@@ -1,0 +1,263 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="editor-window"
+         ref="editorWindowElement">
+        <EmailIFrame v-model:selectedComponentElement="internalSelectedComponentElement"
+                     :html="html"
+                     :cloneComponentRequest="cloneComponentRequest"
+                     :completeComponentRequest="completeComponentRequest"
+                     :deleteComponentRequest="deleteComponentRequest"
+                     :componentTypeDragStartRequest="componentTypeDragStartRequest"
+                     :componentTypeDragOverRequest="componentTypeDragOverRequest"
+                     :componentTypeDragDropRequest="componentTypeDragDropRequest"
+                     :componentTypeDragLeaveRequest="componentTypeDragLeaveRequest"
+                     :componentTypeDragEndRequest="componentTypeDragEndRequest"
+                     :replaceComponentRequest="replaceComponentRequest"
+                     :cssVariables="cssVariables"
+                     :getHtmlRequest="getHtmlRequest"
+                     @emailDocumentUpdated="$emit('emailDocumentUpdated', $event)" />
+        <Overlay :isVisible="isOverlayShown"
+                 backgroundColor="transparent"
+                 targetSelector=".editor-window"
+                 @dragover="onComponentTypeDragOver($event)"
+                 @mousemove="onComponentTypeDragOver"
+                 @drop="onComponentTypeDragDrop"
+                 @mouseup="onComponentTypeDragDrop"
+                 @dragleave="onComponentTypeDragLeave"
+                 @mouseout="onComponentTypeDragLeave" />
+    </div>
+</template>
+
+<style scoped>
+.editor-window {
+    /* Relatively position so the iframe and overlay can be absolutely positioned. */
+    position: relative;
+    width: 100%;
+    height: 100%;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import EmailIFrame from "./emailIFrame.partial.obs";
+    import Overlay from "./overlay.obs";
+    import {
+        CloneComponentRequest,
+        CompleteComponentRequest,
+        ComponentTypeDragDropRequest,
+        ComponentTypeDragEndRequest,
+        ComponentTypeDragLeaveRequest,
+        ComponentTypeDragOverRequest,
+        ComponentTypeDragStartRequest,
+        DeleteComponentRequest,
+        ReplaceComponentRequest
+    } from "./types.partial";
+    import { GetHtmlRequest } from "./types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        /** This is reactive. If it is changed, the inner HTML for the editor will be updated. */
+        html: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        selectedComponentElement: {
+            type: Object as PropType<HTMLElement | null | undefined>,
+            required: true
+        },
+
+        cloneComponentRequest: {
+            type: Object as PropType<CloneComponentRequest | null | undefined>,
+            required: true
+        },
+
+        replaceComponentRequest: {
+            type: Object as PropType<ReplaceComponentRequest | null | undefined>,
+            required: true
+        },
+
+        completeComponentRequest: {
+            type: Object as PropType<CompleteComponentRequest | null | undefined>,
+            required: true
+        },
+
+        deleteComponentRequest: {
+            type: Object as PropType<DeleteComponentRequest | null | undefined>,
+            required: true
+        },
+
+        componentTypeDragStartRequest: {
+            type: Object as PropType<ComponentTypeDragStartRequest | null | undefined>,
+            required: true
+        },
+
+        componentTypeDragEndRequest: {
+            type: Object as PropType<ComponentTypeDragEndRequest | null | undefined>,
+            required: true
+        },
+
+        getHtmlRequest: {
+            type: Object as PropType<GetHtmlRequest | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "emailDocumentUpdated", value: Document): void;
+        (e: "update:selectedComponentElement", value: HTMLElement | null | undefined): void;
+    }>();
+
+    // #region Values
+
+    const internalSelectedComponentElement = useVModelPassthrough(props, "selectedComponentElement", emit);
+    const editorWindowElement = ref<HTMLElement | undefined>();
+    const isOverlayShown = ref<boolean>(false);
+    const cssVariables = ref<Record<string, string>>({});
+    const componentTypeDragOverRequest = ref<ComponentTypeDragOverRequest | null | undefined>();
+    const componentTypeDragDropRequest = ref<ComponentTypeDragDropRequest | null | undefined>();
+    const componentTypeDragLeaveRequest = ref<ComponentTypeDragLeaveRequest | null | undefined>();
+    const isDraggingComponentType = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onComponentTypeDragStart(): void {
+        console.log(`"dragstart" designer component type`);
+
+        isOverlayShown.value = true;
+        isDraggingComponentType.value = true;
+    }
+
+    /**
+     * Handles a component type being dragged over the parent window's editor overlay
+     * and passes arguments to the child editor iframe to handle the event.
+     *
+     * FYI, the "dragover" event is fired repetitively even if the pointer is stationary,
+     * so this handler will be invoked many times.
+     */
+    function onComponentTypeDragOver(event: MouseEvent | DragEvent): void {
+        console.log(`"dragover" designer component type`);
+
+        if (!isDraggingComponentType.value || !editorWindowElement.value) {
+            throw new Error("Unable to handle 'dragover' event. The iframe is not initialized.");
+        }
+
+        // Preventing default here makes the element a valid drop target.
+        event.preventDefault();
+
+        // The pointer's x and y coordinates are currently relative to the parent window.
+        // Convert the coordinates to be relative to the iframe window
+        // so the iframe can process which element(s) are currently being dragged over.
+        const clientX = event.clientX - editorWindowElement.value.getBoundingClientRect().left;
+        const clientY = event.clientY - editorWindowElement.value.getBoundingClientRect().top;
+
+        // Tell the iframe window that a component type is being dragged over it via the message API.
+        // It's important to do this so that the event handling can
+        // be "transferred" to the iframe window.
+        componentTypeDragOverRequest.value = {
+            clientX,
+            clientY
+        };
+    }
+
+    /**
+     * Handles a component type being dropped on the editor overlay
+     * and passes arguments to the child editor iframe to handle the event.
+     *
+     * This should ultimately add the element representing the component type to the editor.
+     */
+    function onComponentTypeDragDrop(): void {
+        console.log(`"drop" designer component type`);
+
+        if (!isDraggingComponentType.value) {
+            return;
+        }
+
+        // Tell the iframe window that a component type is being dropped into it via the message API.
+        // It's important to do this so that the event handling can
+        // be "transferred" to the iframe window.
+        componentTypeDragDropRequest.value = {
+            type: "COMPONENT_TYPE_DRAG_DROP_REQUEST"
+        };
+    }
+
+    /**
+     * Handles a component type stopping being dragged
+     * and passes arguments to the child editor iframe to handle the event.
+     *
+     * This is the last event that is occurs in the drag-drop cycle.
+     */
+    function onComponentTypeDragLeave(): void {
+        console.log(`"dragleave" designer component type`);
+
+        if (!isDraggingComponentType.value) {
+            return;
+        }
+
+        // Tell the iframe window that a component type is being dragged outside of the its border via the message API.
+        // It's important to do this so that the event handling can
+        // be "transferred" to the iframe window.
+        componentTypeDragLeaveRequest.value = {
+            type: "COMPONENT_TYPE_DRAG_LEAVE_REQUEST"
+        };
+    }
+
+    function onComponentTypeDragEnd(): void {
+        console.log(`"dragend" designer component type`);
+
+        isOverlayShown.value = false;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(editorWindowElement, element => {
+        if (element?.ownerDocument.defaultView) {
+            const computedStyle = element.ownerDocument.defaultView.getComputedStyle(element);
+
+            const newCssVariables: Record<string, string> = {};
+
+            const cssVariableNames: string[] = [
+                "--color-info-soft",
+                "--color-info-strong",
+                "--color-interface-softer",
+                "--color-interface-medium",
+                "--color-interface-stronger",
+                "--font-size-xsmall",
+                "--spacing-tiny",
+                "--spacing-xsmall",
+                "--spacing-medium",
+                "--spacing-large"
+            ];
+
+            for (const cssVariableName of cssVariableNames) {
+                const cssVariableValue = computedStyle.getPropertyValue(cssVariableName);
+                newCssVariables[cssVariableName] = cssVariableValue;
+            }
+
+            cssVariables.value = newCssVariables;
+        }
+    });
+
+    watch(() => props.componentTypeDragStartRequest, (newValue) => {
+        if (newValue) {
+            onComponentTypeDragStart();
+        }
+    });
+
+    watch(() => props.componentTypeDragEndRequest, (newValue) => {
+        if (newValue) {
+            onComponentTypeDragEnd();
+        }
+    });
+
+    // #endregion Watchers
+</script>

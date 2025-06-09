@@ -147,7 +147,7 @@ namespace Rock.Blocks.Core
                 Name = entity.Name
             };
 
-            bag.TemplateAttributes = GetAttributes( entity.Id ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
+            bag.TemplateAttributes = GetAttributes( entity.Id ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttribute( a ) );
 
             return bag;
         }

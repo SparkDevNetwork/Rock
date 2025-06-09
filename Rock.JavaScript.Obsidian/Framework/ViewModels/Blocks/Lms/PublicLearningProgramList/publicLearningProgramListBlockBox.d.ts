@@ -31,9 +31,6 @@ export type PublicLearningProgramListBlockBox = {
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;
 
-    /** Gets or sets the HTML to be rendered for the programs list content. */
-    programsHtml?: string | null;
-
     /** Gets or sets the security grant token. */
     securityGrantToken?: string | null;
 };

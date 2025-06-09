@@ -1,18 +1,26 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel v-if="[ComponentScreen.Summary, ComponentScreen.Configuration].includes(screenToShow)" :title="panelTitle" :class="containerClasses" :hasFullscreen="false">
-        <div v-if="screenToShow === ComponentScreen.Configuration" class="learning-activity-video-file-configuration-container">
-            <div class="header-content-section">
+    <Panel v-if="screenToShow === ComponentScreen.Configuration"
+           :title="panelTitle"
+           :class="containerClasses"
+           :hasFullscreen="false">
+        <div class="learning-activity-video-file-configuration-container">
+            <div>
                 <RockLabel>Header Content</RockLabel>
                 <StructuredContentEditor v-model="headerContent" :disabled="disabled" />
             </div>
+
             <div class="video-file-media-section">
                 <div class="media-account-field">
-                    <RockLabel>Video File</RockLabel>
-                    <MediaElementPicker v-model="video" media-element-label="Video" :disabled="disabled" />
+                    <MediaElementPicker v-model="video"
+                                        label="Video File"
+                                        media-element-label="Video"
+                                        rules="required"
+                                        :disabled="disabled" />
                 </div>
+
                 <div class="completion-threshold-field">
-                    <NumberBox v-model="completionThresholdForView"
+                    <NumberBox v-model="completionThresholdForConfigure"
                                :disabled="disabled"
                                :decimalCount="0"
                                :minimumValue="0"
@@ -29,12 +37,15 @@
 
             <div class="footer-content-section">
                 <RockLabel>Footer Content</RockLabel>
-                <StructuredContentEditor
-                                         v-model="footerContent"
-                                         :disabled="disabled" />
+                <StructuredContentEditor v-model="footerContent" :disabled="disabled" />
             </div>
         </div>
+    </Panel>
 
+    <Panel v-if="screenToShow === ComponentScreen.Summary"
+           :title="panelTitle"
+           :class="containerClasses"
+           :hasFullscreen="false">
         <div v-if="screenToShow === ComponentScreen.Summary">
             <NotificationBox :alertType="notificationAlertType">
                 {{ assignee?.name ?? defaultAssigneeDescription }} watched {{ formattedWatchedPercentage }}% of this video.
@@ -45,16 +56,18 @@
     <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
 
         <div class="header-section">
-            <StructuredContentEditor :disabled="true" label="" v-model="headerContent" />
+            <div v-if="headerContent" v-html="headerContent"></div>
         </div>
 
         <div class="video-section">
             <MediaPlayer v-model:watchedPercentage="watchedPercentage"
-                         :mediaElementGuid="video?.value ?? ''" />
+                         :mediaElementGuid="video?.value ?? ''"
+                         :autoResumeInDays="60"
+                         :combinePlayStatisticsInDays="60" />
         </div>
 
         <div class="footer-section">
-            <StructuredContentEditor :disabled="true" label="" v-model="footerContent" />
+            <div v-if="footerContent" v-html="footerContent"></div>
 
             <div v-if="showStudentComment" class="optional-comments-container">
                 <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
@@ -62,7 +75,8 @@
 
         </div>
         <div class="footer-button-section">
-            <RockButton :btnType="BtnType.Primary" :disabled="!hasPassedThreshold"
+            <RockButton :btnType="BtnType.Primary"
+                        :disabled="!hasPassedThreshold"
                         @click="onCompletedAndClosed">
                 {{ completeButtonText }}
             </RockButton>
@@ -71,7 +85,7 @@
     </div>
 </template>
 <script setup lang="ts">
-    import { computed, ref, toValue, watch } from "vue";
+    import { computed, ref, watch } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
@@ -83,10 +97,23 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
-    import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
-    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
-    import { VideoWatchActivityCompletion, VideoWatchActivityConfiguration, VideoWatchActivityDefaults } from "./videoWatchLearningActivity.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    const enum SettingKey {
+        CompletionThreshold = "completionThreshold",
+        FooterContent = "footerContent",
+        HeaderContent = "headerContent",
+        Video = "video"
+    }
+
+    const enum CompletionKey {
+        WatchedPercentage = "watchedPercentage",
+        PointsAvailableAtCompletion = "pointsAvailableAtCompletion"
+    }
 
     // Get the required props and emits for learning activity components.
     const props = defineProps({ ...learningActivityProps });
@@ -97,7 +124,7 @@
 
     // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
     const activityBag = computed(() => props.activityBag);
-    const completionBag = computed(() => props.completionBag ?? {} as LearningActivityCompletionBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningClassActivityCompletionBag);
     const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
     const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
     const studentComment = ref(completionBag.value.studentComment ?? "");
@@ -105,34 +132,72 @@
     /** Initialize the base component and destructure the refs we need for use in this component. */
     const {
         assignee,
-        completionThreshold,
         containerClasses,
         defaultAssigneeDescription,
-        footerContent,
-        headerContent,
         isCompleted,
         panelTitle,
-        pointsPossibleAtCompletion,
-        video,
-        watchedPercentage
-    } = useLearningComponent<VideoWatchActivityConfiguration, VideoWatchActivityCompletion>(
-        activityBag,
-        completionBag,
-        screenToShow,
-        new VideoWatchActivityDefaults()
-    );
+    } = useLearningComponent(activityBag, completionBag, screenToShow);
+
+    const completionThreshold = ref(0);
+    const footerContent = ref("");
+    const headerContent = ref("");
+    const video = ref<ListItemBag | null>(null);
+    const watchedPercentage = ref(0);
+    const pointsPossibleAtCompletion = ref<number>();
+
+    // #region Computed Values
 
     const hasPassedThreshold = computed(() => watchedPercentage.value >= completionThreshold.value);
     const notificationAlertType = computed(() => hasPassedThreshold ? "success" : "warning");
     const formattedWatchedPercentage = computed(() => (watchedPercentage.value * 100).toFixed());
 
-    // The threshold control should show as a number between 0 and 100;
-    // while the saved value will be normalized as a decimal < 1.
-    const completionThresholdForView = ref((
-        completionThreshold.value < 1 ?
-            completionThreshold.value * 100 :
-            completionThreshold.value
-    ));
+    const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
+
+    const completionThresholdForConfigure = computed({
+        get: () => completionThreshold.value * 100,
+        set: (value: number) => completionThreshold.value = value / 100
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function parseSafe<T>(json: string | null | undefined): T | undefined {
+        if (!json) {
+            return undefined;
+        }
+
+        try {
+            return JSON.parse(json) as T;
+        }
+        catch {
+            return undefined;
+        }
+    }
+
+    function updateLocalValues(): void {
+        if (props.screenToShow === ComponentScreen.Configuration) {
+            completionThreshold.value = toNumberOrNull(props.activityBag.componentSettings?.[SettingKey.CompletionThreshold]) ?? 0;
+            footerContent.value = props.activityBag.componentSettings?.[SettingKey.FooterContent] ?? "";
+            headerContent.value = props.activityBag.componentSettings?.[SettingKey.HeaderContent] ?? "";
+            updateRefValue(video, parseSafe(props.activityBag.componentSettings?.[SettingKey.Video]) ?? null);
+        }
+        else {
+            completionThreshold.value = toNumberOrNull(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.CompletionThreshold]) ?? 0;
+            footerContent.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.FooterContent] ?? "";
+            headerContent.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.HeaderContent] ?? "";
+            updateRefValue(video, parseSafe(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Video]) ?? null);
+
+            watchedPercentage.value = toNumberOrNull(props.completionBag?.completionValues?.[CompletionKey.WatchedPercentage]) ?? 0;
+            pointsPossibleAtCompletion.value = toNumberOrNull(props.completionBag?.completionValues?.[CompletionKey.PointsAvailableAtCompletion]) ?? undefined;
+
+            studentComment.value = props.completionBag?.studentComment ?? "";
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
 
     function onCompletedAndClosed(): void {
         if (isCompleted.value === false) {
@@ -143,49 +208,48 @@
         emits("closed");
     }
 
-    const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
-
-    watch(completionThresholdForView, () => {
-        completionThreshold.value = completionThresholdForView.value / 100;
-    });
+    // #endregion
 
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
-        const updatedActivityBag = {
-            ...toValue(activityBag)
-        } as LearningActivityBag;
+        const newValues = {
+            ...props.activityBag.componentSettings
+        };
 
-        updatedActivityBag.activityComponentSettingsJson = JSON.stringify({
-            completionThreshold: completionThreshold.value,
-            footerContent: footerContent.value,
-            headerContent: headerContent.value,
-            video: video.value
-        }) ?? "";
+        newValues[SettingKey.CompletionThreshold] = completionThreshold.value.toString();
+        newValues[SettingKey.FooterContent] = footerContent.value;
+        newValues[SettingKey.HeaderContent] = headerContent.value;
+        newValues[SettingKey.Video] = JSON.stringify(video.value);
 
-        emits("update:activityBag", updatedActivityBag);
+        emits("activitySettingsChanged", newValues);
     });
     watch([completionThreshold, footerContent, headerContent, video], () => {
         debouncedActivityBagEmits();
     }, { deep: true });
 
     /** Watch for modified component completion. */
-    const debouncedCompletionBagEmits = debounce(() => {
-        // Only update completion bag when we're on the completion screen.
-        if (screenToShow.value === ComponentScreen.Completion) {
-            const updatedCompletionBag = {
-                ...toValue(completionBag)
-            } as LearningActivityCompletionBag;
+    watch([watchedPercentage, pointsPossibleAtCompletion], () => {
+        const newValues = {
+            ...props.completionBag?.completionValues
+        };
 
-            updatedCompletionBag.studentComment = studentComment.value;
+        const pointsPossible = pointsPossibleAtCompletion.value ?? props.activityBag.points;
 
-            updatedCompletionBag.activityComponentCompletionJson = JSON.stringify({
-                watchedPercentage: watchedPercentage.value,
-                pointsPossibleAtCompletion: pointsPossibleAtCompletion?.value ?? activityBag.value.points
-            }) ?? "{}";
-            emits("update:completionBag", updatedCompletionBag);
-        }
-    });
-    watch([watchedPercentage, studentComment], () => {
-        debouncedCompletionBagEmits();
+        newValues[CompletionKey.WatchedPercentage] = watchedPercentage.value.toString();
+        newValues[CompletionKey.PointsAvailableAtCompletion] = pointsPossible > 0
+            ? pointsPossible.toString()
+            : "";
+
+        emits("completionValuesChanged", newValues);
     }, { deep: true });
+
+    watch(studentComment, () => {
+        emits("commentChanged", studentComment.value);
+    });
+
+    watch(() => [props.activityBag, props.completionBag], () => {
+        updateLocalValues();
+    });
+
+    updateLocalValues();
 </script>

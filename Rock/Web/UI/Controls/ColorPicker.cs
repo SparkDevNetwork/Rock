@@ -69,7 +69,7 @@ namespace Rock.Web.UI.Controls
             this.AddCssClass( "rock-colorpicker-input input-width-lg" );
             var definedValues = DefinedTypeCache.Get( SystemGuid.DefinedType.COLOR_PICKER_SWATCHES )?.DefinedValues.Select( a => a.Value ).ToList();
 
-            // as per docs (https://farbelous.io/bootstrap-colorpicker/v2/) colorSelectors is a "List of pre selected colors (hex format)."
+            // as per docs (https://itsjavi.com/bootstrap-colorpicker/v2/) colorSelectors is a "List of pre selected colors (hex format)."
             string script = $@"$('.rock-colorpicker-input').colorpicker({{
                 colorSelectors: {definedValues.ToJson( indentOutput: true ).Replace("\"","'")}
             }});";

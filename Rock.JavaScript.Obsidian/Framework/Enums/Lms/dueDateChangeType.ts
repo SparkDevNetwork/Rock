@@ -22,20 +22,20 @@
 //
 
 /**
- * Determines the method for updating the due date of LearningActivityCompletion
- * records when the LearningActivity.DueDate is modified.
+ * Determines the method for updating the due date of LearningClassActivityCompletion
+ * records when the LearningClassActivity.DueDate is modified.
  */
 export const DueDateChangeType = {
-    /** Update only LearningActivityCompletion records whose due date exactly matches the previous value. */
+    /** Update only LearningClassActivityCompletion records whose due date exactly matches the previous value. */
     UpdateMatching: 0,
 
-    /** Update all LearningActivityCompletion records to use the new due date. */
+    /** Update all LearningClassActivityCompletion records to use the new due date. */
     UpdateAll: 1
 } as const;
 
 /**
- * Determines the method for updating the due date of LearningActivityCompletion
- * records when the LearningActivity.DueDate is modified.
+ * Determines the method for updating the due date of LearningClassActivityCompletion
+ * records when the LearningClassActivity.DueDate is modified.
  */
 export const DueDateChangeTypeDescription: Record<number, string> = {
     0: "Update Matching",
@@ -44,7 +44,7 @@ export const DueDateChangeTypeDescription: Record<number, string> = {
 };
 
 /**
- * Determines the method for updating the due date of LearningActivityCompletion
- * records when the LearningActivity.DueDate is modified.
+ * Determines the method for updating the due date of LearningClassActivityCompletion
+ * records when the LearningClassActivity.DueDate is modified.
  */
 export type DueDateChangeType = typeof DueDateChangeType[keyof typeof DueDateChangeType];

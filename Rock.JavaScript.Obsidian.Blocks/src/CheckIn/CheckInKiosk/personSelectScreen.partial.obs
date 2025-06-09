@@ -208,7 +208,7 @@
     function updateActions(): void {
         const actions: KioskButton[] = [];
 
-        if (props.configuration.kiosk?.isRegistrationModeEnabled) {
+        if (props.configuration.kiosk?.isEditingFamiliesEnabled) {
             actions.push({
                 type: "default",
                 title: "Edit Family",

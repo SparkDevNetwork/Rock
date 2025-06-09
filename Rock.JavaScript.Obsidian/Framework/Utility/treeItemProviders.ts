@@ -39,7 +39,7 @@ import { WorkflowActionTypePickerGetChildrenOptionsBag } from "@Obsidian/ViewMod
 import { MergeFieldPickerGetChildrenOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/mergeFieldPickerGetChildrenOptionsBag";
 import { AssetManagerGetRootFoldersOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerGetRootFoldersOptionsBag";
 import { AssetManagerBaseOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/assetManagerBaseOptionsBag";
-import { AdaptiveMessagePickerGetAdaptiveMessagesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/adaptiveMessagePickerGetAdaptiveMessagesOptionsBag";
+import { UniversalItemTreePickerOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/UniversalItemTreePickerOptionsBag";
 import { flatten } from "./arrayUtils";
 import { toNumberOrNull } from "./numberUtils";
 
@@ -1182,13 +1182,9 @@ export class AdaptiveMessageTreeItemProvider implements ITreeItemProvider {
      * @returns A collection of TreeItem objects as an asynchronous operation.
      */
     private async getItems(parentGuid?: Guid | null): Promise<TreeItemBag[]> {
-        const options: AdaptiveMessagePickerGetAdaptiveMessagesOptionsBag = {
-            parentGuid,
-            getCategorizedItems: true,
-            includeCategoriesWithoutChildren: true,
-            lazyLoad: false,
+        const options: UniversalItemTreePickerOptionsBag = {
+            parentValue: parentGuid,
             securityGrantToken: this.securityGrantToken,
-            includeUnnamedEntityItems: true,
         };
 
         const response = await post<TreeItemBag[]>("/api/v2/Controls/AdaptiveMessagePickerGetAdaptiveMessages", {}, options);

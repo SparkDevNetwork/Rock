@@ -16,20 +16,13 @@
 //
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Shared;
+
 namespace Rock.Tests.Integration.Core.Lava.Filters
 {
     [TestClass]
     public class NumericFilterTests : LavaIntegrationTestBase
     {
-        /// <summary>
-        /// Decimal input should be formatted using the supplied currency symbol.
-        /// </summary>
-        [TestMethod]
-        public void FormatAsCurrency_DecimalInputWithNoSymbol_ProducesDefaultCurrencyFormat()
-        {
-            TestHelper.AssertTemplateOutput( "$1,234,567.89", "{{ '1234567.89' | FormatAsCurrency }}" );
-        }
-
         [TestMethod]
         public void Round_InputValueIsLessThanMidpoint_ResultIsRoundedDown()
         {
@@ -51,6 +44,65 @@ namespace Rock.Tests.Integration.Core.Lava.Filters
                 "183.36", "{{ 183.357 | Round:2 }}" );
         }
 
+        #region FormatAsCurrency
+
+        // These rely on GlobalAttributesCache.Value( "CurrencySymbol" )
+
+        /// <summary>
+        /// Decimal input should be formatted using the supplied currency symbol.
+        /// </summary>
+        [TestMethod]
+        public void FormatAsCurrency_DecimalInputWithNoSymbol_ProducesDefaultCurrencyFormat()
+        {
+            TestHelper.AssertTemplateOutput( "$1,234,567.89", "{{ '1234567.89' | FormatAsCurrency }}" );
+        }
+
+        /// <summary>
+        /// The Format filter should format a numeric input using a recognized .NET format string correctly.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
+        [DataRow( "1234567.89", "$123.456.789,00", "de-DE" )]
+        public void FormatAsCurrency_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{{ '" + input + "' | FormatAsCurrency }}" );
+                return null;
+            }, clientCulture );
+        }
+
+        /// <summary>
+        /// The Format filter should format a numeric input using a recognized .NET format string correctly.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
+        [DataRow( "1234567.89", "$1,234,567.89", "de-DE" )]
+        public void FormatAsCurrency_WithSetCulture_AsInvariant_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'invariant' %}{{ '" + input + "' | FormatAsCurrency }}{% endsetculture %}" );
+                return null;
+            }, clientCulture );
+        }
+
+        /// <summary>
+        /// The Format filter should format a numeric input using a recognized .NET format string correctly.
+        /// </summary>
+        [DataTestMethod]
+        [DataRow( "1234567.89", "$1,234,567.89", "en-US" )]
+        [DataRow( "1234567.89", "$123.456.789,00", "de-DE" )]
+        public void FormatAsCurrency_WithSetCulture_AsClient_UsingValidDotNetCustomFormatString_ProducesValidNumber_AgainstClientCulture( string input, string expectedResult, string clientCulture )
+        {
+            TestConfigurationHelper.ExecuteWithCulture<object>( () =>
+            {
+                TestHelper.AssertTemplateOutput( expectedResult, "{% setculture culture:'client' %}{{ '" + input + "' | FormatAsCurrency }}{% endsetculture %}" );
+                return null;
+            }, clientCulture );
+        }
+
+        #endregion
     }
 
 }

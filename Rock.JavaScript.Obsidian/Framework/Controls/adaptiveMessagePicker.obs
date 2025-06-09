@@ -5,7 +5,8 @@
                     formGroupClasses="category-picker"
                     iconCssClass="fa fa-folder-open"
                     :provider="itemProvider"
-                    :multiple="multiple" />
+                    :multiple="multiple"
+                    disableFolderSelection />
 </template>
 
 <script setup lang="ts">

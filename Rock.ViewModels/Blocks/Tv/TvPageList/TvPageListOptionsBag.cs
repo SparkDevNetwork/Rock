@@ -26,5 +26,13 @@ namespace Rock.ViewModels.Blocks.Tv.TvPageList
         /// Gets or sets the site id key.
         /// </summary>
         public string SiteId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default page identifier key of the current application.
+        /// </summary>
+        /// <value>
+        /// The default page identifier key.
+        /// </value>
+        public string DefaultPageIdKey { get; set; }
     }
 }

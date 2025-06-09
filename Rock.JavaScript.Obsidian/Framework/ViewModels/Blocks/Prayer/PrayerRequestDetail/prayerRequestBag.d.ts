@@ -79,11 +79,20 @@ export type PrayerRequestBag = {
     /** Gets or sets the Last Name of the person that this prayer request is about. This property is required. */
     lastName?: string | null;
 
+    /** Gets or sets the list of Moderation Flags. */
+    moderationFlags?: string[] | null;
+
+    /** Gets or sets the original prayer request before AI formatting. */
+    originalRequest?: string | null;
+
     /** Gets or sets the number of times that this prayer request has been prayed for. */
     prayerCount?: number | null;
 
     /** Gets or sets the requested by person alias. */
     requestedByPersonAlias?: ListItemBag | null;
+
+    /** Gets or sets the sentiment of the prayer request. */
+    sentiment?: string | null;
 
     /** Gets or sets the text/content of the request. */
     text?: string | null;

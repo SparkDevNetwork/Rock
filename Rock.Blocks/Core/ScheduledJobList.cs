@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Lists all scheduled jobs." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the service job details.",
@@ -146,7 +146,7 @@ namespace Rock.Blocks.Core
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ServiceJobId", "((Key))" ),
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["ServiceJobId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } ),
                 [NavigationUrlKey.HistoryPage] = this.GetLinkedPageUrl( AttributeKey.HistoryPage, new Dictionary<string, string>
                 {
                     { "ScheduledJobId", "((Key))" }

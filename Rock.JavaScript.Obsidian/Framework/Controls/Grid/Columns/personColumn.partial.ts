@@ -109,7 +109,16 @@ export default defineComponent({
             type: Boolean as PropType<boolean>,
             default: false
         },
-        
+
+        /**
+         * If true, when hovering over the avatar will show a popover with some
+         * additional information about the person.
+         */
+        enableHoverInfo: {
+            type: Boolean,
+            default: false
+        },
+
         columnType: {
             type: String as PropType<string>,
             default: "person"

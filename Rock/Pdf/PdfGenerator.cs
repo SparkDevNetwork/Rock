@@ -15,12 +15,15 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
+
 using PuppeteerSharp;
-using PuppeteerSharp.BrowserData;
 using PuppeteerSharp.Media;
+
 using Rock.Observability;
 using Rock.SystemKey;
 using Rock.Utility;
@@ -47,8 +50,12 @@ namespace Rock.Pdf
 
         private IBrowser _puppeteerBrowser = null;
         private IPage _puppeteerPage;
-
         private static int _lastProgressPercentage = 0;
+
+        /// <summary>
+        /// Default Chrome Version
+        /// </summary>
+        public static string BrowserVersion => "133.0.6943.141";
 
         /// <summary>
         /// Ensures the chrome engine is downloaded and installed.
@@ -74,9 +81,9 @@ namespace Rock.Pdf
 
             try
             {
-                var executablePath = browserFetcher.GetExecutablePath( Chrome.DefaultBuildId );
+                var executablePath = browserFetcher.GetExecutablePath( BrowserVersion );
                 var installingFlagFileName = Path.Combine( browserFetcher.CacheDir, ".installing" );
-                var localInstallExists = browserFetcher.GetInstalledBrowsers().Any( b => b.BuildId == Chrome.DefaultBuildId );
+                var localInstallExists = browserFetcher.GetInstalledBrowsers().Any( b => b.BuildId == BrowserVersion );
 
                 // If checking for an incomplete install, check if there is an orphaned ".installing" file. Also make sure that the chrome.exe exists
                 // (just in case files were deleted, but folders were not).
@@ -87,7 +94,7 @@ namespace Rock.Pdf
                     {
                         // Attempt to kill any chrome.exe processes that are running in our ChromeEngine directory so that we can remove it.
                         KillChromeProcesses();
-                        browserFetcher.Uninstall( Chrome.DefaultBuildId );
+                        browserFetcher.Uninstall( BrowserVersion );
                         localInstallExists = false;
                     }
                 }
@@ -104,7 +111,7 @@ namespace Rock.Pdf
                 }
 
                 File.WriteAllText( installingFlagFileName, "If this file exists, either the chrome engine is currently installing, or was interrupted before the install completed." );
-                AsyncHelper.RunSync( () => browserFetcher.DownloadAsync() );
+                AsyncHelper.RunSync( () => browserFetcher.DownloadAsync( BrowserVersion ) );
                 File.Delete( installingFlagFileName );
 
                 if ( _lastProgressPercentage > 99 )
@@ -161,7 +168,7 @@ namespace Rock.Pdf
                 var browserFetcher = GetBrowserFetcher();
 
                 // Kill any chrome.exe's that got left running
-                var executablePath = browserFetcher.GetExecutablePath( Chrome.DefaultBuildId );
+                var executablePath = browserFetcher.GetExecutablePath( BrowserVersion );
                 var chromeProcesses = Process.GetProcessesByName( "chrome" );
                 foreach ( var process in chromeProcesses )
                 {
@@ -185,6 +192,24 @@ namespace Rock.Pdf
         }
 
         /// <summary>
+        /// The paper formats
+        /// </summary>
+        public static readonly Dictionary<string, PaperFormat> PaperFormats = new Dictionary<string, PaperFormat>( StringComparer.OrdinalIgnoreCase )
+        {
+            { "Letter", PaperFormat.Letter },
+            { "Legal", PaperFormat.Legal },
+            { "Tabloid", PaperFormat.Tabloid },
+            { "Ledger", PaperFormat.Ledger },
+            { "A0", PaperFormat.A0 },
+            { "A1", PaperFormat.A1 },
+            { "A2", PaperFormat.A2 },
+            { "A3", PaperFormat.A3 },
+            { "A4", PaperFormat.A4 },
+            { "A5", PaperFormat.A5 },
+            { "A6", PaperFormat.A6 }
+        };
+
+        /// <summary>
         /// Gets or sets CSS @media. Defaults to <see cref="MediaType.Screen"/>
         /// </summary>
         /// <value>The type of the PDF media.</value>
@@ -194,13 +219,38 @@ namespace Rock.Pdf
         /// Gets or sets the paper format (Letter, Legal, A4). Defaults to <see cref="PaperFormat.Letter"/>
         /// </summary>
         /// <value>The paper format.</value>
-        public PaperFormat PaperFormat { get; set; } = PaperFormat.Letter;
+        public PaperFormat PaperFormat { get; set; }
 
         /// <summary>
-        /// Gets or sets the margin options.
+        /// Gets or sets the margin options. Refers to using inches as the unit of measurement.
         /// </summary>
         /// <value>The margin options.</value>
         public MarginOptions MarginOptions { get; set; }
+
+        /// <summary>
+        /// Paper ranges to print, e.g., <c>1-5, 8, 11-13</c>. Defaults to the empty string, which means print all pages.
+        /// </summary>
+        public string PageRanges { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets or sets the width.
+        /// </summary>
+        public double? Width { get; set; } = 8.5;
+
+        /// <summary>
+        /// Gets or sets the height.
+        /// </summary>
+        public double? Height { get; set; } = 11;
+
+        /// <summary>
+        /// Display header and footer. Defaults to <c>false</c>.
+        /// </summary>
+        public bool DisplayHeaderFooter { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets the header HTML. This value will override the default. To use the default leave blank/null.
+        /// </summary>
+        public string HeaderHtml { get; set; }
 
         /// <summary>
         /// Print background graphics. Defaults to true.
@@ -249,7 +299,7 @@ namespace Rock.Pdf
 
                 // should have already been installed, but just in case it hasn't, download it now.
                 EnsureChromeEngineInstalled( browserFetcher, false );
-                launchOptions.ExecutablePath = browserFetcher.GetExecutablePath( Chrome.DefaultBuildId );
+                launchOptions.ExecutablePath = browserFetcher.GetExecutablePath( BrowserVersion );
 
                 _puppeteerBrowser = Puppeteer.LaunchAsync( launchOptions ).Result;
             }
@@ -365,8 +415,26 @@ namespace Rock.Pdf
 
             var pdfOptions = new PdfOptions();
 
-            // Set page size
-            pdfOptions.Format = this.PaperFormat;
+            // Set page format (e.g A4, Legal, Letter)
+            if ( this.PaperFormat != null )
+            {
+                pdfOptions.Format = this.PaperFormat;
+            }
+            else
+            {
+                // Set Width
+                if ( this.Width != null )
+                {
+                    pdfOptions.Width = this.Width.ToString() + "in";
+                }
+
+                // Set Height
+                if ( this.Height != null )
+                {
+                    pdfOptions.Height = this.Height.ToString() + "in";
+                }
+            }
+
 
             // Set margins
             if ( this.MarginOptions != null )
@@ -377,23 +445,31 @@ namespace Rock.Pdf
             {
                 pdfOptions.MarginOptions = new MarginOptions
                 {
-                    Top = "10mm",
-                    Right = "10mm",
-                    Left = "10mm",
-                    Bottom = "15mm",
+                    Top = "0.39in",
+                    Right = "0.39in",
+                    Left = "0.39in",
+                    Bottom = "0.59in",
                 };
             }
 
             pdfOptions.PrintBackground = this.PrintBackground;
 
-            pdfOptions.DisplayHeaderFooter = true;
-
-            // set HeaderTemplate to something so that it doesn't end up using the default, which is Page Title and Date
-            pdfOptions.HeaderTemplate = "<!-- -->";
-
-            if( this.FooterHtml.IsNullOrWhiteSpace() )
+            pdfOptions.DisplayHeaderFooter = this.DisplayHeaderFooter;
+            if ( this.HeaderHtml.IsNotNullOrWhiteSpace() )
             {
+                pdfOptions.HeaderTemplate = this.HeaderHtml;
+            }
+            else
+            {
+                pdfOptions.HeaderTemplate = "<!-- -->";
+            }
 
+            if ( this.FooterHtml.IsNotNullOrWhiteSpace() )
+            {
+                pdfOptions.FooterTemplate = this.FooterHtml;
+            }
+            else
+            {
                 // Set footer template to show pageNumber/totalPages on the bottom right.
                 // See chromium source code at  https://source.chromium.org/chromium/chromium/src/+/main:components/printing/resources/print_header_footer_template_page.html
                 pdfOptions.FooterTemplate = @"
@@ -402,15 +478,11 @@ namespace Rock.Pdf
     <span class='pageNumber'></span>/<span class='totalPages'></span>
 </div>;";
             }
-            else
-            {
-                pdfOptions.FooterTemplate = this.FooterHtml;
-            }
 
             using ( var activity = ObservabilityHelper.StartActivity( "PDF: Generate From HTML" ) )
             {
                 activity?.AddTag( "rock.pdf.htmlsize", html.Length.ToString() );
-               
+
                 var pdfStreamTask = _puppeteerPage.PdfStreamAsync( pdfOptions );
 
                 // It should only take a couple of seconds to create a PDF, even if it a big file. If it takes more than 30 seconds,

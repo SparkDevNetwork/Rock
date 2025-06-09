@@ -1,0 +1,127 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TogglablePropertyGroup :label="label"
+                            :valueProvider="valueProvider">
+        <BackgroundImageProperty :element="element"
+                                 label="Image"
+                                 :valueProviderOverride="valueProvider.imageProvider" />
+
+        <BackgroundSizeProperty :element="element"
+                                label="Image Size"
+                                help="This controls how the image is displayed. &quot;Fit Width&quot; will adjust the image to take up the full width of the block. &quot;Fill Height&quot; will adjust the image to take up the full height of the block. &quot;Original&quot; will show the original size of your image."
+                                :valueProviderOverride="valueProvider.imageSizeProvider" />
+
+        <BackgroundFitPropertyGroup :element="element"
+                                    label="Image Fit"
+                                    :valueProviderOverride="valueProvider.imageFitProvider" />
+    </TogglablePropertyGroup>
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import BackgroundSizeProperty from "./backgroundSizeProperty.partial.obs";
+    import BackgroundFitPropertyGroup, { } from "./backgroundFitPropertyGroup.partial.obs";
+    import BackgroundImageProperty from "./backgroundImageProperty.partial.obs";
+    import TogglablePropertyGroup from "./togglablePropertyGroup.partial.obs";
+    import {
+        createBackgroundFitProvider,
+        createBackgroundImageProvider,
+        createBackgroundSizeProvider
+    } from "../providers.partial";
+    import { BackgroundFit, BackgroundSize, ValueProvider } from "../types.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    type BackgroundImagePropertyGroupValueProvider = ValueProvider<boolean | null | undefined> & {
+        imageProvider: ValueProvider<ListItemBag | null | undefined>;
+        imageSizeProvider: ValueProvider<BackgroundSize | null | undefined>;
+        imageFitProvider: ValueProvider<BackgroundFit[] | null | undefined>;
+    };
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Background Image" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const valueProvider = ref(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): BackgroundImagePropertyGroupValueProvider {
+        const element = props.element;
+        const copyToElements = props.copyToElements;
+
+        const imageProvider: ValueProvider<ListItemBag | null | undefined> = createBackgroundImageProvider(
+            element,
+            copyToElements
+        );
+        const imageSizeProvider: ValueProvider<BackgroundSize | null | undefined> = createBackgroundSizeProvider(
+            element,
+            copyToElements
+        );
+        const imageFitProvider: ValueProvider<BackgroundFit[] | null | undefined> = createBackgroundFitProvider(
+            element,
+            copyToElements
+        );
+
+        const value = ref<boolean | null | undefined>(
+            !!imageProvider.value?.value
+        );
+
+        const watcher = watch(value, (newValue) => {
+            if (!newValue) {
+                imageProvider.value = null;
+                imageSizeProvider.value = null;
+                imageFitProvider.value = null;
+            }
+        });
+
+        return {
+            get value() {
+                return value.value;
+            },
+            set value(newValue) {
+                value.value = newValue;
+            },
+            imageProvider,
+            imageFitProvider,
+            imageSizeProvider,
+            dispose() {
+                imageProvider.dispose();
+                imageSizeProvider.dispose();
+                imageFitProvider.dispose();
+                watcher();
+            }
+        };
+    }
+
+    // #endregion Functions
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

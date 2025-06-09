@@ -1,0 +1,93 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" :value="value" :displayAsRaw="true">
+
+        <EmailEditor class="gallery-email-editor" :html="value"
+                     :disabled="disabled"
+                     :getHtmlRequest="getHtmlRequest"
+                     :mergeFields="mergeFields"
+                     :recipientPersonIds="[]"
+                     :ltr="ltr"
+                     :videoProviderNames="[]" />
+
+        <template #settings>
+            <p> Since this editor does not automatically save changes, they must be requested on demand when the updated HTML is needed.</p>
+            <RockButton btnType="primary" help="The Email Editor value is only updated on demand. Click this button to get its current value." @click="onGetHtmlClicked">Get HTML</RockButton>
+
+            <div class="row">
+                <div class="col-md-2">
+                    <Switch v-model="disabled" label="Disabled" :text="disabled ? 'Yes' : 'No'" />
+                </div>
+
+                <div class="col-md-2">
+                    <Switch v-model="ltr" label="Left to Right" :text="ltr ? 'Yes' : 'No'" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col">
+                    <ValueList label="Merge Fields" v-model="mergeFields" help="The merge fields that are available for selection in the Merge Field toolbar button. If this is not set, then the Merge Field button will be hidden in the editor toolbar." />
+                </div>
+            </div>
+        </template>
+
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+.gallery-email-editor {
+    height: 600px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import EmailEditor, { GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
+
+    const value = ref(`<!DOCTYPE html>
+<html lang="en-us">
+<head>
+    <title>Email Editor Gallery</title>
+    <meta charset="utf-8" />
+</head>
+<body>
+    <div class="structure-dropzone">
+        <div class="dropzone"></div>
+    </div>
+</body>
+</html>`);
+    const disabled = ref(false);
+    const ltr = ref(false);
+    const mergeFields = ref([
+        "GlobalAttribute",
+        "Rock.Model.Person",
+        "Rock.Model.Person|Custom Person Label",
+        "MergeField1",
+        "MergeFieldWithCustomLabel|Custom Label"
+    ]);
+    const getHtmlRequest = ref<GetHtmlRequest | null | undefined>();
+
+    const importCode = getSfcControlImportPath("htmlEditor");
+    const exampleCode = computed(() => {
+        return `<EmailEditor
+    :html="value"
+    :getHtmlRequest="getHtmlRequest"${disabled.value ? `
+    :disabled="${disabled.value}"` : ""}${mergeFields.value?.length ? `
+    :mergeFields="['${mergeFields.value.join(`', '`)}']"` : ""} />`;
+    });
+
+    function onGetHtmlClicked(): void {
+        getHtmlRequest.value = {
+            onSuccess({ html }): void {
+                value.value = html;
+            },
+            onError(error: string): void {
+                alert(error);
+            }
+        };
+    }
+</script>

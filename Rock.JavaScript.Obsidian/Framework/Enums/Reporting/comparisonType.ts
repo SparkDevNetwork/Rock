@@ -97,5 +97,10 @@ export const ComparisonTypeDescription: Record<number, string> = {
     8192: "Regular Expression"
 };
 
+// Add the __order property hidden so it doesn't get enumerated.
+Object.defineProperty(ComparisonTypeDescription, "__order", {
+    value: [1, 2, 8, 16, 32, 64, 128, 256, 512, 1024, 4, 2048, 4096, 8192],
+});
+
 /** Reporting Field Comparison Types */
 export type ComparisonType = number;

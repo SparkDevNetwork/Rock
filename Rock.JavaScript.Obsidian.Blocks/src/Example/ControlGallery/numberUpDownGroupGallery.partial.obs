@@ -13,7 +13,7 @@
     import { ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import NumberUpDownGroup from "@Obsidian/Controls/numberUpDownGroup.obs";
-
+    import type { NumberUpDownGroupOption } from "@Obsidian/Types/Controls/numberUpDownGroup.d.ts";
     import { getSfcControlImportPath } from "./common/utils.partial";
 
     const value = ref({ prop1: 30, prop2: 30, prop3: 30 });

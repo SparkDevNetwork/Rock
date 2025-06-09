@@ -1,0 +1,57 @@
+<template>
+    <DropDownList v-model="listFormat"
+                  :items="listFormatOptions"
+                  label="Output Format"
+                  help="Specifies the content and format of the values in this field." />
+    <DataViewPicker v-model="dataView"
+                    :entityTypeGuid="EntityType.Group"
+                    label="Participates in Groups"
+                    help="A Data View that filters the Groups included in the result. If no value is selected, any Groups that would be visible in a Group List will be included." />
+    <DropDownList v-model="roleType"
+                  :items="roleTypeOptions"
+                  showBlankItem
+                  label="with Group Member Type"
+                  help="Specifies the type of Group Role the Member must have to be included in the result. If no value is selected, Members in any Role will be included." />
+    <DropDownList v-model="groupMemberStatus"
+                  :items="groupMemberStatusOptions"
+                  showBlankItem
+                  label="with Group Member Status"
+                  help="Specifies the Status the Member must have to be included in the result. If no value is selected, Members of any Group Status will be shown." />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { ref, watch } from "vue";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const listFormatOptions = safeParseJson<ListItemBag[]>(props.modelValue.listFormatOptions);
+    const roleTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.roleTypeOptions);
+    const groupMemberStatusOptions = safeParseJson<ListItemBag[]>(props.modelValue.groupMemberStatusOptions);
+
+    const listFormat = ref(props.modelValue.listFormat ?? "");
+    const dataView = ref(safeParseJson<ListItemBag>(props.modelValue.dataView));
+    const roleType = ref(props.modelValue.roleType ?? "");
+    const groupMemberStatus = ref(props.modelValue.groupMemberStatus ?? "");
+
+    watch([listFormat, dataView, roleType, groupMemberStatus], () => {
+        const newData = {
+            ...props.modelValue,
+            listFormat: listFormat.value,
+            dataView: JSON.stringify(dataView.value),
+            roleType: roleType.value,
+            groupMemberStatus: groupMemberStatus.value,
+        };
+
+        emit("update:modelValue", newData);
+    });
+</script>

@@ -1,0 +1,119 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :componentMigrationHelper="dividerComponentHelper"
+                                title="Divider"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
+        <template v-if="componentHelper">
+            <AccordionGroup>
+                <Accordion title="Divider Styling">
+                    <div class="row">
+                        <div class="col-sm-6">
+                            <DividerStyleProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td"
+                                                  label="Style" />
+                        </div>
+
+                        <div class="col-sm-6 pl-0">
+                            <DividerThicknessProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td"
+                                                      label="Thickness" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-8">
+                            <DividerColorProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td"
+                                                  label="Color" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <RangeSliderProperty label="Divider Width"
+                                                 :min="5"
+                                                 :max="100"
+                                                 :showValueBar="true"
+                                                 valueSuffix="%"
+                                                 :valueProvider="widthProvider" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <HorizontalAlignmentProperty :valueProvider="horizontalAlignmentProvider" />
+                        </div>
+                    </div>
+                </Accordion>
+
+                <Accordion title="Spacing">
+                    <PaddingProperty :element="componentHelper.marginWrapper.td"
+                                     label="Margin" />
+                </Accordion>
+            </AccordionGroup>
+        </template>
+    </ComponentPropertyPanelBase>
+</template>
+
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import DividerColorProperty from "../properties/dividerColorProperty.partial.obs";
+    import DividerStyleProperty from "../properties/dividerStyleProperty.partial.obs";
+    import DividerThicknessProperty from "../properties/dividerThicknessProperty.partial.obs";
+    import HorizontalAlignmentProperty from "../properties/horizontalAlignmentProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import RangeSliderProperty from "../properties/rangeSliderProperty.partial.obs";
+    import { createComponentWidthProvider, createComponentOuterHorizontalAlignmentProvider } from "../providers.partial";
+    import { getDividerComponentHelper } from "../utils.partial";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+        (e: "migrate", value: Element): void;
+    }>();
+
+    // #region Values
+
+    const dividerComponentHelper = getDividerComponentHelper();
+    const componentHelper = ref(dividerComponentHelper.getElements(props.componentElement));
+    const widthProvider = ref(createComponentWidthProvider(props.componentElement));
+    const horizontalAlignmentProvider = ref(createComponentOuterHorizontalAlignmentProvider(props.componentElement));
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        componentHelper.value = dividerComponentHelper.getElements(props.componentElement);
+
+        widthProvider.value?.dispose();
+        widthProvider.value = createComponentWidthProvider(props.componentElement);
+
+        horizontalAlignmentProvider.value?.dispose();
+        horizontalAlignmentProvider.value = createComponentOuterHorizontalAlignmentProvider(props.componentElement);
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        widthProvider.value?.dispose();
+        horizontalAlignmentProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
+</script>

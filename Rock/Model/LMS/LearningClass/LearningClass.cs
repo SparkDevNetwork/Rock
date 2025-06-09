@@ -100,18 +100,18 @@ namespace Rock.Model
         public virtual LearningGradingSystem LearningGradingSystem { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection of <see cref="Rock.Model.LearningActivity">activities</see> for the class.
+        /// Gets or sets a collection of <see cref="Rock.Model.LearningClassActivity">activities</see> for the class.
         /// </summary>
         /// <value>
-        /// A collection of the <see cref="Rock.Model.LearningActivity">activities</see> for the LearningClass.
+        /// A collection of the <see cref="Rock.Model.LearningClassActivity">activities</see> for the LearningClass.
         /// </value>
-        public virtual ICollection<LearningActivity> LearningActivities
+        public virtual ICollection<LearningClassActivity> LearningClassActivities
         {
-            get { return _learningActivities ?? ( _learningActivities = new Collection<LearningActivity>() ); }
-            set { _learningActivities = value; }
+            get { return _learningClassActivities ?? ( _learningClassActivities = new Collection<LearningClassActivity>() ); }
+            set { _learningClassActivities = value; }
         }
 
-        private ICollection<LearningActivity> _learningActivities;
+        private ICollection<LearningClassActivity> _learningClassActivities;
 
         /// <summary>
         /// Gets or sets a collection of <see cref="Rock.Model.LearningParticipant">participants</see> for the class.

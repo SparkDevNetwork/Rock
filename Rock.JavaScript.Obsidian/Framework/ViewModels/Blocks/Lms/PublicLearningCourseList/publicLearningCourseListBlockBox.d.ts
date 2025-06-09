@@ -22,9 +22,6 @@
 //
 
 export type PublicLearningCourseListBlockBox = {
-    /** Gets or sets the HTML to be rendered for the courses list content. */
-    coursesHtml?: string | null;
-
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.

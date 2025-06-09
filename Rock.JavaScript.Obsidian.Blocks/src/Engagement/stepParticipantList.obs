@@ -1,7 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           personKeyField="personIdKey"
@@ -15,6 +16,7 @@
           :showBulkUpdate="true"
           :onAddItem="config.isAddEnabled ? onAddItem : undefined"
           @selectItem="onSelectItem">
+
         <SelectColumn />
 
         <Column name="id"
@@ -32,15 +34,8 @@
                 visiblePriority="xs"
                 width="25%">
             <template #format="{ row }">
-                <div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm"
-                     ref="popOverEl"
-                     :personid="`${row.personIdKey}`"
-                     :data-original="`${photoUrl(row)}&w=50`"
-                     :style="`background-image: url( ${photoUrl(row)} );
-                        background-size: cover;
-                        background-repeat: no-repeat;`">
-                </div>
-                <span class="mr-1">{{ `${row.fullName ?? ""}` }}</span>
+                <PersonAvatar :personIdKey="row.personIdKey" :photoUrl="photoUrl(row)" photoSize="xs" marginRight="sm" enableHoverInfo />
+                <span class="mr-1">{{ row.fullName }}</span>
                 <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
                 <span v-if="config.options?.isNoteColumnVisible && row.note" class='js-member-note' data-toggle='tooltip' data-placement='top' :title='`${row.note}`'>
                     <i class='fa fa-file-text-o text-info'></i>
@@ -137,20 +132,19 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import Grid, { AttributeColumns, pickExistingValueFilter, dateValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, ButtonColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { StepParticipantListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepParticipantList/stepParticipantListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./StepParticipantList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
+    import { computed, reactive, ref } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
-    import { useHttp } from "@Obsidian/Utility/http";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<StepParticipantListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const popOverEl = ref<HTMLElement | null>(null);
-    const http = useHttp();
 
     // #region Values
 
@@ -162,6 +156,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return useStore().state.areSecondaryBlocksShown;
+    });
 
     /**
      * The item term, derived from the name of the current step type.
@@ -230,12 +228,12 @@
 
     /**
      * Called when a row has been selected by the individual.
-     *
-     * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            const row = gridData?.rows?.find(r => r["idKey"] === key);
+            const id = row?.id ?? 0;
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", id.toString());
         }
     }
 
@@ -263,7 +261,7 @@
     }
 
     /**
-     * Called when the Add button has been clicked by the indivual.
+     * Called when the Person button has been clicked by the indivual.
      */
     function onPersonClick(key: string): void {
         if (config.options?.personProfilePageUrl) {
@@ -275,7 +273,7 @@
     }
 
     /**
-     * Called when the Person button has been clicked by the indivual.
+     * Called when the Add button has been clicked by the indivual.
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
@@ -284,55 +282,5 @@
     }
 
     // #endregion
-
-    watch(popOverEl, (element) => {
-        var $ = window["$"];
-
-        if (element) {
-            $(element).popover({
-                placement: "right",
-                trigger: "manual",
-                delay: 500,
-                html: true,
-                content: function () {
-                    let personId = $(this).attr("personid");
-                    let dataUrl = "/api/People/PopupHtml/" + personId + "/false";
-
-                    let content = document.getElementById(personId) ?? document.createElement("div");
-                    content.setAttribute("id", personId);
-                    // Dummy height and width for popover since content will originally be empty.
-                    content.style.width = "300px";
-                    content.style.height = "200px";
-                    content.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
-
-                    http.get<any>(dataUrl).then(response => {
-                        // Let browser handle height and width.
-                        content.style.width = "";
-                        content.style.height = "";
-                        content.style.display = "block";
-                        content.innerHTML = response.data.PickerItemDetailsHtml;
-                    });
-
-                    // Return empty div to be updated whrn response from server is received.
-                    return content;
-                }
-            }).on("mouseenter", (e: Event) => {
-                var target = e.target;
-                $(target).popover("show");
-                $(target).siblings(".popover").on("mouseleave", () => {
-                    $(target).popover("hide");
-                });
-            }).on("mouseleave", (e: Event) => {
-                var target = e.target;
-                setTimeout(() => {
-                    if (!$(".popover:hover").length) {
-                        $(target).popover("hide");
-                    }
-                }, 100);
-            });
-        }
-
-    });
-
     gridDataSource.value = loadGridData();
 </script>

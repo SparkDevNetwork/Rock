@@ -158,7 +158,7 @@
                                                 :isSquare="true"
                                                 title="Mark As Unread"
                                                 @click="toggleConversationReadStatus(selectedConversation)">
-                                        <i class="fa fa-eye-slash"></i>
+                                        <i class="fa fa-eye-slash fa-fw"></i>
                                     </RockButton>
                                     <RockButton v-else
                                                 :btnType="BtnType.Default"
@@ -166,20 +166,22 @@
                                                 :isSquare="true"
                                                 title="Mark As Read"
                                                 @click="toggleConversationReadStatus(selectedConversation)">
-                                        <i class="fa fa-eye"></i>
+                                        <i class="fa fa-eye fa-fw"></i>
                                     </RockButton>
                                 </template>
                                 <RockButton v-if="selectedConversation.isLinkToPersonVisible && canEditOrAdministrate"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
+                                            title="Link to Person"
                                             @click="showLinkToPersonModal">
-                                    Link To Person
+                                    <i class="fa fa-link fa-fw"></i>
                                 </RockButton>
                                 <RockButton v-if="selectedConversation.isViewMergeRequestVisible"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
+                                            title="View Merge Request"
                                             @click="viewMergeRequest">
-                                    View Merge Request
+                                    <i class="fa fa-users fa-fw"></i>
                                 </RockButton>
                             </div>
                         </div>
@@ -392,6 +394,7 @@
     overflow: hidden;
     text-overflow: ellipsis;
     max-width: 100%;
+    overflow-wrap: anywhere;
 }
 
 .sms-conversations-container .conversation-list {
@@ -693,8 +696,8 @@
     import { ConversationMessageBag } from "@Obsidian/ViewModels/Communication/conversationMessageBag";
     import { IConversationParticipantTopic, PreferenceKey } from "./SmsConversations/types.partial";
     import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag";
-    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/saveNoteRequestBag";
-    import { NoteEditBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteEditBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
     import { formatPhoneNumber, stripPhoneNumber } from "@Obsidian/Utility/phone";
     import { DateTimeFormat, RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { computed, nextTick, onMounted, onUnmounted, ref, watch } from "vue";
@@ -730,7 +733,7 @@
 
     // #region Filter Values
 
-    const messageFilterSelection = ref<string>(preferences.getValue(PreferenceKey.SelectedMessageFilter) ?? CommunicationMessageFilter.ShowUnreadReplies.toString());
+    const messageFilterSelection = ref<string>(preferences.getValue(PreferenceKey.SelectedMessageFilter) || CommunicationMessageFilter.ShowAllMessages.toString());
     const personFilterSelection = ref<ListItemBag | undefined>();
     const isPersonFilterToggled = ref<boolean>(false);
     const systemPhoneNumbers = ref<ListItemBag[]>(box.systemPhoneNumbers ?? []);

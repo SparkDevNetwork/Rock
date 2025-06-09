@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Configuration;
 using System.Data.Entity.Infrastructure;
 using System.Data.SqlClient;
+using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -304,7 +305,18 @@ ALTER DATABASE [{dbName}] SET RECOVERY SIMPLE";
                 AttendanceCodeIssuedDateTime = RockDateTime.Now.AddDays( -1 )
             };
 
-            factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
+            if ( sampleDataUrl.Equals( "embedded", StringComparison.OrdinalIgnoreCase ) )
+            {
+                using ( var stream = typeof( DatabaseContainerImageBuilder ).Assembly.GetManifestResourceStream( "Rock.Tests.Shared.TestFramework.sampledata_1_14_1.xml" ) )
+                {
+                    var xmlText = new StreamReader( stream ).ReadToEnd();
+                    factory.CreateFromXmlDocumentText( xmlText, args );
+                }
+            }
+            else
+            {
+                factory.CreateFromXmlDocumentFile( sampleDataUrl, args );
+            }
 
             // Set the sample data identifiers.
             SystemSettings.SetValue( SystemKey.SystemSetting.SAMPLEDATA_DATE, RockDateTime.Now.ToString() );

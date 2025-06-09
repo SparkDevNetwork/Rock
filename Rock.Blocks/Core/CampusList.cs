@@ -135,9 +135,10 @@ namespace Rock.Blocks.Core
                 .AddPersonField( "leader", a => a.LeaderPersonAlias?.Person )
                 .AddTextField( "campusType", a => a.CampusTypeValue?.Value )
                 .AddTextField( "campusStatus", a => a.CampusStatusValue?.Value )
+                .AddTextField( "campusStatusGuid", a => a.CampusStatusValue?.Guid.ToString().ToUpper() )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSystem", a => a.IsSystem )
-                .AddField( "Id", a => a.Id)
+                .AddField( "Id", a => a.Id )
                 .AddAttributeFields( GetGridAttributes() );
         }
 

@@ -167,7 +167,7 @@
                                 FormGroupCssClass="mt-4"
                                 Label="Allow Updating Existing Matched Records"
                                 Checked="true"
-                                Help="When checked, existing records that exist in the database that match date being imported (first name, last name and email match) will be updated. Otherwise only new records will be added to the database." />
+                                Help="When enabled, records in the database that match the imported data (first name, last name, and email) will be updated. Otherwise, only new records will be added." />
 
                             <Rock:BootstrapButton ID="btnStart" runat="server" CssClass="btn btn-primary mt-3" Text="Start" OnClick="btnStart_Click" />
                         </div>

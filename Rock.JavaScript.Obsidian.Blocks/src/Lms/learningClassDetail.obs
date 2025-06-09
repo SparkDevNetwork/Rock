@@ -211,7 +211,12 @@
     });
 
     const options = computed((): LearningClassDetailOptionsBag => {
-        return config.options ?? { activeClassesUsingDefaultGradingSystem: 0, courseAllowsAnnouncements: true, canViewGrades: false };
+        return config.options ?? {
+            activeClassesUsingDefaultGradingSystem: 0,
+            courseAllowsAnnouncements: true,
+            canViewGrades: false,
+            smsMediumCharacterLimit: 0
+        };
     });
 
     const showAttendanceButton = computed((): boolean =>

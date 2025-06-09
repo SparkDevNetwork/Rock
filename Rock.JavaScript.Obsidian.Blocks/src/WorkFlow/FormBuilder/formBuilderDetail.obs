@@ -16,7 +16,27 @@
                         <li role="presentation"><a :href="config.analyticsPageUrl ?? undefined">Analytics</a></li>
                     </ul>
 
-                    <RockButton btnType="primary" btnSize="sm" :disabled="!isFormDirty" @click="onSaveClick">Save</RockButton>
+                    <div class="panel-toolbar-actions">
+                        <template v-if="linkToFormOptions?.length">
+                            <CopyButton v-if="linkToFormOptions.length === 1 && linkToFormOptions[0].formPageUrl"
+                                        btnSize="sm"
+                                        isSquare
+                                        tooltip="Link To Form"
+                                        :value="linkToFormOptions[0].formPageUrl"><i class="fa fa-link"></i></CopyButton>
+                            <RockButton v-else
+                                        btnSize="sm"
+                                        isSquare
+                                        title="Link To Form"
+                                        @click="onLinkToFormClick"><i class="fa fa-link"></i></RockButton>
+
+                            <RockButton btnSize="sm"
+                                        isSquare
+                                        title="Preview"
+                                        @click="onPreviewClick"><i class="fa fa-eye"></i></RockButton>
+                        </template>
+
+                        <RockButton btnType="primary" btnSize="sm" :disabled="isSaving || !isFormDirty" @click="onSaveClick">Save</RockButton>
+                    </div>
                 </div>
 
                 <div class="form-builder-container form-builder-grow" :style="formBuilderContainerStyle">
@@ -39,14 +59,28 @@
                                  v-model:completion="completionViewModel"
                                  :templateOverrides="selectedTemplate"
                                  :submit="formSubmit"
+                                 @getUniqueSlug="onGetUniqueSlug"
                                  @validationChanged="onSettingsValidationChanged" />
                 </div>
             </div>
         </template>
     </Panel>
+
+    <LinkToFormModal v-model="isLinkToFormModalOpen"
+                     :items="linkToFormOptions ?? []" />
+
+    <FormPreviewModal v-model="isFormPreviewModalOpen"
+                      :defaultPreviewPage="config.defaultPreviewPage"
+                      :items="linkToFormOptions ?? []" />
 </template>
 
 <style>
+.panel-toolbar-actions {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-small);
+}
+
 .inline-svg {
     display: inline-flex;
     width: 1.25em;
@@ -488,23 +522,32 @@
 </style>
 
 <script setup lang="ts">
-    import { nextTick } from "vue";
-    import { computed, ref, watch } from "vue";
+    import { computed, nextTick, ref, watch } from "vue";
+    import CommunicationsTab from "./FormBuilderDetail/communicationsTab.partial.obs";
+    import FormBuilderTab from "./FormBuilderDetail/formBuilderTab.partial.obs";
+    import FormPreviewModal from "./FormBuilderDetail/formPreviewModal.partial.obs";
+    import LinkToFormModal from "./FormBuilderDetail/linkToFormModal.partial.obs";
+    import SettingsTab from "./FormBuilderDetail/settingsTab.partial.obs";
+    import {
+        FormBuilderDetailConfiguration,
+        FormBuilderSettings,
+        FormCommunication,
+        FormTemplateListItem
+    } from "./FormBuilderDetail/types.partial";
+    import { provideFormSources } from "./FormBuilderDetail/utils.partial";
+    import { FormCompletionAction, FormGeneral, FormSettings } from "./Shared/types.partial";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { Guid } from "@Obsidian/Types";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { FormError } from "@Obsidian/Utility/form";
     import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { FormBuilderDetailLinkToFormBag } from "@Obsidian/ViewModels/Blocks/Workflow/FormBuilder/formBuilderDetailLinkToFormBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import CommunicationsTab from "./FormBuilderDetail/communicationsTab.partial.obs";
-    import FormBuilderTab from "./FormBuilderDetail/formBuilderTab.partial.obs";
-    import SettingsTab from "./FormBuilderDetail/settingsTab.partial.obs";
-    import { FormBuilderDetailConfiguration, FormBuilderSettings, FormCommunication, FormTemplateListItem } from "./FormBuilderDetail/types.partial";
-    import { provideFormSources } from "./FormBuilderDetail/utils.partial";
-    import { FormCompletionAction, FormGeneral, FormSettings } from "./Shared/types.partial";
-    import { Guid } from "@Obsidian/Types";
 
     const config = useConfigurationValues<FormBuilderDetailConfiguration>();
 
@@ -515,6 +558,7 @@
     const form = config.form ?? {};
 
     const isFormDirty = ref(false);
+    const isSaving = ref<boolean>(false);
 
     const selectedTab = ref(0);
 
@@ -528,7 +572,12 @@
     const generalViewModel = ref<FormGeneral>(form.general ?? {});
 
     const blockTitle = computed((): string => {
-        return generalViewModel.value?.name + " Form" ?? "Workflow Form Builder";
+        if (isNullish(generalViewModel.value?.name)) {
+            return "Workflow Form Builder";
+        }
+        else {
+            return `${generalViewModel.value.name} Form`;
+        }
     });
 
     const completionViewModel = ref<FormCompletionAction>(form.completion ?? {});
@@ -548,6 +597,11 @@
     const communicationsValidationErrors = ref<FormError[]>([]);
     const formBuilderValidationErrors = ref<FormError[]>([]);
     const settingsValidationErrors = ref<FormError[]>([]);
+
+    const isLinkToFormModalOpen = ref<boolean>(false);
+    const isFormPreviewModalOpen = ref<boolean>(false);
+
+    const linkToFormOptions = ref<FormBuilderDetailLinkToFormBag[] | null | undefined>(config.sources?.linkToFormOptions);
 
     // #endregion
 
@@ -645,58 +699,114 @@
         recipientOptions.value = options;
     }
 
+    function selectFormBuilderTab(): void {
+        selectedTab.value = 0;
+    }
+
+    function selectCommunicationsTab(): void {
+        selectedTab.value = 1;
+    }
+
+    function selectSettingsTab(): void {
+        selectedTab.value = 2;
+    }
+
+    async function save(): Promise<boolean> {
+        try {
+            isSaving.value = true;
+
+            // Trigger the submit for validation purposes and then on the next
+            // UI pass turn it back off.
+            formSubmit.value = true;
+            nextTick(() => formSubmit.value = false);
+
+            if (formBuilderValidationErrors.value.length > 0) {
+                selectFormBuilderTab();
+                return false;
+            }
+
+            if (communicationsValidationErrors.value.length > 0) {
+                selectCommunicationsTab();
+                return false;
+            }
+
+            if (settingsValidationErrors.value.length > 0) {
+                selectSettingsTab();
+                return false;
+            }
+
+            const request: {
+                formGuid: Guid;
+                formSettings: FormSettings;
+            } = {
+                formGuid: toGuidOrNull(config.formGuid) ?? emptyGuid,
+                formSettings: form
+            };
+
+            const result = await invokeBlockAction<{ linkToFormOptions?: FormBuilderDetailLinkToFormBag[] | null | undefined; }>("SaveForm", request);
+
+            if (!result.isSuccess) {
+                alert(result.errorMessage ?? "Failed to save.");
+                return false;
+            }
+            else {
+                isFormDirty.value = false;
+                linkToFormOptions.value = result.data?.linkToFormOptions;
+                return true;
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
     // #endregion
 
     // #region Event Handlers
 
     function onFormBuilderTabClick(): void {
-        selectedTab.value = 0;
+        selectFormBuilderTab();
     }
 
     function onCommunicationsTabClick(): void {
-        selectedTab.value = 1;
+        selectCommunicationsTab();
     }
 
     function onSettingsTabClick(): void {
-        selectedTab.value = 2;
+        selectSettingsTab();
     }
 
     async function onSaveClick(): Promise<void> {
-        // Trigger the submit for validation purposes and then on the next
-        // UI pass turn it back off.
-        formSubmit.value = true;
-        nextTick(() => formSubmit.value = false);
+        await save();
+    }
 
-        if (formBuilderValidationErrors.value.length > 0) {
-            onFormBuilderTabClick();
-            return;
-        }
-
-        if (communicationsValidationErrors.value.length > 0) {
-            onCommunicationsTabClick();
-            return;
-        }
-
-        if (settingsValidationErrors.value.length > 0) {
-            onSettingsTabClick();
-            return;
-        }
-
-        const request: {
-            formGuid: Guid;
-            formSettings: FormSettings;
-        } = {
-            formGuid: toGuidOrNull(config.formGuid) ?? emptyGuid,
-            formSettings: form
-        };
-
-        const result = await invokeBlockAction("SaveForm", request);
-
-        if (!result.isSuccess) {
-            alert(result.errorMessage ?? "Failed to save.");
+    async function onLinkToFormClick(): Promise<void> {
+        if (!isFormDirty.value) {
+            // No need to save before showing the modal if the form is not dirty.
+            isLinkToFormModalOpen.value = true;
         }
         else {
-            isFormDirty.value = false;
+            // Save the form before showing the modal.
+            const isSuccess = await save();
+
+            if (isSuccess) {
+                isLinkToFormModalOpen.value = true;
+            }
+        }
+    }
+
+    async function onPreviewClick(): Promise<void> {
+        if (!isFormDirty.value) {
+            // No need to save before previewing if the form is not dirty.
+            isFormPreviewModalOpen.value = true;
+        }
+        else {
+            // Save the form before previewing it.
+            const isSuccess = await save();
+
+            if (isSuccess) {
+                isFormPreviewModalOpen.value = true;
+            }
         }
     }
 
@@ -736,6 +846,33 @@
      */
     function onSettingsValidationChanged(errors: FormError[]): void {
         settingsValidationErrors.value = errors;
+    }
+
+    async function onGetUniqueSlug(): Promise<void> {
+        const request: {
+            formGuid: Guid;
+            slug: string;
+        } = {
+            formGuid: toGuidOrNull(config.formGuid) ?? emptyGuid,
+            slug: generalViewModel.value.slug ?? ""
+        };
+
+        const result = await invokeBlockAction<string>("GetUniqueSlug", request);
+
+        if (!result.isSuccess) {
+            // Log the error to the console, but don't show it.
+            // A validation error will be shown if the slug is invalid when the form is saved.
+            console.error(result.errorMessage ?? "Failed to get unique slug.");
+        }
+        else if (result.data !== generalViewModel.value.slug) {
+            // Update the current slug with the auto-generated unique slug.
+            const newValue: FormGeneral = {
+                ...generalViewModel.value,
+                slug: result.data
+            };
+
+            generalViewModel.value = newValue;
+        }
     }
 
     // #endregion
@@ -788,4 +925,6 @@
             selectedTab.value = 2;
         }
     }
+
+    onConfigurationValuesChanged(useReloadBlock());
 </script>

@@ -43,6 +43,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -65,6 +66,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 {
                     StartDateTime = RockDateTime.Now,
                     EndDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -86,6 +88,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now.AddDays( -1 ),
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -121,6 +124,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -146,6 +150,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -175,6 +180,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -205,6 +211,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -272,6 +279,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -299,6 +307,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -332,6 +341,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -359,6 +369,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -411,6 +422,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };
@@ -449,6 +461,7 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 new RecentAttendance
                 {
                     StartDateTime = RockDateTime.Now,
+                    DidAttend = true,
                     ScheduleId = scheduleId
                 }
             };

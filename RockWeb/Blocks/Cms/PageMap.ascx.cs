@@ -96,6 +96,12 @@ namespace RockWeb.Blocks.Cms
             base.OnInit( e );
 
             _pageId = PageParameter( PageParameterKey.Page ).AsIntegerOrNull();
+
+            if ( _pageId == null )
+            {
+                _pageId = PageCache.GetByIdKey( PageParameter( PageParameterKey.Page) )?.Id;
+            }
+
             _pageSearch = PageParameter( PageParameterKey.PageSearch );
 
             var detailPageReference = new Rock.Web.PageReference( GetAttributeValue( AttributeKey.DetailPage ) );

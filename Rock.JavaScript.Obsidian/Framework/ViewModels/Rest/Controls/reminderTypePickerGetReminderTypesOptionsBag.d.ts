@@ -30,4 +30,7 @@ import { Guid } from "@Obsidian/Types";
 export type ReminderTypePickerGetReminderTypesOptionsBag = {
     /** Gets or sets the Entity Type Guid */
     entityTypeGuid?: Guid | null;
+
+    /** The security grant token to use when performing authorization checks. */
+    securityGrantToken?: string | null;
 };

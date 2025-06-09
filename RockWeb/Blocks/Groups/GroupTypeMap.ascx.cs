@@ -34,7 +34,6 @@ using System.Dynamic;
 using Rock.Web;
 using Rock.Security;
 using Rock.Lava;
-using DotLiquid;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -216,39 +215,22 @@ namespace RockWeb.Blocks.Groups
 
                 if ( groupType != null )
                 {
-                    Template template = null;
                     ILavaTemplate lavaTemplate = null;
 
-                    if ( LavaService.RockLiquidIsEnabled )
-                    {                        
-                        if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
-                        {
-                            template = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( "InfoWindowContents" ).Trim() );
+                    string templateContent;
 
-                            LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( "InfoWindowContents" ).Trim() );
-                        }
-                        else
-                        {
-                            template = LavaHelper.CreateDotLiquidTemplate( string.Empty );
-                        }
+                    if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
+                    {
+                        templateContent = GetAttributeValue( "InfoWindowContents" ).Trim();
                     }
                     else
                     {
-                        string templateContent;
-
-                        if ( GetAttributeValue( "ShowMapInfoWindow" ).AsBoolean() )
-                        {
-                            templateContent = GetAttributeValue( "InfoWindowContents" ).Trim();
-                        }
-                        else
-                        {
-                            templateContent = string.Empty;
-                        }
-
-                        var parseResult = LavaService.ParseTemplate( templateContent );
-
-                        lavaTemplate = parseResult.Template;
+                        templateContent = string.Empty;
                     }
+
+                    var parseResult = LavaService.ParseTemplate( templateContent );
+
+                    lavaTemplate = parseResult.Template;
 
                     var groupPageRef = new PageReference( GetAttributeValue( "GroupDetailPage" ) );
 
@@ -391,20 +373,13 @@ namespace RockWeb.Blocks.Groups
 
                             string infoWindow;
 
-                            if ( LavaService.RockLiquidIsEnabled )
-                            {
-                                infoWindow = template.Render( Hash.FromDictionary( groupDict ) ).Replace( "\n", string.Empty );
-                            }
-                            else
-                            {
-                                var result = LavaService.RenderTemplate( lavaTemplate, groupDict );
+                            var result = LavaService.RenderTemplate( lavaTemplate, groupDict );
 
-                                infoWindow = result.Text;
+                            infoWindow = result.Text;
 
-                                if ( !result.HasErrors )
-                                { 
-                                    infoWindow = infoWindow.Replace( "\n", string.Empty );
-                                }
+                            if ( !result.HasErrors )
+                            { 
+                                infoWindow = infoWindow.Replace( "\n", string.Empty );
                             }
 
                             sbGroupJson.Append( string.Format(

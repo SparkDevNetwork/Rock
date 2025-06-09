@@ -139,6 +139,7 @@ namespace Rock.Blocks.Crm
         {
             // Update person properties from PersonBasicEditorBag
             person.FirstName = personBag.FirstName;
+            person.NickName = personBag.NickName ?? person.FirstName;
             person.LastName = personBag.LastName;
             person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             person.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;

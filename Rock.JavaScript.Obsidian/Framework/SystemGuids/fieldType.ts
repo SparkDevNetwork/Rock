@@ -25,6 +25,8 @@
 export const FieldType = {
     /** Address field type */
     AchievementType: "593132CF-BA5D-462F-97F6-94DCC0BFFE6F",
+    /** Adaptive Message field type */
+    AdaptiveMessage: "55CC533A-99D2-418F-B93E-73EA098ABDAE",
     /** Address field type */
     Address: "0A495222-23B7-41D3-82C8-D484CDB75D17",
     /** AI provider field type. */
@@ -179,6 +181,8 @@ export const FieldType = {
     FinancialGateway: "7B34F9D8-6BBA-423E-B50E-525ABB3A1013",
     /** Financial Statement Template field type */
     FinancialStatementTemplate: "9E0CD807-D69F-4888-A9BE-BCD11DD083FE",
+    /** Financial Transaction field type */
+    FinancialTransaction: "04C66B8E-2DBD-4799-875E-FFFD818EDD91",
     /** Gender field type */
     Gender: "2E28779B-4C76-4142-AE8D-49EA31DDB503",
     /** Group field type */

@@ -137,7 +137,6 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AdditionalFilterJson = source.AdditionalFilterJson;
-            target.CategoryId = source.CategoryId;
             target.Description = source.Description;
             target.FilterDataViewId = source.FilterDataViewId;
             target.ForeignGuid = source.ForeignGuid;

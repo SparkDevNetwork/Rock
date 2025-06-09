@@ -23,13 +23,6 @@
             <div class="col-md-3">
                 <CheckBox v-model="isActive"
                           label="Active" />
-                <div v-if="props.modelValue?.flagCount">
-                    <span ref="flagCountRef" class="label label-warning" tabindex="-1" data-toggle="tooltip"
-                          data-placement="auto" data-container="body" data-html="true"
-                          data-original-title="re-approve the request to clear the flags">
-                        <i class="fa fa-flag"></i> flagged {{ props.modelValue?.flagCount }} times
-                    </span>
-                </div>
                 <CheckBoxList label="Options"
                               v-model="optionsListValue"
                               :items="optionsList" />
@@ -43,6 +36,12 @@
                         onButtonActiveCssClass="btn-warning"
                         offButtonActiveCssClass="btn-success"
                         label="Status" />
+                <HighlightLabel v-if="props.modelValue?.flagCount"
+                                labelType="warning" tooltip="Re-approve the request to clear the flags."
+                                tooltipPlacement="top"
+                                iconCssClass="fa fa-flag">
+                    flagged {{ props.modelValue?.flagCount }} times
+                </HighlightLabel>
             </div>
         </div>
 
@@ -57,6 +56,11 @@
                          label="Request"
                          textMode="multiline"
                          rules="required" />
+                <RockLiteral v-if="!isNullOrWhiteSpace(originalRequest)"
+                             label="Original Request"
+                             labelCssClass="text-muted">
+                    <span class="text-muted">{{ originalRequest }}</span>
+                </RockLiteral>
                 <TextBox v-model="answer"
                          textMode="multiline"
                          label="Answer" />
@@ -90,6 +94,9 @@
     import { PrayerRequestDetailAddPersonResponseBag } from "@Obsidian/ViewModels/Blocks/Prayer/PrayerRequestDetail/prayerRequestDetailAddPersonResponseBag";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Guid } from "@Obsidian/Types";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import RockLiteral from "@Obsidian/Controls/rockLiteral.obs";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
 
     const props = defineProps({
         modelValue: {
@@ -112,6 +119,7 @@
 
     const attributes = ref(props.modelValue.attributes ?? {});
     const attributeValues = ref(props.modelValue.attributeValues ?? {});
+    const originalRequest = ref<string>(props.modelValue.originalRequest ?? "");
     const isActive = propertyRef(props.modelValue.isActive ?? true, "IsActive");
     const requestedByPersonAlias = propertyRef(props.modelValue.requestedByPersonAlias ?? undefined, "RequestedByPersonAliasId");
     const isPending = propertyRef(!(props.modelValue.isApproved ?? false), "IsApproved");

@@ -1,0 +1,66 @@
+<template>
+    <div class="row form-row">
+        <div class="col-md-6">
+            <DropDownList v-model="activityType" :items="activityTypeOptions" label="Activity Type" />
+        </div>
+    </div>
+    <div class="row form-row d-flex flex-wrap align-items-end">
+        <div class="col-md-4">
+            <DropDownList v-model="comparisonType" :items="comparisonItems" label="Count" />
+        </div>
+        <div class="col-md-1">
+            <NumberBox v-model="minimumCount" disableLabel />
+        </div>
+        <div class="col-md-7">
+            <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const activityType = ref<Guid>(props.modelValue.activityType ?? "");
+    const activityTypeOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.activityTypeOptions) ?? []);
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const minimumCount = ref<number | null>(toNumberOrNull(props.modelValue.minimumCount) ?? 4);
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.IsBlank,
+        ComparisonType.IsNotBlank,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    watch([activityType, comparisonType, minimumCount, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            activityType: activityType.value,
+            comparisonType: comparisonType.value,
+            minimumCount: `${minimumCount.value ?? ""}`,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+        });
+    });
+</script>

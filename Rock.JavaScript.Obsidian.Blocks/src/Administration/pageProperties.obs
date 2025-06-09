@@ -290,8 +290,8 @@
      */
     async function onCancelEdit(): Promise<boolean | string> {
         if (!pageEditBag.value.bag?.idKey) {
-            if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
-                return config.navigationUrls[NavigationUrlKey.ParentPage];
+            if (config.navigationUrls?.[NavigationUrlKey.ReturnPage]) {
+                return config.navigationUrls[NavigationUrlKey.ReturnPage];
             }
 
             return false;

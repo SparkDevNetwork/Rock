@@ -107,6 +107,9 @@
     <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Core" />
+    <Reference Include="System.Diagnostics.DiagnosticSource, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
+      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.8.0.0\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
+    </Reference>
     <Reference Include="System.Drawing" />
     <Reference Include="System.IdentityModel.Tokens.Jwt, Version=5.7.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\System.IdentityModel.Tokens.Jwt.5.7.0\lib\net461\System.IdentityModel.Tokens.Jwt.dll</HintPath>
@@ -181,7 +184,9 @@
     <Compile Include="Controllers\CodeGenerated\ContentCollectionSourcesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentTopicDomainsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\ContentTopicsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\EmailSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\EntityIntentsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\HistoryLoginsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractionSessionLocationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceActionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceAnswersController.CodeGenerated.cs" />
@@ -189,6 +194,7 @@
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceScheduleCampusController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperienceSchedulesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\InteractiveExperiencesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningActivitiesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationMessagesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\NotificationMessageTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\PersonalizationSegmentsController.CodeGenerated.cs" />
@@ -203,6 +209,7 @@
     <Compile Include="Controllers\CodeGenerated\WorkflowActionFormSectionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\WorkflowFormBuilderTemplatesController.CodeGenerated.cs" />
     <Compile Include="Controllers\EntitySetsController.cs" />
+    <Compile Include="v2\LavaAppController.cs" />
     <Compile Include="Controllers\NotificationMessagesController.Partial.cs" />
     <Compile Include="Controllers\ReminderTypesController.Partial.cs" />
     <Compile Include="Controllers\RemindersController.Partial.cs" />
@@ -222,6 +229,7 @@
     <Compile Include="ProducesResponseTypeAttribute.cs" />
     <Compile Include="Utility\RockMessageResponseContext.cs" />
     <Compile Include="Utility\BlockUtilities.cs" />
+    <Compile Include="v2\ChatController.cs" />
     <Compile Include="v2\CheckInController.cs" />
     <Compile Include="v2\ControlsController.cs" />
     <Compile Include="v2\Models\CodeGenerated\AchievementAttemptsController.CodeGenerated.cs" />
@@ -267,6 +275,8 @@
     <Compile Include="v2\Models\CodeGenerated\AuthClientsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AuthsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\AuthScopesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\AutomationEventsController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\AutomationTriggersController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\BackgroundChecksController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\BadgesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\BenevolenceRequestDocumentsController.CodeGenerated.cs" />
@@ -317,6 +327,7 @@
     <Compile Include="v2\Models\CodeGenerated\DevicesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\DocumentsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\DocumentTypesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\EmailSectionsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\EntityIntentsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\EntitySearchesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\EntitySetItemsController.CodeGenerated.cs" />
@@ -371,6 +382,7 @@
     <Compile Include="v2\Models\CodeGenerated\GroupTypeRolesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\GroupTypesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\HistoriesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\HistoryLoginsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\HtmlContentsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\IdentityVerificationCodesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\IdentityVerificationsController.CodeGenerated.cs" />
@@ -386,10 +398,13 @@
     <Compile Include="v2\Models\CodeGenerated\InteractiveExperienceScheduleCampusesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\InteractiveExperienceSchedulesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\InteractiveExperiencesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\LavaApplicationsController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\LavaEndpointsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\LavaShortcodesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\LayoutsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\LearningActivitiesController.CodeGenerated.cs" />
-    <Compile Include="v2\Models\CodeGenerated\LearningActivityCompletionsController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\LearningClassActivitiesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\LearningClassActivityCompletionsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\LearningClassAnnouncementsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\LearningClassContentPagesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\LearningClassesController.CodeGenerated.cs" />
@@ -548,7 +563,6 @@
     <Compile Include="Controllers\CodeGenerated\GroupDemographicTypesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupDemographicValuesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupHistoricalsController.CodeGenerated.cs" />
-    <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalSchedulesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupLocationHistoricalsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberAssignmentsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\GroupMemberHistoricalsController.CodeGenerated.cs" />
@@ -557,8 +571,8 @@
     <Compile Include="Controllers\CodeGenerated\IdentityVerificationCodesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\IdentityVerificationsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LavaShortcodesController.CodeGenerated.cs" />
-    <Compile Include="Controllers\CodeGenerated\LearningActivitiesController.CodeGenerated.cs" />
-    <Compile Include="Controllers\CodeGenerated\LearningActivityCompletionsController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningClassActivitiesController.CodeGenerated.cs" />
+    <Compile Include="Controllers\CodeGenerated\LearningClassActivityCompletionsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LearningClassAnnouncementsController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LearningClassContentPagesController.CodeGenerated.cs" />
     <Compile Include="Controllers\CodeGenerated\LearningCourseRequirementsController.CodeGenerated.cs" />

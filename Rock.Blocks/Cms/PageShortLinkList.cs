@@ -115,14 +115,16 @@ namespace Rock.Blocks.Cms
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ShortLinkId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["ShortLinkId"] = "((Key))" } )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<PageShortLink> GetListQueryable( RockContext rockContext )
         {
-            var queryable = base.GetListQueryable( rockContext );
+            var queryable = base.GetListQueryable( rockContext )
+                .Include( p => p.Site )
+                .Include( p => p.Site.SiteDomains );
 
             return queryable;
         }
@@ -136,7 +138,7 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "url", a => a.Url )
                 .AddTextField( "site", a => a.Site?.Name )
                 .AddTextField( "token", a => a.Token )
-                .AddTextField( "shortLink", a => new ShortLinkRow( a ).ShortLink )
+                .AddTextField( "shortLink", a => a.ShortLinkUrl )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -174,32 +176,6 @@ namespace Rock.Blocks.Cms
             RockContext.SaveChanges();
 
             return ActionOk();
-        }
-
-        #endregion
-
-        #region Nested Classes
-
-        protected class ShortLinkRow : RockDynamic
-        {
-            public int Id { get; set; }
-            public int SiteId { get; set; }
-            public string SiteName { get; set; }
-            public string Token { get; set; }
-            public string Url { get; set; }
-            public string ShortLink { get; set; }
-
-            public ShortLinkRow( PageShortLink pageShortLink )
-            {
-                Id = pageShortLink.Id;
-                SiteId = pageShortLink.Site.Id;
-                SiteName = pageShortLink.Site.Name;
-                Token = pageShortLink.Token;
-                Url = pageShortLink.Url;
-
-                var url = pageShortLink.Site.DefaultDomainUri.ToString();
-                ShortLink = url.EnsureTrailingForwardslash() + Token;
-            }
         }
 
         #endregion

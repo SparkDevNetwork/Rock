@@ -1,0 +1,388 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="workflow-entry-panel">
+        <RockForm ref="form"
+                  :formResetKey="formResetKey"
+                  @submit="onFormSubmit">
+            <NotificationBox v-if="gatewayErrorMessage" alertType="danger">{{ gatewayErrorMessage }}</NotificationBox>
+            <RockValidation :errors="gatewayValidationFields" />
+
+            <div class="mb-2" v-html="paymentInformationInstructions"></div>
+
+            <div v-if="showCustomAmount || showCampusPicker" class="row">
+                <div class="col-md-6">
+                    <CurrencyBox v-if="showCustomAmount"
+                                 v-model="amountToPay"
+                                 :label="amountLabel"
+                                 rules="required"
+                                 :minimumValue="0.01" />
+
+                    <DropDownList v-if="showCampusPicker"
+                                  v-model="campus"
+                                  label="Campus"
+                                  :items="campuses" />
+                </div>
+            </div>
+
+            <div v-if="gatewayControlModel" class="registrationentry-payment">
+                <div v-if="hasSavedAccounts && enableSavedAccounts"
+                     class="form-group payment-method-options">
+                    <RockLabel>Payment method</RockLabel>
+
+                    <div class="control-wrapper">
+                        <div class="controls">
+                            <div v-for="savedAccount in savedAccounts"
+                                 class="radio payment-method">
+                                <label :for="getSavedAccountUniqueId(savedAccount)">
+                                    <input :id="getSavedAccountUniqueId(savedAccount)"
+                                           :name="savedAccountUniqueId"
+                                           type="radio"
+                                           :value="savedAccount.value"
+                                           v-model="selectedSavedAccount" />
+                                    <span class="label-text payment-method-account">
+                                        <img v-if="savedAccount.image" class="payment-method-image" :src="savedAccount.image">
+                                        <span class="payment-method-name">{{ savedAccount.text }}</span>
+                                        <span class="payment-method-description text-muted">{{ savedAccount.description }}</span>
+                                    </span>
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="showGateway" class="hosted-gateway-container payment-method-entry">
+                        <div class="hosted-payment-control">
+                            <GatewayControl :gatewayControlModel="gatewayControlModel"
+                                            :amountToPay="amountToPay"
+                                            @success="onGatewayControlSuccess"
+                                            @error="onGatewayControlError"
+                                            @validation="onGatewayControlValidation" />
+                        </div>
+
+                        <template v-if="enableSavedAccounts">
+                            <InlineCheckBox :label="saveAccountLabel"
+                                            v-model="saveAccount" />
+
+                            <TextBox v-if="saveAccount"
+                                     v-model="saveAccountName"
+                                     label="Name for the account"
+                                     rules="required" />
+                        </template>
+                    </div>
+                </TransitionVerticalCollapse>
+            </div>
+
+            <div class="actions">
+                <RockButton btnType="primary" @click="onConfirmPayment" autoDisable>
+                    {{ confirmPaymentButtonText }}
+                </RockButton>
+            </div>
+        </RockForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GatewayControl from "@Obsidian/Controls/gatewayControl.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import RockValidation from "@Obsidian/Controls/rockValidation.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { provideSubmitPayment, usePaymentEvents } from "@Obsidian/Core/Controls/financialGateway";
+    import { FormError } from "@Obsidian/Utility/form";
+    import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+    import { GatewayControlBag } from "@Obsidian/ViewModels/Controls/gatewayControlBag";
+    import { SavedFinancialAccountListItemBag } from "@Obsidian/ViewModels/Finance/savedFinancialAccountListItemBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, ref, watch } from "vue";
+    import { interactiveActionProps } from "../types";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+
+    const enum ComponentConfigurationKey {
+        AmountLabel = "amountLabel",
+        Campuses = "campuses",
+        ConfirmPaymentButtonText = "confirmPaymentButtonText",
+        EnableSavedAccounts = "enableSavedAccounts",
+        ObsidianControlFileUrl = "obsidianControlFileUrl",
+        ObsidianControlSettings = "obsidianControlSettings",
+        PaymentInformationInstructions = "paymentInformationInstructions",
+        SaveAccountLabel = "saveAccountLabel",
+        SavedAccounts = "savedAccounts",
+    }
+
+    const enum ComponentDataKey {
+        Amount = "amount",
+        Campus = "campus",
+        SaveAccount = "saveAccount",
+        SaveAccountName = "saveAccountName",
+        Token = "token",
+        UseSavedAccount = "useSavedAccount",
+    }
+
+    const props = defineProps(interactiveActionProps);
+
+    // #region Values
+
+    const form = ref<InstanceType<typeof RockForm>>();
+    const formResetKey = ref(newGuid());
+    const amountToPay = ref(0);
+    const campus = ref("");
+    const savedAccountUniqueId = ref("");
+    const selectedSavedAccount = ref("");
+    const saveAccount = ref(false);
+    const saveAccountName = ref("");
+
+    const submitGatewayPayment = provideSubmitPayment();
+    const paymentEvents = usePaymentEvents();
+    const gatewayErrorMessage = ref("");
+    const gatewayValidationFields = ref<FormError[]>([]);
+    let gatewayCompletionSource: PromiseCompletionSource | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The model that describes the gateway component to be used during manual entry. */
+    const gatewayControlModel = computed<GatewayControlBag | null>(() => {
+        const fileUrl = props.configuration[ComponentConfigurationKey.ObsidianControlFileUrl];
+        const settings = parseJsonSafe<unknown>(props.configuration[ComponentConfigurationKey.ObsidianControlSettings]);
+
+        if (!fileUrl) {
+            return null;
+        }
+
+        return {
+            fileUrl,
+            settings
+        };
+    });
+
+    /** The list of campuses that can be picked from while making a payment. */
+    const campuses = computed((): ListItemBag[] => {
+        return parseJsonSafe<ListItemBag[]>(props.configuration[ComponentConfigurationKey.Campuses]) ?? [];
+    });
+
+    /** The instructions to display at the top of the form. */
+    const paymentInformationInstructions = computed((): string => {
+        return props.configuration[ComponentConfigurationKey.PaymentInformationInstructions] ?? "";
+    });
+
+    /** The text to display in the submit button. */
+    const confirmPaymentButtonText = computed((): string => {
+        return props.configuration[ComponentConfigurationKey.ConfirmPaymentButtonText] || "Confirm Payment";
+    });
+
+    /** The label text to display on the amount input control. */
+    const amountLabel = computed((): string => {
+        return props.configuration[ComponentConfigurationKey.AmountLabel] ?? "Amount";
+    });
+
+    /** The label text to display on the save account checkbox. */
+    const saveAccountLabel = computed((): string => {
+        return props.configuration[ComponentConfigurationKey.SaveAccountLabel] ?? "Save account information for future gifts";
+    });
+
+    /** `true` if the saved account featue is enabled for this payment. */
+    const enableSavedAccounts = computed((): boolean => {
+        return asBoolean(props.configuration[ComponentConfigurationKey.EnableSavedAccounts]);
+    });
+
+    /** `true` if we have any saved accounts to display. */
+    const hasSavedAccounts = computed((): boolean => {
+        // We always add the "add new method" option, so we need at least 2
+        // options to indicate that we have saved accounts.
+        return savedAccounts.value.length > 1;
+    });
+
+    /** The list of saved accounts that can be selected by the individual. */
+    const savedAccounts = computed((): SavedFinancialAccountListItemBag[] => {
+        const accounts = parseJsonSafe<SavedFinancialAccountListItemBag[]>(props.configuration[ComponentConfigurationKey.SavedAccounts]) ?? [];
+
+        accounts.splice(accounts.length, 0, {
+            value: "",
+            text: "Use a different payment method",
+        });
+
+        return accounts;
+    });
+
+    /** `true` if the campus picker should be shown on the payment form. */
+    const showCampusPicker = computed<boolean>(() => {
+        return campuses.value.length > 0;
+    });
+
+    /** `true` if the custom amount input box should be shown on the payment form. */
+    const showCustomAmount = computed<boolean>(() => {
+        return toNumber(props.data[ComponentDataKey.Amount] ?? "0") === 0;
+    });
+
+    /** `true` if the manual entry gateway component should be shown. */
+    const showGateway = computed<boolean>(() => {
+        return !hasSavedAccounts.value || selectedSavedAccount.value === "";
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Sets the initial values for the form based on the configuration data and
+     * data values.
+     */
+    function setInitialValues(): void {
+        formResetKey.value = newGuid();
+        amountToPay.value = toNumber(props.data[ComponentDataKey.Amount] ?? "0");
+        campus.value = toGuidOrNull(props.data[ComponentDataKey.Campus]) ?? "";
+        savedAccountUniqueId.value = newGuid();
+        selectedSavedAccount.value = "";
+        saveAccount.value = false;
+        saveAccountName.value = "";
+
+        gatewayErrorMessage.value = "";
+        gatewayValidationFields.value = [];
+    }
+
+    /**
+     * Parses a JSON string safely to avoid throwing an error.
+     *
+     * @param json The JSON string to parse.
+     *
+     * @returns The decoded object or `undefined` if the JSON is invalid.
+     */
+    function parseJsonSafe<T>(json: string | null | undefined): T | undefined {
+        if (!json) {
+            return undefined;
+        }
+
+        try {
+            return JSON.parse(json);
+        }
+        catch {
+            return undefined;
+        }
+    }
+
+    /**
+     * Get the unique identifier of the option to use on the saved account control.
+     *
+     * @param option The option that represents the saved account.
+     *
+     * @returns A string that contains the unique control identifier.
+     */
+    function getSavedAccountUniqueId(option: SavedFinancialAccountListItemBag): string {
+        const key = option.value?.replace(" ", "-") ?? "";
+
+        return `${savedAccountUniqueId}-${key}`;
+    }
+
+    /**
+     * Submits the payment information to the server for final processing.
+     *
+     * @param token The token returned by the gateway after a manual payment method entry.
+     */
+    async function submitPayment(token: string | undefined): Promise<void> {
+        const newData = { ...props.data };
+
+        newData[ComponentDataKey.Amount] = amountToPay.value.toString();
+        newData[ComponentDataKey.Campus] = campus.value;
+        newData[ComponentDataKey.SaveAccount] = saveAccount.value.toString();
+        newData[ComponentDataKey.SaveAccountName] = saveAccountName.value;
+        newData[ComponentDataKey.Token] = token;
+        newData[ComponentDataKey.UseSavedAccount] = selectedSavedAccount.value;
+
+        try {
+            paymentEvents({ type: "submitting" });
+            await props.submit(newData);
+            paymentEvents({ type: "success" });
+        }
+        catch (error) {
+            const errorMessage = error instanceof Error ? error.message : "An unknown error occurred.";
+
+            paymentEvents({ type: "failure", errorMessage });
+            gatewayErrorMessage.value = errorMessage;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the submit payment button.
+     */
+    async function onConfirmPayment(): Promise<void> {
+        await form.value?.submitForm();
+    }
+
+    /**
+     * The gateway indicated success and returned a token
+     *
+     * @param token The opaque token that will be used to process the payment.
+     */
+    async function onGatewayControlSuccess(token: string): Promise<void> {
+        await submitPayment(token);
+
+        gatewayCompletionSource?.resolve();
+    }
+
+    /**
+     * The gateway indicated an error.
+     *
+     * @param message The message that describes the error.
+     */
+    function onGatewayControlError(message: string): void {
+        gatewayErrorMessage.value = message;
+        gatewayCompletionSource?.resolve();
+    }
+
+    /**
+     * The gateway wants the user to fix some fields.
+     *
+     * @param invalidFields The invalid fields that need to be fixed.
+     */
+    function onGatewayControlValidation(invalidFields: FormError[]): void {
+        gatewayValidationFields.value = invalidFields;
+        gatewayCompletionSource?.resolve();
+    }
+
+    /**
+     * Called when the primary form has been validated and is ready to submit.
+     */
+    function onFormSubmit(): Promise<void> {
+        if (selectedSavedAccount.value) {
+            // Paying with a saved account, so we can submit payment now.
+            return submitPayment(undefined);
+        }
+        else {
+            // Paying with manually entered payment information, so we need to
+            // wait for the gateway to complete.
+            gatewayCompletionSource = new PromiseCompletionSource();
+
+            // Reset any errors before we submit again.
+            gatewayValidationFields.value = [];
+            gatewayErrorMessage.value = "";
+
+            submitGatewayPayment();
+
+            return gatewayCompletionSource.promise;
+        }
+    }
+
+    // #endregion
+
+    // If either configuration or data changes, we need to reset our state
+    // to match both.
+    watch([() => props.configuration, () => props.data], () => {
+        setInitialValues();
+    });
+
+    setInitialValues();
+</script>

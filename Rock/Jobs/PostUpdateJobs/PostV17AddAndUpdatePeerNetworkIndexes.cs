@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel;
 
 using Rock.Attribute;
@@ -48,11 +49,67 @@ namespace Rock.Jobs
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
 
+            RemoveLegacyPeerNetworkData( jobMigration );
             ReplaceGroupGroupTypeIdIndex( jobMigration );
             AddPeerNetworkRelationshipScoreIndexForDeletes( jobMigration );
             AddPeerNetworkSourcePersonIdIndexForLavaSql( jobMigration );
 
             DeleteJob();
+        }
+
+        /// <summary>
+        /// This code was moved from the Rollup_20241218 migration on 2025-03-17
+        /// to reduce the risk of a timeout during migration.
+        /// </summary>
+        /// <param name="jobMigration">The job migration helper.</param>
+        private void RemoveLegacyPeerNetworkData( JobMigration jobMigration )
+        {
+            try
+            {
+                jobMigration.Sql( @"
+DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
+
+-- [GroupMember] records tied to these groups will cascade-delete.
+DELETE [Group] WHERE [GroupTypeId] = @GroupTypeId;" );
+
+                jobMigration.Sql( "DELETE FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E'" );
+            }
+            catch ( Exception ex )
+            {
+                // This could be risky, as there might be unforeseen foreign key relationships to the records we're
+                // trying to delete here. If there's an exception, log it and move on. It's not detrimental for these
+                // records to remain in the database. But let's at least try to hide this group type from display in
+                // lists and navigation, and ensure it doesn't take part in the new Peer Network functionality.
+                jobMigration.Sql( @"
+DECLARE @GroupTypeId INT = (SELECT TOP 1 [Id] FROM [GroupType] WHERE [Guid] = '8C0E5852-F08F-4327-9AA5-87800A6AB53E');
+
+UPDATE [GroupType]
+SET [ShowInGroupList] = 0
+    , [ShowInNavigation] = 0
+    , [ModifiedDateTime] = GETDATE()
+    , [IsPeerNetworkEnabled] = 0
+    , [RelationshipStrength] = 0
+    , [RelationshipGrowthEnabled] = 0
+    , [LeaderToLeaderRelationshipMultiplier] = 0
+    , [LeaderToNonLeaderRelationshipMultiplier] = 0
+    , [NonLeaderToLeaderRelationshipMultiplier] = 0
+    , [NonLeaderToNonLeaderRelationshipMultiplier] = 0
+WHERE [Id] = @GroupTypeId;
+
+UPDATE [Group]
+SET [IsActive] = 0
+    , [ModifiedDateTime] = GETDATE()
+    , [RelationshipStrengthOverride] = NULL
+    , [RelationshipGrowthEnabledOverride] = NULL
+    , [LeaderToLeaderRelationshipMultiplierOverride] = NULL
+    , [LeaderToNonLeaderRelationshipMultiplierOverride] = NULL
+    , [NonLeaderToLeaderRelationshipMultiplierOverride] = NULL
+    , [NonLeaderToNonLeaderRelationshipMultiplierOverride] = NULL
+WHERE [GroupTypeId] = @GroupTypeId;" );
+
+                var exception = new Exception( "Unable to delete legacy Peer Network Groups and Group Type.", ex );
+                ExceptionLogService.LogException( exception );
+            }
         }
 
         /// <summary>

@@ -20,7 +20,10 @@ using System.Diagnostics;
 using System.Diagnostics.Metrics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Security;
 
+using Rock.Configuration;
 using Rock.Data;
 
 namespace Rock.Observability
@@ -40,6 +43,8 @@ namespace Rock.Observability
         private static readonly PerformanceCounter _cpuPerformancCounter = null;
 
         private static readonly string _rockVersion = VersionInfo.VersionInfo.GetRockProductVersionFullName();
+
+        private static bool _isCommonTagsInitialized = false;
 
         #endregion
 
@@ -111,6 +116,17 @@ namespace Rock.Observability
 
         internal static void StartCoreMetrics()
         {
+            // This isn't fullproof, but add a little sanity check to be sure
+            // we don't try to touch _commonTags on multiple threads. If we only
+            // do this once here, then we should be safe. We don't want to set
+            // rock.node during the constructor as there is a chance it might
+            // not be available then.
+            if ( !_isCommonTagsInitialized )
+            {
+                _commonTags.Add( "rock.node", RockApp.Current.HostingSettings.NodeName.ToLower() );
+                _isCommonTagsInitialized = true;
+            }
+
             // Create hosting environment metrics
             // Code from: https://github.com/open-telemetry/opentelemetry-dotnet-contrib/blob/5f45bc6d662ba20b87cb6b48831599905f7d7d77/src/OpenTelemetry.Instrumentation.Process/ProcessMetrics.cs
 
@@ -243,13 +259,95 @@ namespace Rock.Observability
                     description: "The percent CPU of the web VM." );
             }
 
+            MeterInstance.CreateObservableUpDownCounter(
+                "hosting.memory.size",
+                () => new Measurement<long>( ( long ) ( NativeMethods.GlobalMemoryStatusEx()?.ullTotalPhys ?? 0 ), _commonTags ),
+                unit: "bytes",
+                description: "The amount of physical memory installed in the system in bytes." );
+
+            MeterInstance.CreateObservableUpDownCounter(
+                "hosting.memory.available",
+                () =>
+                {
+                    var memoryStatus = NativeMethods.GlobalMemoryStatusEx();
+
+                    if ( memoryStatus == null )
+                    {
+                        return new Measurement<long>( 0, _commonTags );
+                    }
+
+                    return new Measurement<long>( ( long ) memoryStatus.Value.ullAvailPhys, _commonTags );
+                },
+                unit: "bytes",
+                description: "The amount of physical memory available in bytes." );
+
+            MeterInstance.CreateObservableUpDownCounter(
+                "hosting.memory.used",
+                () =>
+                {
+                    var memoryStatus = NativeMethods.GlobalMemoryStatusEx();
+
+                    if ( memoryStatus == null || memoryStatus.Value.ullTotalPhys == 0 )
+                    {
+                        return new Measurement<long>( 0, _commonTags );
+                    }
+
+                    var used = memoryStatus.Value.ullTotalPhys - memoryStatus.Value.ullAvailPhys;
+                    return new Measurement<long>( ( long ) used, _commonTags );
+                },
+                unit: "bytes",
+                description: "The amount of physical memory used in bytes." );
+
+            MeterInstance.CreateObservableUpDownCounter(
+                "hosting.memory.used.percent",
+                () =>
+                {
+                    var memoryStatus = NativeMethods.GlobalMemoryStatusEx();
+
+                    if ( memoryStatus == null || memoryStatus.Value.ullTotalPhys == 0 )
+                    {
+                        return new Measurement<double>( 0, _commonTags );
+                    }
+
+                    var used = memoryStatus.Value.ullTotalPhys - memoryStatus.Value.ullAvailPhys;
+                    return new Measurement<double>( used / ( double ) memoryStatus.Value.ullTotalPhys * 100, _commonTags );
+                },
+                unit: "%",
+                description: "The amount of physical memory used in percentage." );
+
+            MeterInstance.CreateObservableGauge(
+                "hosting.volumes.size",
+                () =>
+                {
+                    DriveInfo[] allDrives = DriveInfo.GetDrives();
+
+                    var measures = new Measurement<long>[allDrives.Length];
+                    var measureCount = 0;
+
+                    foreach ( DriveInfo d in allDrives )
+                    {
+                        // If the device is not ready, ignore it to avoid an access error.
+                        if ( !d.IsReady  )
+                        {
+                            continue;
+                        }
+                        var tags = _commonTags;
+                        tags.Add( "volume", d.Name );
+                        measures[measureCount++] = new Measurement<long>( d.TotalSize, tags );
+                    }
+
+                    return measures;
+                },
+                unit: "bytes",
+                description: "The total size of the volume in bytes." );
+
             MeterInstance.CreateObservableGauge(
                 "hosting.volumes.space",
                 () =>
                 {
                     DriveInfo[] allDrives = DriveInfo.GetDrives();
 
-                    var measures = new Measurement<double>[allDrives.Length];
+                    var measures = new Measurement<long>[allDrives.Length];
                     var measureCount = 0;
 
                     foreach ( DriveInfo d in allDrives )
@@ -261,13 +359,66 @@ namespace Rock.Observability
                         }
                         var tags = _commonTags;
                         tags.Add( "volume", d.Name );
-                        measures[measureCount++] = new Measurement<double>( d.TotalFreeSpace, tags );
+                        measures[measureCount++] = new Measurement<long>( d.TotalFreeSpace, tags );
                     }
 
                     return measures;
                 },
                 unit: "bytes",
-                description: "Total number of bytes free on the volume." );
+                description: "The total number of bytes free on the volume." );
+
+            MeterInstance.CreateObservableGauge(
+                "hosting.volumes.used",
+                () =>
+                {
+                    DriveInfo[] allDrives = DriveInfo.GetDrives();
+
+                    var measures = new Measurement<long>[allDrives.Length];
+                    var measureCount = 0;
+
+                    foreach ( DriveInfo d in allDrives )
+                    {
+                        // If the device is not ready, ignore it to avoid an access error.
+                        if ( !d.IsReady || d.TotalSize == 0 )
+                        {
+                            continue;
+                        }
+                        var tags = _commonTags;
+                        tags.Add( "volume", d.Name );
+                        measures[measureCount++] = new Measurement<long>( d.TotalSize - d.TotalFreeSpace, tags );
+                    }
+
+                    return measures;
+                },
+                unit: "bytes",
+                description: "The total number of bytes used on the volume." );
+
+            MeterInstance.CreateObservableGauge(
+                "hosting.volumes.used.percent",
+                () =>
+                {
+                    DriveInfo[] allDrives = DriveInfo.GetDrives();
+
+                    var measures = new Measurement<double>[allDrives.Length];
+                    var measureCount = 0;
+
+                    foreach ( DriveInfo d in allDrives )
+                    {
+                        // If the device is not ready, ignore it to avoid an access error.
+                        if ( !d.IsReady || d.TotalSize == 0 )
+                        {
+                            continue;
+                        }
+                        var tags = _commonTags;
+                        tags.Add( "volume", d.Name );
+                        var usedBytes = d.TotalSize - d.TotalFreeSpace;
+                        measures[measureCount++] = new Measurement<double>( usedBytes / ( double ) d.TotalSize * 100, tags );
+                    }
+
+                    return measures;
+                },
+                unit: "%",
+                description: "The percentage of the volume that is filled." );
 
             MeterInstance.CreateObservableGauge( "hosting.sql.cpu",
                 GetSqlCpuMeasure,
@@ -420,5 +571,42 @@ END CATCH
         }
 
         #endregion
+
+        private static class NativeMethods
+        {
+            private const String KERNEL32 = "kernel32.dll";
+
+            [SecurityCritical]
+            public static MEMORYSTATUSEX? GlobalMemoryStatusEx()
+            {
+                var lpBuffer = new MEMORYSTATUSEX
+                {
+                    dwLength = ( uint ) Marshal.SizeOf( typeof( MEMORYSTATUSEX ) )
+                };
+
+                return GlobalMemoryStatusExNative( ref lpBuffer )
+                    ? ( MEMORYSTATUSEX? ) lpBuffer
+                    : null;
+            }
+
+            [DllImport( KERNEL32, CharSet = CharSet.Auto, SetLastError = true, EntryPoint = "GlobalMemoryStatusEx" )]
+            [SecurityCritical]
+            [return: MarshalAs( UnmanagedType.Bool )]
+            private static extern bool GlobalMemoryStatusExNative( [In, Out] ref MEMORYSTATUSEX lpBuffer );
+
+            [StructLayout( LayoutKind.Sequential, CharSet = CharSet.Auto )]
+            internal struct MEMORYSTATUSEX
+            {
+                internal uint dwLength;
+                internal uint dwMemoryLoad;
+                internal ulong ullTotalPhys;
+                internal ulong ullAvailPhys;
+                internal ulong ullTotalPageFile;
+                internal ulong ullAvailPageFile;
+                internal ulong ullTotalVirtual;
+                internal ulong ullAvailVirtual;
+                internal ulong ullAvailExtendedVirtual;
+            }
+        }
     }
 }

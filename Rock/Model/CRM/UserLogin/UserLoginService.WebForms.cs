@@ -16,14 +16,14 @@
 //
 using System;
 using System.Linq;
-using System.Text.RegularExpressions;
-using System.Threading.Tasks;
 using System.Web;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Net;
 using Rock.Security;
 using Rock.Tasks;
-using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Model
 {
@@ -111,23 +111,48 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Updates the last log in, writes to the person's history log, and saves changes to the database
+        /// Updates an individual's last successful login date time and writes the event to the person's <see cref="HistoryLogin"/> log.
         /// </summary>
-        /// <param name="userName">Name of the user.</param>
+        /// <param name="userName">The user name of the individual who successfully logged in.</param>
+        [RockObsolete( "17.0" )]
+        [Obsolete( "Use the UpdateLastLogin method that takes a UpdateLastLoginArgs parameter instead." )]
         public static void UpdateLastLogin( string userName )
         {
-            if ( string.IsNullOrWhiteSpace( userName ) )
+            UpdateLastLogin( new UpdateLastLoginArgs { UserName = userName } );
+        }
+
+        /// <summary>
+        /// Updates an individual's last successful login date time and optionally writes the event to the person's
+        /// <see cref="HistoryLogin"/> log.
+        /// </summary>
+        /// <param name="args">The arguments to specify how an individual's last login should be updated.</param>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.0" )]
+        public static void UpdateLastLogin( UpdateLastLoginArgs args )
+        {
+            if ( args?.UserName.IsNotNullOrWhiteSpace() != true )
             {
                 return;
             }
 
+            var userName = args.UserName;
+
             int? personId = null;
+            UserLogin userLogin = null;
             bool impersonated = userName.StartsWith( "rckipid=" );
+
             using ( var rockContext = new RockContext() )
             {
                 if ( !impersonated )
                 {
-                    var userLogin = new UserLoginService( rockContext ).Queryable().Where( a => a.UserName == userName ).FirstOrDefault();
+                    userLogin = new UserLoginService( rockContext ).Queryable().Where( a => a.UserName == userName ).FirstOrDefault();
                     if ( userLogin != null )
                     {
                         userLogin.LastLoginDateTime = RockDateTime.Now;
@@ -135,91 +160,42 @@ namespace Rock.Model
                         rockContext.SaveChanges();
                     }
                 }
-                else
+                else if ( !args.ShouldSkipWritingHistoryLog )
                 {
                     var impersonationToken = userName.Substring( 8 );
                     personId = new PersonService( rockContext ).GetByImpersonationToken( impersonationToken, false, null )?.Id;
                 }
-            }
 
-            if ( personId == null )
-            {
-                return;
-            }
-
-            var relatedDataBuilder = new System.Text.StringBuilder();
-            int? relatedEntityTypeId = null;
-            int? relatedEntityId = null;
-
-            if ( impersonated )
-            {
-                var impersonatedByUser = HttpContext.Current?.Session?["ImpersonatedByUser"] as UserLogin;
-
-                relatedEntityTypeId = EntityTypeCache.GetId<Rock.Model.Person>();
-                relatedEntityId = impersonatedByUser?.PersonId;
-
-                if ( impersonatedByUser != null )
+                if ( args.ShouldSkipWritingHistoryLog || personId == null )
                 {
-                    relatedDataBuilder.Append( $" impersonated by { impersonatedByUser.Person.FullName }" );
-                }
-            }
-
-            if ( HttpContext.Current != null && HttpContext.Current.Request != null )
-            {
-                string cleanUrl = PersonToken.ObfuscateRockMagicToken( HttpContext.Current.Request.UrlProxySafe().AbsoluteUri );
-
-                // obfuscate the URL specified in the returnurl, just in case it contains any sensitive information (like a rckipid)
-                Regex returnurlRegEx = new Regex( @"returnurl=([^&]*)" );
-                cleanUrl = returnurlRegEx.Replace( cleanUrl, "returnurl=XXXXXXXXXXXXXXXXXXXXXXXXXXXX" );
-
-                string clientIPAddress;
-                try
-                {
-                    clientIPAddress = Rock.Web.UI.RockPage.GetClientIpAddress();
-                }
-                catch
-                {
-                    // if we get an exception getting the IP Address, just ignore it
-                    clientIPAddress = "";
+                    return;
                 }
 
-                clientIPAddress = HttpUtility.HtmlEncode( clientIPAddress );
-
-                relatedDataBuilder.AppendFormat(
-                    " to <span class='field-value'>{0}</span>, from <span class='field-value'>{1}</span>",
-                    cleanUrl,
-                    clientIPAddress );
-            }
-
-            var historyChangeList = new History.HistoryChangeList();
-            var cleanUserName = PersonToken.ObfuscateRockMagicToken( userName );
-            var historyChange = historyChangeList.AddChange( History.HistoryVerb.Login, History.HistoryChangeType.Record, cleanUserName );
-
-            if ( relatedDataBuilder.Length > 0 )
-            {
-                historyChange.SetRelatedData( relatedDataBuilder.ToString(), null, null );
-            }
-
-            var historyList = HistoryService.GetChanges( typeof( Rock.Model.Person ), Rock.SystemGuid.Category.HISTORY_PERSON_ACTIVITY.AsGuid(), personId.Value, historyChangeList, null, null, null, null, null );
-
-            if ( historyList.Any() )
-            {
-                Task.Run( async () =>
+                var historyLogin = new HistoryLogin
                 {
-                    // Wait 1 second to allow all post save actions to complete
-                    await Task.Delay( 1000 );
-                    try
+                    UserName = PersonToken.ObfuscateRockMagicToken( userName ),
+                    UserLoginId = userLogin?.Id,
+                    PersonAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( personId.Value ),
+                    SourceSiteId = args.SourceSiteIdOverride,
+                    WasLoginSuccessful = true
+                };
+
+                if ( impersonated )
+                {
+                    var impersonatedByUser = HttpContext.Current?.Session?["ImpersonatedByUser"] as UserLogin;
+                    if ( impersonatedByUser?.Person != null )
                     {
-                        using ( var rockContext = new RockContext() )
+                        var relatedData = new HistoryLoginRelatedData
                         {
-                            rockContext.BulkInsert( historyList );
-                        }
+                            ImpersonatedByPersonFullName = impersonatedByUser.Person.FullName,
+                            LoginContext = "Impersonation"
+                        };
+
+                        historyLogin.SetRelatedDataJson( relatedData );
                     }
-                    catch ( SystemException ex )
-                    {
-                        ExceptionLogService.LogException( ex, null );
-                    }
-                } );
+                }
+
+                historyLogin.SaveAfterDelay();
             }
         }
     }

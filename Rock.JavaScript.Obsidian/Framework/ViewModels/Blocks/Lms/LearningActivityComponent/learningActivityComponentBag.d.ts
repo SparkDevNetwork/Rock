@@ -31,6 +31,12 @@ export type LearningActivityComponentBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /**
+     * Additional configuration data for the component to use when
+     * rendering the UI.
+     */
+    componentConfiguration?: Record<string, string> | null;
+
     /** Gets or sets the url to the activity component. */
     componentUrl?: string | null;
 

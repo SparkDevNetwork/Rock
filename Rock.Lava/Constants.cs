@@ -36,7 +36,7 @@ namespace Rock.Lava
 
         // A suffix that is added to shortcode elements to avoid naming collisions with other tags and blocks.
         // Note that a suffix is used because the closing tag of a Liquid language element requires the "end" prefix.
-        // Also, the suffix must match a regular expression word character, either A to Z or "_" to be compatible with the DotLiquid engine parser.
+        // Also, the suffix must match a regular expression word character, either A to Z or "_" to be compatible with the Lava engine parser.
         public static string ShortcodeInternalNameSuffix = "_";
     }
 }

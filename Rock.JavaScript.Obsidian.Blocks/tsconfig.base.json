@@ -11,6 +11,7 @@
     "removeComments": true,
     "allowUnreachableCode": false,
     "forceConsistentCasingInFileNames": true,
+    "skipLibCheck": true,
     "sourceMap": true,
     "target": "ES2016",
     "module": "ESNext",

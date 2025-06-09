@@ -328,6 +328,14 @@ namespace Rock.Blocks.Finance
                 .AddAttributeFields( GetGridAttributes() );
         }
 
+        /// <inheritdoc/>
+        protected override List<BenevolenceRequest> GetListItems( IQueryable<BenevolenceRequest> queryable, RockContext rockContext )
+        {
+            return queryable.AsEnumerable()
+                .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, GetCurrentPerson() ) )
+                .ToList();
+        }
+
         /// <summary>
         /// Converts the BenevolenceResults to a list of BenevolenceResultBag.
         /// </summary>

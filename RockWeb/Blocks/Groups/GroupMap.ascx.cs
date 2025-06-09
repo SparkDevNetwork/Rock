@@ -263,13 +263,14 @@ namespace RockWeb.Blocks.Groups
             // Set default map options
             var mapOptions = {{
                  mapTypeId: 'roadmap'
-                ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
                 ,zoom: {9}
             }};
 
             if (!isMapIdEmpty) {{
                 mapOptions.mapId = mapId;
+            }} else {{
+                mapOptions.styles = mapStyle;
             }}
 
             // Display a map on the page

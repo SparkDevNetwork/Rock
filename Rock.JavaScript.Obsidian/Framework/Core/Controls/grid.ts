@@ -2002,7 +2002,7 @@ export class GridState implements IGridState {
             const quickFilterMatch = !quickFilterRawValue || columns.some((column): boolean => {
                 const value = column.quickFilterValue(row, column, this);
 
-                if (value === undefined) {
+                if (typeof value !== "string") {
                     return false;
                 }
 
@@ -2024,7 +2024,7 @@ export class GridState implements IGridState {
 
                 const columnFilterValue = this.columnFilters[column.name];
 
-                if (columnFilterValue === undefined) {
+                if (columnFilterValue === undefined || columnFilterValue === null) {
                     return true;
                 }
 

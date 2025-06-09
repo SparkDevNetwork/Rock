@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -93,13 +94,25 @@ namespace Rock.Jobs
                 {
                     System.Diagnostics.Debug.WriteLine( RockDateTime.Now.ToString() + $" VETOED! Scheduler '{scheduler.SchedulerName}' is already executing job Id '{context.JobDetail.Description}' (key: {context.JobDetail.Key})" );
 
-                    Logger.LogDebug( $"Job ID: {{jobId}}, Job Key: {{jobKey}}, Job trigger was vetoed because scheduler '{scheduler.SchedulerName}' is already executing job.", jobId, context.JobDetail?.Key );
+                    Logger.LogDebug(
+                        $"Job ID: {{jobId}} (App PID: {{processId}}-{{domainId}}), Job Key: {{jobKey}}, Job trigger was vetoed because scheduler '{scheduler.SchedulerName}' is already executing job.",
+                        jobId,
+                        Rock.WebFarm.RockWebFarm.ProcessId,
+                        AppDomain.CurrentDomain.Id,
+                        context.JobDetail?.Key
+                    );
 
                     return true;
                 }
             }
 
-            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job trigger was not vetoed.", jobId, context.JobDetail?.Key );
+            Logger.LogDebug(
+                "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job trigger was not vetoed.",
+                jobId,
+                Rock.WebFarm.RockWebFarm.ProcessId,
+                AppDomain.CurrentDomain.Id,
+                context.JobDetail?.Key
+            );
 
             return false;
         }
@@ -114,7 +127,13 @@ namespace Rock.Jobs
         public void TriggerComplete( ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode )
         {
             // Do nothing but log a message.
-            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job trigger completed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
+            Logger.LogDebug(
+                "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job trigger completed.",
+                context.JobDetail?.Description.AsIntegerOrNull(),
+                Rock.WebFarm.RockWebFarm.ProcessId,
+                AppDomain.CurrentDomain.Id,
+                context.JobDetail?.Key
+            );
         }
 
         /// <summary>
@@ -127,7 +146,13 @@ namespace Rock.Jobs
         public void TriggerFired( ITrigger trigger, IJobExecutionContext context )
         {
             // Do nothing but log a message.
-            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job trigger fired.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
+            Logger.LogDebug(
+                "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job trigger fired.",
+                context.JobDetail?.Description.AsIntegerOrNull(),
+                Rock.WebFarm.RockWebFarm.ProcessId,
+                AppDomain.CurrentDomain.Id,
+                context.JobDetail?.Key
+            );
         }
 
         /// <summary>
@@ -139,7 +164,12 @@ namespace Rock.Jobs
         public void TriggerMisfired( ITrigger trigger )
         {
             // Do nothing but log a message.
-            Logger.LogDebug( "Job Key: {jobKey}, Job trigger misfired.", trigger.Key );
+            Logger.LogDebug(
+                "(App PID: {processId}-{domainId}), Job Key: {jobKey}, Job trigger misfired.",
+                Rock.WebFarm.RockWebFarm.ProcessId,
+                AppDomain.CurrentDomain.Id,
+                trigger.Key
+            );
             return;
         }
 
@@ -157,7 +187,13 @@ namespace Rock.Jobs
         /// <returns>Task.</returns>
         public Task TriggerComplete( ITrigger trigger, IJobExecutionContext context, SchedulerInstruction triggerInstructionCode, CancellationToken cancellationToken = default )
         {
-            Logger.LogDebug( "Job ID: {jobId}, Job Key: {jobKey}, Job trigger completed.", context.JobDetail?.Description.AsIntegerOrNull(), context.JobDetail?.Key );
+            Logger.LogDebug(
+                "Job ID: {jobId} (App PID: {processId}-{domainId}), Job Key: {jobKey}, Job trigger completed.",
+                context.JobDetail?.Description.AsIntegerOrNull(),
+                Rock.WebFarm.RockWebFarm.ProcessId,
+                AppDomain.CurrentDomain.Id,
+                context.JobDetail?.Key
+            );
             return Task.CompletedTask;
         }
     }

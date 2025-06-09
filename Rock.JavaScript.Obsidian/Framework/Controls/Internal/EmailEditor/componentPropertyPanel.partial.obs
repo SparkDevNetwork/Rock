@@ -1,0 +1,198 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TitleComponentPropertyPanel v-if="componentTypeName === 'title'"
+                                 :componentElement="componentElement"
+                                 :hasScrollableBody="true"
+                                 @clone="$emit('clone')"
+                                 @complete="$emit('complete')"
+                                 @delete="$emit('delete')"
+                                 @migrate="$emit('migrate', $event)" />
+
+    <VideoComponentPropertyPanel v-else-if="componentTypeName === 'video'"
+                                 :componentElement="componentElement"
+                                 :hasScrollableBody="true"
+                                 :videoProviderNames="videoProviderNames"
+                                 @clone="$emit('clone')"
+                                 @complete="$emit('complete')"
+                                 @delete="$emit('delete')"
+                                 @migrate="$emit('migrate', $event)" />
+
+    <ButtonComponentPropertyPanel v-else-if="componentTypeName === 'button'"
+                                  :componentElement="componentElement"
+                                  :hasScrollableBody="true"
+                                  @clone="$emit('clone')"
+                                  @complete="$emit('complete')"
+                                  @delete="$emit('delete')"
+                                  @migrate="$emit('migrate', $event)" />
+
+    <TextComponentPropertyPanel v-else-if="componentTypeName === 'text'"
+                                :componentElement="componentElement"
+                                :hasScrollableBody="true"
+                                :mergeFields="mergeFields"
+                                :shortLinkCheckToken="shortLinkCheckToken"
+                                :shortLinkGetPageId="shortLinkGetPageId"
+                                :shortLinkSites="shortLinkSites"
+                                :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)" />
+
+    <DividerComponentPropertyPanel v-else-if="componentTypeName === 'divider'"
+                                   :componentElement="componentElement"
+                                   :hasScrollableBody="true"
+                                   @clone="$emit('clone')"
+                                   @complete="$emit('complete')"
+                                   @delete="$emit('delete')"
+                                   @migrate="$emit('migrate', $event)" />
+
+    <AdaptiveMessageComponentPropertyPanel v-else-if="componentTypeName === 'message'"
+                                           :componentElement="componentElement"
+                                           :hasScrollableBody="true"
+                                           @clone="$emit('clone')"
+                                           @complete="$emit('complete')"
+                                           @delete="$emit('delete')" />
+
+    <ImageComponentPropertyPanel v-else-if="componentTypeName === 'image'"
+                                 :componentElement="componentElement"
+                                 :hasScrollableBody="true"
+                                 :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                                 @clone="$emit('clone')"
+                                 @complete="$emit('complete')"
+                                 @delete="$emit('delete')"
+                                 @migrate="$emit('migrate', $event)"  />
+
+    <CodeComponentPropertyPanel v-else-if="componentTypeName === 'code'"
+                                :componentElement="componentElement"
+                                :hasScrollableBody="true"
+                                :mergeFields="mergeFields"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)" />
+
+    <RsvpComponentPropertyPanel v-else-if="componentTypeName === 'rsvp'"
+                                :componentElement="componentElement"
+                                :hasScrollableBody="true"
+                                :recipientPersonIds="recipientPersonIds"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)" />
+
+    <SectionComponentPropertyPanel v-else-if="componentTypeName === 'section'"
+                                   :componentElement="componentElement"
+                                   :hasScrollableBody="true"
+                                   :isCloneDisabled="isRootSectionComponent && !parentStructureDropzone"
+                                   @clone="$emit('clone')"
+                                   @complete="$emit('complete')"
+                                   @delete="$emit('delete')"
+                                   @emailSectionSaved="$emit('emailSectionSaved', $event)"
+                                   @migrate="$emit('migrate', $event)" />
+
+    <RowComponentPropertyPanel v-else-if="componentTypeName === 'row'"
+                               :componentElement="componentElement"
+                               :hasScrollableBody="true"
+                               @clone="$emit('clone')"
+                               @complete="$emit('complete')"
+                               @delete="$emit('delete')"
+                               @migrate="$emit('migrate', $event)" />
+
+    <div v-else>Unknown component type: {{ componentTypeName }}.</div>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import AdaptiveMessageComponentPropertyPanel from "./propertyPanels/adaptiveMessageComponentPropertyPanel.partial.obs";
+    import ButtonComponentPropertyPanel from "./propertyPanels/buttonComponentPropertyPanel.partial.obs";
+    import CodeComponentPropertyPanel from "./propertyPanels/codeComponentPropertyPanel.partial.obs";
+    import DividerComponentPropertyPanel from "./propertyPanels/dividerComponentPropertyPanel.partial.obs";
+    import ImageComponentPropertyPanel from "./propertyPanels/imageComponentPropertyPanel.partial.obs";
+    import RowComponentPropertyPanel from "./propertyPanels/rowComponentPropertyPanel.partial.obs";
+    import RsvpComponentPropertyPanel from "./propertyPanels/rsvpComponentPropertyPanel.partial.obs";
+    import SectionComponentPropertyPanel from "./propertyPanels/sectionComponentPropertyPanel.partial.obs";
+    import TextComponentPropertyPanel from "./propertyPanels/textComponentPropertyPanel.partial.obs";
+    import TitleComponentPropertyPanel from "./propertyPanels/titleComponentPropertyPanel.partial.obs";
+    import VideoComponentPropertyPanel from "./propertyPanels/videoComponentPropertyPanel.partial.obs";
+    import { EditorComponentTypeName } from "./types.partial";
+    import { getComponentTypeName } from "./utils.partial";
+    import { Guid } from "@Obsidian/Types";
+    import { isHTMLElement } from "@Obsidian/Utility/dom";
+    import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        imageComponentBinaryFileTypeGuid: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+
+        mergeFields: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: false
+        },
+
+        recipientPersonIds: {
+            type: Object as PropType<number[] | null | undefined>,
+            required: true
+        },
+
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
+        },
+
+        shortLinkSites: {
+            type: Array as PropType<ListItemBag[] | null | undefined>
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
+
+        videoProviderNames: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+        (e: "migrate", value: Element): void;
+        (e: "emailSectionSaved", value: EmailEditorEmailSectionBag): void;
+    }>();
+
+    // #region Computed Values
+
+    const componentTypeName = computed<EditorComponentTypeName>(() => {
+        return getComponentTypeName(props.componentElement);
+    });
+
+    const isRootSectionComponent = computed<boolean>(() => {
+        return !!props.componentElement.matches(".component-section") &&
+            !props.componentElement.closest(".dropzone");
+    });
+
+    const parentStructureDropzone = computed<HTMLElement | null>(() => {
+        const structureDropzoneElement = props.componentElement.parentElement?.closest(".structure-dropzone");
+
+        if (isHTMLElement(structureDropzoneElement)) {
+            return structureDropzoneElement;
+        }
+        else {
+            return null;
+        }
+    });
+
+    // #endregion Computed Values
+</script>

@@ -25,9 +25,12 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Security;
+using Rock.SystemGuid;
 using Rock.UniversalSearch;
 using Rock.UniversalSearch.IndexModels;
 using Rock.Web.Cache;
@@ -345,6 +348,11 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            if ( ChatHelper.IsChatEnabled && entityState == EntityState.Deleted )
+            {
+                ChatHelper.TryRemoveCachedChatChannel( this.Id );
+            }
+
             GroupCache.UpdateCachedEntity( Id, entityState );
 
             // If the group changed, and it was a security group, flush the security for the group
@@ -441,7 +449,7 @@ namespace Rock.Model
             List<int> checkMemberRoleIds = new List<int>();
             if ( action == Authorization.VIEW )
             {
-                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView ).Select( a => a.Id ) );
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView || a.CanTakeAttendance ).Select( a => a.Id ) );
             }
             else if ( action == Authorization.MANAGE_MEMBERS )
             {
@@ -450,6 +458,10 @@ namespace Rock.Model
             else if ( action == Authorization.EDIT )
             {
                 checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.TAKE_ATTENDANCE )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanTakeAttendance ).Select( a => a.Id ) );
             }
 
             if ( !checkMemberRoleIds.Any() )
@@ -472,7 +484,7 @@ namespace Rock.Model
                     var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
                     if ( role != null )
                     {
-                        if ( action == Authorization.VIEW && role.CanView )
+                        if ( action == Authorization.VIEW && ( role.CanView || role.CanTakeAttendance ) )
                         {
                             return true;
                         }
@@ -483,6 +495,11 @@ namespace Rock.Model
                         }
 
                         if ( action == Authorization.EDIT && role.CanEdit )
+                        {
+                            return true;
+                        }
+
+                        if ( action == Authorization.TAKE_ATTENDANCE && ( role.CanEdit || role.CanTakeAttendance ) )
                         {
                             return true;
                         }
@@ -643,18 +660,36 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets whether chat is enabled for this group. If <see cref="IsChatEnabledOverride"/> is set to
-        /// <see langword="null"/>, then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/> will be used.
+        /// Gets whether chat is enabled for this group. <see cref="GroupType.IsChatAllowed"/> will be checked first; if
+        /// <see langword="false"/>, chat cannot be enabled for this group. <see cref="IsChatEnabledOverride"/> will be
+        /// checked next; if <see langword="null"/>, then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/>
+        /// will be used.
         /// </summary>
         /// <returns>Whether chat is enabled for this group.</returns>
-        internal bool GetIsChatEnabled()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatEnabled()
         {
+            var groupTypeIsChatAllowed = false;
+            var groupTypeIsChatEnabledForAllGroups = false;
+
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                groupTypeIsChatAllowed = groupTypeCache.IsChatAllowed;
+                groupTypeIsChatEnabledForAllGroups = groupTypeCache.IsChatEnabledForAllGroups;
+            }
+
+            if ( !groupTypeIsChatAllowed )
+            {
+                return false;
+            }
+
             if ( this.IsChatEnabledOverride.HasValue )
             {
                 return this.IsChatEnabledOverride.Value;
             }
 
-            return this.GroupType?.IsChatEnabledForAllGroups ?? false;
+            return groupTypeIsChatEnabledForAllGroups;
         }
 
         /// <summary>
@@ -663,14 +698,21 @@ namespace Rock.Model
         /// then the value of <see cref="GroupType.IsLeavingChatChannelAllowed"/> will be used.
         /// </summary>
         /// <returns>Whether individuals are allowed to leave this chat channel.</returns>
-        internal bool GetIsLeavingChatChannelAllowed()
+        [RockInternal( "17.1", true )]
+        public bool GetIsLeavingChatChannelAllowed()
         {
             if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
             {
                 return this.IsLeavingChatChannelAllowedOverride.Value;
             }
 
-            return this.GroupType?.IsLeavingChatChannelAllowed ?? false;
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.IsLeavingChatChannelAllowed;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -680,14 +722,21 @@ namespace Rock.Model
         /// <see cref="GroupType.IsChatChannelPublic"/> will be used.
         /// </summary>
         /// <returns>Whether this chat channel is public, and may be joined by any person.</returns>
-        internal bool GetIsChatChannelPublic()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatChannelPublic()
         {
             if ( this.IsChatChannelPublicOverride.HasValue )
             {
                 return this.IsChatChannelPublicOverride.Value;
             }
 
-            return this.GroupType?.IsChatChannelPublic ?? false;
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.IsChatChannelPublic;
+            }
+
+            return false;
         }
 
         /// <summary>
@@ -697,14 +746,84 @@ namespace Rock.Model
         /// <see cref="GroupType.IsChatChannelAlwaysShown"/> will be used.
         /// </summary>
         /// <returns>Whether this chat channel is always shown in the channel list, and may be joined by any person.</returns>
-        internal bool GetIsChatChannelAlwaysShown()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatChannelAlwaysShown()
         {
             if ( this.IsChatChannelAlwaysShownOverride.HasValue )
             {
                 return this.IsChatChannelAlwaysShownOverride.Value;
             }
 
-            return this.GroupType?.IsChatChannelAlwaysShown ?? false;
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.IsChatChannelAlwaysShown;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat channel.
+        /// If <see cref="ChatPushNotificationModeOverride"/> set to <see langword="null"/>, then the value of
+        /// <see cref="GroupType.ChatPushNotificationMode"/> will be used.
+        /// </summary>
+        /// <returns>The <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat channel.</returns>
+        public ChatNotificationMode GetChatPushNotificationMode()
+        {
+            return GroupCache.GetChatPushNotificationMode( ChatPushNotificationModeOverride, GroupTypeId );
+        }
+
+        /// <summary>
+        /// Gets whether this chat channel is active.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="GetIsChatEnabled"/>, <see cref="IsActive"/> and NOT <see cref="IsArchived"/>;
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
+        internal bool GetIsChatChannelActive()
+        {
+            return this.GetIsChatEnabled() && this.IsActive && !this.IsArchived;
+        }
+
+        /// <summary>
+        /// Gets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
+        /// of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value of
+        /// <see cref="GroupType.GroupMemberRecordSourceValueId"/> will be used.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </returns>
+        internal int? GetGroupMemberRecordSourceValueId()
+        {
+            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
+
+            if ( this.GroupMemberRecordSourceValueId.HasValue && groupTypeCache?.AllowGroupSpecificRecordSource == true )
+            {
+                return this.GroupMemberRecordSourceValueId.Value;
+            }
+
+            return groupTypeCache?.GroupMemberRecordSourceValueId;
+        }
+
+        /// <summary>
+        /// Gets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source of
+        /// <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value of
+        /// <see cref="GroupType.GroupMemberRecordSourceValue"/> will be used.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type.
+        /// </returns>
+        internal DefinedValue GetGroupMemberRecordSourceValue()
+        {
+            if ( this.GroupMemberRecordSourceValue != null && this.GroupType?.AllowGroupSpecificRecordSource == true )
+            {
+                return this.GroupMemberRecordSourceValue;
+            }
+
+            return this.GroupType?.GroupMemberRecordSourceValue;
         }
 
         #endregion

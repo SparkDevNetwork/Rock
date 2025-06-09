@@ -1,0 +1,95 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <AutomationEventHeader title="Log Message Settings"
+                           description="Specify the required details to log a message whenever the event executes."
+                           :mergeFields="props.mergeFields" />
+
+    <div class="row">
+        <div class="col-md-6">
+            <TextBox label="Category"
+                     v-model="category"
+                     help="The category to use when writing the log message. This category must be enabled in the Rock Logger settings for the message to be logged."
+                     rules="required" />
+        </div>
+
+        <div class="col-md-6">
+            <DropDownList label="Log Level"
+                          v-model="level"
+                          :items="levelItems"
+                          help="The severity level of the log message. This level must be enabled in the Rock Logger settings for the message to be logged."
+                          rules="required" />
+        </div>
+    </div>
+
+    <TextBox label="Message"
+             v-model="message"
+             help="The message to write to the log. <span class='tip tip-lava'></span>"
+             rules="required" />
+</template>
+
+<script setup lang="ts">
+    import AutomationEventHeader from "@Obsidian/Controls/Internal/Automation/automationEventHeader.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { automationEventComponentProps } from "@Obsidian/Core/Core/Automation/component";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+
+    const enum ConfigurationKey {
+        Category = "category",
+        Level = "level",
+        Message = "message",
+    }
+
+    const props = defineProps(automationEventComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const category = ref<string>(props.modelValue[ConfigurationKey.Category] ?? "");
+    const level = ref<string>(props.modelValue[ConfigurationKey.Level] ?? "2");
+    const message = ref<string>(props.modelValue[ConfigurationKey.Message] ?? "");
+
+    const levelItems: ListItemBag[] = [
+        { text: "Trace", value: "0" },
+        { text: "Debug", value: "1" },
+        { text: "Information", value: "2" },
+        { text: "Warning", value: "3" },
+        { text: "Error", value: "4" },
+        { text: "Critical", value: "5" }
+    ];
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch([category, level, message], () => {
+        const newValues = { ...props.modelValue };
+
+        newValues[ConfigurationKey.Category] = category.value;
+        newValues[ConfigurationKey.Level] = level.value;
+        newValues[ConfigurationKey.Message] = message.value;
+
+        emit("update:modelValue", newValues);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(category, props.modelValue[ConfigurationKey.Category] ?? "");
+        updateRefValue(level, props.modelValue[ConfigurationKey.Level] ?? "2");
+        updateRefValue(message, props.modelValue[ConfigurationKey.Message] ?? "");
+    });
+</script>

@@ -940,6 +940,7 @@ namespace RockWeb.Blocks.Connection
 
                     ddlTransferOpportunity.Items.Clear();
                     foreach ( var opportunity in connectionRequest.ConnectionOpportunity.ConnectionType.ConnectionOpportunities
+                        .Where( o => o.IsActive )
                         .OrderBy( o => o.Order )
                         .ThenBy( o => o.Name ) )
                     {

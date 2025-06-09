@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Block for viewing a list of tags." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [BooleanField( "Show Qualifier Columns",
         Description = "Should the 'Qualifier Column' and 'Qualifier Value' fields be displayed in the grid?",

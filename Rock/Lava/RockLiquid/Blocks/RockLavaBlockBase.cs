@@ -14,19 +14,21 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.IO;
-using System.Linq;
+
+using Rock.Utility;
 
 using Block = global::DotLiquid.Block;
 using Context = global::DotLiquid.Context;
-
-using Rock.Utility;
 
 namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// 
     /// </summary>
+    [Obsolete( "This class was for DotLiquid which is no longer supported." )]
+    [RockObsolete( "18.0" )]
     public class RockLavaBlockBase : Block, IRockStartup
     {
         /// <summary>
@@ -42,7 +44,7 @@ namespace Rock.Lava.Blocks
                 return "The Lava command '{0}' is not configured for this template.";
             }
         }
-        
+
         /// <summary>
         /// Determines whether the specified command is authorized.
         /// </summary>
@@ -77,6 +79,5 @@ namespace Rock.Lava.Blocks
         public virtual void OnStartup()
         {
         }
-
     }
 }

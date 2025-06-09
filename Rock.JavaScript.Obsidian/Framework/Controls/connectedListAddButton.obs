@@ -1,0 +1,68 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="connected-list-add-button">
+        <DropDownMenu v-if="actions?.length" anchorButtonCssClass="connected-list-add-button-trigger"
+                      :items="actions ?? []"
+                      @click.stop><i class="fa fa-plus-circle"></i> {{ addText }}</DropDownMenu>
+
+        <RockButton v-else
+                    class="connected-list-add-button-trigger">
+            <i class="fa fa-plus-circle"></i> {{ addText }}
+        </RockButton>
+    </div>
+</template>
+
+<style scoped>
+.connected-list-add-button {
+    white-space: nowrap;
+}
+
+.connected-list-add-button-trigger,
+:deep(.connected-list-add-button-trigger) {
+    height: 90px;
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    padding: var(--spacing-large) var(--spacing-large);
+    background-color: var(--color-interface-softest);
+    border-radius: var(--border-radius-base);
+    border: 1px dotted var(--color-info-strong);
+    cursor: pointer;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    color: var(--color-info-strong);
+    font-weight: var(--font-weight-semibold);
+    white-space: nowrap;
+}
+
+:deep(.connected-list-add-button-trigger:hover),
+.dropdown.open :deep(.connected-list-add-button-trigger) {
+    background-color: var(--color-info-soft);
+}
+
+:deep(.dropdown-menu) {
+    left: 50%;
+    right: 50%;
+    transform: translate(-50%, calc(0px - var(--spacing-medium)));
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import DropDownMenu from "./dropDownMenu.obs";
+    import RockButton from "./rockButton.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+
+    defineProps({
+        actions: {
+            type: Array as PropType<MenuAction[] | null | undefined>,
+            required: false
+        },
+
+        addText: {
+            type: String as PropType<string>,
+            default: "Add"
+        }
+    });
+</script>

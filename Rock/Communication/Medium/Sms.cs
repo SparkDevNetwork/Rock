@@ -43,13 +43,13 @@ namespace Rock.Communication.Medium
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS )]
     public class Sms : MediumComponent
     {
-        const int TOKEN_REUSE_DURATION = 30; // number of days between token reuse
+        const int TOKEN_REUSE_DURATION = 10; // number of days between token reuse
 
         /// <summary>
         /// The highest value an SMS Response Code can contain. If you change this above 5 digits
         /// then you must also change the regular expression in the ProcessResponse method.
         /// </summary>
-        private const int RESPONSE_CODE_MAX = 90000;
+        private const int RESPONSE_CODE_MAX = 99000;
 
         /// <summary>
         /// Define a key to use in the cache for storing our available response code list.

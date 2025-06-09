@@ -22,8 +22,6 @@ using System.IO;
 using System.Linq;
 using System.Web.Hosting;
 
-using DotLiquid;
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -242,7 +240,7 @@ namespace Rock.Blocks.Cms
             var attributes = GetSiteAttributes( RockContext, entity.Id.ToString() );
 
             bag.SiteAttributes = new List<PublicEditableAttributeBag>();
-            bag.SiteAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+            bag.SiteAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttribute( attribute ) ) );
             bag.BinaryFileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuid();
 
 
@@ -834,7 +832,7 @@ namespace Rock.Blocks.Cms
             else
             {
                 var attribute = attributes.FirstOrDefault( a => a.Guid == attributeGuid );
-                editableAttribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+                editableAttribute = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
                 modalTitle = ActionTitle.Edit( "attribute for pages of site " + entity.Name );
             }
 

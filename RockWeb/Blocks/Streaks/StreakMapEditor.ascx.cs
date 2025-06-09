@@ -687,6 +687,12 @@ namespace RockWeb.Blocks.Streaks
             {
                 var streakId = PageParameter( PageParameterKey.StreakId ).AsIntegerOrNull();
 
+                if ( streakId == null )
+                {
+                    var streakIdKey = PageParameter( PageParameterKey.StreakId );
+                    streakId = Rock.Utility.IdHasher.Instance.GetId( streakIdKey );
+                }
+
                 if ( streakId.HasValue && streakId.Value > 0 )
                 {
                     var streakService = GetStreakService();

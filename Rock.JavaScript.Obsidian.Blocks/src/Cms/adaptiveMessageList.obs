@@ -25,7 +25,7 @@
                     <div>
                         <span class="text-semibold">{{ row.name }}</span> <span class="text-muted text-xs">{{ row.id }}</span>
                     </div>
-                    <div v-if="row.description">
+                    <div v-if="row.description" class="text-muted">
                         {{ row.description }}
                     </div>
                 </div>

@@ -1,0 +1,67 @@
+<template>
+    <WorkflowTypePicker v-if="filterMode == FilterMode.AdvancedFilter"
+                        v-model="workflowType"
+                        label="Workflow Type"
+                        showBlankItem />
+
+    <div style="margin-right:-10px">
+        <FieldFilterRuleRow v-model="filterRule"
+                            :sources="sourcesForWorkflowType"
+                            :filterMode="filterMode"
+                            disableRemoval
+                            allowBlankFieldSelection />
+    </div>
+</template>
+
+<script setup lang="ts">
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import FieldFilterRuleRow from "@Obsidian/Controls/fieldFilterRuleRow.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { computed, ref, watch } from "vue";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+    import { FieldFilterSourceBag } from "@Obsidian/ViewModels/Reporting/fieldFilterSourceBag";
+    import { FieldFilterRuleBag } from "@Obsidian/ViewModels/Reporting/fieldFilterRuleBag";
+    import { emptyGuid, newGuid } from "@Obsidian/Utility/guid";
+    import { FieldFilterSourceType } from "@Obsidian/Enums/Reporting/fieldFilterSourceType";
+    import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
+
+    const props = defineProps(dataViewFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const workflowType = ref<ListItemBag | null | undefined>(safeParseJson(props.modelValue.workflowType));
+    const fieldFilterSources = safeParseJson<Record<Guid, FieldFilterSourceBag[]>>(props.modelValue.fieldFilterSources) ?? {};
+    const filterRule = ref<FieldFilterRuleBag>(safeParseJson(props.modelValue.filterRule) ?? createNewFieldRule());
+
+    const sourcesForWorkflowType = computed(() => {
+        return fieldFilterSources[workflowType.value?.value ?? emptyGuid] ?? [];
+    });
+
+    watch(sourcesForWorkflowType, () => {
+        // Workflows types may share attributes between them if they're not specific to that type, so if they have an attribute
+        // identical to the one in the filter rule, we should keep it. Otherwise, we need to reset the rule.
+        if (!sourcesForWorkflowType.value.some(source => source.attribute?.attributeGuid == filterRule.value.attributeGuid)) {
+            filterRule.value = createNewFieldRule();
+        }
+    });
+
+    function createNewFieldRule(): FieldFilterRuleBag {
+        return {
+            guid: newGuid(),
+            comparisonType: 0,
+            sourceType: FieldFilterSourceType.Attribute,
+        };
+    }
+
+    watch([workflowType, filterRule], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            workflowType: JSON.stringify(workflowType.value),
+            filterRule: JSON.stringify(filterRule.value),
+        });
+    });
+</script>

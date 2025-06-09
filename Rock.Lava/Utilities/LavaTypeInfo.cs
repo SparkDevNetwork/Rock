@@ -23,7 +23,7 @@ namespace Rock.Lava
     /// Information about the Lava-related properties of a data type.
     /// </summary>
     [Obsolete( "Use Rock.Lava.Shared.LavaDataTypeInfo instead." )]
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     public class LavaTypeInfo
     {
         /// <summary>

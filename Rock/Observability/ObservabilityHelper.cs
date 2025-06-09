@@ -27,6 +27,7 @@ using OpenTelemetry.Resources;
 using OpenTelemetry.Trace;
 
 using Rock.Configuration;
+using Rock.Enums.Observability;
 using Rock.SystemKey;
 using Rock.ViewModels.Utility;
 
@@ -43,14 +44,17 @@ namespace Rock.Observability
 
         private static TracerProvider _currentTracerProvider;
         private static MeterProvider _currentMeterProvider;
-        private static LogExporterWrapper _exporterWrapper = new LogExporterWrapper();
+        private static readonly LogExporterWrapper _exporterWrapper = new LogExporterWrapper();
+        private static Enums.Observability.TraceLevel _traceLevel;
 
 
         /// <summary>
         /// The global meter provider.
         /// </summary>
-        public static MeterProvider MeterProvider {
-            get {
+        public static MeterProvider MeterProvider
+        {
+            get
+            {
                 return _currentMeterProvider;
             }
         }
@@ -160,9 +164,9 @@ namespace Rock.Observability
 
             // Clear out the current trace provider
             _currentTracerProvider?.Dispose();
+            _currentTracerProvider = null;
 
             Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out var endpointUri );
-            var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
             var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace( "^", "=" ).Replace( "|", "," );
             var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
             var serviceName = ObservabilityHelper.ServiceName;
@@ -172,7 +176,7 @@ namespace Rock.Observability
                 endpointUri = AppendPathIfNotEndsWith( endpointUri, DefaultTracesPath );
             }
 
-            if ( observabilityEnabled && endpointUri != null )
+            if ( IsFeatureEnabled( FeatureFlags.Traces ) && endpointUri != null )
             {
                 _currentTracerProvider = Sdk.CreateTracerProviderBuilder()
                     .AddOtlpExporter( o =>
@@ -196,6 +200,11 @@ namespace Rock.Observability
                     RockActivitySource.RefreshActivitySource();
                 }
             }
+
+            var traceLevel = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TRACE_LEVEL )
+                .ConvertToEnum<Enums.Observability.TraceLevel>( Enums.Observability.TraceLevel.Minimal );
+            SetTraceLevel( traceLevel );
+
             return _currentTracerProvider;
         }
 
@@ -207,9 +216,9 @@ namespace Rock.Observability
         {
             // Clear out the current trace provider
             _currentMeterProvider?.Dispose();
+            _currentMeterProvider = null;
 
             Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out var endpointUri );
-            var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
             var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace( "^", "=" ).Replace( "|", "," );
             var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
             var serviceName = ObservabilityHelper.ServiceName;
@@ -219,7 +228,7 @@ namespace Rock.Observability
                 endpointUri = AppendPathIfNotEndsWith( endpointUri, DefaultMetricsPath );
             }
 
-            if ( observabilityEnabled && endpointUri != null )
+            if ( IsFeatureEnabled( FeatureFlags.Metrics ) && endpointUri != null )
             {
                 _currentMeterProvider = Sdk.CreateMeterProviderBuilder()
                     .SetResourceBuilder( ResourceBuilder.CreateDefault().AddService( serviceName: serviceName, serviceVersion: "1.0.0", serviceInstanceId: GetServiceInstanceId() ) )
@@ -233,6 +242,7 @@ namespace Rock.Observability
                     )
                     .Build();
             }
+
             return _currentMeterProvider;
         }
 
@@ -243,7 +253,6 @@ namespace Rock.Observability
         public static void ConfigureLogExporter()
         {
             Uri.TryCreate( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ), UriKind.Absolute, out var endpointUri );
-            var observabilityEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean();
             var endpointHeaders = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS )?.Replace( "^", "=" ).Replace( "|", "," );
             var endpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ).ToString().ConvertToEnumOrNull<OpenTelemetry.Exporter.OtlpExportProtocol>() ?? OpenTelemetry.Exporter.OtlpExportProtocol.Grpc;
 
@@ -252,7 +261,7 @@ namespace Rock.Observability
                 endpointUri = AppendPathIfNotEndsWith( endpointUri, DefaultLogsPath );
             }
 
-            if ( !observabilityEnabled || endpointUri == null )
+            if ( !IsFeatureEnabled( FeatureFlags.Logs ) || endpointUri == null )
             {
                 _exporterWrapper.Exporter = null;
                 return;
@@ -317,6 +326,12 @@ namespace Rock.Observability
 
                 rootActivity.SetTag( "rock.descendant_count", childCount + 1 );
 
+                // Don't create child spans in minimal mode.
+                if ( _traceLevel == Enums.Observability.TraceLevel.Minimal )
+                {
+                    return null;
+                }
+
                 // Subtract one since the root activity is not counted in childCount.
                 if ( childCount >= SpanCountLimit - 1 )
                 {
@@ -337,7 +352,7 @@ namespace Rock.Observability
             // Add on default attributes
             activity.AddTag( "rock.node", nodeName );
 
-            if (nodeName != machineName )
+            if ( nodeName != machineName )
             {
                 activity.AddTag( "service.instance.id", $"{machineName} ({nodeName})" );
             }
@@ -419,6 +434,36 @@ namespace Rock.Observability
         }
 
         /// <summary>
+        /// Gets the currently enabled features. This handles legacy boolean values.
+        /// </summary>
+        /// <returns>A value of <see cref="FeatureFlags"/> for which features are enabled.</returns>
+        internal static FeatureFlags GetEnabledFeatures()
+        {
+            var allFlags = FeatureFlags.Traces | FeatureFlags.Metrics | FeatureFlags.Logs;
+            var enabledValue = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED );
+
+            // This is checking for legacy True/False values. It's probably
+            // safe to remove this logic after Rock v18. If somebody skips v17
+            // completely somehow then it just changes their observability settings.
+            if ( enabledValue?.Equals( "True", StringComparison.OrdinalIgnoreCase ) == true )
+            {
+                // Convert the value to the new format.
+                Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENABLED, allFlags.ConvertToInt().ToString() );
+
+                return allFlags;
+            }
+            else if ( enabledValue?.Equals( "False", StringComparison.OrdinalIgnoreCase ) == true )
+            {
+                // Convert the value to the new format.
+                Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENABLED, "0" );
+
+                return 0;
+            }
+
+            return ( FeatureFlags ) ( enabledValue.AsIntegerOrNull() ?? 0 );
+        }
+
+        /// <summary>
         /// Appends the path to the URI if it doesn't already end with the path.
         /// </summary>
         /// <param name="uri">The URI to be modified.</param>
@@ -468,6 +513,32 @@ namespace Rock.Observability
             {
                 return machineName;
             }
+        }
+
+        /// <summary>
+        /// Determines if the specific feature is enabled for Observability.
+        /// </summary>
+        /// <param name="feature">The feature to check.</param>
+        /// <returns><c>true</c> if the feature is enabled; otherwise <c>false</c>.</returns>
+        private static bool IsFeatureEnabled( FeatureFlags feature )
+        {
+            return GetEnabledFeatures().HasFlag( feature );
+        }
+
+        /// <summary>
+        /// Sets the trace level for the observability system. This exists primarily
+        /// for unit testing purposes to be able to change the trace level without
+        /// requiring a database update.
+        /// </summary>
+        /// <param name="traceLevel">The desired trace level.</param>
+        /// <returns>The previous trace level.</returns>
+        internal static Enums.Observability.TraceLevel SetTraceLevel( Enums.Observability.TraceLevel traceLevel )
+        {
+            var oldTraceLevel = _traceLevel;
+
+            _traceLevel = traceLevel;
+
+            return oldTraceLevel;
         }
     }
 }

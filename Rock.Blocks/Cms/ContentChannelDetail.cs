@@ -392,7 +392,7 @@ namespace Rock.Blocks.Cms
             bag.SummaryAttributeGuid = entity.ContentLibraryConfiguration?.SummaryAttributeGuid;
             bag.AuthorAttributeGuid = entity.ContentLibraryConfiguration?.AuthorAttributeGuid;
             bag.ImageAttributeGuid = entity.ContentLibraryConfiguration?.ImageAttributeGuid;
-            bag.ItemAttributes = GetItemAttributes( entity.Id ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttributeViewModel( a ) );
+            bag.ItemAttributes = GetItemAttributes( entity.Id ).ConvertAll( a => PublicAttributeHelper.GetPublicEditableAttribute( a ) );
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;

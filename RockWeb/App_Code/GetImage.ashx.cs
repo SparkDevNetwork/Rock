@@ -153,7 +153,7 @@ namespace RockWeb
                         context.Response.ContentType = mimeType;
 
                         // If extra query string params are passed in and it isn't an SVG file, assume resize is needed
-                        if ( ( context.Request.QueryString.Count > GetQueryCount( context ) ) && ( mimeType != "image/svg+xml" ) )
+                        if ( ShouldResizeImage( mimeType, fileContents, fileContents.Length, context ) )
                         {
                             using ( var resizedStream = GetResized( context.Request.QueryString, fileContents ) )
                             {
@@ -379,9 +379,8 @@ namespace RockWeb
                     // If we got the image from the binaryFileService, it might need to be resized and cached
                     if ( fileContent != null )
                     {
-                        // If more than 1 query string param is passed in, or the mime type is TIFF, assume resize is needed
-                        // Note: we force "image/tiff" to get resized so that it gets converted into a jpg (browsers don't like tiffs)
-                        if ( context.Request.QueryString.Count > GetQueryCount( context ) || binaryFile.MimeType == "image/tiff" )
+                        // Determine if we should resize the image.
+                        if ( ShouldResizeImage( binaryFile.MimeType, fileContent, binaryFile.FileSize, context ) )
                         {
                             // if it isn't an SVG file, do a Resize
                             if ( binaryFile.MimeType != "image/svg+xml" )
@@ -465,6 +464,64 @@ namespace RockWeb
                     fileContent.Dispose();
                 }
             }
+        }
+
+        /// <summary>
+        /// Determines if the image should be resized based on various checks
+        /// and parameters.
+        /// </summary>
+        /// <param name="mimeType">The known mime type of <paramref name="stream"/>.</param>
+        /// <param name="stream">The stream that contains the image data.</param>
+        /// <param name="fileSize">If the size of the content is already known then it should be passed here; otherwise pass <c>null</c>.</param>
+        /// <param name="context">The current context for this request.</param>
+        /// <returns><c>true</c> if the image should be resized; otherwise <c>false</c>.</returns>
+        private bool ShouldResizeImage( string mimeType, Stream stream, long? fileSize, HttpContext context)
+        {
+            // Force "image/tiff" to get resized so that it gets converted into a jpg (browsers don't like tiffs)
+            if ( mimeType == "image/tiff" )
+            {
+                return true;
+            }
+
+            // If there are no optimization parameters then we should not resize
+            if ( context.Request.QueryString.Count == GetQueryCount( context ) )
+            {
+                return false;
+            }
+
+            // SVGs are text can't be resized.
+            if ( mimeType == "image/svg+xml" )
+            {
+                return false;
+            }
+
+            // Final logic for animated gifs. We'll only resize gifs if they are over 10MB to preserve animated gifs.
+            // We could add the ImageResizer animated gif plug-in but the quality is terrible and would likely create Github issues.
+            // We also need to move away from ImageResizer as it's not .net core compatible.
+            if ( mimeType != "image/gif" )
+            {
+                return true;
+            }
+
+            // Large gifs over 10MB will be put through the optimization. This will strip the animation but that's arguably a good thing.
+            if ( !fileSize.HasValue )
+            {
+                try
+                {
+                    fileSize = stream.Length;
+                }
+                catch ( NotSupportedException )
+                {
+                    fileSize = null;
+                }
+            }
+
+            if ( fileSize.HasValue && fileSize.Value > 10 * 1024 * 1024 )
+            {
+                return true;
+            }
+
+            return false;
         }
 
         /// <summary>

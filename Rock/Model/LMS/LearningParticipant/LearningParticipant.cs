@@ -130,18 +130,18 @@ namespace Rock.Model
         public virtual LearningClass LearningClass { get; set; }
 
         /// <summary>
-        /// Gets or sets a collection of <see cref="Rock.Model.LearningActivityCompletion">activities</see> for this participant.
+        /// Gets or sets a collection of <see cref="Rock.Model.LearningClassActivityCompletion">activities</see> for this participant.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.LearningActivityCompletion">activities</see> for this participant.
+        /// A collection of <see cref="Rock.Model.LearningClassActivityCompletion">activities</see> for this participant.
         /// </value>
-        public virtual ICollection<LearningActivityCompletion> LearningActivities
+        public virtual ICollection<LearningClassActivityCompletion> LearningClassActivityCompletions
         {
-            get { return _learningActivities ?? ( _learningActivities = new Collection<LearningActivityCompletion>() ); }
-            set { _learningActivities = value; }
+            get { return _learningClassActivityCompletions ?? ( _learningClassActivityCompletions = new Collection<LearningClassActivityCompletion>() ); }
+            set { _learningClassActivityCompletions = value; }
         }
 
-        private ICollection<LearningActivityCompletion> _learningActivities;
+        private ICollection<LearningClassActivityCompletion> _learningClassActivityCompletions;
 
         #endregion
 

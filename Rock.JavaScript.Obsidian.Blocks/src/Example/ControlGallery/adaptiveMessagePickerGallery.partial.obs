@@ -4,7 +4,7 @@
                       :exampleCode="exampleCode"
                       enableReflection>
 
-        <AdaptiveMessagePicker label="Adaptve Message"
+        <AdaptiveMessagePicker label="Adaptive Message"
                                v-model="value"
                                :multiple="multiple" />
 
@@ -25,6 +25,7 @@
     import { getSfcControlImportPath } from "./common/utils.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
 
     const value = ref<ListItemBag | ListItemBag[] | null>(null);
     const multiple = ref(true);

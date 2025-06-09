@@ -1,0 +1,81 @@
+
+
+// Rollover - Used to hide/show items in
+// the UI has the mouse rolls-over a container. (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+//  + Touch
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.rollover-container,
+.rollover-container-nested {
+  position: relative;
+}
+
+.rollover-container > .rollover-item,
+.rollover-container-nested .rollover-item {
+  opacity: 0;
+  -webkit-transition: opacity .5s ease-out;
+  -moz-transition: opacity .5s ease-out;
+  transition: opacity .5s ease-out;
+}
+
+.rollover-container:hover > .rollover-item,
+.rollover-container-nested:hover .rollover-item {
+  opacity: 1;
+}
+
+.group-hover {
+  .group-hover-item {
+    transition: 200ms opacity ease-in-out;
+  }
+
+  .group-hover-show {
+    visibility: hidden;
+    opacity: 0;
+  }
+
+  .group-hover-0-show {
+    width: 0;
+    height: 0;
+  }
+
+  .group-hover-hide {
+    visibility: visible;
+    opacity: 1;
+  }
+
+  &:hover {
+    .group-hover-show {
+      visibility: visible;
+      opacity: 1;
+    }
+
+    .group-hover-0-show {
+      width: auto;
+      height: auto;
+    }
+
+    .group-hover-hide {
+      visibility: hidden;
+      opacity: 0;
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+// ======================== TOUCH ========================
+// always show item if on touch device
+.touch .rollover-item {
+  opacity: 1;
+}
+// ====================== END TOUCH ======================
+
+

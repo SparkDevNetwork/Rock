@@ -34,6 +34,9 @@ using Rock.Cms.ContentCollection.IndexDocuments;
 using Rock.Cms.ContentCollection.Search;
 using Rock.Model;
 
+// This class uses AttributeKey constants from the related UniversalSearch component.
+using AttributeKey = Rock.UniversalSearch.IndexComponents.Elasticsearch.AttributeKey;
+
 namespace Rock.Cms.ContentCollection.IndexComponents
 {
     /// <summary>
@@ -47,18 +50,6 @@ namespace Rock.Cms.ContentCollection.IndexComponents
     [Rock.SystemGuid.EntityTypeGuid( "BFF0C2AF-A970-4452-80F8-75C6340F78CF" )]
     internal sealed class Elasticsearch : ContentIndexComponent
     {
-        // These attribute keys are actually from the Elasticsearch component
-        // in Universal Search.
-        private static class AttributeKey
-        {
-            public const string NodeURL = "NodeURL";
-            public const string ShardCount = "ShardCount";
-            public const string UserName = "UserName";
-            public const string Password = "Password";
-            public const string CertificateFingerprint = "CertificateFingerprint";
-            public const string IncludeExplain = "IncludeExplain";
-        }
-
         #region Fields
 
         /// <summary>

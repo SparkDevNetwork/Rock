@@ -1,0 +1,100 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ShorthandNumberBoxProperty v-bind="$attrs"
+                                :label="label"
+                                :valueProvider="valueProviderOverride ?? valueProvider!"
+                                valueSuffix="px" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import ShorthandNumberBoxProperty from "./shorthandNumberBoxProperty.partial.obs";
+    import { createBorderWidthProvider } from "../providers.partial";
+    import { Shorthand, ShorthandValueProvider, StyleSheetMode } from "../types.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Border Thickness" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Creates and adds a &lt;style&gt; element to the `element` input to host the changes.
+         */
+        styleSheetMode: {
+            type: Object as PropType<StyleSheetMode | undefined>,
+            required: false
+        },
+
+        /**
+         * Overrides the value provider.
+         */
+        valueProviderOverride: {
+            type: Object as PropType<ShorthandValueProvider<number | null | undefined> | undefined>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:borderWidth", value: Shorthand<string | null>): void;
+    }>();
+
+    // #region Values
+
+    const valueProvider = ref<ShorthandValueProvider<number | null | undefined> | undefined>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ShorthandValueProvider<number | null | undefined> | undefined {
+        if (props.valueProviderOverride) {
+            return;
+        }
+
+        return createBorderWidthProvider(
+            props.element,
+            props.copyToElements,
+            props.styleSheetMode,
+            {
+                onTargetValueUpdated(value) {
+                    emit("update:borderWidth", value);
+                }
+            }
+        );
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements, () => props.styleSheetMode], () => {
+        valueProvider.value?.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
+</script>

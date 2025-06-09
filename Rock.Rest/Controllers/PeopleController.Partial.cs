@@ -17,7 +17,6 @@
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
-using System.IO;
 using System.Linq;
 using System.Net;
 using System.Net.Http;
@@ -581,7 +580,7 @@ namespace Rock.Rest.Controllers
         /// <para>For this reason, this endpoint does not and must not require authentication or authorization other than the encrypted person action identifier.</para>
         /// </remarks>
         [HttpPost]
-        [System.Web.Http.Route( "api/People/OneClickUnsubscribe/{personActionIdentifier}")]
+        [System.Web.Http.Route( "api/People/OneClickUnsubscribe/{personActionIdentifier}" )]
         [Rock.SystemGuid.RestActionGuid( "D9B2C190-B881-4691-8941-079F47CE0E2F" )]
         public HttpResponseMessage OneClickUnsubscribe( string personActionIdentifier, string communicationListIdKey = null )
         {
@@ -592,7 +591,7 @@ namespace Rock.Rest.Controllers
             {
                 personService = new PersonService( rockContext );
             }
-            
+
             // Enable lazy loading.
             SetProxyCreation( true );
 
@@ -683,7 +682,7 @@ namespace Rock.Rest.Controllers
         [HttpPost]
         [Rock.SystemGuid.RestActionGuid( "E6ED42BF-701C-4C06-822D-ED9FBA2F2E5F" )]
         [RockObsolete( "1.16" )]
-        [Obsolete( "Use the new PersonPreference endpoints in the v2 API.")]
+        [Obsolete( "Use the new PersonPreference endpoints in the v2 API." )]
         public void SetUserPreference( string userPreferenceKey, string value )
         {
             PersonPreferenceCollection preferences;
@@ -1303,7 +1302,7 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/People/PopupHtml/{personId}" )]
         [Rock.SystemGuid.RestActionGuid( "5231C211-9517-4C8E-8934-1BFB74A392E4" )]
-        public PersonSearchResult GetPopupHtml( int personId )
+        public PersonSearchResult GetPopupHtml( string personId )
         {
             return GetPopupHtml( personId, true );
         }
@@ -1318,74 +1317,96 @@ namespace Rock.Rest.Controllers
         [HttpGet]
         [System.Web.Http.Route( "api/People/PopupHtml/{personId}/{emailAsLink}" )]
         [Rock.SystemGuid.RestActionGuid( "EB110632-B6B3-4AE4-8A0F-9711B8C85F4C" )]
-        public PersonSearchResult GetPopupHtml( int personId, bool emailAsLink )
+        public PersonSearchResult GetPopupHtml( string personId, bool emailAsLink )
         {
-            var result = new PersonSearchResult();
-            result.Id = personId;
-            result.PickerItemDetailsHtml = "No Details Available";
-
-            var html = new StringBuilder();
-
-            // Create new service (need ProxyServiceEnabled)
-            var rockContext = new Rock.Data.RockContext();
-            var person = new PersonService( rockContext ).Queryable( "ConnectionStatusValue, PhoneNumbers" )
-                .Where( p => p.Id == personId )
-                .FirstOrDefault();
-
-            if ( person != null )
+            using ( var rockContext = new RockContext() )
             {
-                Guid? recordTypeValueGuid = null;
-                if ( person.RecordTypeValueId.HasValue )
+                var personService = new PersonService( rockContext );
+                Person person = null;
+
+                int? id = personId.AsIntegerOrNull();
+
+                if ( !id.HasValue )
                 {
-                    recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid;
-                }
+                    var guid = personId.AsGuidOrNull();
 
-                var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
-                html.AppendFormat(
-                    "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
-                    Person.GetPersonPhotoImageTag( person, 65, 65 ),
-                    person.FullName,
-                    person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
-
-                html.Append( "<div class='body'>" );
-
-                var spouse = person.GetSpouse( rockContext );
-                if ( spouse != null )
-                {
-                    html.AppendFormat(
-                        "<div><strong>Spouse</strong> {0}</div>",
-                        spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
-                }
-
-                int? age = person.Age;
-                if ( age.HasValue )
-                {
-                    html.AppendFormat( "<div><strong>Age</strong> {0}</div>", age );
-                }
-
-                if ( !string.IsNullOrWhiteSpace( person.Email ) )
-                {
-                    if ( emailAsLink )
+                    if ( guid.HasValue )
                     {
-                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( VirtualPathUtility.ToAbsolute( "~/" ) ) );
+                        person = personService.Get( guid.Value );
+                        id = person?.Id;
                     }
                     else
                     {
-                        html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.Email );
+                        id = Rock.Utility.IdHasher.Instance.GetId( personId );
                     }
                 }
 
-                foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false && n.NumberTypeValueId.HasValue ).OrderBy( n => n.NumberTypeValue.Order ) )
+                var result = new PersonSearchResult();
+                result.Id = id ?? 0;
+                result.PickerItemDetailsHtml = "No Details Available";
+
+                var html = new StringBuilder();
+
+                // Create new service (need ProxyServiceEnabled)
+                person = new PersonService( rockContext ).Queryable( "ConnectionStatusValue, PhoneNumbers" )
+                    .Where( p => p.Id == id )
+                    .FirstOrDefault();
+
+                if ( person != null )
                 {
-                    html.AppendFormat( "<div><strong>{0}</strong> {1}</div>", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
+                    Guid? recordTypeValueGuid = null;
+                    if ( person.RecordTypeValueId.HasValue )
+                    {
+                        recordTypeValueGuid = DefinedValueCache.Get( person.RecordTypeValueId.Value ).Guid;
+                    }
+
+                    var appPath = System.Web.VirtualPathUtility.ToAbsolute( "~" );
+                    html.AppendFormat(
+                        "<header>{0} <h3>{1}<small>{2}</small></h3></header>",
+                        Person.GetPersonPhotoImageTag( person, 65, 65 ),
+                        person.FullName,
+                        person.ConnectionStatusValue != null ? person.ConnectionStatusValue.Value : string.Empty );
+
+                    html.Append( "<div class='body'>" );
+
+                    var spouse = person.GetSpouse( rockContext );
+                    if ( spouse != null )
+                    {
+                        html.AppendFormat(
+                            "<div><strong>Spouse</strong> {0}</div>",
+                            spouse.LastName == person.LastName ? spouse.FirstName : spouse.FullName );
+                    }
+
+                    int? age = person.Age;
+                    if ( age.HasValue )
+                    {
+                        html.AppendFormat( "<div><strong>Age</strong> {0}</div>", age );
+                    }
+
+                    if ( !string.IsNullOrWhiteSpace( person.Email ) )
+                    {
+                        if ( emailAsLink )
+                        {
+                            html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.GetEmailTag( VirtualPathUtility.ToAbsolute( "~/" ) ) );
+                        }
+                        else
+                        {
+                            html.AppendFormat( "<div style='text-overflow: ellipsis; white-space: nowrap; overflow:hidden; width: 245px;'><strong>Email</strong> {0}</div>", person.Email );
+                        }
+                    }
+
+                    foreach ( var phoneNumber in person.PhoneNumbers.Where( n => n.IsUnlisted == false && n.NumberTypeValueId.HasValue ).OrderBy( n => n.NumberTypeValue.Order ) )
+                    {
+                        html.AppendFormat( "<div><strong>{0}</strong> {1}</div>", phoneNumber.NumberTypeValue.Value, phoneNumber.ToString() );
+                    }
+
+                    html.Append( "</div>" );
+
+                    result.PickerItemDetailsHtml = html.ToString();
                 }
 
-                html.Append( "</div>" );
-
-                result.PickerItemDetailsHtml = html.ToString();
+                return result;
             }
-
-            return result;
         }
 
         #endregion

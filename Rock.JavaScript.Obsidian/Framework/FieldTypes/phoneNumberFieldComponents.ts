@@ -67,7 +67,7 @@ export const EditComponent = defineComponent({
             is reset back to the prior value in RockField and the Field.Edit component, however, the phone number is still
             up-to-date in PhoneNumberBox...
 
-            By adding this short debounce, we ensure that all the updates from the PhoneNumberBox are propogated up to the
+            By adding this short debounce, we ensure that all the updates from the PhoneNumberBox are propagated up to the
             Field.Edit component, THEN we emit a single change up from there to prevent the race from happening and all
             the updates stay in place.
 

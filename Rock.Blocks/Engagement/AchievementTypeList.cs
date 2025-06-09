@@ -39,7 +39,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Streaks" )]
     [Description( "Shows a list of all achievement types." )]
     [IconCssClass( "fa fa-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the achievement type details.",

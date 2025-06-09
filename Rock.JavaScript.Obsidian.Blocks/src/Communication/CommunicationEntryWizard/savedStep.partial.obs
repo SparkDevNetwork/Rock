@@ -1,0 +1,42 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :hasTitle="false">
+        <NotificationBox :alertType="finalMessageAlertType">
+            {{ finalMessage }}
+        </NotificationBox>
+
+        <template v-if="hasDetailBlockOnCurrentPage" #footerActions>
+            <RockButton btnType="primary"
+                        @click="$emit('viewCommunication')">View Communication</RockButton>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+
+    defineProps({
+        finalMessage: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        finalMessageAlertType: {
+            type: String as PropType<AlertType>,
+            required: true
+        },
+
+        hasDetailBlockOnCurrentPage: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "viewCommunication"): void;
+    }>();
+</script>

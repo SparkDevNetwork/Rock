@@ -9,7 +9,7 @@
     import { computed, PropType, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockField from "@Obsidian/Controls/rockField.obs";
-    import { FilterExpressionType } from "@Obsidian/Core/Reporting/filterExpressionType";
+    import { FilterExpressionType } from "@Obsidian/Enums/Reporting/filterExpressionType";
     import { Guid } from "@Obsidian/Types";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";

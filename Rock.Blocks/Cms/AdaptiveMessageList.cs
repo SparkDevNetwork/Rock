@@ -21,8 +21,6 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
-using DotLiquid.Tags;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -71,6 +69,7 @@ namespace Rock.Blocks.Cms
         private static class PageParameterKey
         {
             public const string CategoryId = "CategoryId";
+            public const string ParentCategoryId = "ParentCategoryId";
             public const string CategoryGuid = "CategoryGuid";
             public const string AdaptiveMessageGuid = "AdaptiveMessageGuid";
             public const string AdaptiveMessageId = "AdaptiveMessageId";
@@ -139,9 +138,14 @@ namespace Rock.Blocks.Cms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            Dictionary<string, string> queryParams = new Dictionary<string, string>()
+            {
+                { PageParameterKey.AdaptiveMessageId, "((Key))" },
+                { PageParameterKey.ParentCategoryId, PageParameter( PageParameterKey.CategoryId ) },
+            };
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "AdaptiveMessageId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams ),
             };
         }
 
@@ -179,7 +183,7 @@ namespace Rock.Blocks.Cms
             return GetAdaptiveMessageCategoryQueryable( rockContext ).Select( b => new AdaptiveMessageData
             {
                 AdaptiveMessage = b.AdaptiveMessage,
-                Views = interactionQry.Where( a => a.InteractionComponent.EntityId == b.Id ).Count(),
+                Views = interactionQry.Where( a => a.InteractionComponent.EntityId == b.AdaptiveMessageId ).Count(),
                 AdaptiveMessageCategory = b
             } );
         }

@@ -24,12 +24,13 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Enums.Blocks.Engagement.SignUp;
 using Rock.Field.Types;
-using Rock.Logging;
 using Rock.Model;
 using Rock.Tasks;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -109,6 +110,15 @@ namespace Rock.Blocks.Engagement.SignUp
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Order = 7 )]
 
+    [DefinedValueField( "Record Source",
+        Key = AttributeKey.RecordSource,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        Description = "The record source to use for new individuals (default = 'Sign-up'). Can be overridden by a record source specified on the sign-up project or its parent group type. If a 'RecordSource' page parameter is found, it will be used instead.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_SIGN_UP,
+        Order = 8 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "ED7A31F2-8D4C-469A-B2D8-7E28B8717FB8" )]
@@ -127,6 +137,7 @@ namespace Rock.Blocks.Engagement.SignUp
             public const string RequireMobilePhone = "RequireMobilePhone";
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
+            public const string RecordSource = "RecordSource";
         }
 
         private static class PageParameterKey
@@ -1023,6 +1034,7 @@ namespace Rock.Blocks.Engagement.SignUp
                             CommunicationPreference = communicationPreference,
                             RecordStatusValueId = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() )?.Id,
                             ConnectionStatusValueId = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() )?.Id,
+                            RecordSourceValueId = GetRecordSourceValueId( registrationData.Project )
                         };
 
                         if ( wasMobilePhoneProvided )
@@ -1592,6 +1604,20 @@ namespace Rock.Blocks.Engagement.SignUp
                 UnsuccessfulRegistrantNames = unsuccessful.Select( r => r.FullName ).ToList(),
                 WarningMessage = warningMessage
             };
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <param name="project">The project the individual is signing up for.</param>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId( Rock.Model.Group project )
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? project.GetGroupMemberRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
         }
 
         /// <summary>

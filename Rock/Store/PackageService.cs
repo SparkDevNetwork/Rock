@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 
 using RestSharp;
@@ -102,13 +103,13 @@ namespace Rock.Store
         /// Gets a package from the store.
         /// </summary>
         /// <returns>a <see cref="Package"/> of the package.</returns>
-
+        [Obsolete( "Use GetPackage( int packageId, out string errorResponse )" )]
+        [RockObsolete( "17.1" )]
         public Package GetPackage( int packageId )
         {
             string error = null;
             return GetPackage( packageId, out error );
         }
-
 
         /// <summary>
         /// Gets the package.
@@ -121,7 +122,14 @@ namespace Rock.Store
             errorResponse = string.Empty;
 
             var storeKey = StoreService.GetOrganizationKey();
-            var response = ExecuteRestGetRequest<Package>( $"api/Packages/GetPackageDetails/{packageId}/{storeKey}/true", null );
+
+            var queryParameters = new Dictionary<string, List<string>>
+                {
+                    { "v13request", new List<string> { "true" } }, // this was the original useTieredPricing flag
+                    { "rockSemanticVersionNumber", new List<string> { Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber() } }
+                };
+
+            var response = ExecuteRestGetRequest<Package>( $"api/Packages/GetPackageDetails/{packageId}/{storeKey}", queryParameters );
 
             var package = new Package();
 
@@ -148,7 +156,8 @@ namespace Rock.Store
         /// Gets a package from the store.
         /// </summary>
         /// <returns>a <see cref="Package"/> of the package.</returns>
-        /// 
+        [Obsolete( "Use GetPurchasedPackages( out string errorResponse )" )]
+        [RockObsolete( "17.1" )]
         public List<Package> GetPurchasedPackages()
         {
             string error = null;
@@ -171,7 +180,12 @@ namespace Rock.Store
                 return new List<Package>();
             }
 
-            var response = ExecuteRestGetRequest<List<Package>>( $"api/Packages/GetPurchasedPackages/{storeKey}/true" );
+            var queryParameters = new Dictionary<string, List<string>>
+                {
+                    { "rockSemanticVersionNumber", new List<string> { Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber() } }
+                };
+
+            var response = ExecuteRestGetRequest<List<Package>>( $"api/Packages/GetPurchasedPackages/{storeKey}/true", queryParameters );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {

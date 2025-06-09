@@ -1,0 +1,99 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="section && isVisible"
+         class="form-section"
+         :class="section.cssClass">
+        <SectionHeader :title="section.title ?? undefined"
+                       :description="section.description ?? undefined"
+                       :isSeparatorHidden="!section.isHeadingSeparatorVisible" />
+
+        <div class="form-section-fields">
+            <div class="row">
+                <div v-for="field of sectionFields"
+                     :class="getWidthClass(field)">
+                    <EntryFormField :field="field"
+                                    :fieldValues="fieldValues"
+                                    :filterContext="filterContext"
+                                    @updateFieldValue="onUpdateFieldValue" />
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <template v-else-if="!section">
+        <EntryFormField v-for="field of sectionFields"
+                        :field="field"
+                        :fieldValues="fieldValues"
+                        :filterContext="filterContext"
+                        @updateFieldValue="onUpdateFieldValue" />
+    </template>
+</template>
+
+<script setup lang="ts">
+    import { Guid } from "@Obsidian/Types";
+    import EntryFormField from "./entryFormField.partial.obs";
+    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
+    import { EntryFormFieldBag } from "@Obsidian/ViewModels/Workflow/entryFormFieldBag";
+    import { EntryFormSectionBag } from "@Obsidian/ViewModels/Workflow/entryFormSectionBag";
+    import { computed, PropType } from "vue";
+    import { EntryFormFilterContext, EntryFormFilterFunctionBuilder } from "./conditional.partial";
+
+    const props = defineProps({
+        section: {
+            type: Object as PropType<EntryFormSectionBag>,
+            required: false
+        },
+
+        fields: {
+            type: Array as PropType<EntryFormFieldBag[]>,
+            required: true
+        },
+
+        fieldValues: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+
+        filterContext: {
+            type: Object as PropType<EntryFormFilterContext>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "updateFieldValue", attributeGuid: string, value: string): void;
+    }>();
+
+    const visbilityFilter = new EntryFormFilterFunctionBuilder();
+
+    /** The fields that should be displayed in this section. */
+    const sectionFields = computed((): EntryFormFieldBag[] => {
+        return props.fields.filter(f => (f.sectionId ?? "") === (props.section?.id ?? ""));
+    });
+
+    /**
+     * Determines if this field is currently visible based on conditional
+     * visibility rules.
+     */
+    const isVisible = computed((): boolean => {
+        if (!props.section?.visibilityRule) {
+            return true;
+        }
+
+        return visbilityFilter.isMatch(props.filterContext, props.section.visibilityRule);
+    });
+
+    /** The width class for a field based on its column size setting. */
+    function getWidthClass(field: EntryFormFieldBag): string {
+        return `col-md-${field.columnSize ?? 12}`;
+    }
+
+    /**
+     * Called when a field component has updated the value in the UI.
+     *
+     * @param value The updated value from the field component.
+     */
+    function onUpdateFieldValue(attributeGuid: Guid, value: string): void {
+        emit("updateFieldValue", attributeGuid, value);
+    }
+</script>

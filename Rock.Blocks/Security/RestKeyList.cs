@@ -37,7 +37,7 @@ namespace Rock.Blocks.Security
     [Category( "Security" )]
     [Description( "Lists all the REST API Keys" )]
     [IconCssClass( "fa fa-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the person details.",
@@ -109,7 +109,7 @@ namespace Rock.Blocks.Security
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "RestUserId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["RestUserId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
             };
         }
 

@@ -63,7 +63,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
-                        var limitFullSync = GetAttributeValue( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
+            var limitFullSync = GetAttributeValue( AttributeKey.LimitFullSyncToOnceADay ).AsBoolean( true );
 
             // Start a task that will let us run the Async methods in order.
             var task = Task.Run( () => ProcessAllAccounts( limitFullSync ) );
@@ -99,6 +99,12 @@ namespace Rock.Jobs
                     return new OperationResult( "No active accounts to process.", new string[0] );
                 }
 
+                // Grab all the media element Id.
+                var initialMediaElementId = new MediaElementService( rockContext )
+                    .Queryable()
+                    .Select( me => me.Id )
+                    .ToList();
+
                 // Start a SyncMedia task for each active account.
                 foreach ( var mediaAccount in mediaAccounts )
                 {
@@ -124,10 +130,31 @@ namespace Rock.Jobs
                 var results = await Task.WhenAll( tasks );
                 var message = string.Join( Environment.NewLine, results.Select( a => a.Message ) );
 
+                /*
+                     5/30/2025 - PS
+
+                     Fixed a race condition between the `SyncMedia` job and the Media Element post-save hook.
+
+                     The issue occurred when the post-save hook was still processing a Media Element, taking longer to finish—
+                     while the `SyncMedia` job began execution. During this window, the job could incorrectly assume that the Media Element
+                     wasn't yet linked to a Content Channel Item and attempt to create the link, leading to duplicate or overlapping entries.
+
+                     To prevent this, we are tracking a list of Media Elements that were recently added or are actively being saved.
+                     This list is passed to the `AddMissingSyncedContentChannelItems` method to ensure those elements are excluded from reprocessing.
+
+                     Reason: Avoid sync overlap by excluding Media Elements still being handled by the post-save hook.
+                */
+                var newlyAddedMediaElementIds = new MediaElementService( rockContext )
+                    .Queryable()
+                    .Select( me => me.Id )
+                    .ToList()
+                    .Where( id => !initialMediaElementId.Contains( id ) )
+                    .ToList();
+
                 // Sync the media folders and content channels 
                 var contentChannelCount = mediaAccounts
                                 .SelectMany( ma => ma.MediaFolders )
-                                .Select( mf => Task.Run( () => MediaFolderService.AddMissingSyncedContentChannelItem( mf.Id ) ).Result )
+                                .Select( mf => Task.Run( () => MediaFolderService.AddMissingSyncedContentChannelItem( mf.Id, newlyAddedMediaElementIds ) ).Result )
                                 .Sum();
 
                 if ( contentChannelCount > 0 )

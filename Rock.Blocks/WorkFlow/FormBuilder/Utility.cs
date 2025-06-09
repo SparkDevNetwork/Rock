@@ -71,9 +71,11 @@ namespace Rock.Blocks.WorkFlow.FormBuilder
         /// <returns>A collection of view models that represent the e-mail templates.</returns>
         internal static List<ListItemBag> GetEmailTemplateOptions( RockContext rockContext, RockRequestContext requestContext )
         {
+            var systemCommunicationFormBuilderCategoryGuid = SystemGuid.Category.SYSTEM_COMMUNICATION_FORM_BUILDER.AsGuid();
+
             return new SystemCommunicationService( rockContext )
                 .Queryable()
-                .Where( c => c.IsActive == true )
+                .Where( c => c.IsActive == true && c.Category.Guid == systemCommunicationFormBuilderCategoryGuid )
                 .ToList()
                 .Where( c => c.IsAuthorized( Rock.Security.Authorization.VIEW, requestContext.CurrentPerson ) )
                 .OrderBy( c => c.Title )

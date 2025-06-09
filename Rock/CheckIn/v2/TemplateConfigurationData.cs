@@ -191,6 +191,14 @@ namespace Rock.CheckIn.v2
         public virtual bool IsPresenceEnabled { get; }
 
         /// <summary>
+        /// Gets a value indicating whether the proximity check-in and check-out
+        /// system is enabled for areas and groups in this configuration. This
+        /// is used by the native mobile application to perform check-in when
+        /// near Bluetooth beacons.
+        /// </summary>
+        public virtual bool IsProximityEnabled { get; }
+
+        /// <summary>
         /// Gets a value indicating whether removing people with a "can check-in"
         /// relationship from the family is allowed. This does not allow
         /// full family members to be removed.
@@ -629,6 +637,7 @@ namespace Rock.CheckIn.v2
             IsOverrideAvailable = groupTypeCache.GetAttributeValue( "core_checkin_EnableOverride" ).AsBoolean( true );
             IsPhotoHidden = groupTypeCache.GetAttributeValue( "core_checkin_HidePhotos" ).AsBoolean( true );
             IsPresenceEnabled = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean();
+            IsProximityEnabled = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN ).AsBoolean();
             IsRemoveFromFamilyAtKioskAllowed = groupTypeCache.GetAttributeValue( GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK ).AsBoolean();
             IsSameCodeUsedForFamily = groupTypeCache.GetAttributeValue( "core_checkin_ReuseSameCode" ).AsBoolean( false );
             IsSameOptionUsed = groupTypeCache.GetAttributeValue( "core_checkin_UseSameOptions" ).AsBoolean( false );

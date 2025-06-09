@@ -1,27 +1,29 @@
 <div class="promotionrotator">
     <div id="promo-rotator" class="carousel slide" data-ride="carousel">
         <!-- Indicators -->
-        {%- assign caroselCount = 0 -%}
+        {% assign caroselCount = 0 %}
         <ol class="carousel-indicators">
-            {%- for promo in Promos -%}
-            {%- if promo.ImageLarge != null -%}
-            <li data-target="#promo-rotator" data-slide-to="{{ caroselCount }}" {% if forloop.first %} class="active" {% endif %}></li>
-            {%- assign caroselCount = caroselCount | Plus:1 -%}
-            {%- endif -%}
-            {%- endfor -%}
+            {% for promo in Promos %}
+                {% if promo.ImageLarge != null %}
+                <li data-target="#promo-rotator" data-slide-to="{{ caroselCount }}" {% if caroselCount == 0 %} class="active" {% endif %}></li>
+                {% assign caroselCount = caroselCount | Plus:1 %}
+                {% endif %}
+            {% endfor %}
         </ol>
 
         <!-- Wrapper for slides -->
+        {% assign caroselCount = 0 %}
         <div class="carousel-inner" role="listbox">
-            {%- for promo in Promos -%}
-            {%- if promo.ImageLarge != null -%}
-            <div class="item{% if forloop.index == 1 %} active{% endif %}">
-                <a href="{{ LinkedPages.DetailPage }}?PackageId={{ promo.PackageId }}">
-                    <img src="{{ promo.ImageLarge.ImageUrl }}" />
-                </a>
-            </div>
-            {%- endif -%}
-            {%- endfor -%}
+            {% for promo in Promos %}
+                {% if promo.ImageLarge != null %}
+                <div class="item{% if caroselCount == 0 %} active{% endif %}">
+                    <a href="{{ LinkedPages.DetailPage }}?PackageId={{ promo.PackageId }}">
+                        <img src="{{ promo.ImageLarge.ImageUrl }}" />
+                    </a>
+                </div>
+                {% assign caroselCount = caroselCount | Plus:1 %}
+                {% endif %}
+            {% endfor %}
         </div>
 
         <!-- Controls -->

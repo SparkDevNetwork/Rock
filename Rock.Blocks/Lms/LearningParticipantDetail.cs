@@ -575,19 +575,19 @@ namespace Rock.Blocks.Lms
             var canViewGrades = entity.IsAuthorized( Authorization.VIEW_GRADES, GetCurrentPerson() );
 
             // Return all activities for the course.
-            var gridBuilder = new GridBuilder<LearningActivityCompletion>()
+            var gridBuilder = new GridBuilder<LearningClassActivityCompletion>()
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "name", a => a.LearningActivity.Name )
-                .AddField( "type", a => a.LearningActivity.ActivityComponentId )
-                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.IconCssClass )
-                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.HighlightColor )
-                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningActivity.ActivityComponentId ).Value.Value.Name )
+                .AddTextField( "name", a => a.LearningClassActivity.Name )
+                .AddField( "type", a => a.LearningClassActivity.LearningActivity.ActivityComponentId )
+                .AddField( "componentIconCssClass", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningClassActivity.LearningActivity.ActivityComponentId ).Value.Value.IconCssClass )
+                .AddField( "componentHighlightColor", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningClassActivity.LearningActivity.ActivityComponentId ).Value.Value.HighlightColor )
+                .AddField( "componentName", a => components.FirstOrDefault( c => c.Value.Value.EntityType.Id == a.LearningClassActivity.LearningActivity.ActivityComponentId ).Value.Value.Name )
                 .AddField( "dateCompleted", a => a.CompletedDateTime )
                 .AddField( "dateAvailable", a => a.AvailableDateTime )
                 .AddField( "dueDate", a => a.DueDate )
                 .AddField( "isPastDue", a => a.DueDate != null && a.DueDate >= now && !a.CompletedDateTime.HasValue )
                 .AddField( "isAvailableNow", a => a.AvailableDateTime != null && now >= a.AvailableDateTime )
-                .AddTextField( "grade", a => !canViewGrades || a.RequiresGrading || a.LearningActivity.Points == 0 ? null : a.GetGradeText( gradeScales ) );
+                .AddTextField( "grade", a => !canViewGrades || a.RequiresGrading || a.LearningClassActivity.Points == 0 ? null : a.GetGradeText( gradeScales ) );
 
             return ActionOk( gridBuilder.Build( learningPlan ) );
         }

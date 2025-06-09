@@ -12,7 +12,7 @@
                  entityTypeName="Category"
                  :isAuditHidden="selectedTab !== 'Details'"
                  :isBadgesVisible="false"
-                 :isDeleteVisible="isDeletable"
+                 :isDeleteVisible="isDeletable && selectedTab === 'Details'"
                  :isEditVisible="isEditable && selectedTab === 'Details'"
                  :isFullScreenVisible="false"
                  :isFollowVisible="false"
@@ -21,27 +21,27 @@
                  @delete="onDelete"
                  @edit="onEdit"
                  @save="onSave">
-            <template #view>
+        <template #view>
             <TabbedContent :tabs="tabs" v-model:selectedTab="selectedTab" selectedTabQueryParameterKey="tab">
                 <template #tabpane="{ item }">
                     <div v-if="item === 'Details'">
-                        <ViewPanel :modelValue="categoryViewBag" :options="options"  />
+                        <ViewPanel :modelValue="categoryViewBag" :options="options" />
                     </div>
                     <div v-else-if="item === 'Child Categories'">
                         <span class="ml-4">Below are the child categories for the {{ panelName }}. From here you can add, delete or reorder the categories as needed.</span>
                         <Grid light
-                            v-if="!isLoadingChildCategories"
-                            :data="gridData"
-                            keyField="idKey"
-                            itemTerm="Category"
-                            :isTitleHidden="true"
-                            :isCountMessageVisible="false"
-                            :hideFilterHeaderRow="true"
-                            :showMergeTemplate="false"
-                            :showLaunchWorkflow="false"
-                            :showExport="false"
-                            @selectItem="onCategoryClick"
-                            stickyHeader >
+                              v-if="!isLoadingChildCategories"
+                              :data="gridData"
+                              keyField="idKey"
+                              itemTerm="Category"
+                              :isTitleHidden="true"
+                              :isCountMessageVisible="false"
+                              :hideFilterHeaderRow="true"
+                              :showMergeTemplate="false"
+                              :showLaunchWorkflow="false"
+                              :showExport="false"
+                              @selectItem="onCategoryClick"
+                              stickyHeader>
                             <ReorderColumn @orderChanged="onChildCategoryOrderChanged" />
 
                             <Column name="name"
@@ -54,7 +54,7 @@
 
                             <AttributeColumns visiblePriority="md" :attributes="gridDefinition?.attributeFields ?? []" />
 
-                            <DeleteColumn visiblePriority="xs" @click="onDeleteChildCategoryClick" :rowDisabled="(row) => row.isSystem === true"  />
+                            <DeleteColumn visiblePriority="xs" @click="onDeleteChildCategoryClick" :rowDisabled="(row) => row.isSystem === true" />
 
                             <template #gridFooterAppend>
                                 <div class="add-button pull-right">
@@ -74,13 +74,11 @@
 </template>
 
 <style scoped>
-
 .add-button > i.fa-plus-circle {
     color: var(--color-interface-soft);
     padding: 8px;
     cursor: pointer;
 }
-
 </style>
 <script setup lang="ts">
     import { computed, reactive, ref } from "vue";
@@ -176,6 +174,16 @@
      * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
      */
     async function onCancelEdit(): Promise<boolean | string> {
+        // Get the current URL and check if query params match ?CategoryId=0&ExpandedIds=
+        // This is a workaround until the CategoryTreeView has been converted to Obsidian.
+        const searchParams = new URLSearchParams(window.location.search);
+
+        // Check if query parameters match the specific pattern
+        if (searchParams.get("CategoryId") === "0" && searchParams.get("ExpandedIds") === "") {
+            const baseUrl = window.location.href.split("?")[0];
+            return baseUrl;
+        }
+
         return true;
     }
 
@@ -184,11 +192,11 @@
      *
      * @param key The key of the row that was selected.
      */
-     function onCategoryClick(key: string): void {
+    function onCategoryClick(key: string): void {
         const childCategory = gridData?.rows?.find(c => c.idKey === key);
         const categoryId = childCategory?.categoryId as number ?? 0;
 
-        if (categoryId > 0){
+        if (categoryId > 0) {
             navigateToCategoryDetail(categoryId, categoryViewBag.value?.categoryId ?? 0, true);
         }
     }
@@ -278,7 +286,7 @@
     /**
      * Called at startup to get the definition for the child categories grid.
      */
-     async function getGridDefinition(): Promise<void> {
+    async function getGridDefinition(): Promise<void> {
         const result = await invokeBlockAction<GridDefinitionBag>("GetChildCategoriesGridDefinition");
 
         if (result.isSuccess && result.data) {
@@ -293,7 +301,7 @@
     /**
      * Called when the grid is requesting the row data be loaded.
      */
-     async function loadGridData(): Promise<GridDataBag> {
+    async function loadGridData(): Promise<GridDataBag> {
         isLoadingChildCategories.value = true;
         const result = await invokeBlockAction<GridDataBag>("GetChildCategories", {
             idKey: categoryViewBag.value?.idKey ?? ""
@@ -313,7 +321,7 @@
      * Called when a row's delete button has been clicked by the individual. This
      * happens only if they have confirmed the delete action.
      */
-     async function onDeleteChildCategoryClick(key: string): Promise<void> {
+    async function onDeleteChildCategoryClick(key: string): Promise<void> {
         isLoadingChildCategories.value = true;
         const result = await invokeBlockAction<string>("Delete", {
             key
@@ -360,14 +368,14 @@
             // First set the returnUrl to the url before making changes to it.
             params.set("returnUrl", window.location.href);
 
-            if (autoEdit){
+            if (autoEdit) {
                 params.set("autoEdit", autoEdit.toString());
             }
-            else{
+            else {
                 params.delete("autoEdit");
             }
 
-            if (parentCategoryId && parentCategoryId > 0){
+            if (parentCategoryId && parentCategoryId > 0) {
                 params.set("ParentCategoryId", parentCategoryId.toString());
             }
             else {
@@ -384,7 +392,7 @@
      * When the order of the items in the child categories grid is changed via drag and drop, rearrange the items in the
      * array and update the `order` property to match the array order.
      */
-     async function onChildCategoryOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<void> {
+    async function onChildCategoryOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<void> {
         const data: {
             parentCategoryIdKey: string | null | undefined;
             idKey: string;
@@ -441,7 +449,7 @@
     else if (!config.entity) {
         blockError.value = "The specified category could not be viewed.";
     }
-    else if (!options.value.showBlock){
+    else if (!options.value.showBlock) {
         isBlockVisible.value = false;
     }
     else if (config.entity.categoryId === 0) {

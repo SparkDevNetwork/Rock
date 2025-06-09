@@ -29,10 +29,10 @@
         </NumberColumn>
 
         <TextColumn name="contentChannelSync"
-                       title="Content Channel Sync"
-                       field="contentChannelSync"
-                       :filter="pickExistingValueFilter"
-                       visiblePriority="xs" />
+                    title="Content Channel Sync"
+                    field="contentChannelSync"
+                    :filter="pickExistingValueFilter"
+                    visiblePriority="xs" />
 
         <NumberColumn name="watchCount"
                       title="Watch Count"

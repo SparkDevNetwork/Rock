@@ -1,0 +1,85 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalValue"
+           title="Form Preview"
+           @submit="internalValue = false">
+        <div class="form-preview-header">
+            <div class="form-group">
+                <ButtonGroup v-model="previewDevice" :items="[{ value: 'desktop', text: 'Desktop' }, { value: 'mobile', text: 'Mobile' }]" />
+            </div>
+
+            <div v-if="items.length > 1">
+                <DropDownList v-model="selectedWorkflowPageUrl"
+                              :showBlankItem="false"
+                              :items="listItemBags" />
+            </div>
+        </div>
+
+        <DevicePreview v-if="selectedWorkflowPageUrl"
+                       :mode="previewDevice"
+                       :source="selectedWorkflowPageUrl" sourceMode="url" />
+    </Modal>
+</template>
+
+<style scoped>
+.form-preview-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import DevicePreview from "@Obsidian/Controls/Internal/devicePreview.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { FormBuilderDetailLinkToFormBag } from "@Obsidian/ViewModels/Blocks/Workflow/FormBuilder/formBuilderDetailLinkToFormBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    type PreviewDevice = "desktop" | "mobile";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        items: {
+            type: Array as PropType<FormBuilderDetailLinkToFormBag[]>,
+            required: true
+        },
+
+        defaultPreviewPage: {
+            type: Object as PropType<FormBuilderDetailLinkToFormBag | null | undefined>,
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    /** The internal value as displayed in the UI. */
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const previewDevice = ref<PreviewDevice>("desktop");
+    const selectedWorkflowPageUrl = ref<string>(props.defaultPreviewPage?.formPageUrl ?? props.items[0]?.formPageUrl ?? "");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const listItemBags = computed<ListItemBag[]>(() => {
+        return props.items.map(item => {
+            return {
+                text: item.formPageName,
+                value: item.formPageUrl,
+            };
+        });
+    });
+
+    // #endregion Computed Values
+</script>

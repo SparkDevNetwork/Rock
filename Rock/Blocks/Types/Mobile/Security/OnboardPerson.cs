@@ -26,6 +26,7 @@ using Rock.Common.Mobile.Blocks.Security.OnboardPerson;
 using Rock.Common.Mobile.Enums;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Mobile;
 using Rock.Model;
 using Rock.Security;
@@ -56,7 +57,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         Order = 0 )]
 
     [DefinedValueField( "Default Connection Status",
-        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
+        Description = "The connection status to use for new individuals (default = 'Prospect').",
         DefinedTypeGuid = SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = true,
         AllowMultiple = false,
@@ -65,7 +66,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         Order = 1 )]
 
     [DefinedValueField( "Default Record Status",
-        Description = "The record status to use for new individuals (default = 'Pending'.)",
+        Description = "The record status to use for new individuals (default = 'Pending').",
         DefinedTypeGuid = SystemGuid.DefinedType.PERSON_RECORD_STATUS,
         IsRequired = true,
         AllowMultiple = false,
@@ -73,11 +74,20 @@ namespace Rock.Blocks.Types.Mobile.Security
         Key = AttributeKeys.DefaultRecordStatus,
         Order = 2 )]
 
+    [DefinedValueField( "Default Record Source",
+        Description = "The record source to use for new individuals (default = 'Mobile App').",
+        DefinedTypeGuid = SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_MOBILE_APP,
+        Key = AttributeKeys.DefaultRecordSource,
+        Order = 3 )]
+
     [SystemCommunicationField( "System Communication",
         Description = "The communication that will be used to send the SMS or email to the user.",
         IsRequired = true,
         Key = AttributeKeys.SystemCommunication,
-        Order = 3 )]
+        Order = 4 )]
 
     [GroupCategoryField( "Communication List Categories",
         Description = "The category of communication lists that will be made available to the user as topics of interest.",
@@ -85,25 +95,25 @@ namespace Rock.Blocks.Types.Mobile.Security
         IsRequired = false,
         AllowMultiple = true,
         Key = AttributeKeys.CommunicationListCategories,
-        Order = 4 )]
+        Order = 5 )]
 
     [IntegerField( "Verification Time Limit",
         Description = "The number of minutes that the user has to enter the verification code.",
         DefaultIntegerValue = 5,
         Key = AttributeKeys.VerificationTimeLimit,
-        Order = 5 )]
+        Order = 6 )]
 
     [IntegerField( "IP Throttle Limit",
         Description = "The number of times a single IP address can submit phone numbers for verification per day.",
         DefaultIntegerValue = 5000,
         Key = AttributeKeys.IpThrottleLimit,
-        Order = 6 )]
+        Order = 7 )]
 
     [IntegerField( "Validation Code Attempts",
         Description = "The number of times a validation code verification can be re-tried before failing permanently.",
         DefaultIntegerValue = IdentityVerification.DefaultMaxFailedMatchAttemptCount,
         Key = AttributeKeys.ValidationCodeAttempts,
-        Order = 7 )]
+        Order = 8 )]
 
     #region Campus Block Attributes
 
@@ -465,6 +475,11 @@ namespace Rock.Blocks.Types.Mobile.Security
             public const string DefaultRecordStatus = "DefaultRecordStatus";
 
             /// <summary>
+            /// The default record source key.
+            /// </summary>
+            public const string DefaultRecordSource = "DefaultRecordSource";
+
+            /// <summary>
             /// The system communication key.
             /// </summary>
             public const string SystemCommunication = "SystemCommunication";
@@ -688,6 +703,14 @@ namespace Rock.Blocks.Types.Mobile.Security
         /// The default record status unique identifier.
         /// </value>
         public Guid DefaultRecordStatusGuid => GetAttributeValue( AttributeKeys.DefaultRecordStatus ).AsGuid();
+
+        /// <summary>
+        /// Gets the default record source unique identifier.
+        /// </summary>
+        /// <value>
+        /// The default record source unique identifier.
+        /// </value>
+        public Guid DefaultRecordSourceGuid => GetAttributeValue( AttributeKeys.DefaultRecordSource ).AsGuid();
 
         /// <summary>
         /// Gets the system communication unique identifier.
@@ -1244,13 +1267,13 @@ namespace Rock.Blocks.Types.Mobile.Security
 
             string providedName = null;
 
-            if( person != null )
+            if ( person != null )
             {
-                if( person.NickName.IsNotNullOrWhiteSpace() )
+                if ( person.NickName.IsNotNullOrWhiteSpace() )
                 {
                     providedName = person.NickName;
                 }
-                else if( person.FirstName.IsNotNullOrWhiteSpace() )
+                else if ( person.FirstName.IsNotNullOrWhiteSpace() )
                 {
                     providedName = person.FirstName;
                 }
@@ -1304,6 +1327,7 @@ namespace Rock.Blocks.Types.Mobile.Security
         {
             var dvcConnectionStatus = DefinedValueCache.Get( DefaultConnectionStatusGuid );
             var dvcRecordStatus = DefinedValueCache.Get( DefaultRecordStatusGuid );
+            var dvcRecordSource = DefinedValueCache.Get( DefaultRecordSourceGuid );
 
             var person = new Person
             {
@@ -1315,7 +1339,8 @@ namespace Rock.Blocks.Types.Mobile.Security
                 EmailPreference = Rock.Model.EmailPreference.EmailAllowed,
                 RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                 ConnectionStatusValueId = dvcConnectionStatus?.Id,
-                RecordStatusValueId = dvcRecordStatus?.Id
+                RecordStatusValueId = dvcRecordStatus?.Id,
+                RecordSourceValueId = dvcRecordSource?.Id
             };
 
             if ( details.BirthDate.HasValue )
@@ -1618,8 +1643,31 @@ namespace Rock.Blocks.Types.Mobile.Security
                 Person person;
                 string refNumber;
 
+                // While this might not represent a current Rock person, it's the best we have at this point, and will
+                // be helpful when identifying failed onboarding attempts in the log.
+                var uniqueIdentifier = request?.Email.IsNotNullOrWhiteSpace() == true
+                    ? request.Email
+                    : request?.PhoneNumber;
+
+                // We'll supplement and save this as needed below.
+                var failedHistoryLogin = new HistoryLogin
+                {
+                    UserName = uniqueIdentifier,
+                    SourceSiteId = this.PageCache?.SiteId,
+                    WasLoginSuccessful = false,
+                    LoginFailureReason = LoginFailureReason.Other,
+                    LoginFailureMessage = "Rock Mobile Onboard Person"
+                }.WithContext( "Mobile Onboarding" );
+
                 if ( systemCommunication == null )
                 {
+                    // Only log this failure if we have a "username" to tie it to.
+                    if ( uniqueIdentifier.IsNotNullOrWhiteSpace() )
+                    {
+                        failedHistoryLogin.LoginFailureMessage += ": System Communication is not configured.";
+                        failedHistoryLogin.SaveAfterDelay();
+                    }
+
                     return ActionInternalServerError( "Invalid configuration." );
                 }
 
@@ -1656,9 +1704,16 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // profile account that must not be used.
                 if ( person != null )
                 {
+                    // Supplement the history login record with the person's primary alias ID.
+                    failedHistoryLogin.PersonAliasId = person.PrimaryAliasId;
+
                     if ( DisableMatchingProtectionProfiles.Contains( person.AccountProtectionProfile ) )
                     {
-                        return ActionBadRequest( "It appears you have an account in our system that has security access which requires you to log in with a username and password." );
+                        var errorMessage = "It appears you have an account in our system that has security access which requires you to log in with a username and password.";
+                        failedHistoryLogin.LoginFailureMessage += ": {errorMessage}";
+                        failedHistoryLogin.SaveAfterDelay();
+
+                        return ActionBadRequest( errorMessage );
                     }
                 }
 
@@ -1679,8 +1734,18 @@ namespace Rock.Blocks.Types.Mobile.Security
                 // on in the event of an error.
                 if ( !success )
                 {
-                    return ActionInternalServerError( "Unable to send code." );
+                    var errorMessage = "Unable to send code.";
+                    failedHistoryLogin.LoginFailureMessage += ": {errorMessage}";
+                    failedHistoryLogin.SaveAfterDelay();
+
+                    return ActionInternalServerError( errorMessage );
                 }
+
+                // Even though onboarding was "successful" up to this point, go ahead and save a "failed" history login
+                // record, to track that verification is needed for onboarding to continue.
+                failedHistoryLogin.LoginFailureReason = LoginFailureReason.RequiresVerification;
+                failedHistoryLogin.LoginFailureMessage += $": Verification code sent via {( request.SendEmail ? "email" : "SMS" )}.";
+                failedHistoryLogin.SaveAfterDelay();
 
                 // Create our encrypted state to track where we are in the process.
                 var state = new EncryptedState
@@ -1735,9 +1800,28 @@ namespace Rock.Blocks.Types.Mobile.Security
 
                 if ( !isCodeValid )
                 {
+                    var errorMessage = "Unable to verify your code.";
+
+                    // Only create a history login record if we're able to identify this person.
+                    if ( state.MatchedPersonId.HasValue )
+                    {
+                        var personAliasId = new PersonAliasService( rockContext ).GetPrimaryAliasId( state.MatchedPersonId.Value );
+                        if ( personAliasId.HasValue )
+                        {
+                            new HistoryLogin
+                            {
+                                SourceSiteId = this.PageCache?.SiteId,
+                                PersonAliasId = personAliasId,
+                                WasLoginSuccessful = false,
+                                LoginFailureReason = LoginFailureReason.InvalidCredentials,
+                                LoginFailureMessage = $"Rock Mobile Onboard Person: {errorMessage}"
+                            }.WithContext( "Mobile Onboarding" ).SaveAfterDelay();
+                        }
+                    }
+
                     return new BlockActionResult( System.Net.HttpStatusCode.Unauthorized )
                     {
-                        Error = "Unable to verify your code."
+                        Error = errorMessage
                     };
                 }
 
@@ -1844,7 +1928,7 @@ namespace Rock.Blocks.Types.Mobile.Security
                         isSamePerson = false;
                     }
 
-                    if( person.LastName != request.Details.LastName )
+                    if ( person.LastName != request.Details.LastName )
                     {
                         isSamePerson = false;
                     }
@@ -1928,6 +2012,15 @@ namespace Rock.Blocks.Types.Mobile.Security
                     // they can log in.
                     mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
 
+                    // Onboarding was successful; save a history login record.
+                    new HistoryLogin
+                    {
+                        UserName = username,
+                        PersonAliasId = mobilePerson.PersonAliasId,
+                        SourceSiteId = siteCache.Id,
+                        WasLoginSuccessful = true
+                    }.WithContext( "Mobile Onboarding" ).SaveAfterDelay();
+
                     return ActionOk( new CreatePersonResponse
                     {
                         IsSuccess = true,
@@ -1965,6 +2058,7 @@ namespace Rock.Blocks.Types.Mobile.Security
             {
                 var person = new PersonService( rockContext ).Get( RequestContext.CurrentPerson.Id );
                 var username = RequestContext.CurrentUser.UserName;
+                var siteCache = PageCache.Layout.Site;
 
                 if ( username == null )
                 {
@@ -2019,10 +2113,19 @@ namespace Rock.Blocks.Types.Mobile.Security
                     rockContext.SaveChanges();
                 } );
 
-                var mobilePerson = MobileHelper.GetMobilePerson( person, PageCache.Layout.Site );
+                var mobilePerson = MobileHelper.GetMobilePerson( person, siteCache );
 
                 // Set the authentication token so they get/stay logged in.
                 mobilePerson.AuthToken = MobileHelper.GetAuthenticationToken( username );
+
+                // Onboarding was successful; save a history login record.
+                new HistoryLogin
+                {
+                    UserName = username,
+                    PersonAliasId = mobilePerson.PersonAliasId,
+                    SourceSiteId = siteCache.Id,
+                    WasLoginSuccessful = true
+                }.WithContext( "Mobile Onboarding" ).SaveAfterDelay();
 
                 return ActionOk( new
                 {

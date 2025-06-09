@@ -26,7 +26,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'badgeName'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

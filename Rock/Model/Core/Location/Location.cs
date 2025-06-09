@@ -333,6 +333,14 @@ namespace Rock.Model
         [DataMember]
         public int? FirmRoomThreshold { get; set; }
 
+        /// <summary>
+        /// The identifier of the beacon that is associated with this location.
+        /// This is typically used with Bluetooth proximity beacons and allows
+        /// the <see cref="Location"/> to be determined from a beacon.
+        /// </summary>
+        [DataMember]
+        public int? BeaconId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

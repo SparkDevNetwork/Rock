@@ -18,8 +18,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+
 using Rock.Data;
+using Rock.Enums.Controls;
 using Rock.Model;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -27,7 +30,8 @@ using Rock.Web.Cache;
 namespace Rock.Blocks
 {
     /// <summary>
-    /// Extension methods to convert between serialized <see cref="AttributeValue"/> values and their associated UI controls.
+    /// Extension methods to assist with getting and setting values between <see cref="AttributeValue"/> or
+    /// <see cref="PersonPreference"/> records and their associated UI controls.
     /// </summary>
     internal static class SettingsExtensions
     {
@@ -67,42 +71,6 @@ namespace Rock.Blocks
             }
 
             return values.AsDelimited( "," );
-        }
-
-        /// <summary>
-        /// Converts the <see cref="IEntityCache"/> into a <see cref="ListItemBag"/>.
-        /// </summary>
-        /// <param name="entityCache">The <see cref="IEntityCache"/> instance to be converted.</param>
-        /// <returns>A <see cref="ListItemBag"/> representing the <see cref="IEntityCache"/>, with the <see cref="IEntityCache.Guid"/> string mapped to <see cref="ListItemBag.Value"/> and the <see cref="IEntityCache.ToString()"/> result mapped to <see cref="ListItemBag.Text"/>.</returns>
-        public static ListItemBag ToListItemBag( this IEntityCache entityCache )
-        {
-            if ( entityCache == null )
-            {
-                return null;
-            }
-
-            return new ListItemBag
-            {
-                Value = entityCache.Guid.ToString(),
-                Text = entityCache.ToString()
-            };
-        }
-
-        /// <summary>
-        /// Converts the <see cref="IEntityCache"/> collection into a <see cref="ListItemBag"/> list.
-        /// </summary>
-        /// <param name="entityCache">The <see cref="IEntityCache"/> collection to be converted.</param>
-       /// <returns>A <see cref="ListItemBag"/> list of <see cref="IEntityCache"/> representations, with each <see cref="IEntityCache.Guid"/> string mapped to <see cref="ListItemBag.Value"/> and its corresponding <see cref="IEntityCache.ToString()"/> result mapped to <see cref="ListItemBag.Text"/>.</returns>
-        public static List<ListItemBag> ToListItemBagList( this IEnumerable<IEntityCache> entityCaches )
-        {
-            var listItemBags = new List<ListItemBag>();
-
-            foreach ( var entityCache in entityCaches.Where( a => a != null ) )
-            {
-                listItemBags.Add( entityCache.ToListItemBag() );
-            }
-
-            return listItemBags;
         }
 
         /// <summary>
@@ -179,7 +147,7 @@ namespace Rock.Blocks
             return listItemBags;
         }
 
-        #endregion
+        #endregion Generic Converters: Not Entity-Specific
 
         #region Convenience Converters: Entity-Specific Usages of Generic Converters
 
@@ -211,7 +179,7 @@ namespace Rock.Blocks
             return campusGuidStrings.ToListItemBagListUsingCache( CampusCache.Get );
         }
 
-        #endregion
+        #endregion Campuses
 
         #region Categories
 
@@ -241,7 +209,7 @@ namespace Rock.Blocks
             return categoryGuidStrings.ToListItemBagListUsingCache( CategoryCache.Get );
         }
 
-        #endregion
+        #endregion Categories
 
         #region Defined Values
 
@@ -271,7 +239,7 @@ namespace Rock.Blocks
             return definedValueGuidStrings.ToListItemBagListUsingCache( DefinedValueCache.Get );
         }
 
-        #endregion
+        #endregion Defined Values
 
         #region Group Types
 
@@ -301,7 +269,7 @@ namespace Rock.Blocks
             return groupTypeGuidStrings.ToListItemBagListUsingCache( GroupTypeCache.Get );
         }
 
-        #endregion
+        #endregion Group Types
 
         #region Named Schedules
 
@@ -331,9 +299,9 @@ namespace Rock.Blocks
             return namedScheduleGuidStrings.ToListItemBagListUsingCache( NamedScheduleCache.Get );
         }
 
-        #endregion
+        #endregion Named Schedules
 
-        #endregion
+        #endregion Convenience Converters: Entity-Specific Usages of Generic Converters
 
         #region One-Off Converters with No Commonality
 
@@ -412,6 +380,187 @@ namespace Rock.Blocks
 
         #endregion
 
-        #endregion
+        #endregion One-Off Converters with No Commonality
+
+        #region Validators
+
+        #region SlidingDateRangeBag
+
+        /// <summary>
+        /// Deserializes the delimited sliding date range string into a <see cref="SlidingDateRangeBag"/>, if possible.
+        /// </summary>
+        /// <param name="delimitedSlidingDateRange">The delimited sliding date range string.</param>
+        /// <returns>A <see cref="SlidingDateRangeBag"/> or <see langword="null"/> if unable to parse.</returns>
+        /// <remarks>
+        /// <para>
+        /// No validation will be performed on the deserialized <see cref="SlidingDateRangeBag"/>. Use the
+        /// <see cref="Validate(SlidingDateRangeBag, SlidingDateRangeBag)"/> method for this purpose.
+        /// </para>
+        /// <para>
+        /// The expected string format is "RangeType|TimeValue|TimeUnit|LowerDate|UpperDate".
+        /// </para>
+        /// </remarks>
+        public static SlidingDateRangeBag ToSlidingDateRangeBagOrNull( this string delimitedSlidingDateRange )
+        {
+            if ( delimitedSlidingDateRange.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var slidingDateRangeParts = delimitedSlidingDateRange.SplitDelimitedValues( "|", StringSplitOptions.None );
+            if ( slidingDateRangeParts.Length != 5 )
+            {
+                return null;
+            }
+
+            var rangeType = slidingDateRangeParts[0].ConvertToEnumOrNull<SlidingDateRangeType>();
+            if ( !rangeType.HasValue )
+            {
+                return null;
+            }
+
+            return new SlidingDateRangeBag
+            {
+                RangeType = rangeType.Value,
+                TimeValue = slidingDateRangeParts[1].AsIntegerOrNull(),
+                TimeUnit = slidingDateRangeParts[2].ConvertToEnumOrNull<TimeUnitType>(),
+                LowerDate = slidingDateRangeParts[3].AsDateTime(),
+                UpperDate = slidingDateRangeParts[4].AsDateTime()
+            };
+        }
+
+        /// <summary>
+        /// Serializes the <see cref="SlidingDateRangeBag"/> as a delimited sliding date range string.
+        /// </summary>
+        /// <param name="slidingDateRangeBag">The <see cref="SlidingDateRangeBag"/> to serialize.</param>
+        /// <returns>The delimited sliding date range string in the format "RangeType|TimeValue|TimeUnit|LowerDate|UpperDate"
+        /// or <see langword="null"/> if unable to serialize.</returns>
+        public static string ToDelimitedSlidingDateRangeOrNull( this SlidingDateRangeBag slidingDateRangeBag )
+        {
+            if ( slidingDateRangeBag == null )
+            {
+                return null;
+            }
+
+            var rangeType = slidingDateRangeBag.RangeType.ToString();
+            var timeValue = slidingDateRangeBag.TimeValue.ToString();
+            var timeUnit = slidingDateRangeBag.TimeUnit.ToString();
+            var lowerDate = slidingDateRangeBag.LowerDate.ToString();
+            var upperDate = slidingDateRangeBag.UpperDate.ToString();
+
+            return $"{rangeType}|{timeValue}|{timeUnit}|{lowerDate}|{upperDate}";
+        }
+
+        /// <summary>
+        /// Gets the <see cref="DateRange"/> represented within the <see cref="SlidingDateRangeBag"/>.
+        /// </summary>
+        /// <param name="slidingDateRangeBag">The <see cref="SlidingDateRangeBag"/> for which to get the <see cref="DateRange"/>.</param>
+        /// <returns>The <see cref="DateRange"/> represented within the <see cref="SlidingDateRangeBag"/>, or <see langword="null"/>.</returns>
+        public static DateRange ToActualDateRange( this SlidingDateRangeBag slidingDateRangeBag )
+        {
+            return RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( slidingDateRangeBag.ToDelimitedSlidingDateRangeOrNull() );
+        }
+
+        /// <summary>
+        /// Ensures this <see cref="SlidingDateRangeBag"/> passes basic validation checks.
+        /// </summary>
+        /// <param name="toValidate">The <see cref="SlidingDateRangeBag"/> to validate.</param>
+        /// <param name="defaultIfInvalid">The default <see cref="SlidingDateRangeBag"/> to use if invalid.</param>
+        /// <returns>An object containing the validated <see cref="SlidingDateRangeBag"/> (or default if invalid) along
+        /// with the actual <see cref="DateRange"/> represented within.</returns>
+        public static ValidatedDateRange Validate( this SlidingDateRangeBag toValidate, SlidingDateRangeBag defaultIfInvalid )
+        {
+            // Validate the sliding date range bag as follows:
+            //
+            //  1) If no sliding date range bag provided, return the default.
+            //  2) If range type is specific date range (with selected start and end dates):
+            //      a) If end date < start date, set end date = start date.
+            //      b) If only a start date is selected, set end date = start date.
+            //      c) If only an end date is selected, set start date = end date.
+            //      d) If neither start nor end date are selected, return the default.
+            //  3) Allow any other valid selections (knowing they might represent an excessively-large range).
+
+            if ( toValidate == null )
+            {
+                return new ValidatedDateRange
+                {
+                    SlidingDateRangeBag = defaultIfInvalid,
+                    ActualDateRange = defaultIfInvalid.ToActualDateRange()
+                };
+            }
+
+            if ( toValidate.RangeType == SlidingDateRangeType.DateRange )
+            {
+                var lowerDate = toValidate.LowerDate;
+                var upperDate = toValidate.UpperDate;
+
+                if ( lowerDate.HasValue && upperDate.HasValue )
+                {
+                    if ( upperDate < lowerDate )
+                    {
+                        // Set end date = start date.
+                        toValidate.UpperDate = lowerDate;
+                    }
+                }
+                else if ( lowerDate.HasValue )
+                {
+                    // Set end date = start date.
+                    toValidate.UpperDate = lowerDate;
+                }
+                else if ( upperDate.HasValue )
+                {
+                    // Set start date = end date.
+                    toValidate.LowerDate = upperDate;
+                }
+                else
+                {
+                    // Return the default.
+                    return new ValidatedDateRange
+                    {
+                        SlidingDateRangeBag = defaultIfInvalid,
+                        ActualDateRange = defaultIfInvalid.ToActualDateRange()
+                    };
+                }
+            }
+
+            var actualDateRange = toValidate.ToActualDateRange();
+            if ( actualDateRange?.Start == null || actualDateRange?.End == null )
+            {
+                // If for some reason we don't have valid start and end dates at this point, return the default.
+                return new ValidatedDateRange
+                {
+                    SlidingDateRangeBag = defaultIfInvalid,
+                    ActualDateRange = defaultIfInvalid.ToActualDateRange()
+                };
+            }
+
+            // Otherwise, return the provided, validated sliding date range bag + actual date range.
+            return new ValidatedDateRange
+            {
+                SlidingDateRangeBag = toValidate,
+                ActualDateRange = actualDateRange
+            };
+        }
+
+        /// <summary>
+        /// A POCO to represent a validated <see cref="Rock.ViewModels.Controls.SlidingDateRangeBag"/> along with the
+        /// actual <see cref="DateRange"/> represented within.
+        /// </summary>
+        public class ValidatedDateRange
+        {
+            /// <summary>
+            /// The sliding date range bag.
+            /// </summary>
+            public SlidingDateRangeBag SlidingDateRangeBag { get; set; }
+
+            /// <summary>
+            /// The actual date range represented within the sliding date range bag.
+            /// </summary>
+            public DateRange ActualDateRange { get; set; }
+        }
+
+        #endregion SlidingDateRangeBag
+
+        #endregion Validators
     }
 }

@@ -1,0 +1,125 @@
+
+// WIZARD (ROCK COMPONENT)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.wizard {
+  display:              -webkit-flex;
+  display:              -ms-flexbox;
+  display:              flex;
+  -ms-flex-align:       start;
+  -webkit-align-items:  flex-start;
+  align-items:          flex-start;
+  padding:              var(--spacing-xsmall) 0;
+  background-color:     var(--color-interface-softest);
+  margin-bottom: var(--spacing-large);
+  border: 1px solid var(--color-interface-soft);
+  box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+
+  &:before,
+  &:after {
+    display:  table;
+    content: " "; 
+  }
+  &:after {
+    clear:    both;
+  }
+
+  @media only screen and (max-width: $screen-xsmall) {
+    display:  none;
+  }
+
+  .wizard-item {
+    position:     relative; /* Because we are absolutely positioning the connector */
+    width:        100%;
+    min-width:    75px;
+    color:        var(--color-interface-stronger);
+    text-align:   center;
+    word-break:   break-word;
+    cursor:       default;
+
+    a {
+      color:      var(--color-interface-stronger);
+    }
+
+    .wizard-item-icon {
+      min-width: 75px;
+
+      i {
+        display:        inline-block;
+        width:          36px;
+        height:         36px;
+        padding:        9px 7px;
+        color:          var(--color-interface-soft);
+        background:     var(--color-interface-softest);
+        border:         1px solid var(--color-interface-soft);
+        border-radius:  60px;
+      }
+    }
+    .wizard-item-label {
+      padding-top:      var(--spacing-tiny);
+    }
+
+    &::before {
+      position:         absolute;
+      top:              18px; //Hard coded because it need to be exact
+      left:             -49%; // Original Value was "-50%"
+      width:            calc(100% - 36px);  // Fix the decorative line that run from one wizard to another.
+      height:           1px;
+      margin-left:      var(--spacing-medium); /* 11px = 1/2 icon width */
+      content:          "";
+      background-color: var(--color-interface-soft);
+    }
+
+    &.active {
+      font-weight:    var(--font-weight-bold);
+      color:          var(--color-primary);
+
+      &::before {
+        background-color:   var(--color-primary);
+      }
+
+      .wizard-item-icon i {
+        color:              var(--color-interface-softest);
+        background-color:   var(--color-primary);
+        border-color:       var(--color-primary);
+      }
+    }
+
+    &.complete {
+      color:    var(--color-primary);
+
+      a {
+        color:  var(--color-primary);
+      }
+
+      &::before {
+        background-color:   var(--color-interface-soft);
+      }
+
+      .wizard-item-icon i {
+        color:              var(--color-interface-softest);
+        background-color:   var(--color-primary);
+        border-color:       var(--color-interface-softest);
+      }
+    }
+
+    &:first-of-type::before {
+      display: none;
+    }
+  }
+}
+
+// Override asp disabled
+div.aspNetDisabled {
+  opacity: .5;
+}
+// ====================== END BASE STYLE ======================
+
+

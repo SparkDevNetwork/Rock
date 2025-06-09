@@ -43,4 +43,7 @@ export type LearningClassDetailOptionsBag = {
 
     /** Gets or sets the available semesters for this course. */
     semesters?: ListItemBag[] | null;
+
+    /** Gets or sets the character limit of the SMS medium. */
+    smsMediumCharacterLimit: number;
 };

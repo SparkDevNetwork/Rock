@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -1525,21 +1525,11 @@ namespace RockWeb.Blocks.Groups
                 // If a map is to be shown
                 if ( showMap && groups.Any() )
                 {
-                    Template template = null;
                     ILavaTemplate lavaTemplate = null;
 
-                    if ( LavaService.RockLiquidIsEnabled )
-                    {
-                        template = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( AttributeKey.MapInfo ) );
+                    var parseResult = LavaService.ParseTemplate( GetAttributeValue( AttributeKey.MapInfo ) );
 
-                        LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.MapInfo ) );
-                    }
-                    else
-                    {
-                        var parseResult = LavaService.ParseTemplate( GetAttributeValue( AttributeKey.MapInfo ) );
-
-                        lavaTemplate = parseResult.Template;
-                    }
+                    lavaTemplate = parseResult.Template;
 
                     // Add mapitems for all the remaining valid group locations
                     var groupMapItems = new List<MapItem>();
@@ -1578,16 +1568,9 @@ namespace RockWeb.Blocks.Groups
 
                             string infoWindow;
 
-                            if ( LavaService.RockLiquidIsEnabled )
-                            {
-                                infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
-                            }
-                            else
-                            {
-                                var result = LavaService.RenderTemplate( lavaTemplate, mergeFields );
+                            var result = LavaService.RenderTemplate( lavaTemplate, mergeFields );
 
-                                infoWindow = result.Text;
-                            }
+                            infoWindow = result.Text;
 
                             // Add a map item for group
                             var mapItem = new FinderMapItem( gl.Location );
@@ -1941,7 +1924,6 @@ namespace RockWeb.Blocks.Groups
             // Set default map options
             var mapOptions = {{
                  mapTypeId: 'roadmap'
-                ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
                 ,maxZoom: {11}
                 ,minZoom: {12}
@@ -1950,11 +1932,13 @@ namespace RockWeb.Blocks.Groups
 
             if (!isMapIdEmpty) {{
                 mapOptions.mapId = mapId;
+            }} else {{
+                mapOptions.styles = mapStyle;
             }}
 
             // Display a map on the page
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-            google.maps.event.addDomListener(map, 'zoom_changed', function() {{
+            google.maps.event.addListener(map, 'zoom_changed', function() {{
                 var zoomThreshold = {13};
                 var zoomAmount = {14};
 

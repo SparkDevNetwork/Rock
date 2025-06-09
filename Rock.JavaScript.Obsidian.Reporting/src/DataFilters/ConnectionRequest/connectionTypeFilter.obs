@@ -1,0 +1,31 @@
+<template>
+    <DropDownList v-model="connectionType"
+                  :items="connectionTypeOptions"
+                  label="Connection Type"
+                  showBlankItem
+                  enhanceForLongLists />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const connectionTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.connectionTypeOptions) ?? [];
+    const connectionType = ref<Guid>(props.modelValue.connectionType ?? "");
+
+    watch(connectionType, () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            connectionType: connectionType.value,
+        });
+    });
+</script>

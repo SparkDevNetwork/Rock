@@ -58,9 +58,22 @@ namespace Rock.Security
         public SecuritySettingsService()
         {
             _validationResults = new List<ValidationResult>();
-            var securitySettings = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS ).FromJsonOrNull<SecuritySettings>();
+
+            var securitySettingsJson = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS );
+            var cacheKey = $"Rock.Core.SecuritySettings:{securitySettingsJson.XxHash()}";
+            var shouldAddToCache = false;
+
+            var securitySettings = RockCache.Get( cacheKey ) as SecuritySettings;
             if ( securitySettings == null )
             {
+                securitySettings = securitySettingsJson.FromJsonOrNull<SecuritySettings>();
+                shouldAddToCache = true;
+            }
+
+            if ( securitySettings == null )
+            {
+                shouldAddToCache = true;
+
                 securitySettings = GetDefaultSecuritySettings();
                 this.SecuritySettings = securitySettings;
 
@@ -74,7 +87,7 @@ namespace Rock.Security
                     {
                         // A security settings record already exists if this exception was thrown,
                         // so get the latest security settings and move on.
-                        securitySettings = SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ROCK_SECURITY_SETTINGS ).FromJsonOrThrow<SecuritySettings>();
+                        securitySettings = securitySettingsJson.FromJsonOrThrow<SecuritySettings>();
                         RefreshSecurityGroups( securitySettings );
                     }
                     else
@@ -86,6 +99,11 @@ namespace Rock.Security
             else
             {
                 RefreshSecurityGroups( securitySettings );
+            }
+
+            if ( shouldAddToCache )
+            {
+                RockCache.AddOrUpdate( cacheKey, null, securitySettings, RockDateTime.Now.AddSeconds( 300 ) );
             }
 
             this.SecuritySettings = securitySettings;

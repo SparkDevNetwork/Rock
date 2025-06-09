@@ -333,10 +333,16 @@ namespace RockWeb.Blocks.Reporting
                                 }
                             }
 
-                            if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
+                            if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromRockRequestContext )
+                            {
+                                selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromRockRequestContext ).UpdateSelectionFromRockRequestContext( selection, RequestContext, rockContext );
+                            }
+#pragma warning disable CS0618 // Type or member is obsolete
+                            else if ( component is Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters )
                             {
                                 selection = ( component as Rock.Reporting.DataFilter.IUpdateSelectionFromPageParameters ).UpdateSelectionFromPageParameters( selection, this );
                             }
+#pragma warning restore CS0618 // Type or member is obsolete
 
                             try
                             {

@@ -14,11 +14,9 @@
 // limitations under the License.
 // </copyright>
 
-using System.Collections;
-using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
-using DotLiquid.Util;
+
 using Rock.Attribute;
 using Rock.Data;
 

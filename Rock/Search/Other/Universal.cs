@@ -21,6 +21,8 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+using Rock.Data;
+using Rock.Net;
 using Rock.UniversalSearch;
 
 namespace Rock.Search.Other
@@ -135,10 +137,14 @@ namespace Rock.Search.Other
                 return Enumerable.Empty<string>().AsQueryable();
             }
 
-            var results = GetSearchResults( searchterm );
+            using ( var rockContext = new RockContext() )
+            {
+                var results = GetSearchResults( searchterm )
+                    .Where( r => r.IsViewAllowed( RockRequestContextAccessor.Current?.CurrentPerson, rockContext ) );
 
-            // NOTE: Put a bunch of whitespace before and after it so that the Search box shows blank instead of stringified html
-            return results.Select( r => $"                                                                       <data return-type='{r.IndexModelType}' return-id={r.Id}></data><i class='{ r.IconCssClass}'></i> {r.DocumentName}                                                                               " ).ToList().AsQueryable();
+                // NOTE: Put a bunch of whitespace before and after it so that the Search box shows blank instead of stringified html
+                return results.Select( r => $"                                                                       <data return-type='{r.IndexModelType}' return-id={r.Id}></data><i class='{r.IconCssClass}'></i> {r.DocumentName}                                                                               " ).ToList().AsQueryable();
+            }
         }
     }
 }

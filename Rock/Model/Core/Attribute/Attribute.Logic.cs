@@ -20,7 +20,10 @@ using System.ComponentModel.DataAnnotations;
 using System.Data.Entity;
 using System.Linq;
 using System.Runtime.Serialization;
+
+using Rock.Bus.Message;
 using Rock.Data;
+using Rock.Net.Geolocation;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -187,6 +190,15 @@ namespace Rock.Model
             if ( ( !entityTypeId.HasValue || entityTypeId.Value == 0 ) && entityTypeQualifierColumn == Attribute.SYSTEM_SETTING_QUALIFIER && string.IsNullOrEmpty( entityTypeQualifierValue ) )
             {
                 Rock.Web.SystemSettings.Remove();
+
+                if ( this.Key == SystemKey.SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING )
+                {
+                    // Reinitialize the restricted countries immediately for this instance of Rock.
+                    IpGeoLookup.ReinitializeGloballyRestrictedCountryCodes();
+
+                    // Send a bus message so other instances of Rock know to do the same.
+                    RestrictedCountriesWereUpdatedMessage.Publish();
+                }
             }
 
             if ( entityTypeId.HasValue )

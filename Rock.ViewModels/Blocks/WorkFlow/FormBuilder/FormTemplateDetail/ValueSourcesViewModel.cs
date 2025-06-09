@@ -43,6 +43,11 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder.FormTemplateDetail
         public List<ListItemBag> RecordStatusOptions { get; set; }
 
         /// <summary>
+        /// The list of record source options that are available to pick from.
+        /// </summary>
+        public List<ListItemBag> RecordSourceOptions { get; set; }
+
+        /// <summary>
         /// The list of connection status options that are available to pick from.
         /// </summary>
         public List<ListItemBag> ConnectionStatusOptions { get; set; }

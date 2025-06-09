@@ -50,9 +50,12 @@ using System.Runtime.InteropServices;
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Jobs" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Bus" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Communication" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Core.Automation" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Financial" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Lava" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Model" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Transactions" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Transactions.RockQueue" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Web" )]
 [assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks" )]
 [assembly: Rock.Logging.RockLoggingCategory( "RockWeb.App_Code.TwilioDefaultResponseAsync" )]
@@ -162,3 +165,6 @@ using System.Runtime.InteropServices;
 
 // The following type forwardings were setup in Rock 17.0
 [assembly: TypeForwardedTo( typeof( Rock.Reporting.FilterMode ) )]
+
+// The following type forwardings were setup in Rock 17.1
+[assembly: TypeForwardedTo( typeof(Rock.Media.MediaElementQuality ) )]

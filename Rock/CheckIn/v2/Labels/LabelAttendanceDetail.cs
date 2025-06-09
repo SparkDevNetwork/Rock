@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Rock.Data;
 using Rock.Model;
@@ -37,31 +38,36 @@ namespace Rock.CheckIn.v2.Labels
         private readonly Lazy<Person> _checkedInByPersonLazy;
 
         /// <summary>
+        /// The lazy load value for <see cref="GroupMembers"/>.
+        /// </summary>
+        private readonly Lazy<List<GroupMember>> _groupMembersLazy;
+
+        /// <summary>
         /// The person this attendance record is for.
         /// </summary>
-        public Person Person { get; set; }
+        public Person Person { get; }
 
         /// <summary>
         /// The date and time the individual was checked in.
         /// </summary>
-        public DateTime StartDateTime { get; set; }
+        public DateTime StartDateTime { get; }
 
         /// <summary>
         /// The date and time the individual was checked out or <c>null</c>
         /// if they have not been checked out yet.
         /// </summary>
-        public DateTime? EndDateTime { get; set; }
+        public DateTime? EndDateTime { get; }
 
         /// <summary>
         /// Indicates if attendance record was from a check-in session where
         /// no other attendance records previously existed for the same person.
         /// </summary>
-        public bool IsFirstTime { get; set; }
+        public bool IsFirstTime { get; }
 
         /// <summary>
         /// The area used during the check-in for this attendance.
         /// </summary>
-        public GroupTypeCache Area { get; set; }
+        public GroupTypeCache Area { get; }
 
         /// <summary>
         /// The person that checked this individual in. May be <c>null</c> in
@@ -72,54 +78,57 @@ namespace Rock.CheckIn.v2.Labels
         /// <summary>
         /// The group used during the check-in for this attendance.
         /// </summary>
-        public GroupCache Group { get; set; }
+        public GroupCache Group { get; }
 
         /// <summary>
         /// The location used during the check-in for this attendance.
         /// </summary>
-        public NamedLocationCache Location { get; set; }
+        public NamedLocationCache Location { get; }
 
         /// <summary>
         /// The schedule used during the check-in for this attendance.
         /// </summary>
-        public NamedScheduleCache Schedule { get; set; }
+        public NamedScheduleCache Schedule { get; }
 
         /// <summary>
         /// All <see cref="GroupMember"/> records this <see cref="Person"/>
         /// has in <see cref="Group"/>.
         /// </summary>
-        public List<GroupMember> GroupMembers { get; set; }
+        public List<GroupMember> GroupMembers => _groupMembersLazy.Value;
 
         /// <summary>
         /// The security code that was assigned to this person for check-in.
         /// </summary>
-        public string SecurityCode { get; set; }
+        public string SecurityCode { get; }
 
         /// <summary>
         /// The details of any achievements that were completed during this
         /// check-in session.
         /// </summary>
-        public List<AchievementBag> JustCompletedAchievements { get; set; }
+        public List<AchievementBag> JustCompletedAchievements { get; }
 
         /// <summary>
         /// The details of any achievements that are still in progress after
         /// the check-in session was completed.
         /// </summary>
-        public List<AchievementBag> InProgressAchievements { get; set; }
+        public List<AchievementBag> InProgressAchievements { get; }
 
         /// <summary>
         /// The details of any achievements that were previously completed
         /// before the check-in session was started.
         /// </summary>
-        public List<AchievementBag> PreviouslyCompletedAchievements { get; set; }
+        public List<AchievementBag> PreviouslyCompletedAchievements { get; }
 
         /// <summary>
-        /// Creates a new, empty, instance of the AttendanceLabel. This would
-        /// primarily be used by unit tests.
+        /// Creates a new, empty, instance of the AttendanceLabel that just has
+        /// a person record.
         /// </summary>
-        internal LabelAttendanceDetail()
+        internal LabelAttendanceDetail( Person person )
         {
             _checkedInByPersonLazy = new Lazy<Person>( () => null );
+            _groupMembersLazy = new Lazy<List<GroupMember>>( () => new List<GroupMember>() );
+
+            Person = person;
         }
 
         /// <summary>
@@ -163,10 +172,23 @@ namespace Rock.CheckIn.v2.Labels
                     : null;
             } );
 
+            _groupMembersLazy = new Lazy<List<GroupMember>>( () =>
+            {
+                if ( attendance.PersonAlias == null )
+                {
+                    return new List<GroupMember>();
+                }
+
+                return new GroupMemberService( rockContext ).Queryable()
+                    .Where( gm => gm.GroupId == attendance.Occurrence.GroupId
+                        && gm.PersonId == attendance.PersonAlias.PersonId
+                        && gm.GroupMemberStatus != GroupMemberStatus.Inactive )
+                    .ToList();
+            } );
+
             Area = areaCache;
             EndDateTime = attendance.EndDateTime;
             Group = groupCache;
-            GroupMembers = new List<GroupMember>(); // TODO: Need to fill this in, probably via lazy load.
             InProgressAchievements = attendanceBag?.InProgressAchievements ?? new List<AchievementBag>();
             IsFirstTime = attendance.IsFirstTime ?? false;
             JustCompletedAchievements = attendanceBag?.JustCompletedAchievements ?? new List<AchievementBag>();

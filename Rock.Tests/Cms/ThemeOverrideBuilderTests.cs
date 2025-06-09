@@ -206,7 +206,7 @@ namespace Rock.Tests.Cms
 
                 var content = builder.Build( string.Empty );
 
-                Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-icon.css" );
+                Assert.That.Contains( content, "/Styles/styles-v2-prototype/icons/fontawesome-icon.css" );
             }
         }
 
@@ -229,7 +229,7 @@ namespace Rock.Tests.Cms
 
                 var content = builder.Build( string.Empty );
 
-                Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-solid.css" );
+                Assert.That.Contains( content, "/Styles/styles-v2-prototype/icons/fontawesome-solid.css" );
             }
         }
 
@@ -252,7 +252,7 @@ namespace Rock.Tests.Cms
 
                 var content = builder.Build( string.Empty );
 
-                Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-regular.css" );
+                Assert.That.Contains( content, "/Styles/styles-v2-prototype/icons/fontawesome-regular.css" );
             }
         }
 
@@ -275,7 +275,7 @@ namespace Rock.Tests.Cms
 
                 var content = builder.Build( string.Empty );
 
-                Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-light.css" );
+                Assert.That.Contains( content, "/Styles/styles-v2-prototype/icons/fontawesome-light.css" );
             }
         }
 
@@ -301,7 +301,7 @@ namespace Rock.Tests.Cms
 
                 var content = builder.Build( string.Empty );
 
-                Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-solid.css" );
+                Assert.That.Contains( content, "/Styles/styles-v2-prototype/icons/fontawesome-solid.css" );
             }
         }
 
@@ -327,7 +327,7 @@ namespace Rock.Tests.Cms
 
                 var content = builder.Build( string.Empty );
 
-                Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-regular.css" );
+                Assert.That.Contains( content, "/Styles/styles-v2-prototype/icons/fontawesome-regular.css" );
             }
         }
 
@@ -353,7 +353,7 @@ namespace Rock.Tests.Cms
 
                 var content = builder.Build( string.Empty );
 
-                Assert.That.Contains( content, "/Styles/style-v2/icons/fontawesome-light.css" );
+                Assert.That.Contains( content, "/Styles/styles-v2-prototype/icons/fontawesome-light.css" );
             }
         }
 
@@ -375,7 +375,7 @@ namespace Rock.Tests.Cms
 
                 var content = builder.Build( string.Empty );
 
-                Assert.That.Contains( content, "/Styles/style-v2/icons/tabler-icon.css" );
+                Assert.That.Contains( content, "/Styles/styles-v2-prototype/icons/tabler-icon.css" );
             }
         }
 
@@ -412,7 +412,7 @@ namespace Rock.Tests.Cms
             {
                 var expectedContent = $@"{ThemeOverrideBuilder.TopOverrideStartMarker}
 @import url('on.css');
-@import url('/Styles/style-v2/icons/tabler-icon.css');
+@import url('/Styles/styles-v2-prototype/icons/tabler-icon.css');
 {ThemeOverrideBuilder.TopOverrideEndMarker}
 
 
@@ -467,7 +467,7 @@ div {{ display: none; }}
                 var expectedContent = @".body { color: white; }";
                 var originalContent = $@"{ThemeOverrideBuilder.TopOverrideStartMarker}
 @import url('on.css');
-@import url('/Styles/style-v2/icons/tabler-icon.css');
+@import url('/Styles/styles-v2-prototype/icons/tabler-icon.css');
 {ThemeOverrideBuilder.TopOverrideEndMarker}
 
 {expectedContent}

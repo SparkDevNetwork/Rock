@@ -136,6 +136,8 @@
                     if (index !== -1) {
                         gridData.rows?.splice(index, 1);
                     }
+
+                    flushPersonalLinksData();
                 }
                 else {
                     await alert(result.errorMessage ?? "Unknown error while trying to delete personal link.");
@@ -184,6 +186,10 @@
             beforeKey: beforeItem?.["idKey"] ?? null
         });
 
+        if (result.isSuccess) {
+            flushPersonalLinksData();
+        }
+
         return result.isSuccess;
     }
 
@@ -215,6 +221,9 @@
 
         isPersonalLinkModalVisible.value = false;
         submitPersonalLink.value = false;
+
+        flushPersonalLinksData();
+
         // Reload the grid data
         gridDataSource.value = loadGridData();
     }
@@ -251,6 +260,14 @@
         isPersonalLinkModalVisible.value = true;
     }
 
+    /*
+    * This is a quick fix for issue #6242. The Webforms logic uses session storage to keep track of the personal links data which does not work with ASP.NET Core.
+    * This fix clears the cached personalLinksData when an update is made so that the personal links are reloaded on the next page reload.
+    * Once PersonalLinks.ascx.cs is converted to Obsidian, this can be refactored (likely use the JavaScript Bus to communicate to the Block that personal links have been updated and page reload is not required).
+    */
+    function flushPersonalLinksData(): void {
+        localStorage.removeItem("personalLinksData");
+    }
 
     // #endregion
 

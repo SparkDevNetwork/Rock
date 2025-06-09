@@ -1,0 +1,56 @@
+<template>
+    <div class="row">
+        <div class="col-md-8">
+            <DropDownList v-model="groupTypeGuid"
+                          :items="groupTypes"
+                          label="Group Type"
+                          rules="required"
+                          showBlankItem />
+        </div>
+        <div class="col-md-8">
+            <DropDownList v-model="memberType"
+                          :items="memberTypes"
+                          label="Member Type"
+                          help="The member type to be considered for this filter."
+                          showBlankItem />
+        </div>
+        <div class="col-md-8">
+            <CheckBox v-model="hidePastOpportunities" label="Hide Past Opportunities" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const memberTypes: ListItemBag[] = [
+        { text: "Leader", value: "Leader" },
+        { text: "Not Leader", value: "NotLeader" },
+    ];
+
+    const groupTypes = ref<ListItemBag[]>(safeParseJson(props.modelValue.groupTypes) ?? []);
+
+    const memberType = ref<string>(props.modelValue.memberType ?? "");
+    const groupTypeGuid = ref<string>(props.modelValue.groupTypeGuid ?? "");
+    const hidePastOpportunities = ref<boolean>(asBoolean(props.modelValue.hidePastOpportunities));
+
+    watch([memberType, groupTypeGuid, hidePastOpportunities], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            memberType: memberType.value,
+            groupTypeGuid: groupTypeGuid.value,
+            hidePastOpportunities: asTrueOrFalseString(hidePastOpportunities.value),
+        });
+    });
+</script>

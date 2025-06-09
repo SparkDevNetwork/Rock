@@ -1,0 +1,409 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <h4>Events</h4>
+    <div class="drag-container"
+         v-dragSource="dragOptions"
+         v-dragTarget="dragOptions">
+        <ConnectedListButton v-for="ev in events"
+                             :key="ev.idKey ?? undefined"
+                             :title="ev.name"
+                             :description="ev.description"
+                             :iconCssClass="ev.iconCssClass"
+                             :aside="ev.eventType?.text"
+                             :primaryActions="getPrimaryActions(ev)">
+            <template #prepend>
+                <div>
+                    <i class="fa fa-bars reorder-handle" style="cursor: grab;"></i>
+                </div>
+            </template>
+        </ConnectedListButton>
+    </div>
+
+    <ConnectedListAddButton @click="onAddEvent" />
+
+    <Modal v-model="isEditVisible"
+           title="Event Settings"
+           saveText="Save"
+           @save="onSaveEvent">
+        <div class="row">
+            <div class="col-md-6">
+                <StaticFormControl v-if="existingEventTypeName"
+                                   :modelValue="existingEventTypeName"
+                                   label="Event Type" />
+
+                <DropDownList v-else
+                              :modelValue="editEventType"
+                              label="Event Type"
+                              :items="eventTypeItems"
+                              rules="required"
+                              @update:modelValue="onEditEventTypeChanged"
+                              :disabled="isEventTypeDisabled" />
+            </div>
+
+            <div class="col-md-6">
+                <CheckBox v-model="editIsActive"
+                          label="Active" />
+            </div>
+        </div>
+
+        <DynamicComponent v-if="editComponentDefinition"
+                          v-model="editComponentData"
+                          :definition="editComponentDefinition"
+                          :executeRequest="onExecuteComponentRequest"
+                          :properties="editComponentProperties" />
+    </Modal>
+</template>
+
+<style scoped>
+.drag-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
+    margin-bottom: var(--spacing-medium);
+}
+</style>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ConnectedListAddButton from "@Obsidian/Controls/connectedListAddButton.obs";
+    import ConnectedListButton from "@Obsidian/Controls/connectedListButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { alert, confirmDelete } from "@Obsidian/Utility/dialogs";
+    import { AutomationEventBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerDetail/automationEventBag";
+    import { GetComponentDefinitionResponseBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerDetail/getComponentDefinitionResponseBag";
+    import { AutomationValueDefinitionBag } from "@Obsidian/ViewModels/Core/Automation/automationValueDefinitionBag";
+    import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { computed, PropType, ref } from "vue";
+
+    const props = defineProps({
+        /**
+         * The list of events that are being displayed and possibly edited.
+         */
+        modelValue: {
+            type: Array as PropType<AutomationEventBag[]>,
+            required: true,
+        },
+
+        /**
+         * The key that identifies the trigger that is being edited.
+         */
+        triggerKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /**
+         * The list of event types that can be used in the automation trigger.
+         */
+        eventTypeItems: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        /**
+         * The list of merge fields that can be used in the automation event.
+         * These vary based on the type of trigger.
+         */
+        mergeFields: {
+            type: Array as PropType<AutomationValueDefinitionBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AutomationEventBag[]): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const events = useVModelPassthrough(props, "modelValue", emit);
+
+    const isEditVisible = ref(false);
+    const isEditLoadingEventType = ref(false);
+    const editIsActive = ref(false);
+    const editIdKey = ref<string | null>();
+    const editEventType = ref<string>("");
+    const existingEventTypeName = ref<string | null>();
+    const editComponentDefinition = ref<DynamicComponentDefinitionBag | null>(null);
+    const editComponentData = ref<Record<string, string>>({});
+
+    const dragOptions = useDragReorder(events, onOrderChanged);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Determines if the event type is disabled. This is true if the event
+     * has previously been saved or if we are currently loading the event type.
+     */
+    const isEventTypeDisabled = computed((): boolean => {
+        return isEditLoadingEventType.value || !!editIdKey.value;
+    });
+
+    /**
+     * The list of additional properties that will be passed to the dynamic
+     * component.
+     */
+    const editComponentProperties = computed((): Record<string, unknown> => {
+        const properties: Record<string, unknown> = {};
+
+        properties.mergeFields = props.mergeFields;
+
+        return properties;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the list of primary actions that will be displayed for the event row.
+     *
+     * @param event The automation event that is being displayed.
+     *
+     * @returns A list of {@link MenuAction} objects that will be used to render the actions.
+     */
+    function getPrimaryActions(event: AutomationEventBag): MenuAction[] {
+        const actions: MenuAction[] = [];
+        const idKey = event.idKey;
+
+        if (!idKey) {
+            return actions;
+        }
+
+        actions.push({
+            title: "Edit",
+            iconCssClass: "fa fa-pencil-alt",
+            type: "default",
+            handler: () => onEditEvent(idKey)
+        });
+
+        actions.push({
+            title: "Delete",
+            iconCssClass: "fa fa-times",
+            type: "danger",
+            handler: () => onDeleteEvent(idKey)
+        });
+
+        return actions;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the individual clicks the Add Event button. This will begin
+     * the process of adding a new event to the trigger.
+     */
+    async function onAddEvent(): Promise<void> {
+        const result = await invokeBlockAction<ValidPropertiesBox<AutomationEventBag>>("AddEvent", {
+            triggerKey: props.triggerKey
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            editIdKey.value = result.data.bag.idKey;
+            editIsActive.value = result.data.bag.isActive;
+            editEventType.value = result.data.bag.eventType?.value ?? "";
+            editComponentDefinition.value = result.data.bag.componentDefinition ?? null;
+            editComponentData.value = result.data.bag.componentConfiguration ?? {};
+            existingEventTypeName.value = null;
+
+            isEditVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to add a new event.");
+        }
+    }
+
+    /**
+     * Event handler for the Delete button being clicked. Sends the
+     * delete request to the server and then removes the item.
+     */
+    async function onDeleteEvent(key: string): Promise<void> {
+        if (!await confirmDelete("Event")) {
+            return;
+        }
+
+        const result = await invokeBlockAction<string>("DeleteEvent", {
+            key
+        });
+
+        if (result.isSuccess) {
+            events.value = events.value.filter(ev => ev.idKey !== key);
+        }
+        else {
+            await alert(result.errorMessage || "Unknown error while trying to delete automation trigger.");
+        }
+    }
+
+    /**
+     * Event handler for the Edit button being clicked. Request the edit
+     * details from the server and then enter edit mode.
+     *
+     * @returns true if the panel should enter edit mode; otherwise false.
+     */
+    async function onEditEvent(key: string): Promise<void> {
+        const result = await invokeBlockAction<ValidPropertiesBox<AutomationEventBag>>("EditEvent", {
+            triggerKey: props.triggerKey,
+            key
+        });
+
+        if (result.isSuccess && result.data && result.data.bag) {
+            editIdKey.value = result.data.bag.idKey;
+            editIsActive.value = result.data.bag.isActive;
+            editEventType.value = result.data.bag.eventType?.value ?? "";
+            editComponentDefinition.value = result.data.bag.componentDefinition ?? null;
+            editComponentData.value = result.data.bag.componentConfiguration ?? {};
+            existingEventTypeName.value = result.data.bag.eventType?.text ?? null;
+
+            isEditVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to edit the event.");
+        }
+    }
+
+    /**
+     * Event handler for the modal's Save event. Send the data to the server
+     * to be saved and then leave edit mode.
+     */
+    async function onSaveEvent(): Promise<void> {
+        const newBox: ValidPropertiesBox<AutomationEventBag> = {};
+
+        setPropertiesBoxValue(newBox, "idKey", editIdKey.value);
+        setPropertiesBoxValue(newBox, "isActive", editIsActive.value);
+        setPropertiesBoxValue(newBox, "eventType", { value: editEventType.value });
+        setPropertiesBoxValue(newBox, "componentConfiguration", editComponentData.value);
+
+        const result = await invokeBlockAction<ValidPropertiesBox<AutomationEventBag>>("SaveEvent", {
+            triggerKey: props.triggerKey,
+            box: newBox
+        });
+
+        if (result.isSuccess && result.data?.bag) {
+            const newEvents = [...events.value];
+
+            const index = newEvents.findIndex(ev => ev.idKey === result.data?.bag?.idKey);
+
+            if (index >= 0) {
+                newEvents.splice(index, 1, result.data.bag);
+            }
+            else {
+                newEvents.push(result.data.bag);
+            }
+
+            events.value = newEvents;
+            isEditVisible.value = false;
+        }
+        else {
+            await alert(result.errorMessage || "Unknown error while trying to save automation event.");
+        }
+    }
+
+    /**
+     * Called when the dynamic component needs to execute a request. This
+     * will send the request to the server and return the result.
+     *
+     * @param request The request to send to the server.
+     * @param securityGrantToken The security grant token that the dynamic component is using.
+     *
+     * @returns The response from the server or null if there was an error.
+     */
+    async function onExecuteComponentRequest(request: Record<string, string>, securityGrantToken: string | null): Promise<Record<string, string> | null> {
+        const result = await invokeBlockAction<Record<string, string>>("ExecuteEventComponentRequest", {
+            componentGuid: editEventType.value,
+            request,
+            securityGrantToken
+        });
+
+        if (result.isSuccess) {
+            return result.data;
+        }
+        else {
+            return null;
+        }
+    }
+
+    /**
+     * Called when the individual drags and drops an event item in the list.
+     *
+     * @param item The item that has been moved in the list.
+     * @param beforeItem The item it has been moved before. This will be null if the item is now at the end of the list.
+     */
+    async function onOrderChanged(item: AutomationEventBag, beforeItem: AutomationEventBag | null): Promise<void> {
+        const result = await invokeBlockAction<string>("ReorderEvent", {
+            key: item.idKey,
+            beforeKey: beforeItem?.idKey ?? null
+        });
+
+        if (result.isSuccess) {
+            const newEvents = [...events.value];
+            const index = newEvents.findIndex(ev => ev.idKey === item.idKey);
+            const eventItem = newEvents.splice(index, 1)[0];
+
+            if (beforeItem) {
+                const beforeIndex = newEvents.findIndex(ev => ev.idKey === beforeItem.idKey);
+                newEvents.splice(beforeIndex, 0, eventItem);
+            }
+            else {
+                newEvents.push(eventItem);
+            }
+
+            events.value = newEvents;
+        }
+        else {
+            await alert(result.errorMessage || "Unable to reorder events.");
+        }
+    }
+
+    /**
+     * Called when the event type is changed. This will update the component
+     * definition and the component data.
+     *
+     * @param value The value of the event type that has been selected.
+     */
+    async function onEditEventTypeChanged(value: string | string[]): Promise<void> {
+        if (Array.isArray(value) || editEventType.value === value) {
+            return;
+        }
+
+        editComponentDefinition.value = null;
+        editComponentData.value = {};
+        editEventType.value = value ?? "";
+
+        if (!editEventType.value) {
+            return;
+        }
+
+        isEditLoadingEventType.value = true;
+
+        try {
+            const result = await invokeBlockAction<GetComponentDefinitionResponseBag>("GetEventComponentDefinition", {
+                componentGuid: editEventType.value
+            });
+
+            if (result.isSuccess && result.data) {
+                editComponentDefinition.value = result.data.componentDefinition ?? null;
+                editComponentData.value = result.data.componentConfiguration ?? {};
+            }
+        }
+        finally {
+            isEditLoadingEventType.value = false;
+        }
+    }
+
+    // #endregion
+</script>

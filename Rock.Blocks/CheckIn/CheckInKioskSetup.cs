@@ -147,6 +147,9 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A new instance of <see cref="KioskBag"/>.</returns>
         internal static WebKioskBag GetKioskBag( DeviceCache kiosk )
         {
+            var isAddingFamiliesAllowed = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean();
+            var isEditingFamiliesAllowed = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean();
+
             var bag = new WebKioskBag
             {
                 Id = kiosk.IdKey,
@@ -155,7 +158,9 @@ namespace Rock.Blocks.CheckIn
                 Type = kiosk.KioskType,
                 IsCameraEnabled = kiosk.HasCamera,
                 CameraMode = kiosk.CameraBarcodeConfigurationType ?? CameraBarcodeConfiguration.Off,
-                IsRegistrationModeEnabled = kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean()
+                IsRegistrationModeEnabled = isAddingFamiliesAllowed || isEditingFamiliesAllowed,
+                IsAddingFamiliesEnabled = isAddingFamiliesAllowed,
+                IsEditingFamiliesEnabled = isEditingFamiliesAllowed
             };
 
             return bag;

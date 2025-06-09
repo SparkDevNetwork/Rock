@@ -39,7 +39,4 @@ export type ChatConfigurationBag = {
 
     /** Gets or sets the system default for whether individuals can receive direct messages from anybody in the system. */
     isOpenDirectMessagingAllowed: boolean;
-
-    /** Gets or sets the workflow type that will be launched every time a chat user is created. */
-    welcomeWorkflowType?: ListItemBag | null;
 };

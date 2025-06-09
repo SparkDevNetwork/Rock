@@ -175,7 +175,6 @@ namespace Rock.Model
         /// <param name="level">The level of ancestors to retrieve (1 = parent, 2 = grandparent, etc.)</param>
         /// <param name="childCategoryIds">The child category identifiers.</param>
         /// <returns></returns>
-        [RockInternal( "1.15.2" )]
         internal IEnumerable<Category> GetAncestors( int level, params int[] childCategoryIds )
         {
             return ExecuteQuery( $@"

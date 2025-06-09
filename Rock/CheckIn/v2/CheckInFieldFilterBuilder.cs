@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Reporting;
 using Rock.Utility;
 using Rock.ViewModels.Reporting;
+using Rock.Web.Cache;
 
 namespace Rock.CheckIn.v2
 {
@@ -48,6 +49,19 @@ namespace Rock.CheckIn.v2
             .FirstOrDefault()
             .MakeGenericMethod( typeof( string ) ) );
 
+        /// <summary>
+        /// The MethodInfo that describes the Enumerable.Any method taking
+        /// a <see cref="int"/> as a generic type.
+        /// </summary>
+        private static readonly Lazy<MethodInfo> _anyIntegerMethod = new Lazy<MethodInfo>( () => typeof( Enumerable )
+            .GetMethods()
+            .Where( m => m.Name == nameof( Enumerable.Any )
+                && m.GetParameters().Length == 2
+                && m.GetParameters()[1].ParameterType.IsGenericType
+                && m.GetParameters()[1].ParameterType.GetGenericTypeDefinition() == typeof( Func<,> ) )
+            .FirstOrDefault()
+            .MakeGenericMethod( typeof( int ) ) );
+
         /// <inheritdoc/>
         protected override Expression GetRulePropertyExpression( Expression instanceExpression, FieldFilterRuleBag rule, RockContext rockContext )
         {
@@ -56,6 +70,19 @@ namespace Rock.CheckIn.v2
             // but bail out just in case.
             if ( typeof( Data.IEntity ).IsAssignableFrom( instanceExpression.Type ) || rockContext != null )
             {
+                // Special handling of certain properties.
+                if ( instanceExpression.Type == typeof( Model.Person ) )
+                {
+                    if ( rule.PropertyName == nameof( Model.Person.AgePrecise ) )
+                    {
+                        return GetAgePreciseExpression( instanceExpression, rule, rockContext );
+                    }
+                    else if ( rule.PropertyName == nameof( Model.Person.GradeOffset ) )
+                    {
+                        return GetGradeOffsetExpression( instanceExpression, rule, rockContext );
+                    }
+                }
+
                 return base.GetRulePropertyExpression( instanceExpression, rule, rockContext );
             }
 
@@ -71,20 +98,22 @@ namespace Rock.CheckIn.v2
             if ( typeof( ICollection<string> ).IsAssignableFrom( property.PropertyType ) )
             {
                 // If the property is a collection of strings, then we want
-                // to run the normal text expression on all strings in the
+                // to run the normal text expression on all values in the
                 // collection and return true if any of them match. We also
                 // need to convert everything to lower case so so that the
                 // comparisons happen case-insensitive.
                 var filterValues = new List<string>
-                    {
-                        rule.ComparisonType.ConvertToString( false ),
-                        rule.Value?.ToLower()
-                    };
+                {
+                    rule.ComparisonType.ConvertToString( false ),
+                    rule.Value?.ToLower()
+                };
 
                 var propertyExpression = Expression.Property( instanceExpression, property );
 
-                // Create an expression for prop.Any( (s) => s.ToLower() == value ) and then pass
-                // that value to the property filter expression.
+                // Create an expression patterned like property.Any( (s) => s.ToLower() == value )
+                // and then pass that value to the property filter expression.
+                // The actual conditional expression will be provided by the
+                // PropertyFilterExpression method.
                 var innerParameterExpression = Expression.Parameter( typeof( string ), "s" );
                 var lowerStringExpression = Expression.Call( innerParameterExpression, nameof( string.ToLower ), Type.EmptyTypes );
                 var propertyFilterExpression = ExpressionHelper.PropertyFilterExpression( filterValues, lowerStringExpression );
@@ -92,8 +121,70 @@ namespace Rock.CheckIn.v2
 
                 return Expression.Call( _anyStringMethod.Value, propertyExpression, propertyFilterFunc );
             }
+            else if ( typeof( ICollection<int> ).IsAssignableFrom( property.PropertyType ) )
+            {
+                // If the property is a collection of integers, then we want
+                // to run the normal integer expression on all values in the
+                // collection and return true if any of them match.
+                var filterValues = new List<string>
+                {
+                    rule.ComparisonType.ConvertToString( false ),
+                    rule.Value
+                };
+
+                var propertyExpression = Expression.Property( instanceExpression, property );
+
+                // Create an expression patterned like property.Any( (v) => v == value )
+                // and then pass that value to the property filter expression.
+                // The actual conditional expression will be provided by the
+                // PropertyFilterExpression method.
+                var innerParameterExpression = Expression.Parameter( typeof( int ), "v" );
+                var propertyFilterExpression = ExpressionHelper.PropertyFilterExpression( filterValues, innerParameterExpression );
+                var propertyFilterFunc = Expression.Lambda<Func<int, bool>>( propertyFilterExpression, innerParameterExpression );
+
+                return Expression.Call( _anyIntegerMethod.Value, propertyExpression, propertyFilterFunc );
+            }
+
 
             return base.GetRulePropertyExpression( instanceExpression, rule, rockContext );
+        }
+
+        /// <summary>
+        /// Gets the expression that will be used to evaluate a rule for the
+        /// <see cref="Model.Person.GradeOffset"/> property.
+        /// </summary>
+        /// <param name="instanceExpression">The expression that will identify the object instance to be evaluated. This will already point to the object specified by the rule path.</param>
+        /// <param name="rule">The object that contains the filter rule information.</param>
+        /// <param name="rockContext">If <c>null</c> then an in-memory expression will be created; otherwise this specifies the database context the expression will be used in.</param>
+        /// <returns>An expression that evaluates instances of <paramref name="instanceExpression"/>.</returns>
+        private Expression GetGradeOffsetExpression( Expression instanceExpression, FieldFilterRuleBag rule, RockContext rockContext )
+        {
+            var gradeOffsetProperty = typeof( Model.Person ).GetProperty( nameof( Model.Person.GradeOffset ) );
+            var entityField = new EntityField( gradeOffsetProperty.Name, FieldKind.Property, gradeOffsetProperty )
+            {
+                FieldType = FieldTypeCache.Get( SystemGuid.FieldType.INTEGER.AsGuid(), rockContext )
+            };
+
+            return GetEntityFieldRulePropertyExpression( entityField, instanceExpression, rule, rockContext );
+        }
+
+        /// <summary>
+        /// Gets the expression that will be used to evaluate a rule for the
+        /// <see cref="Model.Person.AgePrecise"/> property.
+        /// </summary>
+        /// <param name="instanceExpression">The expression that will identify the object instance to be evaluated. This will already point to the object specified by the rule path.</param>
+        /// <param name="rule">The object that contains the filter rule information.</param>
+        /// <param name="rockContext">If <c>null</c> then an in-memory expression will be created; otherwise this specifies the database context the expression will be used in.</param>
+        /// <returns>An expression that evaluates instances of <paramref name="instanceExpression"/>.</returns>
+        private Expression GetAgePreciseExpression( Expression instanceExpression, FieldFilterRuleBag rule, RockContext rockContext )
+        {
+            var agePreciseProperty = typeof( Model.Person ).GetProperty( nameof( Model.Person.AgePrecise ) );
+            var entityField = new EntityField( agePreciseProperty.Name, FieldKind.Property, agePreciseProperty )
+            {
+                FieldType = FieldTypeCache.Get( SystemGuid.FieldType.DECIMAL.AsGuid(), rockContext )
+            };
+
+            return GetEntityFieldRulePropertyExpression( entityField, instanceExpression, rule, rockContext );
         }
     }
 }

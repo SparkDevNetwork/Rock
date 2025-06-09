@@ -1,0 +1,60 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="panel">
+        <div class="panel-heading">
+            <p>Your communication is being created. This may take some time for a large number of recipients...</p>
+        </div>
+
+        <div class="panel-body">
+            <div>
+                <span class="mr-1"><i class="fa fa-spinner fa-spin"></i></span>
+                <span>{{ message }}</span>
+            </div>
+            <div v-if="isProgressBarShown" class="mt-1">
+                <ProgressBar :percent="completionPercentage"
+                             :showCompletionText="true" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, ref, PropType } from "vue";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+
+    const props = defineProps({
+        sendingProgressMessage: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        completionPercentage: {
+            type: Number as PropType<number>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const isProgressBarShown = ref<boolean>(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const message = computed<string>(() => {
+        return props.sendingProgressMessage || "Loading...";
+    });
+
+    // #endregion Computed Values
+
+    // #region Hooks
+
+    onMounted(() => {
+        setTimeout(() => {
+            isProgressBarShown.value = true;
+        }, 5000);
+    });
+
+    // #endregion Hooks
+</script>

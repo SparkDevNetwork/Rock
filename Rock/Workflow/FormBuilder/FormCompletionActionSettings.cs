@@ -41,7 +41,7 @@ namespace Rock.Workflow.FormBuilder
         public FormCompletionActionType Type { get; set; }
 
         /// <summary>
-        /// Contains the HTML message content that should be displayed to the
+        /// Contains the text message content that should be displayed to the
         /// individual after the form has been submitted.
         /// </summary>
         /// <remarks>

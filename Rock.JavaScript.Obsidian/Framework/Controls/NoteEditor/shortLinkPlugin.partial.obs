@@ -1,0 +1,406 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isShown"
+           saveText="Save"
+           title="Create Shortlink"
+           @save="onShortLinkPicked">
+        <div class="row">
+            <div class="col-sm-6">
+                <UrlLinkBox v-model="destinationUrl"
+                            :help="destinationUrlHelpText"
+                            label="Destination URL"
+                            rules="required" />
+            </div>
+
+            <div class="col-sm-6">
+                <TextBox v-model="token"
+                         :disabled="isImpersonationEnabled"
+                         :help="tokenHelpText"
+                         label="Token"
+                         :placeholder="isImpersonationEnabled ? `Unique value generated per recipient` : `Leave blank to auto-generate or enter your own`"
+                         :rules="[isValidToken, createMinLengthRule(tokenMinLength ?? 0)]" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-6">
+                <DropDownList v-if="hasMultipleValues(sites)"
+                              v-model="siteIdOrEmptyString"
+                              help="The site to use for the shortlink."
+                              :items="sites"
+                              label="Shortlink Site"
+                              rules="required"
+                              :showEnabledForShortLinkOnly="true" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-sm-3">
+                <Switch v-model="isImpersonationEnabled"
+                        :disableLabel="true"
+                        label=""
+                        text="Enable Impersonation"
+                        @update:modelValue="onIsImpersonationEnabledUpdated" />
+            </div>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <div v-if="isImpersonationEnabled" class="row">
+                <div class="col-sm-3">
+                    <NumberBox v-model="impersonationExpirationMinutes"
+                               help="Set the number of minutes before the impersonation token expires. Leave blank for no expiration."
+                               label="Expiration in Minutes">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">mins</span>
+                        </template>
+                    </NumberBox>
+                </div>
+
+                <div class="col-sm-3">
+                    <NumberBox v-model="impersonationMaxUsageLimit"
+                               help="Specify the maximum number of times the impersonation token can be used. Leave blank for unlimited use."
+                               label="Max Usage Limit" />
+                </div>
+
+                <div class="col-sm-3">
+                    <PagePicker v-model="impersonationPage"
+                                help="Restrict the shortlink's impersonation to a specific page. Leave blank to allow all pages."
+                                label="Limit Impersonation to Page" />
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    /**
+     * ShortLinkPlugin - Adds a toolbar button for adding a short link at the current
+     * cursor position in the editor.
+     *
+     * @example
+     * <!--
+     *      someEditorHost.obs - This example shows just enough code to wire up the plugin.
+     *      FYI, the Vue - Official extension complains if template and script tags are used in comments,
+     *      so using (template) and (script) for now.
+     * -->
+     * (template)
+     *   <div id="uniqueEditorId">
+     *     <ShortLinkPlugin ref="shortLinkPlugin" />
+     *   </div>
+     * (/template)
+     *
+     * (script setup lang="ts")
+     *   import ShortLinkPlugin from "./NoteEditor/shortLinkPlugin.partial.obs";
+     *   ...
+     *
+     *   const shortLinkPlugin = ref<InstanceType<typeof ShortLinkPlugin> | undefined>();
+     *   ...
+     *
+     *   // The host must provide the plugins feature.
+     *   const pluginManager = providePluginsFeature({
+     *       editorInstance: computed(() => tinyMceInstance.value),
+     *       toolbarElement: computed(() => toolbarElement.value)
+     *   });
+     *   ...
+     *
+     *   // Initialize the editor.
+     *   onMounted(() => {
+     *     ...
+     *
+     *     tinymce.init({
+     *       // The short link button can be placed anywhere in this configuration string.
+     *       // Here, the toolbar will display
+     *       // the short link button, followed by a separator character,
+     *       // then the undo and redo buttons.
+     *       // Reference: https://www.tiny.cloud/docs/tinymce/6/toolbar-configuration-options/#example-grouped-toolbar
+     *       toolbar: `${shortLinkPlugin.value?.id} | undo redo`
+     *     });
+     *
+     *     ...
+     *   });
+     * (/script)
+     */
+    import { PropType, ref, watch } from "vue";
+    import { getToolbarButton, usePluginHelper } from "./utils.partial";
+    import { Editor, Ui } from "@Obsidian/Libs/tinymce";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ValidationResult } from "@Obsidian/ValidationRules";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+
+    const props = defineProps({
+        checkToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        cssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        isIconHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        label: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        sites: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: true
+        },
+
+        tokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
+
+        getPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>,
+            required: true
+        }
+    });
+
+    const id = "rockshortlink" as const;
+    const tooltip = "Create Shortlink" as const;
+
+    defineExpose({
+        id
+    });
+
+    const destinationUrlHelpText = `Enter the full URL that the shortlink will direct to. Be sure to include "http://" or "https://".`;
+    const tokenHelpText = `Provide a unique token for the shortlink. This will be the identifiable portion of the shortlink (e.g., "my-link" in "short.ly/my-link"). Use only letters, numbers, or dashes. Leave blank to generate a unique value for each recipient.`;
+
+    //#region Values
+
+    // UI state.
+    const { editorInstance, toolbarElement } = usePluginHelper();
+    const toolbarButtonElement = ref<HTMLElement | undefined>();
+    const isShown = ref<boolean>(false);
+    const isImpersonationEnabled = ref<boolean>(false);
+
+    // Short link state.
+    const siteIdOrEmptyString = ref<string>("");
+    const destinationUrl = ref<string>("");
+    const token = ref<string>("");
+    const impersonationExpirationMinutes = ref<number | null>(null);
+    const impersonationMaxUsageLimit = ref<number | null>(null);
+    const impersonationPage = ref<PageRouteValueBag | null | undefined>();
+
+    //#endregion
+
+    //#region Computed Values
+
+    function hasMultipleValues<T>(someArray: T[] | null | undefined): someArray is T[] {
+        return Array.isArray(someArray) && someArray.length > 1;
+    }
+
+    //#endregion
+
+    //#region Functions
+
+    async function getShortLinkLava(): Promise<string[]> {
+        const siteId = getSelectedSiteIdOrSingleValue() || "null";
+
+        if (isImpersonationEnabled.value) {
+            const separator = destinationUrl.value.includes("?") ? "&" : "?";
+            const expiryMinutes = `${impersonationExpirationMinutes.value ?? "null"}`;
+            const usageLimit = `${impersonationMaxUsageLimit.value ?? "null"}`;
+            const pageGuid = toGuidOrNull(impersonationPage.value?.page?.value);
+            let pageId = "null";
+
+            if (!isNullish(pageGuid) && !isNullish(props.getPageId)) {
+                const pageIdResult = await props.getPageId(pageGuid);
+
+                if (!isNullish(pageIdResult)) {
+                    pageId = `${pageIdResult}`;
+                }
+            }
+
+            return [
+                // Ensure all entries but the last one use '{%-' to ensure blank lines aren't added.
+                `{%- assign token = Person | PersonTokenCreate:${expiryMinutes},${usageLimit},${pageId} -%}`,
+                `{{ "${destinationUrl.value}${separator}rckipid=" | Append:token | CreateShortLink:'',${siteId} }}`
+            ];
+        }
+        else {
+            // All recipients should get the same shortlink (if it's not blank).
+            const useSameToken = token.value ? "true" : "false";
+
+            return [
+                `{{ "${destinationUrl.value}" | CreateShortLink:'${token.value}',${siteId},${useSameToken} }}`
+            ];
+        }
+    }
+
+    function getSelectedSiteIdOrSingleValue(): string | null {
+        if (siteIdOrEmptyString.value) {
+            // A site was selected so return it.
+            return siteIdOrEmptyString.value;
+        }
+        else if (props.sites?.length === 1) {
+            // There is only one site so return it by default.
+            return props.sites[0].value ?? null;
+        }
+        else {
+            return null;
+        }
+    }
+
+    /** Disposes the tooltip button. */
+    function disposeTooltipButton(): void {
+        // Nothing to dispose.
+    }
+
+    /** Initializes the plugin. */
+    function init(editor: Editor): void {
+        editor.ui.registry.addIcon("rock-short-link", `<svg width="24" height="26" viewBox="0 0 24 26" fill="none" xmlns="http://www.w3.org/2000/svg" style="fill: none;">
+<path d="M5 8.62499C5 9.32119 5.27656 9.98886 5.76884 10.4811C6.26112 10.9734 6.9288 11.25 7.62499 11.25C8.32119 11.25 8.98886 10.9734 9.48114 10.4811C9.97343 9.98886 10.25 9.32119 10.25 8.62499C10.25 7.9288 9.97343 7.26112 9.48114 6.76884C8.98886 6.27656 8.32119 6 7.62499 6C6.9288 6 6.26112 6.27656 5.76884 6.76884C5.27656 7.26112 5 7.9288 5 8.62499Z" stroke="black" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M5 17.375C5 18.0712 5.27656 18.7389 5.76884 19.2311C6.26112 19.7234 6.9288 20 7.62499 20C8.32119 20 8.98886 19.7234 9.48114 19.2311C9.97343 18.7389 10.25 18.0712 10.25 17.375C10.25 16.6788 9.97343 16.0111 9.48114 15.5188C8.98886 15.0266 8.32119 14.75 7.62499 14.75C6.9288 14.75 6.26112 15.0266 5.76884 15.5188C5.27656 16.0111 5 16.6788 5 17.375Z" stroke="black" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M9.90039 10.0254L19.0004 19.1254" stroke="black" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+<path d="M9.90039 15.975L19.0004 6.875" stroke="black" stroke-width="1.75" stroke-linecap="round" stroke-linejoin="round"></path>
+</svg>`);
+
+        editor.ui.registry.addButton(id, {
+            // https://www.tiny.cloud/docs/tinymce/latest/editor-icon-identifiers/
+            icon: !props.isIconHidden ? "rock-short-link" : undefined,
+            text: props.label || undefined,
+            tooltip: tooltip,
+            onSetup: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): (api: Ui.Toolbar.ToolbarButtonInstanceApi) => void => {
+                toolbarButtonElement.value = getToolbarButton(tooltip, toolbarElement.value) ?? undefined;
+
+                showOrHideToolbarButton();
+
+                const tb = toolbarButtonElement.value;
+                if (tb) {
+                    if (props.cssClass) {
+                        tb.classList.add(...props.cssClass.split(" "));
+                    }
+                }
+
+                // Return a dispose callback.
+                return disposeTooltipButton;
+            },
+            onAction: (_api: Ui.Toolbar.ToolbarButtonInstanceApi): void => {
+                isShown.value = true;
+            },
+        });
+    }
+
+    function createMinLengthRule(minLength: number) {
+        return (value: unknown): ValidationResult => {
+            if (!value) {
+                return true;
+            }
+
+            if (typeof value === "string" && value.length >= minLength) {
+                return true;
+            }
+
+            return `must be at least ${minLength} characters`;
+        };
+    }
+
+    function isValidToken(value: unknown): ValidationResult {
+        if (!value) {
+            return true;
+        }
+
+        if (typeof value === "string") {
+            const regex = /^[-a-zA-Z0-9]+$/;
+
+            if (regex.test(value)) {
+                return true;
+            }
+        }
+
+        return "must only contain letters, numbers, or dashes";
+    }
+
+    /** Shows or hides the toolbar button based */
+    function showOrHideToolbarButton(): void {
+        if (toolbarButtonElement.value) {
+            // Set the CSS display value depending on whether there is a value.
+            const display = props.sites?.length ? "" : "none";
+            toolbarButtonElement.value.style.display = display;
+
+            // Also update the display of the toolbar button group if this is the only button in the button group.
+            const parentElement = toolbarButtonElement.value.parentElement;
+            if (parentElement?.classList.contains("tox-toolbar__group") && parentElement.children.length === 1) {
+                parentElement.style.display = display;
+            }
+        }
+    }
+
+    //#endregion Functions
+
+    //#region Event Handlers
+
+    /** Event handler for a short link being created. */
+    async function onShortLinkPicked(): Promise<void> {
+        if (editorInstance.value) {
+            if (props.checkToken && token.value) {
+                const siteId = toNumberOrNull(getSelectedSiteIdOrSingleValue());
+                token.value = await props.checkToken(token.value, siteId ?? 0);
+            }
+
+            const shortLink = (await getShortLinkLava()).join("<br>");
+
+            if (shortLink) {
+                // Insert the merge field value into the editor at the current position.
+                editorInstance.value.insertContent(shortLink);
+            }
+        }
+
+        // Clear the merge field and close the modal.
+        isShown.value = false;
+        isImpersonationEnabled.value = false;
+        siteIdOrEmptyString.value = "";
+        destinationUrl.value = "";
+        token.value = "";
+        impersonationExpirationMinutes.value = null;
+        impersonationMaxUsageLimit.value = null;
+        impersonationPage.value = null;
+    }
+
+    function onIsImpersonationEnabledUpdated(value: boolean): void {
+        if (value) {
+            // Ensure the token is cleared out since one will be generated per person.
+            token.value = "";
+        }
+    }
+
+    //#endregion
+
+    //#region Watchers
+
+    // Hide or show the toolbar button when the siteOptions change.
+    watch(() => props.sites, () => {
+        showOrHideToolbarButton();
+    });
+
+    // Register the plugin whenever the bound Editor changes.
+    watch(editorInstance, () => {
+        // Dispose the previous tooltip button if set.
+        disposeTooltipButton();
+
+        if (editorInstance.value) {
+            init(editorInstance.value);
+        }
+    });
+
+    //#endregion
+</script>

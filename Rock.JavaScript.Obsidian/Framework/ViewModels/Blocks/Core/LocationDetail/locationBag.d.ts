@@ -37,6 +37,9 @@ export type LocationBag = {
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
+    /** Gets or sets the identifier of the bluetooth beacon. */
+    beaconId?: number | null;
+
     /** Gets or sets threshold that will prevent checkin (no option to override) */
     firmRoomThreshold?: string | null;
 

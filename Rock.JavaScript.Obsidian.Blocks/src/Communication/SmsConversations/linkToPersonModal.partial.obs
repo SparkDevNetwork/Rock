@@ -1,33 +1,30 @@
 <template>
-    <TabbedModal v-model="isVisible"
-                 v-model:selectedTab="selectedTab"
-                 :tabs="['Add New Person', 'Link Existing Person']"
-                 :title="`Link Phone Number ${recipientPhoneNumber} to Person`"
-                 cancelText="Cancel"
-                 saveText="Save"
-                 @save="onSave">
-        <template #prepend>
-            <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)" alertType="danger">
-                {{ errorMessage }}
-            </NotificationBox>
-            <NotificationBox v-else alertType="info" style="font-weight: 600">
-                To prevent data loss and to ensure the highest level of security, a merge request will be created upon pressing Save.
-            </NotificationBox>
+    <Modal v-model="isVisible"
+           :title="`Link Phone Number ${recipientPhoneNumber} to Person`"
+           cancelText="Cancel"
+           saveText="Save"
+           @save="onSave">
+        <NotificationBox v-if="!isNullOrWhiteSpace(errorMessage)" alertType="danger">
+            {{ errorMessage }}
+        </NotificationBox>
+        <NotificationBox v-else alertType="info" style="font-weight: 600">
+            To prevent data loss and to ensure the highest level of security, a merge request will be created upon pressing Save.
+        </NotificationBox>
+        <div class="mb-3">
+            <ButtonGroup v-model="linkType"
+                         :btnSize="BtnSize.Default"
+                         :btnType="BtnType.Default"
+                         :items="linkTypes" />
+        </div>
+        <template v-if="linkType === 'Add New Person'">
+            <PersonBasicEditor v-model="newPerson" />
         </template>
-        <template #tabpane="{ item }">
-            <template v-if="item === selectedTab">
-                <template v-if="item === 'Add New Person'">
-                    <PersonBasicEditor v-model="newPerson" />
-
-                </template>
-                <template v-else>
-                    <PersonPicker v-model="existingPerson"
-                                  label="Person"
-                                  rules="required" />
-                </template>
-            </template>
+        <template v-else>
+            <PersonPicker v-model="existingPerson"
+                          label="Person"
+                          rules="required" />
         </template>
-    </TabbedModal>
+    </Modal>
 </template>
 
 <script setup lang="ts">
@@ -35,8 +32,11 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { PropType, ref, computed } from "vue";
-    import TabbedModal from "@Obsidian/Controls/tabbedModal.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
@@ -64,9 +64,19 @@
         (e: "linkToPerson", value: ListItemBag | undefined): void;
         (e: "dismissMessage"): void
     }>();
+    const linkTypes = [
+        {
+            text: "Add New Person",
+            value: "Add New Person"
+        },
+        {
+            text: "Link Existing Person",
+            value: "Link Existing Person"
+        }
+    ];
 
     const isVisible = useVModelPassthrough(props, "modelValue", emit);
-    const selectedTab = ref();
+    const linkType = ref<string>("Add New Person");
     const newPerson = ref<PersonBasicEditorBag>({});
     const existingPerson = ref<ListItemBag>();
 
@@ -74,7 +84,7 @@
     const recipientPhoneNumber = computed(() => props.recipientPhoneNumber);
 
     function onSave(): void {
-        if (selectedTab.value === "Add New Person") {
+        if (linkType.value === "Add New Person") {
             const bag = newPerson.value;
             emit("saveNewPerson", bag);
         }

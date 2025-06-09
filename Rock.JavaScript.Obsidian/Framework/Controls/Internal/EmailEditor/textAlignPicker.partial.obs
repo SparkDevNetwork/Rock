@@ -1,0 +1,116 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SingleSelectButtonGroup v-model="internalTextAlignment"
+                             v-bind="standardFieldProps"
+                             :disableLabel="!label"
+                             @update:modelValue="onHorizontalAlignmentUpdated">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('left')"
+                        title="Left"
+                        @click="selectValue('left')">
+                <i class="fa fa-align-left"></i>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('center')"
+                        title="Center"
+                        @click="selectValue('center')">
+                <i class="fa fa-align-center"></i>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('right')"
+                        title="Right"
+                        @click="selectValue('right')">
+                <i class="fa fa-align-right"></i>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('justify')"
+                        title="Justify"
+                        @click="selectValue('justify')">
+                <i class="fa fa-align-justify"></i>
+            </RockButton>
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<style scoped>
+svg {
+    height: 16px;
+    width: 16px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import SingleSelectButtonGroup from "./singleSelectButtonGroup.partial.obs";
+    import { TextAlignment, ValueProvider } from "./types.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        label: {
+            type: String as PropType<string>,
+            default: "Text Align" as const
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<string | null | undefined>>,
+            required: true
+        }
+    });
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    // #region Computed Props
+
+    // Set the numeric value from the element OR from the input CSS styles.
+    const internalTextAlignment = computed<TextAlignment | "">({
+        get(): TextAlignment | "" {
+            return getTextAlignment(props.valueProvider.value) ?? "";
+        },
+        set(newValue: TextAlignment | ""): void {
+            props.valueProvider.value = newValue || null;
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Functions
+
+    function getTextAlignment(propertyValue: string | null | undefined): TextAlignment | null {
+        switch (propertyValue) {
+            case "left":
+                return "left";
+            case "right":
+                return "right";
+            case "center":
+                return "center";
+            case "justify":
+                return "justify";
+            default:
+                return null;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the line height control being updated.
+     */
+    function onHorizontalAlignmentUpdated(value: string | null | undefined): void {
+        props.valueProvider.value = value;
+    }
+
+    // #endregion Event Handlers
+</script>

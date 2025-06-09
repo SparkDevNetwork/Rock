@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Lms.LearningActivityComponent
@@ -33,6 +35,12 @@ namespace Rock.ViewModels.Blocks.Lms.LearningActivityComponent
         /// Gets or sets the url to the activity component.
         /// </summary>
         public string ComponentUrl { get; set; }
+
+        /// <summary>
+        /// Additional configuration data for the component to use when
+        /// rendering the UI.
+        /// </summary>
+        public Dictionary<string, string> ComponentConfiguration { get; set; }
 
         /// <summary>
         /// Gets or sets the highlight color of the activity component.

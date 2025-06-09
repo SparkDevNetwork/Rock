@@ -25,6 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -61,6 +64,72 @@ namespace Rock.Reporting.DataFilter.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/groupTypeFirstAttendanceFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            string[] options = selection.Split( '|' );
+            if ( options.Length >= 4 )
+            {
+                var groupTypeGuids = options[0].Split( ',' ).AsGuidList();
+                var groupTypes = groupTypeGuids
+                    .Select( gt => GroupTypeCache.Get( gt )?.ToListItemBag() )
+                    .Where( gt => gt != null )
+                    .ToList();
+                var dateRange = "";
+
+                var lastXWeeks = options[3].AsIntegerOrNull();
+                if ( lastXWeeks.HasValue )
+                {
+                    // selection was from when it just simply a LastXWeeks instead of Sliding Date Range
+                    // Last X Weeks was treated as "LastXWeeks * 7" days, so we have to convert it to a SlidingDateRange of Days to keep consistent behavior
+                    dateRange = $"Last|{lastXWeeks * 7}|Day||";
+                }
+                else
+                {
+                    // convert from comma-delimited to pipe since we store it as comma delimited so that we can use pipe delimited for the selection values
+                    dateRange = options[3].Replace( ',', '|' );
+                }
+
+                data.AddOrReplace( "groupTypes", groupTypes.ToCamelCaseJson( false, true ) );
+                data.AddOrReplace( "dateRange", dateRange );
+
+                if ( options.Length >= 5 )
+                {
+                    var includeChildGroupTypes = options[4];
+
+                    data.AddOrReplace( "includeChildGroupTypes", includeChildGroupTypes );
+                }
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupTypes = data.GetValueOrNull( "groupTypes" )?.FromJsonOrNull<List<ListItemBag>>() ?? new List<ListItemBag>();
+            var groupTypeGuids = groupTypes.Select( a => a.Value ).ToList().AsDelimited( "," );
+            var dateRange = data.GetValueOrDefault( "dateRange", "Last|7|Day||" ).Replace( '|', ',' );
+            var includeChildGroupTypes = data.GetValueOrDefault( "includeChildGroupTypes", "False" );
+
+            return $"{groupTypeGuids}|256|1|{dateRange}|{includeChildGroupTypes}";
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <inheritdoc/>
@@ -93,7 +162,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 foreach ( string groupTypeId in listOfGroupTypeIds )
                 {
-                    groupType += $" { GroupTypeCache.Get( groupTypeId.AsGuid() ) },";
+                    groupType += $" {GroupTypeCache.Get( groupTypeId.AsGuid() )},";
                 }
 
                 groupType = groupType.TrimStart( ' ' );
@@ -168,7 +237,7 @@ namespace Rock.Reporting.DataFilter.Person
             var groupValues = string.Empty;
             foreach ( Guid groupTypeOutput in gtpGroupsTypes.SelectedGroupTypeGuids )
             {
-                groupValues += $"{ groupTypeOutput },";
+                groupValues += $"{groupTypeOutput},";
             }
 
             groupValues = groupValues.TrimEnd( ',' );
@@ -235,7 +304,7 @@ namespace Rock.Reporting.DataFilter.Person
             var groupValues = string.Empty;
             foreach ( Guid groupTypeOutput in gtpGroupsTypes.SelectedGroupTypeGuids )
             {
-                groupValues += $"{ groupTypeOutput },";
+                groupValues += $"{groupTypeOutput},";
             }
 
             groupValues = groupValues.TrimEnd( ',' );

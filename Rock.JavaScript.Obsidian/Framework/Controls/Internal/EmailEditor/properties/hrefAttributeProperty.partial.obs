@@ -1,0 +1,76 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TextBoxProperty v-bind="$attrs"
+                     :label="label"
+                     :valueProvider="valueProvider">
+        <template #inputGroupPrepend>
+            <span class="input-group-addon"><i class="fa fa-link"></i></span>
+        </template>
+    </TextBoxProperty>
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import TextBoxProperty from "./textBoxProperty.partial.obs";
+    import { attributeProvider } from "../providers.partial";
+    import { ValueProvider } from "../types.partial";
+    import { stringConverter } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "URL" as const
+        },
+
+        /**
+         * Changes are copied to these elements.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+    });
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<string | null | undefined>>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<string | null | undefined> {
+        return attributeProvider(
+            props.element,
+            "href",
+            stringConverter,
+            props.copyToElements
+        );
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements], () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

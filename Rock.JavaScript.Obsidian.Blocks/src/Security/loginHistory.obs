@@ -1,0 +1,182 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <Grid :definition="gridDefinition"
+          :data="gridDataSource"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
+          title="Login History"
+          keyField="historyLoginGuid"
+          itemTerm="Login History"
+          tooltipField="tooltip"
+          gridSettings
+          :gridSettingsActive="hasSettingsFilters"
+          @gridSettingsClick="isGridSettingsVisible = true">
+
+        <DateTimeColumn name="dateTime"
+                        field="dateTime"
+                        title="Date Time"
+                        :filter="dateValueFilter" />
+
+        <PersonColumn v-if="hasPersonColumn"
+                      name="person"
+                      field="person"
+                      title="Person"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonFilterValue"
+                      :quickFilterValue="getPersonFilterValue" />
+
+        <TextColumn name="provider"
+                    field="provider"
+                    title="Provider"
+                    visiblePriority="md"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn name="username"
+                    field="username"
+                    title="Username"
+                    visiblePriority="md"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn name="source"
+                    field="source"
+                    title="Source"
+                    visiblePriority="lg"
+                    :filter="pickExistingValueFilter" />
+
+        <TextColumn name="clientIp"
+                    field="clientIp"
+                    title="Client IP"
+                    visiblePriority="lg"
+                    :filter="pickExistingValueFilter" />
+
+        <LabelColumn name="status"
+                     field="status"
+                     title="Status"
+                     defaultLabelClass="warning"
+                     :classSource="statusLabelColors"
+                     :filter="pickExistingValueFilter" />
+
+    </Grid>
+
+    <GridSettingsModal v-model="gridSettings"
+                       v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange" />
+</template>
+
+<script setup lang="ts">
+    import { computed, reactive, ref, watch } from "vue";
+    import GridSettingsModal from "./LoginHistory/gridSettingsModal.partial.obs";
+    import { GridSettingsOptions, PreferenceKey } from "./LoginHistory/types.partial";
+    import Grid, { DateTimeColumn, dateValueFilter, LabelColumn, PersonColumn, pickExistingValueFilter, TextColumn } from "@Obsidian/Controls/grid";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { LoginHistoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/LoginHistory/loginHistoryOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+
+    const config = useConfigurationValues<ListBlockBox<LoginHistoryOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const statusLabelColors: Record<string, string> = {
+        Success: "success"
+    };
+
+    // We'll enforce a default date range of the last 30 days - to be applied if
+    // the individual doesn't have a preference - as the [HistoryLogin] table
+    // can have a large number of rows.
+    const defaultSlidingDateRange: SlidingDateRange = {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Day,
+        timeValue: 30
+    };
+
+    // #region Values
+
+    const gridDefinition = ref<GridDefinitionBag | undefined>(config.gridDefinition ?? undefined);
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const isGridSettingsVisible = ref(false);
+    const gridSettings = ref<GridSettingsOptions>({
+        slidingDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterSlidingDateRange))
+    });
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    /**
+     * `true` if the grid has a person column.
+     */
+    const hasPersonColumn = computed((): boolean => {
+        return !!(
+            gridDefinition.value?.fields?.some(f => f.name === "person")
+        );
+    });
+
+    /**
+     * Always `true`, since we're enforcing a default date range.
+     * */
+    const hasSettingsFilters = computed((): boolean => {
+        return true;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while tring to load grid data.");
+        }
+    }
+
+    /**
+    * Gets the filter value text to use for the person column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(gridSettings, async () => {
+        const slidingDateRangeString = gridSettings.value.slidingDateRange
+            ? slidingDateRangeToString(gridSettings.value.slidingDateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange);
+
+        preferences.setValue(PreferenceKey.FilterSlidingDateRange, slidingDateRangeString);
+
+        await preferences.save();
+
+        gridDataSource.value = loadGridData();
+    });
+
+    // #endregion Watchers
+
+    gridDataSource.value = loadGridData();
+</script>

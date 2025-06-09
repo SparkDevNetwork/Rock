@@ -1,0 +1,29 @@
+.workflow-activity {
+  position: relative;
+  margin: 0 0 8px;
+
+  > .panel-heading {
+    background: var(--color-interface-softest);
+    border-bottom: 0;
+
+    &:hover {
+      background: var(--color-interface-softer);
+    }
+
+    > .pull-right {
+      flex-shrink: 0;
+      align-self: flex-start;
+    }
+  }
+
+
+  .btn-action.add-action {
+    color: var(--color-interface-strong);
+    background-color: var(--color-interface-softest);
+    border-color: var(--color-interface-soft);
+  }
+
+  &:last-of-type {
+    margin-bottom: 0;
+  }
+}

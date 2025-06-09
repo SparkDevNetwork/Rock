@@ -22,9 +22,13 @@ using System.Threading.Tasks;
 using System.Web.Http;
 using System.Web.Http.Routing;
 
+using Microsoft.Extensions.Logging;
+
+using Rock.Logging;
 using Rock.Model;
 using Rock.Utility;
 
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Rest.Swagger" )]
 namespace Rock.Rest.Swagger
 {
     /// <summary>
@@ -76,7 +80,8 @@ namespace Rock.Rest.Swagger
                 }
                 catch ( Exception ex )
                 {
-                    ExceptionLogService.LogException( new Exception( "Failed to initialize the API documentation during startup.", ex ) );
+                    var logger = RockLogger.LoggerFactory.CreateLogger( "Rock.Rest.Swagger" );
+                    logger.LogWarning( ex, "Failed to initialize the API documentation during startup." );
                 }
             } );
         }

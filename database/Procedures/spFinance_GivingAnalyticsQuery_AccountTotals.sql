@@ -16,16 +16,16 @@ ALTER PROCEDURE [dbo].[spFinance_GivingAnalyticsQuery_AccountTotals]
 	                    SET @EndDate = COALESCE( @EndDate, '2100-01-01' )
 
 	                    DECLARE @AccountTbl TABLE ( [Id] int )
-	                    INSERT INTO @AccountTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@AccountIds,'') )
+	                    INSERT INTO @AccountTbl SELECT value FROM STRING_SPLIT(@AccountIds,',')
 
 	                    DECLARE @CurrencyTypeTbl TABLE ( [Id] int )
-	                    INSERT INTO @CurrencyTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@CurrencyTypeIds,'') )
+	                    INSERT INTO @CurrencyTypeTbl SELECT value FROM STRING_SPLIT(@CurrencyTypeIds,',')
 
 	                    DECLARE @SourceTypeTbl TABLE ( [Id] int )
-	                    INSERT INTO @SourceTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@SourceTypeIds,'') )
+	                    INSERT INTO @SourceTypeTbl SELECT value FROM STRING_SPLIT(@SourceTypeIds,',')
 
 	                    DECLARE @TransactionTypeTbl TABLE ( [Id] int )
-	                    INSERT INTO @TransactionTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@TransactionTypeIds,'') )
+	                    INSERT INTO @TransactionTypeTbl SELECT value FROM STRING_SPLIT(@TransactionTypeIds,',')
 
  	                    SELECT
 		                    [GivingId],

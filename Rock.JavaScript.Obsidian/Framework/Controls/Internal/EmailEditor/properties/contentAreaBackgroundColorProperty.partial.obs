@@ -1,0 +1,98 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList v-model="contentAlignment"
+                  :disableLabel="!label"
+                  :items="[
+                      {
+                          value: 'left',
+                          text: 'Left'
+                      },
+                      {
+                          value: 'center',
+                          text: 'Center'
+                      },
+                      {
+                          value: 'right',
+                          text: 'Right'
+                      },
+                  ]"
+                  :label="label"
+                  @update:modelValue="onContentAlignmentUpdated" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { addContentAreaElementsIfMissing, findDescendantContentAreaElements } from "../utils.partial";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Content Area Alignment" as const
+        }
+    });
+
+    // #region Values
+
+    const {
+        outerTable: initialOuterTable,
+        outerTableTd: initialOuterTableTd,
+        innerTable: initialInnerTable
+    } = findDescendantContentAreaElements(props.element);
+    const outerTableElement = ref<HTMLElement | undefined>(initialOuterTable);
+    const innerTableElement = ref<HTMLElement | undefined>(initialInnerTable);
+    const contentAlignment = ref<string>(findContentAlignment(initialOuterTableTd));
+
+    // #endregion
+
+    // #region Functions
+
+    function findContentAlignment(outerTableTd: HTMLElement | undefined): string {
+        return outerTableTd?.getAttribute("align") ?? "";
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onContentAlignmentUpdated(value: string | string[]): void {
+        if (Array.isArray(value)) {
+            value = value[0] ?? "";
+        }
+
+        if (value !== "") {
+            console.log(`added by contentbackgroundcolor`);
+            const {
+                outerTable,
+                outerTableTd,
+                innerTable
+            } = addContentAreaElementsIfMissing(props.element);
+            outerTableElement.value = outerTable;
+            innerTableElement.value = innerTable;
+
+            outerTableTd.setAttribute("align", value);
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.element, element => {
+        const {
+            outerTable: initialOuterTable,
+            outerTableTd: initialOuterTableTd,
+            innerTable: initialInnerTable
+        } = findDescendantContentAreaElements(element);
+        outerTableElement.value = initialOuterTable;
+        innerTableElement.value = initialInnerTable;
+        contentAlignment.value = findContentAlignment(initialOuterTableTd);
+    });
+
+    // #endregion Watchers
+</script>

@@ -44,11 +44,20 @@ export type FinancialPersonSavedAccountBag = {
     /** Gets or sets the expiration date of the saved account. */
     expirationDate?: string | null;
 
+    /** Gets or sets the GUID for this saved account. */
+    guid: Guid;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
     /** Gets or sets the image source for the saved account. */
     imageSource?: string | null;
+
+    /**
+     * Whether or not the saved account can be deleted.
+     * Note, this is false if the saved account is being used in a scheduled transaction.
+     */
+    isUsedInScheduledTransaction: boolean;
 
     /** Gets or sets the name of the saved account. */
     name?: string | null;

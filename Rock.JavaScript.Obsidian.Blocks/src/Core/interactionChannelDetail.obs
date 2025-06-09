@@ -16,7 +16,7 @@
                  :isDeleteVisible="isEditable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="isSecurityHidden"
+                 :isSecurityHidden="false"
                  :isFullScreenVisible="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -42,7 +42,6 @@
     import EditPanel from "./InteractionChannelDetail/editPanel.partial.obs";
     import ViewPanel from "./InteractionChannelDetail/viewPanel.partial.obs";
     import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
     import { NavigationUrlKey } from "./InteractionChannelDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { InteractionChannelBag } from "@Obsidian/ViewModels/Blocks/Core/InteractionChannelDetail/interactionChannelBag";
@@ -74,11 +73,6 @@
     // #endregion
 
     // #region Computed Values
-
-    const isSecurityHidden = computed((): boolean => {
-        return interactionChannelViewBag.value?.canAdministrate === false;
-    });
-
 
     /**
      * The entity name to display in the block panel.

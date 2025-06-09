@@ -106,5 +106,13 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// The valid properties.
         /// </value>
         public List<string> ValidProperties { get; set; }
+
+        /// <summary>
+        /// Gets or sets the promotions content channel options.
+        /// </summary>
+        /// <value>
+        /// The promotions content channel options.
+        /// </value>
+        public List<ListItemBag> PromotionsContentChannelTypeOptions { get; set; }
     }
 }

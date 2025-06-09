@@ -16,11 +16,15 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Communication.Chat;
+using Rock.Communication.Chat.Sync;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Logging;
@@ -400,6 +404,23 @@ namespace Rock.Model
                 PersonService.UpdatePrimaryFamily( this.Entity.Id, RockContext );
                 PersonService.UpdateGivingLeaderId( this.Entity.Id, RockContext );
                 PersonService.UpdateGroupSalutations( this.Entity.Id, RockContext );
+
+                if ( RockContext.IsRockToChatSyncEnabled && ChatHelper.IsChatEnabled )
+                {
+                    Task.Run( async () =>
+                    {
+                        using ( var chatHelper = new ChatHelper() )
+                        {
+                            var syncCommand = new SyncPersonToChatCommand
+                            {
+                                PersonId = Entity.Id,
+                                ShouldEnsureChatAliasExists = false
+                            };
+
+                            await chatHelper.CreateOrUpdateChatUsersAsync( new List<SyncPersonToChatCommand> { syncCommand } );
+                        }
+                    } );
+                }
             }
         }
     }

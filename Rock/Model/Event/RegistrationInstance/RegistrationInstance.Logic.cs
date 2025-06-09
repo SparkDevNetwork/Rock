@@ -15,6 +15,8 @@
 // </copyright>
 
 using System.Collections.Generic;
+
+using Rock.Attribute;
 using Rock.Communication;
 using Rock.Security;
 
@@ -54,6 +56,52 @@ namespace Rock.Model
             {
                 return RegistrationTemplate != null ? RegistrationTemplate : base.ParentAuthority;
             }
+        }
+
+        /// <summary>
+        /// Gets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
+        /// of <see cref="RegistrationRegistrant"/>s added to this <see cref="RegistrationInstance"/>. If set to
+        /// <see langword="null"/>, then the value of <see cref="RegistrationTemplate.RegistrantRecordSourceValueId"/>
+        /// will be used.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </returns>
+        /// <remarks>
+        /// This is an internal API that supports the Rock infrastructure and not
+        /// subject to the same compatibility standards as public APIs. It may be
+        /// changed or removed without notice in any release. You should only use
+        /// it directly in your code with extreme caution and knowing that doing so
+        /// can result in application failures when updating to a new Rock release.
+        /// </remarks>
+        [RockInternal( "18.0" )]
+        public int? GetRegistrantRecordSourceValueId()
+        {
+            if ( this.RegistrantRecordSourceValueId.HasValue )
+            {
+                return this.RegistrantRecordSourceValueId.Value;
+            }
+
+            return this.RegistrationTemplate?.RegistrantRecordSourceValueId;
+        }
+
+        /// <summary>
+        /// Gets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source of
+        /// <see cref="RegistrationRegistrant"/>s added to this <see cref="RegistrationInstance"/>. If set to
+        /// <see langword="null"/>, then the value of <see cref="RegistrationTemplate.RegistrantRecordSourceValue"/>
+        /// will be used.
+        /// </summary>
+        /// <returns>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type.
+        /// </returns>
+        internal DefinedValue GetRegistrantRecordSourceValue()
+        {
+            if ( this.RegistrantRecordSourceValue != null )
+            {
+                return this.RegistrantRecordSourceValue;
+            }
+
+            return this.RegistrationTemplate?.RegistrantRecordSourceValue;
         }
     }
 }

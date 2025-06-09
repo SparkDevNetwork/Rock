@@ -259,6 +259,23 @@ namespace Rock
         }
 
         /// <summary>
+        /// Returns the <paramref name="dateTime"/> in RFC3339 ( https://www.ietf.org/rfc/rfc3339.txt ) UTC format.
+        /// </summary>
+        /// <param name="dateTime">The date time.</param>
+        /// <returns>The <paramref name="dateTime"/> in RFC3339 UTC format.</returns>
+        public static string ToRfc3339UtcString( this DateTime dateTime )
+        {
+            // Turn the provided DateTime into a DateTimeOffset with the org's offset.
+            var rockDateTimeOffset = dateTime.ToRockDateTimeOffset();
+
+            // Then convert that offset-based time to UTC.
+            var utcDateTimeOffset = rockDateTimeOffset.ToUniversalTime();
+
+            // Format with 'Z' for RFC 3339 UTC representation.
+            return utcDateTimeOffset.ToString( "yyyy-MM-dd'T'HH:mm:ss.fff'Z'" );
+        }
+
+        /// <summary>
         /// Returns a string in relative format (x seconds ago, x minutes ago, about an hour ago, in x seconds,
         /// in x minutes, in about an hour, etc.) or if time difference is greater than max days in long format (February
         /// 13 at 11:28am or November 5, 2011 at 1:57pm).

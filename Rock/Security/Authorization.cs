@@ -133,6 +133,11 @@ namespace Rock.Security
         public const string MANAGE_MEMBERS = "ManageMembers";
 
         /// <summary>
+        /// Authorization to take the group's attendance
+        /// </summary>
+        public const string TAKE_ATTENDANCE = "TakeAttendance";
+
+        /// <summary>
         /// Authorization to perform scheduling
         /// </summary>
         public const string SCHEDULE = "Schedule";

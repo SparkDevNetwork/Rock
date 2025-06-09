@@ -23,6 +23,10 @@
 
 /** Group Role System Guids */
 export const GroupRole = {
+    /** The Member group member role for Application Group */
+    GroupRoleApplicationGroupMember: "09B14358-FA17-4D65-A8E9-03FA7312CD62",
+    /** The Member group member role for Hidden Application Group */
+    GroupRoleHiddenApplicationGroupMember: "2008B263-CD41-45F0-8033-26D949FC0DA7",
     /** The Administrator group member role for a Campus Team */
     GrouproleCampusTeamAdministrator: "07F857ED-C0D7-47B4-AB6C-9AFDFAE2ADD9",
     /** The Pastor group member role for a Campus Team */
@@ -67,6 +71,10 @@ export const GroupRole = {
     GrouproleKnownRelationshipsStepChild: "EFD2D6D1-A407-4EFB-9086-5DF1F19B7D93",
     /** A step parent of the owner of this known relationship group */
     GrouproleKnownRelationshipsStepParent: "D14827EF-5D43-442D-8134-DEB58AAC93C5",
+    /** A facilitator in a class. */
+    GrouproleLmsClassFacilitator: "80F802CE-2F59-4AB1-ABD8-CFD7A009A00A",
+    /** A student in a class. */
+    GrouproleLmsClassStudent: "FA3ACAC2-0377-484C-B888-974CA3BF2FF2",
     /** Gets the Leader group member role for an Organizational Unit */
     GrouproleOrganizationUnitLeader: "8438D6C5-DB92-4C99-947B-60E9100F223D",
     /** Gets the Staff group member role for an Organizational Unit */

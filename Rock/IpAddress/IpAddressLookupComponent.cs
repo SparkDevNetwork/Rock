@@ -28,7 +28,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// Internal IP Address Lookup Component
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public abstract class IpAddressLookupComponent : Component
     {

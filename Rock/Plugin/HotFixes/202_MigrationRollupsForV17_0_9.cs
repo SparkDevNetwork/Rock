@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -863,7 +863,7 @@ WHERE [Guid] = '{GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID}'
         private void AddLmsDataUp()
         {
             RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningProgram", Rock.SystemGuid.EntityType.LEARNING_PROGRAM, true, false );
-            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningActivityCompletion", Rock.SystemGuid.EntityType.LEARNING_ACTIVITY_COMPLETION, true, false );
+            RockMigrationHelper.AddOrUpdateEntityType( "Rock.Model.LearningActivityCompletion", Rock.SystemGuid.EntityType.LEARNING_CLASS_ACTIVITY_COMPLETION, true, false );
             LmsEntityTypesPagesBlocksUp();
             AddSeedData();
             AddOrUpdateSendLearningActivityNotificationsJob();
@@ -882,7 +882,7 @@ WHERE [Guid] = '{GIVING_HOUSEHOLDS_BY_CAMPUS_METRIC_GUID}'
             LmsEntityTypesPagesBlocksDown();
 
             RemoveSeedData();
-            RockMigrationHelper.DeleteEntityType( Rock.SystemGuid.EntityType.LEARNING_ACTIVITY_COMPLETION );
+            RockMigrationHelper.DeleteEntityType( Rock.SystemGuid.EntityType.LEARNING_CLASS_ACTIVITY_COMPLETION );
         }
 
         /// <summary>

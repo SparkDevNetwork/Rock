@@ -22,7 +22,7 @@ namespace Rock.IpAddress.Classes
     /// <summary>
     /// POCO for storing the information we need to write an Interaction Session Location
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeolocation instead." )]
     public class IpLocation
     {
@@ -126,7 +126,7 @@ namespace Rock.IpAddress.Classes
     /// <summary>
     /// Enum for describing why the address is invalid
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeolocationErrorCode instead." )]
     public enum IpLocationErrorCode
     {

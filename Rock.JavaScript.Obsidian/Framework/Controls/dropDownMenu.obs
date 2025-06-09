@@ -2,7 +2,7 @@
 <template>
     <div ref="dropdownElement" :class="dropDownClasses">
         <slot name="anchor" @click.prevent="onDropDownClick">
-            <button class="btn btn-link btn-overflow" type="button" @click.prevent="onDropDownClick">
+            <button :class="`btn btn-link btn-overflow ${anchorButtonCssClass}`" type="button" @click.prevent="onDropDownClick">
                 <slot>
                     <i class="fa fa-ellipsis-v"></i>
                 </slot>
@@ -63,6 +63,14 @@ li.disabled > button {
         verticalAlign: {
             type: String as PropType<"up" | "down">,
             default: "down"
+        },
+
+        /**
+         * Additional CSS classes to apply to the anchor button.
+         */
+        anchorButtonCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
         }
     });
 

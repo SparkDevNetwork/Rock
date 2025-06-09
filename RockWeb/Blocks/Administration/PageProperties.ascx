@@ -105,6 +105,7 @@
                                             <asp:CustomValidator ID="cvPageRoute" runat="server" ControlToValidate="tbPageRoute" OnServerValidate="cvPageRoute_ServerValidate" Display="None" ErrorMessage="Invalid Route(s)" />
                                         </fieldset>
                                         <Rock:DefinedValuesPickerEnhanced ID="dvpPageIntents" runat="server" Label="Page Intent" Help="Helps classify the purpose of the page. This is written to interactions as individuals view the page. You can provide options here by editing the Interaction Intent Defined Type." />
+                                        <Rock:ValueList ID="vlCountriesRestrictedFromAccessing" runat="server" Label="Countries Restricted from Accessing" Help="Select the countries from which access will be restricted to this page. Users attempting to connect from these locations will be blocked." />
                                         <asp:PlaceHolder ID="phContextPanel" runat="server">
                                             <fieldset>
                                                 <h4>Context Parameters</h4>

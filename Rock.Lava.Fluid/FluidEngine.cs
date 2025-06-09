@@ -21,6 +21,7 @@ using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.ExceptionServices;
 using System.Text;
 using System.Threading.Tasks;
 using Fluid;
@@ -477,7 +478,12 @@ namespace Rock.Lava.Fluid
                 {
                     // Any exceptions thrown from the filter method are wrapped in a TargetInvocationException by the .NET framework.
                     // Rethrow the actual exception thrown by the filter, where possible.
-                    throw ex.InnerException ?? ex;
+                    if ( ex.InnerException != null )
+                    {
+                        ExceptionDispatchInfo.Capture( ex.InnerException ).Throw();
+                    }
+
+                    throw;
                 }
             }
 

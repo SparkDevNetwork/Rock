@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Finance
                 if ( currentPersonOrBusiness == null )
                 {
                     // person or business not set (or was set to somebody else), so set it the current person
-                    SetGivingTypeContext( this.CurrentPersonId.Value, true );
+                    SetGivingTypeContext( this.CurrentPerson.IdKey, true );
                 }
                 else
                 {
@@ -146,6 +146,7 @@ namespace RockWeb.Blocks.Finance
                         {
                             Id = a.Id,
                             Name = a.FullName,
+                            IdKey = a.IdKey,
                             ButtonClass = ( a.Id == currentPersonOrBusiness.Id ) ? "btn btn-xs btn-primary" : "btn btn-xs btn-default"
                         } ).ToList();
 
@@ -157,11 +158,11 @@ namespace RockWeb.Blocks.Finance
                         var dropdownList = personAndBusinesses.Select( a => new ListItem
                         {
                             Text = a.FullName,
-                            Value = a.Id.ToString(),
+                            Value = a.IdKey.ToString(),
                         } ).ToArray();
 
                         ddlGivingTypes.Items.AddRange( dropdownList );
-                        ddlGivingTypes.SetValue( currentPersonOrBusiness.Id );
+                        ddlGivingTypes.SetValue( currentPersonOrBusiness.IdKey );
                     }
                 }
             }
@@ -175,12 +176,12 @@ namespace RockWeb.Blocks.Finance
         /// <summary>
         /// Sets the giving type context.
         /// </summary>
-        /// <param name="personOrBusinessId">The person or business identifier.</param>
+        /// <param name="personOrBusinessIdKey">The person or business IdKey identifier.</param>
         /// <param name="refreshPage">if set to <c>true</c> [refresh page].</param>
         /// <returns></returns>
-        protected Person SetGivingTypeContext( int personOrBusinessId, bool refreshPage = false )
+        protected Person SetGivingTypeContext( string personOrBusinessIdKey, bool refreshPage = false )
         {
-            var personOrBusiness = new PersonService( new RockContext() ).Get( personOrBusinessId );
+            var personOrBusiness = new PersonService( new RockContext() ).Get( personOrBusinessIdKey );
             if ( personOrBusiness == null )
             {
                 personOrBusiness = this.CurrentPerson;
@@ -205,11 +206,11 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="RepeaterCommandEventArgs"/> instance containing the event data.</param>
         protected void rptGivingTypes_ItemCommand( object source, RepeaterCommandEventArgs e )
         {
-            var personOrBusinessId = e.CommandArgument.ToString();
+            var personOrBusinessIdKey = e.CommandArgument.ToString();
 
-            if ( personOrBusinessId != null )
+            if ( personOrBusinessIdKey != null )
             {
-                SetGivingTypeContext( personOrBusinessId.AsInteger(), true );
+                SetGivingTypeContext( personOrBusinessIdKey, true );
             }
         }
 
@@ -220,10 +221,10 @@ namespace RockWeb.Blocks.Finance
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void ddlGivingTypes_SelectedIndexChanged( object sender, EventArgs e )
         {
-            var personOrBusinessId = ddlGivingTypes.SelectedValueAsInt();
-            if ( personOrBusinessId.HasValue )
+            var personOrBusinessIdKey = ddlGivingTypes.SelectedValue;
+            if ( personOrBusinessIdKey.IsNotNullOrWhiteSpace() )
             {
-                SetGivingTypeContext( personOrBusinessId.Value, true );
+                SetGivingTypeContext( personOrBusinessIdKey, true );
             }
         }
 

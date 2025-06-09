@@ -82,6 +82,7 @@ namespace Rock.Workflow.Action
                                         List<string> devices = new PersonalDeviceService( rockContext ).Queryable()
                                             .Where( a => a.PersonAliasId.HasValue && a.PersonAliasId == personAlias.Id && a.IsActive && a.NotificationsEnabled )
                                             .Select( a => a.DeviceRegistrationId )
+                                            .Distinct()
                                             .ToList();
 
                                         string deviceIds = String.Join( ",", devices );
@@ -137,6 +138,7 @@ namespace Rock.Workflow.Action
                                             List<string> devices = new PersonalDeviceService( rockContext ).Queryable()
                                                 .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId == person.PrimaryAliasId && p.IsActive && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
                                                 .Select( p => p.DeviceRegistrationId )
+                                                .Distinct()
                                                 .ToList();
 
                                             string deviceIds = String.Join( ",", devices );

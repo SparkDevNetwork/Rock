@@ -1,0 +1,558 @@
+
+
+//  BADGE STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+//  + Alternate Style        
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.badge {
+  display:            inline-block;
+  min-width:          10px;
+  padding:            var(--spacing-tiny) var(--spacing-xsmall);
+  font-size:          var(--font-size-small);
+  font-weight:        var(--font-weight-bold);
+  line-height:        var(--line-height-compact);
+  color:              var(--color-interface-softest);
+  text-align:         center;
+  white-space:        nowrap;
+  vertical-align:     middle;
+  background-color:   var(--color-interface-medium);
+  border-radius:      var(--rounded-large);
+
+  // Empty badges collapse automatically (not available in IE8)
+  &:empty {
+    display: none;
+  }
+
+  // Quick fix for badges in buttons
+  .btn & {
+    position: relative;
+    top: -1px;
+  }
+
+  .btn-xs &,
+  .btn-group-xs > .btn & {
+    top:      0;
+    padding:  1px 5px;
+  }
+
+  // Hover state, but only for links
+  a {
+    &:hover,
+    &:focus {
+      color:            var(--color-interface-softest);
+      text-decoration:  none;
+      cursor:           pointer;
+    }
+  }
+
+  // Account for badges in navs
+  .list-group-item.active > &,
+  .nav-pills > .active > a > & {
+    color:            var(--color-link);
+    background-color: var(--color-interface-softest);
+  }
+
+  .list-group-item > & {
+    float: right;
+  }
+
+  .list-group-item > & + & {
+    margin-right: 5px;
+  }
+
+  .nav-pills > li > a > & {
+    margin-left: 3px;
+  }
+  
+  .fa-square::before,
+  .fa-circle::before {
+    display: block;
+    width: 1em;
+    height: 1em;
+    content: " ";
+    background: currentColor;
+  }
+
+  .fa-circle::before {
+    border-radius: 50%;
+  }
+}
+
+.badge-bar {
+  display:      flex;
+  align-items:  center;
+  
+  .badge {
+    background-color: inherit;
+  }
+}
+// ======================== END BASE STYLE ========================
+
+
+// ======================== ALTERNATIVE BADGE ========================
+.badge-danger {
+  color:            var(--color-interface-softest) !important;
+  background-color: var(--color-danger-strong) !important;
+}
+
+.badge-warning {
+  color:            var(--color-interface-softest) !important;
+  background-color: var(--color-warning-strong) !important;
+}
+
+.badge-success {
+  color:            var(--color-interface-softest)  !important;
+  background-color: var(--color-success-strong) !important;
+}
+
+.badge-info {
+  color:            var(--color-interface-softest) !important;
+  background-color: var(--color-info-strong) !important;
+}
+
+.badge-critical {
+  color:            var(--color-interface-softest)  !important;
+  background-color: var(--color-critical-strong) !important;
+}
+// ======================== END ALTERNATIVE BADGE ========================
+
+.badge-legend .badge {
+  height:       24px;
+  margin-right: var(--spacing-tiny);
+  cursor:       pointer;
+}
+
+
+// Moved from _legacy-badges.less
+
+// Legacy Badge Styles
+// To enable use @enable-legacy-badges: true;
+// -------------------------
+$badge-icon-height: 45px;
+$badge-count-width: 18px;
+$badge-baptism-color: #23a5c5;
+
+.badge-grid {
+  font-size: 0;
+
+  .badge {
+    width: 1em;
+    height: 1em;
+    padding: 0 !important;
+    margin: 0 .08333em .08333em;
+    font-size: 24px;
+    font-size: calc(var(--badge-size, 45px) * 0.533);
+    line-height: 1;
+
+    .fa-stack {
+      width: 1em;
+      line-height: 1em;
+    }
+
+    .fa-stack-1x {
+      font-size: .5em;
+      color: var(--color-interface-softest);
+    }
+
+    .fa-stack-2x {
+      font-size: 1em;
+    }
+  }
+
+  .badge-row:last-child .badge {
+    padding-bottom: 0;
+  }
+}
+
+// Used to provide background in :before
+.badge-background {
+  display: block;
+  width: 1em;
+  height: 1em;
+  content: " ";
+  background: currentColor;
+  border-radius: .1em;
+}
+
+.badge-step {
+  position: relative;
+  padding: 0 !important;
+  margin: 0 4px;
+  font-size: var(--badge-size, 45px);
+
+  &::before {
+    display: block;
+    width: 1em;
+    height: 1em;
+    content: " ";
+    background: currentColor;
+    border-radius: .1em;
+  }
+
+  .badge-icon {
+    position: absolute;
+    top: 0;
+    right: 0;
+    left: 0;
+    font-size: .5777em;
+    line-height: 1.85em;
+    color:      var(--color-interface-softest);
+  }
+
+  .badge-count {
+    position: absolute;
+    top: calc($badge-count-width / -3);
+    right: calc($badge-count-width / -3);
+    width: $badge-count-width;
+    height: $badge-count-width;
+    font-size: .266em;
+    font-weight: var(--font-weight-regular);
+    line-height: $badge-count-width;
+    color: var(--color-interface-softest);
+    background-color: var(--color-danger-soft);
+    border-radius: 50%;
+  }
+}
+
+.badge-baptism {
+  color: $badge-baptism-color;
+}
+
+.badge-era {
+  position: relative;
+  font-size: var(--badge-size, 45px);
+  color: var(--color-success-strong);
+
+  &::before {
+    display: block;
+    width: 1em;
+    height: 1em;
+    content: " ";
+    background: currentColor;
+    border-radius: .1em;
+    border-radius: 50%;
+  }
+
+  &.era-loss {
+    color: var(--color-warning-strong);
+  }
+
+  span {
+    position: absolute;
+    top: 1.0625em;
+    right: 0;
+    left: 0;
+    font-size: .3555em; // 16px
+    color: var(--color-interface-softest);
+  }
+}
+
+.badge-icon {
+  font-size: $badge-icon-height;
+  font-size: var(--badge-size, 45px);
+
+  &.badge-disabled {
+    color: var(--color-interface-medium);
+    opacity: .2;
+  }
+}
+
+.badge-disc {
+  position: relative;
+
+  .badge-disc-chart {
+    display: table;
+    width: 1em;
+    height: .888em;
+    margin: 0 auto;
+    //http://codepen.io/Victa/pen/xDqbf
+    font-size: var(--font-size-h1);
+    font-size: var(--badge-size, 45px);
+    table-layout: fixed;
+
+    li {
+      position: relative;
+      display: table-cell;
+      width: 3px;
+      height: 100%;
+      vertical-align: bottom;
+
+      span {
+        display: block;
+        width: .2222em;
+        min-height: 2px;
+        background: lighten(#4f89bd, 20%);
+
+        @media screen and (-webkit-min-device-pixel-ratio: 0) {
+          // needed for chrome but kills ie
+          position: absolute;
+          bottom: 0;
+        }
+      }
+
+      &.badge-disc-primary {
+        span {
+          background: #4f89bd;
+        }
+      }
+
+      &.badge-disc-disabled {
+        span {
+          background-color: var(--color-interface-medium);
+          opacity: .2;
+        }
+      }
+    }
+  }
+
+  .requested {
+    position: absolute;
+    top: 14px;
+    left: 12px;
+    padding: 1px 5px;
+    font-size: 24px;
+    background-color: var(--color-interface-softer);
+    border-radius: 99px;
+    opacity: .8;
+  }
+
+  &.animate {
+    ul.badge-disc-chart li span {
+      -webkit-animation: bar-grow 1s ease-in-out;
+      -moz-animation: bar-grow 1s ease-in-out;
+      animation: bar-grow 1s ease-in-out;
+    }
+  }
+}
+
+.badge-attendingduration {
+  font-size: var(--font-size-h1);
+  font-size: var(--badge-size, 45px);
+
+  .duration-metric {
+    position: relative;
+    color: #e5d24d;  // Default (.duration-weeks)
+    &::before {
+      display: block;
+      width: 1em;
+      height: 1em;
+      content: " ";
+      background: currentColor;
+      border-radius: .1em;
+      border-radius: 50%;
+    }
+
+    &.duration-new {
+      color: #d25555;
+    }
+
+    &.duration-months {
+      color: #69ad5e;
+    }
+
+    &.duration-years {
+      color: #56789e;
+    }
+
+    .metric-value {
+      position: absolute;
+      top: .6em; // 14px
+      right: 0;
+      left: 0;
+      font-size: .444em; // 20px
+      font-weight: var(--font-weight-bold);
+      line-height: .6em; //12px
+      color: var(--color-interface-softest);
+      text-align: center;
+    }
+
+    .metric-unit {
+      display: block;
+      font-size: .55em;
+      font-weight: var(--font-weight-regular);
+    }
+
+    &.duration-new .metric-value {
+      top: 0; //18px
+      font-size: .3111em; //14px
+      font-weight: var(--font-weight-semibold);
+      line-height: 3.2142em;
+    }
+  }
+}
+
+.badge-weeksattendanceduration {
+  .weeks-metric {
+    position: relative;
+    font-size: 40px;
+    font-size: calc(var(--badge-size, 45px) * 0.888);
+    color: #686576;
+
+    &::before {
+      display: block;
+      width: 1em;
+      height: 1em;
+      content: " ";
+      background: currentColor;
+      border-radius: .1em;
+      background-color: var(--color-warning-soft);
+    }
+
+    .weeks-attended {
+      position: absolute;
+      top: .388em; // 7px
+      left: .2em; // 4px
+      display: block;
+      width: 1em; // 18px
+      font-size: .45em; //20px
+      font-weight: var(--font-weight-bold);
+      text-align: center;
+      letter-spacing: -2px;
+    }
+
+    .week-duration {
+      position: absolute;
+      right: .363em;
+      bottom: .9em;
+      font-size: .275em; // 11px
+      font-weight: var(--font-weight-semibold);
+    }
+  }
+}
+
+.badge-content {
+  &.fa-layers {
+    width: 50px;
+    height: 43px;
+    font-size: 4em;
+  }
+}
+
+.badge-lastvisitonsite {
+  .badge-content {
+    position: relative;
+    font-size: 40px;
+    font-size: calc(var(--badge-size, 45px) * 0.888);
+    color: var(--color-info-strong);
+
+    .badge-icon {
+      font-size: inherit;
+    }
+
+    &.today {
+      .duration {
+        top: 1em;
+        font-size: .275em;
+      }
+    }
+
+    &.recent {
+      opacity: .8;
+    }
+
+    &.moderate {
+      opacity: .6;
+    }
+
+    &.not-recent {
+      opacity: .4;
+    }
+
+    &.old {
+      opacity: .2;
+    }
+
+    .duration {
+      position: absolute;
+      top: .5em; // 8px
+      right: .3em;
+      left: .3em;
+      font-size: .4em; // 16px
+      font-weight: var(--font-weight-bold);
+      text-align: center;
+    }
+  }
+}
+
+.badge-signal {
+  .badge-content {
+    position: relative;
+    font-size: var(--font-size-h1);
+    font-size: var(--badge-size, 45px);
+
+    .badge-icon {
+      font-size: inherit;
+    }
+
+    .signal {
+      position: absolute;
+      top: .875em; //10px
+      right: 0;
+      left: 0;
+      padding-left: .5em;
+      font-size:    .355em; //16px
+      font-weight:  var(--font-weight-bold);
+      color:        var(--color-info-soft);
+      text-align:   center;
+    }
+  }
+}
+
+.badge-assessment {
+  a {
+    color: inherit;
+  }
+
+  // Incomplete and Pending have !important to allow for additional assessments with embedded CSS
+  &.not-requested {
+    color: fade(var(--color-interface-medium), 20%) !important;
+  }
+
+  &.requested {
+    color: var(--color-link) !important;
+  }
+
+  .fa-stack-1x {
+    color: var(--color-interface-softest);
+  }
+
+  .fa-stack-2x {
+    color: currentColor;
+  }
+}
+
+.badge-personaldevice {
+  .badge-content {
+    position: relative;
+    font-size: calc(var(--badge-size, 45px) * 0.888);
+    color: var(--color-link);
+
+    .badge-icon {
+      font-size: inherit;
+    }
+
+    .deviceCount {
+      position: absolute;
+      top: .7142em;
+      right: 0;
+      left: 0;
+      font-size: .35em; // 14px
+      font-weight: var(--font-weight-bold);
+      text-align: center;
+    }
+  }
+}
+
+.badge-attendance {
+  width: 220px;
+  height: var(--badge-size, 40px);
+}
+
+// ==========

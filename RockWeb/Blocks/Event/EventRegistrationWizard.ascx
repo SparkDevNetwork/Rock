@@ -199,6 +199,9 @@
                                     <Rock:RockTextBox ID="tbRegistrationName" runat="server" Label="Registration Name" Required="true" OnTextChanged="tbRegistrationName_TextChanged" />
                                     <asp:HiddenField ID="hfPreviousName" runat="server" Value="" />
                                 </div>
+                                <div class="col-md-6">
+                                    <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" Help="The record source to use for new individuals. If not set, the registration template's record source will be used. If a 'RecordSource' page parameter is found at the time of registration, it will be used instead." />
+                                </div>
                             </div>
                             <div class="row">
                                 <div class="col-md-6">

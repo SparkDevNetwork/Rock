@@ -1,0 +1,73 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalValue"
+           title="Link To Form"
+           saveText="Close"
+           cancelText=""
+           @save="onSave">
+        <div class="well no-border">
+            <h4 class="mb-1">Select A Page For Form Link</h4>
+            <p class="text-muted text-sm">Choose a page from the list below to generate a link for the form. Once selected, you can copy and use the link as needed.</p>
+        </div>
+
+        <div class="table-responsive table-no-border">
+            <table class="grid-table table table-condensed table-light" id="ctl00_feature_ctl19_ctl01_ctl06_mdLinkToFormModal_gPages">
+                <thead>
+                    <tr align="left" data-original-title="" title="">
+                        <th data-priority="1" scope="col">Link</th>
+                        <th data-priority="1" scope="col">&nbsp;</th>
+                    </tr>
+                </thead>
+
+                <tbody>
+                    <tr v-for="item in items" :key="item.formPageGuid" align="left">
+                        <td class="w-100">
+                            <div>
+                                <h5 class="mb-1">{{ item.formPageName }}</h5>
+                                <p class="text-muted text-sm">{{ item.formPageUrl }}</p>
+                            </div>
+                        </td>
+                        <td class="align-middle" data-priority="1">
+                            <CopyButton :value="item.formPageUrl ?? ''"><i class="fa fa-clipboard"></i> Copy Link</CopyButton>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { FormBuilderDetailLinkToFormBag } from "@Obsidian/ViewModels/Blocks/Workflow/FormBuilder/formBuilderDetailLinkToFormBag";
+
+    const props = defineProps({
+        items: {
+            type: Object as PropType<FormBuilderDetailLinkToFormBag[]>,
+            required: true
+        },
+
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    /** The internal value as displayed in the UI. */
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // #region Event Handlers
+
+    function onSave(): void {
+        internalValue.value = false;
+    }
+
+    // #endregion Event Handlers
+</script>

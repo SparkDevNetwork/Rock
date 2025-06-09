@@ -484,7 +484,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 Key = attr.Key,
                 Name = attr.Name,
                 Order = attr.Order,
-                Value = PublicAttributeHelper.GetPublicEditValue( attribute, value )
+                Value = PublicAttributeHelper.GetPublicValueForEdit( attribute, value )
             };
         }
 

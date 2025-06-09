@@ -21,7 +21,8 @@
                             autoExpand,
                             showChildCount,
                             initiallyExpanded,
-                            enableDeselect
+                            enableDeselect,
+                            provider
                         }" />
         </ul>
     </li>

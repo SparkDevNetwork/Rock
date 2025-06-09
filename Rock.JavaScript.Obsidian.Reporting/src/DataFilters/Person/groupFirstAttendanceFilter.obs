@@ -1,0 +1,52 @@
+<template>
+    <div class="row form-row">
+        <div class="col-md-6">
+            <GroupPicker v-model="groups" multiple disableLabel />
+            <InlineCheckBox v-model="includeChildGroups" label="Include Child Groups" />
+        </div>
+    </div>
+    <div class="row form-row">
+        <div class="col-md-7">
+            <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+        </div>
+    </div>
+    <div class="row form-row">
+        <div class="col-md-6">
+            <SchedulePicker v-model="schedules" label="Schedules" multiple />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import SchedulePicker from "@Obsidian/Controls/schedulePicker.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const groups = ref<ListItemBag[]>(safeParseJson(props.modelValue.groups) ?? []);
+    const includeChildGroups = ref<boolean>(asBoolean(props.modelValue.includeChildGroups));
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+    const schedules = ref<ListItemBag[]>(safeParseJson(props.modelValue.schedules) ?? []);
+
+    watch([groups, includeChildGroups, dateRange, schedules], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            groups: JSON.stringify(groups.value),
+            includeChildGroups: asTrueOrFalseString(includeChildGroups.value),
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+            schedules: JSON.stringify(schedules.value),
+        });
+    });
+</script>

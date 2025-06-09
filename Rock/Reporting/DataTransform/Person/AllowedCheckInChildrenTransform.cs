@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -77,7 +77,7 @@ namespace Rock.Reporting.DataTransform.Person
             int childRoleId = GroupTypeCache.GetFamilyGroupType().Roles.Where( a => a.Guid == Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid() ).Select( a => a.Id ).FirstOrDefault();
             var rockContext = ( RockContext ) service.Context;
 
-            var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().AsEnumerable();
+            var groupTypeRoles = new GroupTypeRoleService( rockContext ).Queryable().ToList();
 
             groupTypeRoles.LoadAttributes( rockContext );
 

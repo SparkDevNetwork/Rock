@@ -99,9 +99,6 @@ namespace Rock.Blocks.Engagement
         #endregion Keys
 
         #region Fields
-
-        private StepProgram _stepProgram;
-
         #endregion
 
         #region Properties
@@ -211,6 +208,13 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
+        protected override List<StepType> GetListItems( IQueryable<StepType> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( st => st.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+        }
+
+        /// <inheritdoc/>
         protected override IQueryable<StepType> GetOrderedListQueryable( IQueryable<StepType> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( b => b.Order ).ThenBy( b => b.Id );
@@ -249,34 +253,17 @@ namespace Rock.Blocks.Engagement
         /// Gets the step program context.
         /// </summary>
         /// <returns></returns>
-        public StepProgram GetStepProgram()
+        public StepProgramCache GetStepProgram()
         {
-            if ( _stepProgram == null )
+            var stepProgramGuid = GetAttributeValue( AttributeKey.StepProgram ).AsGuidOrNull();
+
+            if ( stepProgramGuid.HasValue )
             {
                 // Try to load the Step Program from the cache.
-                var programGuid = GetAttributeValue( AttributeKey.StepProgram ).AsGuid();
-
-                int programId = 0;
-
-                // If a Step Program is specified in the block settings use it, otherwise use the PageParameters.
-                if ( programGuid == Guid.Empty )
-                {
-                    programId = PageParameter( PageParameterKey.StepProgramId ).AsInteger();
-                }
-
-                var stepProgramService = new StepProgramService( RockContext );
-
-                if ( programGuid != Guid.Empty )
-                {
-                    _stepProgram = stepProgramService.Queryable().Where( g => g.Guid == programGuid ).FirstOrDefault();
-                }
-                else if ( programId != 0 )
-                {
-                    _stepProgram = stepProgramService.Queryable().Where( g => g.Id == programId ).FirstOrDefault();
-                }
+                return StepProgramCache.Get( stepProgramGuid.Value );
             }
 
-            return _stepProgram;
+            return StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         /// <summary>

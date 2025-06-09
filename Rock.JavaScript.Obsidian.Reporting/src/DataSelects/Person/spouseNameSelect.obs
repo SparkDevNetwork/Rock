@@ -1,0 +1,30 @@
+<template>
+    <CheckBox v-model="includeLastName" label="Include Last Name" />
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { ref, watch } from "vue";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const includeLastName = ref(asBoolean(props.modelValue.includeLastName));
+
+    // #endregion
+
+    watch(includeLastName, () => {
+        const newData = { ...props.modelValue };
+
+        newData.includeLastName = asTrueOrFalseString(includeLastName.value);
+
+        emit("update:modelValue", newData);
+    });
+</script>

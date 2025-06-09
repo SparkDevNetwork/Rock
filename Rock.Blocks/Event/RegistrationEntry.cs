@@ -24,14 +24,14 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-using DotLiquid.Util;
-
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.ElectronicSignature;
+using Rock.Field;
 using Rock.Financial;
 using Rock.Model;
 using Rock.Pdf;
@@ -132,6 +132,20 @@ namespace Rock.Blocks.Event
         Order = 11 )]
 
     [BooleanField(
+        "Enable ACH",
+        Key = AttributeKey.EnableACH,
+        Description = "Enabling this will also control which type of Saved Accounts can be used during the payment process.  The payment gateway must still be configured to support ACH payments.",
+        DefaultBooleanValue = true,
+        Order = 12 )]
+
+    [BooleanField(
+        "Enable Credit Card",
+        Key = AttributeKey.EnableCreditCard,
+        Description = "Enabling this will also control which type of Saved Accounts can be used during the payment process.  The payment gateway must still be configured to support Credit Card payments.",
+        DefaultBooleanValue = true,
+        Order = 13 )]
+
+    [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
@@ -161,8 +175,9 @@ namespace Rock.Blocks.Event
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
             public const string EnableSavedAccount = "EnableSavedAccount";
+            public const string EnableACH = "EnableACH";
+            public const string EnableCreditCard = "EnableCreditCard";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
-            public const string EnableACHForEvents = "Ach";
         }
 
         /// <summary>
@@ -1390,11 +1405,9 @@ namespace Rock.Blocks.Event
             // If the Registration Instance linkage specified a group, load it now
             var groupId = GetRegistrationGroupId( rockContext, context.Registration.RegistrationInstanceId );
 
-            Rock.Model.Group group = null;
-
             if ( groupId.HasValue )
             {
-                group = new GroupService( rockContext ).Get( groupId.Value );
+                var group = new GroupService( rockContext ).Get( groupId.Value );
 
                 if ( group != null && ( !context.Registration.GroupId.HasValue || context.Registration.GroupId.Value != group.Id ) )
                 {
@@ -1403,8 +1416,7 @@ namespace Rock.Blocks.Event
                 }
             }
 
-            var registrationSlug = PageParameter( PageParameterKey.Slug );
-            var linkage = GetRegistrationLinkage( registrationSlug, rockContext );
+            var linkage = GetRegistrationLinkage( rockContext, context.Registration.RegistrationInstanceId );
 
             if ( linkage?.CampusId.HasValue == true )
             {
@@ -1923,27 +1935,47 @@ namespace Rock.Blocks.Event
         /// <summary>
         /// Gets the registration linkage.
         /// </summary>
-        /// <param name="slug">The slug.</param>
         /// <param name="rockContext">The rock context.</param>
+        /// <param name="registrationInstanceId">The registration instance identifier.</param>
         /// <returns></returns>
-        private EventItemOccurrenceGroupMap GetRegistrationLinkage( string slug, RockContext rockContext )
+        private EventItemOccurrenceGroupMap GetRegistrationLinkage( RockContext rockContext, int? registrationInstanceId )
         {
             var dateTime = RockDateTime.Now;
+            var registrationSlug = PageParameter( PageParameterKey.Slug );
+            var eventOccurrenceId = this.EventOccurrenceIdPageParameter;
 
-            var linkage = new EventItemOccurrenceGroupMapService( rockContext ?? new RockContext() )
-                .Queryable().AsNoTracking()
-                .Include( m => m.Campus )
-                .Where( l =>
-                    l.UrlSlug == slug &&
-                    l.RegistrationInstance != null &&
-                    l.RegistrationInstance.IsActive &&
-                    l.RegistrationInstance.RegistrationTemplate != null &&
-                    l.RegistrationInstance.RegistrationTemplate.IsActive &&
-                    ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
-                    ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
-                .FirstOrDefault();
+            if ( !registrationSlug.IsNullOrWhiteSpace() )
+            {
+                return new EventItemOccurrenceGroupMapService( rockContext ?? new RockContext() )
+                    .Queryable().AsNoTracking()
+                    .Include( m => m.Campus )
+                    .Where( l =>
+                        l.UrlSlug == registrationSlug &&
+                        l.RegistrationInstance != null &&
+                        l.RegistrationInstance.IsActive &&
+                        l.RegistrationInstance.RegistrationTemplate != null &&
+                        l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                        ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                        ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                    .FirstOrDefault();
+            }
+            else if ( eventOccurrenceId.HasValue && registrationInstanceId.HasValue )
+            {
+                return new EventItemOccurrenceGroupMapService( rockContext ?? new RockContext() )
+                    .Queryable().AsNoTracking()
+                    .Include( m => m.Campus )
+                    .Where( l =>
+                        l.EventItemOccurrence.Id == eventOccurrenceId &&
+                        l.RegistrationInstanceId == registrationInstanceId.Value &&
+                        l.RegistrationInstance.IsActive &&
+                        l.RegistrationInstance.RegistrationTemplate != null &&
+                        l.RegistrationInstance.RegistrationTemplate.IsActive &&
+                        ( !l.RegistrationInstance.StartDateTime.HasValue || l.RegistrationInstance.StartDateTime <= dateTime ) &&
+                        ( !l.RegistrationInstance.EndDateTime.HasValue || l.RegistrationInstance.EndDateTime > dateTime ) )
+                    .FirstOrDefault();
+            }
 
-            return linkage;
+            return null;
         }
 
         /// <summary>
@@ -2166,7 +2198,7 @@ namespace Rock.Blocks.Event
             switch ( field.PersonFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
-                    return person.NickName.IsNullOrWhiteSpace() ? person.FirstName : person.NickName;
+                    return person.FirstName;
 
                 case RegistrationPersonFieldType.LastName:
                     return person.LastName;
@@ -2302,12 +2334,12 @@ namespace Rock.Blocks.Event
 
             if ( entity == null )
             {
-                return PublicAttributeHelper.GetPublicEditValue( attribute, attribute.DefaultValue );
+                return PublicAttributeHelper.GetPublicValueForEdit( attribute, attribute.DefaultValue );
             }
 
             entity.LoadAttributes( rockContext );
 
-            return PublicAttributeHelper.GetPublicEditValue( attribute, entity.GetAttributeValue( attribute.Key ) );
+            return PublicAttributeHelper.GetPublicValueForEdit( attribute, entity.GetAttributeValue( attribute.Key ) );
         }
 
         /// <summary>
@@ -2353,6 +2385,16 @@ namespace Rock.Blocks.Event
             }
             else
             {
+                if ( !settings.ActualRecordSourceValueId.HasValue )
+                {
+                    settings.ActualRecordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                        ?? settings.RecordSourceValueId
+                        ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_EVENT_REGISTRATION.AsGuid() )?.Id;
+                }
+
+                // Assign the record source for new people.
+                person.RecordSourceValueId = settings.ActualRecordSourceValueId;
+
                 // If we've created the family already for this registrant, add them to it
                 if (
                         ( settings.RegistrantsSameFamily == RegistrantsSameFamily.Ask && multipleFamilyGroupIds.ContainsKey( familyGuid ) ) ||
@@ -3453,12 +3495,14 @@ namespace Rock.Blocks.Event
             {
                 var attribute = AttributeCache.Get( field.AttributeId.Value );
 
-
                 if ( attribute is null )
                 {
                     continue;
                 }
+
                 var newValue = registrantInfo.FieldValues.GetValueOrNull( field.Guid ).ToStringSafe();
+                newValue = PublicAttributeHelper.GetPrivateValue( attribute, newValue );
+
                 var attributeValue = new AttributeValueCache( field.AttributeId.Value, null, newValue );
                 attributes.Add( attribute.Key, attribute );
                 attributeValues.Add( attribute.Key, attributeValue );
@@ -3757,34 +3801,16 @@ namespace Rock.Blocks.Event
                                 return null;
                             }
 
-                            var filterValues = new List<string>();
                             var fieldAttribute = AttributeCache.Get( comparedToField.AttributeId.Value );
-                            var fieldType = fieldAttribute?.FieldType?.Field;
-
-                            if ( fieldType == null )
-                            {
-                                return null;
-                            }
-
-                            var comparisonTypeValue = vr.ComparisonType.ConvertToString( false );
-                            if ( comparisonTypeValue != null )
-                            {
-                                // only add the comparisonTypeValue if it is specified, just like
-                                // the logic at https://github.com/SparkDevNetwork/Rock/blob/22f64416b2461c8a988faf4b6e556bc3dcb209d3/Rock/Field/FieldType.cs#L558
-                                filterValues.Add( comparisonTypeValue );
-                            }
-
-                            filterValues.Add( vr.ComparedToValue );
-
-                            var comparisonValue = fieldType.GetPublicFilterValue( filterValues.ToJson(), fieldAttribute.ConfigurationValues );
+                            var ruleBag = FieldVisibilityRule.GetPublicRuleBag( fieldAttribute, vr.ComparisonType, vr.ComparedToValue );
 
                             return new RegistrationEntryVisibilityBag
                             {
                                 ComparedToRegistrationTemplateFormFieldGuid = vr.ComparedToFormFieldGuid.Value,
                                 ComparisonValue = new PublicComparisonValueBag
                                 {
-                                    ComparisonType = ( int? ) comparisonValue.ComparisonType,
-                                    Value = comparisonValue.Value
+                                    ComparisonType = ( int? ) ruleBag.ComparisonType,
+                                    Value = ruleBag.Value
                                 }
                             };
                         } )
@@ -3926,7 +3952,7 @@ namespace Rock.Blocks.Event
                 session.FieldValues = session.FieldValues ?? new Dictionary<Guid, object>();
                 foreach ( var registrationAttribute in registrationAttributes )
                 {
-                    var defaultEditValue = PublicAttributeHelper.GetPublicEditValue( registrationAttribute, registrationAttribute.DefaultValue );
+                    var defaultEditValue = PublicAttributeHelper.GetPublicValueForEdit( registrationAttribute, registrationAttribute.DefaultValue );
 
                     session.FieldValues[registrationAttribute.Guid] = defaultEditValue;
                 }
@@ -3989,7 +4015,11 @@ namespace Rock.Blocks.Event
                 GatewayControl = isRedirectGateway ? null : new GatewayControlBag
                 {
                     FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
-                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, null ) ?? new object()
+                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, new HostedPaymentInfoControlOptions {
+                        EnableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean(),
+                        EnableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean(),
+                        EnableBillingAddressCollection = true
+                    } ) ?? new object()
                 },
                 IsRedirectGateway = isRedirectGateway,
                 SpotsRemaining = adjustedSpotsRemaining,
@@ -4761,22 +4791,34 @@ namespace Rock.Blocks.Event
         /// <returns>A list of <see cref="DefinedValueCache"/> objects that represent the currency types.</returns>
         private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent, FinancialGateway financialGateway )
         {
-            var enableACH = gatewayComponent.GetAttributeValue( financialGateway, AttributeKey.EnableACHForEvents ).AsBoolean();
-            var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
-            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
-            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
             var allowedCurrencyTypes = new List<DefinedValueCache>();
+            var enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            var enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
 
             // Conditionally enable credit card.
+            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
             if ( enableCreditCard && gatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
             {
                 allowedCurrencyTypes.Add( creditCardCurrency );
             }
 
             // Conditionally enable ACH.
+            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
             if ( enableACH && gatewayComponent.SupportsSavedAccount( achCurrency ) )
             {
                 allowedCurrencyTypes.Add( achCurrency );
+            }
+
+            var applePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_APPLE_PAY.AsGuid() );
+            if ( gatewayComponent.SupportsSavedAccount( applePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( applePayCurrency );
+            }
+
+            var googlePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ANDROID_PAY.AsGuid() );
+            if ( gatewayComponent.SupportsSavedAccount( googlePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( googlePayCurrency );
             }
 
             return allowedCurrencyTypes;
@@ -5016,7 +5058,7 @@ namespace Rock.Blocks.Event
             foreach ( var attribute in registrationAttributes )
             {
                 var value = registration.GetAttributeValue( attribute.Key );
-                value = PublicAttributeHelper.GetPublicEditValue( attribute, value );
+                value = PublicAttributeHelper.GetPublicValueForEdit( attribute, value );
 
                 session.FieldValues[attribute.Guid] = value;
             }

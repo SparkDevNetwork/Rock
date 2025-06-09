@@ -65,7 +65,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -168,7 +168,7 @@
      *
      * @returns `true` if the operation succeeded; otherwise `false`.
      */
-     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
+    async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const result = await invokeBlockAction<string>("ReorderItem", {
             key: item["idKey"],
             beforeKey: beforeItem?.["idKey"] ?? null

@@ -122,6 +122,7 @@ namespace Rock.Personalization
                     break;
             }
 
+            compareValue = compareValue ?? string.Empty;
             return compareValue.CompareTo( Value, ComparisonType );
         }
 

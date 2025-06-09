@@ -16,6 +16,10 @@
 //
 using System.Collections.Generic;
 
+// NOTE: We only use JsonProperty to handle re-encoding so it uses the right
+// casing for JavaScript to understand. If we switch away from Newtonsoft
+// we will need to handle that in the new system.
+
 namespace Rock.Cms.StructuredContent
 {
     /// <summary>
@@ -30,6 +34,7 @@ namespace Rock.Cms.StructuredContent
         /// <value>
         /// The time in JavaScript milliseconds.
         /// </value>
+        [Newtonsoft.Json.JsonProperty( "time" )]
         public long Time { get; set; }
 
         /// <summary>
@@ -38,6 +43,7 @@ namespace Rock.Cms.StructuredContent
         /// <value>
         /// The blocks.
         /// </value>
+        [Newtonsoft.Json.JsonProperty( "blocks" )]
         public List<StructuredContentBlock> Blocks { get; set; } = new List<StructuredContentBlock>();
 
         /// <summary>
@@ -46,6 +52,7 @@ namespace Rock.Cms.StructuredContent
         /// <value>
         /// The version.
         /// </value>
+        [Newtonsoft.Json.JsonProperty( "version" )]
         public string Version { get; set; }
     }
 }

@@ -158,50 +158,33 @@ namespace Rock.Blocks.Core
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            if ( entity.Id != 0 )
+            // New entity is being created, prepare for edit mode by default.
+            if ( box.IsEditable )
             {
-                // Existing entity was found, prepare for view mode by default.
-                if ( isViewable )
-                {
-                    box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( EntitySearch.FriendlyTypeName );
-                }
+                box.Entity = GetEntityBag( entity );
+                box.SecurityGrantToken = GetSecurityGrantToken( entity );
             }
             else
             {
-                // New entity is being created, prepare for edit mode by default.
-                if ( box.IsEditable )
-                {
-                    box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
-                }
-                else
-                {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( EntitySearch.FriendlyTypeName );
-                }
+                box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( EntitySearch.FriendlyTypeName );
             }
         }
 
         /// <summary>
-        /// Gets the entity bag that is common between both view and edit modes.
+        /// Gets the bag for viewing or editing the specified entity.
         /// </summary>
-        /// <param name="entity">The entity to be represented as a bag.</param>
+        /// <param name="entity">The entity to be represented for view purposes.</param>
         /// <returns>A <see cref="EntitySearchBag"/> that represents the entity.</returns>
-        private EntitySearchBag GetCommonEntityBag( EntitySearch entity )
+        private EntitySearchBag GetEntityBag( EntitySearch entity )
         {
             if ( entity == null )
             {
                 return null;
             }
 
-            return new EntitySearchBag
+            var bag = new EntitySearchBag
             {
                 IdKey = entity.IdKey,
                 Description = entity.Description,
@@ -211,47 +194,14 @@ namespace Rock.Blocks.Core
                 IsRefinementAllowed = entity.IsRefinementAllowed,
                 Key = entity.Key,
                 MaximumResultsPerQuery = entity.MaximumResultsPerQuery,
-                Name = entity.Name
+                Name = entity.Name,
+                IncludePaths = entity.IncludePaths,
+                GroupByExpression = entity.GroupByExpression,
+                SortExpression = entity.SortExpression,
+                SelectExpression = entity.SelectExpression,
+                SelectManyExpression = entity.SelectManyExpression,
+                WhereExpression = entity.WhereExpression
             };
-        }
-
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="EntitySearchBag"/> that represents the entity.</returns>
-        private EntitySearchBag GetEntityBagForView( EntitySearch entity )
-        {
-            if ( entity == null )
-            {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity );
-
-            return bag;
-        }
-
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="EntitySearchBag"/> that represents the entity.</returns>
-        private EntitySearchBag GetEntityBagForEdit( EntitySearch entity )
-        {
-            if ( entity == null )
-            {
-                return null;
-            }
-
-            var bag = GetCommonEntityBag( entity );
-
-            bag.IncludePaths = entity.IncludePaths;
-            bag.GroupByExpression = entity.GroupByExpression;
-            bag.SortExpression = entity.SortExpression;
-            bag.SelectExpression = entity.SelectExpression;
-            bag.SelectManyExpression = entity.SelectManyExpression;
-            bag.WhereExpression = entity.WhereExpression;
 
             return bag;
         }
@@ -285,7 +235,7 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Entity.IsEntitySecurityEnabled ),
                 () => entity.IsEntitySecurityEnabled = box.Entity.IsEntitySecurityEnabled );
 
-            box.IfValidProperty( nameof(box.Entity.IncludePaths ), () =>
+            box.IfValidProperty( nameof( box.Entity.IncludePaths ), () =>
             {
                 var paths = ( box.Entity.IncludePaths ?? string.Empty ).Split( new[] { ',' }, StringSplitOptions.RemoveEmptyEntries );
 
@@ -436,7 +386,7 @@ namespace Rock.Blocks.Core
 
                 var box = new DetailBlockBox<EntitySearchBag, EntitySearchDetailOptionsBag>
                 {
-                    Entity = GetEntityBagForEdit( entity )
+                    Entity = GetEntityBag( entity )
                 };
 
                 return ActionOk( box );
@@ -490,7 +440,7 @@ namespace Rock.Blocks.Core
                 // Ensure navigation properties will work now.
                 entity = entityService.Get( entity.Id );
 
-                return ActionOk( GetEntityBagForView( entity ) );
+                return ActionOk( GetEntityBag( entity ) );
             }
         }
 
@@ -536,7 +486,7 @@ namespace Rock.Blocks.Core
         }
 
         /// <summary>
-        /// Generates a preview of the search query.
+        /// Generates a preview of the search query. Copied to the EntitySearchDetail block. Keep both of these up-to-date.
         /// </summary>
         /// <param name="box">The box that contains all the information required.</param>
         /// <returns>The results of the query.</returns>

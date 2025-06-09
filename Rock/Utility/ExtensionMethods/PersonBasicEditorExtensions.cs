@@ -45,6 +45,8 @@ namespace Rock
         {
             bag.IfValidProperty( nameof( bag.FirstName ), () => person.FirstName = bag.FirstName );
 
+            bag.IfValidProperty( nameof( bag.NickName ), () => person.NickName = bag.NickName );
+
             bag.IfValidProperty( nameof( bag.LastName ), () => person.LastName = bag.LastName );
 
             bag.IfValidProperty( nameof( bag.Email ), () => person.Email = bag.Email );
@@ -222,6 +224,7 @@ namespace Rock
             return new PersonBasicEditorBag
             {
                 FirstName = person.FirstName,
+                NickName = person.NickName,
                 LastName = person.LastName,
                 PersonTitle = DefinedValueCache.Get( person.TitleValueId.HasValue ? person.TitleValueId.Value : 0 ).ToListItemBag(),
                 PersonSuffix = DefinedValueCache.Get( person.SuffixValueId.HasValue ? person.SuffixValueId.Value : 0 ).ToListItemBag(),
@@ -249,6 +252,7 @@ namespace Rock
                 ValidProperties = new List<string>
                 {
                     ToCamelCase( nameof( PersonBasicEditorBag.FirstName ) ),
+                    ToCamelCase( nameof( PersonBasicEditorBag.NickName ) ),
                     ToCamelCase( nameof( PersonBasicEditorBag.LastName ) ),
                     ToCamelCase( nameof( PersonBasicEditorBag.PersonTitle ) ),
                     ToCamelCase( nameof( PersonBasicEditorBag.PersonSuffix ) ),

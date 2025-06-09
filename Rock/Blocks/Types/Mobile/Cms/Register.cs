@@ -66,7 +66,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DefinedValueField(
         "Connection Status",
         Key = AttributeKeys.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
+        Description = "The connection status to use for new individuals (default = 'Prospect').",
         DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
         IsRequired = true,
         AllowMultiple = false,
@@ -76,12 +76,22 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DefinedValueField(
         "Record Status",
         Key = AttributeKeys.RecordStatus,
-        Description = "The record status to use for new individuals (default = 'Pending'.)",
+        Description = "The record status to use for new individuals (default = 'Pending').",
         DefinedTypeGuid = "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Order = 12 )]
+
+    [DefinedValueField(
+        "Record Source",
+        Key = AttributeKeys.RecordSource,
+        Description = "The record source to use for new individuals (default = 'Mobile App').",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_MOBILE_APP,
+        Order = 13 )]
 
     [BooleanField(
         "Birthdate Show",
@@ -199,6 +209,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The record status key.
             /// </summary>
             public const string RecordStatus = "RecordStatus";
+
+            /// <summary>
+            /// The record source key.
+            /// </summary>
+            public const string RecordSource = "RecordSource";
 
             /// <summary>
             /// The birth date show key.
@@ -426,6 +441,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         {
             DefinedValueCache dvcConnectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKeys.ConnectionStatus ).AsGuid() );
             DefinedValueCache dvcRecordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKeys.RecordStatus ).AsGuid() );
+            DefinedValueCache dvcRecordSource = DefinedValueCache.Get( GetAttributeValue( AttributeKeys.RecordSource ).AsGuid() );
 
             Person person = new Person
             {
@@ -446,6 +462,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
             if ( dvcRecordStatus != null )
             {
                 person.RecordStatusValueId = dvcRecordStatus.Id;
+            }
+
+            if ( dvcRecordSource != null )
+            {
+                person.RecordSourceValueId = dvcRecordSource.Id;
             }
 
             if ( account.BirthDate.HasValue )

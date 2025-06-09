@@ -646,6 +646,7 @@ namespace RockWeb.Blocks.Core
         protected void ddlAttrQualifierField_SelectedIndexChanged( object sender, EventArgs e )
         {
             edtAttribute.AttributeEntityTypeQualifierColumn = ddlAttrQualifierField.SelectedValue;
+            tbAttrQualifierField.Text = ddlAttrQualifierField.SelectedValue;
         }
 
         /// <summary>

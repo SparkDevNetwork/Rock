@@ -1,0 +1,222 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="connected-list-button"
+         :class="{
+            'is-hovering': isHovering,
+            'clickable': !!props.onClick
+        }"
+         @mouseenter="isHovering = true"
+         @mouseleave="isHovering = false"
+         @click="onMainClick">
+        <slot name="prepend" />
+
+        <div v-if="badgeText" class="connected-list-button-badge">
+            <Badge badgeType="success">{{ badgeText }}</Badge>
+        </div>
+
+        <div class="connected-list-button-icon-title-and-desc">
+            <div v-if="iconCssClass" class="connected-list-button-icon">
+                <HighlightLabel labelType="info" :iconCssClass="`${iconCssClass}`" />
+            </div>
+
+            <div v-if="title || description" class="connected-list-button-title-and-desc">
+                <h4 v-if="title" class="connected-list-button-title">{{ title }}</h4>
+                <small v-if="description" class="connected-list-button-description text-muted">{{ description }}</small>
+            </div>
+        </div>
+
+        <div v-if="asideIconCssClass || aside" class="connected-list-button-aside">
+            <i v-if="asideIconCssClass" :class="`${asideIconCssClass} text-muted`"></i>
+            <small v-if="aside" class="text-muted">{{ aside }}</small>
+        </div>
+
+        <div v-if="primaryActions?.length || secondaryActions?.length" class="connected-list-button-actions">
+            <div v-if="primaryActions?.length" class="connected-list-button-primary-actions">
+                <template v-for="action in primaryActions" :key="`${action.title}${action.iconCssClass}`">
+                    <RockButton v-if="action.iconCssClass" isSquare btnSize="sm" :btnType="action.type" :tooltip="action.title" @click.stop="action.handler">
+                        <i :class="action.iconCssClass"></i>
+                    </RockButton>
+
+                    <RockButton v-else btnSize="sm" @click.stop="action.handler">
+                        {{ action.title }}
+                    </RockButton>
+                </template>
+            </div>
+
+            <div v-if="secondaryActions?.length" class="connected-list-button-secondary-actions">
+                <DropDownMenu align="right"
+                              :items="secondaryActions"
+                              @click.stop
+                              @mouseenter="isHovering = false"
+                              @mouseleave="isHovering = true" />
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.connected-list-button {
+    height: 90px;
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-large);
+    align-items: center;
+    padding: var(--spacing-large);
+    border-radius: var(--border-radius-base);
+    border: 1px solid var(--color-interface-medium);
+    transition: background-color .15s ease-in-out;
+}
+
+.connected-list-button.is-hovering {
+    background-color: var(--color-info-soft);
+}
+
+.connected-list-button-badge {
+    /* Prevent the badge from shrinking. */
+    flex-shrink: 0;
+}
+
+.connected-list-button-icon .label {
+    padding: var(--spacing-xsmall);
+}
+
+.connected-list-button-icon-title-and-desc {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-medium);
+    flex: 1;
+    overflow: hidden;
+}
+
+.connected-list-button-title-and-desc {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+    overflow: hidden;
+}
+
+.connected-list-button-title {
+    margin: 0;
+    /* line-height: var(--line-height-compact) (line-height: 1.055) clips the bottom of "g" and "y"
+       for small text, so making a little larger. */
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.connected-list-button-description {
+    font-size: var(--font-size-small);
+    /* line-height: var(--line-height-tight) (line-height: 1.1) clips the bottom of "g" and "y"
+       for small text, so making a little larger. */
+    line-height: 1.2;
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.connected-list-button-aside {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    flex: 0;
+    white-space: nowrap;
+}
+
+.connected-list-button-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.connected-list-button-primary-actions {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import Badge from "./badge.obs";
+    import DropDownMenu from "./dropDownMenu.obs";
+    import HighlightLabel from "./highlightLabel.obs";
+    import RockButton from "./rockButton.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+
+    const props = defineProps({
+        aside: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        asideIconCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        badgeText: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        iconCssClass: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        description: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        primaryActions: {
+            type: Array as PropType<MenuAction[] | null | undefined>,
+            required: false
+        },
+
+        secondaryActions: {
+            type: Array as PropType<MenuAction[] | null | undefined>,
+            required: false
+        },
+
+        title: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        /**
+         * Optional click handler that will be called when the main button
+         * is clicked.
+         */
+        onClick: {
+            type: Function as PropType<() => void>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const isHovering = ref<boolean>(false);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Handles the click event on the main button. This will simply call the
+     * onClick function if it is defined. This is used so that we can detect
+     * when a click handler is defined and apply the "clickable" class.
+     */
+    function onMainClick(): void {
+        if (props.onClick) {
+            props.onClick();
+        }
+    }
+
+    // #endregion
+</script>

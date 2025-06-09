@@ -24,6 +24,7 @@ using Rock;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Model;
+using Rock.Web.Cache;
 
 namespace Rock.Web.UI.Controls
 {
@@ -43,6 +44,7 @@ namespace Rock.Web.UI.Controls
         DateTimePicker _dtpEnd;
         NumberBox _nbMaxAttendees;
         WorkflowTypePicker _wtpRegistrationWorkflow;
+        DefinedValuePicker _dvpRecordSource;
         CurrencyBox _cbCost;
         CurrencyBox _cbMinimumInitialPayment;
         CurrencyBox _cbDefaultPaymentAmount;
@@ -282,6 +284,26 @@ namespace Rock.Web.UI.Controls
             {
                 EnsureChildControls();
                 _wtpRegistrationWorkflow.SetValue( value );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the record source value id.
+        /// </summary>
+        /// <value>
+        /// The record source value id.
+        /// </value>
+        public int? RecordSourceValueId
+        {
+            get
+            {
+                EnsureChildControls();
+                return _dvpRecordSource.SelectedValueAsInt();
+            }
+            set
+            {
+                EnsureChildControls();
+                _dvpRecordSource.SetValue( value );
             }
         }
 
@@ -648,6 +670,7 @@ namespace Rock.Web.UI.Controls
                 _dtpEnd.ValidationGroup = value;
                 _nbMaxAttendees.ValidationGroup = value;
                 _wtpRegistrationWorkflow.ValidationGroup = value;
+                _dvpRecordSource.ValidationGroup = value;
                 _ppContact.ValidationGroup = value;
                 _pnContactPhone.ValidationGroup = value;
                 _ebContactEmail.ValidationGroup = value;
@@ -688,6 +711,7 @@ namespace Rock.Web.UI.Controls
                 _dtpEnd.SelectedDateTime = instance.EndDateTime;
                 _nbMaxAttendees.Text = instance.MaxAttendees.ToString();
                 _wtpRegistrationWorkflow.SetValue( instance.RegistrationWorkflowTypeId );
+                _dvpRecordSource.SetValue( instance.RegistrantRecordSourceValueId );
 
                 Person contactPerson = null;
                 if ( instance.ContactPersonAlias != null && instance.ContactPersonAlias.Person != null )
@@ -796,6 +820,7 @@ namespace Rock.Web.UI.Controls
                 _dtpEnd.SelectedDateTime = null;
                 _nbMaxAttendees.Text = string.Empty;
                 _wtpRegistrationWorkflow.SetValue( null );
+                _dvpRecordSource.SetValue( ( int? ) null );
                 _ppContact.SetValue( null );
                 _pnContactPhone.Text = string.Empty;
                 _ebContactEmail.Text = string.Empty;
@@ -838,6 +863,7 @@ namespace Rock.Web.UI.Controls
                 instance.EndDateTime = _dtpEnd.SelectedDateTime;
                 instance.MaxAttendees = _nbMaxAttendees.Text.AsIntegerOrNull();
                 instance.RegistrationWorkflowTypeId = _wtpRegistrationWorkflow.SelectedValueAsInt();
+                instance.RegistrantRecordSourceValueId = _dvpRecordSource.SelectedValueAsInt();
                 instance.ContactPersonAliasId = _ppContact.PersonAliasId;
                 instance.ContactPhone = _pnContactPhone.Text;
                 instance.ContactEmail = _ebContactEmail.Text;
@@ -958,6 +984,13 @@ namespace Rock.Web.UI.Controls
                 _wtpRegistrationWorkflow.Label = "Registration Workflow";
                 _wtpRegistrationWorkflow.Help = "An optional workflow type to launch when a new registration is completed.";
                 Controls.Add( _wtpRegistrationWorkflow );
+
+                _dvpRecordSource = new DefinedValuePicker();
+                _dvpRecordSource.ID = this.ID + "_dvpRecordSource";
+                _dvpRecordSource.Label = "Record Source";
+                _dvpRecordSource.Help = "The record source to use for new individuals. If not set, the registration template's record source will be used. If a 'RecordSource' page parameter is found at the time of registration, it will be used instead.";
+                _dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
+                Controls.Add( _dvpRecordSource );
 
                 _cbCost = new CurrencyBox();
                 _cbCost.ID = this.ID + "_cbCost";
@@ -1194,6 +1227,11 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 _dtpSendReminder.RenderControl( writer );
+                writer.RenderEndTag();
+
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );
+                writer.RenderBeginTag( HtmlTextWriterTag.Div );
+                _dvpRecordSource.RenderControl( writer );
                 writer.RenderEndTag();
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "col-md-6" );

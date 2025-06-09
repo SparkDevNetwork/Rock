@@ -1032,7 +1032,6 @@ namespace Rock.Model
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
-        [RockInternal( "1.15" )]
         internal static IQueryable<GroupMember> WhereMembersWithNoAttendanceForNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext )
         {
             var attendanceOccurenceService = new AttendanceService( rockContext );
@@ -1059,7 +1058,6 @@ namespace Rock.Model
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
-        [RockInternal( "1.15" )]
         internal static IQueryable<GroupMember> WhereMembersWhoFirstAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();
@@ -1096,7 +1094,6 @@ namespace Rock.Model
         /// <param name="amtOfWeeks">The amt of weeks.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns>IQueryable&lt;GroupMember&gt;.</returns>
-        [RockInternal( "1.15" )]
         internal static IQueryable<GroupMember> WhereMembersWhoAttendedWithinNumberOfWeeks( IQueryable<GroupMember> members, int groupId, int amtOfWeeks, RockContext rockContext = null )
         {
             rockContext = rockContext ?? new RockContext();

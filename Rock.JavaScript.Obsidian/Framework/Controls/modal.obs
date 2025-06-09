@@ -2,9 +2,9 @@
 <template>
     <teleport :to="container" v-if="modelValue">
         <div :class="modalWrapperClasses">
-            <div class="modal-backdrop" style="z-index: 1050;"></div>
+            <div class="modal-backdrop" :style="`z-index: ${zIndex};`"></div>
 
-            <div @click.stop="onScrollableClick" class="modal-scrollable" style="z-index: 1050;">
+            <div @click.stop="onScrollableClick" class="modal-scrollable" :style="`z-index: ${zIndex};`">
                 <div @click.stop
                      class="modal container modal-content rock-modal rock-modal-frame modal-overflow"
                      :class="{ 'animated shake': isShaking }"
@@ -13,7 +13,7 @@
                      role="dialog"
                      style="display: block; margin-top: 0;">
                     <div class="modal-header">
-                        <button v-if="!isCloseButtonHidden" @click="onClose" class="close" aria-hidden="true" type="button">&times;</button>
+                        <button v-if="!isCloseButtonHidden" @click="onClose" class="close" type="button" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <template v-if="title">
                             <h3 class="modal-title">{{ title }}</h3>
                             <small v-if="subtitle">{{ subtitle }}</small>
@@ -34,7 +34,7 @@
 
                         <div v-if="!isFooterHidden" class="modal-footer">
                             <RockButton v-if="cancelText" @click="onClose" btnType="link">{{ cancelText }}</RockButton>
-                            <RockButton v-if="saveThenAddText" @click="onSaveThenAdd" btnType="link">{{ saveThenAddText }}</RockButton>
+                            <RockButton v-if="saveThenAddText" @click="onSaveThenAdd" :btnType="saveThenAddBtnType">{{ saveThenAddText }}</RockButton>
                             <RockButton v-if="saveText" type="submit" btnType="primary" :disabled="isSaveButtonDisabled">{{ saveText }}</RockButton>
                             <slot name="customButtons" />
                         </div>
@@ -50,6 +50,7 @@
     import RockForm from "./rockForm.obs";
     import RockButton from "./rockButton.obs";
     import RockValidation from "./rockValidation.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { trackModalState } from "@Obsidian/Utility/page";
     import { FormError } from "@Obsidian/Utility/form";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
@@ -89,6 +90,11 @@
         saveThenAddText: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        saveThenAddBtnType: {
+            type: String as PropType<BtnType>,
+            default: "link"
         },
 
         isFooterHidden: {
@@ -134,7 +140,8 @@
     // #region Values
 
     const internalModalVisible = ref(props.modelValue);
-    const container = ref(document.fullscreenElement ?? document.body);
+    const zIndex = ref<number>(1050);
+    const container = ref(getHostContainer());
     const validationErrors = ref<FormError[]>([]);
     const internalSubmit = useVModelPassthrough(props, "submit", emit);
 
@@ -177,6 +184,25 @@
             }
             else if (modalBodyPaddingElement.value.style.paddingBottom !== "") {
                 modalBodyPaddingElement.value.style.paddingBottom = "";
+            }
+        }
+    }
+
+    function getHostContainer(): Element {
+        if (document.fullscreenElement) {
+            zIndex.value = 1050;
+            return document.fullscreenElement;
+        }
+        else {
+            const panelFullscreen = document.querySelector(".panel-fullscreen");
+
+            if (panelFullscreen) {
+                zIndex.value = 1060; // Make sure our modal is at the same zindex as panel-fullscreen.
+                return panelFullscreen;
+            }
+            else {
+                zIndex.value = 1050;
+                return document.body;
             }
         }
     }
@@ -288,11 +314,14 @@
     // Watch for changes in our visiblity.
     watch(() => props.modelValue, () => {
         if (props.modelValue) {
-            container.value = document.fullscreenElement || document.body;
+            container.value = getHostContainer();
 
             // Clear any old validation errors. They will be updated when
             // the submit button is next clicked.
             validationErrors.value = [];
+        }
+        else {
+            internalSubmit.value = false;
         }
 
         internalModalVisible.value = props.modelValue;

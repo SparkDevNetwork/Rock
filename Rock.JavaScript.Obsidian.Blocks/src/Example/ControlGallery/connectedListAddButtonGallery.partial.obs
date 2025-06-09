@@ -1,0 +1,70 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <ConnectedListAddButton :actions="actions"
+                                :addText="addText"
+                                @click="onClick" />
+
+        <template #settings>
+            <div class="row">
+                <TextBox v-model="addText" formGroupClasses="col-md-6" label="Add Text" />
+            </div>
+
+            <div class="row">
+                <Switch v-model="hideActions" formGroupClasses="col-md-4" label="Hide Actions" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import ConnectedListAddButton from "@Obsidian/Controls/connectedListAddButton.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+
+    const importCode = `import ConnectedListAddButton from "@Obsidian/Controls/connectedListAddButton.obs";`;
+
+    const addText = ref<string>("Add");
+    const hideActions = ref<boolean>(false);
+
+    const actions = computed<MenuAction[] | null>(() => {
+        if (!hideActions.value) {
+            return [
+                {
+                    iconCssClass: "fa fa-envelope",
+                    title: "Email",
+                    type: "default",
+                    handler: () => alert("Email clicked"),
+                },
+                {
+                    iconCssClass: "fa fa-sms",
+                    title: "SMS",
+                    type: "default",
+                    handler: () => alert("SMS clicked"),
+                },
+                {
+                    iconCssClass: "fa fa-mobile-alt",
+                    title: "Push Notification",
+                    type: "default",
+                    handler: () => alert("Push Notification clicked"),
+                }
+            ];
+        }
+        else {
+            return null;
+        }
+    });
+
+    const exampleCode = computed<string>(() => {
+        return `<ConnectedListAddButton :actions="${JSON.stringify(actions.value, null, 2).replace(/\n/g, "\n                        ").replace(/"/g, "'")}"
+                        addText="${addText.value}"
+                        @click="onClick" />`;
+    });
+
+    function onClick(): void {
+        alert("Button clicked!");
+    }
+</script>

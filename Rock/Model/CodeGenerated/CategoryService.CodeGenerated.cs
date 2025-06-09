@@ -95,6 +95,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring EmailSection,CategoryId
+
             if ( new Service<GroupRequirementType>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, GroupRequirementType.FriendlyTypeName );
@@ -128,12 +130,6 @@ namespace Rock.Model
             if ( new Service<PageShortLink>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PageShortLink.FriendlyTypeName );
-                return false;
-            }
-
-            if ( new Service<PersonalizationSegment>( Context ).Queryable().Any( a => a.CategoryId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", Category.FriendlyTypeName, PersonalizationSegment.FriendlyTypeName );
                 return false;
             }
 

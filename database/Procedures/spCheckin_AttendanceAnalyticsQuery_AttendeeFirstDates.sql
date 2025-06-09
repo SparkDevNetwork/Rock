@@ -46,16 +46,16 @@ BEGIN
 	FROM dbo.ufnUtility_GetSundayDateRange(@StartDate, @EndDate) x
 
 	DECLARE @CampusTbl TABLE ( [Id] int )
-	INSERT INTO @CampusTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@CampusIds,'') )
+	INSERT INTO @CampusTbl SELECT value FROM STRING_SPLIT(@CampusIds,',')
 
 	DECLARE @ScheduleTbl TABLE ( [Id] int )
-	INSERT INTO @ScheduleTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@ScheduleIds,'') )
+	INSERT INTO @ScheduleTbl SELECT value FROM STRING_SPLIT(@ScheduleIds,',')
 
 	DECLARE @GroupTbl TABLE ( [Id] int )
-	INSERT INTO @GroupTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@GroupIds,'') )
+	INSERT INTO @GroupTbl SELECT value FROM STRING_SPLIT(@GroupIds,',')
 
 	DECLARE @GroupTypeTbl TABLE ( [Id] int )
-	INSERT INTO @GroupTypeTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@GroupTypeIds,'') )
+	INSERT INTO @GroupTypeTbl SELECT value FROM STRING_SPLIT(@GroupTypeIds,',')
 
 	-- Get all the attendees
 	DECLARE @PersonIdTbl TABLE ( [PersonId] INT NOT NULL )

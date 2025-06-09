@@ -14,11 +14,15 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+
 namespace Rock.Lava.Blocks
 {
     /// <summary>
     /// Interface that classes can implement to be included when searching assemblies for custom Lava Commands.
     /// </summary>
+    [Obsolete( "This interface was for DotLiquid which is no longer supported." )]
+    [RockObsolete( "18.0" )]
     public interface IRockLavaBlock
     {
     }

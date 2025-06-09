@@ -545,14 +545,16 @@ namespace Rock.Lava.Blocks
                             // Determine if we should prefetch attributes. By default we will unless they specifically say not to.
                             if ( !disableattributeprefetch )
                             {
+                                var attributedItems = results.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList();
+
                                 // If a filtered list of attributes keys are not provided load all attributes otherwise just load the ones for the keys provided.
                                 if ( attributeKeys.Count() == 0 )
                                 {
-                                    results.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadAttributes();
+                                    Helper.LoadAttributes( entityType, attributedItems, ( RockContext ) dbContext );
                                 }
                                 else
                                 {
-                                    results.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadFilteredAttributes( (RockContext)dbContext, a => attributeKeys.Contains( a.Key ) );
+                                    Helper.LoadFilteredAttributes( entityType, attributedItems, ( RockContext ) dbContext, a => attributeKeys.Contains( a.Key ) );
                                 }
                             }
                                 
@@ -567,6 +569,11 @@ namespace Rock.Lava.Blocks
                         if ( returnCount == 1 )
                         {
                             // If there is only one item, set a singleton variable in addition to the result list.
+                            context.SetMergeField( EntityName, firstItem );
+                        }
+                        else
+                        {
+                            // There is more than one so blank out the variable in case it was already set in the Lava context. (Issue #6205)
                             context.SetMergeField( EntityName, firstItem );
                         }
                     }

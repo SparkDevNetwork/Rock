@@ -5,9 +5,6 @@
             <div :class="columnClass">
                 <CheckBox v-model="autofillCurrentPerson"
                           label="Autofill Current Person" />
-            </div>
-
-            <div :class="columnClass">
                 <CheckBox v-model="hideIfCurrentPersonKnown"
                           label="Hide if Current Person Known" />
             </div>
@@ -16,6 +13,13 @@
                 <DropDownList v-model="recordStatus"
                               label="Record Status"
                               :items="recordStatusOptions"
+                              rules="required" />
+            </div>
+
+            <div :class="columnClass">
+                <DropDownList v-model="recordSource"
+                              label="Record Source"
+                              :items="recordSourceOptions"
                               rules="required" />
             </div>
 
@@ -168,6 +172,11 @@
             default: []
         },
 
+        recordSourceOptions: {
+            type: Array as PropType<ListItemBag[]>,
+            default: []
+        },
+
         connectionStatusOptions: {
             type: Array as PropType<ListItemBag[]>,
             default: []
@@ -202,6 +211,7 @@
     const autofillCurrentPerson = ref(props.modelValue.autofillCurrentPerson ?? false);
     const hideIfCurrentPersonKnown = ref(props.modelValue.hideIfCurrentPersonKnown ?? false);
     const recordStatus = ref(props.modelValue.recordStatus ?? "");
+    const recordSource = ref(props.modelValue.recordSource ?? "");
     const connectionStatus = ref(props.modelValue.connectionStatus ?? "");
     const showCampus = ref(props.modelValue.showCampus ?? false);
     const includeInactiveCampus = ref(props.modelValue.includeInactiveCampus ?? false);
@@ -258,12 +268,13 @@
 
     // Watch for any changes in our simple field values and update the
     // modelValue.
-    watch([autofillCurrentPerson, hideIfCurrentPersonKnown, recordStatus, connectionStatus, showCampus, includeInactiveCampus, campusType, campusStatus, gender, email, mobilePhone, smsOptIn, birthdate, address, addressType, maritalStatus, spouseEntry, spouseLabel, raceEntry, ethnicityEntry], () => {
+    watch([autofillCurrentPerson, hideIfCurrentPersonKnown, recordStatus, recordSource, connectionStatus, showCampus, includeInactiveCampus, campusType, campusStatus, gender, email, mobilePhone, smsOptIn, birthdate, address, addressType, maritalStatus, spouseEntry, spouseLabel, raceEntry, ethnicityEntry], () => {
         const newValue: FormPersonEntry = {
             ...props.modelValue,
             autofillCurrentPerson: autofillCurrentPerson.value,
             hideIfCurrentPersonKnown: hideIfCurrentPersonKnown.value,
             recordStatus: recordStatus.value,
+            recordSource: recordSource.value,
             connectionStatus: connectionStatus.value,
             showCampus: showCampus.value,
             includeInactiveCampus: includeInactiveCampus.value,
@@ -292,6 +303,7 @@
         autofillCurrentPerson.value = props.modelValue.autofillCurrentPerson ?? false;
         hideIfCurrentPersonKnown.value = props.modelValue.hideIfCurrentPersonKnown ?? false;
         recordStatus.value = props.modelValue.recordStatus ?? "";
+        recordSource.value = props.modelValue.recordSource ?? "";
         connectionStatus.value = props.modelValue.connectionStatus ?? "";
         showCampus.value = props.modelValue.showCampus ?? false;
         includeInactiveCampus.value = props.modelValue.includeInactiveCampus ?? true;

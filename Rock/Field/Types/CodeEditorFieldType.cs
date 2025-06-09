@@ -59,6 +59,32 @@ namespace Rock.Field.Types
             return configurationProperties;
         }
 
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string internalValue )
+        {
+            var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, internalValue );
+
+            ConvertEnumToPublicValue<CodeEditorMode>( privateConfigurationValues, publicConfigurationValues, EDITOR_MODE );
+            ConvertEnumToPublicValue<CodeEditorTheme>( privateConfigurationValues, publicConfigurationValues, EDITOR_THEME );
+
+            return publicConfigurationValues;
+        }
+
+        /// <summary>
+        /// Converts the specified enum value from the private configuration to a public configuration value.
+        /// </summary>
+        /// <typeparam name="TEnum">The type of the enum.</typeparam>
+        /// <param name="privateConfig">The private configuration values.</param>
+        /// <param name="publicConfig">The public configuration values.</param>
+        /// <param name="key">The key of the configuration value to convert.</param>
+        private static void ConvertEnumToPublicValue<TEnum>( Dictionary<string, string> privateConfig, Dictionary<string, string> publicConfig, string key ) where TEnum : struct, Enum
+        {
+            if ( privateConfig.TryGetValue( key, out var value ) && Enum.TryParse( value, out TEnum enumValue ) )
+            {
+                publicConfig[key] = Convert.ToInt32( enumValue ).ToString();
+            }
+        }
+
         /// <summary>
         /// Converts the passed enum into a Listitembaglist.
         /// </summary>

@@ -14,7 +14,6 @@
 // limitations under the License.
 // </copyright>
 //
-using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -23,7 +22,6 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Enums.Lms;
 
 namespace Rock.Model
 {
@@ -35,24 +33,15 @@ namespace Rock.Model
     [DataContract]
     [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_ACTIVITY )]
-    public partial class LearningActivity : Model<LearningActivity>, IOrdered
+    public partial class LearningActivity : Model<LearningActivity>
     {
         #region Entity Properties
-
-        /// <summary>
-        /// Gets or sets the id of the <see cref="Rock.Model.LearningClass"/> this activity belongs to.
-        /// </summary>
-        /// <value>
-        /// The identifier of the <see cref="Rock.Model.LearningClass"/> this activity belongs to.
-        /// </value>
-        [DataMember]
-        public int LearningClassId { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the activity.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the Name of the LearningActivity.
+        /// A <see cref="System.String"/> representing the Name of the <see cref="Model.LearningActivity"/>.
         /// </value>
         [Required]
         [MaxLength( 100 )]
@@ -63,25 +52,16 @@ namespace Rock.Model
         /// Gets or sets the description of the activity.
         /// </summary>
         /// <value>
-        /// A <see cref="System.String"/> representing the full description of the LearningActivity.
+        /// A <see cref="System.String"/> representing the full description of the <see cref="Model.LearningActivity"/>.
         /// </value>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// Gets or sets the order in which the activity should be displayed.
+        /// The id of the related <see cref="EntityType"/> that handles logic for this <see cref="Model.LearningActivity"/>.
         /// </summary>
         /// <value>
-        /// The <see cref="System.Int32"/> value representing the order.
-        /// </value>
-        [DataMember]
-        public int Order { get; set; }
-
-        /// <summary>
-        /// The id of the related ActivityComponent for this LearningActivity.
-        /// </summary>
-        /// <value>
-        /// The identifier of the related ActivityComponent.
+        /// The identifier of the related <see cref="EntityType"/> ActivityComponent.
         /// </value>
         [DataMember]
         public int ActivityComponentId { get; set; }
@@ -96,145 +76,38 @@ namespace Rock.Model
         public string ActivityComponentSettingsJson { get; set; }
 
         /// <summary>
-        /// The participant type assigned to complete this activity.
+        /// Indicates whether or not this activity is intended to be shared
+        /// as a template by multiple <see cref="LearningClassActivity"/>.
         /// </summary>
         /// <value>
-        /// A <see cref="System.Enum"/> for the type of learning participant responsible for completing the activity (i.e Facilitator or Student ).
+        ///   <c>true</c> if this activity is intended to be shared as a template; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        public AssignTo AssignTo { get; set; }
-
-        /// <summary>
-        /// The method used for determining the DueDate of the activity.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Enum"/> for the method of determining the due date (i.e Specific Date, Class Start Offset, Enrollment Offset or No Date ).
-        /// </value>
-        [DataMember]
-        public DueDateCriteria DueDateCriteria { get; set; }
-
-        /// <summary>
-        /// Gets or sets the default date the <see cref="Rock.Model.LearningActivity">activity</see> is due.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> representing the latest date the learning participant must complete the activity.
-        /// </value>
-        [Column( TypeName = "Date" )]
-        [DataMember]
-        public DateTime? DueDateDefault { get; set; }
-
-        /// <summary>
-        /// The optional offset to use for calculating the DueDate.
-        /// </summary>
-        /// <value>
-        /// The number of days to offset the DueDate to be used in conjunction with <see cref="DueDateCriteria"/>.
-        /// </value>
-        [DataMember]
-        public int? DueDateOffset { get; set; }
-
-        /// <summary>
-        /// The method used for determining the AvailableDate of the activity.
-        /// </summary>
-        /// <value>
-        /// An <see cref="System.Enum"/> for the method of determining the available date (i.e Specific Date, Class Start Offset, Enrollment Offset, No Date or Always Available ).
-        /// </value>
-        [DataMember]
-        public AvailabilityCriteria AvailabilityCriteria { get; set; }
-
-        /// <summary>
-        /// Gets or sets the default date the <see cref="Rock.Model.LearningActivity">activity</see>
-        /// is available for the <see cref="Rock.Model.LearningParticipant"/> to complete.
-        /// </summary>
-        /// <value>
-        /// A <see cref="System.DateTime"/> representing the date the learning participant could begin working on the activity.
-        /// </value>
-        [Column( TypeName = "Date" )]
-        [DataMember]
-        public DateTime? AvailableDateDefault { get; set; }
-
-        /// <summary>
-        /// The optional offset to use for calculating the AvailableDate.
-        /// </summary>
-        /// <value>
-        /// The number of days to offset the AvailableDate to be used in conjunction with <see cref="AvailabilityCriteria"/>.
-        /// </value>
-        [DataMember]
-        public int? AvailableDateOffset { get; set; }
-
-        /// <summary>
-        /// Gets or sets the id of the <see cref="Rock.Model.BinaryFile">TaskBinaryFile</see> for the activity.
-        /// </summary>
-        /// <value>
-        /// The binary file id.
-        /// </value>
-        [DataMember]
-        public int? TaskBinaryFileId { get; set; }
-
-        /// <summary>
-        /// Gets or sets the maximum number of points the activity is worth.
-        /// </summary>
-        /// <value>
-        /// The <see cref="System.Int32" /> representing the number of points for the activity.
-        /// </value>
-        [DataMember]
-        public int Points { get; set; }
-
-        /// <summary>
-        /// Indicates whether or not this activity allows students to comment.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this activity should allow students to comment; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool IsStudentCommentingEnabled { get; set; }
-
-        /// <summary>
-        /// Indicates whether or not this activity sends a notification.
-        /// </summary>
-        /// <value>
-        ///   <c>true</c> if this activity sends a notification; otherwise, <c>false</c>.
-        /// </value>
-        [DataMember]
-        public bool SendNotificationCommunication { get; set; }
-
-        /// <summary>
-        /// Gets or sets the id of the <see cref="Rock.Model.WorkflowType"/> that's triggered when the activity is completed.
-        /// </summary>
-        /// <value>
-        /// The <see cref="Rock.Model.WorkflowType"/> identifier.
-        /// </value>
-        [DataMember]
-        public int? CompletionWorkflowTypeId { get; set; }
+        public bool IsShared { get; set; }
 
         #endregion
 
         #region Navigation Properties
 
         /// <summary>
-        /// Gets or sets the <see cref="LearningClass"/> for the activity.
+        /// Gets or sets the <see cref="EntityType"/> for the activity.
         /// </summary>
         [DataMember]
-        public virtual LearningClass LearningClass { get; set; }
+        public virtual EntityType ActivityComponent { get; set; }
 
         /// <summary>
-        /// Gets or sets the <see cref="WorkflowType"/> for the activity.
-        /// </summary>
-        [DataMember]
-        public virtual WorkflowType CompletionWorkflowType { get; set; }
-
-        /// <summary>
-        /// Gets or sets a collection of <see cref="Rock.Model.LearningActivityCompletion">LearningActivityCompletions</see> for this activity.
+        /// Gets or sets a collection of <see cref="Rock.Model.LearningClassActivity">activities</see> for the activity.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.LearningActivityCompletion">LearningActivityCompletions</see> for this activity.
+        /// A collection of the <see cref="Rock.Model.LearningClassActivity"/> records for the activity.
         /// </value>
-        public virtual ICollection<LearningActivityCompletion> LearningActivityCompletions
+        public virtual ICollection<LearningClassActivity> LearningClassActivities
         {
-            get { return _learningActivityCompletions ?? ( _learningActivityCompletions = new Collection<LearningActivityCompletion>() ); }
-            set { _learningActivityCompletions = value; }
+            get { return _learningClassActivities ?? ( _learningClassActivities = new Collection<LearningClassActivity>() ); }
+            set { _learningClassActivities = value; }
         }
 
-        private ICollection<LearningActivityCompletion> _learningActivityCompletions;
+        private ICollection<LearningClassActivity> _learningClassActivities;
 
         #endregion
 
@@ -244,7 +117,7 @@ namespace Rock.Model
         /// Returns a <see cref="System.String" /> that represents this activity.
         /// </summary>
         /// <returns>
-        /// A <see cref="System.String" /> that represents this LearningActivity.
+        /// A <see cref="System.String" /> that represents this <see cref="Model.LearningClassActivity"/>.
         /// </returns>
         public override string ToString()
         {
@@ -257,7 +130,7 @@ namespace Rock.Model
     #region Entity Configuration
 
     /// <summary>
-    /// LearningActivity Configuration class.
+    /// <see cref="Model.LearningActivity"/> Configuration class.
     /// </summary>
     public partial class LearningActivityConfiguration : EntityTypeConfiguration<LearningActivity>
     {
@@ -266,8 +139,7 @@ namespace Rock.Model
         /// </summary>
         public LearningActivityConfiguration()
         {
-            this.HasOptional( a => a.CompletionWorkflowType ).WithMany().HasForeignKey( a => a.CompletionWorkflowTypeId ).WillCascadeOnDelete( false );
-            this.HasRequired( a => a.LearningClass ).WithMany( a => a.LearningActivities ).HasForeignKey( a => a.LearningClassId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.ActivityComponent ).WithMany().HasForeignKey( a => a.ActivityComponentId ).WillCascadeOnDelete( false );
         }
     }
 

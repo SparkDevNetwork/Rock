@@ -75,7 +75,6 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personAliasId"></param>
         /// <returns></returns>
-        [RockInternal( "1.16" )]
         internal IQueryable<IGrouping<ReminderType, Reminder>> GetTypesAndRemindersAssignedToPerson( int personAliasId )
         {
             var rockContext = ( RockContext ) this.Context;

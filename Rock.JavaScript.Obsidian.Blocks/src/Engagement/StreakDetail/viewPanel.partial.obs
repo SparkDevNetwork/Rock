@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-
         <div v-if="rebuildActionSuccessMessage" class="row">
             <div class="col-md-12">
                 <NotificationBox alertType="success">{{ rebuildActionSuccessMessage }}</NotificationBox>
@@ -25,7 +24,6 @@
                 <ValueDetailList :modelValue="rightSideValues" />
             </div>
         </div>
-
     </fieldset>
 </template>
 
@@ -50,12 +48,10 @@
             required: true
         },
 
-        rebuildActionSuccessMessage : String
+        rebuildActionSuccessMessage: String
     });
 
     // #region Values
-
-
     // #endregion
 
     // #region Computed Values
@@ -83,7 +79,7 @@
 
         valueBuilder.addHtmlValue("Streak Type", props.modelValue?.streakType?.text ?? "");
         valueBuilder.addTextValue("Enrollment Date", `${RockDateTime.parseISO(props.modelValue.enrollmentDate ?? "")?.toASPString("d") ?? ""}`);
-        if(props.modelValue?.location?.text) {
+        if (props.modelValue?.location?.text) {
             valueBuilder.addTextValue("Location", props.modelValue.location.text);
         }
 

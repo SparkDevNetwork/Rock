@@ -1,0 +1,23 @@
+
+// This files is being imported by './_font-styling-core.scss'
+
+.fa-ul,
+.ti-ul {
+    list-style-type: none;
+    margin-left: calc(2em * 5/4);
+    padding-left: 0px;
+}
+
+.fa-ul > li,
+.ti-ul > li {
+    position: relative;
+}
+  
+.fa-li,
+.ti-li {
+    left: calc(2em * -1);
+    position: absolute;
+    text-align: center;
+    width: 2em;
+    line-height: inherit;
+}

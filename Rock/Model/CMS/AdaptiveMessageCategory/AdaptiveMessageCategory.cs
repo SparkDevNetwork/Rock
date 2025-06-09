@@ -101,7 +101,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.AdaptiveMessage.SupportedActions;
+                return ( this.AdaptiveMessage ?? new AdaptiveMessage() ).SupportedActions;
             }
         }
 

@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 
 using Rock.Enums.Lms;
-using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
+using Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassAnnouncementDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassContentPageDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
@@ -35,7 +35,7 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// <summary>
         /// Gets or sets the list of activities for this learning class.
         /// </summary>
-        public List<LearningActivityCompletionBag> Activities { get; set; }
+        public List<LearningClassActivityCompletionBag> Activities { get; set; }
 
         /// <summary>
         /// Gets or sets the announcements specific to this class and student.

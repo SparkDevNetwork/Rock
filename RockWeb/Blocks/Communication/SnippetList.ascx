@@ -16,7 +16,7 @@
                         <Rock:RockDropDownList ID="ddlActiveFilter" runat="server" Label="Active Status" />
                         <Rock:CategoryPicker ID="cpCategory" runat="server" Label="Category" EntityTypeName="Rock.Model.Snippet" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gSnippets" runat="server" AllowSorting="true" RowItemText="Snippets">
+                    <Rock:Grid ID="gSnippets" runat="server" AllowSorting="true" RowItemText="Snippet">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" />

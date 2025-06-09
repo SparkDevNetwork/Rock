@@ -173,6 +173,8 @@ namespace Rock.Model
                                 // save the file to the provider's new storage medium, and if the medium returns a filesize, save that value.
                                 long? outFileSize = null;
                                 Entity.StorageProvider.SaveContent( Entity, out outFileSize );
+                                // Mark the data as clean to prevent SaveChanges() from being triggered a second time.
+                                Entity.ContentIsDirty = false;
                                 if ( outFileSize.HasValue )
                                 {
                                     Entity.FileSize = outFileSize;
@@ -244,7 +246,7 @@ namespace Rock.Model
                             Entity.Path = null;
                             long? fileSize = null;
                             Entity.StorageProvider.SaveContent( Entity, out fileSize );
-
+                            Entity.ContentIsDirty = false;
                             Entity.FileSize = fileSize;
                             Entity.Path = Entity.StorageProvider.GetPath( Entity );
                         }

@@ -159,7 +159,8 @@ namespace Rock.Security.Authentication
                 return new OneTimePasscodeAuthenticationResult
                 {
                     ErrorMessage = "Code invalid or expired",
-                    State = options.State
+                    State = options.State,
+                    UniqueIdentifier = state.UniqueIdentifier
                 };
             }
 
@@ -170,20 +171,28 @@ namespace Rock.Security.Authentication
                     return new OneTimePasscodeAuthenticationResult
                     {
                         ErrorMessage = "Code is invalid",
-                        State = options.State
+                        State = options.State,
+                        UniqueIdentifier = state.UniqueIdentifier
                     };
                 }
 
                 var user = GetExistingPasswordlessUser( rockContext, state.UniqueIdentifier );
 
+                OneTimePasscodeAuthenticationResult result;
+
                 if ( user != null )
                 {
-                    return AuthenticateExistingPasswordlessUser( rockContext, options, remoteAuthenticationSession, user );
+                    result = AuthenticateExistingPasswordlessUser( rockContext, options, remoteAuthenticationSession, user );
                 }
                 else
                 {
-                    return AuthenticateNewPasswordlessUser( rockContext, options, state, remoteAuthenticationSession );
+                    result = AuthenticateNewPasswordlessUser( rockContext, options, state, remoteAuthenticationSession );
                 }
+
+                // Append the attempted unique identifier to all results so failures properly identify the individual.
+                result.UniqueIdentifier = state.UniqueIdentifier;
+
+                return result;
             }
         }
 
@@ -375,9 +384,11 @@ namespace Rock.Security.Authentication
         {
             if ( !IsPasswordlessAuthenticationAllowedForProtectionProfile( user.Person ) )
             {
+                var securitySettings = new SecuritySettingsService().SecuritySettings;
+
                 return new OneTimePasscodeAuthenticationResult
                 {
-                    ErrorMessage = "Passwordless sign-in not available for your protection profile. Please request assistance from the organization administrator."
+                    ErrorMessage = securitySettings.MessageForDisabledPasswordlessSignIn
                 };
             }
 
@@ -489,9 +500,11 @@ namespace Rock.Security.Authentication
             // Check if passwordless authentication is allowed.
             if ( !IsPasswordlessAuthenticationAllowedForProtectionProfile( person ) )
             {
+                var securitySettings = new SecuritySettingsService().SecuritySettings;
+
                 return new OneTimePasscodeAuthenticationResult
                 {
-                    ErrorMessage = "Passwordless sign-in not available for your protection profile. Please request assistance from the organization administrator."
+                    ErrorMessage = securitySettings.MessageForDisabledPasswordlessSignIn
                 };
             }
 

@@ -6,9 +6,9 @@
                               v-model:selectedFolder="selectedFolder"
                               :height="height"
                               :browseMode="config?.browseMode as 'image' | 'doc' | undefined ?? 'doc'"
-                              :enableAssetManager="config?.enableAssetProviders ?? true"
-                              :enableFileManager="config?.enableFileManager ?? false"
-                              :enableZipUpload="config?.enableZipUploader ?? false"
+                              :enableAssetManager="config?.enableAssetProviders ?? false"
+                              :enableFileManager="config?.enableFileManager ?? true"
+                              :enableZipUpload="config?.enableZipUploader ?? true"
                               :encryptedRootFolder="config?.rootFolder ?? undefined"
                               :editFilePage="config?.fileEditorPage ?? undefined" />
         </div>

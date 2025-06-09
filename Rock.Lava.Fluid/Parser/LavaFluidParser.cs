@@ -89,6 +89,16 @@ namespace Rock.Lava.Fluid
         #endregion
 
         #region Constructors
+        /*
+            4/29/2025 - NA
+
+            When using Lava blocks (e.g., {% lava %}) inside a for loop defined outside of Lava tags, the `continue` and `break` tags do not behave as
+            expected — they are ignored and the loop continues execution. This behavior differs from both Fluid and Shopify Liquid where control
+            flow is honored regardless of tag location. Fluid v2.20+ will throw a parse exceptions until the new AllowLiquidTag is enabled.
+
+            Reason: Fluid introduced a new `AllowLiquidTag` option in v2.20. When upgrading Fluid, we’ll need to set
+                    `AllowLiquidTag = true` to restore compatibility with wrapped control tags.
+        */
         public LavaFluidParser()
             // Functions are being enabled as an experimental feature.
             // Do not use in production.

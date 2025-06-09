@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
@@ -43,6 +44,20 @@ namespace RockWeb.Blocks.Administration
         {
             public const string DetailPage = "DetailPage";
         }
+
+        #region PageParameterKeys
+
+        /// <summary>
+        /// Keys to use for Page Parameters
+        /// </summary>
+        private static class PageParameterKey
+        {
+            public const string BinaryFileTypeId = "BinaryFileTypeId";
+            public const string ReturnUrl = "returnUrl";
+            public const string AutoEdit = "autoEdit";
+        }
+
+        #endregion PageParameterKey
 
         #region Control Methods
 
@@ -103,7 +118,11 @@ namespace RockWeb.Blocks.Administration
         /// <param name="e">The <see cref="RowEventArgs" /> instance containing the event data.</param>
         protected void gBinaryFileType_Edit( object sender, RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, "BinaryFileTypeId", e.RowKeyId );
+            var queryParams = new Dictionary<string, string>();
+            queryParams.AddOrReplace( PageParameterKey.BinaryFileTypeId, e.RowKeyId.ToString() );
+            queryParams.AddOrReplace( PageParameterKey.AutoEdit, "true" );
+            queryParams.AddOrReplace( PageParameterKey.ReturnUrl, Request.RawUrl );
+            NavigateToLinkedPage( AttributeKey.DetailPage, queryParams );
         }
 
         /// <summary>

@@ -39,8 +39,8 @@
     });
 
     const emit = defineEmits<{
-        (event: "next", session: CheckInSession): void;
         (event: "updateActions", actions: KioskButton[]): void;
+        (event: "done"): void;
     }>();
 
     // #region Values
@@ -94,7 +94,26 @@
     function updateActions(): void {
         const actions: KioskButton[] = [];
 
+        actions.push({
+            type: "primary",
+            title: "Done",
+            key: "next",
+            disabled: false,
+            handler: onDoneClick
+        });
+
         emit("updateActions", actions);
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the click event for the done button.
+     */
+    async function onDoneClick(): Promise<void> {
+        emit("done");
     }
 
     // #endregion

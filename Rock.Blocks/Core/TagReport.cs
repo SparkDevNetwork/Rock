@@ -22,8 +22,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
-using DotLiquid;
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;

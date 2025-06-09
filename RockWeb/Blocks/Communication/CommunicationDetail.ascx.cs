@@ -1963,7 +1963,7 @@ namespace RockWeb.Blocks.Communication
 
             if ( showEmailTab )
             {
-                sb.AppendLine( "<div id='emailTabContent' class='tab-pane h-100 d-flex flex-column active'>" );
+                sb.AppendLine( "<div id='emailTabContent' class='tab-pane h-100 active'>" );
                 sb.AppendLine( "<div class='row'>" );
 
                 AppendStaticControlMediumData( sb, "From",

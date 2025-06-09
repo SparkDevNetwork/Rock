@@ -216,7 +216,7 @@ namespace Rock.Utility
         public static List<ListItemBag> GetReprintNextGenLabelTypes( List<int> attendanceIds )
         {
             var director = new CheckIn.v2.CheckInDirector( new RockContext() );
-            var labels = director.LabelProvider.RenderLabels( attendanceIds, null, false );
+            var labels = director.LabelProvider.RenderLabels( attendanceIds, null, null, false );
 
             return labels
                 .Where( l => l.Error.IsNullOrWhiteSpace() )
@@ -246,7 +246,7 @@ namespace Rock.Utility
         public static bool TryReprintNextGenLabels( List<int> attendanceIds, DeviceCache kiosk, DeviceCache printerOverride, PrintFrom? printFromOverride, List<string> onlyPrintLabelTypes, out List<string> errorMessages, out List<ClientLabelBag> clientLabels )
         {
             var director = new CheckIn.v2.CheckInDirector( new RockContext() );
-            var labels = director.LabelProvider.RenderLabels( attendanceIds, kiosk, false );
+            var labels = director.LabelProvider.RenderLabels( attendanceIds, kiosk, printerOverride, false );
 
             errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
                 .Select( l => l.Error )

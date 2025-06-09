@@ -1,0 +1,41 @@
+<template>
+    <DataViewPicker v-model="dataView"
+                    :entityTypeGuid="EntityType.Location"
+                    label="Connected to Locations"
+                    help="A Data View that provides the list of Locations to which the Person may be connected."
+                    showBlankItem />
+
+    <DropDownList v-model="locationType"
+                  :items="locationTypeOptions"
+                  label="Address Type"
+                  help="Specifies the type of Address the filter will be applied to. If no value is selected, all of the Person's Addresses will be considered."
+                  showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const dataView = ref(safeParseJson<ListItemBag>(props.modelValue.dataView ?? ""));
+    const locationTypeOptions: ListItemBag[] = safeParseJson(props.modelValue.locationTypeOptions) ?? [];
+    const locationType = ref<string>(props.modelValue.locationType ?? "");
+
+    watch([dataView, locationType], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            dataView: JSON.stringify(dataView.value),
+            locationType: locationType.value,
+        });
+    });
+</script>

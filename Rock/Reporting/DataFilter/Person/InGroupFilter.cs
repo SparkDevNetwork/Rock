@@ -26,6 +26,9 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -33,12 +36,12 @@ using Rock.Web.UI.Controls;
 namespace Rock.Reporting.DataFilter.Person
 {
     /// <summary>
-    /// 
+    ///
     /// </summary>
     [Description( "Filter people on whether they are in the specified group, groups or child groups, with specific roles, status and dates" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Group(s) Filter (Advanced)" )]
-    [Rock.SystemGuid.EntityTypeGuid( "A40B4BD4-FA17-4A82-97CC-2C71805F9D7C")]
+    [Rock.SystemGuid.EntityTypeGuid( "A40B4BD4-FA17-4A82-97CC-2C71805F9D7C" )]
     public class InGroupFilter : DataFilterComponent
     {
         #region Properties
@@ -65,12 +68,18 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => null;//"~/Obsidian/Reporting/DataFilters/Person/inGroupFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/inGroupFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
@@ -173,8 +182,7 @@ namespace Rock.Reporting.DataFilter.Person
                 selections.Add( string.Empty );
             }
 
-            // Use .AsBoolean().ToString() on boolean values to force empty
-            // strings to become "False".
+            // Use .AsBoolean().ToString() on boolean values to force empty strings to become "False".
             selections.Add( data.GetValueOrDefault( "groupMemberRoles", string.Empty ) );
             selections.Add( data.GetValueOrDefault( "includeChildGroups", string.Empty ).AsBoolean().ToString() );
             selections.Add( data.GetValueOrDefault( "groupMemberStatus", string.Empty ) );
@@ -186,6 +194,30 @@ namespace Rock.Reporting.DataFilter.Person
             selections.Add( data.GetValueOrDefault( "lastAttendance", string.Empty ).Replace( '|', ',' ) );
 
             return selections.JoinStrings( "|" );
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var action = request.GetValueOrNull( "action" );
+            var options = request.GetValueOrNull( "options" )?.FromJsonOrNull<InGroupFilterGetGroupRolesForGroupsOptionsBag>();
+
+            if ( action == "GetGroupRolesForGroups" && options != null )
+            {
+                var groupIds = GroupCache.GetMany( options.GroupGuids ).Select( gc => gc.Id ).ToList();
+
+                var groupRoles = GetGroupTypeRolesForSelectedGroups(
+                        groupIds,
+                        options.IncludeChildGroups,
+                        options.IncludeSelectedGroups,
+                        options.IncludeAllDescendants,
+                        options.IncludeInactiveGroups,
+                        rockContext
+                    );
+
+                return new Dictionary<string, string> { { "groupRoles", groupRoles.ToCamelCaseJson( false, true ) } };
+            }
+            return null;
         }
 
         #endregion
@@ -208,7 +240,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <summary>
         /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
         /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before
         /// referencing this property.
         /// </summary>
         /// <value>
@@ -376,7 +408,8 @@ namespace Rock.Reporting.DataFilter.Person
             var qryGroupTypeRoles = groupTypeRoleService.Queryable();
 
             var selectedGroups = groupService.GetByIds( groupIds )
-                .Select( s => new {
+                .Select( s => new
+                {
                     s.Id,
                     s.GroupTypeId
                 } )
@@ -452,6 +485,7 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
 #if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -794,6 +828,7 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
         }
+
 #endif
 
         /// <summary>
@@ -1041,7 +1076,7 @@ namespace Rock.Reporting.DataFilter.Person
         #region Support Classes
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class PersonIdFirstAttendance
         {
@@ -1063,7 +1098,7 @@ namespace Rock.Reporting.DataFilter.Person
         }
 
         /// <summary>
-        /// 
+        ///
         /// </summary>
         private class PersonIdLastAttendance
         {

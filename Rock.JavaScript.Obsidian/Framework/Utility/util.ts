@@ -16,6 +16,7 @@
 //
 
 import { CancellationTokenSource, ICancellationToken } from "./cancellation";
+import { isHTMLElement } from "./dom";
 
 /**
  * Compares two values for equality by performing deep nested comparisons
@@ -71,6 +72,11 @@ export function deepEqual(a: unknown, b: unknown, strict: boolean): boolean {
             // The objects must be of the same "object type".
             if (a.constructor !== b.constructor) {
                 return false;
+            }
+
+            // The objects must be the same instance if they are both HTML elements.
+            if (isHTMLElement(a) && isHTMLElement(b)) {
+                return a === b;
             }
 
             // Get all the key/value pairs of each object and sort them so they
@@ -186,18 +192,19 @@ type DebounceAsyncOptions = {
  * accepts an optional `parentCancellationToken` that, when canceled, will also
  * cancel the execution of `fn`.
  */
-export function debounceAsync(
-    fn: ((cancellationToken?: ICancellationToken) => PromiseLike<void>),
+export function debounceAsync<T>(
+    fn: ((cancellationToken: ICancellationToken) => PromiseLike<T>),
     options?: DebounceAsyncOptions
-): ((parentCancellationToken?: ICancellationToken) => Promise<void>) {
+): ((parentCancellationToken?: ICancellationToken) => Promise<T>) {
     const delay = options?.delay ?? 250;
     const eager = options?.eager ?? false;
 
     let timeout: NodeJS.Timeout | null = null;
     let source: CancellationTokenSource | null = null;
     let isEagerExecutionInProgress = false;
+    let pendingPromise: PromiseLike<T> | null = null;
 
-    return async (parentCancellationToken?: ICancellationToken): Promise<void> => {
+    return async (parentCancellationToken?: ICancellationToken): Promise<T> => {
         // Always cancel any ongoing execution of fn.
         source?.cancel();
 
@@ -217,30 +224,47 @@ export function debounceAsync(
             }, delay);
 
             try {
-                await fn(source.token);
+                pendingPromise = fn(source.token);
+                return await pendingPromise;
             }
             catch (e) {
                 console.error(e || "Unknown error while debouncing async function call.");
                 throw e;
             }
-
-            return;
         }
 
         // Schedule the function to run after the delay.
         source = new CancellationTokenSource(parentCancellationToken);
         const cts = source;
-        timeout = setTimeout(async () => {
-            try {
-                await fn(cts.token);
-            }
-            catch (e) {
-                console.error(e || "Unknown error while debouncing async function call.");
-                throw e;
-            }
 
-            timeout = null;
-            isEagerExecutionInProgress = false;
-        }, delay);
+        return new Promise<T>((resolve, reject) => {
+            timeout = setTimeout(async () => {
+                try {
+                    pendingPromise = fn(cts.token);
+                    resolve(await pendingPromise);
+                }
+                catch (e) {
+                    console.error(e || "Unknown error while debouncing async function call.");
+                    reject(e);
+                }
+
+                timeout = null;
+                isEagerExecutionInProgress = false;
+            }, delay);
+        });
     };
+}
+
+/**
+ * Returns `true` if the value is `null` or `undefined` (nullish).
+ */
+export function isNullish(value: unknown): value is null | undefined {
+    return (value ?? null) === null;
+}
+
+/**
+ * Returns `true` if the value is not `null` or `undefined` (nullish).
+ */
+export function isNotNullish<T>(item: T): item is NonNullable<T> {
+    return !isNullish(item);
 }

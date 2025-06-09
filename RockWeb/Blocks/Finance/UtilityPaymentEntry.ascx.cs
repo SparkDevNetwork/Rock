@@ -38,6 +38,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Constants;
+using Rock.Crm.RecordSource;
 
 namespace RockWeb.Blocks.Finance
 {
@@ -176,9 +177,9 @@ namespace RockWeb.Blocks.Finance
         "Use Account Campus Mapping Logic",
         Description = @"If enabled, the accounts will be determined as follows:
         <ul>
-          <li>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</li>
-          <li>If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the user sees) will be returned.</li>
-          <li>If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)</li>
+          <li>If no campus is selected, then the selected account will be used.</li>
+          <li>If an active direct child account has a campus that matches the selected campus, then the first matching child account will be used.</li>
+          <li>If no active direct child account matches the selected campus, then the selected account will be used.</li>
         <ul>",
         Key = AttributeKey.UseAccountCampusMappingLogic,
         DefaultBooleanValue = false,
@@ -222,7 +223,7 @@ namespace RockWeb.Blocks.Finance
 
     [DefinedValueField( "Connection Status",
         Key = AttributeKey.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default: 'Prospect'.)",
+        Description = "The connection status to use for new individuals (default: 'Prospect').",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = true,
         AllowMultiple = false,
@@ -231,51 +232,60 @@ namespace RockWeb.Blocks.Finance
 
     [DefinedValueField( "Record Status",
         Key = AttributeKey.RecordStatus,
-        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        Description = "The record status to use for new individuals (default: 'Pending').",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Order = 23 )]
 
+    [DefinedValueField( "Record Source",
+        Key = AttributeKey.RecordSource,
+        Description = "The record source to use for new individuals (default = 'Giving'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_GIVING,
+        Order = 24 )]
+
     [BooleanField( "Enable Comment Entry",
         Key = AttributeKey.EnableCommentEntry,
         Description = "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment Template' setting)",
         DefaultBooleanValue = false,
-        Order = 24 )]
+        Order = 25 )]
 
     [TextField( "Comment Entry Label",
         Key = AttributeKey.CommentEntryLabel,
         Description = "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).",
         IsRequired = false,
         DefaultValue = "Comment",
-        Order = 25 )]
+        Order = 26 )]
 
     [BooleanField( "Enable Business Giving",
         Key = AttributeKey.EnableBusinessGiving,
         Description = "Should the option to give as a business be displayed?",
         DefaultBooleanValue = true,
-        Order = 26 )]
+        Order = 27 )]
 
     [BooleanField( "Enable Anonymous Giving",
         Key = AttributeKey.EnableAnonymousGiving,
         Description = "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.",
         DefaultBooleanValue = false,
-        Order = 27 )]
+        Order = 28 )]
 
     [BooleanField(
         "Disable Captcha Support",
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         Key = AttributeKey.DisableCaptchaSupport,
         DefaultBooleanValue = false,
-        Order = 28 )]
+        Order = 29 )]
 
     [BooleanField(
         "Enable End Date",
         Description = "When enabled, this setting allows an individual to specify an optional end date for their recurring scheduled gifts.",
         Key = AttributeKey.EnableEndDate,
         DefaultBooleanValue = false,
-        Order = 29 )]
+        Order = 30 )]
 
     #endregion Default Category
 
@@ -563,6 +573,7 @@ namespace RockWeb.Blocks.Finance
             public const string AddressType = "AddressType";
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
+            public const string RecordSource = "RecordSource";
             public const string EnableCommentEntry = "EnableCommentEntry";
             public const string CommentEntryLabel = "CommentEntryLabel";
             public const string EnableBusinessGiving = "EnableBusinessGiving";
@@ -2108,6 +2119,18 @@ mission. We are so grateful for your commitment.</p>
                 allowedCurrencyTypes.Add( achCurrency );
             }
 
+            var applePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_APPLE_PAY.AsGuid() );
+            if ( financialGatewayComponent.SupportsSavedAccount( applePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( applePayCurrency );
+            }
+
+            var googlePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ANDROID_PAY.AsGuid() );
+            if ( financialGatewayComponent.SupportsSavedAccount( googlePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( googlePayCurrency );
+            }
+
             int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
 
             personSavedAccountsQuery = personSavedAccountsQuery.Where( a =>
@@ -2194,6 +2217,15 @@ mission. We are so grateful for your commitment.</p>
 
                     var participationMode = PageParameters().ContainsKey( PageParameterKey.ParticipationMode ) ? PageParameter( PageParameterKey.ParticipationMode ).AsIntegerOrNull() ?? 1 : 1;
 
+                    /*
+                         4/3/2025 - SMC
+
+                         This logic overlaps with logic in the Fundraising Donation Entry block. Any changes made here should also be applied there.
+                         When these blocks are migrated to Obsidian, this redundancy should be resolved to ensure the logic exists in only one place.
+
+                         Reason: Prevent code duplication and maintain consistency between blocks.
+                    */
+
                     if ( EntityTypeCache.Get( transactionEntityTypeId ).Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() )
                     {
                         var groupMember = new GroupMemberService( rockContext ).Get( transactionEntity.Guid );
@@ -2210,7 +2242,7 @@ mission. We are so grateful for your commitment.</p>
                             }
 
                             var contributionTotal = new FinancialTransactionDetailService( rockContext )
-                            .GetContributionsForGroupMemberList( transactionEntityTypeId, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
+                                .GetContributionsForGroupMemberList( transactionEntityTypeId, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
                             mergeFields.Add( "FundraisingGoal", groupFundraisingGoal );
                             mergeFields.Add( "AmountRaised", contributionTotal );
                         }
@@ -2621,6 +2653,8 @@ mission. We are so grateful for your commitment.</p>
                             person.RecordStatusValueId = dvcRecordStatus.Id;
                         }
 
+                        person.RecordSourceValueId = GetRecordSourceValueId();
+
                         // Create Person/Family
                         familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
                     }
@@ -2767,6 +2801,8 @@ mission. We are so grateful for your commitment.</p>
                     person.RecordStatusValueId = dvcRecordStatus.Id;
                 }
 
+                person.RecordSourceValueId = GetRecordSourceValueId();
+
                 // Create Person/Family
                 PersonService.SaveNewPerson( person, rockContext, null, false );
             }
@@ -2889,6 +2925,8 @@ mission. We are so grateful for your commitment.</p>
                         business.RecordStatusValueId = dvcRecordStatus.Id;
                     }
 
+                    business.RecordSourceValueId = GetRecordSourceValueId();
+
                     // Create Person/Family
                     familyGroup = PersonService.SaveNewPerson( business, rockContext, null, false );
 
@@ -2986,6 +3024,18 @@ mission. We are so grateful for your commitment.</p>
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId()
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
         }
 
         /// <summary>

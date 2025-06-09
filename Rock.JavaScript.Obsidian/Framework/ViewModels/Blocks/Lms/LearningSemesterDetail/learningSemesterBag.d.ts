@@ -23,7 +23,7 @@
 
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/** The item details for the Learning Semester Detail block. */
+/** The editable item details for the Learning Semester Detail block. */
 export type LearningSemesterBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
@@ -39,9 +39,6 @@ export type LearningSemesterBag = {
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
-
-    /** Gets or sets the program for the semester. */
-    learningProgramId: number;
 
     /** Gets or sets the name of the LearningSemester. */
     name?: string | null;

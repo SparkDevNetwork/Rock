@@ -62,10 +62,8 @@
                 visiblePriority="md">
 
             <template #format="{ row }">
-                <div class="text-lg">
-                    <div v-for="registrar in row.registrarsHtml">
-                        <span v-html="registrar"></span><br />
-                    </div>
+                <div v-for="registrar in row.registrarsHtml">
+                    <span v-html="registrar"></span><br />
                 </div>
             </template>
 
@@ -83,10 +81,8 @@
                 visiblePriority="xs">
 
             <template #format="{ row }">
-                <div class="text-lg">
-                    <div v-for="registrant in row.registrants">
-                        <span>{{ registrant }}</span><br />
-                    </div>
+                <div v-for="registrant in row.registrants">
+                    <span>{{ registrant }}</span><br />
                 </div>
             </template>
 

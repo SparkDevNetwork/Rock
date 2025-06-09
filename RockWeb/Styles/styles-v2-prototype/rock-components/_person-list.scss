@@ -1,0 +1,47 @@
+
+// PERSON LIST (ROCK COMPONENT)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.personlist {
+  padding-left:   0;
+  list-style:     none;
+
+  li {
+    padding-left: calc($grid-gutter-width * .5);
+
+    i.fa-circle {
+      margin-right: calc($grid-gutter-width * 0.25);
+      margin-left:  calc($grid-gutter-width * -.5);
+      font-size:    9px;
+      color:        var(--color-interface-soft);
+    }
+
+    .control-actions {
+      opacity:                      0;
+      -webkit-transition: opacity   .5s ease-out;
+      -moz-transition: opacity      .5s ease-out;
+      transition: opacity           .5s ease-out;
+    }
+
+    &:hover {
+      .control-actions {
+        opacity:                    1;
+      }
+    }
+  }
+
+  .popover {
+    width:                          320px;
+  }
+}
+// ====================== END BASE STYLE ======================
+
+

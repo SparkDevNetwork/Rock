@@ -406,7 +406,7 @@ namespace Rock.Web.Cache
                 // Pre-load all the attributes.
                 if ( typeof( IHasAttributes ).IsAssignableFrom( typeof( TT ) ) && typeof( T ) != typeof( AttributeCache ) )
                 {
-                    items.Cast<IHasAttributes>().LoadAttributes( rockContext );
+                    Helper.LoadAttributes( typeof( TT ), items.Cast<IHasAttributes>().ToList(), rockContext );
                 }
 
                 cachedItems.AddRange( items.Select( a => Get( ( TT ) a ) ) );
@@ -479,7 +479,7 @@ namespace Rock.Web.Cache
                 // Pre-load all the attributes.
                 if ( typeof( IHasAttributes ).IsAssignableFrom( typeof( TT ) ) && typeof( T ) != typeof( AttributeCache ) )
                 {
-                    items.Cast<IHasAttributes>().LoadAttributes( rockContext );
+                    Helper.LoadAttributes( typeof( TT ), items.Cast<IHasAttributes>().ToList(), rockContext );
                 }
 
                 cachedItems.AddRange( items.Select( a => Get( ( TT ) a ) ) );

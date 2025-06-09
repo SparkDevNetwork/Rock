@@ -22,11 +22,11 @@
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
-            <ViewPanel :modelValue="learningCourseViewBag" :options="options" />
+            <ViewPanel :modelValue="learningCourseViewBag" :options="options" v-model:selectedTab="selectedTab" />
         </template>
 
         <template #edit>
-            <EditPanel v-model="learningCourseEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+            <EditPanel v-model="learningCourseEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" v-model:selectedTab="selectedTab" />
         </template>
     </DetailBlock>
 </template>
@@ -74,6 +74,8 @@
     const entityTypeGuid = EntityType.LearningCourse;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
+
+    const selectedTab = ref("Overview");
 
     // #endregion
 

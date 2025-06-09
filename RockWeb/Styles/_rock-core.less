@@ -175,6 +175,7 @@
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.min.css";
+@import (less) "styles-v2-prototype/icons/tabler-icon.css";
 
 @import "_page-admin.less";
 @import "_modal.less";
@@ -541,6 +542,10 @@ th[align="right"] {
     //   color: @panel-heading-text-color;
     // }
 
+    .panel-header-actions {
+      margin-right: 1rem !important;
+    }
+    
     .panel-title {
       small {
         opacity: .5;

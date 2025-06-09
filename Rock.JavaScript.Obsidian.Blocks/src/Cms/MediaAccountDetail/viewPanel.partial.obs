@@ -9,14 +9,11 @@
                 <ValueDetailList :modelValue="rightSideValues" />
             </div>
         </div>
-
-        <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
-    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { computed, PropType } from "vue";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
@@ -35,13 +32,6 @@
         }
     });
 
-    // #region Values
-
-    const attributes = ref(props.modelValue?.attributes ?? {});
-    const attributeValues = ref(props.modelValue?.attributeValues ?? {});
-
-    // #endregion
-
     // #region Computed Values
 
     /** The values to display at half-width on the left side of the block. */
@@ -59,7 +49,7 @@
         return valueBuilder.build();
     });
 
-     /** The values to display at half-width on the right side of the block. */
+    /** The values to display at half-width on the right side of the block. */
     const rightSideValues = computed((): ValueDetailListItem[] => {
         const valueBuilder = new ValueDetailListItemBuilder();
 

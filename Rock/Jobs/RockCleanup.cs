@@ -29,14 +29,13 @@ using Humanizer;
 
 using Microsoft.Extensions.Logging;
 
-using PuppeteerSharp.BrowserData;
 using Rock.Attribute;
 using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Pdf;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -324,7 +323,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
+            RunCleanupTask( "non-default chrome engines", () => RemoveNonDefaultChromeEngines() );
 
             RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
 
@@ -341,8 +340,6 @@ namespace Rock.Jobs
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
-
-            RunCleanupTask( "update geolocation database", () => UpdateGeolocationDatabase() );
 
             /*
              * 21-APR-2022 DMV
@@ -1229,6 +1226,7 @@ namespace Rock.Jobs
             var workflowContext = CreateRockContext();
 
             var workflowService = new WorkflowService( workflowContext );
+            var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable().AsNoTracking()
                 .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.CompletedDateTime.HasValue
@@ -1251,6 +1249,7 @@ namespace Rock.Jobs
                 // to prevent a SQL complexity exception, do a bulk delete anytime the workflowIdsSafeToDelete gets too big
                 if ( workflowIdsSafeToDelete.Count >= batchAmount )
                 {
+                    BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                     totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
                     workflowIdsSafeToDelete = new List<int>();
                 }
@@ -1258,6 +1257,7 @@ namespace Rock.Jobs
 
             if ( workflowIdsSafeToDelete.Any() )
             {
+                BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                 totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
             }
 
@@ -1825,8 +1825,16 @@ namespace Rock.Jobs
             {
                 var attributeValueService = new AttributeValueService( rockContext );
 
+                /*
+                    6/5/2025 - JJZ
+
+                    Originally this was checking for empty strings (`av.Value = ""`), but SQL equates an emoji
+                    with an empty string, so instead we're not checking for string length, which accurately checks
+                    for empty strings and doesn't give a false positive on emojis. This was reported in this issue:
+                    https://github.com/SparkDevNetwork/Rock/issues/6291
+                */
                 var emptyValuesQuery = attributeValueService.Queryable()
-                    .Where( av => av.Value == null || av.Value == "" )
+                    .Where( av => av.Value == null || av.Value.Length == 0 )
                     .WithQueryableAttributeValues();
 
                 recordsDeleted += BulkDeleteInChunks( emptyValuesQuery, batchAmount, commandTimeout );
@@ -2880,10 +2888,10 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
         }
 
         /// <summary>
-        /// Removes older unused versions of the chrome engine
+        /// Removes all installed versions of Chrome that do not match the default browser version, ensuring only the required version remains.
         /// </summary>
         /// <returns></returns>
-        private int RemoveOlderChromeEngines()
+        private int RemoveNonDefaultChromeEngines()
         {
             var options = new PuppeteerSharp.BrowserFetcherOptions()
             {
@@ -2892,14 +2900,16 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
             };
 
             var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );
-            var olderVersions = browserFetcher.GetInstalledBrowsers().Where( r => r.BuildId != Chrome.DefaultBuildId );
+            var olderVersions = browserFetcher.GetInstalledBrowsers().Where( r => r.BuildId != PdfGenerator.BrowserVersion && r.Browser == options.Browser );
+            int totalRemoved = 0;
 
             foreach ( var version in olderVersions )
             {
                 browserFetcher.Uninstall( version.BuildId );
+                totalRemoved++;
             }
 
-            return olderVersions.Count();
+            return totalRemoved;
         }
 
         /// <summary>
@@ -3547,20 +3557,6 @@ SET @UpdatedCampusCount = @CampusCount;
 
                 return ( int ) outputParam.Value;
             }
-        }
-
-        /// <summary>
-        /// Updates Rock's geolocation database.
-        /// </summary>
-        /// <returns>1 if the database was updated successfully.</returns>
-        private int UpdateGeolocationDatabase()
-        {
-            if ( !IsRunningFromUnitTest )
-            {
-                IpGeoLookup.Instance.UpdateDatabase();
-            }
-
-            return 1;
         }
 
         /// <summary>

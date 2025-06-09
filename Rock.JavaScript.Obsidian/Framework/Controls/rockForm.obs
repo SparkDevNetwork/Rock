@@ -1,17 +1,19 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <form @submit.prevent.stop="onInternalSubmit()">
-        <RockValidation v-if="!hideErrors" :errors="visibleErrors" />
+    <form ref="formElement" @submit.prevent.stop="onInternalSubmit()">
+        <RockValidation v-if="!hideErrors"
+                        :errors="visibleErrors" />
         <slot />
     </form>
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { nextTick, PropType, reactive, ref, watch, onBeforeUnmount } from "vue";
     import { FormError, FormState, provideFormState } from "@Obsidian/Utility/form";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import RockValidation from "./rockValidation.obs";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
 
     const props = defineProps({
         /** True if the form should attempt to submit. */
@@ -50,14 +52,19 @@
         (e: "update:submit", value: boolean): void;
     }>();
 
+    defineExpose({
+        submitForm
+    });
+
+    // #region Values
+
     const visibleErrors = ref<FormError[]>([]);
     const errorValues = ref<FormError[]>([]);
     const errors = ref<Record<string, FormError>>({});
     const submit = ref(props.submit);
+    const formElement = ref<HTMLElement | undefined>();
 
-    const onInternalSubmit = (): void => {
-        submit.value = true;
-    };
+    // #endregion Values
 
     // Construct the form state.
     const formState = reactive<FormState>({
@@ -83,42 +90,65 @@
         }
     });
 
-    provideFormState(formState);
+    // #region Functions
 
-    // Watch for requests to submit from the parent component.
-    watch(() => props.submit, () => {
-        if (submit.value !== props.submit) {
-            submit.value = props.submit;
-        }
-    });
+    function onInternalSubmit(): void {
+        submitForm();
+    }
 
-    // Watch for any submit actions and check the validation.
-    watch(submit, async () => {
+    /**
+     * Submits the form and waits until both validation and the onSubmit
+     * callback have completed before returning.
+     */
+    async function submitForm(): Promise<void> {
+        // Prevent double submits.
         if (submit.value) {
+            return;
+        }
+
+        submit.value = true;
+
+        try {
             formState.submitCount++;
 
             // Update the visible errors.
             visibleErrors.value = errorValues.value;
             emit("visibleValidationChanged", visibleErrors.value);
 
-            try {
-                if (Object.keys(errors.value).length === 0) {
-                    const submitHandler = props.onSubmit;
+            if (Object.keys(errors.value).length === 0) {
+                const submitHandler = props.onSubmit;
 
-                    if (submitHandler) {
-                        const result = submitHandler();
+                if (submitHandler) {
+                    const result = submitHandler();
 
-                        if (isPromise(result)) {
-                            await result;
-                        }
+                    if (isPromise(result)) {
+                        await result;
                     }
                 }
             }
-            finally {
-                submit.value = false;
-            }
         }
+        finally {
+            // When there are errors, everything is synchronous, so the watchers aren't able to fire
+            // before we change `submit` again, so let them fire.
+            await nextTick();
+            submit.value = false;
+        }
+    }
 
+    // #endregion Functions
+
+    // #region Watchers
+
+    // Watch for requests to submit from the parent component.
+    watch(() => props.submit, () => {
+        // submitForm() will bail if we are already submitting.
+        if (props.submit) {
+            submitForm();
+        }
+    });
+
+    // Watch for any submit state changes and emit new value.
+    watch(submit, () => {
         emit("update:submit", submit.value);
     });
 
@@ -140,4 +170,28 @@
         updateRefValue(visibleErrors, []);
         emit("visibleValidationChanged", visibleErrors.value);
     });
+
+    watch(visibleErrors, (errors) => {
+        if (errors.length && formElement.value) {
+            // Wait until the errors are rendered to scroll to them.
+            const element = formElement.value;
+            scrollElementStartToTop(element);
+        }
+    });
+
+    // #endregion Watchers
+
+    /**
+     * If the component is unmounted while a submit is in progress (e.g., modal is closed mid-submit),
+     * the form's internal `submit.value` may still be true. In that case, emit `update:submit = false`
+     * so the parent-side v-model is properly reset. Otherwise, the parent stays stuck at true,
+     * and future submits won't be triggered due to no observable change.
+     */
+    onBeforeUnmount(() => {
+        if (submit.value) {
+            emit("update:submit", false);
+        }
+    });
+
+    provideFormState(formState);
 </script>

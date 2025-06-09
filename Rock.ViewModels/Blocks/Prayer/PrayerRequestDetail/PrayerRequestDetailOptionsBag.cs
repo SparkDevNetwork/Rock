@@ -31,5 +31,15 @@ namespace Rock.ViewModels.Blocks.Prayer.PrayerRequestDetail
         /// Pass the value of the RequireCampus block attribute to the front end
         /// </summary>
         public bool IsCampusRequired { get; set; }
+
+        /// <summary>
+        /// Pass the EnableAIDisclaimer block attribute to the front end
+        /// </summary>
+        public bool IsAIDisclaimerEnabled { get; set; }
+
+        /// <summary>
+        /// Pass the AIDisclaimer block attribute to the front end
+        /// </summary>
+        public string AIDisclaimer { get; set; }
     }
 }

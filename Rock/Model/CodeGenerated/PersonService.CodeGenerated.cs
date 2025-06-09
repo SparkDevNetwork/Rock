@@ -184,6 +184,7 @@ namespace Rock.Model
             target.PrimaryFamilyId = source.PrimaryFamilyId;
             target.PronunciationNote = source.PronunciationNote;
             target.RaceValueId = source.RaceValueId;
+            target.RecordSourceValueId = source.RecordSourceValueId;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             target.RecordStatusValueId = source.RecordStatusValueId;

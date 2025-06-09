@@ -1397,7 +1397,7 @@ namespace RockWeb.Blocks.Engagement.SignUp
             var groupMemberAssignments = qry.ToList();
 
             groupMemberAssignments.LoadAttributes();
-            groupMemberAssignments.Select( gma => gma.GroupMember ).LoadAttributes();
+            groupMemberAssignments.Select( gma => gma.GroupMember ).ToList().LoadAttributes();
 
             this.GroupMemberIdByGroupMemberAssignmentIds = new Dictionary<int, int>();
 

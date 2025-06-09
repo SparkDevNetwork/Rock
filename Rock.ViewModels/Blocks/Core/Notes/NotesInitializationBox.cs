@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.ViewModels.Controls;
+
 namespace Rock.ViewModels.Blocks.Core.Notes
 {
     /// <summary>

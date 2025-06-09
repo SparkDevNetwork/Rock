@@ -70,6 +70,11 @@ namespace Rock.ViewModels.Blocks.Core.DeviceDetail
         public ListItemBag PrinterDevice { get; set; }
 
         /// <summary>
+        /// The device that will act as a proxy for this device.
+        /// </summary>
+        public ListItemBag ProxyDevice { get; set; }
+
+        /// <summary>
         /// Gets or sets where print jobs for this device originates from.
         /// </summary>
         public PrintFrom PrintFrom { get; set; }

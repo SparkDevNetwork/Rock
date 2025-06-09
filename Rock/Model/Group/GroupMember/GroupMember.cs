@@ -72,6 +72,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
+        [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 0 )]
         public int GroupId { get; set; }
 
         /// <summary>
@@ -104,6 +105,7 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
+        [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 1 )]
         public int GroupRoleId { get; set; }
 
         /// <summary>
@@ -124,6 +126,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 2 )]
         public GroupMemberStatus GroupMemberStatus { get; set; } = GroupMemberStatus.Active;
 
         /// <summary>
@@ -244,16 +247,14 @@ namespace Rock.Model
         public CommunicationType CommunicationPreference { get; set; }
 
         /// <summary>
-        /// Gets or sets whether notifications for the chat channel are muted for this person. This should be treated as
-        /// read-only and only set from the sync job or webhooks.
+        /// Gets or sets whether notifications for the chat channel are muted for this person.
         /// </summary>
         [DataMember]
         public bool IsChatMuted { get; set; }
 
         /// <summary>
-        /// Gets or sets whether this user is banned from the chat channel. It should be assumed that external chat
-        /// providers do not remove the member from the channel when they are banned; they just set a banned field to
-        /// true. This should be treated as read-only and only set from the sync job or webhooks.
+        /// Gets or sets whether this person is banned from the chat channel. It should be assumed that external chat providers
+        /// do not remove the member from the channel when they are banned; they just set a banned field to true.
         /// </summary>
         [DataMember]
         public bool IsChatBanned { get; set; }

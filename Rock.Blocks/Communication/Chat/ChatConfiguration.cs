@@ -19,9 +19,11 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 
-using Rock.Security;
-using Rock.SystemKey;
+using Rock.Communication.Chat;
+using Rock.Data;
+using Rock.Model;
 using Rock.ViewModels.Blocks.Communication.Chat.ChatConfiguration;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -35,7 +37,7 @@ namespace Rock.Blocks.Communication.Chat
     [DisplayName( "Chat Configuration" )]
     [Category( "Communication > Chat" )]
     [Description( "Used for making configuration changes to Rock's chat system." )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "4E1EF8E8-8984-47EA-A6FC-31125C3B6153" )]
     [Rock.SystemGuid.BlockTypeGuid( "D5BE6AAE-70A2-4021-93F7-DD66A09B08CB" )]
@@ -81,6 +83,34 @@ namespace Rock.Blocks.Communication.Chat
 
             SaveChatConfigurationToSystemSettings( bag );
 
+            // Perform an app settings and group type sync to the external chat system in a background task, as it could
+            // take some time to complete.
+            Task.Run( async () =>
+            {
+                using ( var rockContext = new RockContext() )
+                using ( var chatHelper = new ChatHelper( rockContext ) )
+                {
+                    chatHelper.Reinitialize();
+
+                    var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
+                    if ( isSetUpResult?.IsSetUp != true )
+                    {
+                        // There's no point in trying to sync the group types if initial setup failed.
+                        return;
+                    }
+
+                    // We'll only sync chat-enabled group types as a part of this configuration save, as there is no
+                    // good way to warn the individual of any previously-synced channel types that might become deleted
+                    // as a result of synching no-longer-chat-enabled group types here. We'll let the job clean those
+                    // up later.
+                    var chatEnabledGroupTypes = new GroupTypeService( rockContext )
+                        .GetChatEnabledGroupTypes()
+                        .ToList();
+
+                    await chatHelper.SyncGroupTypesToChatProviderAsync( chatEnabledGroupTypes );
+                }
+            } );
+
             return ActionOk();
         }
 
@@ -94,18 +124,7 @@ namespace Rock.Blocks.Communication.Chat
         /// <returns>A chat configuration bag instance that represents the current chat configuration.</returns>
         private ChatConfigurationBag GetCurrentChatConfigurationBag()
         {
-            var chatConfigurationJson = Rock.Web.SystemSettings.GetValue( SystemSetting.CHAT_CONFIGURATION );
-            var chatConfiguration = chatConfigurationJson.FromJsonOrNull<Rock.Communication.Chat.ChatConfiguration>() ?? new Rock.Communication.Chat.ChatConfiguration();
-
-            ListItemBag welcomeWorkflowType = null;
-            if ( chatConfiguration.WelcomeWorkflowTypeGuid.HasValue )
-            {
-                var welcomeWorkflowTypeCache = WorkflowTypeCache.Get( chatConfiguration.WelcomeWorkflowTypeGuid.Value );
-                if ( welcomeWorkflowTypeCache != null )
-                {
-                    welcomeWorkflowType = welcomeWorkflowTypeCache.ToListItemBag();
-                }
-            }
+            var chatConfiguration = ChatHelper.GetChatConfiguration();
 
             List<ListItemBag> chatBadgeDataViews = null;
             if ( chatConfiguration.ChatBadgeDataViewGuids?.Any() == true )
@@ -125,10 +144,9 @@ namespace Rock.Blocks.Communication.Chat
             return new ChatConfigurationBag
             {
                 ApiKey = chatConfiguration.ApiKey,
-                ApiSecret = Encryption.DecryptString( chatConfiguration.ApiSecret ),
+                ApiSecret = chatConfiguration.ApiSecret,
                 AreChatProfilesVisible = chatConfiguration.AreChatProfilesVisible,
                 IsOpenDirectMessagingAllowed = chatConfiguration.IsOpenDirectMessagingAllowed,
-                WelcomeWorkflowType = welcomeWorkflowType,
                 ChatBadgeDataViews = chatBadgeDataViews
             };
         }
@@ -151,16 +169,6 @@ namespace Rock.Blocks.Communication.Chat
         /// <param name="bag">The chat configuration to save to system settings.</param>
         private void SaveChatConfigurationToSystemSettings( ChatConfigurationBag bag )
         {
-            Guid? welcomeWorkflowTypeGuid = null;
-            if ( bag.WelcomeWorkflowType != null )
-            {
-                var welcomeWorkflowTypeCache = WorkflowTypeCache.Get( bag.WelcomeWorkflowType.Value );
-                if ( welcomeWorkflowTypeCache != null )
-                {
-                    welcomeWorkflowTypeGuid = welcomeWorkflowTypeCache.Guid;
-                }
-            }
-
             List<Guid> chatBadgeDataViewGuids = null;
             if ( bag.ChatBadgeDataViews?.Any() == true )
             {
@@ -176,17 +184,21 @@ namespace Rock.Blocks.Communication.Chat
                 }
             }
 
+            // Get the system user GUID from the current (pre-save) config so we always have the latest value, since
+            // this isn't managed by the UI.
+            var preSaveChatConfiguration = ChatHelper.GetChatConfiguration();
+
             var chatConfiguration = new Rock.Communication.Chat.ChatConfiguration
             {
                 ApiKey = bag.ApiKey,
-                ApiSecret = Encryption.EncryptString( bag.ApiSecret ),
+                ApiSecret = bag.ApiSecret,
                 AreChatProfilesVisible = bag.AreChatProfilesVisible,
                 IsOpenDirectMessagingAllowed = bag.IsOpenDirectMessagingAllowed,
-                WelcomeWorkflowTypeGuid = welcomeWorkflowTypeGuid,
-                ChatBadgeDataViewGuids = chatBadgeDataViewGuids
+                ChatBadgeDataViewGuids = chatBadgeDataViewGuids,
+                SystemUserGuid = preSaveChatConfiguration.SystemUserGuid
             };
 
-            Rock.Web.SystemSettings.SetValue( SystemSetting.CHAT_CONFIGURATION, chatConfiguration.ToJson() );
+            ChatHelper.SaveChatConfiguration( chatConfiguration );
         }
 
         #endregion Private Methods

@@ -1,0 +1,26 @@
+<template>
+    <div class="row">
+        <div class="col-sm-6">
+            <GroupPicker v-model="group" label="Group" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const group = ref<ListItemBag | null>(safeParseJson(props.modelValue.group) ?? null);
+
+    watch(group, () => {
+        emit("update:modelValue", { ...props.modelValue, group: JSON.stringify(group.value) });
+    });
+</script>

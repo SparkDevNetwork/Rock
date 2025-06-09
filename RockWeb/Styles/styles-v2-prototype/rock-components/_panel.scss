@@ -1,0 +1,296 @@
+
+
+// Panel Helper (Rock Components)
+
+
+// =============================================================
+// Table of Content           
+//  + Panel Parent
+//  + Panel with Sidebar
+// =============================================================
+
+
+// ======================== PANEL PARENT ========================
+.panel-parent {
+  & > .panel-body {
+    padding: 0;
+  }
+
+  .panel {
+    margin-bottom:  0;
+    border:         0;
+
+    .panel-heading {
+      display:      none;
+    }
+  }
+}
+// ====================== END PANEL PARENT ======================
+
+// ======================== PANEL WITH SIDEBAR ========================
+// Panels with sidebar content use a grid with 4 columns and 2 rows.
+/* use e("/") to escape the forward slash during compilation. */
+.panel-with-sidebar {
+  display:                grid;
+  grid-template-columns:  repeat(4, 1fr);
+  gap:                    var(--spacing-medium);
+  box-shadow:             0 0 1px 0 rgba(0,0,0,0.03), 0 1px 3px 0 rgba(0,0,0,0.08);
+  background:             var(--color-interface-softest);
+  border:                 1px solid var(--color-interface-soft);
+  border-radius:          var(--rounded-small);
+  margin-bottom:          var(--spacing-large);
+  /* The sidebar panel content spans 1 of the 4 columns of the 1st row. */
+  > .panel-sidebar-content {
+    grid-column:    1;
+    grid-row:       1;
+    /* Include margins for the top and left. */
+    margin-top:           var(--spacing-medium);
+    margin-left:          var(--spacing-medium);
+  }
+  /* The main panel content spans 3 of the 4 columns of the 1st row. */
+  > .panel {
+    grid-column:  2 / span 3;
+    grid-row:     1;
+    border:       0;
+    box-shadow:   none;
+  }
+  /* Remove background and borders for main panel headers. */
+  .panel-block {
+    > .panel-heading, > .panel-sub-header {
+      border-bottom:    0;
+      background-color: var(--color-interface-softest);
+    }
+  }
+  /* The footer spans all 4 columns of the 2nd row. */
+  .sidebar-footer {
+    grid-column:  1 / span 4;
+    grid-row:     2;
+    /* The actions footer items uses a sub grid with a single row and 2 columns. */
+    > div.actions {
+      display:                grid;
+      justify-items:          start;
+      grid-template-columns:  repeat(2, 1fr);
+      margin:                 var(--spacing-medium);
+
+      div.footer-actions {
+        grid-column:      1;
+        /* Child buttons should have margins */
+        > * {
+          margin-right:   var(--spacing-xsmall);
+        }
+      }
+      /* justify the secondary footer actions to the right-hand side (end) of the grid. */
+      div.footer-secondary-actions {
+        grid-column:      2;
+        justify-self:     end;
+        /* Child buttons should have margins */
+        > * {
+          margin-left:    var(--spacing-tiny);
+        }
+      }
+    }
+  }
+}
+
+// Moved from theme.less
+.panel-block {
+  position:           relative;
+  display:            -ms-flexbox;
+  display:            flex;
+  -ms-flex-direction: column;
+  flex-direction:     column;
+  min-width:          0;
+
+  > .panel-heading {
+    border-bottom:    1px solid var(--color-interface-softer);
+  }
+
+  > .panel-body {
+    -ms-flex:         1 1 auto;
+    flex:             1 1 auto;
+  }
+
+  .is-fullscreen & {
+    height:           100vh !important;
+    margin:           0;
+    overflow:         auto;
+    background-color: var(--color-interface-softest);
+    border-radius:    0;
+
+    .panel-block {
+      height:         auto !important;
+      margin-bottom:  var(--spacing-large);
+      overflow:       visible;
+    }
+  }
+
+  .wizard {
+    padding:        var(--spacing-medium) 0;
+    margin:         0;
+    background:     var(--color-interface-softest);
+    border-bottom:  1px solid var(--color-interface-softer);
+  }
+
+
+  .treeview-actions {
+    display:  flex;
+    margin:   -6px -12px -6px 0 !important;
+
+    .btn-link {
+      width:          28px;
+      padding:        6px 0;
+      margin-bottom:  0;
+      font-size:      var(--font-size-small);
+      color:          var(--color-interface-medium);
+      border:         0;
+
+      &:hover {
+        color:        var(--color-link);
+      }
+
+      &.aspNetDisabled {
+        cursor:       not-allowed !important;
+        opacity:      .4 !important;
+      }
+    }
+  }
+}
+// ====================== END PANEL WITH SIDEBAR ======================
+
+
+.panel-block {
+  position:           relative;
+  display:            -ms-flexbox;
+  display:            flex;
+  -ms-flex-direction: column;
+  flex-direction:     column;
+  min-width:          0;
+
+  > .panel-heading {
+    border-bottom:        1px solid var(--color-interface-soft);
+    background-color:     var(--color-interface-softest);
+    // border-bottom-color:  var(--color-interface-soft);
+    padding-left:         var(--spacing-medium);
+    height:               56px; // to match the NextGen grid
+
+    & .panel-title {
+      font-size:          var(--font-size-h5);
+    }
+  }
+
+  > .panel-body {
+    -ms-flex:       1 1 auto;
+    flex:           1 1 auto;
+  }
+
+  .is-fullscreen & {
+    height:           100vh !important;
+    margin:           0;
+    overflow:         auto;
+    background-color: var(--color-interface-softest);
+    border-radius:    0;
+
+    .panel-block {
+      height:         auto !important;
+      margin-bottom:  var(--spacing-large);
+      overflow:       visible;
+    }
+  }
+
+  .wizard {
+    padding:        var(--spacing-medium) 0;
+    margin:         0;
+    background:     var(--color-interface-softest);
+    border-bottom:  1px solid var(--color-interface-softer);
+  }
+
+
+  .treeview-actions {
+    display:    flex;
+    margin:     -6px -12px -6px 0 !important;
+
+    .btn-link {
+      width:          28px;
+      padding:        6px 0;
+      margin-bottom:  0;
+      font-size:      var(--font-size-small);
+      color:          var(--color-interface-strong);
+      border:         0;
+
+      &:hover {
+        color:        var(--color-interface-stronger);
+      }
+
+      &.aspNetDisabled {
+        cursor:       not-allowed !important;
+        opacity:      .4 !important;
+      }
+    }
+  }
+}
+
+.panel-block,
+.panel-section,
+.panel-note {
+  > .panel-heading {
+    display:                  -ms-flexbox;
+    display:                  flex;
+    align-content:            center;
+    align-items:              center;
+    // Have to add these before the border was overlapping each other.
+    border-top-left-radius:   var(--rounded-medium);
+    border-top-right-radius:  var(--rounded-medium);
+
+    .row {
+      width:          100%;
+    }
+
+    > .panel-title {
+      margin-right:   auto;
+    }
+
+    .filter-toggle {
+      margin-top:     0;
+    }
+
+    > .panel-labels,
+    > .pull-right {
+      margin-left:    auto;
+      text-align:     right;
+    }
+
+    > .panel-labels {
+      margin-top:     calc(var(--spacing-xsmall) * -1);
+      margin-bottom:  calc(var(--spacing-xsmall) * -1);
+
+      .btn {
+        vertical-align: baseline;
+      }
+    }
+
+    > .description {
+      display:          block;
+    }
+  }
+}
+
+.drawer-pull {
+  padding: 6px 8px;
+  color: var(--color-interface-strong);
+  cursor: pointer;
+  border-bottom: 1px solid var(--color-interface-soft);
+
+  &:before,
+  &:after {
+    display: table; // 2
+    content: " "; // 1
+  }
+  &:after {
+    clear: both;
+  }
+
+  i {
+    float: right;
+  }
+}
+

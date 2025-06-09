@@ -20,25 +20,41 @@ using Rock.Data;
 
 namespace Rock.Jobs
 {
+    /// <summary>
+    /// A helper class to execute SQL commands within Rock jobs.
+    /// </summary>
     internal class JobMigration : IMigration
     {
-        private readonly int _commandTimeout;
+        private readonly int _commandTimeout = 14400; // Default: 4 hours.
         private readonly RockContext _rockContext;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="JobMigration"/> class to use <see cref="DbService"/> along with
+        /// the specified command timeout for all SQL commands.
+        /// </summary>
+        /// <param name="commandTimeout">The command timeout to use for all SQL commands.</param>
         public JobMigration( int commandTimeout )
         {
             _commandTimeout = commandTimeout;
         }
 
         /// <summary>
-        /// Create a Job Migration Class out of a RockContext
+        /// Initializes a new instance of the <see cref="JobMigration"/> class to use the specified <see cref="RockContext"/>
+        /// for all SQL commands.
         /// </summary>
-        /// <param name="rockContext">The RockContext to be used to make the SQL commands. Please ensure that the rockContext has the commandTimeout set.</param>
-        public JobMigration( RockContext rockContext)
+        /// <param name="rockContext">The <see cref="RockContext"/> to be used for all SQL commands.</param>
+        /// <remarks>
+        /// Ensure <paramref name="rockContext"/> has the appropriate command timeout set before executing any commands.
+        /// </remarks>
+        public JobMigration( RockContext rockContext )
         {
             _rockContext = rockContext;
         }
 
+        /// <summary>
+        /// Executes the specified SQL command.
+        /// </summary>
+        /// <param name="sql">The SQL command.</param>
         public void Sql( string sql )
         {
             if ( _rockContext == null )
@@ -51,6 +67,11 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Executes the specified SQL command with the specified parameters.
+        /// </summary>
+        /// <param name="sql">The SQL command.</param>
+        /// <param name="parameters">The parameters to use in the SQL command.</param>
         public void Sql( string sql, Dictionary<string, object> parameters )
         {
             if ( _rockContext == null )
@@ -63,9 +84,18 @@ namespace Rock.Jobs
             }
         }
 
+        /// <summary>
+        /// Executes the specified SQL query and returns the first column of the first row in the result set returned by the query.
+        /// </summary>
+        /// <param name="sql">The SQL query.</param>
+        /// <returns>The first column of the first row in the result set.</returns>
+        /// <remarks>
+        /// EF6 doesn't provide an easy way to perform a simple scalar read, so all queries of this type will be run directly
+        /// through <see cref="DbService"/> using the <see cref="JobMigration"/>'s command timeout (default 4 hours).
+        /// </remarks>
         public object SqlScalar( string sql )
         {
-            return DbService.ExecuteScalar( sql );
+            return DbService.ExecuteScalar( sql, commandTimeout: _commandTimeout );
         }
     }
 }

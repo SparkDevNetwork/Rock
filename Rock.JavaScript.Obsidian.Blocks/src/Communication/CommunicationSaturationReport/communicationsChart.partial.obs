@@ -1,0 +1,112 @@
+<template>
+    <Panel title="Saturation Spread" hasFullscreen>
+
+        <Loading :isLoading="props.isLoading">
+
+            <div v-if="props.data && props.data.length > 0" class="text-right text-muted">
+                <small>{{ didNotReceiveAny }} ({{ percentDidNotReceiveAny }}%) Active Adults Did Not Receive Any Messages</small>
+            </div>
+
+            <Chart v-if="props.data && props.data.length > 0" type="bar" :data="data" :options="options" />
+
+            <div v-else>
+                <NothingToShow />
+            </div>
+
+        </Loading>
+    </Panel>
+</template>
+
+<script lang="ts" setup>
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import NothingToShow from "./nothingToShow.partial.obs";
+    import { computed, PropType, ref } from "vue";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { CommunicationSaturationReportChartDataBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationSaturationReport/communicationSaturationReportChartDataBag";
+
+    const props = defineProps({
+        data: {
+            type: Object as PropType<CommunicationSaturationReportChartDataBag[] | null | undefined>,
+            required: false
+        },
+
+        isLoading: {
+            type: Boolean,
+            default: false
+        }
+    });
+
+    const bucketZero = computed(() => {
+        return props.data?.filter(item => item.bucket === "0")[0];
+    });
+
+    const otherBuckets = computed(() => {
+        return props.data?.filter(item => item.bucket !== "0");
+    });
+
+    const didNotReceiveAny = computed<number>(() => {
+        return bucketZero.value?.numberOfRecipients ?? 0;
+    });
+
+    const totalDidReceive = computed<number>(() => {
+        return otherBuckets.value?.reduce((sum, item) => sum + item.numberOfRecipients, 0) ?? 0;
+    });
+
+    const percentDidNotReceiveAny = computed<number>(() => {
+        return Math.round(didNotReceiveAny.value / (didNotReceiveAny.value + totalDidReceive.value) * 100);
+    });
+
+    const data = computed<ChartData>(() => ({
+        labels: otherBuckets.value?.map(item => item.bucket) ?? [],
+        datasets: [{
+            data: otherBuckets.value?.map(item => item.numberOfRecipients) ?? [],
+            backgroundColor: "#007aff",
+            borderWidth: 0
+        }]
+    }));
+
+    const options = ref<ChartOptions>({
+        responsive: true,
+        plugins: {
+            legend: {
+                display: false
+            },
+            tooltip: {
+                displayColors: false,
+                yAlign: "bottom",
+                callbacks: {
+                    title: () => "",
+                    label: (context) => context.raw == 1 ? "1 Recipient" : `${context.formattedValue} Recipients`,
+                }
+            }
+        },
+        scales: {
+            y: {
+                title: {
+                    display: true,
+                    text: "# of Recipients",
+                    padding: { top: 4, bottom: 20 },
+                    font: {
+                        weight: "bold",
+                        size: 14
+                    },
+                    color: "#3D444D"
+                }
+            },
+            x: {
+                title: {
+                    display: true,
+                    text: "# of Messages Sent (Active Adults)",
+                    padding: { top: 20, bottom: 4 },
+                    font: {
+                        weight: "bold",
+                        size: 14
+                    },
+                    color: "#3D444D"
+                }
+            }
+        }
+    });
+</script>

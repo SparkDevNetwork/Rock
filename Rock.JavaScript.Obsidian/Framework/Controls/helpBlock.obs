@@ -9,14 +9,15 @@
        data-container="body"
        data-html="true"
        title=""
-       :data-original-title="props.text">
+       :data-original-title="props.text"
+       @click.prevent="toggleTooltip">
         <i class="fa fa-info-circle"></i>
     </a>
 </template>
 
 <script setup lang="ts">
     import { onMounted, PropType, ref } from "vue";
-    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { tooltip, showTooltip, hideTooltip } from "@Obsidian/Utility/tooltip";
 
     const props = defineProps({
         text: {
@@ -26,8 +27,48 @@
     });
 
     const helpElement = ref<HTMLElement>();
+    const isTooltipPinned = ref(false);
 
     onMounted(() => {
-        tooltip(helpElement.value!);
+        tooltip(helpElement.value!, {
+            html: true
+        });
     });
+
+    function toggleTooltip(event: Event): void {
+        event.stopPropagation();
+
+        if (!helpElement.value) {
+            return;
+        }
+
+        isTooltipPinned.value = !isTooltipPinned.value;
+
+        if (isTooltipPinned.value) {
+            showTooltip(helpElement.value);
+
+            setTimeout(() => {
+                document.addEventListener("click", closeTooltipOnOutsideClick);
+            }, 0);
+        }
+        else {
+            hideTooltip(helpElement.value);
+            document.removeEventListener("click", closeTooltipOnOutsideClick);
+        }
+    }
+
+    function closeTooltipOnOutsideClick(event: Event): void {
+        const tooltip = document.querySelector(".tooltip");
+        const target = event.target as HTMLElement;
+
+        if (tooltip &&
+            !tooltip.contains(target) &&
+            helpElement.value !== target &&
+            !helpElement.value?.contains(target)) {
+
+            isTooltipPinned.value = false;
+            hideTooltip(helpElement.value!);
+            document.removeEventListener("click", closeTooltipOnOutsideClick);
+        }
+    }
 </script>

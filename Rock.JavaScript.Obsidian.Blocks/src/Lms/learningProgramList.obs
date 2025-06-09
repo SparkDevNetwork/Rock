@@ -80,7 +80,7 @@
             <div class="skeleton skeleton-text skeleton-rounded" />
         </template>
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :disableConfirmation="true" />
     </Grid>

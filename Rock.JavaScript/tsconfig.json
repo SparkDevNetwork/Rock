@@ -3,15 +3,20 @@
     "baseUrl": "./",
     "module": "CommonJS",
     "target": "ES2016",
-    "lib": [ "ES2016", "DOM" ],
+    "lib": [
+      "ES2016",
+      "DOM"
+    ],
     "sourceMap": true,
     "strict": true,
     "rootDir": "src",
     "isolatedModules": true,
-    "esModuleInterop": true
+    "esModuleInterop": true,
+    "jsx": "react"
   },
   "include": [
-    "./src/**/*.ts"
+    "./src/**/*.ts",
+    "./src/**/*.tsx"
   ],
   "exclude": [
     "node_modules"

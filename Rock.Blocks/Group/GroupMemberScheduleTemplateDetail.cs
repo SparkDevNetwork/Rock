@@ -52,6 +52,7 @@ namespace Rock.Blocks.Group
 
         private static class PageParameterKey
         {
+            public const string AutoEdit = "autoEdit";
             public const string GroupMemberScheduleTemplateId = "GroupMemberScheduleTemplateId";
         }
 
@@ -113,10 +114,15 @@ namespace Rock.Blocks.Group
 
             var isViewable = BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var isAutoEdit = PageParameter( PageParameterKey.AutoEdit ).AsBoolean();
 
             if ( entity.Id != 0 )
             {
-                // Existing entity was found, prepare for view mode by default.
+                // Existing entity was found, prepare for view mode by default, unless autoEdit flag was passed.
+                if ( isAutoEdit && box.IsEditable )
+                {
+                    box.Entity = GetEntityBagForEdit( entity );
+                }
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );

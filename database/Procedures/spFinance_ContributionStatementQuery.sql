@@ -90,7 +90,7 @@ BEGIN
 			(
 				(@AccountIds is null)
 				OR
-				(ftd.[AccountId] in (select * from ufnUtility_CsvToTable(@AccountIds)))
+				(ftd.[AccountId] in (SELECT value FROM STRING_SPLIT(@AccountIds, ',')))
 			)
 	)
 

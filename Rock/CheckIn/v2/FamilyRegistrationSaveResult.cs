@@ -53,6 +53,12 @@ namespace Rock.CheckIn.v2
         /// The list of new people that were created by the save operation.
         /// </summary>
         public List<Person> NewPersonList { get; private set; } = new List<Person>();
+
+        /// <summary>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/>, to be used for any new people that are
+        /// created by the save operation.
+        /// </summary>
+        public int? RecordSourceValueId { get; set; }
     }
 
 }

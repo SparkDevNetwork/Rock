@@ -1,0 +1,105 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="!hasResults && !isLoading" title="Top Recipients" type="block">
+        <template #headerActions>
+            <div class="mr-3" style="font-size: 18px"><span class="label label-default"><span class="label-value">0 Records</span></span></div>
+        </template>
+
+        <NothingToShow />
+    </Panel>
+
+    <Grid v-else :definition="config ?? undefined"
+          :data="gridData ?? undefined"
+          keyField="idKey"
+          title="Top Recipients"
+          itemTerm="Record"
+          liveUpdates
+          disablePreferences>
+
+        <PersonColumn name="person" title="Name" field="person"
+                      :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
+                      :quickFilterValue="getPersonNameFilterValue" />
+
+        <NumberColumn name="messageCount" title="Messages Received" field="messageCount" />
+
+        <TextColumn name="connectionStatus" title="Connection Status" field="connectionStatus"
+                    :filter="pickExistingValueFilter"
+                    :filterValue="getConnectionStatusFilterValue"
+                    :quickFilterValue="getConnectionStatusFilterValue" />
+
+        <ButtonColumn name="view" title="" field="view" iconClass="fa fa-user"
+                      :onClick="showPersonCommunicationHistory" />
+
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import Grid, { ButtonColumn, NumberColumn, PersonColumn, TextColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NothingToShow from "./nothingToShow.partial.obs";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+
+    const props = defineProps({
+        config: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: false
+        },
+
+        gridData: {
+            type: Object as PropType<GridDataBag | Promise<GridDataBag> | null>,
+            required: false
+        }
+    });
+
+    const isLoading = ref(false);
+    const hasResults = ref(true);
+
+    watch(() => props.gridData, async () => {
+        if (isPromise(props.gridData)) {
+            isLoading.value = true;
+            hasResults.value = false;
+            await props.gridData;
+            isLoading.value = false;
+            hasResults.value = ((props.gridData as GridDataBag)?.rows?.length ?? 0) > 0;
+        }
+        else {
+            isLoading.value = false;
+            hasResults.value = (props.gridData?.rows?.length ?? 0) > 0;
+        }
+    }, { immediate: true });
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+    * Gets the filter value text to use for the connection status column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getConnectionStatusFilterValue(row: Record<string, unknown>): string {
+        return row["connectionStatus"] as string;
+    }
+
+    /**
+     * Invokes the block action to view the person's communication history.
+     *
+     * @param rowKey The key of the row to be viewed.
+     */
+    function showPersonCommunicationHistory(rowKey: string): void {
+        window.location.href = makeUrlRedirectSafe(`/person/${rowKey}/history`);
+    }
+
+</script>

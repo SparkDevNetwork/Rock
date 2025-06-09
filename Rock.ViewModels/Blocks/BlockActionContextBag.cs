@@ -40,6 +40,13 @@ namespace Rock.ViewModels.Blocks
         public string Captcha { get; set; }
 
         /// <summary>
+        /// The Interaction session that this request belongs to. This is used
+        /// to group block action API requests back to the main request's
+        /// session.
+        /// </summary>
+        public Guid? SessionGuid { get; set; }
+
+        /// <summary>
         /// Identifies the interaction that represented the original page load.
         /// This is used to correlate actions in this request with the
         /// original interaction.

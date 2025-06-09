@@ -21,10 +21,14 @@
 // </copyright>
 //
 
+import { GroupLocationsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInScheduleBuilder/groupLocationsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** The Clone Schedule Bag */
 export type CloneScheduleBag = {
+    /** All existing GroupLocation/schedules (this is required to maintain state when making modifications prior to cloning). */
+    currentScheduleConfiguration?: GroupLocationsBag[] | null;
+
     /** The destination schedule for the clone operation */
     destinationSchedule?: ListItemBag | null;
 

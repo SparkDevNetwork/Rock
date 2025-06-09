@@ -54,6 +54,10 @@ export const EditComponent = defineComponent({
             return props.configurationValues[ConfigurationValueKey.UserSpecificRoot] == "True";
         });
 
+        const enableAssetManager = computed(() => {
+            return asBoolean(props.configurationValues[ConfigurationValueKey.EnableAssetManager]);
+        });
+
         // Watch for changes from the parent component and update the text editor.
         watch(() => props.modelValue, () => {
             internalValue.value = props.modelValue ?? "";
@@ -75,6 +79,7 @@ export const EditComponent = defineComponent({
             internalValue,
             toolbar,
             documentFolderRoot,
+            enableAssetManager,
             imageFolderRoot,
             userSpecificRoot,
             refreshKey
@@ -86,6 +91,7 @@ export const EditComponent = defineComponent({
             :key="refreshKey"
             :editorHeight="200"
             :toolbar="toolbar"
+            :enableAssetManager="enableAssetManager"
             :encryptedDocumentRootFolder="documentFolderRoot"
             :encryptedImageRootFolder="imageFolderRoot"
             :userSpecificRoot="userSpecificRoot" />

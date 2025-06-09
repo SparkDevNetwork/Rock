@@ -46,7 +46,7 @@ namespace Rock.IpAddress
         Order = 0,
         Key = AttributeKey.APIKey )]
     [Rock.SystemGuid.EntityTypeGuid( "7AFE6DFA-5FC4-4554-98D2-5BD4C909558B" )]
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public class IpRegistry : IpAddressLookupComponent
     {
@@ -428,7 +428,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// Information about the current status of the service.
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     internal class IpRegistryStatusInfo
     {
@@ -466,7 +466,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for the Result body
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public class Result
     {
@@ -528,7 +528,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Location information
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public class Location
     {
@@ -590,7 +590,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Region
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public class Region
     {
@@ -616,7 +616,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Country Info
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public class Country
     {
@@ -642,7 +642,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Company Information
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public class Company
     {
@@ -659,7 +659,7 @@ namespace Rock.IpAddress
     /// <summary>
     /// POCO for Root Response
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use IpGeoLookup instead." )]
     public class Root
     {

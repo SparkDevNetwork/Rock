@@ -87,18 +87,9 @@ namespace Rock.Model
         /// <summary>
         /// Adds a job history record for a job that has just started (does not save the context).
         /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
         /// <param name="job">The job.</param>
         /// <param name="startDateTime">The time the job started (defaults to RockDateTime.Now).</param>
         /// <returns>The created job history.</returns>
-        [RockInternal( "1.16" )]
         internal ServiceJobHistory AddStartedServiceJobHistory( ServiceJob job, DateTime startDateTime )
         {
             // The history record is being written before job execution (with a null stop date) so it is visible sooner.
@@ -122,16 +113,7 @@ namespace Rock.Model
         /// Adds a job history record for a job that has just completed (does not save the context).
         /// <para>This should only be called after the job's last run details are updated.</para>
         /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
         /// <param name="job">The job.</param>
-        [RockInternal( "1.16" )]
         internal void AddCompletedServiceJobHistory( ServiceJob job )
         {
             // If there is an incomplete job history record for this job's last run then update it; otherwise, create a new job history record.
@@ -159,16 +141,7 @@ namespace Rock.Model
         /// <summary>
         /// Adds a job history record for a job that has just stopped due to an error (does not save the context).
         /// </summary>
-        /// <remarks>
-        ///     <para>
-        ///         <strong>This is an internal API</strong> that supports the Rock
-        ///         infrastructure and not subject to the same compatibility standards
-        ///         as public APIs. It may be changed or removed without notice in any
-        ///         release and should therefore not be directly used in any plug-ins.
-        ///     </para>
-        /// </remarks>
         /// <param name="job">The job.</param>
-        [RockInternal( "1.16" )]
         internal void AddErrorServiceJobHistory( ServiceJob job )
         {
             var now = RockDateTime.Now;

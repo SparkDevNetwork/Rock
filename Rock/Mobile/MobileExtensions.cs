@@ -15,6 +15,7 @@
 // </copyright>
 //
 using Rock.Common.Mobile.Enums;
+using Rock.Enums.Mobile;
 using Rock.Web.Cache;
 
 namespace Rock.Mobile
@@ -324,6 +325,57 @@ namespace Rock.Mobile
                     return ConnectionState.Connected;
                 default:
                     return ConnectionState.Active;
+            }
+        }
+
+    }
+
+    /// <summary>
+    /// Extension methods for <see cref="Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus"/>.
+    /// </summary>
+    public static class MobileExtensionLocationPermissionStatus
+    {
+        /// <summary>
+        /// Converts a mobile <see cref="Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus"/> to a web native.
+        /// </summary>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        public static LocationPermissionStatus ToNative( this Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus status )
+        {
+            switch ( status )
+            {
+                case Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus.Always:
+                    return LocationPermissionStatus.Always;
+                case Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus.WhenInUse:
+                    return LocationPermissionStatus.WhenInUse;
+                case Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus.Denied:
+                    return LocationPermissionStatus.Denied;
+                case Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus.NotGranted:
+                    return LocationPermissionStatus.NotGranted;
+                default:
+                    return LocationPermissionStatus.Always;
+            }
+        }
+
+        /// <summary>
+        /// Converts a web native <see cref="LocationPermissionStatus"/> to a mobile <see cref="Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus"/>.
+        /// </summary>
+        /// <param name="status"></param>
+        /// <returns></returns>
+        public static Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus ToMobile( this LocationPermissionStatus status )
+        {
+            switch ( status )
+            {
+                case LocationPermissionStatus.Always:
+                    return Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus.Always;
+                case LocationPermissionStatus.WhenInUse:
+                    return Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus.WhenInUse;
+                case LocationPermissionStatus.Denied:
+                    return Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus.Denied;
+                case LocationPermissionStatus.NotGranted:
+                    return Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus.NotGranted;
+                default:
+                    return Rock.Common.Mobile.Enums.Beacon.LocationPermissionStatus.Always;
             }
         }
     }

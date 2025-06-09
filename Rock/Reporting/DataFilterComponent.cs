@@ -28,6 +28,8 @@ using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Net;
+using Rock.Security;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting
@@ -138,10 +140,41 @@ namespace Rock.Reporting
         [Obsolete]
         [RockObsolete( "17.0" )]
         private static Dictionary<string, object> _nonHttpContextOptions;
-   
+
         #endregion
 
         #region Configuration
+
+        /// <summary>
+        /// Gets the definition of the Obsidian component that will be used to
+        /// render the UI for editing the data filter.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use for any database access that is required.</param>
+        /// <param name="requestContext">The context describing the current request.</param>
+        /// <returns>An instance of <see cref="DynamicComponentDefinitionBag"/> that describes how to render the UI.</returns>
+        [RockInternal( "17.0" )]
+        public virtual DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Executes a request that is sent from the UI component to the server
+        /// component. This is used to handle any dynamic updates that are
+        /// required by the UI in order to operate correctly.
+        /// </summary>
+        /// <param name="request">The request object from the UI component.</param>
+        /// <param name="securityGrant">The security grant that is providing additional authorization to this request.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="requestContext">The context that describes the current network request being processed.</param>
+        /// <returns>A dictionary of values that will be returned to the UI component.</returns>
+        [RockInternal( "17.0" )]
+        public virtual Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return null;
+        }
 
         /// <summary>
         /// Gets the component data that will be provided to the Obsidian component
@@ -172,6 +205,21 @@ namespace Rock.Reporting
         public virtual string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
         {
             return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the related data view that this filter references. This is used
+        /// to ensure data integrity so that the related data view can't be
+        /// deleted while another data view is referencing it.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns>The identifier of the related data view or <c>null</c> if there isn't one.</returns>
+        [RockInternal( "18.0" )]
+        public virtual int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
+        {
+            return null;
         }
 
 #if WEBFORMS

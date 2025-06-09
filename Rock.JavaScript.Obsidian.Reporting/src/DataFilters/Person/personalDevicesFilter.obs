@@ -1,0 +1,71 @@
+<template>
+    <DropDownList v-model="sites"
+                  :items="siteOptions"
+                  label="Sites"
+                  help="The sites for which the device is registered."
+                  multiple
+                  showBlankItem
+                  enhanceForLongLists />
+
+    <DropDownList v-model="notificationsEnabled"
+                  :items="notificationsEnabledOptions"
+                  label="Notifications Enabled"
+                  help="Specifies if notifications are enabled for the device."
+                  showBlankItem
+                  enhanceForLongLists />
+
+    <DropDownList v-model="platforms"
+                  :items="platformOptions"
+                  label="Mobile Device Platforms"
+                  help="The platform or operating system used by the device."
+                  multiple
+                  showBlankItem
+                  enhanceForLongLists />
+
+    <DropDownList v-model="deviceTypes"
+                  :items="deviceTypeOptions"
+                  label="Mobile Device Types"
+                  help="The physical type of the device."
+                  multiple
+                  showBlankItem
+                  enhanceForLongLists />
+
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const sites = ref<string[]>(safeParseJson(props.modelValue.sites) ?? []);
+    const siteOptions: ListItemBag[] = safeParseJson(props.modelValue.siteOptions) ?? [];
+
+    const notificationsEnabled = ref<string>(props.modelValue.notificationsEnabled ?? "");
+    const notificationsEnabledOptions: ListItemBag[] = [
+        { value: "True", text: "Yes" },
+        { value: "False", text: "No" },
+    ];
+
+    const platforms = ref<string[]>(safeParseJson(props.modelValue.platforms) ?? []);
+    const platformOptions: ListItemBag[] = safeParseJson(props.modelValue.platformOptions) ?? [];
+
+    const deviceTypes = ref<string[]>(safeParseJson(props.modelValue.deviceTypes) ?? []);
+    const deviceTypeOptions: ListItemBag[] = safeParseJson(props.modelValue.deviceTypeOptions) ?? [];
+
+    watch([sites, notificationsEnabled, platforms, deviceTypes], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            sites: JSON.stringify(sites.value),
+            notificationsEnabled: notificationsEnabled.value,
+            platforms: JSON.stringify(platforms.value),
+            deviceTypes: JSON.stringify(deviceTypes.value),
+        });
+    });
+</script>

@@ -100,7 +100,7 @@ namespace Rock.Model
         {
             get
             {
-                return this.Metric.SupportedActions;
+                return ( this.Metric ?? new Metric() ).SupportedActions;
             }
         }
 

@@ -43,7 +43,12 @@
                 <TextBox v-model="publicName"
                          label="PublicName" />
 
-                <CampusPicker v-model="campus"
+                <CheckBox v-model="usesCampusChildAccounts"
+                          label="Use Campus Child Account Matching"
+                          help="When this is enabled, blocks that support this feature will attempt to use a child account that matches the campus provided by the block. If no match is found then this account will be used. Any selected campus on this account will also be cleared." />
+
+                <CampusPicker v-if="!usesCampusChildAccounts"
+                              v-model="campus"
                               label="Campus"
                               showBlankItem
                               includeInactive />
@@ -158,6 +163,7 @@
     const endDate = propertyRef(props.modelValue?.bag?.endDate ?? "", "EndDate");
     const parentAccount = propertyRef(props.modelValue?.bag?.parentAccount ?? {}, "ParentAccount");
     const accountTypeValue = propertyRef(props.modelValue?.bag?.accountTypeValue ?? {}, "AccountTypeValue");
+    const usesCampusChildAccounts = propertyRef(props.modelValue?.bag?.usesCampusChildAccounts ?? false, "UsesCampusChildAccounts");
     const campus = propertyRef(props.modelValue?.bag?.campus ?? {}, "Campus");
     const imageBinaryFile = propertyRef(props.modelValue?.bag?.imageBinaryFile ?? {}, "ImageBinaryFileId");
     const accountParticipants = ref(props.modelValue?.bag?.accountParticipants ?? []);
@@ -168,7 +174,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, isPublic, isTaxDeductible, name, publicDescription, glCode, publicName, url, startDate, endDate, parentAccount, accountTypeValue, campus, imageBinaryFile];
+    const propRefs = [description, isActive, isPublic, isTaxDeductible, name, publicDescription, glCode, publicName, url, startDate, endDate, parentAccount, accountTypeValue, usesCampusChildAccounts, campus, imageBinaryFile];
 
     // #endregion
 
@@ -251,6 +257,7 @@
         updateRefValue(endDate, props.modelValue?.bag?.endDate ?? "");
         updateRefValue(parentAccount, props.modelValue?.bag?.parentAccount ?? {});
         updateRefValue(accountTypeValue, props.modelValue?.bag?.accountTypeValue ?? {});
+        updateRefValue(usesCampusChildAccounts, props.modelValue?.bag?.usesCampusChildAccounts ?? false);
         updateRefValue(campus, props.modelValue?.bag?.campus ?? {});
         updateRefValue(accountParticipants, props.modelValue?.bag?.accountParticipants ?? []);
         updateRefValue(imageBinaryFile, props.modelValue?.bag?.imageBinaryFile ?? {});
@@ -277,6 +284,7 @@
         setPropertiesBoxValue(newValue, "endDate", endDate.value);
         setPropertiesBoxValue(newValue, "parentAccount", parentAccount.value);
         setPropertiesBoxValue(newValue, "accountTypeValue", accountTypeValue.value);
+        setPropertiesBoxValue(newValue, "usesCampusChildAccounts", usesCampusChildAccounts.value);
         setPropertiesBoxValue(newValue, "campus", campus.value);
         setPropertiesBoxValue(newValue, "accountParticipants", accountParticipants.value);
         setPropertiesBoxValue(newValue, "imageBinaryFile", imageBinaryFile.value);

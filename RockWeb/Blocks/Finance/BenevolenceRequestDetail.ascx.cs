@@ -23,6 +23,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
@@ -223,9 +224,25 @@ namespace RockWeb.Blocks.Finance
         {
             SetPageParameters();
             _caseWorkRoleGuid = GetAttributeValue( AttributeKey.CaseWorkerRole ).AsGuidOrNull();
-            LoadEditDetails();
-            LoadViewDetails();
-            ConfigureRaceAndEthnicityControls();
+
+            var request = GetBenevolenceRequest();
+
+            // If user is not authorized to View, don't show details. Just a warning.
+            if ( !request.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
+            {
+                nbNotAuthorizedToView.Visible = true;
+                nbNotAuthorizedToView.Text = EditModeMessage.NotAuthorizedToView( BenevolenceRequest.FriendlyTypeName );
+                pnlViewDetail.Visible = false;
+                pnlEditDetail.Visible = false;
+            }
+            else
+            {
+                nbNotAuthorizedToView.Visible = false;
+                LoadEditDetails();
+                LoadViewDetails();
+                ConfigureRaceAndEthnicityControls();
+            }
+
             base.OnLoad( e );
         }
 
@@ -404,10 +421,16 @@ namespace RockWeb.Blocks.Finance
 
                     if ( _isNewRecord )
                     {
+                        var personIdParam = PageParameter( PageParameterKey.PersonId );
                         var queryParams = new Dictionary<string, string>
                         {
                             { "BenevolenceRequestId", this._benevolenceRequestId.ToString() }
                         };
+
+                        if ( !string.IsNullOrWhiteSpace( personIdParam ) )
+                        {
+                            queryParams.Add( PageParameterKey.PersonId, personIdParam );
+                        }
 
                         NavigateToCurrentPage( queryParams );
                     }
@@ -462,7 +485,8 @@ namespace RockWeb.Blocks.Finance
                     }
                 }
 
-                var group = PersonService.SaveNewPerson( person, rockContext );
+                // If the campus picker has a value, use it and make that the new person's primary campus.
+                var group = PersonService.SaveNewPerson( person, rockContext, cpEditCampus.SelectedCampusId );
 
                 SavePhoneNumbers( person.Id, homePhone, mobilePhone, workPhone, rockContext );
 
@@ -499,7 +523,15 @@ namespace RockWeb.Blocks.Finance
         {
             if ( _isNewRecord )
             {
-                NavigateToParentPage();
+                var parameters = new Dictionary<string, string>();
+                var personIdParam = PageParameter( PageParameterKey.PersonId );
+
+                if ( !string.IsNullOrWhiteSpace( personIdParam ) )
+                {
+                    parameters.Add( PageParameterKey.PersonId, personIdParam );
+                }
+
+                NavigateToParentPage( parameters );
             }
             else
             {

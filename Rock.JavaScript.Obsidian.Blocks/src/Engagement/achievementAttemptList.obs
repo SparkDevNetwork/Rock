@@ -38,7 +38,7 @@
                     :filter="dateValueFilter"
                     visiblePriority="md"
                     headerClass="title-right"
-                    itemClass="justify-content-end text-right"/>
+                    itemClass="justify-content-end text-right" />
 
         <DateColumn name="endDate"
                     title="End Date"

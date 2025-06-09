@@ -150,6 +150,27 @@ namespace Rock.Communication
         /// </value>
         public bool CssInliningEnabled { get; set; }
 
+        /// <summary>
+        /// Indicates that the communication should be created immediately and
+        /// the <see cref="LastCommunicationId"/> property set before returning
+        /// from the send method.
+        /// </summary>
+        /// <remarks>
+        /// This is a special one-off use case for the LMS system. So don't
+        /// use this under any circumstances unless ye be judged.
+        /// </remarks>
+        internal bool CreateCommunicationRecordImmediately { get; set; }
+
+        /// <summary>
+        /// The identifier of the last communication that was created for this
+        /// message.
+        /// </summary>
+        /// <remarks>
+        /// This is a special one-off use case for the LMS system. So don't
+        /// use this under any circumstances unless ye be judged.
+        /// </remarks>
+        internal int? LastCommunicationId { get; set; }
+
         #region Constructors
 
         /// <summary>

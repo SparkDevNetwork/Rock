@@ -94,13 +94,6 @@ namespace Rock.Lava
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
         public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
-            // This code is only required for the DotLiquid implementation of Lava.
-            if ( _engine.EngineName == "RockLiquid" )
-            {
-                InitializeRockLiquidShortcode( tagName, markup, tokens );
-                return;
-            }
-
             _elementAttributesMarkup = markup;
             _tagName = tagName;
 
@@ -108,7 +101,7 @@ namespace Rock.Lava
 
             if ( tokens.Any() )
             {
-                // To allow for backward-compatibility with custom blocks developed for the DotLiquid framework,
+                // To allow for backward-compatibility with custom blocks developed for the legacy Lava engine,
                 // the set of tokens returned by the Lava block parser includes the closing tag of the block.
                 // We remove the closing tag here because it is not needed for our internal dynamic shortcode implementation.
                 tokens = tokens.Take( tokens.Count - 1 ).ToList();
@@ -117,82 +110,6 @@ namespace Rock.Lava
                 {
                     _blockMarkup.Append( tokenText );
                 }
-            }
-
-            base.OnInitialize( tagName, markup, tokens );
-        }
-
-        /// <summary>
-        /// Initializes the specified tag name.
-        /// </summary>
-        /// <param name="tagName">Name of the tag.</param>
-        /// <param name="markup">The markup.</param>
-        /// <param name="tokens">The tokens.</param>
-        /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        private void InitializeRockLiquidShortcode( string tagName, string markup, List<string> tokens )
-        {
-            _elementAttributesMarkup = markup;
-            _tagName = tagName;
-
-            _blockMarkup = new StringBuilder();
-
-            // Get the block markup. The list of tokens contains all of the lava from the start tag to
-            // the end of the template. This will pull out just the internals of the block.
-            // We must take into consideration nested tags of the same type.
-
-            var endTagFound = false;
-
-            // Create regular expressions for start and end tags.
-            var startTag = $@"{{\[\s*{_tagName}\s*(.*?)\]}}";
-            var endTag = $@"{{\[\s*end{_tagName}\s*\]}}";
-
-            var startTags = 0;
-
-            Regex regExStart = new Regex( startTag );
-            Regex regExEnd = new Regex( endTag );
-
-            string token;
-            while ( ( token = tokens.Shift() ) != null )
-            {
-                Match startTagMatch = regExStart.Match( token );
-                if ( startTagMatch.Success )
-                {
-                    startTags++; // increment the child tag counter
-                    if ( startTags > 1 )
-                    {
-                        _blockMarkup.Append( token );
-                    }
-                }
-                else
-                {
-                    Match endTagMatch = regExEnd.Match( token );
-
-                    if ( endTagMatch.Success )
-                    {
-                        if ( startTags > 1 )
-                        {
-                            startTags--; // decrement the child tag counter
-                            _blockMarkup.Append( token );
-                        }
-                        else
-                        {
-                            endTagFound = true;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        _blockMarkup.Append( token );
-                    }
-                }
-
-            }
-
-            // If this is a block, we need a closing tag.
-            if ( this.ElementType == LavaShortcodeTypeSpecifier.Block
-                 && !endTagFound )
-            {
-                AssertMissingDelimitation();
             }
 
             base.OnInitialize( tagName, markup, tokens );

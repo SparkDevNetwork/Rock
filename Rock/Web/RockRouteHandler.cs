@@ -99,7 +99,7 @@ namespace Rock.Web
                     else if ( !isSiteMatch )
                     {
                         // This page belongs to another site, make sure it is allowed to be loaded.
-                        if ( IsPageExclusiveToAnotherSite( site, pageId.AsIntegerOrNull(), null ) )
+                        if ( IsPageExclusiveFromRequestingSite( site, pageId.AsIntegerOrNull(), null ) )
                         {
                             // If the page has to match the site and does not then don't use the page ID. Set it to empty so the 404 can be returned.
                             pageId = string.Empty;
@@ -410,16 +410,39 @@ namespace Rock.Web
         }
 
         /// <summary>
-        /// Determines whether the given PageId or Route is exclusive to another site.
+        /// Determines whether a specified Page and Route should be considered exclusive from the requesting site.
         /// </summary>
         /// <param name="requestingSite">The requesting site.</param>
         /// <param name="pageId">The page identifier.</param>
         /// <param name="routeId">The route identifier. Provide this to check the route's IsGlobal property.</param>
         /// <returns>
-        ///   <c>true</c> if [is page exclusive to another site] [the specified requesting site]; otherwise, <c>false</c>.
+        ///   <c>true</c> if [the specified Page and Route should be considered exclusive from the requesting site];
+        ///   otherwise, <c>false</c>.
         /// </returns>
-        private static bool IsPageExclusiveToAnotherSite( SiteCache requestingSite, int? pageId, int? routeId )
+        private static bool IsPageExclusiveFromRequestingSite( SiteCache requestingSite, int? pageId, int? routeId )
         {
+            /*
+                4/7/2025 - SMC
+
+                This method should return true when a page from another site is requested, and either the requesting
+                site or the site the page belongs to has "Exclusive Routes" enabled, UNLESS it was accessed using a
+                PageRoute with the "IsGlobal" flag set.
+
+                Examples:
+
+                    Request Site | Page Site | Route    |
+                    Exclusive    | Exclusive | IsGlobal | Result
+                    --------------------------------------------
+                    False        | False     | False    | False (not exclusive)
+                    True         | False     | False    | True (exclusive)
+                    False        | True      | False    | True (exclusive)
+                    True         | True      | False    | True (exclusive)
+                    True         | True      | True     | False (not exclusive)
+
+                Reason: To ensure route exclusivity rules are enforced, except when the route is globally shared.
+            */
+
+
             if ( pageId == null || requestingSite == null )
             {
                 // The default value is not to be exclusive
@@ -427,23 +450,30 @@ namespace Rock.Web
             }
 
             var pageCache = PageCache.Get( pageId.Value );
-            var pageSite = pageCache?.Layout.Site;
 
+            var pageSite = pageCache?.Layout.Site;
             if ( pageSite == null )
             {
                 return false;
             }
 
-            bool isGlobalRoute = routeId != null ? pageCache.PageRoutes.Where( r => r.Id == routeId ).Select( r => r.IsGlobal ).FirstOrDefault() : false;
+            // If the page belongs to the requesting site, the page is usable by the site.
+            if ( requestingSite.Id == pageSite.Id )
+            {
+                return false;
+            }
 
             // If pageRoute.IsGlobal then return false, this page is usable by all sites.
+            bool isGlobalRoute = routeId != null ? pageCache.PageRoutes.Where( r => r.Id == routeId ).Select( r => r.IsGlobal ).FirstOrDefault() : false;
             if ( isGlobalRoute )
             {
                 return false;
             }
 
-            // See if the requesting site is exclusive and if the requesting site is different from the page's site
-            return pageSite.EnableExclusiveRoutes && requestingSite.Id != pageSite.Id;
+            // The page and requesting sites do not match, and the route is not flagged as global, so if either
+            // the requesting site _OR_ the site the page belongs to has "exclusive routes" enabled, then return
+            // true, indicating that the requesting site should NOT be permitted to load this page.
+            return ( requestingSite.EnableExclusiveRoutes || pageSite.EnableExclusiveRoutes );
         }
 
         /// <summary>
@@ -605,7 +635,7 @@ namespace Rock.Web
             // Default to first site/page that is not Exclusive
             foreach ( var pageAndRouteId in pageAndRouteIds )
             {
-                if ( !IsPageExclusiveToAnotherSite( site, pageAndRouteId.PageId, pageAndRouteId.RouteId ) )
+                if ( !IsPageExclusiveFromRequestingSite( site, pageAndRouteId.PageId, pageAndRouteId.RouteId ) )
                 {
                     // These are safe to assign as defaults
                     pageId = pageAndRouteId.PageId.ToStringSafe();

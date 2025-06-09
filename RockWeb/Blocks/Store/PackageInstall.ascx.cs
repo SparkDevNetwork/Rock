@@ -112,6 +112,12 @@ namespace RockWeb.Blocks.Store
             {
                 DisplayPackageInfo();
             }
+            else
+            {
+                // Set timeout for up to 3 minutes
+                Server.ScriptTimeout = 180;
+                ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 180;
+            }
 
             base.OnLoad( e );
         }

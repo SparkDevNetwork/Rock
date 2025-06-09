@@ -1,0 +1,34 @@
+{%- if Page.DisplayChildPages and Page.Pages != empty -%}
+    <ul class="nav nav-stacked navbar-side">
+        <li class="navbar-logo">
+        {%- if CurrentPage.Layout.Site.SiteLogoBinaryFileId != null -%}
+            <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-side has-logo">
+                <img src="{{ CurrentPage.Layout.Site.SiteLogoBinaryFileId | ImageUrl }}&w=48&h=48" alt="{{ 'Global' | Attribute:'OrganizationName' }}" class="logo">
+            </a>
+        {%- else -%}
+            <a href="{{ '~' | ResolveRockUrl }}" title="Rock RMS" class="navbar-brand-side no-logo"></a>
+        {%- endif -%}
+        </li>
+		{%- for childPage in Page.Pages -%}
+				<li class="nav-item nav-item-top{% if childPage.DisplayChildPages and childPage.Pages != empty %} has-children{% endif %}{% if childPage.IsParentOfCurrent %} current{% endif %}">
+				<i class="{{ childPage.IconCssClass }}"></i>
+                <span class="item-title">{{ childPage.Title }}</span>
+				{%- if childPage.DisplayChildPages and childPage.Pages != empty -%}
+                    <ul class="nav nav-childpages">
+                        <li class="title"><i class="{{ childPage.IconCssClass }}"></i> <span class="item-title">{{ childPage.Title }}</span></li>
+						{%- for grandchildPage in childPage.Pages -%}
+                            <li class="header">{{ grandchildPage.Title }}</li>
+                            {%- if grandchildPage.DisplayChildPages -%}
+                                {%- for greatgrandchildPage in grandchildPage.Pages -%}
+                                    <li class="nav-item{% if greatgrandchildPage.IsParentOfCurrent or greatgrandchildPage.Current %} current{% endif %}">
+                                        <a class="nav-link" role="menu-item" href="{{ greatgrandchildPage.Url }}">{{ greatgrandchildPage.Title }}</a>
+                                    </li>
+                                {%- endfor -%}
+                            {%- endif -%}
+                        {%- endfor -%}
+                    </ul>
+                {%- endif -%}
+            </li>
+        {%- endfor -%}
+    </ul>
+{%- endif -%}

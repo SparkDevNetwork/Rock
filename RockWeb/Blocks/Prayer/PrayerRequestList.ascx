@@ -70,9 +70,9 @@
                                 <Rock:BadgeField DataField="FlagCount" HeaderText="Flag Count" SortExpression="FlagCount" DangerMin="4" WarningMin="1" />
                                 <Rock:BoolField DataField="IsPublic" HeaderText="Public" SortExpression="IsPublic" ItemStyle-CssClass="text-top" />
                                 <Rock:ToggleField DataField="IsApproved" HeaderText="Approved" ButtonSizeCssClass="btn-xs" Enabled="True" OnCssClass="btn-success" OnText="Yes" OffText="No" SortExpression="IsApproved" OnCheckedChanged="gPrayerRequests_CheckChanged" />
-                                <Rock:RockTemplateField ID="rtfSelfHarmFlag" Visible="false" HeaderText="" ItemStyle-HorizontalAlign="Center" ItemStyle-VerticalAlign="Top">
+                                <Rock:RockTemplateField ID="rtfModerationFlags" Visible="false" HeaderText="" ItemStyle-HorizontalAlign="Center" ItemStyle-VerticalAlign="Top">
                                     <ItemTemplate >
-                                        <Rock:RockLiteral ID="lSelfHarmFlag" runat="server" />
+                                        <Rock:RockLiteral ID="lModerationFlags" runat="server" />
                                     </ItemTemplate>
                                 </Rock:RockTemplateField>
                             </Columns>

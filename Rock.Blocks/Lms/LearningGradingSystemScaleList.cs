@@ -193,7 +193,7 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"{LearningGradingSystemScale.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( $"Not authorized to delete {LearningGradingSystemScale.FriendlyTypeName}." );
             }

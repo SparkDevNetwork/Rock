@@ -14,8 +14,10 @@
 // limitations under the License.
 // </copyright>
 //
-using RestSharp;
+using System;
+using System.Collections.Generic;
 
+using RestSharp;
 
 namespace Rock.Store
 {
@@ -34,6 +36,8 @@ namespace Rock.Store
         /// Gets a package version.
         /// </summary>
         /// <returns>a <see cref="T:PackageVersion"/> package version.</returns>
+        [Obsolete( "Use GetPackageVersion( int versionId, out string errorResponse )" )]
+        [RockObsolete( "17.1" )]
         public PackageVersion GetPackageVersion( int versionId )
         {
             string error = null;
@@ -49,7 +53,13 @@ namespace Rock.Store
         public PackageVersion GetPackageVersion( int versionId, out string errorResponse )
         {
             errorResponse = string.Empty;
-            var response = ExecuteRestGetRequest<PackageVersion>( $"api/Packages/GetPackageVersionDetails/{versionId}" );
+
+            var queryParameters = new Dictionary<string, List<string>>
+                {
+                    { "rockSemanticVersionNumber", new List<string> { Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber() } }
+                };
+
+            var response = ExecuteRestGetRequest<PackageVersion>( $"api/Packages/GetPackageVersionDetails/{versionId}", queryParameters );
 
             if ( response.ResponseStatus == ResponseStatus.Completed )
             {

@@ -1,0 +1,34 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                title="Message"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')">
+        <AccordionGroup>
+            <Accordion title="General Settings">
+                Coming soon...
+            </Accordion>
+        </AccordionGroup>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+
+    defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+    }>();
+</script>

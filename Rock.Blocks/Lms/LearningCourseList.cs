@@ -76,9 +76,9 @@ namespace Rock.Blocks.Lms
             var box = new ListBlockBox<LearningCourseListOptionsBag>();
             var builder = GetGridBuilder();
 
-            var isEditAuthorized = GetIsEditAuthorized();
+            var isEditAuthorized = GetIsAddEnabled();
             box.IsAddEnabled = isEditAuthorized;
-            box.IsDeleteEnabled = isEditAuthorized;
+            box.IsDeleteEnabled = true;
             box.ExpectedRowCount = 5;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -102,9 +102,12 @@ namespace Rock.Blocks.Lms
         /// Determines if the add button should be enabled in the grid.
         /// <summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
-        private bool GetIsEditAuthorized()
+        private bool GetIsAddEnabled()
         {
-            var entity = new LearningCourse();
+            var entity = new LearningCourse
+            {
+                LearningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId )
+            };
 
             return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
@@ -130,18 +133,20 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override IQueryable<LearningCourse> GetListQueryable( RockContext rockContext )
         {
-            var programId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
-            var currentPerson = GetCurrentPerson();
+            var learningProgramId = RequestContext.PageParameterAsId( PageParameterKey.LearningProgramId );
 
             // Eagerly load the program so it can be checked for Authorization.
-            var courses = programId > 0 ?
-                new LearningCourseService( rockContext ).Queryable()
-                    .Include( c => c.LearningProgram )
-                    .Where( c => c.LearningProgramId == programId )
-                    .ToList():
-                new List<LearningCourse>();
+            return new LearningCourseService( rockContext ).Queryable()
+                .Include( c => c.LearningProgram )
+                .Where( c => c.LearningProgramId == learningProgramId );
+        }
 
-            return courses.Where( c => c.IsAuthorized( Authorization.VIEW, currentPerson ) ).AsQueryable();
+        /// <inheritdoc/>
+        protected override List<LearningCourse> GetListItems( IQueryable<LearningCourse> queryable, RockContext rockContext )
+        {
+            return queryable.ToList()
+                .Where( c => c.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>
@@ -237,7 +242,7 @@ namespace Rock.Blocks.Lms
                 var classService = new LearningClassService( RockContext );
                 // Include related entities that should be deleted along with the class.
                 var classesForCourse = classService.Queryable()
-                    .Include( c => c.LearningActivities )
+                    .Include( c => c.LearningClassActivities )
                     .Include( c => c.LearningParticipants )
                     .Include( c => c.ContentPages )
                     .Include( c => c.Announcements )

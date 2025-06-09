@@ -23,6 +23,7 @@ using System.Linq;
 using System.Web;
 
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Lava;
@@ -236,6 +237,12 @@ namespace Rock.Net
         /// </summary>
         internal Guid RelatedInteractionGuid { get; set; } = Guid.NewGuid();
 
+        /// <summary>
+        /// The unique identifier of the (interaction) session related to this
+        /// request.
+        /// </summary>
+        internal Guid SessionGuid { get; set; } = Guid.NewGuid();
+
         #endregion
 
         #region Constructors
@@ -307,6 +314,8 @@ namespace Rock.Net
             AddContextEntitiesFromHeaders();
 
             CurrentVisitorId = LoadCurrentVisitorId();
+
+            SessionGuid = request.RequestContext.HttpContext.Session?["RockSessionId"].ToStringSafe().AsGuidOrNull() ?? Guid.NewGuid();
         }
 
         /// <summary>
@@ -756,7 +765,7 @@ namespace Rock.Net
         /// <returns></returns>
         public virtual IDictionary<string, string> GetPageParameters()
         {
-            return new Dictionary<string, string>( PageParameters );
+            return new Dictionary<string, string>( PageParameters, StringComparer.InvariantCultureIgnoreCase );
         }
 
         /// <summary>
@@ -844,6 +853,7 @@ namespace Rock.Net
             }
 
             mergeFields.Add( "Geolocation", ClientInformation?.Geolocation );
+            mergeFields.Add( "IsChatEnabled", ChatHelper.IsChatEnabled );
             mergeFields.Add( $"{LavaHelper.InternalMergeFieldPrefix}RockRequestContext", this );
 
             return mergeFields;
@@ -994,6 +1004,26 @@ namespace Rock.Net
         public string ResolveRockUrl( string input )
         {
             return RockApp.Current.ResolveRockUrl( input, _pageCache?.Layout?.Site?.Theme ?? "Rock" );
+        }
+
+        /// <summary>
+        /// Gets the site cache for the current request.
+        /// </summary>
+        /// <remarks>This will return null if there is not a site/page associated with this request.</remarks>
+        /// <returns>The site type of this request.</returns>
+        public SiteType? GetSiteType()
+        {
+            return _siteCache?.SiteType;
+        }
+
+        /// <summary>
+        /// Checks if the current site is of the specified type.
+        /// </summary>
+        /// <param name="siteType">The <see cref="SiteType"/> to check against.</param>
+        /// <returns><c>true</c> if the type matches, <c>false</c> otherwise.</returns>
+        public bool IsSiteType( SiteType siteType )
+        {
+            return GetSiteType() == siteType;
         }
 
         #endregion

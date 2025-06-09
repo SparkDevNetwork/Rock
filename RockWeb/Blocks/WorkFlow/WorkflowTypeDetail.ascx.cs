@@ -29,6 +29,7 @@ using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Plugin.HotFixes;
 using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -326,7 +327,8 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
         protected void btnCopy_Click( object sender, EventArgs e )
         {
             var rockContext = new RockContext();
-            var workflowType = new WorkflowTypeService( rockContext ).Get( hfWorkflowTypeId.Value.AsInteger() );
+            var workflowTypeService = new WorkflowTypeService( rockContext );
+            var workflowType = workflowTypeService.Get( hfWorkflowTypeId.Value.AsInteger() );
 
             if ( workflowType != null )
             {
@@ -337,6 +339,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 var newWorkflowType = workflowType.CloneWithoutIdentity();
                 newWorkflowType.IsSystem = false;
                 newWorkflowType.Name = workflowType.Name + " - Copy";
+                newWorkflowType.Slug = workflowTypeService.GetUniqueSlug( workflowType.Slug );
 
                 // Generate a unique workflow id prefix
                 newWorkflowType.WorkflowIdPrefix = GenerateUniqueWorkflowPrefix( rockContext, workflowType.WorkflowIdPrefix );
@@ -660,6 +663,15 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             workflowType.SummaryViewText = ceSummaryViewText.Text;
             workflowType.NoActionMessage = ceNoActionMessage.Text;
 
+            if ( workflowTypeId.HasValue )
+            {
+                workflowType.Slug = service.GetUniqueSlug( tbSlug.Text, workflowTypeId.Value );
+            }
+            else
+            {
+                workflowType.Slug = service.GetUniqueSlug( tbSlug.Text );
+            }
+
             if ( validationErrors.Any() )
             {
                 nbValidationError.Text = string.Format( "Please correct the following:<ul><li>{0}</li></ul>",
@@ -926,6 +938,46 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 WorkflowTypeService service = new WorkflowTypeService( new RockContext() );
                 WorkflowType item = service.Get( int.Parse( hfWorkflowTypeId.Value ) );
                 ShowReadonlyDetails( item );
+            }
+        }
+
+        /// <summary>
+        /// Handles the TextChanged event of the tbName control.
+        /// </summary>
+        protected void tbName_TextChanged( object sender, EventArgs e )
+        {
+            // Auto-update the slug when the name changes if the workflow is new.
+            using ( var rockContext = new RockContext() )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                var workflowTypeId = hfWorkflowTypeId.Value.AsInteger();
+
+                if ( workflowTypeId == 0 )
+                {
+                    tbSlug.Text = workflowTypeService.GetUniqueSlug( tbName.Text );
+                }
+            }
+        }
+        
+        /// <summary>
+        /// Handles the TextChanged event of the tbSlug control.
+        /// </summary>
+        protected void tbSlug_TextChanged( object sender, EventArgs e )
+        {
+            // Ensure the manually entered slug is unique anytime it is changed.
+            using ( var rockContext = new RockContext() )
+            {
+                var workflowTypeService = new WorkflowTypeService( rockContext );
+                var workflowTypeId = hfWorkflowTypeId.Value.AsIntegerOrNull();
+
+                if ( workflowTypeId.HasValue )
+                {
+                    tbSlug.Text = workflowTypeService.GetUniqueSlug( tbSlug.Text, workflowTypeId.Value );
+                }
+                else
+                {
+                    tbSlug.Text = workflowTypeService.GetUniqueSlug( tbSlug.Text );
+                }
             }
         }
 
@@ -1479,6 +1531,17 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             else
             {
                 pwDetails.Expanded = false;
+                
+                // Ensure the workflow type has a slug.
+                if ( workflowType.Slug.IsNullOrWhiteSpace() )
+                {
+                    var workflowTypeService = new WorkflowTypeService( rockContext );
+                    workflowType.Slug = workflowTypeService.GetUniqueSlug( workflowType.Name, workflowType.Id );
+
+                    // The UI will show the generated slug value, and the logged-in person may expect to be able to use the slug elsewhere.
+                    // Save now so the slug will work right away without the person having to manually click the save button.   
+                    rockContext.SaveChanges();
+                }
             }
 
             SetEditMode( true );
@@ -1513,7 +1576,11 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             tbIconCssClass.Text = workflowType.IconCssClass;
             ceSummaryViewText.Text = workflowType.SummaryViewText;
             ceNoActionMessage.Text = workflowType.NoActionMessage;
+            tbSlug.Text = workflowType.Slug;
 
+            // Explicitly mark the Slug field as required since the property is not required.
+            tbSlug.Required = true;
+                 
             BindAttributesGrid();
 
             BuildControls( true );
@@ -1752,6 +1819,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             parentControl.Controls.Add( control );
             control.ID = actionType.Guid.ToString( "N" );
             control.ValidationGroup = btnSave.ValidationGroup;
+            control.ModalManagerId = upDetail.ClientID;
 
             control.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
             control.ChangeActionTypeClick += workflowActionTypeEditor_ChangeActionTypeClick;

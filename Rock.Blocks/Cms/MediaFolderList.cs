@@ -190,7 +190,7 @@ namespace Rock.Blocks.Cms
 
             // Load any attribute column configuration.
             var gridAttributeIds = _gridAttributes.Value.Select( a => a.Id ).ToList();
-            Helper.LoadFilteredAttributes( items.Select( d => d.MediaFolder ), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+            Helper.LoadFilteredAttributes( items.Select( d => d.MediaFolder ).ToList(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
             var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.MEDIA_EVENTS.AsGuid() );
             var mediaElementQry = new MediaElementService( rockContext ).Queryable();
             var interactionComponentQry = new InteractionComponentService( rockContext )

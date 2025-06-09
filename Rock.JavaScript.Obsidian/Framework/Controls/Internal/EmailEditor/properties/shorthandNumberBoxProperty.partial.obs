@@ -1,0 +1,250 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="['shorthand-property-header', isMoreShown ? 'more' : '']">
+        <RockLabel class="shorthand-property-label">{{ label }}</RockLabel>
+        <div class="more-switch">
+            <InlineSwitch v-model="isMoreShown"
+                          label="More" />
+        </div>
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="!isMoreShown" class="row">
+            <div class="col-sm-6">
+                <NumberBox v-model="internalShorthandValue"
+                           v-bind="$attrs"
+                           :label="shorthandLabel">
+                    <template v-if="valueSuffix" #inputGroupAppend>
+                        <span class="input-group-addon">{{ valueSuffix }}</span>
+                    </template>
+                </NumberBox>
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+
+    <TransitionVerticalCollapse>
+        <div v-if="isMoreShown">
+            <div class="row">
+                <div class="col-sm-6">
+                    <NumberBox v-model="internalTopValue"
+                               v-bind="$attrs"
+                               :label="topLabel"
+                               :disableLabel="!topLabel">
+                        <template v-if="valueSuffix" #inputGroupAppend>
+                            <span class="input-group-addon">{{ valueSuffix }}</span>
+                        </template>
+                    </NumberBox>
+                </div>
+
+                <div class="col-sm-6">
+                    <NumberBox v-model="internalBottomValue"
+                               v-bind="$attrs"
+                               :label="bottomLabel"
+                               :disableLabel="!bottomLabel">
+                        <template v-if="valueSuffix" #inputGroupAppend>
+                            <span class="input-group-addon">{{ valueSuffix }}</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <NumberBox v-model="internalLeftValue"
+                               v-bind="$attrs"
+                               :label="leftLabel"
+                               :disableLabel="!leftLabel">
+                        <template v-if="valueSuffix" #inputGroupAppend>
+                            <span class="input-group-addon">{{ valueSuffix }}</span>
+                        </template>
+                    </NumberBox>
+                </div>
+
+                <div class="col-sm-6">
+                    <NumberBox v-model="internalRightValue"
+                               v-bind="$attrs"
+                               :label="rightLabel"
+                               :disableLabel="!rightLabel">
+                        <template v-if="valueSuffix" #inputGroupAppend>
+                            <span class="input-group-addon">{{ valueSuffix }}</span>
+                        </template>
+                    </NumberBox>
+                </div>
+            </div>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<style scoped>
+.shorthand-property-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-interface-soft);
+    margin-bottom: var(--spacing-small);
+}
+
+.shorthand-property-label {
+    font-size: var(--font-size-regular);
+}
+
+.more-switch {
+    font-size: var(--font-size-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { ShorthandValueProvider } from "../types.partial";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        valueProvider: {
+            type: Object as PropType<ShorthandValueProvider<number | null | undefined>>,
+            required: true
+        },
+
+        valueSuffix: {
+            type: String as PropType<string | null | undefined>,
+            required: false
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        shorthandLabel: {
+            type: String as PropType<string>,
+            default: "All Sides"
+        },
+
+        topLabel: {
+            type: String as PropType<string>,
+            default: "Top"
+        },
+
+        bottomLabel: {
+            type: String as PropType<string>,
+            default: "Bottom"
+        },
+
+        leftLabel: {
+            type: String as PropType<string>,
+            default: "Left"
+        },
+
+        rightLabel: {
+            type: String as PropType<string>,
+            default: "Right"
+        }
+    });
+
+    // #region Computed Props
+
+    const internalShorthandValue = computed<number | null | undefined>({
+        get(): number | null | undefined {
+            return props.valueProvider.shorthandValue;
+        },
+        set(value: number | null | undefined): void {
+            props.valueProvider.shorthandValue = value;
+        }
+    });
+
+    const internalTopValue = computed<number | null | undefined>({
+        get(): number | null | undefined {
+            return props.valueProvider.topValue;
+        },
+        set(value: number | null | undefined): void {
+            props.valueProvider.topValue = value;
+        }
+    });
+
+    const internalBottomValue = computed<number | null | undefined>({
+        get(): number | null | undefined {
+            return props.valueProvider.bottomValue;
+        },
+        set(value: number | null | undefined): void {
+            props.valueProvider.bottomValue = value;
+        }
+    });
+
+    const internalRightValue = computed<number | null | undefined>({
+        get(): number | null | undefined {
+            return props.valueProvider.rightValue;
+        },
+        set(value: number | null | undefined): void {
+            props.valueProvider.rightValue = value;
+        }
+    });
+
+    const internalLeftValue = computed<number | null | undefined>({
+        get(): number | null | undefined {
+            return props.valueProvider.leftValue;
+        },
+        set(value: number | null | undefined): void {
+            props.valueProvider.leftValue = value;
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Values
+
+    const hasInitialShorthand = !isNullish(internalShorthandValue.value);
+    const hasInitialTop = !isNullish(internalTopValue.value);
+    const hasInitialBottom = !isNullish(internalBottomValue.value);
+    const hasInitialLeft = !isNullish(internalLeftValue.value);
+    const hasInitialRight = !isNullish(internalRightValue.value);
+    const hasShorthandOnly = hasInitialShorthand && !hasInitialTop && !hasInitialBottom && !hasInitialRight && !hasInitialLeft;
+
+    const isMoreShown = ref<boolean>(hasShorthandOnly ? false :
+        (internalShorthandValue.value ?? 0) !== (internalTopValue.value ?? 0)
+        || (internalShorthandValue.value ?? 0) !== (internalBottomValue.value ?? 0)
+        || (internalShorthandValue.value ?? 0) !== (internalLeftValue.value ?? 0)
+        || (internalShorthandValue.value ?? 0) !== (internalRightValue.value ?? 0)
+    );
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(isMoreShown, (newValue) => {
+        if (!newValue) {
+            if (!isNullish(internalTopValue.value)
+                || !isNullish(internalBottomValue.value)
+                || !isNullish(internalLeftValue.value)
+                || !isNullish(internalRightValue.value)) {
+                internalShorthandValue.value = Math.max(
+                    internalTopValue.value ?? 0,
+                    internalBottomValue.value ?? 0,
+                    internalLeftValue.value ?? 0,
+                    internalRightValue.value ?? 0);
+            }
+            else {
+                internalShorthandValue.value = null;
+            }
+        }
+        else {
+            if (!isNullish(internalShorthandValue.value)) {
+                internalTopValue.value = internalShorthandValue.value;
+                internalBottomValue.value = internalShorthandValue.value;
+                internalLeftValue.value = internalShorthandValue.value;
+                internalRightValue.value = internalShorthandValue.value;
+            }
+            else {
+                internalTopValue.value = null;
+                internalBottomValue.value = null;
+                internalLeftValue.value = null;
+                internalRightValue.value = null;
+            }
+        }
+    });
+
+    // #endregion Watchers
+</script>

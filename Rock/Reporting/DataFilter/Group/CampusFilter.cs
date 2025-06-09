@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -19,12 +19,10 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Group
 {
@@ -34,8 +32,8 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter groups by campus" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Campus Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "32AEA2DF-2374-478D-865E-D1B6FB2E06D0")]
-    public class CampusFilter : DataFilterComponent
+    [Rock.SystemGuid.EntityTypeGuid( "32AEA2DF-2374-478D-865E-D1B6FB2E06D0" )]
+    public class CampusFilter : BaseCampusFilter
     {
         #region Properties
 
@@ -60,6 +58,9 @@ namespace Rock.Reporting.DataFilter.Group
         {
             get { return "Additional Filters"; }
         }
+
+        /// <inheritdoc/>
+        protected override string CampusPickerLabel => "Campus";
 
         #endregion
 
@@ -135,70 +136,6 @@ function() {
         }
 
         /// <summary>
-        /// Creates the child controls.
-        /// </summary>
-        /// <returns></returns>
-        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
-        {
-            CampusPicker campusPicker = new CampusPicker();
-            campusPicker.ID = filterControl.ID + "_campusPicker";
-            campusPicker.Label = "Campus";
-            campusPicker.Campuses = CampusCache.All();
-            filterControl.Controls.Add( campusPicker );
-
-            return new Control[] { campusPicker };
-        }
-
-        /// <summary>
-        /// Renders the controls.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="filterControl">The filter control.</param>
-        /// <param name="writer">The writer.</param>
-        /// <param name="controls">The controls.</param>
-        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
-        {
-            base.RenderControls( entityType, filterControl, writer, controls );
-        }
-
-        /// <summary>
-        /// Gets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <returns></returns>
-        public override string GetSelection( Type entityType, Control[] controls )
-        {
-            int? campusId = ( controls[0] as CampusPicker ).SelectedCampusId;
-            if ( campusId.HasValue )
-            {
-                var campus = CampusCache.Get( campusId.Value );
-                if ( campus != null )
-                {
-                    return campus.Guid.ToString();
-                }
-            }
-
-            return string.Empty;
-        }
-
-        /// <summary>
-        /// Sets the selection.
-        /// </summary>
-        /// <param name="entityType">Type of the entity.</param>
-        /// <param name="controls">The controls.</param>
-        /// <param name="selection">The selection.</param>
-        public override void SetSelection( Type entityType, Control[] controls, string selection )
-        {
-            string[] selectionValues = selection.Split( '|' );
-            if ( selectionValues.Length >= 1 )
-            {
-                int? campusId = GetCampusIdFromSelection( selectionValues );
-                ( controls[0] as CampusPicker ).SetValue( campusId );
-            }
-        }
-
-        /// <summary>
         /// Gets the expression.
         /// </summary>
         /// <param name="entityType">Type of the entity.</param>
@@ -213,7 +150,7 @@ function() {
             {
                 int? campusId = GetCampusIdFromSelection( selectionValues );
 
-                var qry = new GroupService( (RockContext)serviceInstance.Context ).Queryable()
+                var qry = new GroupService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( p => p.CampusId == campusId );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Group>( qry, parameterExpression, "p" );

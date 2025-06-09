@@ -16,14 +16,19 @@
 //
 using System.Collections.Generic;
 
+using Rock.Attribute;
+using Rock.Data;
+using Rock.Enums.Lms;
 using Rock.Extension;
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Lms
 {
     /// <summary>
     /// Base class for learning activity components
     /// </summary>
+    [RockInternal( "17.0" )]
     public abstract class LearningActivityComponent : Component
     {
         #region Properties
@@ -87,47 +92,121 @@ namespace Rock.Lms
 
         #endregion
 
-        /// <summary>
-        /// Gets the completion JSON string that should be persisted to the database.
-        /// </summary>
-        /// <remarks>
-        /// By default the rawCompletionJsonString is returned, but if the StudentScrubbedConfiguration method removed something that
-        /// should be persisted with the final completion JSON string, this method could be overridden to re-add those values from the rawConfigurationJsonString.
-        /// </remarks>
-        /// <param name="rawCompletionJsonString"> The unparsed activity completion data.</param>
-        /// <param name="rawConfigurationJsonString">The unparsed activity configuration data.</param>
-        /// <returns>The unparsed completion data that should be persisted to the database.</returns>
-        public virtual string GetCompletionJsonToPersist( string rawCompletionJsonString, string rawConfigurationJsonString ) => rawCompletionJsonString;
+        #region Methods
 
         /// <summary>
-        /// Calculates the points earned based on the configuration and completion JSON's and the maximum points possible.
+        /// Gets the configuration that can be used when rendering the component.
+        /// This is only ever passed to the component, it will never be sent
+        /// back to the server. This can provide additional context or
+        /// UI options that would not make sense to be in the settings or
+        /// completion data.
         /// </summary>
-        /// <remarks>
-        /// This method returns all points by default. To change this behavior, override the <see cref="CalculatePointsEarned"/> method.
-        /// </remarks>
-        /// <param name="rawConfigurationJsonString">The unparsed activity configuration data.</param>
-        /// <param name="rawCompletionJsonString"> The unparsed activity completion data.</param>
+        /// <param name="activity">The <see cref="LearningClassActivity"/> that will be displayed or <c>null</c> if this is a brand new activity.</param>
+        /// <param name="componentData">If <paramref name="presentation"/> is <see cref="PresentedFor.Configuration"/> then this will be <c>null</c>; otherwise it will contain the component data previously returned by <c>GetComponentData</c>.</param>
+        /// <param name="presentation">The target to which the component will be displayed.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current network request.</param>
+        /// <returns>A dictionary of additional configuraiton data to provide to the component.</returns>
+        public virtual Dictionary<string, string> GetActivityConfiguration( LearningClassActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// Gets the settings that will be provided to the UI component when
+        /// rendering for <see cref="PresentedFor.Configuration"/>. These
+        /// are the values that can be edited and then sent back to be saved.
+        /// </summary>
+        /// <param name="activity">The <see cref="LearningClassActivity"/> that will be displayed.</param>
+        /// <param name="componentData">The component data previously returned by <c>GetComponentData</c>.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current network request.</param>
+        /// <returns>A dictionary of settings that can be edited in the component.</returns>
+        public virtual Dictionary<string, string> GetComponentSettings( LearningClassActivity activity, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return componentData;
+        }
+
+        /// <summary>
+        /// Gets the component data from the component settings that were edited
+        /// in the UI component. This will always be called in the context of
+        /// a <see cref="PresentedFor.Configuration"/> save operation.
+        /// </summary>
+        /// <param name="activity">The <see cref="LearningClassActivity"/> that is being updated.</param>
+        /// <param name="componentSettings">The settings that were provided from the UI component.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current network request.</param>
+        /// <returns>A dictionary of raw component data values that will be stored in the database.</returns>
+        public virtual Dictionary<string, string> GetComponentData( LearningClassActivity activity, Dictionary<string, string> componentSettings, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return componentSettings;
+        }
+
+        /// <summary>
+        /// Gets the completion values that will be provided to the UI
+        /// component when displaying the completion for either the
+        /// student or facilitator.
+        /// </summary>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> that will be displayed. This will never be <c>null</c> but may not be fully populated if it is a new completion.</param>
+        /// <param name="completionData">The completion data previously returned by <c>GetCompletionData</c>.</param>
+        /// <param name="componentData">The component data that was previously returned by <c>GetComponentData</c>.</param>
+        /// <param name="presentation">The component will be displayed to either <see cref="PresentedFor.Facilitator"/> or <see cref="PresentedFor.Student"/>.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current network request.</param>
+        /// <returns>A dictionary of values that can be edited in the component.</returns>
+        public virtual Dictionary<string, string> GetCompletionValues( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return completionData;
+        }
+
+        /// <summary>
+        /// Gets the completion data from the completion values that were edited
+        /// in the UI component.
+        /// </summary>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> that will be displayed. This will never be <c>null</c> but may not be fully populated if it is a new completion.</param>
+        /// <param name="completionValues">The values that were provided from the UI component.</param>
+        /// <param name="componentData">The component data that was previously returned by <c>GetComponentData</c>.</param>
+        /// <param name="presentation">The component will be displayed to either <see cref="PresentedFor.Facilitator"/> or <see cref="PresentedFor.Student"/>.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current network request.</param>
+        /// <returns>A dictionary of raw completion data values that will be stored in the database.</returns>
+        public virtual Dictionary<string, string> GetCompletionData( LearningClassActivityCompletion completion, Dictionary<string, string> completionValues, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return completionValues;
+        }
+
+        /// <summary>
+        /// Calculates the points earned based on the component data and
+        /// completion data from the maximum points possible. This is used for
+        /// automatic point assignment when completed by the student.
+        /// </summary>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> that points are being calculated for.</param>
+        /// <param name="completionData">The completion data previously returned by <c>GetCompletionData</c>.</param>
+        /// <param name="componentData">The component data that was previously returned by <c>GetComponentData</c>.</param>
         /// <param name="pointsPossible">The maximum points possible for the activity./></param>
-        /// <returns>The actual points earned.</returns>
-        public virtual int CalculatePointsEarned( string rawConfigurationJsonString, string rawCompletionJsonString, int pointsPossible ) => pointsPossible;
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current network request, this may be <c>null</c>.</param>
+        /// <returns>The actual points earned or <c>null</c> if no points should be assigned automatically.</returns>
+        public virtual int? CalculatePointsEarned( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, int pointsPossible, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return pointsPossible;
+        }
 
         /// <summary>
         /// Determines if the activity requires grading by a facilitator.
         /// Defaults to false allowing LearningActivityComponents to opt-in.
         /// </summary>
-        /// <param name="completion">The student completion to evaluate.</param>
+        /// <param name="completion">The <see cref="LearningClassActivityCompletion"/> that points are being calculated for.</param>
+        /// <param name="completionData">The completion data previously returned by <c>GetCompletionData</c>.</param>
+        /// <param name="componentData">The component data that was previously returned by <c>GetComponentData</c>.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current network request, this may be <c>null</c>.</param>
         /// <returns><c>true</c> if the completion requires grading/scoring by a facilitator; otherwise <c>false</c>.</returns>
-        public virtual bool RequiresGrading( LearningActivityCompletion completion ) => false;
+        public virtual bool RequiresGrading( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return false;
+        }
 
-        /// <summary>
-        /// Scrubs the configuration data, removing anything the student should not know before completion.
-        /// </summary>
-        /// <remarks>
-        ///     This method should be used to remove any indication of correct answers from the configuration
-        ///     before the configuration data is sent to the <see cref="Model.LearningParticipant">Student</see> for completion.
-        /// </remarks>
-        /// <param name="rawConfigurationJsonString">The unparsed activity configuration data.</param>
-        /// <returns>The configuration data scrubbed of sensitive content as a JSON <c>string</c></returns>
-        public virtual string StudentScrubbedConfiguration( string rawConfigurationJsonString ) => rawConfigurationJsonString;
+        #endregion
     }
 }

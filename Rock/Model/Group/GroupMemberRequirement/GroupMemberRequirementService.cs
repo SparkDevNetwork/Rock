@@ -60,7 +60,8 @@ namespace Rock.Model
         public GroupMemberRequirement GetByPersonIdRequirementIdGroupIdGroupRoleId( int personId, int groupRequirementId, int groupId, int? groupRoleId )
         {
             var groupMemberRequirements = Queryable()
-                .Where( r => r.GroupMember.PersonId == personId && r.GroupMember.GroupId == groupId && r.GroupRequirementId == groupRequirementId );
+                .Where( r => r.GroupMember.PersonId == personId && r.GroupMember.GroupId == groupId && r.GroupRequirementId == groupRequirementId && !r.GroupMember.IsArchived );
+
             if ( groupRoleId.HasValue )
             {
                 groupMemberRequirements = groupMemberRequirements.Where( r => r.GroupMember.GroupRoleId == groupRoleId.Value );

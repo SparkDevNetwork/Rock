@@ -291,6 +291,20 @@ namespace Rock.Reporting
         {
             var entityField = EntityHelper.GetEntityField( instanceExpression.Type, EntityHelper.MakePropertyNameUnique( rule.PropertyName ), false, true );
 
+            return GetEntityFieldRulePropertyExpression( entityField, instanceExpression, rule, rockContext );
+        }
+
+        /// <summary>
+        /// Gets the expression that will be used to evaluate a rule that
+        /// applies to a property.
+        /// </summary>
+        /// <param name="entityField">The entity field that contains the information about how the property will be evaluated.</param>
+        /// <param name="instanceExpression">The expression that will identify the object instance to be evaluated. This will already point to the object specified by the rule path.</param>
+        /// <param name="rule">The object that contains the filter rule information.</param>
+        /// <param name="rockContext">If <c>null</c> then an in-memory expression will be created; otherwise this specifies the database context the expression will be used in.</param>
+        /// <returns>An expression that evaluates instances of <paramref name="instanceExpression"/>.</returns>
+        protected virtual Expression GetEntityFieldRulePropertyExpression( EntityField entityField, Expression instanceExpression, FieldFilterRuleBag rule, RockContext rockContext )
+        {
             // If the attribute was not found, then throw an exception because
             // filter is no longer valid. This matches the DataView logic.
             // See: Rock.Reporting.DataFilter.PropertyFilter.GetExpression().

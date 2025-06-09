@@ -82,7 +82,6 @@ namespace RockWeb.Blocks.Reporting
             base.OnInit( e );
 
             btnDelete.Attributes["onclick"] = string.Format( "javascript: return Rock.dialogs.confirmDelete(event, '{0}');", InteractionChannel.FriendlyTypeName );
-            btnSecurity.EntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.InteractionChannel ) ).Id;
 
             // this event gets fired after block settings are updated. it's nice to repaint the screen if these settings would alter it
             this.BlockUpdated += Block_BlockUpdated;
@@ -295,9 +294,6 @@ namespace RockWeb.Blocks.Reporting
                     btnEdit.Visible = false;
                     btnDelete.Visible = false;
                 }
-
-                btnSecurity.Visible = UserCanAdministrate || channel.IsAuthorized( Authorization.ADMINISTRATE, CurrentPerson );
-                btnSecurity.EntityId = channel.Id;
 
                 SetEditMode( false );
 

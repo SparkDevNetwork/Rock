@@ -10,7 +10,7 @@
                     <asp:Repeater runat="server" ID="rptGivingTypes" OnItemCommand="rptGivingTypes_ItemCommand">
                         <ItemTemplate>
                     
-                                <asp:LinkButton ID="btnPersonOrBusiness" CssClass='<%# Eval("ButtonClass") %>' runat="server" Text='<%# Eval("Name") %>' CommandArgument='<%# Eval("Id") %>' />
+                                <asp:LinkButton ID="btnPersonOrBusiness" CssClass='<%# Eval("ButtonClass") %>' runat="server" Text='<%# Eval("Name") %>' CommandArgument='<%# Eval("IdKey") %>' />
                     
                         </ItemTemplate>
                     </asp:Repeater>

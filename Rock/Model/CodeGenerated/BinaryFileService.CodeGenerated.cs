@@ -119,6 +119,8 @@ namespace Rock.Model
                 return false;
             }
 
+            // ignoring EmailSection,ThumbnailBinaryFileId
+
             if ( new Service<EventItem>( Context ).Queryable().Any( a => a.PhotoId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, EventItem.FriendlyTypeName );
@@ -140,6 +142,12 @@ namespace Rock.Model
             if ( new Service<FinancialTransactionImage>( Context ).Queryable().Any( a => a.BinaryFileId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, FinancialTransactionImage.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<Group>( Context ).Queryable().Any( a => a.ChatChannelAvatarBinaryFileId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", BinaryFile.FriendlyTypeName, Group.FriendlyTypeName );
                 return false;
             }
 

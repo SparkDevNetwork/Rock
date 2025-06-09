@@ -1,0 +1,31 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ColorPicker v-model.hex="internalValue"
+                 v-bind="$attrs" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ValueProvider } from "../types.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+
+    const props = defineProps({
+        valueProvider: {
+            type: Object as PropType<ValueProvider<string | null | undefined>>,
+            required: true
+        }
+    });
+
+    // #region Computed Props
+
+    const internalValue = computed<string>({
+        get(): string {
+            return props.valueProvider.value ?? "";
+        },
+        set(value: string): void {
+            props.valueProvider.value = value;
+        }
+    });
+
+    // #endregion Computed Props
+</script>

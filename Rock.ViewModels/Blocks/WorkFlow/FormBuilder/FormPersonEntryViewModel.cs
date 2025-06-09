@@ -45,6 +45,12 @@ namespace Rock.ViewModels.Blocks.WorkFlow.FormBuilder
 
         /// <summary>
         /// The DefinedValue unique identifier that specifies the value used for
+        /// Person.RecordSourceValue when a new Person is created.
+        /// </summary>
+        public Guid? RecordSource { get; set; }
+
+        /// <summary>
+        /// The DefinedValue unique identifier that specifies the value used for
         /// Person.ConnectionStatusValue when a new Person is created.
         /// </summary>
         public Guid? ConnectionStatus { get; set; }

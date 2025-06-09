@@ -308,6 +308,8 @@ namespace Rock.CheckIn.v2
 
                     return filter;
                 } )
+                // If we are in override mode, skip filters that should be skipped.
+                .Where( filter => !Session.IsOverrideEnabled || !filter.IsSkippedDuringOverride )
                 .ToList();
         }
 

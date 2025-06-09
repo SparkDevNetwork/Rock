@@ -7,13 +7,26 @@ import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
  *
  * @returns An array of ListItemBag.
  */
-export function enumToListItemBag (description: Record<number, string>): ListItemBag[] {
+export function enumToListItemBag(description: Record<number, string>): ListItemBag[] {
     const listItemBagList: ListItemBag[] = [];
-    for(const property in description) {
-        listItemBagList.push({
-            text: description[property].toString(),
-            value: property.toString()
-        });
+    const order = description["__order"] as number[] | undefined;
+
+    if (order) {
+        for (const value of order) {
+            listItemBagList.push({
+                text: description[value],
+                value: value.toString()
+            });
+        }
     }
+    else {
+        for (const property in description) {
+            listItemBagList.push({
+                text: description[property],
+                value: property.toString()
+            });
+        }
+    }
+
     return listItemBagList;
 }

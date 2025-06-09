@@ -1,0 +1,48 @@
+// WELL STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+//  + Well Size     
+// =============================================================
+
+
+// ========================== BASE STYLE ==========================
+.well {
+  min-height:       20px;
+  padding:          19px;
+  margin-bottom:    20px;
+  background-color: var(--color-interface-softer);
+  border:           1px solid var(--color-interface-soft); // TODO when color-mix() available darken the background-color by 7%
+  border-radius:    var(--rounded-small);
+  box-shadow:       inset 0 1px 1px rgba(0, 0, 0, .05);
+
+  blockquote {
+    border-color: var(--color-interface-soft);
+    border-color: rgba(0, 0, 0, .15);
+  }
+  
+  & > h1,
+  & > h2,
+  & > h3,
+  & > h4 {
+    margin-top: 0;
+  }
+
+}
+// ======================== END BASE STYLE ========================
+
+
+// ========================== WELL SIZES==========================
+.well-lg {
+  padding:        var(--spacing-large);
+  border-radius:  var(--rounded-medium);
+}
+
+.well-sm {
+  padding:        var(--spacing-xsmall);
+  border-radius:  var(--rounded-tiny);
+}
+// ======================== END WELL SIZES ========================
+

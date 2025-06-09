@@ -1,0 +1,76 @@
+  {% assign eventItemCount = EventItems | Size %}
+
+  {% if eventItemCount == 0 %}
+  <div class="panel panel-default margin-t-md">
+    <div class="margin-all-md"> There are no events in this time frame.</div>
+  </div>
+  {% endif %}
+
+  {% for eventItem in EventItems %}
+  {% assign firstOccurrence = eventItem | First %}
+  <div class="panel panel-default margin-t-md">
+    <div class="panel-heading clearfix">
+		<h2 class="panel-title pull-left">
+			{{ firstOccurrence.Name }}
+		</h2>
+		<br/>
+		{{ firstOccurrence.Summary }}
+    </div>
+    <div class="panel-body">
+		<div class="row">
+			<div class="col-md-2">
+				<strong>Date</strong>
+			</div>
+			<div class="col-md-2">
+				<strong>Time</strong>
+			</div>
+			<div class="col-md-2">
+				 <strong>Location</strong>
+			</div>
+			<div class="col-md-4">
+			  <strong>Summary</strong>
+			</div>
+		</div>
+		{% for eventItemOccurrence in eventItem %}
+		<div class="row">
+			<div class="col-md-2">
+				{% if eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate != eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate %}
+					{{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveStartDate  | Date:'MMM d' }} -  {{ eventItemOccurrence.EventItemOccurrence.Schedule.EffectiveEndDate  | Date:'MMM d' }}
+				{% else %}
+					{{ eventItemOccurrence.Date | Date:'MMM d' }}
+				{% endif %}
+			</div>
+			<div class="col-md-2">
+				{{ eventItemOccurrence.Time }}
+			</div>
+			<div class="col-md-2">
+				 {{ eventItemOccurrence.Location }}
+			</div>
+			<div class="col-md-4">
+			  {{ eventItemOccurrence.OccurrenceNote }}
+			</div>
+			<div class="col-md-2">
+				{% if eventItemOccurrence.DetailPage != null %}
+				<a href="{{ firstOccurrence.DetailPage }}">
+				  <i> View <i class="fa fa-chevron-right"></i> </i>
+				</a>
+				{% else %}
+				<a href="{{ DetailsPage }}?EventOccurrenceId={{ eventItemOccurrence.EventItemOccurrence.Id }}">
+					View <i class="fa fa-chevron-right"></i>
+				</a>
+				{% endif %}
+			</div>
+		</div>
+		<br/>
+		{% endfor %}
+    </div>
+  </div>
+  {% endfor %}
+
+<script type="text/javascript">
+
+  $( document ).ready(function() {
+  $('.js-group-item').tooltip();
+  });
+
+</script>

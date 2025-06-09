@@ -36,8 +36,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms.Utm;
+using Rock.Configuration;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Observability;
@@ -103,11 +106,6 @@ namespace Rock.Web.UI
         /// The obsidian file watchers.
         /// </summary>
         private static readonly List<FileSystemWatcher> _obsidianFileWatchers = new List<FileSystemWatcher>();
-
-        /// <summary>
-        /// The service provider to use during requests.
-        /// </summary>
-        private static readonly Lazy<IServiceProvider> _lazyServiceProvider = new Lazy<IServiceProvider>( CreateServiceProvider );
 
         /// <summary>
         /// The service scopes that should be disposed.
@@ -845,6 +843,7 @@ namespace Rock.Web.UI
                 Activity.Current.AddTag( "rock.site.id", this.Site.Id );
                 Activity.Current.AddTag( "rock.page.id", this.PageId );
                 Activity.Current.AddTag( "rock.page.ispostback", this.IsPostBack );
+                Activity.Current.AddTag( "rock.page.issystem", _pageCache?.IsSystem ?? false );
             }
 
             var stopwatchInitEvents = Stopwatch.StartNew();
@@ -1052,7 +1051,7 @@ namespace Rock.Web.UI
                     // don't redirect if this is the change password page
                     if ( Site.ChangePasswordPageReference.PageId != this.PageId )
                     {
-                        Site.RedirectToChangePasswordPage( true, true );
+                        Site.RedirectToChangePasswordPage( true, true, user );
                     }
                 }
 
@@ -1198,6 +1197,11 @@ namespace Rock.Web.UI
                 else
                 {
                     /* At this point, we know the Person (or NULL person) is authorized to View the page */
+
+                    RecordSourceHelper.TrySetRecordSourceSessionCookie( ( cookieName, cookieValue ) =>
+                    {
+                        AddOrUpdateCookie( new HttpCookie( cookieName, cookieValue ) );
+                    } );
 
                     if ( Site.EnableVisitorTracking )
                     {
@@ -1553,6 +1557,7 @@ Obsidian.onReady(() => {{
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {sanitizedPageParameters.ToJson()},
+            sessionGuid: '{RequestContext.SessionGuid}',
             interactionGuid: '{RequestContext.RelatedInteractionGuid}',
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
@@ -1572,6 +1577,20 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-init", script, true );
                         }
                     }
+
+                    var colorModeScript = @"
+(function initializeColorMode() {
+    let attributeName = ""theme""
+    var htmlElement = document.documentElement;
+
+    if ( localStorage.getItem(attributeName) != null ) {
+        const value = localStorage.getItem(attributeName);
+        htmlElement.setAttribute(attributeName, value);
+    }
+})();
+";
+                    ClientScript.RegisterStartupScript( this.Page.GetType(), "color-mode-init", colorModeScript, true );
+
 
                     /*
                      * 2020-06-17 - JH
@@ -2332,7 +2351,12 @@ Obsidian.onReady(() => {{
             if ( impersonatedByUser != null )
             {
                 Authorization.SignOut();
-                UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
+                UserLoginService.UpdateLastLogin(
+                    new UpdateLastLoginArgs {
+                        UserName = impersonatedByUser.UserName,
+                        ShouldSkipWritingHistoryLog = true
+                    }
+                );
 
                 /*
                     10/23/2023 - JMH
@@ -2403,7 +2427,8 @@ Obsidian.onReady(() => {{
                         isImpersonated: true,
                         isTwoFactorAuthenticated: true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
-                    UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
+                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = "rckipid=" + impersonatedPersonKeyParam } );
+
 
                     // reload page as the impersonated user (we probably could remove the token from the URL, but some blocks might be looking for rckipid in the PageParameters, so just leave it)
                     Response.Redirect( Request.RawUrl, false );
@@ -2768,30 +2793,12 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Creates the service provider that will provides services for all
-        /// requests during the lifetime of this application.
-        /// </summary>
-        /// <returns>A new service provider.</returns>
-        private static IServiceProvider CreateServiceProvider()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
-            serviceCollection.AddScoped<RockContext>();
-            serviceCollection.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
-            {
-                WebRootPath = AppDomain.CurrentDomain.BaseDirectory
-            } );
-
-            return serviceCollection.BuildServiceProvider();
-        }
-
-        /// <summary>
         /// Creates the service scope and initializes any required values.
         /// </summary>
         /// <returns>An new service scope.</returns>
         private IServiceScope CreateServiceScope()
         {
-            var scope = _lazyServiceProvider.Value.CreateScope();
+            var scope = RockApp.Current.CreateScope();
 
             _pageServiceScopes.Add( scope );
 
@@ -3551,7 +3558,7 @@ Sys.Application.add_load(function () {
         /// Converts the legacy, "structured" context cookies to a simpler, JSON format.
         /// </summary>
         [Obsolete( "Remove this method after a few major versions, hopefully allowing enough time to convert all legacy context cookies." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         private void ConvertLegacyContextCookiesToJSON()
         {
             // Find any cookies whose names start with the legacy cookie name prefix.
@@ -5082,9 +5089,18 @@ Sys.Application.add_load(function () {
         {
             RequestContext = new RockRequestContext( context.Request, new RockResponseContext( this ), CurrentUser );
 
-            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 internalAccessor.RockRequestContext = RequestContext;
+            }
+
+            if ( RequestContext.IsClientForbidden( _pageCache ) )
+            {
+                context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.Forbidden;
+                context.Response.SuppressContent = true;
+                context.ApplicationInstance.CompleteRequest();
+
+                return null;
             }
 
             return AsyncPageBeginProcessRequest( context, cb, extraData );
@@ -5095,7 +5111,7 @@ Sys.Application.add_load(function () {
         {
             AsyncPageEndProcessRequest( result );
 
-            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 if ( ReferenceEquals( internalAccessor.RockRequestContext, RequestContext ) )
                 {

@@ -14,9 +14,7 @@
                         title="Date"
                         field="date"
                         :filter="dateValueFilter"
-                        visiblePriority="xs"
-                        headerClass="title-right"
-                        itemClass="justify-content-end text-right"/>
+                        visiblePriority="xs" />
 
         <TextColumn name="requestor"
                     title="Requestor"
@@ -29,6 +27,7 @@
                 :filter="textValueFilter"
                 :filterValue="getMergeRecordsRowFilterValue"
                 :quickFilterValue="getMergeRecordsRowFilterValue"
+                :exportValue="getMergeRecordsExportValue"
                 visiblePriority="md">
             <template #format="{ row }">
                 <div class="text-lg">
@@ -52,12 +51,6 @@
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
 </template>
-
-<style>
-.title-right .grid-column-title {
-    text-align: right;
-}
-</style>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -97,18 +90,21 @@
     }
 
     /**
-    * Gets the filter value text to use for the accounts column.
+    * Gets the filter value text to use for the merge records column.
     *
     * @param row The row to be filtered.
     */
     function getMergeRecordsRowFilterValue(row: Record<string, unknown>): string {
-        let filterValue = "";
+        return (row.mergeRecords as string[]).join(" ");
+    }
 
-        for (const mergeRecord of row.mergeRecords as string[]) {
-            filterValue += mergeRecord;
-        }
-
-        return filterValue;
+    /**
+     * Gets the export value text to use for the merge records column.
+     *
+     * @param row The row to be exported.
+     */
+    function getMergeRecordsExportValue(row: Record<string, unknown>): string {
+        return (row.mergeRecords as string[]).join("\n");
     }
 
     // #endregion

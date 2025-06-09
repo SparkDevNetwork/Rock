@@ -21,12 +21,14 @@
 // </copyright>
 //
 
+import { FeatureFlags } from "@Obsidian/Enums/Observability/featureFlags";
+import { TraceLevel } from "@Obsidian/Enums/Observability/traceLevel";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /** Contains the observability configuration details. */
 export type ObservabilityConfigurationBag = {
-    /** Gets or sets a value indicating whether [enable observability]. */
-    enableObservability: boolean;
+    /** The individual features that are enabled for observability. */
+    enabledFeatures: FeatureFlags;
 
     /** Gets or sets the endpoint. */
     endpoint?: string | null;
@@ -48,4 +50,7 @@ export type ObservabilityConfigurationBag = {
 
     /** Gets or sets the targeted queries. */
     targetedQueries?: string[] | null;
+
+    /** The detail level of the trace information that will be generated. */
+    traceLevel: TraceLevel;
 };

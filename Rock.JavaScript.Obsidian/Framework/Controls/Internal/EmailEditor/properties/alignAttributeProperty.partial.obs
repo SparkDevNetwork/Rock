@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <HorizontalAlignmentProperty v-bind="$attrs"
+                                 :label="label"
+                                 :valueProvider="valueProvider" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import HorizontalAlignmentProperty from "./horizontalAlignmentProperty.partial.obs";
+    import { attributeProvider } from "../providers.partial";
+    import { HorizontalAlignment, ValueProvider } from "../types.partial";
+    import { horizontalAlignmentConverter } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Align" as const
+        }
+    });
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<HorizontalAlignment | "" | null | undefined>>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<"" | HorizontalAlignment | null | undefined> {
+        return attributeProvider(
+            props.element,
+            "align",
+            horizontalAlignmentConverter
+        );
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.element, () => {
+        valueProvider.value.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value.dispose();
+    });
+
+    // #endregion Hooks
+</script>

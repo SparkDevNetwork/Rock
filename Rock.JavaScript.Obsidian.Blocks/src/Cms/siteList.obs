@@ -76,7 +76,7 @@
                        width="2%"
                        :itemClass="'d-flex align-items-center'" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

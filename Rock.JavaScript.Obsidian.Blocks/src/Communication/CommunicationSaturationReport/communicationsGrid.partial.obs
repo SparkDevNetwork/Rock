@@ -1,0 +1,109 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="!hasResults && !isLoading" title="Communications With Most Recipients" type="block">
+        <template #headerActions>
+            <div class="mr-3" style="font-size: 18px"><span class="label label-default"><span class="label-value">0 Records</span></span></div>
+        </template>
+
+        <NothingToShow />
+    </Panel>
+
+    <Grid v-else :definition="config ?? undefined"
+          :data="gridData ?? undefined"
+          keyField="id"
+          title="Communications With Most Recipients"
+          itemTerm="Record"
+          liveUpdates
+          disablePreferences>
+
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter" />
+
+        <NumberColumn name="messageCount"
+                      title="Messages Sent"
+                      field="messageCount" />
+
+        <DateColumn name="dateSent"
+                    title="Date Sent"
+                    field="dateSent" />
+
+        <TextColumn name="sentBy"
+                    title="Sent By"
+                    field="sentBy"
+                    :filter="pickExistingValueFilter"
+                    disableSort />
+
+        <TextColumn name="reviewedBy"
+                    title="Reviewed By"
+                    field="reviewedBy"
+                    :filter="pickExistingValueFilter"
+                    disableSort />
+
+        <ButtonColumn name="view"
+                      title=""
+                      field="view"
+                      iconClass="fa fa-poll"
+                      :onClick="showCommunicationDetails" />
+
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import Grid, { ButtonColumn, DateColumn, NumberColumn, TextColumn, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NothingToShow from "./nothingToShow.partial.obs";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./types.partial";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+
+    const props = defineProps({
+        config: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: false
+        },
+
+        gridData: {
+            type: Object as PropType<GridDataBag | Promise<GridDataBag> | null>,
+            required: false
+        },
+
+        navigationUrls: {
+            type: Object as PropType<Record<string, string> | null>,
+            required: false
+        },
+    });
+
+    const isLoading = ref(false);
+    const hasResults = ref(true);
+
+    watch(() => props.gridData, async () => {
+        console.log("Grid data changed", props.gridData);
+        if (isPromise(props.gridData)) {
+            isLoading.value = true;
+            hasResults.value = false;
+            await props.gridData;
+            isLoading.value = false;
+            hasResults.value = ((props.gridData as GridDataBag)?.rows?.length ?? 0) > 0;
+        }
+        else {
+            isLoading.value = false;
+            hasResults.value = (props.gridData?.rows?.length ?? 0) > 0;
+        }
+    }, { immediate: true });
+
+    /**
+     * Invokes the block action to view the person's communication history.
+     *
+     * @param rowKey The key of the row to be viewed.
+     */
+    function showCommunicationDetails(rowKey: string): void {
+        if (props.navigationUrls?.[NavigationUrlKey.CommunicationDetailPage]) {
+            window.location.href = props.navigationUrls[NavigationUrlKey.CommunicationDetailPage].replace("((Key))", rowKey);
+        }
+    }
+
+</script>

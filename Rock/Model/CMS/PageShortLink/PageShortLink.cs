@@ -68,7 +68,6 @@ namespace Rock.Model
         public string Url { get; set; }
 
         /// <inheritdoc/>
-        [RockInternal( "1.16.6" )]
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 
@@ -124,7 +123,8 @@ namespace Rock.Model
         {
             get
             {
-                string domain = new SiteService( new RockContext() ).GetDefaultDomainUri( this.SiteId ).ToString();
+                string domain = this.Site?.DefaultDomainUri?.ToString()
+                    ?? new SiteService( new RockContext() ).GetDefaultDomainUri( this.SiteId ).ToString();
                 return domain.EnsureTrailingForwardslash() + this.Token;
             }
         }

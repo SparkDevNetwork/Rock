@@ -1,0 +1,67 @@
+<template>
+    <div class="row">
+        <div class="col-md-6">
+            <DropDownList v-model="alertTypes"
+                          :items="alertTypeOptions"
+                          label="Alert Name"
+                          rules="required"
+                          :showBlankItem="false"
+                          multiple
+                          enhanceForLongLists />
+
+            <DropDownList v-model="comparisonType" :items="comparisonItems" disableLabel :showBlankItem="false" />
+
+            <CurrencyBox v-model="amount" label="Amount" />
+
+            <SlidingDateRangePicker v-model="dateRange"
+                                    label="Date Range"
+                                    help="The date range that the alert occurred."
+                                    rules="required" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import CurrencyBox from "@Obsidian/Controls/currencyBox.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString, RangeType } from "@Obsidian/Utility/slidingDateRange";
+    import { Guid } from "@Obsidian/Types";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const alertTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.alertTypeOptions) ?? [];
+    const alertTypes = ref<Guid[]>(safeParseJson(props.modelValue.alertTypes) ?? []);
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+    const amount = ref<number | null>(toNumberOrNull(props.modelValue.amount));
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.NotEqualTo,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    watch([alertTypes, dateRange, amount, comparisonType], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            alertTypes: JSON.stringify(alertTypes.value),
+            amount: `${amount.value ?? 1}`,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.All }),
+            comparisonType: comparisonType.value,
+        });
+    });
+</script>

@@ -1,0 +1,40 @@
+<template>
+    <div class="row form-row">
+        <div class="col-md-4">
+            <LocationPicker v-model="location"
+                            label="Location"
+                            :allowedPickerModes="allowedPickerModes" />
+        </div>
+        <div class="col-md-8">
+            <DropDownList v-model="locationTypeGuid" :items="locationTypeOptions" label="Location Type" showBlankItem />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { LocationPickerMode, LocationPickerModeFlag } from "@Obsidian/Enums/Controls/locationPickerMode";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const allowedPickerModes = (LocationPickerMode.Named | LocationPickerMode.Polygon) as LocationPickerModeFlag;
+    const location = ref<ListItemBag | string | undefined>(safeParseJson(props.modelValue.location));
+    const locationTypeOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.locationTypeOptions) ?? []);
+    const locationTypeGuid = ref<string>(props.modelValue.locationTypeGuid ?? "");
+
+    watch([location, locationTypeGuid], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            locationTypeGuid: locationTypeGuid.value,
+            location: JSON.stringify(location.value),
+        });
+    });
+</script>

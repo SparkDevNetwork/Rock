@@ -43,20 +43,20 @@ BEGIN
 	DECLARE @CampusTbl TABLE ([Id] INT)
 
 	INSERT INTO @CampusTbl
-	SELECT [Item]
-	FROM ufnUtility_CsvToTable(ISNULL(@CampusIds, ''))
+	SELECT value
+	FROM STRING_SPLIT(@CampusIds, ',')
 
 	DECLARE @ScheduleTbl TABLE ([Id] INT)
 
 	INSERT INTO @ScheduleTbl
-	SELECT [Item]
-	FROM ufnUtility_CsvToTable(ISNULL(@ScheduleIds, ''))
+	SELECT value
+	FROM STRING_SPLIT(@ScheduleIds, ',')
 
 	DECLARE @GroupTbl TABLE ([Id] INT)
 
 	INSERT INTO @GroupTbl
-	SELECT [Item]
-	FROM ufnUtility_CsvToTable(ISNULL(@GroupIds, ''))
+	SELECT value
+	FROM STRING_SPLIT(@GroupIds, ',')
 
 	-- Get all the attendance
 	SELECT PA.[PersonId]

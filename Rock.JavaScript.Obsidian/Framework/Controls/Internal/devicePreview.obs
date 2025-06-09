@@ -1,0 +1,182 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="mode === 'desktop'"
+         class="window">
+        <iframe v-show="state.isLoaded"
+                ref="autoHeightIframe"
+                class="window-iframe"
+                :src="sourceMode === 'url' ? source : undefined"
+                :srcdoc="sourceMode === 'html' ? source : undefined"
+                sandbox="allow-scripts allow-same-origin"
+                @load="state = { isLoaded: true }"></iframe>
+
+        <div v-if="isLoadingShown" class="loading-content">
+            <div class="loading-spinner">
+                <LoadingIndicator />
+            </div>
+        </div>
+    </div>
+
+    <div v-else-if="mode === 'mobile'"
+         class="mobile-device">
+        <iframe v-show="state.isLoaded"
+                class="window-iframe"
+                :src="sourceMode === 'url' ? source : undefined"
+                :srcdoc="sourceMode === 'html' ? source : undefined"
+                sandbox="allow-scripts allow-same-origin"
+                @load="state = { isLoaded: true }"></iframe>
+
+        <div v-if="isLoadingShown" class="loading-spinner">
+            <LoadingIndicator />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.loading-spinner {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+}
+
+.loading-content {
+    position: relative;
+    height: 150px;
+}
+
+.window {
+    position: relative;
+    width: 100%;
+    border: 2px solid var(--color-interface-soft);
+    border-radius: var(--border-radius-base) var(--border-radius-base) 0 0;
+    background: #fff;
+    border-top-width: 48px;
+    display: block;
+    margin: 0 auto;
+    line-height: 0;
+}
+
+.window::before {
+    position: absolute;
+    top: -30px;
+    left: 12px;
+    display: block;
+    width: 12px;
+    height: 12px;
+    content: "";
+    background-color: #f36;
+    border-radius: 12px;
+    box-shadow: 0 0 0 0 #f36, 24px 0 0 0 #fc9, 48px 0 0 0 #3f6;
+}
+
+.window-iframe {
+    width: 100%;
+    height: 100%;
+    border: none;
+}
+
+.mobile-device {
+    width: 435px;
+    border-color: var(--color-interface-soft);
+    border-style: solid;
+    border-width: 18px;
+    border-top-width: 36px;
+    border-bottom-width: 72px;
+    border-radius: 18px;
+    display: block;
+    margin: 0 auto;
+    position: relative;
+    height: 693px;
+}
+
+.mobile-device::before {
+    position: absolute;
+    display: block;
+    top: 18px;
+    left: -21px;
+    width: 3px;
+    height: 18px;
+    content: "";
+    background-color: var(--color-interface-medium);
+    border-radius: 3px 0 0 3px;
+    box-shadow: 0 0 0 0 var(--color-interface-medium), 0 36px 0 0 var(--color-interface-medium);
+}
+
+.mobile-device::after {
+    position: absolute;
+    bottom: -54px;
+    left: 50%;
+    display: block;
+    margin-left: -18px;
+    background-color: var(--color-interface-medium);
+    width: 36px;
+    height: 36px;
+    content: "";
+    border-radius: 18px;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import { useAutoHeightIframe } from "./DevicePreview/utils.partial";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+
+    const props = defineProps({
+        mode: {
+            type: String as PropType<"desktop" | "mobile">,
+            required: true
+        },
+
+        source: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        sourceMode: {
+            type: String as PropType<"html" | "url">,
+            default: "html"
+        }
+    });
+
+    let debounceTimer: ReturnType<typeof setTimeout> | null = null;
+
+    // #region Values
+
+    const autoHeightIframe = ref<HTMLIFrameElement | undefined>();
+    const state = ref<{ isLoaded: boolean }>({ isLoaded: false });
+    const isLoadingShown = ref<boolean>(false);
+
+    // #endregion Values
+
+    // Make the iframe auto height adjust to the content inside it.
+    // This is only needed for the desktop mode, as the mobile mode is already
+    // set to a fixed height.
+    useAutoHeightIframe(autoHeightIframe, state);
+
+    watch([() => props.mode, () => props.source, () => props.sourceMode], () => {
+        state.value = { isLoaded: false };
+    });
+
+    watch(state, ({ isLoaded }) => {
+        // Always clear any pending timer.
+        if (debounceTimer !== null) {
+            clearTimeout(debounceTimer);
+            debounceTimer = null;
+        }
+
+        if (!isLoaded) {
+            // Delay showing the loading indicator until the iframe has loaded.
+            debounceTimer = setTimeout(() => {
+                isLoadingShown.value = true;
+                debounceTimer = null;
+            }, 500);
+        }
+        else {
+            // Immediately hide the loading indicator when the iframe has loaded.
+            isLoadingShown.value = false;
+        }
+    }, {
+        immediate: true, deep: true
+    });
+</script>

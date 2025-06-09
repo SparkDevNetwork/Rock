@@ -48,7 +48,8 @@ namespace Rock.Blocks.Finance
     [LinkedPage( "Detail Page",
         Description = "Page used to view details of a saved account.",
         IsRequired = false,
-        Key = AttributeKey.DetailPage )]
+        Key = AttributeKey.DetailPage,
+        SiteTypes = Enums.Cms.SiteTypeFlags.Mobile )]
 
     #endregion
 

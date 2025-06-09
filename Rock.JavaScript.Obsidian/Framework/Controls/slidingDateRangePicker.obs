@@ -17,14 +17,16 @@
                 </template>
 
                 <div v-if="isDateRange" class="picker-daterange slidingdaterange-daterange pull-left">
-                    <div class="input-group input-group-lower input-width-md date">
-                        <DatePicker v-model="lowDate" />
-                    </div>
+                    <div><!-- Keep this plain wrapper DIV so styles work correctly -->
+                        <div class="input-group input-group-lower input-width-md date">
+                            <DatePicker v-model="lowDate" />
+                        </div>
 
-                    <div class="input-group form-control-static">to</div>
+                        <div class="input-group form-control-static">to</div>
 
-                    <div class="input-group input-group-lower input-width-md date">
-                        <DatePicker v-model="highDate" />
+                        <div class="input-group input-group-lower input-width-md date">
+                            <DatePicker v-model="highDate" />
+                        </div>
                     </div>
                 </div>
             </div>

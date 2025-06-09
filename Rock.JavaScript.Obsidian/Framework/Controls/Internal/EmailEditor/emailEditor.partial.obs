@@ -1,0 +1,257 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="email-editor-wrapper styled-scroll">
+        <div class="email-editor">
+            <SidePanel v-if="ltr" v-model:selectedComponentElement="selectedComponentElement"
+                       v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
+                       :communicationTemplates="communicationTemplates"
+                       :emailDocument="emailDocument"
+                       :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                       :ltr="ltr"
+                       :mergeFields="mergeFields"
+                       :recipientPersonIds="recipientPersonIds"
+                       :shortLinkCheckToken="shortLinkCheckToken"
+                       :shortLinkGetPageId="shortLinkGetPageId"
+                       :shortLinkSites="shortLinkSites"
+                       :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                       :videoProviderNames="videoProviderNames"
+                       @cloneComponent="onCloneComponent"
+                       @completeComponent="onCompleteComponent"
+                       @componentTypeDragStart="onComponentTypeDragStart"
+                       @componentTypeDragEnd="onComponentTypeDragEnd"
+                       @deleteComponent="onDeleteComponent"
+                       @replaceComponent="onReplaceComponent" />
+
+            <div class="email-designer-container">
+                <EmailDesigner v-model:selectedComponentElement="selectedComponentElement"
+                               :html="html"
+                               :cloneComponentRequest="cloneComponentRequest"
+                               :completeComponentRequest="completeComponentRequest"
+                               :deleteComponentRequest="deleteComponentRequest"
+                               :componentTypeDragStartRequest="componentTypeDragStartRequest"
+                               :componentTypeDragEndRequest="componentTypeDragEndRequest"
+                               :getHtmlRequest="getHtmlRequest"
+                               :replaceComponentRequest="replaceComponentRequest"
+                               :isDisabled="disabled"
+                               @emailDocumentUpdated="onEmailDocumentUpdated" />
+            </div>
+
+            <SidePanel v-if="!ltr" v-model:selectedComponentElement="selectedComponentElement"
+                       v-model:communicationTemplateGuid="internalCommunicationTemplateGuid"
+                       :communicationTemplates="communicationTemplates"
+                       :emailDocument="emailDocument"
+                       :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
+                       :ltr="ltr"
+                       :mergeFields="mergeFields"
+                       :recipientPersonIds="recipientPersonIds"
+                       :shortLinkCheckToken="shortLinkCheckToken"
+                       :shortLinkGetPageId="shortLinkGetPageId"
+                       :shortLinkSites="shortLinkSites"
+                       :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                       :videoProviderNames="videoProviderNames"
+                       @cloneComponent="onCloneComponent"
+                       @completeComponent="onCompleteComponent"
+                       @componentTypeDragStart="onComponentTypeDragStart"
+                       @componentTypeDragEnd="onComponentTypeDragEnd"
+                       @deleteComponent="onDeleteComponent"
+                       @replaceComponent="onReplaceComponent" />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+/* #region Email Editor Container */
+.email-editor-wrapper {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+/* #endregion Email Editor Container */
+
+/* #region Email Editor */
+.email-editor {
+    display: flex;
+    flex-grow: 1;
+    background-color: var(--color-interface-softest);
+    overflow: hidden;
+}
+
+.email-designer-container {
+    flex-grow: 1;
+    flex-basis: auto;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--color-interface-soft);
+}
+
+/* #endregion Email Editor */
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import EmailDesigner from "./emailDesigner.partial.obs";
+    import SidePanel from "./sidePanel.partial.obs";
+    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, ReplaceComponentRequest } from "./types.partial";
+    import { GetHtmlRequest } from "./types";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { Guid } from "@Obsidian/Types";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { EmailEditorApi, provideApi } from "./api";
+
+    const props = defineProps({
+        html: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        communicationTemplateGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: false
+        },
+
+        communicationTemplates: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: false
+        },
+
+        emailEditorCssClass: {
+            type: String as PropType<string | null | undefined>
+        },
+
+        getHtmlRequest: {
+            type: Object as PropType<GetHtmlRequest | null | undefined>,
+            required: false
+        },
+
+        imageComponentBinaryFileTypeGuid: {
+            type: String as PropType<Guid>,
+            default: BinaryFiletype.CommunicationImage
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /** Paragraph & Lava components - the merge fields available for selection. */
+        mergeFields: {
+            type: Object as PropType<string[] | undefined>,
+            required: true
+        },
+
+        /** RSVP component - the recipients who should be registered in the RSVP component when the register button is clicked. */
+        recipientPersonIds: {
+            type: Object as PropType<number[] | null | undefined>,
+            required: true
+        },
+
+        shortLinkCheckToken: {
+            type: Object as PropType<((token: string, siteId: number) => Promise<string>) | null | undefined>
+        },
+
+        shortLinkGetPageId: {
+            type: Object as PropType<((pageGuid: Guid) => Promise<number | null | undefined>) | null | undefined>
+        },
+
+        shortLinkSites: {
+            type: Array as PropType<ListItemBag[] | null | undefined>
+        },
+
+        shortLinkTokenMinLength: {
+            type: Number as PropType<number | null | undefined>
+        },
+
+        /** Video component - the video provider names used to add context to the Source Video URL help text. */
+        videoProviderNames: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+    }>();
+
+    defineExpose({
+        getApi
+    });
+
+    const securityGrantToken = useSecurityGrantToken();
+    const api = new EmailEditorApi({ securityGrantToken });
+    provideApi(api);
+
+    // #region Values
+
+    const selectedComponentElement = ref<HTMLElement | null | undefined>();
+    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
+    const emailDocument = ref<Document | null | undefined>();
+
+    const cloneComponentRequest = ref<CloneComponentRequest | null | undefined>();
+    const completeComponentRequest = ref<CompleteComponentRequest | null | undefined>();
+    const deleteComponentRequest = ref<DeleteComponentRequest | null | undefined>();
+    const componentTypeDragStartRequest = ref<ComponentTypeDragStartRequest | null | undefined>();
+    const componentTypeDragEndRequest = ref<ComponentTypeDragEndRequest | null | undefined>();
+    const replaceComponentRequest = ref<ReplaceComponentRequest | null | undefined>();
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Gets the API for the email editor.
+     *
+     * @returns The API for the email editor. This is used to communicate with server on behalf of the email editor.
+     */
+    function getApi(): EmailEditorApi {
+        return api;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onComponentTypeDragStart(event: ComponentTypeDragStartRequest): void {
+        componentTypeDragStartRequest.value = event;
+        //emailDesigner.value?.onComponentTypeDragStart(e.componentTypeName, e.customHtml);
+    }
+
+    function onComponentTypeDragEnd(event: ComponentTypeDragEndRequest): void {
+        componentTypeDragEndRequest.value = event;
+        //emailDesigner.value?.onComponentTypeDragEnd();
+    }
+
+    function onCloneComponent(event: CloneComponentRequest): void {
+        cloneComponentRequest.value = event;
+        //emailDesigner.value?.cloneSelectedComponent();
+    }
+
+    function onReplaceComponent(event: ReplaceComponentRequest): void {
+        replaceComponentRequest.value = event;
+        //emailDesigner.value?.cloneSelectedComponent();
+    }
+
+    function onCompleteComponent(event: CompleteComponentRequest): void {
+        //selectedComponentElement.value = null;
+        completeComponentRequest.value = event;
+    }
+
+    function onDeleteComponent(event: DeleteComponentRequest): void {
+        deleteComponentRequest.value = event;
+        //emailDesigner.value?.deleteSelectedComponent();
+    }
+
+    function onEmailDocumentUpdated(document: Document): void {
+        emailDocument.value = document;
+    }
+
+    // #endregion Event Handlers
+</script>

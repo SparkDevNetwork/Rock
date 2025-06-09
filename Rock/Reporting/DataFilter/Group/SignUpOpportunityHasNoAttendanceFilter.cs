@@ -24,8 +24,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -119,6 +123,55 @@ namespace Rock.Reporting.DataFilter.Group
         private int SignUpGroupGroupTypeId
         {
             get { return GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_SIGNUP_GROUP.AsGuid() ).ToIntSafe(); }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/signUpOpportunityHasNoAttendanceFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = SelectionConfig.Parse( selection );
+
+            var groupTypes = new GroupTypeService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( gt => gt.Id == this.SignUpGroupGroupTypeId || gt.InheritedGroupTypeId == this.SignUpGroupGroupTypeId )
+                    .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
+                    .ToList();
+
+            var data = new Dictionary<string, string>
+            {
+                { "groupTypes", groupTypes.ToCamelCaseJson(false, true) },
+                { "groupTypeGuid", selectionConfig?.GroupTypeGuid ?? string.Empty },
+                { "includeProjectTypes", selectionConfig?.IncludeProjectTypes.ToJson() ?? string.Empty },
+                { "eventDateWithin", selectionConfig?.EventDateWithin ?? string.Empty },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig
+            {
+                GroupTypeGuid = data.GetValueOrDefault( "groupTypeGuid", string.Empty ),
+                IncludeProjectTypes = data.GetValueOrDefault( "includeProjectTypes", "[]" ).FromJsonOrNull<List<string>>() ?? new List<string>(),
+                EventDateWithin = data.GetValueOrDefault( "eventDateWithin", "All||||" ),
+            };
+
+            return selectionConfig.ToJson();
         }
 
         #endregion

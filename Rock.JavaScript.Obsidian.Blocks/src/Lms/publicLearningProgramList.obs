@@ -1,15 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-html="programsHtml"></div>
+    <div v-content="content"></div>
 </template>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock, useStaticContent } from "@Obsidian/Utility/block";
     import { PublicLearningProgramListBlockBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningProgramList/publicLearningProgramListBlockBox";
-    import { ref } from "vue";
 
-    const config = useConfigurationValues<PublicLearningProgramListBlockBox>();
+    useConfigurationValues<PublicLearningProgramListBlockBox>();
+
+    const content = useStaticContent();
+
     onConfigurationValuesChanged(useReloadBlock());
-
-    const programsHtml = ref(config.programsHtml ?? "");
 </script>

@@ -45,7 +45,7 @@
                     </p>
                 </Rock:NotificationBox>
 
-                <Rock:NotificationBox ID="nbPendingMigrationJobs" runat="server" NotificationBoxType="Warning" Visible="false"></Rock:NotificationBox>
+                <Rock:NotificationBox ID="nbPendingMigrationJobs" runat="server" NotificationBoxType="Info" Visible="false"></Rock:NotificationBox>
 
                 <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">

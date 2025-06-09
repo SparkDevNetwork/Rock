@@ -1,0 +1,75 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <TextBox v-model="textContent"
+             label="Text"
+             @update:modelValue="onTextContentChanged" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import { RockCssClassContentEditable } from "../utils.partial";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "change", value: string | null): void;
+    }>();
+
+    // #region Values
+
+    // Initialized in the immediate watcher below.
+    const textContent = ref<string>("");
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onInput(): void {
+        if (textContent.value !== props.element.textContent) {
+            textContent.value = props.element.textContent ?? "";
+            emit("change", textContent.value);
+        }
+    }
+
+    function onTextContentChanged(value: string): void {
+        if (value !== props.element.textContent) {
+            props.element.textContent = value;
+            emit("change", props.element.textContent);
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.element, (newValue, oldValue) => {
+        textContent.value = props.element.textContent ?? "";
+
+        if (oldValue) {
+            oldValue.removeEventListener("input", onInput);
+        }
+
+        const component = newValue.closest(".component[data-state='component']");
+        if (component?.parentElement && component.parentElement.querySelectorAll(`.${RockCssClassContentEditable},[contenteditable="true"]`).length) {
+            newValue.addEventListener("input", onInput);
+        }
+    }, {
+        immediate: true
+    });
+
+    // #endregion
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        props.element.removeEventListener("input", onInput);
+    });
+
+    // #endregion
+</script>

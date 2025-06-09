@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -62,7 +62,7 @@ namespace Rock.Plugin.HotFixes
             var sqlObsoletePersonProfile = $@"
 DECLARE @ObsoletePersonBlockId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '48BBB7A7-1E1D-461E-9B64-E9CAD815E9E1');
 UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Please replace it with either the Person Profile or the Person Recent Attendances blocks.</div>')
+SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in the future. Please replace it with either the Person Profile or the Person Recent Attendances blocks.</div>')
 WHERE [BlockTypeId] = @ObsoletePersonBlockId
 IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoletePersonBlockId)
 BEGIN
@@ -81,8 +81,8 @@ VALUES (
 		1
     , @AdminChecklistDefinedTypeId
     , @ORDER+1
-    , 'Obsoleted Person Profile block will be removed in v17.0. Please replace it with the Person Profile or the Person Recent Attendances blocks.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Person Profile (Obsolete) block. This block will be removed in v17.0. Please replace the instances with either the Person Profile or the Person Recent Attendances blocks.</div>'
+    , 'Obsoleted Person Profile block will be removed in the future. Please replace it with the Person Profile or the Person Recent Attendances blocks.'
+    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Person Profile (Obsolete) block. This block will be removed in the future. Please replace the instances with either the Person Profile or the Person Recent Attendances blocks.</div>'
     , '80343B7C-7731-473F-9947-15A3D74ABB02'
     , GETDATE()
     , GETDATE()
@@ -92,7 +92,7 @@ END";
             var sqlObsoleteLocation = $@"
 DECLARE @ObsoleteLocationBlockId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '00FC1DEA-FE34-41E3-BC0A-2EE9138091EC');
 UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Use Roster, Live Metrics, or Room Settings blocks instead.</div>')
+SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in the future. Use Roster, Live Metrics, or Room Settings blocks instead.</div>')
 WHERE [BlockTypeId] = @ObsoleteLocationBlockId
 IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoleteLocationBlockId)
 BEGIN
@@ -111,8 +111,8 @@ VALUES (
 		1
     , @AdminChecklistDefinedTypeId
     , @ORDER+2
-    , 'Obsoleted Locations block will be removed in v17.0. Please replace it with Roster or Live Metrics or Room Settings Blocks.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Locations block. This block will be removed in v17.0. Please replace the instances with the Roster or the Live Metrics or the Room Settings blocks.</div>'
+    , 'Obsoleted Locations block will be removed in the future. Please replace it with Roster or Live Metrics or Room Settings Blocks.'
+    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Locations block. This block will be removed in the future. Please replace the instances with the Roster or the Live Metrics or the Room Settings blocks.</div>'
     , '84D3F58A-B427-4348-98B9-D1121376FB30'
     , GETDATE()
     , GETDATE()
@@ -122,7 +122,7 @@ END";
             var sqlObsoleteContributionStatementLava = $@"
 DECLARE @ObsoleteContributionStatementLavaBlockId INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = 'AF986B72-ADD9-4E05-971F-1DE4EBED8667');
 UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Use the Contribution Statement Generator block instead.</div>')
+SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in the future. Use the Contribution Statement Generator block instead.</div>')
 WHERE [BlockTypeId] = @ObsoleteContributionStatementLavaBlockId
 IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoleteContributionStatementLavaBlockId)
 BEGIN
@@ -141,68 +141,9 @@ VALUES (
 		1
     , @AdminChecklistDefinedTypeId
     , @ORDER+3
-    , 'Obsoleted Contribution Statement Generator block will be removed in v17.0. Please replace it with Contribution Statement Generator block.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Contribution Statement Lava block. This block will be removed in v17.0. Please replace the instances with Contribution Statement Generator blocks.</div>'
+    , 'Obsoleted Contribution Statement Generator block will be removed in the future. Please replace it with Contribution Statement Generator block.'
+    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted Contribution Statement Lava block. This block will be removed in the future. Please replace the instances with Contribution Statement Generator blocks.</div>'
     , '85A4AE6F-8B52-484B-B594-C9A15EEDEBE1'
-    , GETDATE()
-    , GETDATE()
-    , 1)
-END";
-
-            var sqlObsoleteSystemEmailListBlock = $@"
-DECLARE @ObsoleteSystemEmailList INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '2645A264-D5E5-43E8-8FE2-D351F3D5435B');
-UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Use System Communication List instead.</div>')
-WHERE [BlockTypeId] = @ObsoleteSystemEmailList
-IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoleteSystemEmailList AND [Guid] <> '68F10E30-BD74-49F5-B63F-DA671E31DA90')
-BEGIN
--- Insert the entry to delete the occurrences of the obsolete Person block from Rock
-INSERT INTO [dbo].[DefinedValue] (
-		[IsSystem]
-    , [DefinedTypeId]
-    , [Order]
-    , [Value]
-    , [Description]
-    , [Guid]
-    , [CreatedDateTime]
-    , [ModifiedDateTime]
-    , [IsActive])
-VALUES (
-		1
-    , @AdminChecklistDefinedTypeId
-    , @ORDER+4
-    , 'Obsoleted System Email List block will be removed in v17.0. Please replace it System Communication List block.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted System Email List block. This block will be removed in v17.0. Please replace the instances with the System Communication List block.</div>'
-    , '6D0A5968-4BF3-43B0-866C-11D9779165F6'
-    , GETDATE()
-    , GETDATE()
-    , 1)
-END";
-
-            var sqlObsoleteSystemEmailDetail = $@"
-DECLARE @ObsoleteSystemEmailDetail INT = (SELECT [Id] FROM [BlockType] WHERE [Guid] = '82B00455-B8CF-4673-ACF5-641B961DF59F');
-UPDATE [Block]
-SET [PreHtml] = CONCAT([PreHtml], '<div class=""alert alert-danger"">This block will be removed in v17.0. Use System Communication Detail block instead.</div>')
-WHERE [BlockTypeId] = @ObsoleteSystemEmailDetail
-IF EXISTS(SELECT * FROM [Block] WHERE [BlockTypeId] = @ObsoleteSystemEmailDetail AND [Guid] <> '707A99EB-C24A-46BB-9230-8607E674246C')
-BEGIN
-INSERT INTO [dbo].[DefinedValue] (
-		[IsSystem]
-    , [DefinedTypeId]
-    , [Order]
-    , [Value]
-    , [Description]
-    , [Guid]
-    , [CreatedDateTime]
-    , [ModifiedDateTime]
-    , [IsActive])
-VALUES (
-		1
-    , @AdminChecklistDefinedTypeId
-    , @ORDER+5
-    , 'Obsoleted System Email Detail block will be removed in v17.0. Please replace it with the System Communication Detail block.'
-    , '<div class=""alert alert-danger"">Rock still has some instances of the obsoleted System Email Detail Block. This block will be removed in v17.0. Please replaces the instances with the System Communication Detail block.</div>'
-    , 'EF040A12-DEAD-43D5-84D2-8FEE0C9CF365'
     , GETDATE()
     , GETDATE()
     , 1)
@@ -218,10 +159,6 @@ SELECT @Order = ISNULL(MAX([order]) + 1, 0) FROM [DefinedValue] WHERE [DefinedTy
 {sqlObsoleteLocation}
 -- Add entry for obsoleted Contribution Statement Lava block
 {sqlObsoleteContributionStatementLava}
--- Add entry for obsoleted System Email List block
-{sqlObsoleteSystemEmailListBlock}
--- Add entry for obsoleted System Email Detail block
-{sqlObsoleteSystemEmailDetail}
 " );
         }
 

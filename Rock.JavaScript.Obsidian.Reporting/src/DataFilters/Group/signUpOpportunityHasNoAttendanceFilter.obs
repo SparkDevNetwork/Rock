@@ -1,0 +1,66 @@
+<template>
+    <div class="row">
+        <div class="col-md-8">
+            <DropDownList v-model="groupTypeGuid"
+                          :items="groupTypes"
+                          label="Group Type"
+                          rules="required"
+                          showBlankItem />
+        </div>
+        <div class="col-md-8">
+            <CheckBoxList v-model="includeProjectTypes" :items="projectTypes" label="Include Project Types" horizontal />
+        </div>
+        <div class="col-md-8">
+            <SlidingDateRangePicker v-model="eventDateWithin"
+                                    :enabledSlidingDateRangeUnits="enabledRangeTypes"
+                                    :enabledTimeUnits="enabledTimeUnits"
+                                    label="Event Date Within"
+                                    help="The time frame the opportunity's schedule should be within." />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString, TimeUnit, RangeType } from "@Obsidian/Utility/slidingDateRange";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const groupTypes = ref<ListItemBag[]>(safeParseJson(props.modelValue.groupTypes) ?? []);
+    const groupTypeGuid = ref<string>(props.modelValue.groupTypeGuid ?? "");
+
+    const projectTypes: ListItemBag[] = [
+        {
+            text: "In-Person",
+            value: DefinedValue.ProjectTypeInPerson
+        },
+        {
+            text: "Project Due",
+            value: DefinedValue.ProjectTypeProjectDue
+        }
+    ];
+    const includeProjectTypes = ref<string[]>(safeParseJson(props.modelValue.includeProjectTypes) ?? []);
+
+    const enabledRangeTypes = [RangeType.Previous, RangeType.Upcoming];
+    const enabledTimeUnits = [TimeUnit.Day, TimeUnit.Week, TimeUnit.Month];
+    const eventDateWithin = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.eventDateWithin ?? ""));
+
+    watch([groupTypeGuid, includeProjectTypes, eventDateWithin], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            groupTypeGuid: groupTypeGuid.value,
+            includeProjectTypes: JSON.stringify(includeProjectTypes.value),
+            eventDateWithin: slidingDateRangeToString(eventDateWithin.value ?? { rangeType: RangeType.All }),
+        });
+    });
+</script>

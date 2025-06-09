@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-import { onBeforeUnmount } from "vue";
 import { getUniqueCssSelector } from "./dom";
 import { getFullscreenElement, isFullscreen } from "./fullscreen";
 
@@ -116,7 +115,8 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
                     container: container,
                     html: options?.html,
                     sanitize: options?.sanitize ?? true,
-                    delay: options?.delay
+                    delay: options?.delay,
+                    trigger: "hover focus"
                 });
 
             }, 151);
@@ -126,7 +126,8 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
                 container: container,
                 html: options?.html,
                 sanitize: options?.sanitize ?? true,
-                delay: options?.delay
+                delay: options?.delay,
+                trigger: "hover focus"
             });
         }
 
@@ -140,8 +141,14 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
 
     applyTooltip(getContainer());
 
-    $node?.on("mouseleave", function () {
-        $node?.tooltip("hide");
+    $(document).on("click", ".tooltip", function(e: Event) {
+        e.stopPropagation();
+    });
+
+    $node?.on("mouseleave", function(this: Element) {
+        if (!$(this).data("tooltip-pinned")) {
+            $node?.tooltip("hide");
+        }
     });
 }
 
@@ -153,6 +160,19 @@ export function tooltip(node: Element | Element[], options?: TooltipOptions): vo
 export function showTooltip(node: Element): void {
     if (typeof $ === "function") {
         $(node).tooltip("show");
+        $(node).data("tooltip-pinned", true);
+    }
+}
+
+/**
+ * Manually hide a previously-configured tooltip for the specified node.
+ *
+ * @param node The node for which to hide a tooltip
+ */
+export function hideTooltip(node: Element): void {
+    if (typeof $ === "function") {
+        $(node).data("tooltip-pinned", false);
+        $(node).tooltip("hide");
     }
 }
 
@@ -161,8 +181,25 @@ export function showTooltip(node: Element): void {
  *
  * @param node The node for which to destroy a tooltip.
  */
-export function destroyTooltip(node: Element): void {
+export function destroyTooltip(node: Element | Element[]): void {
     if (typeof $ === "function") {
         $(node).tooltip("destroy");
     }
+}
+
+/**
+ * Reset a tooltip by destroying the existing one and adding a new tooltip on
+ *
+ * @param node The node or nodes to have tooltips configured on.
+ * @param options The options that describe how the tooltips should behave.
+ */
+export function resetTooltip(node: Element | Element[], options?: TooltipOptions): Promise<void> {
+    return new Promise(res => {
+        destroyTooltip(node);
+
+        setTimeout(() => {
+            tooltip(node, options);
+            res();
+        }, 151);
+    });
 }

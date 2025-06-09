@@ -1,0 +1,118 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SingleSelectButtonGroup v-bind="standardFieldProps"
+                             :modelValue="internalValue"
+                             :disableLabel="!label"
+                             @update:modelValue="internalValue = <HorizontalAlignment>$event">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType(get<HorizontalAlignment>('left'))"
+                        title="Left"
+                        @click="selectValue(get<HorizontalAlignment>('left'))">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 20 20">
+                    <mask id="path-1-inside-1_2348_53830" fill="white">
+                        <path d="M0 0H20V20H0V0Z" />
+                    </mask>
+                    <path d="M2 20V0H-2V20H2Z" mask="url(#path-1-inside-1_2348_53830)" />
+                    <rect width="10" height="8" transform="translate(4 1)" />
+                    <rect width="16" height="8" transform="translate(4 11)" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType(get<HorizontalAlignment>('center'))"
+                        title="Center"
+                        @click="selectValue(get<HorizontalAlignment>('center'))">
+                <svg xmlns="http://www.w3.org/2000/svg" width="16" height="20" viewBox="0 0 16 20">
+                    <rect width="10" height="6.15385" transform="translate(3 3.07715)" />
+                    <rect width="16" height="6.15385" transform="translate(0 10.769)" />
+                    <rect width="2" height="20" transform="translate(7)" />
+                </svg>
+            </RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType(get<HorizontalAlignment>('right'))"
+                        title="Right"
+                        @click="selectValue(get<HorizontalAlignment>('right'))">
+                <svg xmlns="http://www.w3.org/2000/svg" width="20" height="18" viewBox="0 0 20 18">
+                    <mask id="path-1-inside-1_2348_53848" fill="white">
+                        <path d="M0 0H20V18H0V0Z" />
+                    </mask>
+                    <path d="M18 0V18H22V0H18Z" mask="url(#path-1-inside-1_2348_53848)" />
+                    <rect width="10" height="8" transform="translate(6)" />
+                    <rect width="16" height="8" transform="translate(0 10)" />
+                </svg>
+            </RockButton>
+        </template>
+
+        <template #afterBtnGroup>
+            <ClearStyleButton v-if="internalValue"
+                              @click="onClearClicked" />
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<style scoped>
+svg {
+    height: 16px;
+    width: 16px;
+    fill: var(--theme-black);
+}
+
+.btn-primary svg {
+    fill: var(--theme-white);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ClearStyleButton from "./clearStyleButton.partial.obs";
+    import SingleSelectButtonGroup from "./singleSelectButtonGroup.partial.obs";
+    import { HorizontalAlignment } from "./types.partial";
+    import { get } from "./utils.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        label: {
+            type: String as PropType<string>,
+            default: "Horizontal Alignment" as const
+        },
+
+        modelValue: {
+            type: String as PropType<HorizontalAlignment | "">,
+            required: true
+        }
+    });
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: HorizontalAlignment | ""): void;
+    }>();
+
+    // #region Values
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the clear styles button being clicked.
+     *
+     * Deletes the property from the CSS style declarations.
+     */
+    function onClearClicked(): void {
+        internalValue.value = "";
+    }
+
+    // #endregion Event Handlers
+</script>

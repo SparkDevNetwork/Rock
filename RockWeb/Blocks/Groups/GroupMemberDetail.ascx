@@ -65,6 +65,10 @@
                                 <asp:ListItem Text="Email" Value="1" />
                                 <asp:ListItem Text="SMS" Value="2" />
                             </Rock:RockRadioButtonList>
+                            <asp:Panel ID="pnlChatPreferences" runat="server">
+                                <Rock:RockCheckBox ID="cbIsChatMuted" runat="server" Label="Is Chat Muted" Help="If enabled, notifications for the chat channel are muted for this person." />
+                                <Rock:RockCheckBox ID="cbIsChatBanned" runat="server" Label="Is Chat Banned" Help="If enabled, this person is banned from the chat channel." />
+                            </asp:Panel>
                             <Rock:RockControlWrapper id="rcwLinkedRegistrations" runat="server" Label="Registration">
                                 <ul class="list-unstyled">
                                     <asp:Repeater ID="rptLinkedRegistrations" runat="server">

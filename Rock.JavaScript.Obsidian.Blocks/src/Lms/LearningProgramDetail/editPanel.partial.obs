@@ -113,7 +113,7 @@
                                 <WorkflowTypePicker
                                                     v-model="completionWorkflowType"
                                                     label="Completion Workflow Type"
-                                                    help="The workflow to launch when an individual completes the requirements for a program." />
+                                                    help="The workflow to launch when an individual completes the requirements for a program. The 'Person' and 'LearningProgram' will also be passed as workflow attributes." />
                             </div>
                         </div>
                     </Panel>
@@ -195,7 +195,7 @@
     const completionWorkflowType = propertyRef(props.modelValue.bag?.completionWorkflowType ?? {}, "CompletionWorkflowType");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const summary = propertyRef(props.modelValue.bag?.summary ?? "", "Summary");
-    const configurationMode = propertyRef(props.modelValue.bag?.configurationMode?.toString() ?? undefined, "ConfigurationMode");
+    const configurationMode = propertyRef(props.modelValue.bag?.configurationMode?.toString() ?? defaultConfigurationMode, "ConfigurationMode");
     const highlightColor = propertyRef(props.modelValue.bag?.highlightColor ?? "", "HighlightColor");
     const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
     const isCompletionStatusTracked = propertyRef(props.modelValue.bag?.isCompletionStatusTracked ?? false, "TrackProgramStatus");
@@ -255,7 +255,7 @@
         updateRefValue(name, props.modelValue.bag?.name ?? "");
         updateRefValue(publicName, props.modelValue.bag?.name ?? "");
         updateRefValue(summary, props.modelValue.bag?.summary ?? "");
-        updateRefValue(configurationMode, props.modelValue.bag?.configurationMode?.toString() ?? undefined);
+        updateRefValue(configurationMode, props.modelValue.bag?.configurationMode?.toString() ?? defaultConfigurationMode);
         updateRefValue(systemCommunicationValue, props.modelValue.bag?.systemCommunication?.value ?? "");
         updateRefValue(category, props.modelValue.bag?.category ?? null);
         updateRefValue(highlightColor, props.modelValue.bag?.highlightColor ?? "");

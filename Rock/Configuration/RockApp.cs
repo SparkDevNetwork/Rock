@@ -18,6 +18,8 @@ using System;
 
 using Microsoft.Extensions.DependencyInjection;
 
+using Rock.Communication.Chat;
+
 namespace Rock.Configuration
 {
     // Use System.Web.VirtualPathUtility.ToAbsolute("~/") to get virtual root path.
@@ -26,7 +28,7 @@ namespace Rock.Configuration
     /// The RockApp class provides access to all the configuration information
     /// about a running Rock instance.
     /// </summary>
-    public class RockApp
+    public class RockApp : IServiceProvider
     {
         #region Fields
 
@@ -89,6 +91,7 @@ namespace Rock.Configuration
                 sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
                 sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
                 sc.AddSingleton<IHostingSettings, HostingSettings>();
+                sc.AddSingleton<IChatProvider, StreamChatProvider>();
 
                 Current = new RockApp( sc.BuildServiceProvider() );
             }
@@ -109,7 +112,7 @@ namespace Rock.Configuration
         #region Methods
 
         /// <inheritdoc cref="IServiceProvider.GetService(Type)"/>
-        internal object GetService( Type type )
+        public object GetService( Type type )
         {
             return _serviceProvider.GetService( type );
         }

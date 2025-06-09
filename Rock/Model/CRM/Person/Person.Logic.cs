@@ -25,6 +25,7 @@ using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
 
+using Rock.Communication.Chat;
 using Rock.Data;
 using Rock.Enums.Crm;
 using Rock.Lava;
@@ -651,7 +652,7 @@ namespace Rock.Model
             Reason: To replace this with a method of the same name having a nullable return value.
         */
         [Obsolete( "Use the DaysToBirthdayOrNull property instead." )]
-        [RockObsolete( "1.17" )] // IMPORTANT: Refer to the engineering note above.
+        [RockObsolete( "17.0" )] // IMPORTANT: Refer to the engineering note above.
         public virtual int DaysToBirthday
         {
             get
@@ -748,7 +749,7 @@ namespace Rock.Model
             Reason: To replace this with a method of the same name having a nullable return value.
         */
         [Obsolete("Use the DaysToAnniversaryOrNull property instead.")]
-        [RockObsolete( "1.17" )] // IMPORTANT: Refer to the engineering note above.
+        [RockObsolete( "17.0" )] // IMPORTANT: Refer to the engineering note above.
         public virtual int DaysToAnniversary
         {
             get
@@ -1001,6 +1002,20 @@ namespace Rock.Model
             get
             {
                 return Aliases.FirstOrDefault( a => a.AliasPersonId == Id );
+            }
+        }
+
+        /// <summary>
+        /// Gets a value indicating whether this <see cref="Person"/> has a chat-specific <see cref="PersonAlias"/>,
+        /// indicating they have a presence in Rock's chat system.
+        /// </summary>
+        [NotMapped]
+        [LavaVisible]
+        public virtual bool HasChatAlias
+        {
+            get
+            {
+                return Aliases.Any( a => a.Name == ChatHelper.ChatPersonAliasName );
             }
         }
 
@@ -1284,10 +1299,22 @@ namespace Rock.Model
         /// Gets the phone number.
         /// </summary>
         /// <param name="phoneType">Type of the phone.</param>
-        /// <returns></returns>
+        /// <returns>The first matching <see cref="PhoneNumber"/> or <c>null</c> if none was found.</returns>
         public PhoneNumber GetPhoneNumber( Guid phoneType )
         {
             int numberTypeValueId = DefinedValueCache.GetId( phoneType ) ?? 0;
+            return PhoneNumbers?.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
+        }
+
+        /// <summary>
+        /// Gets the phone number.
+        /// </summary>
+        /// <param name="phoneType">Type of the phone.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns>The first matching <see cref="PhoneNumber"/> or <c>null</c> if none was found.</returns>
+        public PhoneNumber GetPhoneNumber( Guid phoneType, RockContext rockContext )
+        {
+            int numberTypeValueId = DefinedValueCache.Get( phoneType, rockContext )?.Id ?? 0;
             return PhoneNumbers?.FirstOrDefault( n => n.NumberTypeValueId == numberTypeValueId );
         }
 

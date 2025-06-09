@@ -1,0 +1,223 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div :class="configuration.sectionCssClass">
+        <PrePost :pre="configuration.preHtml"
+                 :post="configuration.postHtml">
+            <h1 v-if="configuration.title">{{ configuration.title }}</h1>
+            <p v-if="configuration.description">{{ configuration.description }}</p>
+            <hr v-if="configuration.showHeadingSeparator">
+
+            <div v-if="configuration.isCampusVisible"
+                 class="row">
+                <div class="col-md-6">
+                    <DropDownList label="Campus"
+                                  v-model="campus"
+                                  formGroupClasses="field-campus"
+                                  showBlankItem
+                                  :items="configuration.campuses ?? []" />
+                </div>
+            </div>
+
+            <div class="fieldgroup-personentry">
+                <div class="row">
+                    <div class="col-md-6">
+                        <PersonBasicEditor v-model="personValues"
+                                           showInOneColumn
+                                           hideTitle
+                                           hideSuffix
+                                           hideConnectionStatus
+                                           hidePersonRole
+                                           hideGrade
+                                           hideMaritalStatus
+                                           :hideBirthdate="!isFieldVisible(configuration.birthDateOption)"
+                                           :requireBirthdate="isFieldRequired(configuration.birthDateOption)"
+                                           :showEmail="isFieldVisible(configuration.emailOption)"
+                                           :requireEmail="isFieldRequired(configuration.emailOption)"
+                                           :hideGender="!isFieldVisible(configuration.genderOption)"
+                                           :requireGender="isFieldRequired(configuration.genderOption)"
+                                           :showMobilePhone="isFieldVisible(configuration.mobilePhoneOption)"
+                                           :requireMobilePhone="isFieldRequired(configuration.mobilePhoneOption)"
+                                           :showSmsOptIn="configuration.isSmsVisible"
+                                           :hideRace="!isFieldVisible(configuration.raceOption)"
+                                           :requireRace="isFieldRequired(configuration.raceOption)"
+                                           :hideEthnicity="!isFieldVisible(configuration.ethnicityOption)"
+                                           :requireEthnicity="isFieldRequired(configuration.ethnicityOption)" />
+                    </div>
+
+                    <div v-if="showSpouse"
+                         class="col-md-6">
+                        <PersonBasicEditor v-model="spouseValues"
+                                           :personLabelPrefix="spouseLabel"
+                                           showInOneColumn
+                                           hideTitle
+                                           hideSuffix
+                                           hideConnectionStatus
+                                           hidePersonRole
+                                           hideGrade
+                                           hideMaritalStatus
+                                           :hideBirthdate="!isFieldVisible(configuration.birthDateOption)"
+                                           :requireBirthdate="isFieldRequired(configuration.birthDateOption)"
+                                           :showEmail="isFieldVisible(configuration.emailOption)"
+                                           :requireEmail="isFieldRequired(configuration.emailOption)"
+                                           :hideGender="!isFieldVisible(configuration.genderOption)"
+                                           :requireGender="isFieldRequired(configuration.genderOption)"
+                                           :showMobilePhone="isFieldVisible(configuration.mobilePhoneOption)"
+                                           :requireMobilePhone="isFieldRequired(configuration.mobilePhoneOption)"
+                                           :showSmsOptIn="configuration.isSmsVisible"
+                                           :hideRace="!isFieldVisible(configuration.raceOption)"
+                                           :requireRace="isFieldRequired(configuration.raceOption)"
+                                           :hideEthnicity="!isFieldVisible(configuration.ethnicityOption)"
+                                           :requireEthnicity="isFieldRequired(configuration.ethnicityOption)" />
+                    </div>
+                </div>
+            </div>
+
+            <InlineCheckBox v-if="isSpouseCheckBoxVisible"
+                            v-model="showSpouse"
+                            :label="showSpouseLabel"
+                            class="show-spouse mt-3 mb-4" />
+
+            <div class="row">
+                <div class="col-md-6">
+                    <AddressControl v-if="isFieldVisible(configuration.addressOption)"
+                                    v-model="address"
+                                    label="Address"
+                                    :rules="isFieldRequired(configuration.addressOption) ? 'required' : ''" />
+                </div>
+
+                <div class="col-md-6">
+                    <DropDownList v-if="isFieldVisible(configuration.maritalStatusOption)"
+                                  v-model="maritalStatus"
+                                  label="Marital Status"
+                                  showBlankItem
+                                  :rules="isFieldRequired(configuration.maritalStatusOption) ? 'required' : ''"
+                                  :items="configuration.maritalStatuses ?? []" />
+                </div>
+            </div>
+        </PrePost>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
+    import PrePost from "../prePost.partial";
+    import { PersonEntryConfigurationBag } from "@Obsidian/ViewModels/Workflow/personEntryConfigurationBag";
+    import { PersonEntryValuesBag } from "@Obsidian/ViewModels/Workflow/personEntryValuesBag";
+    import { computed, PropType, ref, watch } from "vue";
+    import { WorkflowActionFormPersonEntryOption } from "@Obsidian/Enums/Workflow/workflowActionFormPersonEntryOption";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<PersonEntryValuesBag>,
+            required: false
+        },
+
+        configuration: {
+            type: Object as PropType<PersonEntryConfigurationBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: PersonEntryValuesBag): void;
+    }>();
+
+    // #region Values
+
+    const campus = ref(props.modelValue?.campusGuid ?? "");
+    const personValues = ref(props.modelValue?.person ?? {});
+    const spouseValues = ref(props.modelValue?.spouse ?? {});
+    const showSpouse = ref(isFieldRequired(props.configuration.spouseOption));
+    const address = ref(props.modelValue?.address ?? undefined);
+    const maritalStatus = ref(props.modelValue?.maritalStatusGuid ?? "");
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Determines if the checkbox to show/hide the spouse should be visible. */
+    const isSpouseCheckBoxVisible = computed((): boolean => {
+        return isFieldVisible(props.configuration.spouseOption)
+            && !isFieldRequired(props.configuration.spouseOption);
+    });
+
+    /** The text to use anywhere we would normally use "Spouse". */
+    const spouseLabel = computed((): string => {
+        return props.configuration.spouseLabel ?? "Spouse";
+    });
+
+    /** The label to use for the Show Spouse checkbox. */
+    const showSpouseLabel = computed((): string => {
+        return `Show ${spouseLabel.value}`;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Determines if the field should be visible or not.
+     *
+     * @param field The field to be inspected.
+     *
+     * @returns true if the field should be visible.
+     */
+    function isFieldVisible(field: WorkflowActionFormPersonEntryOption): boolean {
+        return field !== WorkflowActionFormPersonEntryOption.Hidden;
+    }
+
+    /**
+     * Determines if the field should be marked as required or not.
+     *
+     * @param field The field to be inspected.
+     *
+     * @returns true if the field should be marked as required.
+     */
+    function isFieldRequired(field: WorkflowActionFormPersonEntryOption): boolean {
+        return field === WorkflowActionFormPersonEntryOption.Required;
+    }
+
+    // #endregion
+
+    watch(showSpouse, () => {
+        // If the show spouse checkbox is turned on and no marital status
+        // has been set yet then default to married.
+        if (showSpouse.value && !maritalStatus.value) {
+            maritalStatus.value = "5fe5a540-7d9f-433e-b47e-4229d1472248";
+        }
+    });
+
+    // Watch for changes to the configuration that need to be reflected.
+    watch(() => props.configuration, () => {
+        // The configuration object changing means we are resetting everything
+        // anyway. So it's safe to reset this value that might have been changed
+        // by the individual already.
+        showSpouse.value = isFieldRequired(props.configuration.spouseOption);
+    });
+
+    // Watch for changes in our modelValue and update our local values to match.
+    watch(() => props.modelValue, () => {
+        updateRefValue(campus, props.modelValue?.campusGuid ?? "");
+        updateRefValue(personValues, props.modelValue?.person ?? {});
+        updateRefValue(spouseValues, props.modelValue?.spouse ?? {});
+        updateRefValue(address, props.modelValue?.address ?? undefined);
+        updateRefValue(maritalStatus, props.modelValue?.maritalStatusGuid ?? "");
+    });
+
+    // Watch for changes in our local values and update the parent's value.
+    watch([campus, personValues, spouseValues, address, maritalStatus], () => {
+        const newData: PersonEntryValuesBag = { ...props.modelValue };
+
+        newData.campusGuid = campus.value !== "" ? campus.value : null;
+        newData.person = personValues.value;
+        newData.spouse = spouseValues.value;
+        newData.address = address.value ?? null;
+        newData.maritalStatusGuid = maritalStatus.value !== "" ? maritalStatus.value : null;
+
+        emit("update:modelValue", newData);
+    });
+</script>

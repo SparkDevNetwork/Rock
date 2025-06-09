@@ -1,0 +1,42 @@
+<template>
+    <AddressControl v-model="address"
+                    label="Address"
+                    help="All or part of an address to which the Person is associated."
+                    disableFrontEndValidation
+                    omitDefaultValues
+                    showBlankItem />
+
+    <DropDownList v-model="locationType"
+                  :items="locationTypeOptions"
+                  label="Address Type"
+                  help="Specifies the type of address the filter will be applied to. If no value is selected, all of the Person's Addresses will be considered."
+                  showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import AddressControl from "@Obsidian/Controls/addressControl.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import type { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
+
+    const props = defineProps(dataViewFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const address = ref<AddressControlBag>(safeParseJson(props.modelValue.address) ?? {});
+    const locationTypeOptions: ListItemBag[] = safeParseJson(props.modelValue.locationTypeOptions) ?? [];
+    const locationType = ref<string>(props.modelValue.locationType ?? "");
+
+    watch([address, locationType], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            address: JSON.stringify(address.value),
+            locationType: locationType.value,
+        });
+    }, { deep: true });
+</script>

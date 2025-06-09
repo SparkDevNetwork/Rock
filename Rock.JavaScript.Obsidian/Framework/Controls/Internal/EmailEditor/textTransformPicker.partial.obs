@@ -1,0 +1,92 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <SingleSelectButtonGroup v-model="internalTextTransform"
+                             v-bind="standardFieldProps"
+                             :disableLabel="!label"
+                             @update:modelValue="onTextTransformUpdated">
+        <template #default="{ btnSize, disabled, itemButtonType, toggleValue: selectValue }">
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('capitalize')"
+                        title="Capitalize"
+                        @click="selectValue('capitalize')">Ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('lowercase')"
+                        title="Lowercase"
+                        @click="selectValue('lowercase')">ag</RockButton>
+
+            <RockButton :disabled="disabled"
+                        :btnSize="btnSize"
+                        :btnType="itemButtonType('uppercase')"
+                        title="Uppercase"
+                        @click="selectValue('uppercase')">AG</RockButton>
+        </template>
+
+        <template #afterBtnGroup>
+            <ClearStyleButton v-if="!isNullish(valueProvider.value)"
+                              @click="onClearClicked" />
+        </template>
+    </SingleSelectButtonGroup>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ClearStyleButton from "./clearStyleButton.partial.obs";
+    import SingleSelectButtonGroup from "./singleSelectButtonGroup.partial.obs";
+    import { ValueProvider } from "./types.partial";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        label: {
+            type: String as PropType<string>,
+            default: "Text Transform"
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<string | null | undefined>>,
+            required: true
+        }
+    });
+
+    const standardFieldProps = useStandardRockFormFieldProps(props);
+
+    // #region Computed Props
+
+    // Set the value from the element OR from the input CSS styles.
+    const internalTextTransform = computed<string>({
+        get(): string {
+            return props.valueProvider.value ?? "";
+        },
+        set(newValue: string): void {
+            props.valueProvider.value = newValue;
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the internal control being updated.
+     */
+    function onTextTransformUpdated(value: string): void {
+        internalTextTransform.value = value || "none";
+    }
+
+    /**
+     * Event handler for the clear styles button being clicked.
+     *
+     * Deletes the property from the CSS style declarations.
+     */
+    function onClearClicked(): void {
+        props.valueProvider.value = null;
+    }
+
+    // #endregion
+</script>

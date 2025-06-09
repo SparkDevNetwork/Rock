@@ -28,7 +28,13 @@
                       field="entityId"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
-                      width="2%" />
+                      width="2%">
+            <template #format="{ row }">
+                <div class="text">
+                    <div>{{ row.entityId }}</div>
+                </div>
+            </template>
+        </NumberColumn>
 
         <TextColumn name="title"
                     title="Entity Description"

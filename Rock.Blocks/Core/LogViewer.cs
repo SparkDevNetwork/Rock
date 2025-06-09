@@ -18,7 +18,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Logs" )]
     [Category( "Core" )]
     [Description( "Block to view system logs." )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "DB6A13D0-964D-4839-9E32-BF1E522D176A" )]
     [Rock.SystemGuid.BlockTypeGuid( "E35992D6-C175-4C35-9DA6-A9A7115E1FFD" )]

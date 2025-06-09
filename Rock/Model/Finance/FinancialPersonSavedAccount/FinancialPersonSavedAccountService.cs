@@ -303,6 +303,7 @@ namespace Rock.Model
                 Street2 = string.Empty,
                 City = string.Empty,
                 State = string.Empty,
+                AdditionalParameters = options.AdditionalParameters,
                 TransactionTypeValueId = authorizationTransactionTypeId
             };
 
@@ -399,7 +400,8 @@ namespace Rock.Model
                 City = options.City,
                 State = options.State,
                 PostalCode = options.PostalCode,
-                Country = options.Country
+                Country = options.Country,
+                AdditionalParameters = options.AdditionalParameters
             };
 
             var customerToken = hostedGatewayComponent.CreateCustomerAccount( gateway, paymentInfo, out errorMessage );

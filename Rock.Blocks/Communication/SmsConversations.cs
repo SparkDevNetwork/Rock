@@ -16,7 +16,7 @@ using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.SmsConversations;
-using Rock.ViewModels.Blocks.Core.Notes;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -41,7 +41,7 @@ namespace Rock.Blocks.Communication
 
     [BooleanField( "Show only personal SMS number",
         Key = AttributeKey.ShowOnlyPersonalSmsNumber,
-        Description = "Only SMS Numbers tied to the current individual will be shown. Those with ADMIN rights will see all SMS Numbers.",
+        Description = "Only SMS Numbers assigned to the current individual will be shown. Those with ADMIN rights will see all SMS Numbers.",
         DefaultBooleanValue = false,
         Order = 2
          )]
@@ -168,7 +168,7 @@ namespace Rock.Blocks.Communication
 
         protected CommunicationMessageFilter SelectedMessageFilter => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.SelectedMessageFilter )
-            .ConvertToEnum<CommunicationMessageFilter>( CommunicationMessageFilter.ShowUnreadReplies );
+            .ConvertToEnum<CommunicationMessageFilter>( CommunicationMessageFilter.ShowAllMessages );
 
         #endregion
 
@@ -553,6 +553,7 @@ namespace Rock.Blocks.Communication
         {
             // Update person properties from PersonBasicEditorBag
             person.FirstName = personBag.FirstName;
+            person.NickName = personBag.NickName ?? personBag.FirstName;
             person.LastName = personBag.LastName;
             person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             person.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;

@@ -456,7 +456,7 @@ namespace Rock.Model
         /// <c>true</c> if [enable page view geo tracking]; otherwise, <c>false</c>.
         /// </value>
         [DataMember]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Geolocation lookups are now performed on all interactions, regardless of this setting." )]
         public bool EnablePageViewGeoTracking { get; set; }
 

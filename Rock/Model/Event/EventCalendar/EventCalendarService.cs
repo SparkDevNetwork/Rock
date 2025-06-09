@@ -129,6 +129,16 @@ namespace Rock.Model
                         continue;
                     }
 
+                    // Filter by campus ids so that we only display individual
+                    // occurrences that match.
+                    if ( args.CampusIds?.Any() == true )
+                    {
+                        if ( eventItemOccurrence.CampusId.HasValue && !args.CampusIds.Contains( eventItemOccurrence.CampusId.Value ) )
+                        {
+                            continue;
+                        }
+                    }
+
                     calendarEvent.Sequence = sequenceNo;
 
                     // Create a new calendar event copy to prevent thread-safety issues. This might not be a legitimate
@@ -323,7 +333,9 @@ namespace Rock.Model
                     )
                 );
 
-            // Filter by campus(es).
+            // Filter by campus(es). This handles the query filtering only.
+            // After this we know that the EvenItem had at least one matching
+            // occurrence. Later we will filter the occurrences as well.
             if ( calendarProps.CampusIds?.Any() == true )
             {
                 eventItemQuery = eventItemQuery.Where( eventItem =>

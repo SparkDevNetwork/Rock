@@ -28,6 +28,11 @@ namespace Rock.ViewModels.Rest.Controls
         /// <summary>
         /// Gets or sets the Entity Type Guid
         /// </summary>
-        public Guid? EntityTypeGuid { get; set; } = null;
+        public Guid? EntityTypeGuid { get; set; }
+
+        /// <summary>
+        /// The security grant token to use when performing authorization checks.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

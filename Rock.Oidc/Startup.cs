@@ -71,8 +71,6 @@ namespace Rock.Oidc
                 return;
             }
 
-            app.UseOAuthValidation();
-
             app.UseOpenIdConnectServer( options =>
             {
                 options.Provider = new AuthorizationProvider();
@@ -105,6 +103,8 @@ namespace Rock.Oidc
                     options.SigningCredentials.AddKey( new RsaSecurityKey( key ) );
                 }
             } );
+
+            app.UseOAuthValidation();
         }
     }
 }

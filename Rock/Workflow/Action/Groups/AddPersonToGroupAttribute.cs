@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -69,6 +69,12 @@ namespace Rock.Workflow.Action
         IsRequired = false,
         Order = 4 )]
 
+    [BooleanField( "Ignore Group Member Requirements",
+        Description = "When enabled, group member requirements are bypassed, allowing the person to be added regardless of whether they meet the criteria.",
+        Key = AttributeKey.IgnoreGroupMemberRequirements,
+        IsRequired = false,
+        Order = 5 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "BD53F375-78A2-4A54-B1D1-2D805F3FCD44")]
     public class AddPersonToGroupWFAttribute : ActionComponent
     {
@@ -79,6 +85,7 @@ namespace Rock.Workflow.Action
             public const string DisableSecurityGroups = "DisableSecurityGroups";
             public const string LimitToGroupsOfType = "LimitToGroupsOfType";
             public const string LimitToGroupsUnderSpecificParentGroup = "LimitToGroupsUnderSpecificParentGroup";
+            public const string IgnoreGroupMemberRequirements = "IgnoreGroupMemberRequirements";
         }
 
         /// <summary>
@@ -226,9 +233,12 @@ namespace Rock.Workflow.Action
                 groupMember.GroupRoleId = groupRoleId.Value;
                 groupMember.GroupMemberStatus = GroupMemberStatus.Active;
 
+                // Set to skip group member requirements checking if the option is enabled.
+                groupMember.IsSkipRequirementsCheckingDuringValidationCheck = GetAttributeValue( action, AttributeKey.IgnoreGroupMemberRequirements ).AsBoolean();
+
                 if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
-                    if (isNew)
+                    if ( isNew )
                     {
                         groupMemberService.Add( groupMember );
                     }

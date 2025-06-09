@@ -1,0 +1,28 @@
+<template>
+    <DataViewPicker v-model="dataView"
+                    :entityTypeGuid="EntityType.Group"
+                    label="Is Member of Group from Data View"
+                    help="A Data View that filters the Groups included in the result. If no value is selected, any Groups that would be visible in a Group List will be included."
+                    showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const dataView = ref(safeParseJson<ListItemBag>(props.modelValue.dataView ?? ""));
+
+    watch(dataView, () => {
+        emit("update:modelValue", { ...props.modelValue, dataView: JSON.stringify(dataView.value) });
+    });
+</script>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel.Composition;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Workflow.Action
 {
@@ -31,8 +32,8 @@ namespace Rock.Workflow.Action
     [Export( typeof( ActionComponent ) )]
     [ExportMetadata( "ComponentName", "Form Builder" )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "B2A91AD5-3B41-45A6-A670-EBBF3FF626F9")]
-    public class FormBuilder : ActionComponent
+    [Rock.SystemGuid.EntityTypeGuid( "B2A91AD5-3B41-45A6-A670-EBBF3FF626F9" )]
+    public class FormBuilder : ActionComponent, IInteractiveAction
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -48,5 +49,21 @@ namespace Rock.Workflow.Action
 
             return false;
         }
+
+        #region IInteractiveAction
+
+        /// <inheritdoc/>
+        InteractiveActionResult IInteractiveAction.StartAction( WorkflowAction action, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return UserEntryForm.StartActionInternal( action, rockContext, requestContext );
+        }
+
+        /// <inheritdoc/>
+        InteractiveActionResult IInteractiveAction.UpdateAction( WorkflowAction action, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return UserEntryForm.UpdateActionInternal( action, componentData, rockContext, requestContext );
+        }
+
+        #endregion
     }
 }

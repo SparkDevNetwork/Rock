@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.IO;
 
 namespace Rock.Cms.StructuredContent.BlockTypes
@@ -29,6 +30,17 @@ namespace Rock.Cms.StructuredContent.BlockTypes
         protected override void Render( TextWriter writer, ParagraphData data )
         {
             writer.WriteLine( $"<p>{data?.Text}</p>" );
+        }
+
+        /// <inheritdoc/>
+        protected override ParagraphData ResolveMergeFields( Dictionary<string, object> mergeFields, ParagraphData data )
+        {
+            if ( data != null )
+            {
+                data.Text = data.Text.ResolveMergeFields( mergeFields );
+            }
+
+            return data;
         }
     }
 }

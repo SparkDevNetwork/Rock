@@ -18,6 +18,7 @@
                     <PersonEntrySettings v-model="internalValue"
                                          isVertical
                                          :recordStatusOptions="options.recordStatusOptions ?? []"
+                                         :recordSourceOptions="options.recordSourceOptions ?? []"
                                          :connectionStatusOptions="options.connectionStatusOptions ?? []"
                                          :campusTypeOptions="options.campusTypeOptions ?? []"
                                          :campusStatusOptions="options.campusStatusOptions ?? []"

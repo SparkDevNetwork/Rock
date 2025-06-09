@@ -35,7 +35,9 @@ using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rock;
+using Rock.Configuration;
 using Rock.Data;
+using Rock.Logging;
 using Rock.Net;
 using Rock.Rest.Handler;
 using Rock.Rest.Utility;
@@ -359,23 +361,13 @@ namespace Rock.Rest
         /// <param name="config">The HTTP configuration.</param>
         private static void ConfigureServiceProvider( HttpConfiguration config )
         {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
-            serviceCollection.AddScoped<RockContext>();
-            serviceCollection.AddSingleton<IWebHostEnvironment>( provider => new Rock.Utility.WebHostEnvironment
-            {
-                WebRootPath = AppDomain.CurrentDomain.BaseDirectory
-            } );
-
-            var apiServiceProvider = serviceCollection.BuildServiceProvider();
-
             // Replace the standard controller activator with one of ours
             // that uses the standard dependency injection patterm used in
             // ASP.Net Core.
             config.Services.Replace( typeof( IHttpControllerActivator ), new RockDependencyControllerActivator() );
 
             // Add a new message handler that will create scopes for each request.
-            config.MessageHandlers.Add( new ServiceScopeHandler( apiServiceProvider ) );
+            config.MessageHandlers.Add( new ServiceScopeHandler( RockApp.Current ) );
         }
     }
 }

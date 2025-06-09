@@ -22,7 +22,7 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Lms.LearningSemesterDetail
 {
     /// <summary>
-    /// The item details for the Learning Semester Detail block.
+    /// The editable item details for the Learning Semester Detail block.
     /// </summary>
     public class LearningSemesterBag : EntityBagBase
     {
@@ -45,10 +45,5 @@ namespace Rock.ViewModels.Blocks.Lms.LearningSemesterDetail
         /// Gets or sets the date the semester starts
         /// </summary>
         public DateTime? StartDate { get; set; }
-
-        /// <summary>
-        /// Gets or sets the program for the semester.
-        /// </summary>
-        public int LearningProgramId { get; set; }
     }
 }

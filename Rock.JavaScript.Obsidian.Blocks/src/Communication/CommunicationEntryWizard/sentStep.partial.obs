@@ -1,0 +1,147 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :hasTitle="false">
+        <NotificationBox :alertType="finalMessageAlertType">
+            {{ finalMessage }}
+        </NotificationBox>
+
+        <ConditionalWell v-if="communicationType === CommunicationType.Email || (communicationType === CommunicationType.RecipientPreference && allowedMediums.includes(CommunicationType.Email))">
+            <template v-if="!isAnalyticsSaved">
+                <Switch v-model="isEmailAnalyticsEnabled"
+                        help="Turn this on to receive an email with basic performance analytics. Note: analytics only available for email medium."
+                        label="Email Performance Analytics To Me"
+                        :text="isEmailAnalyticsEnabled ? 'No' : 'Yes'" />
+
+                <RockForm v-if="isEmailAnalyticsEnabled"
+                          @submit="onSaveEmailAnayltics">
+                    <NumberBox v-model="daysFromNow"
+                               help="This date/time will be the trigger for the report to send. Required if enabled."
+                               label="Days From Now"
+                               rules="required" />
+
+                    <NotificationBox v-if="errorMessage"
+                                     alertType="danger">{{ errorMessage }}</NotificationBox>
+
+                    <RockButton btnType="link"
+                                class="text-primary"
+                                type="submit">Save</RockButton>
+                </RockForm>
+            </template>
+            <template v-else>
+                <p>You will receive a reminder email in {{ daysFromNow }} {{ pluralize("day", daysFromNow) }} to assess the impact of your message in terms of opens and click-throughs.</p>
+
+                <NotificationBox v-if="errorMessage"
+                                 alertType="danger">{{ errorMessage }}</NotificationBox>
+
+                <RockButton btnType="link"
+                            @click="onCancelEmailAnalytics">Cancel</RockButton>
+            </template>
+        </ConditionalWell>
+
+        <template #footerActions>
+            <RockButton v-if="hasDetailBlockOnCurrentPage"
+                        btnType="primary"
+                        @click="$emit('viewCommunication')">View Communication</RockButton>
+            <RockButton @click="$emit('newCommunication')">Create New Communication</RockButton>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import { BlockActionCallbacks } from "./types.partial";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+
+    defineProps({
+        allowedMediums: {
+            type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        communicationType: {
+            type: Number as PropType<CommunicationType>,
+            required: true
+        },
+
+        finalMessage: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        finalMessageAlertType: {
+            type: String as PropType<AlertType>,
+            required: true
+        },
+
+        hasDetailBlockOnCurrentPage: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "saveEmailAnalytics", value: number, callbacks: BlockActionCallbacks): void;
+        (e: "cancelEmailAnalytics", callbacks: BlockActionCallbacks): void;
+        (e: "viewCommunication"): void;
+        (e: "newCommunication"): void;
+    }>();
+
+    // #region Values
+
+    const isEmailAnalyticsEnabled = ref<boolean>(false);
+    const daysFromNow = ref<number>(1);
+    const isAnalyticsSaving = ref<boolean>(false);
+    const isAnalyticsSaved = ref<boolean>(false);
+    const isAnalyticsCancelling = ref<boolean>(false);
+    const errorMessage = ref<string | null | undefined>();
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onSaveEmailAnayltics(): void {
+        errorMessage.value = null;
+        isAnalyticsSaving.value = true;
+        isAnalyticsSaved.value = false;
+
+        emit("saveEmailAnalytics", daysFromNow.value, {
+            onSuccess() {
+                isAnalyticsSaving.value = false;
+                isAnalyticsSaved.value = true;
+            },
+
+            onError(error: string | null | undefined) {
+                errorMessage.value = error;
+                isAnalyticsSaving.value = false;
+            }
+        });
+    }
+
+    function onCancelEmailAnalytics(): void {
+        errorMessage.value = null;
+        isAnalyticsCancelling.value = true;
+
+        emit("cancelEmailAnalytics", {
+            onSuccess() {
+                isAnalyticsSaved.value = false;
+                isAnalyticsCancelling.value = false;
+            },
+
+            onError(error: string | null | undefined) {
+                errorMessage.value = error;
+                isAnalyticsCancelling.value = false;
+            }
+        });
+    }
+
+    // #endregion Event Handlers
+</script>

@@ -26,6 +26,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Communication;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
@@ -401,7 +402,7 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.PersonConnectionStatus,
         Category = AttributeCategory.PersonOptions,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
-        Description = "The connection status to use for new individuals (default: 'Prospect'.)",
+        Description = "The connection status to use for new individuals (default: 'Prospect').",
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
         IsRequired = true,
@@ -412,11 +413,22 @@ namespace RockWeb.Blocks.Finance
         Key = AttributeKey.PersonRecordStatus,
         Category = AttributeCategory.PersonOptions,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
-        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        Description = "The record status to use for new individuals (default: 'Pending').",
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Order = 5 )]
+
+    [DefinedValueField(
+        "Record Source",
+        Key = AttributeKey.PersonRecordSource,
+        Category = AttributeCategory.PersonOptions,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        Description = "The record source to use for new individuals (default = 'Giving'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_GIVING,
+        Order = 6 )]
 
     #endregion Person Options
 
@@ -746,6 +758,7 @@ mission. We are so grateful for your commitment.</p>
             public const string PersonAddressType = "PersonAddressType";
             public const string PersonConnectionStatus = "PersonConnectionStatus";
             public const string PersonRecordStatus = "PersonRecordStatus";
+            public const string PersonRecordSource = "PersonRecordSource";
             public const string EnableFeeCoverage = "EnableFeeCoverage";
             public const string FeeCoverageDefaultState = "FeeCoverageDefaultState";
             public const string FeeCoverageMessage = "FeeCoverageMessage";
@@ -2397,6 +2410,8 @@ mission. We are so grateful for your commitment.</p>
                 newPersonOrBusiness.RecordStatusValueId = dvcRecordStatus.Id;
             }
 
+            newPersonOrBusiness.RecordSourceValueId = GetRecordSourceValueId();
+
             int? campusId = this.SelectedCampusId;
 
             // Create Person and Family, and set their primary campus to the one they gave money to
@@ -2406,6 +2421,18 @@ mission. We are so grateful for your commitment.</p>
             rockContext.SaveChanges();
 
             return newPersonOrBusiness;
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId()
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.PersonRecordSource ).AsGuid() )?.Id;
         }
 
         /// <summary>

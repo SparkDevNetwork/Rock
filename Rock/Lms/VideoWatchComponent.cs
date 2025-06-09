@@ -14,8 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+
+using Rock.Attribute;
+using Rock.Cms.StructuredContent;
+using Rock.Data;
+
+using Rock.Enums.Lms;
+
+using Rock.Model;
+using Rock.Net;
 
 namespace Rock.Lms
 {
@@ -26,25 +36,81 @@ namespace Rock.Lms
     [Export( typeof( LearningActivityComponent ) )]
     [ExportMetadata( "ComponentName", "Video Watch" )]
 
+    [RockInternal( "17.0" )]
     [Rock.SystemGuid.EntityTypeGuid( "70f13b8f-ab1e-4ea4-847e-a448501dab1c" )]
     public class VideoWatchComponent : LearningActivityComponent
     {
-        /// <summary>
-        /// Gets the Highlight color for the component.
-        /// </summary>
+        #region Keys
+
+        private static class SettingKey
+        {
+            public const string CompletionThreshold = "completionThreshold";
+
+            public const string FooterContent = "footerContent";
+
+            public const string HeaderContent = "headerContent";
+
+            public const string Video = "video";
+        }
+
+        private static class CompletionKey
+        {
+            public const string WatchedPercentage = "watchedPercentage";
+
+            public const string PointsAvailableAtCompletion = "pointsAvailableAtCompletion";
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <inheritdoc/>
         public override string HighlightColor => "#2f699f";
 
-        /// <summary>
-        /// Gets the icon CSS class for the component.
-        /// </summary>
+        /// <inheritdoc/>
         public override string IconCssClass => "fa fa-video";
 
-        /// <summary>
-        /// Gets the name of the component.
-        /// </summary>
+        /// <inheritdoc/>
         public override string Name => "Video Watch";
 
         /// <inheritdoc/>
         public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/videoWatchLearningActivity.obs";
+
+        #endregion
+
+        #region Methods
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetActivityConfiguration( LearningClassActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
+        {
+            if ( presentation == PresentedFor.Configuration )
+            {
+                return new Dictionary<string, string>();
+            }
+            else
+            {
+                var headerContent = componentData.GetValueOrNull( SettingKey.HeaderContent );
+                var footerContent = componentData.GetValueOrNull( SettingKey.FooterContent );
+                var mergeFields = requestContext.GetCommonMergeFields();
+
+                var headerContentHtml = headerContent.IsNotNullOrWhiteSpace()
+                    ? new StructuredContentHelper( headerContent ).Render().ResolveMergeFields( mergeFields )
+                    : string.Empty;
+
+                var footerContentHtml = footerContent.IsNotNullOrWhiteSpace()
+                    ? new StructuredContentHelper( footerContent ).Render().ResolveMergeFields( mergeFields )
+                    : string.Empty;
+
+                return new Dictionary<string, string>
+                {
+                    [SettingKey.CompletionThreshold] = componentData.GetValueOrNull( SettingKey.CompletionThreshold ),
+                    [SettingKey.FooterContent] = footerContentHtml,
+                    [SettingKey.HeaderContent] = headerContentHtml,
+                    [SettingKey.Video] = componentData.GetValueOrNull( SettingKey.Video )
+                };
+            }
+        }
+
+        #endregion
     }
 }

@@ -28,6 +28,8 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security.SecurityGrantRules;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -43,7 +45,7 @@ namespace Rock.Field.Types
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M14.12,10.62V2.31A1.31,1.31,0,0,0,12.81,1H4.06A2.19,2.19,0,0,0,1.88,3.19v9.62A2.19,2.19,0,0,0,4.06,15h9.41a.66.66,0,0,0,0-1.31h-.22V11.86A1.32,1.32,0,0,0,14.12,10.62Zm-2.18,3.07H4.06a.88.88,0,0,1,0-1.75h7.88Zm.87-3.07H4.06a2.13,2.13,0,0,0-.87.19V3.19a.87.87,0,0,1,.87-.88h8.75Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_VALUE )]
-    public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType
+    public class DefinedValueFieldType : FieldType, IEntityFieldType, IEntityQualifierFieldType, ICachedEntitiesFieldType, IEntityReferenceFieldType, ISplitMultiValueFieldType, ISecurityGrantFieldType
     {
         #region Configuration
 
@@ -736,6 +738,22 @@ namespace Rock.Field.Types
         public ICollection<string> SplitMultipleValues( string privateValue )
         {
             return privateValue.Split( ',' );
+        }
+
+        #endregion
+
+        #region ISecurityGrantFieldType
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            var definedTypeId = privateConfigurationValues.GetValueOrDefault( DEFINED_TYPE_KEY, "" ).AsIntegerOrNull();
+            var allowAdding = privateConfigurationValues.GetValueOrNull( ALLOW_ADDING_NEW_VALUES_KEY ).AsBooleanOrNull() ?? false;
+
+            if ( definedTypeId.HasValue && allowAdding )
+            {
+                grant.AddRule( new AddDefinedValueToTypeGrantRule( definedTypeId.Value ) );
+            }
         }
 
         #endregion

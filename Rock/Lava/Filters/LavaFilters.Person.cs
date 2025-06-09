@@ -19,6 +19,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data.Entity;
+using System.Data.Entity.Spatial;
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
@@ -36,6 +37,7 @@ using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
 using ImageResizer;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
@@ -1104,6 +1106,78 @@ namespace Rock.Lava
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Returns the nearest groups of a specific type.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="input"></param>
+        /// <param name="groupTypeId"></param>
+        /// <param name="maxResults"></param>
+        /// <param name="returnOnlyClosestLocationPerGroup"></param>
+        /// <param name="maxDistance"></param>
+        /// <returns></returns>
+        public static object NearestGroups( ILavaRenderContext context, object input, string groupTypeId, string maxResults, string returnOnlyClosestLocationPerGroup, string maxDistance )
+        {
+            // Get Rock Context
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            // Prep input
+            var person = GetPerson( input, context );
+
+            // Get the point from the person's home location, or if the input is an actual point in the format of '33.663092,-112.202615'
+            DbGeography point = null;
+            if ( person != null )
+            {
+                var personService = new PersonService( rockContext );
+                point = personService.GetGeopoints( person.Id ).FirstOrDefault();
+            }
+            else
+            {
+                point = ParseToDbGeography( input.ToString() );
+            }
+
+            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+            int numericalMaxResults = maxResults.AsIntegerOrNull() ?? 10;
+            int? numericalMaxDistance = maxDistance.AsIntegerOrNull();
+            bool boolReturnOnlyClosestLocationPerGroup = returnOnlyClosestLocationPerGroup.AsBooleanOrNull() ?? true;
+
+            if ( point == null || numericalGroupTypeId == null  )
+            {
+                return null;
+            }
+
+
+            // Get results and shape for return
+            return new GroupService( rockContext )
+                .GetNearestGroups( point, numericalGroupTypeId.Value, numericalMaxResults, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
+                .Select( g => new 
+                {
+                    Distance = g.Location.GeoPoint.Distance( point ),
+                    Group =  g.Group,
+                    Location = g.Location
+                } ).ToList();
+  
+        }
+
+        /// <summary>
+        /// Private helper method to convert a string of '33.663092,-112.202615' to a DbGeography. Did not make this
+        /// an extension method to prevent expanding dependency on EntityFramework.dll.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        private static DbGeography ParseToDbGeography( string input )
+        {
+            var parts = input.Split( ',' );
+            if ( parts.Length != 2 )
+                throw new ArgumentException( "Invalid format. Expected format is 'latitude,longitude'." );
+
+            double latitude = double.Parse( parts[0].Trim() );
+            double longitude = double.Parse( parts[1].Trim() );
+
+            string wellKnownText = $"POINT({longitude} {latitude})";
+            return DbGeography.PointFromText( wellKnownText, 4326 );
         }
 
         /// <summary>

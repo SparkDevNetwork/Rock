@@ -17,6 +17,14 @@ module.exports = {
         Plyr: {
             import: "./src/plyr/index.ts",
             filename: "plyr.js"
+        },
+        StreamChat: {
+            import: "./src/streamchat/index.tsx",
+            filename: "streamchat.js",
+            library: {
+                type: "assign-properties",
+                name: ["Rock", "StreamChat"]
+            }
         }
     },
     output: {
@@ -24,14 +32,14 @@ module.exports = {
     },
     /* Enable caching so rebuilds are faster. */
     cache: {
-        type: 'filesystem',
+        type: "filesystem",
         buildDependencies: {
             config: [__filename],
         },
     },
     resolve: {
         /* WebPack will process `.ts` and then if not found try `.js`. */
-        extensions: [".ts", ".js"]
+        extensions: [".ts", ".js", ".tsx"]
     },
     module: {
         rules: [
@@ -44,6 +52,10 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: ["style-loader", "css-loader"]
+            },
+            {
+                test: /\.tsx$/,
+                use: ["babel-loader", "ts-loader"]
             },
         ],
     },

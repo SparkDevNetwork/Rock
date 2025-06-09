@@ -9,11 +9,10 @@
 
             <div v-if="hasTitle" :class="panelHeadingClass" @click="onPanelHeadingClick">
                 <h1 class="panel-title">
-                    <slot v-if="$slots.title" name="title" />
-                    <template v-else>
+                    <slot name="title" v-bind="{ title: title, titleIconCssClass: titleIconCssClass }">
                         <i v-if="titleIconCssClass" :class="titleIconCssClass"></i>
                         {{ title }}
-                    </template>
+                    </slot>
                 </h1>
 
                 <div class="panel-header-actions">
@@ -99,7 +98,7 @@
             </template>
 
             <TransitionVerticalCollapse>
-                <div v-show="isPanelOpen" class="panel-body" :style="panelBodyStyle">
+                <div v-show="isPanelOpen" :class="panelBodyClass" :style="panelBodyStyle">
                     <slot />
 
                     <div v-if="!slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="actions">
@@ -202,7 +201,7 @@
 
         /** The type of panel to render. */
         type: {
-            type: String as PropType<"default" | "block" | "default" | "primary" | "success" | "info" | "warning" | "danger">,
+            type: String as PropType<"default" | "block" | "primary" | "success" | "info" | "warning" | "danger" | "widget">,
             default: "default"
         },
 
@@ -222,6 +221,18 @@
         headerSecondaryActions: {
             type: Array as PropType<PanelAction[]>,
             required: false
+        },
+
+        /** The CSS class to add to the panel-body element. */
+        panelBodyCssClass: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /** The CSS class to add to the panel-heading element. */
+        panelHeadingCssClass: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
 
@@ -290,6 +301,10 @@
             classes.push("cursor-pointer");
         }
 
+        if (props.panelHeadingCssClass) {
+            classes.push(props.panelHeadingCssClass);
+        }
+
         return classes;
     });
 
@@ -302,6 +317,16 @@
         }
 
         return styles;
+    });
+
+    const panelBodyClass = computed<string[]>(() => {
+        const classes = ["panel-body"];
+
+        if (props.panelBodyCssClass) {
+            classes.push(props.panelBodyCssClass);
+        }
+
+        return classes;
     });
 
     /** The tab index for the panel, this allows us to catch the escape key. */
@@ -340,8 +365,8 @@
 
     /** Event handler when the panel heading is clicked. */
     const onPanelHeadingClick = (event: Event): void => {
-        // Ignore the click if it happened inside the panel actions.
-        if (event.target && event.target instanceof HTMLElement && event.target.closest(".panel-header-actions")) {
+        // Ignore the click if it happened inside the panel actions or by the "expand" button being clicked.
+        if (event.target && event.target instanceof HTMLElement && (event.target.closest(".panel-header-actions") || !event.target.parentElement)) {
             return;
         }
 
