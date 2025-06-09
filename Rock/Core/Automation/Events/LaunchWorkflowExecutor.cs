@@ -85,7 +85,7 @@ namespace Rock.Core.Automation.Events
                             ? EntityTypeCache.Get( entityTypeId.Value, rockContext )
                             : null;
 
-                        if ( entityTypeCache != null )
+                        if ( entityTypeCache != null && activity != null )
                         {
                             activity.DisplayName = $"WT: {entityTypeCache?.FriendlyName}";
                         }

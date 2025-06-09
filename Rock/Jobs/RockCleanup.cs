@@ -29,13 +29,11 @@ using Humanizer;
 
 using Microsoft.Extensions.Logging;
 
-using PuppeteerSharp.BrowserData;
 using Rock.Attribute;
 using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Net.Geolocation;
 using Rock.Observability;
 using Rock.Pdf;
 using Rock.Web.Cache;
@@ -1827,8 +1825,16 @@ namespace Rock.Jobs
             {
                 var attributeValueService = new AttributeValueService( rockContext );
 
+                /*
+                    6/5/2025 - JJZ
+
+                    Originally this was checking for empty strings (`av.Value = ""`), but SQL equates an emoji
+                    with an empty string, so instead we're not checking for string length, which accurately checks
+                    for empty strings and doesn't give a false positive on emojis. This was reported in this issue:
+                    https://github.com/SparkDevNetwork/Rock/issues/6291
+                */
                 var emptyValuesQuery = attributeValueService.Queryable()
-                    .Where( av => av.Value == null || av.Value == "" )
+                    .Where( av => av.Value == null || av.Value.Length == 0 )
                     .WithQueryableAttributeValues();
 
                 recordsDeleted += BulkDeleteInChunks( emptyValuesQuery, batchAmount, commandTimeout );
