@@ -238,7 +238,7 @@ namespace Rock.Blocks.Cms
 
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "ContentItemId", "((Key))" ),
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["ContentItemId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } ),
                 [NavigationUrlKey.NewItemPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string>
                 {
                     ["ContentItemId"] = "((Key))",
@@ -311,6 +311,13 @@ namespace Rock.Blocks.Cms
 
             return GetAttributeValue( AttributeKey.FilterItemsForCurrentUser ).AsBoolean()
                 || ( contextEntity != null && contextEntity is Rock.Model.Person );
+        }
+
+        /// <inheritdoc/>
+        protected override List<ContentChannelItem> GetListItems( IQueryable<ContentChannelItem> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( cci => cci.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
         }
 
         /// <inheritdoc/>

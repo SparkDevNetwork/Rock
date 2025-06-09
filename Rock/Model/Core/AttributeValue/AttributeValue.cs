@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AttributeValue" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None, DisableEntitySecurity = true )]
     [JsonConverter( typeof( Rock.Utility.AttributeValueJsonConverter ) )]
     [Rock.SystemGuid.EntityTypeGuid( "D2BDCCF0-D3F4-4F29-B286-DA5B7BFA41C6")]
     public partial class AttributeValue : Model<AttributeValue>, ICacheable

@@ -102,6 +102,10 @@
             valueBuilder.addTextValue("Printer", props.modelValue.printerDevice.text ?? "");
         }
 
+        if (props.modelValue.beaconId !== null && props.modelValue.beaconId !== undefined) {
+            valueBuilder.addTextValue("Beacon Identifier", props.modelValue.beaconId.toString());
+        }
+
         if (props.modelValue.softRoomThreshold) {
             valueBuilder.addTextValue("Threshold", props.modelValue.softRoomThreshold?.toString() ?? "");
         }

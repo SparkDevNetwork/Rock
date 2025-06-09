@@ -23,7 +23,11 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security.SecurityGrantRules;
+using Rock.Security;
+using Rock.SystemGuid;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Field.Types
@@ -32,6 +36,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a list of label files
     /// Stored as BinaryFile's Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.LABEL )]
     public class LabelFieldType : BinaryFileFieldType
@@ -107,6 +112,21 @@ namespace Rock.Field.Types
         }
 
         #endregion Edit Control
+
+        #region ISecurityGrantFieldType
+
+        /// <inheritdoc/>
+        public override void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            var binaryFileType = BinaryFileTypeCache.Get( SystemGuid.BinaryFiletype.CHECKIN_LABEL );
+
+            if ( binaryFileType != null )
+            {
+                grant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.VIEW ) );
+            }
+        }
+
+        #endregion
 
         #region WebForms
 #if WEBFORMS

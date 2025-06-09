@@ -34,7 +34,6 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of learning grading systems.
     /// </summary>
-
     [DisplayName( "Learning Grading System List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning grading systems." )]
@@ -122,6 +121,11 @@ namespace Rock.Blocks.Lms
                 .OrderBy( a => a.Name );
         }
 
+        protected override IQueryable<LearningGradingSystem> GetOrderedListQueryable( IQueryable<LearningGradingSystem> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( g => g.Name );
+        }
+
         /// <inheritdoc/>
         protected override GridBuilder<LearningGradingSystem> GetGridBuilder()
         {
@@ -131,8 +135,7 @@ namespace Rock.Blocks.Lms
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
                 .AddField( "scalesCount", a => a.LearningGradingSystemScales.Count() )
-                .AddField( "isActive", a => a.IsActive )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddField( "isActive", a => a.IsActive );
         }
 
         #endregion
@@ -157,7 +160,7 @@ namespace Rock.Blocks.Lms
 
             if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningGradingSystem.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningGradingSystem.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

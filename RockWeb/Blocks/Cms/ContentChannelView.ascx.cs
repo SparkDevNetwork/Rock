@@ -26,7 +26,7 @@ using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
-using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -710,6 +710,7 @@ $(document).ready(function() {
 
                 Dictionary<string, object> linkedPages = new Dictionary<string, object>();
                 linkedPages.Add( "DetailPage", LinkedPageRoute( AttributeKey.DetailPage ) );
+                linkedPages.Add( "DetailPageRoute", GetAttributeValue( AttributeKey.DetailPage ) );
 
                 List<ContentChannelItem> contentItemList = null;
                 List<TagModel> tags = null;
@@ -876,21 +877,12 @@ $(document).ready(function() {
                 }
 
                 // Render the Lava content.
-                var isRendered = true;
-                if ( LavaService.RockLiquidIsEnabled )
-                {
-                    var template = GetTemplate();
-                    outputContents = template.Render( Hash.FromDictionary( mergeFields ) );
-                }
-                else
-                {
-                    var template = GetLavaTemplate();
-                    var lavaContext = LavaService.NewRenderContext( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ).SplitDelimitedValues() );
+                var template = GetLavaTemplate();
+                var lavaContext = LavaService.NewRenderContext( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ).SplitDelimitedValues() );
 
-                    var renderResult = LavaService.RenderTemplate( template, lavaContext );
-                    isRendered = !renderResult.HasErrors;
-                    outputContents = renderResult.Text;
-                }
+                var renderResult = LavaService.RenderTemplate( template, lavaContext );
+                var isRendered = !renderResult.HasErrors;
+                outputContents = renderResult.Text;
 
                 // Cache the result if caching is enabled and the template was rendered successfully.
                 if ( isRendered && OutputCacheDuration.HasValue && OutputCacheDuration.Value > 0 )
@@ -973,51 +965,6 @@ $(document).ready(function() {
 
             return template;
         }
-
-        #region RockLiquid Lava implementation
-
-        /// <summary>
-        /// Gets the template.
-        /// </summary>
-        /// <returns>a DotLiquid Template</returns>
-        /// <returns>A <see cref="DotLiquid.Template"/></returns>
-        private Template GetTemplate()
-        {
-            Template template = null;
-
-            try
-            {
-                // only load from the cache if a cacheDuration was specified
-                if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
-                {
-                    template = GetCacheItem( TEMPLATE_CACHE_KEY, true ) as Template;
-                }
-
-                if ( template == null )
-                {
-                    template = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( AttributeKey.Template ) );
-
-                    LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.Template ) );
-
-                    if ( ItemCacheDuration.HasValue && ItemCacheDuration.Value > 0 )
-                    {
-                        string cacheTags = GetAttributeValue( AttributeKey.CacheTags ) ?? string.Empty;
-                        AddCacheItem( TEMPLATE_CACHE_KEY, template, ItemCacheDuration.Value, cacheTags );
-                    }
-
-                    var enabledLavaCommands = GetAttributeValue( AttributeKey.EnabledLavaCommands );
-                    template.Registers.AddOrReplace( "EnabledCommands", enabledLavaCommands );
-                }
-            }
-            catch ( Exception ex )
-            {
-                template = Template.Parse( string.Format( "Lava error: {0}", ex.Message ) );
-            }
-
-            return template;
-        }
-
-        #endregion
 
         /// <summary>
         /// Gets the content channel items from the item-cache (if there), or from 
@@ -1450,8 +1397,8 @@ $(document).ready(function() {
             }
             catch ( Exception ex )
             {
-                ExceptionLogService.LogException( ex );
                 //Don't choke on the filter.
+                ExceptionLogService.LogException( new Exception( $"Error while trying to filter a channel by DataFilterId. This is likely due to a broken DataFilter for the '{channelGuid}' channel for block {this.BlockId} on page {this.RockPage.PageId}.", ex ) );
             }
 
             // If items could be filtered by querystring values, check for filters

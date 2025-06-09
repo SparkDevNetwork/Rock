@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Note" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.NOTE )]
     public partial class Note : Model<Note>
     {
@@ -55,6 +56,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember]
+        [EnableAttributeQualification]
         public int NoteTypeId { get; set; }
 
         /// <summary>

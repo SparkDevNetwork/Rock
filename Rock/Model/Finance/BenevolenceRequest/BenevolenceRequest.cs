@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "BenevolenceRequest" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.BENEVOLENCE_REQUEST )]
     public partial class BenevolenceRequest : Model<BenevolenceRequest>
     {
@@ -218,6 +219,7 @@ namespace Rock.Model
         /// </value>
         [HideFromReporting]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int BenevolenceTypeId { get; set; }
 
         /// <summary>

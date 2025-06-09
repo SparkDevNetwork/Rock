@@ -55,6 +55,9 @@ export type AdaptiveMessageBag = {
     /** Gets or sets the description. */
     description?: string | null;
 
+    /** Gets or sets the end date for this Adaptive Message. */
+    endDate?: string | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
@@ -64,6 +67,15 @@ export type AdaptiveMessageBag = {
     /** Gets or sets the key. */
     key?: string | null;
 
+    /** Gets or sets the message reserved key names. */
+    messageReservedKeyNames?: string[] | null;
+
     /** Gets or sets the name. */
     name?: string | null;
+
+    /** Gets or sets the reserved key names. */
+    reservedKeyNames?: string[] | null;
+
+    /** Gets or sets the start date for this Adaptive Message. */
+    startDate?: string | null;
 };

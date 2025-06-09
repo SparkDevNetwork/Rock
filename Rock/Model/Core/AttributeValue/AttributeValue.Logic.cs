@@ -431,7 +431,7 @@ namespace Rock.Model
                 caption,
                 typeof( Attribute ),
                 AttributeId,
-                dbContext.GetCurrentPersonAlias()?.Id,
+                dbContext.GetCurrentPersonAliasId(),
                 dbContext.SourceOfChange );
         }
 

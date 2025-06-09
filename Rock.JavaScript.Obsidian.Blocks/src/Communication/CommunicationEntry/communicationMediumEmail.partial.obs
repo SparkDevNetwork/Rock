@@ -44,9 +44,9 @@
                                      :minimumRecipientCount="minimumRecipientCount" />
                     <template v-else>
                         <RockLabel>Recipients</RockLabel>
-                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${config.communication.communicationListRecipientCount} individuals)`">
+                        <StaticFormControl :modelValue="`Communication List: ${config.communication.communicationListName} (${recipients.length} individuals)`">
                             <template #default="{ value }">
-                                {{ value }} <RockButton btnType="link" btnSize="sm" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
+                                {{ value }} <RockButton btnType="link" btnSize="sm" :disabled="disabled" @click="onConvertListToRecipients">Convert List to Recipients</RockButton>
                             </template>
                         </StaticFormControl>
                     </template>
@@ -56,7 +56,7 @@
             <div class="row">
                 <div class="col-sm-12">
                     <EmailBox v-if="config.areAdditionalEmailRecipientsAllowed"
-                              v-model="additionalEmailAddresses"
+                              v-model="internalAdditionalEmailAddresses"
                               :allowLava="false"
                               :allowMultiple="true"
                               :disabled="internalDisabled"
@@ -68,7 +68,7 @@
             <div class="row d-sm-flex">
                 <div class="col-sm-6">
                     <DropDownList v-if="config.mode === Mode.Full"
-                                  v-model="templateGuid"
+                                  v-model="templateGuidOrEmptyString"
                                   :disabled="disabled"
                                   :items="mediumOptions.templates ?? undefined"
                                   label="Template" />
@@ -86,22 +86,22 @@
             <div class="row">
                 <div class="col-sm-6">
                     <TextBox v-if="config.mode === Mode.Full"
-                             v-model="fromName"
+                             v-model="internalFromName"
                              :disabled="disabled"
                              label="From Name"
                              rules="required" />
                     <StaticFormControl v-else
-                                       :modelValue="fromName"
+                                       :modelValue="internalFromName"
                                        label="From Name" />
                 </div>
                 <div class="col-sm-6">
                     <EmailBox v-if="config.mode === Mode.Full"
-                              v-model="fromAddress"
+                              v-model="internalFromAddress"
                               :disabled="disabled"
                               label="From Address"
                               rules="required" />
                     <StaticFormControl v-else
-                                       :modelValue="fromAddress"
+                                       :modelValue="internalFromAddress"
                                        label="From Address" />
                 </div>
             </div>
@@ -109,11 +109,11 @@
             <div class="row d-sm-flex">
                 <div class="col-sm-6">
                     <EmailBox v-if="config.mode === Mode.Full"
-                              v-model="replyToAddress"
+                              v-model="internalReplyAddress"
                               :disabled="disabled"
                               label="Reply To Address" />
-                    <StaticFormControl v-else-if="replyToAddress"
-                                       :modelValue="replyToAddress"
+                    <StaticFormControl v-else-if="internalReplyAddress"
+                                       :modelValue="internalReplyAddress"
                                        label="Reply To Address" />
                 </div>
                 <div v-if="config.isCcBccEntryAllowed" class="col-sm-6 align-self-center">
@@ -128,7 +128,7 @@
             <VerticalTransitionCollapse v-if="config.isCcBccEntryAllowed">
                 <div v-if="isCcShown" class="row">
                     <div class="col-sm-6">
-                        <EmailBox v-model="ccAddresses"
+                        <EmailBox v-model="internalCcAddresses"
                                   :allowLava="config.isLavaEnabled"
                                   :allowMultiple="true"
                                   :disabled="disabled"
@@ -136,7 +136,7 @@
                                   label="CC Addresses" />
                     </div>
                     <div class="col-sm-6">
-                        <EmailBox v-model="bccAddresses"
+                        <EmailBox v-model="internalBccAddresses"
                                   :allowLava="config.isLavaEnabled"
                                   :allowMultiple="true"
                                   :disabled="disabled"
@@ -146,21 +146,21 @@
                 </div>
             </VerticalTransitionCollapse>
 
-            <div class="row d-sm-flex">
+            <div class="row d-flex align-items-end">
                 <div class="col-sm-6">
-                    <TextBox v-model="subject"
+                    <TextBox v-model="internalSubject"
                              :disabled="disabled"
                              :help="config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span>' : ''"
                              label="Subject"
                              rules="required" />
                 </div>
-                <div class="col-sm-4 align-self-center">
+                <div class="col-sm-4 email-switch-margin">
                     <ScheduleSend v-if="config.mode === Mode.Full"
                                   v-model="internalScheduleSendIsoString"
                                   :disabled="disabled" />
                 </div>
                 <div v-if="mediumOptions.isAttachmentUploaderShown"
-                     class="col-sm-2 align-self-center">
+                     class="col-sm-2 email-switch-margin">
                     <div class="float-right">
                         <RockButton btnType="link"
                                     :disabled="disabled"
@@ -172,7 +172,7 @@
             <VerticalTransitionCollapse>
                 <div v-if="areAttachmentsShown" class="row">
                     <div class="col-sm-12">
-                        <AttachmentPicker v-model="attachments"
+                        <AttachmentPicker v-model="internalAttachments"
                                           :binaryFileTypeGuid="mediumOptions.binaryFileTypeGuid"
                                           :disabled="disabled" />
                     </div>
@@ -182,12 +182,13 @@
             <div v-if="isDuplicatePreventionOptionShown">
                 <CheckBox label="Prevent Duplicate Email Addresses"
                           help="Check this option to prevent communications from being sent to people with the same email addresses.This will mean two people who share an address will not receive a personalized communication, only one of them will."
-                          v-model="excludeDuplicateRecipientAddress" />
+                          v-model="internalExcludeDuplicateRecipientAddress" />
             </div>
 
-            <HtmlEditor v-model="message"
+            <HtmlEditor v-model="internalMessage"
                         :disabled="disabled"
                         :editorHeight="600"
+                        :enableAssetManager="config.enableAssetManager"
                         :help="`${config.isLavaEnabled ? '<span class=\'tip tip-lava\'></span> ' : ''}<span class='tip tip-html'>`"
                         label="Message"
                         :mergeFields="messageMergeFields" />
@@ -231,6 +232,10 @@
 .float-right {
     float: right;
 }
+
+.email-switch-margin {
+    margin-bottom: 14px;
+}
 </style>
 
 <script setup lang="ts">
@@ -260,7 +265,7 @@
     import { Guid } from "@Obsidian/Types";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { emptyGuid } from "@Obsidian/Utility/guid";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { CommunicationEntryCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryCommunicationBag";
     import { CommunicationEntryEmailMediumOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryEmailMediumOptionsBag";
     import { CommunicationEntryInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryInitializationBox";
@@ -306,6 +311,61 @@
         isDuplicatePreventionOptionShown: {
             type: Boolean as PropType<boolean>,
             required: false
+        },
+
+        emailAttachmentBinaryFiles: {
+            type: Object as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        communicationTemplateGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: true
+        },
+
+        fromName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        fromAddress: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        replyAddress: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        ccAddresses: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        bccAddresses: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        subject: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        message: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        additionalEmailAddresses: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        excludeDuplicateRecipientAddress: {
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     });
 
@@ -328,6 +388,28 @@
         (e: "update:isBulkCommunication", value: boolean): void;
         /** Emits an event indicating the communication list unique identifier should be updated. */
         (e: "update:communicationListGroupGuid", value: Guid | null | undefined): void;
+        /** Emits an event indicating the email attachment binary files should be updated. */
+        (e: "update:emailAttachmentBinaryFiles", value: ListItemBag[]): void;
+        /** Emits an event indicating the communication template unique identifier should be updated. */
+        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+        /** Emits an event indicating the from name should be updated. */
+        (e: "update:fromName", value: string): void;
+        /** Emits an event indicating the from address should be updated. */
+        (e: "update:fromAddress", value: string): void;
+        /** Emits an event indicating the reply address should be updated. */
+        (e: "update:replyAddress", value: string): void;
+        /** Emits an event indicating the CC address should be updated. */
+        (e: "update:ccAddresses", value: string): void;
+        /** Emits an event indicating the BCC address should be updated. */
+        (e: "update:bccAddresses", value: string): void;
+        /** Emits an event indicating the subject should be updated. */
+        (e: "update:subject", value: string): void;
+        /** Emits an event indicating the message should be updated. */
+        (e: "update:message", value: string): void;
+        /** Emits an event indicating the additional email addresses should be updated. */
+        (e: "update:additionalEmailAddresses", value: string): void;
+        /** Emits an event indicating the exclude duplicated recipient address value should be updated. */
+        (e: "update:excludeDuplicateRecipientAddress", value: boolean): void;
     }>();
 
     const config = useConfigurationValues<CommunicationEntryInitializationBox>();
@@ -341,23 +423,27 @@
     const internalIsBulkCommunication = useVModelPassthrough(props, "isBulkCommunication", emit);
     const internalScheduleSendIsoString = useVModelPassthrough(props, "scheduleSendIsoString", emit);
     const internalCommunicationListGroupGuid = useVModelPassthrough(props, "communicationListGroupGuid", emit);
+    const internalAttachments = useVModelPassthrough(props, "emailAttachmentBinaryFiles", emit);
+    const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
+    const internalFromName = useVModelPassthrough(props, "fromName", emit);
+    const internalFromAddress = useVModelPassthrough(props, "fromAddress", emit);
+    const internalReplyAddress = useVModelPassthrough(props, "replyAddress", emit);
+    const internalCcAddresses = useVModelPassthrough(props, "ccAddresses", emit);
+    const internalBccAddresses = useVModelPassthrough(props, "bccAddresses", emit);
+    const internalSubject = useVModelPassthrough(props, "subject", emit);
+    const internalMessage = useVModelPassthrough(props, "message", emit);
+    const internalAdditionalEmailAddresses = useVModelPassthrough(props, "additionalEmailAddresses", emit);
+    const internalExcludeDuplicateRecipientAddress = useVModelPassthrough(props, "excludeDuplicateRecipientAddress", emit);
+
     const disabledMessage = ref<string | null | undefined>();
     const testResultElement = ref<HTMLElement | undefined>();
-    const attachments = ref<ListItemBag[]>(template.value?.emailAttachmentBinaryFiles ?? []);
-    const templateGuid = ref<string>(template.value?.communicationTemplateGuid ?? "");
-    const fromName = ref<string>(template.value?.fromName ?? "");
-    const fromAddress = ref<string>(template.value?.fromAddress ?? "");
-    const replyToAddress = ref<string>(template.value?.replyAddress ?? "");
-    const ccAddresses = ref<string>(template.value?.ccAddresses ?? "");
-    const bccAddresses = ref<string>(template.value?.bccAddresses ?? "");
+
     // Show CC and BCC fields if the loaded communication has either value.
-    const isCcShown = ref<boolean>(!!(ccAddresses.value || bccAddresses.value));
-    const subject = ref<string>(template.value?.subject ?? "");
+    const isCcShown = ref<boolean>(!!(internalCcAddresses.value || internalBccAddresses.value));
     const areAttachmentsShown = ref<boolean>(false);
-    const message = ref<string>(template.value?.message ?? "");
     const communicationGuid = ref<Guid>(template.value?.communicationGuid ?? emptyGuid);
     const mediumOptions = ref<CommunicationEntryEmailMediumOptionsBag | null>(isEmailMediumOptions(config.mediumOptions) ? config.mediumOptions : null);
-    const excludeDuplicateRecipientAddress = ref<boolean>(template.value?.excludeDuplicateRecipientAddress ?? false);
+
     /** Programmatically submits the form when set to true. */
     const submitFormTrigger = ref<boolean>(false);
     const actionToExecuteOnSubmit = ref<() => PromiseLike<void>>();
@@ -366,11 +452,19 @@
     const errorMessage = ref<string | null | undefined>();
     const isInvalidTransportNotificationDismissed = ref<boolean>(false);
     const isLoadingMediumOptions = ref<boolean>(true);
-    const additionalEmailAddresses = ref<string>(template.value?.additionalEmailAddresses?.join(", ") ?? "");
 
     //#endregion
 
     //#region Computed Values
+
+    const templateGuidOrEmptyString = computed<string>({
+        get(): string {
+            return internalCommunicationTemplateGuid.value ?? "";
+        },
+        set(value: string): void {
+            internalCommunicationTemplateGuid.value = toGuidOrNull(value);
+        }
+    });
 
     const isInvalidTransportNotificationVisible = computed<boolean>(() => {
         return mediumOptions.value?.hasActiveTransport === false && !isInvalidTransportNotificationDismissed.value;
@@ -425,7 +519,7 @@
             return "Hide Attachments";
         }
 
-        const attachmentCount = attachments.value.length;
+        const attachmentCount = internalAttachments.value.length;
 
         if (attachmentCount > 0) {
             return `Show Attachments (${attachmentCount})`;
@@ -659,24 +753,24 @@
             disable("Saving communication...");
 
             const bag: CommunicationEntrySaveRequestBag = {
-                isBulkCommunication: props.isBulkCommunication,
-                bccAddresses: bccAddresses.value,
-                ccAddresses: ccAddresses.value,
+                isBulkCommunication: internalIsBulkCommunication.value,
+                bccAddresses: internalBccAddresses.value,
+                ccAddresses: internalCcAddresses.value,
                 status: CommunicationStatus.Transient,
                 communicationListGroupGuid: internalCommunicationListGroupGuid.value,
-                communicationTemplateGuid: templateGuid.value,
-                emailAttachmentBinaryFiles: attachments.value ?? [],
-                fromAddress: fromAddress.value,
-                fromName: fromName.value,
-                futureSendDateTime: props.scheduleSendIsoString,
+                communicationTemplateGuid: internalCommunicationTemplateGuid.value,
+                emailAttachmentBinaryFiles: internalAttachments.value ?? [],
+                fromAddress: internalFromAddress.value,
+                fromName: internalFromName.value,
+                futureSendDateTime: internalScheduleSendIsoString.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
-                message: message.value,
-                recipients: props.recipients,
-                replyAddress: replyToAddress.value,
-                subject: subject.value,
+                message: internalMessage.value,
+                recipients: internalRecipients.value,
+                replyAddress: internalReplyAddress.value,
+                subject: internalSubject.value,
                 communicationGuid: communicationGuid.value,
-                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value),
-                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
+                additionalEmailAddresses: splitDelimitedValues(internalAdditionalEmailAddresses.value),
+                excludeDuplicateRecipientAddress: internalExcludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntrySaveResponseBag>("Save", { bag });
@@ -702,24 +796,24 @@
             disable("Sending communication...");
 
             const bag: CommunicationEntrySendRequestBag = {
-                isBulkCommunication: props.isBulkCommunication,
-                bccAddresses: bccAddresses.value,
-                ccAddresses: ccAddresses.value,
+                isBulkCommunication: internalIsBulkCommunication.value,
+                bccAddresses: internalBccAddresses.value,
+                ccAddresses: internalCcAddresses.value,
                 status: CommunicationStatus.Transient,
                 communicationListGroupGuid: internalCommunicationListGroupGuid.value,
-                communicationTemplateGuid: templateGuid.value,
-                emailAttachmentBinaryFiles: attachments.value,
-                fromAddress: fromAddress.value,
-                fromName: fromName.value,
-                futureSendDateTime: props.scheduleSendIsoString,
+                communicationTemplateGuid: internalCommunicationTemplateGuid.value,
+                emailAttachmentBinaryFiles: internalAttachments.value,
+                fromAddress: internalFromAddress.value,
+                fromName: internalFromName.value,
+                futureSendDateTime: internalScheduleSendIsoString.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
-                message: message.value,
-                recipients: props.recipients,
-                replyAddress: replyToAddress.value,
-                subject: subject.value,
+                message: internalMessage.value,
+                recipients: internalRecipients.value,
+                replyAddress: internalReplyAddress.value,
+                subject: internalSubject.value,
                 communicationGuid: communicationGuid.value,
-                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value),
-                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
+                additionalEmailAddresses: splitDelimitedValues(internalAdditionalEmailAddresses.value),
+                excludeDuplicateRecipientAddress: internalExcludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntrySendResponseBag>("Send", { bag });
@@ -747,24 +841,24 @@
             testResult.value = undefined;
 
             const bag: CommunicationEntryTestRequestBag = {
-                isBulkCommunication: props.isBulkCommunication,
-                bccAddresses: bccAddresses.value,
-                ccAddresses: ccAddresses.value,
+                isBulkCommunication: internalIsBulkCommunication.value,
+                bccAddresses: internalBccAddresses.value,
+                ccAddresses: internalCcAddresses.value,
                 status: CommunicationStatus.Transient,
                 communicationListGroupGuid: internalCommunicationListGroupGuid.value,
-                communicationTemplateGuid: templateGuid.value,
-                emailAttachmentBinaryFiles: attachments.value ?? [],
-                fromAddress: fromAddress.value,
-                fromName: fromName.value,
-                futureSendDateTime: props.scheduleSendIsoString,
+                communicationTemplateGuid: internalCommunicationTemplateGuid.value,
+                emailAttachmentBinaryFiles: internalAttachments.value ?? [],
+                fromAddress: internalFromAddress.value,
+                fromName: internalFromName.value,
+                futureSendDateTime: internalScheduleSendIsoString.value,
                 mediumEntityTypeGuid: EntityType.CommunicationMediumEmail,
-                message: message.value,
-                recipients: props.recipients,
-                replyAddress: replyToAddress.value,
-                subject: subject.value,
+                message: internalMessage.value,
+                recipients: internalRecipients.value,
+                replyAddress: internalReplyAddress.value,
+                subject: internalSubject.value,
                 communicationGuid: communicationGuid.value,
-                additionalEmailAddresses: splitDelimitedValues(additionalEmailAddresses.value),
-                excludeDuplicateRecipientAddress: excludeDuplicateRecipientAddress.value
+                additionalEmailAddresses: splitDelimitedValues(internalAdditionalEmailAddresses.value),
+                excludeDuplicateRecipientAddress: internalExcludeDuplicateRecipientAddress.value
             };
 
             const result = await invokeBlockAction<CommunicationEntryTestResponseBag>("Test", { bag });
@@ -788,9 +882,9 @@
     /**
      * Populate fields whenever the template is changed.
      */
-    watch(templateGuid, async () => {
-        if (templateGuid.value) {
-            const result = await invokeBlockAction<CommunicationEntryCommunicationBag>("GetTemplate", { templateGuid: templateGuid.value });
+    watch(internalCommunicationTemplateGuid, async () => {
+        if (internalCommunicationTemplateGuid.value) {
+            const result = await invokeBlockAction<CommunicationEntryCommunicationBag>("GetTemplate", { templateGuid: internalCommunicationTemplateGuid.value });
 
             if (result.isError || !result.data) {
                 raiseError(result.errorMessage || "An error occurred while getting the template.");
@@ -811,24 +905,24 @@
 
         // Only overwrite the from name and email.
         if (template.fromName) {
-            fromName.value = template.fromName;
+            internalFromName.value = template.fromName;
         }
         if (template.fromAddress) {
-            fromAddress.value = template.fromAddress;
+            internalFromAddress.value = template.fromAddress;
         }
 
-        replyToAddress.value = template.replyAddress ?? "";
-        ccAddresses.value = template.ccAddresses ?? "";
-        bccAddresses.value = template.bccAddresses ?? "";
+        internalReplyAddress.value = template.replyAddress ?? "";
+        internalCcAddresses.value = template.ccAddresses ?? "";
+        internalBccAddresses.value = template.bccAddresses ?? "";
 
         // Only update the subject if the current subject is empty
         // or if it is the old template's subject.
-        if (!subject.value || subject.value === oldTemplate?.subject) {
-            subject.value = template.subject ?? "";
+        if (!internalSubject.value || internalSubject.value === oldTemplate?.subject) {
+            internalSubject.value = template.subject ?? "";
         }
 
-        attachments.value = template.emailAttachmentBinaryFiles ?? [];
-        message.value = template.message ?? "";
+        internalAttachments.value = template.emailAttachmentBinaryFiles ?? [];
+        internalMessage.value = template.message ?? "";
     });
 
     /**
@@ -877,11 +971,11 @@
 
             mediumOptions.value = response.data;
 
-            if (!fromAddress.value) {
-                fromAddress.value = mediumOptions.value.fromAddress ?? "";
+            if (!internalFromAddress.value) {
+                internalFromAddress.value = mediumOptions.value.fromAddress ?? "";
             }
-            if (!fromName.value) {
-                fromName.value = mediumOptions.value.fromName ?? "";
+            if (!internalFromName.value) {
+                internalFromName.value = mediumOptions.value.fromName ?? "";
             }
         }
         finally {

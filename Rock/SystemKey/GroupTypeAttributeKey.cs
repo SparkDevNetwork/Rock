@@ -155,6 +155,12 @@ namespace Rock.SystemKey
         public const string CHECKIN_GROUPTYPE_ABILITY_LEVEL_DETERMINATION = "core_checkin_AbilityLevelDetermination";
 
         /// <summary>
+        /// Attribute key for check-in configuration template to specify if
+        /// certain age groups should be excluded from check-in.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_AGE_RESTRICTION = "core_AgeRestriction";
+
+        /// <summary>
         /// Attribute key for GroupTypes that allow checkout
         /// </summary>
         [RockObsolete( "1.14" )]
@@ -190,6 +196,19 @@ namespace Rock.SystemKey
         public const string CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES = "core_checkin_AchievementTypes";
 
         /// <summary>
+        /// Attribute Key for Check-in Configuration Template to specify that all
+        /// areas and groups in this GroupType should be available for proximity
+        /// based check-in from the native mobile application.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN = "core_EnableProximityCheckIn";
+
+        /// <summary>
+        /// Attribute key for check-in configuration template to specify the
+        /// behavior of matching Grade and Age for groups.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR = "core_checkin_GradeAndAgeMatchingBehavior";
+
+        /// <summary>
         /// Attribute key for grouptypes location selection strategy (Ask, Fill in order, balance).
         /// </summary>
         public const string CHECKIN_GROUPTYPE_LOCATION_SELECTION_STRATEGY = "core_LocationSelectionStrategy";
@@ -208,6 +227,13 @@ namespace Rock.SystemKey
         /// special needs.
         /// </summary>
         public const string CHECKIN_GROUPTYPE_REMOVE_NON_SPECIAL_NEEDS_GROUPS = "core_RemoveNonSpecialNeedsGroups";
+
+        /// <summary>
+        /// Attribute key for check-in configuraiton template to specify the
+        /// content channel that will drive the promotions on the welcome
+        /// screen. The raw value will be the unique identifier of the channel.
+        /// </summary>
+        public const string CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL = "core_PromotionsContentChannel";
 
         #endregion
 

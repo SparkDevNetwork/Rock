@@ -473,17 +473,18 @@ namespace RockWeb.Blocks.Streaks
             gEnrollments.ShowConfirmDeleteDialog = true;
 
             var streakType = GetStreakType();
-            var canEditBlock =
-                IsUserAuthorized( Authorization.EDIT ) ||
-                streakType.IsAuthorized( Authorization.EDIT, CurrentPerson ) ||
-                streakType.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
-
-            gEnrollments.Actions.ShowAdd = canEditBlock;
-            gEnrollments.IsDeleteEnabled = canEditBlock;
 
             if ( streakType != null )
             {
                 gEnrollments.ExportFilename = streakType.Name;
+
+                var canEditBlock =
+                    IsUserAuthorized( Authorization.EDIT ) ||
+                    streakType.IsAuthorized( Authorization.EDIT, CurrentPerson ) ||
+                    streakType.IsAuthorized( Authorization.MANAGE_MEMBERS, CurrentPerson );
+
+                gEnrollments.Actions.ShowAdd = canEditBlock;
+                gEnrollments.IsDeleteEnabled = canEditBlock;
             }
         }
 

@@ -17,8 +17,8 @@
 
 import { ComputedRef, MaybeRefOrGetter, PropType, Ref, computed, ref, toValue } from "vue";
 import { LearningActivityParticipantBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityComponent/learningActivityParticipantBag";
-import { LearningActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityDetail/learningActivityBag";
-import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+import { LearningClassActivityBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityDetail/learningClassActivityBag";
+import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
 import { AssignTo, AssignToDescription } from "@Obsidian/Enums/Lms/assignTo";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { isValidGuid } from "@Obsidian/Utility/guid";
@@ -44,13 +44,13 @@ export enum ComponentScreen {
 type LearningActivityComponentBaseProps = {
     /** The LearningActivityBag for saving any activity configuration data. */
     activityBag: {
-        type: PropType<LearningActivityBag>;
+        type: PropType<LearningClassActivityBag>;
         required: true;
     };
 
     /** The LearningActivityCompletionBag for saving any completion data. */
     completionBag: {
-        type: PropType<LearningActivityCompletionBag>;
+        type: PropType<LearningClassActivityCompletionBag>;
         required: false;
     };
 
@@ -68,27 +68,62 @@ type LearningActivityComponentBaseProps = {
 };
 
 /**
+ * Extra values that can be passed to the completionValuesChanged emit.
+ */
+export type CompletionExtraValues = {
+    /**
+     * If not `undefined` then this will update the points earned for the
+     * activity.
+     */
+    pointsEarned?: number;
+
+    /**
+     * If not `undefined` then this will update the binary file tracked by
+     * the activity. If `null` then the binary file will be removed.
+     */
+    binaryFile?: ListItemBag | null;
+};
+
+/**
  * The emits that all Learning Activity Components are expected to emit.
  * Failure to implement all emits could result in unexpected behavior.
  */
 type LearningActivityComponentBaseEmits = {
-    /** The model change event for the LearningActivityBag of the component. */
-    ["update:activityBag"]: (activityBag: LearningActivityBag) => void;
-
-    /** The model change event for the LearningActivityCompletionBag of the component. */
-    ["update:completionBag"]: (completionBag: LearningActivityCompletionBag) => void;
-
     /**
-     * @description Emitted when the screen's complete or cancel button has been clicked.
+     * Emitted when the screen's complete or cancel button has been clicked.
+     *
      * @param isSuccess True if the button click was for a completion; false if cancelled.
      */
     completed(isSuccess: boolean): void;
 
     /**
-     * @description Emitted when the activity is done and should be closed
+     * Emitted when the activity is done and should be closed
      * or the next activity opened.
      */
     closed(): void;
+
+    /**
+     * Emitted when the student comment has been changed.
+     *
+     * @param comment The student comment text.
+     */
+    commentChanged(comment: string): void;
+
+    /**
+     * Emitted when the settings for an activity has been changed while on the
+     * configuration screen.
+     *
+     * @param settings The updated settings for the activity.
+     */
+    activitySettingsChanged(settings: Record<string, string>): void;
+
+    /**
+     * Emitted when the completion values for an activity have been changed.
+     *
+     * @param values The updated completion values.
+     * @param extra Additional values related to the completion of an activity.
+     */
+    completionValuesChanged(values: Record<string, string>, extra?: CompletionExtraValues): void;
 };
 
 /**
@@ -96,12 +131,12 @@ type LearningActivityComponentBaseEmits = {
  */
 export const learningActivityProps: LearningActivityComponentBaseProps = {
     activityBag: {
-        type: Object as PropType<LearningActivityBag>,
+        type: Object as PropType<LearningClassActivityBag>,
         required: true,
     },
 
     completionBag: {
-        type: Object as PropType<LearningActivityCompletionBag>,
+        type: Object as PropType<LearningClassActivityCompletionBag>,
         required: false,
     },
 
@@ -122,17 +157,14 @@ export const learningActivityProps: LearningActivityComponentBaseProps = {
 export const learningActivityEmits: LearningActivityComponentBaseEmits = {
     completed(_isSuccess: boolean): void { },
     closed(): void { },
-    ["update:activityBag"](_bag: LearningActivityBag): void { },
-    ["update:completionBag"](_bag: LearningActivityCompletionBag): void { }
+    activitySettingsChanged(_settings: Record<string, string>): void { },
+    completionValuesChanged(_values: Record<string, string>, _extra?: CompletionExtraValues): void { },
+    commentChanged(_comment: string): void { }
 };
 
 /**
- * A generic type destructured to a list of refs.
+ * Default implementation of the learning component state for internal use.
  */
-type ToRef<T> = {
-    [Property in keyof T]: Ref<T[Property]>;
-};
-
 type LearningComponentBaseProps = {
     /** The name of the activity. */
     activityName: ComputedRef<string>;
@@ -161,22 +193,15 @@ type LearningComponentBaseProps = {
     /** Determines if the actiivty has been graded by a facilitator. */
     hasBeenGraded: ComputedRef<boolean>;
 
+    /** Whether the student or facilitator has completed the activity. */
+    isCompleted: ComputedRef<boolean>;
+
     /** The title of the panel to display in the template. */
     panelTitle: ComputedRef<string>;
 
     /** The student the activity is related to. */
     student: Ref<LearningActivityParticipantBag>;
 };
-
-/**
- * Default implementation of the learning component state for internal use.
- *
- * @private The is an internal class that should not be used by plugins as it may change at any time.
- */
-type LearningComponent<TConfig, TCompletion> =
-    LearningComponentBaseProps &
-    ToRef<Exclude<TConfig, LearningComponentBaseProps>> &
-    ToRef<Exclude<TCompletion, LearningComponentBaseProps>>;
 
 /**
  * The class containing the default configuration and default completion classes.
@@ -195,7 +220,7 @@ export abstract class LearningComponentBaseDefaults<TConfig, TCompletion> {
  * Initializes the base functionality and properties common to all learning activity components.
  * And parses the component Settings and Completion JSON into the specified types.
  *
- * @param activityBag The LearningActivityBag for the activity.
+ * @param classActivityBag The LearningActivityBag for the activity.
  * @param completionBag The LearningActivityCompletionBag for the activty.
  * @param screenToShow The screen that should be shown to the current user.
  * @param defaults A class extending the LearningComponentBaseDefaults which initializes default values for the control.
@@ -204,34 +229,16 @@ export abstract class LearningComponentBaseDefaults<TConfig, TCompletion> {
  * @returns The properties common to all learning activity components, the parsed settings
  *  and completion objects.
  */
-export function useLearningComponent<TConfig extends object, TCompletion extends object>(
-    activityBag: MaybeRefOrGetter<LearningActivityBag>,
-    completionBag: MaybeRefOrGetter<LearningActivityCompletionBag>,
-    screenToShow: MaybeRefOrGetter<ComponentScreen>,
-    defaults: LearningComponentBaseDefaults<TConfig, TCompletion>
-): LearningComponent<TConfig, TCompletion> {
-
-    let configuration = defaults.defaultConfig;
-    try {
-        configuration = JSON.parse(toValue(activityBag)?.activityComponentSettingsJson ?? "") as TConfig;
-    }
-    catch (error) {
-        configuration = defaults.defaultConfig;
-    }
-
-    let completion = defaults.defaultCompletion;
-    try {
-        completion = JSON.parse(toValue(completionBag)?.activityComponentCompletionJson ?? "") as TCompletion;
-    }
-    catch (error) {
-        completion = defaults.defaultCompletion;
-    }
-
-    const assignTo = ref(toValue(activityBag)?.assignTo ?? AssignTo.Student);
-    const defaultAssigneeDescription = computed(() => `The ${AssignToDescription[toValue(activityBag)?.assignTo ?? AssignTo.Student]}`);
-    const currentPerson = computed(() => toValue(activityBag)?.currentPerson ?? {} as LearningActivityParticipantBag);
+export function useLearningComponent(
+    classActivityBag: MaybeRefOrGetter<LearningClassActivityBag>,
+    completionBag: MaybeRefOrGetter<LearningClassActivityCompletionBag>,
+    screenToShow: MaybeRefOrGetter<ComponentScreen>
+): LearningComponentBaseProps {
+    const assignTo = ref(toValue(classActivityBag)?.assignTo ?? AssignTo.Student);
+    const defaultAssigneeDescription = computed(() => `The ${AssignToDescription[toValue(classActivityBag)?.assignTo ?? AssignTo.Student]}`);
+    const currentPerson = computed(() => toValue(classActivityBag)?.currentPerson ?? {} as LearningActivityParticipantBag);
     const student = ref(toValue(completionBag)?.student ?? {} as LearningActivityParticipantBag);
-    const activityName = ref(toValue(activityBag)?.name ?? "");
+    const activityName = ref(toValue(classActivityBag)?.name ?? "");
 
     /**
      * If the assignee is the faciliator and the facilitator is currently viewing
@@ -254,13 +261,19 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
     /** Determines if the actiivty has been graded by a facilitator. */
     const hasBeenGraded = computed(() => isValidGuid(toValue(completionBag)?.gradedByPersonAlias?.value ?? ""));
 
+    /** Whether the student or facilitator has completed the activity. */
+    const isCompleted = computed(() => {
+        const completion = toValue(completionBag);
+        return completion?.isStudentCompleted || completion?.isFacilitatorCompleted;
+    });
+
     /**
      * The default title of the panel to display.
      * This function is provided for consistency,
      * but can be overridden by the component implementation.
      */
     const panelTitle = computed(() => {
-        const activityName = toValue(activityBag).name ?? "";
+        const activityName = toValue(classActivityBag).name ?? "";
         switch (toValue(screenToShow)) {
             case ComponentScreen.Configuration:
                 return `Configure ${activityName}`;
@@ -290,34 +303,12 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
     /** The CSS classes for the containing panel. */
     const containerClasses = computed((): string[] => {
         const screenName = toValue(screenToShow);
-        const componentName = toValue(activityBag)?.activityComponent?.name ?? "";
+        const componentName = toValue(classActivityBag)?.activityComponent?.name ?? "";
         return [
             `lms-${screenName.toLowerCase()}-container`,
             `lms-${componentName.toLowerCase()}-container`
         ];
     });
-
-    /*
-        Get the properties of the generic types - TConfig and TCompletion.
-        Assuming the LearningComponentBaseDefaults was given with proper values
-        all fields should be initialized and therefore returned as ref's.
-
-        This code is what destructures the TConfig and TCompletion property values.
-     */
-    const dynamicProps: { [key: string]: unknown } = {};
-    for (const key in configuration) {
-        if (Object.prototype.hasOwnProperty.call(configuration, key)) {
-            const value = configuration[key];
-            dynamicProps[key] = ref(value);
-        }
-    }
-
-    for (const key in completion) {
-        if (Object.prototype.hasOwnProperty.call(completion, key)) {
-            const value = completion[key];
-            dynamicProps[key] = ref(value);
-        }
-    }
 
     return {
         activityName,
@@ -327,10 +318,10 @@ export function useLearningComponent<TConfig extends object, TCompletion extends
         containerClasses,
         currentPerson,
         defaultAssigneeDescription,
-        ...dynamicProps,
         fileUrl,
         hasBeenGraded,
+        isCompleted,
         panelTitle,
         student
-    } as LearningComponent<TConfig, TCompletion>;
+    } as LearningComponentBaseProps;
 }

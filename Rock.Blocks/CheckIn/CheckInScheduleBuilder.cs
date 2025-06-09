@@ -19,11 +19,11 @@ namespace Rock.Blocks.CheckIn
     [Category( "Check-in" )]
     [Description( "Helps to build schedules used for check-in." )]
     [IconCssClass( "fa fa-clipboard" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "28B9DAB2-C58A-4459-9EE7-8D1895C09592" )]
     [Rock.SystemGuid.BlockTypeGuid( "03C8EA07-DAF5-4B5A-9BB6-3A1AF99BB135" )]
-    [CustomizedGrid]
+    [CustomizedGrid( IsCustomColumnsSupported = false )]
     public class CheckInScheduleBuilder : RockBlockType
     {
         #region Keys
@@ -63,6 +63,11 @@ namespace Rock.Blocks.CheckIn
             /// The selected parent location user preference key
             /// </summary>
             public const string SelectedParentLocation = "selected-parent-location";
+        }
+
+        private static class NavigationUrlKey
+        {
+            public const string ParentPage = "ParentPage";
         }
 
         #endregion
@@ -142,8 +147,26 @@ namespace Rock.Blocks.CheckIn
                 };
             }
 
+            bag.NavigationUrls = GetBoxNavigationUrls();
+
             return bag;
         }
+
+        /// <summary>
+        /// Gets the box navigation URLs required for the page to operate.
+        /// </summary>
+        /// <returns>A dictionary of key names and URL values.</returns>
+        private Dictionary<string, string> GetBoxNavigationUrls()
+        {
+            return new Dictionary<string, string>
+            {
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    ["CheckinTypeId"] = PageParameter( PageParameterKey.GroupTypeId )
+                } ),
+            };
+        }
+
 
         /// <summary>
         /// Gets the list of schedules to display and applies the category filter against the schedules.
@@ -492,34 +515,50 @@ namespace Rock.Blocks.CheckIn
             var groupLocationQuery = GetGroupLocationQuery( out List<CheckinAreaPath> groupPaths ).ToList();
 
             if ( bag.SourceSchedule != null
-                && Guid.TryParse( bag.SourceSchedule.Value, out var sourceScheduleId )
+                && Guid.TryParse( bag.SourceSchedule.Value, out var sourceScheduleGuid )
                 && bag.DestinationSchedule != null
-                && Guid.TryParse( bag.DestinationSchedule.Value, out var destinationScheduleId ) )
+                && Guid.TryParse( bag.DestinationSchedule.Value, out var destinationScheduleGuid ) )
             {
-                var sourceSchedule = NamedScheduleCache.Get( sourceScheduleId );
-                var destinationSchedule = NamedScheduleCache.Get( destinationScheduleId );
+                var sourceSchedule = NamedScheduleCache.Get( sourceScheduleGuid );
+                var destinationSchedule = NamedScheduleCache.Get( destinationScheduleGuid );
 
                 if ( sourceSchedule != null && destinationSchedule != null )
                 {
-                    var srcGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == sourceSchedule.Id ) );
-                    var destGroupLocations = groupLocationQuery.Where( gl => gl.Schedules.Any( s => s.Id == destinationSchedule.Id ) );
-
-                    // Remove the target schedule from any existing GroupLocations, this should clear any existing enabled location for this configuration.
-                    foreach ( var groupLocation in destGroupLocations )
+                    if ( !destinationSchedule.CheckInStartOffsetMinutes.HasValue || !sourceSchedule.CheckInStartOffsetMinutes.HasValue )
                     {
-                        var scheduleToRemove = groupLocation.Schedules.FirstOrDefault( s => s.Id == destinationSchedule.Id );
-                        groupLocation.Schedules.Remove( scheduleToRemove );
+                        string messagePrefix;
+                        if ( !destinationSchedule.CheckInStartOffsetMinutes.HasValue && !sourceSchedule.CheckInStartOffsetMinutes.HasValue )
+                        {
+                            messagePrefix = "The Destination and Source schedules are";
+                        }
+                        else if ( !destinationSchedule.CheckInStartOffsetMinutes.HasValue )
+                        {
+                            messagePrefix = "The Destination schedule is";
+                        }
+                        else
+                        {
+                            messagePrefix = "The Source schedule is";
+                        }
+
+                        return ActionBadRequest( $"{messagePrefix} not enabled for check-in. You can enable check-in for a schedule by providing a value for the 'Enable Check-in' field of that schedule." );
                     }
 
-                    // Add the target/destination schedule to any locations with the source schedule, this should enable the same locations as the source schedule.
-                    var targetSchedule = new ScheduleService( RockContext ).Get( destinationSchedule.Id );
-                    foreach ( var item in srcGroupLocations )
+                    var destinationScheduleId = IdHasher.Instance.GetHash( destinationSchedule.Id );
+                    var sourceScheduleId = IdHasher.Instance.GetHash( sourceSchedule.Id );
+
+                    var groupLocationsToClear = bag.CurrentScheduleConfiguration.Where( l => l.ScheduleIds.Contains( destinationScheduleId.ToString() ) ).ToList();
+                    foreach( var groupLocationToClear in groupLocationsToClear )
                     {
-                        item.Schedules.Add( targetSchedule );
+                        groupLocationToClear.ScheduleIds.Remove( destinationScheduleId.ToString() );
                     }
 
-                    var groupScheduleLocationData = GetGroupLocationSchedules( groupLocationQuery.AsQueryable(), groupPaths );
-                    return ActionOk( groupScheduleLocationData );
+                    var groupLocationsToAdd = bag.CurrentScheduleConfiguration.Where( l => l.ScheduleIds.Contains( sourceScheduleId.ToString() ) ).ToList();
+                    foreach ( var groupLocationToAdd in groupLocationsToAdd )
+                    {
+                        groupLocationToAdd.ScheduleIds.Add( destinationScheduleId.ToString() );
+                    }
+
+                    return ActionOk( bag.CurrentScheduleConfiguration );
                 }
             }
 

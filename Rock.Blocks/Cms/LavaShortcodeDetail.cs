@@ -20,9 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-#if REVIEW_WEBFORMS
-using DotLiquid;
-#endif
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -117,7 +115,7 @@ namespace Rock.Blocks.Cms
 
             if ( lavaShortCodeService.Queryable().Any( a => a.TagName == lavaShortcode.TagName && a.Id != lavaShortcode.Id ) )
             {
-                errorMessage = "Tag with the same name is already in use.";
+                errorMessage = @"This ""Tag Name"" is already in use. Please enter a new ""Tag Name"".";
                 return false;
             }
 
@@ -142,25 +140,28 @@ namespace Rock.Blocks.Cms
 
             var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
-
             entity.LoadAttributes( rockContext );
 
             if ( entity.Id != 0 )
             {
                 // Existing entity was found, prepare for view mode by default.
-                if ( isViewable )
+                if ( box.IsEditable )
+                {
+                    box.Entity = GetEntityBagForEdit( entity );
+                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
+                }
+                else if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( Snippet.FriendlyTypeName );
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToView( LavaShortcode.FriendlyTypeName );
                 }
             }
             else
             {
-                // New entity is being created, prepare for edit mode by default.
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
@@ -168,7 +169,7 @@ namespace Rock.Blocks.Cms
                 }
                 else
                 {
-                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( Snippet.FriendlyTypeName );
+                    box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( LavaShortcode.FriendlyTypeName );
                 }
             }
         }
@@ -199,8 +200,6 @@ namespace Rock.Blocks.Cms
                 TagType = entity.TagType.ToString(),
             };
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
-
             return bag;
         }
 
@@ -218,7 +217,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -237,7 +236,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
             bag.EnabledCommands = entity.EnabledLavaCommands.SplitDelimitedValues().Select( lc => new ViewModels.Utility.ListItemBag() { Text = lc, Value = lc } ).ToList();
             bag.Parameters = GetParameterValues( entity.Parameters );
 
@@ -302,7 +301,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -538,34 +537,6 @@ namespace Rock.Blocks.Cms
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-#if REVIEW_WEBFORMS
-                if ( LavaService.RockLiquidIsEnabled )
-                {
-                    // unregister shortcode
-                    if ( oldTagName.IsNotNullOrWhiteSpace() )
-                    {
-                        Template.UnregisterShortcode( oldTagName );
-                    }
-
-                    // Register the new shortcode definition. Note that RockLiquid shortcode tags are case-sensitive.
-                    if ( entity.TagType == TagType.Block )
-                    {
-                        Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeBlock>( entity.TagName );
-                    }
-                    else
-                    {
-                        Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeInline>( entity.TagName );
-                    }
-
-                    // (bug fix) Now we have to clear the entire LavaTemplateCache because it's possible that some other
-                    // usage of this shortcode is cached with a key we can't predict.
-#pragma warning disable CS0618 // Type or member is obsolete
-                    // This obsolete code can be deleted when support for the DotLiquid Lava implementation is removed.
-                    LavaTemplateCache.Clear();
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
-#endif
-
                 if ( oldTagName.IsNotNullOrWhiteSpace() )
                 {
                     LavaService.DeregisterShortcode( oldTagName );
@@ -578,10 +549,7 @@ namespace Rock.Blocks.Cms
 
                 if ( isNew )
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.LavaShortcodeId] = entity.IdKey
-                    } ) );
+                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
                 }
 
                 // Ensure navigation properties will work now.

@@ -263,7 +263,6 @@ export default defineComponent({
 
         const http = useHttp();
         const internalMode = useVModelPassthrough(props, "mode", emit);
-        const isFormSubmitting = ref(false);
         const isEditModeLoading = ref(false);
         const isEntityFollowed = ref<boolean | null>(null);
         const showAuditDetailsModal = ref(false);
@@ -271,6 +270,7 @@ export default defineComponent({
         const providedEntityTypeName = useEntityTypeName();
         const providedEntityTypeGuid = useEntityTypeGuid();
         const browserBus = useBlockBrowserBus();
+        const editForm = ref<InstanceType<typeof RockForm> | null>(null);
 
         let formSubmissionSource: PromiseCompletionSource | null = null;
         let editModeReadyCompletionSource: PromiseCompletionSource | null = null;
@@ -626,13 +626,7 @@ export default defineComponent({
          * operation on the form to perform validation.
          */
         const onSaveClick = async (): Promise<void> => {
-            // Trigger the form to begin processing and then wait for it to
-            // fully complete. This makes sure the Save button stays disabled
-            // until the action is complete so they can't double click.
-            formSubmissionSource = new PromiseCompletionSource();
-            isFormSubmitting.value = true;
-            await formSubmissionSource.promise;
-            isFormSubmitting.value = false;
+            await editForm.value.submitForm();
         };
 
         /**
@@ -762,15 +756,6 @@ export default defineComponent({
 
         // #endregion
 
-        // Watch for the RockForm component to toggle the isFormSubmitting value
-        // back off. This indicates it has finished submitting the form.
-        watch(isFormSubmitting, () => {
-            if (isFormSubmitting.value === false && formSubmissionSource !== null) {
-                formSubmissionSource.resolve();
-                formSubmissionSource = null;
-            }
-        });
-
         // Watch for the isFollowVisible value to change, and if we haven't loaded
         // the initial followed state yet then begin loading it.
         watch(() => props.isFollowVisible, () => {
@@ -791,6 +776,7 @@ export default defineComponent({
         }
 
         return {
+            editForm,
             entityTypeName,
             entityTypeGuid,
             internalFooterSecondaryActions,
@@ -803,7 +789,6 @@ export default defineComponent({
             headerActions,
             isEditMode,
             isEditModeVisible,
-            isFormSubmitting,
             isPanelShown,
             isPanelVisible,
             isViewMode,
@@ -866,23 +851,24 @@ export default defineComponent({
 
     <template #footerActions>
         <template v-if="isEditMode">
-            <RockButton btnType="primary" autoDisable @click="onSaveClick" shortcutKey="s">Save</RockButton>
+            <RockButton btnType="primary" autoDisable autoLoading @click="onSaveClick" shortcutKey="s">Save</RockButton>
             <RockButton btnType="link" @click="onEditCancelClick" shortcutKey="c">Cancel</RockButton>
         </template>
 
         <template v-else>
-            <RockButton v-if="isEditVisible" btnType="primary" @click="onEditClick" autoDisable shortcutKey="e">Edit</RockButton>
-            <RockButton v-if="isDeleteVisible" btnType="link" @click="onDeleteClick" autoDisable>Delete</RockButton>
+            <RockButton v-if="isEditVisible" btnType="primary" @click="onEditClick" autoDisable autoLoading shortcutKey="e">Edit</RockButton>
+            <RockButton v-if="isDeleteVisible" btnType="link" @click="onDeleteClick" autoDisable autoLoading>Delete</RockButton>
         </template>
 
         <RockButton v-for="action in footerActions" :btnType="action.type" @click="onActionClick(action, $event)">
+            <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
+            <template v-if="action.title && action.title">&nbsp;</template>
             <template v-if="action.title">{{ action.title }}</template>
-            <i v-else :class="action.iconCssClass"></i>
         </RockButton>
     </template>
 
     <template #footerSecondaryActions>
-        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)" :disabled="action.disabled">
+        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)" :disabled="action.disabled" :key="action.title+action.iconCssClass">
             <i :class="getActionIconCssClass(action)"></i>
         </RockButton>
     </template>
@@ -894,7 +880,7 @@ export default defineComponent({
             }
         </v-style>
 
-        <RockForm v-if="isEditModeVisible" v-show="isEditMode" @submit="onSaveSubmit" v-model:submit="isFormSubmitting">
+        <RockForm ref="editForm" v-if="isEditModeVisible" v-show="isEditMode" @submit="onSaveSubmit">
             <RockSuspense @ready="onEditSuspenseReady">
                 <slot name="edit" />
             </RockSuspense>

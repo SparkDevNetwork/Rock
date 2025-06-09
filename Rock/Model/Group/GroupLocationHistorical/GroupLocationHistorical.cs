@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "GroupLocationHistorical" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly )]
     [Rock.SystemGuid.EntityTypeGuid( "03128778-5E7D-4FE4-9C7A-929936E06F90")]
     public partial class GroupLocationHistorical : Model<GroupLocationHistorical>, IHistoricalTracking
     {
@@ -167,17 +168,6 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual Location Location { get; set; }
-
-        /// <summary>
-        /// Gets or sets the group location historical schedules.
-        /// </summary>
-        /// <value>
-        /// The group location historical schedules.
-        /// </value>
-        [DataMember]
-        [Obsolete( "The GroupLocationHistoricalSchedule entity and its usages will be removed." )]
-        [RockObsolete( "1.16" )]
-        public virtual ICollection<GroupLocationHistoricalSchedule> GroupLocationHistoricalSchedules { get; set; }
 
         #endregion
     }

@@ -30,6 +30,8 @@
                         <Rock:HighlightLabel ID="hlArchived" runat="server" CssClass="js-archivedgroup-label" LabelType="Danger" Text="Archived" />
                         <Rock:HighlightLabel ID="hlIsPrivate" runat="server" CssClass="js-privategroup-label" LabelType="Default" Text="Private" />
                         <Rock:HighlightLabel ID="hlElevatedSecurityLevel" runat="server" LabelType="Warning" Visible="false" />
+                        <Rock:HighlightLabel ID="hlPeerNetwork" runat="server" LabelType="Info" Visible="false" />
+                        <Rock:HighlightLabel ID="hlChat" runat="server" LabelType="Info" Visible="false" />
                         <Rock:HighlightLabel ID="hlType" runat="server" LabelType="Type" />
                         <Rock:HighlightLabel ID="hlCampus" runat="server" LabelType="Campus" />
                     </div>
@@ -126,8 +128,70 @@
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                                     <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document"
                                         Help="If members of this group need to have signed a document, select that document type here." />
+                                    <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source Override" Help="The record source for group members added to this group. If not set, the group type's record source will be used." />
                                 </div>
                             </div>
+
+                            <%-- Peer Network --%>
+                            <asp:Panel ID="pnlPeerNetworkOverride" runat="server">
+                                <Rock:RockCheckBox ID="cbOverrideRelationshipStrength" runat="server" AutoPostBack="true" Label="Override Relationship Strength" Help="A relationship strength has been set for this group type, but you can override that configuration here." OnCheckedChanged="cbOverrideRelationshipStrength_CheckedChanged" />
+                                <asp:Panel ID="pnlPeerNetwork" runat="server">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <Rock:RockRadioButtonList ID="rblRelationshipStrength" runat="server" Label="Relationship Strength" Help="Sets the relationship strength for individuals in groups of this type. Advanced settings offer additional customization options based on the individual's role in the group." RepeatDirection="Horizontal" AutoPostBack="true" OnSelectedIndexChanged="rblRelationshipStrength_SelectedIndexChanged" CssClass="js-relationship-strength" />
+                                        </div>
+                                        <div id="pnlRelationshipGrowth" runat="server" class="col-md-6">
+                                            <Rock:RockCheckBox ID="cbEnableRelationshipGrowth" runat="server" Label="Enable Relationship Growth Over Time" Help="Enable this setting to allow relationship strength to grow over time as individuals spend more time together in the group." />
+                                        </div>
+                                    </div>
+                                    <div id="pnlShowPeerNetworkAdvancedSettings" runat="server" class="row">
+                                        <div class="col-md-6">
+                                            <Rock:Switch ID="swShowPeerNetworkAdvancedSettings" runat="server" AutoPostBack="true" Text="Show Advanced Settings" OnCheckedChanged="swShowPeerNetworkAdvancedSettings_CheckedChanged" />
+                                        </div>
+                                    </div>
+                                    <asp:Panel ID="pnlPeerNetworkAdvanced" runat="server" Visible="false">
+                                        <Rock:RockLiteral ID="lRelationshipStrenghAdvanced" runat="server">
+                                            You can adjust the relationship score below based on the relationship type of the group members. For instance, if the group members have a strong relationship with the leaders but do not know other non-leaders, you can reduce or eliminate the relationship score percentage between non-leaders.
+                                        </Rock:RockLiteral>
+                                        <div class="d-grid grid-cols-3 gap-2" style="width: max-content;">
+                                            <div></div>
+                                            <div class="d-flex align-items-center">
+                                                <label class="control-label">
+                                                    Leader
+                                                </label>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <label class="control-label">
+                                                    Non-Leader
+                                                </label>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <label class="control-label">
+                                                    Leader
+                                                </label>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <Rock:RockTextBox ID="tbLeaderToLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" />
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <Rock:RockTextBox ID="tbLeaderToNonLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" />
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <label class="control-label">
+                                                    Non-Leader
+                                                </label>
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <Rock:RockTextBox ID="tbNonLeaderToLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" />
+                                            </div>
+                                            <div class="d-flex align-items-center">
+                                                <Rock:RockTextBox ID="tbNonLeaderToNonLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" />
+                                            </div>
+                                        </div>
+                                    </asp:Panel>
+                                </asp:Panel>
+                            </asp:Panel>
+
                         </Rock:PanelWidget>
 
                         <%-- RSVP Settings --%>
@@ -290,6 +354,47 @@
                                     </Rock:Grid>
                                 </div>
                             </Rock:RockControlWrapper>
+                        </Rock:PanelWidget>
+
+                        <%-- Chat --%>
+                        <Rock:PanelWidget ID="wpChat" runat="server" Title="Chat">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlIsChatEnabled" runat="server" CssClass="input-width-xl" Label="Enable Chat" Help="If enabled, this group will participate in the chat system as a chat channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                    <Rock:RockDropDownList ID="ddlIsLeavingChatChannelAllowed" runat="server" CssClass="input-width-xl" Label="Allow Members to Leave Channel" Help="If enabled, individuals are allowed to leave this chat channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlIsChatChannelPublic" runat="server" CssClass="input-width-xl" Label="Make Channel Public" Help="If enabled, this chat channel is visible to everyone when performing a search. This also implies that the channel may be joined by any person via the chat application.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                    <Rock:RockDropDownList ID="ddlIsChatChannelAlwaysShown" runat="server" CssClass="input-width-xl" Label="Always Show Channel" Help="If enabled, this chat channel is always shown in the channel list even if the person has not joined the channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlChatPushNotificationMode" runat="server" CssClass="input-width-xl" Label="Push Notification Mode" Help="Controls how push notifications are sent for this chat channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="0" Text="All Messages" />
+                                        <asp:ListItem Value="1" Text="Mentions" />
+                                        <asp:ListItem Value="2" Text="Silent" />
+                                    </Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:ImageUploader ID="imgChatChannelAvatar" runat="server" Label="Channel Avatar" Help="The image to use for this chat channel in the external chat system. Recommended image size is 120x120." />
+                                </div>
+                            </div>
                         </Rock:PanelWidget>
 
                         <Rock:PanelWidget ID="wpGroupSync" runat="server" Title="Group Sync Settings">
@@ -683,6 +788,35 @@
                     });
                 });
 
+                var $thisBlock = $('#<%= upnlGroupDetail.ClientID %>');
+
+                addRelationshipStrengthTooltips();
+
+                function addRelationshipStrengthTooltips() {
+                    var $relStrength = $thisBlock.find('.js-relationship-strength');
+                    if (!$relStrength.length) {
+                        return;
+                    }
+
+                    addTooltip('0', 'No established relationship or interaction.');
+                    addTooltip('5', 'Basic interactions with a familiar but limited bond.');
+                    addTooltip('10', 'Frequent interactions characterized by a strong and supportive relationship.');
+                    addTooltip('20', 'Intense and trusted relationship with a high level of personal engagement and understanding.');
+
+                    function addTooltip(value, tooltip) {
+                        var $label = $relStrength
+                            .find('input[type="radio"][value="' + value + '"]')
+                            .closest('label');
+
+                        $label.attr('title', tooltip);
+                        $label.tooltip();
+
+                        // Hide the tooltip when a selection is made.
+                        $label.find('input[type="radio"]').on('click', function () {
+                            $label.tooltip('hide');
+                        });
+                    }
+                }
             });
 
         </script>

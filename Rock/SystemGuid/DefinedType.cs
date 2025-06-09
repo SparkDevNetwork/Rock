@@ -96,6 +96,11 @@ namespace Rock.SystemGuid
         public const string COMMUNICATION_PHONE_COUNTRY_CODE = "45E9EF7C-91C7-45AB-92C1-1D6219293847";
 
         /// <summary>
+        /// Guid for the Communication Topic.
+        /// </summary>
+        public const string COMMUNICATION_TOPIC = "A798492C-F0A4-496E-9142-97D9336C3E99";
+
+        /// <summary>
         /// Guid for Content Channel Audience Type
         /// </summary>
         public const string CONTENT_CHANNEL_AUDIENCE_TYPE = "799301A3-2026-4977-994E-45DC68502559";
@@ -404,6 +409,14 @@ namespace Rock.SystemGuid
         /// The "Saved Check-in Configurations" defined type that provides a list
         /// of saved configuration settings for quickly starting up kiosks.
         /// </summary>
+        public const string SAVED_KIOSK_TEMPLATES = "F986008C-99BB-4C48-8A6E-38C8A121D75B";
+
+        /// <summary>
+        /// The "Saved Check-in Configurations" defined type that provides a list
+        /// of saved configuration settings for quickly starting up kiosks.
+        /// </summary>
+        [RockObsolete( "1.16.7" )]
+        [Obsolete( "Use SAVED_KIOSK_TEMPLATES instead." )]
         public const string SAVED_CHECKIN_CONFIGURATIONS = "F986008C-99BB-4C48-8A6E-38C8A121D75B";
 
         /// <summary>
@@ -547,5 +560,10 @@ namespace Rock.SystemGuid
         [Obsolete("Use FinancialStatementTemplate instead")]
         [RockObsolete("1.12.4")]
         public const string STATEMENT_GENERATOR_LAVA_TEMPLATE_LEGACY = "74A23516-A20A-40C9-93B5-1AB5FDFF6750";
+
+        /// <summary>
+        /// Guid for the types of Record Sources (such as external website, event registration, etc.)
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE = "B8F781C5-6690-4E5E-8BCE-75CC62DB0EBB";
     }
 }

@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "LavaShortcode" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "7574A473-3326-4973-8DF6-C7BF5F64EB36" )]
     public partial class LavaShortcode : Model<LavaShortcode>, ICacheable
     {
@@ -144,7 +145,7 @@ namespace Rock.Model
         /// NOTE: Since changes to Categories isn't tracked by ChangeTracker, set the ModifiedDateTime if Categories are modified.
         /// </summary>
         /// <value>
-        /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
+        /// A collection of <see cref="Rock.Model.Category">Categories</see> that this <see cref="LavaShortcode"/> is associated with.
         /// </value>
         [DataMember]
         public virtual ICollection<Category> Categories

@@ -22,7 +22,6 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Model;
-using Rock.Utility;
 using Rock.ViewModels.Blocks.Lms.PublicLearningCourseDetail;
 using Rock.Web;
 using Rock.Web.UI.Controls;
@@ -32,17 +31,15 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays the details for a public learning course.
     /// </summary>
-
     [DisplayName( "Public Learning Course Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular public learning course." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.CourseDetailTemplate,
-        Description = "The Lava template to use to render the page. Merge fields include: Course, Program, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The Lava template to use to render the page. Merge fields include: CourseInfo, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
@@ -55,25 +52,16 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.ClassWorkspacePage,
         Order = 2 )]
 
-    [CustomDropdownListField(
-        "Show Completion Status",
-        Key = AttributeKey.ShowCompletionStatus,
-        Description = "Determines if the individual's completion status should be shown.",
-        ListSource = "Show,Hide",
-        IsRequired = true,
-        DefaultValue = "Show",
-        Order = 3 )]
-
     [SlidingDateRangeField( "Next Session Date Range",
-        Description = "Filter to limit the display of upcming sessions.",
-        Order = 4,
+        Description = "Filter to limit the display of upcoming sessions based on Start Date.",
+        Order = 3,
         IsRequired = false,
         Key = AttributeKey.NextSessionDateRange )]
 
     [LinkedPage( "Enrollment Page",
         Description = "The page that will enroll the student in the course.",
         Key = AttributeKey.CourseEnrollmentPage,
-        Order = 5 )]
+        Order = 4 )]
 
     [BooleanField(
         "Public Only",
@@ -82,7 +70,7 @@ namespace Rock.Blocks.Lms
         DefaultBooleanValue = true,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         Key = AttributeKey.PublicOnly,
-        Order = 6 )]
+        Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "c5d5a151-038e-4295-a03c-63196883f68e" )]
     [Rock.SystemGuid.BlockTypeGuid( "b0dce130-0c91-4aa0-8161-57e8fa523392" )]
@@ -93,7 +81,7 @@ namespace Rock.Blocks.Lms
         private static class AttributeKey
         {
             public const string CourseEnrollmentPage = "CourseEnrollmentPage";
-            public const string CourseDetailTemplate = "CourseListTemplate";
+            public const string CourseDetailTemplate = "CourseDetailTemplate";
             public const string ClassWorkspacePage = "DetailPage";
             public const string NextSessionDateRange = "NextSessionDateRange";
             public const string PublicOnly = "PublicOnly";
@@ -109,14 +97,6 @@ namespace Rock.Blocks.Lms
         private static class AttributeDefault
         {
             public const string CourseDetailTemplate = @"
-//- Variable Assignments
-{% assign requirementTypes = Course.CourseRequirements | Distinct:'RequirementType' %}
-{% assign prerequisitesText = Course.CourseRequirements | Where:'RequirementType','Prerequisite' |
-Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
-{% assign facilitatorCount = Course.Facilitators | Size %}
-{% assign facilitators = Course.Facilitators | Join:', ' | ReplaceLast:',',' and' | Default:'TBD' %}
-
-
 //- Styles
 
 <style>
@@ -128,7 +108,6 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         .card {
             margin-bottom: 24px;
         }
-        
     }
     
     @media (max-width: 767px) {
@@ -142,14 +121,13 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
 </style>
 
-
 <div class=""d-flex flex-column gap-4"">
     
     <div class=""hero-section"">
-        <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ Course.Entity.ImageBinaryFile.Guid }}')""></div>
+        <div class=""hero-section-image"" style=""background-image: url('/GetImage.ashx?guid={{ CourseInfo.ImageFileGuid}}')""></div>
         <div class=""hero-section-content"">
-            <h1 class=""hero-section-title""> {{ Course.Entity.PublicName }} </h1>
-            <p class=""hero-section-description""> {{ Course.Entity.Summary }} </p>
+            <h1 class=""hero-section-title""> {{ CourseInfo.PublicName }} </h1>
+            <p class=""hero-section-description""> {{ CourseInfo.Summary }} </p>
         </div>
     </div>
 
@@ -159,32 +137,33 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
             <div class=""col-xs-12 col-sm-12 col-md-8""> //- LEFT CONTAINER
 
-                <div class=""card""> //-COURSE DESCRIPTION
+                <div class=""card rounded-lg""> //- COURSE DESCRIPTION
 
                     <div class=""card-body"">
                         <div class=""card-title"">
-                            <h4>Course Description</h4>
+                            <h4 class=""m-0"">Course Description</h4>
                         </div>
                         <div class=""card-text"">
-                            <div class=""text-muted"">
-                                <span class=""text-bold"">Course Code: </span>
-                                <span>{{Course.Entity.CourseCode}}</span>
+                            {% if CourseInfo.CourseCode != empty %}
+                            <div class=""text-gray-600 d-flex gap-1"">
+                                <p class=""text-bold mb-0"">Course Code: </p>
+                                <p class=""mb-0"">{{CourseInfo.CourseCode}}</p>
                             </div>
+                            {% endif %}
 
-                            <div class=""text-muted"">
-                                <span class=""text-bold"">Credits: </span>
-                                <span>{{Course.Entity.Credits}}</span>
+                            {% if CourseInfo.Credits != empty and CourseInfo.Credits != 0 %}
+                            <div class=""d-flex text-gray-600 gap-1 pb-3"">
+                                <p class=""text-bold mb-0"">Credits: </p>
+                                <p class=""mb-0"">{{CourseInfo.Credits}}</p>
                             </div>
+                            {% endif %}
 
-                            <div class=""text-muted"">
-                                <span class=""text-bold"">Prerequisites: </span>
-                                <span>
-                                    {{ prerequisitesText }}
-                                </span>
-                            </div>
-
-                            <div class=""pt-3 text-muted"">
-                                <span>{{Course.DescriptionAsHtml}}</span>
+                            <div class=""pt-3 border-top border-gray-200"">
+                                {% if CourseInfo.DescriptionAsHtml == empty %}
+                                    <span>No course description provided.</span>
+                                {% else %}
+                                    <span>{{CourseInfo.DescriptionAsHtml}}</span>
+                                {% endif %}
                             </div>
                         </div>
                     </div>
@@ -193,112 +172,240 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
 
             </div>
 
-
             <div class=""col-xs-12 col-sm-12 col-md-4""> //- RIGHT CONTAINER
-
-                <div>
-
-                    {% case Course.LearningCompletionStatus %}
-
-                        {% when 'Incomplete' %}
-                        <div class=""card"">
-                            <div class=""card-body"">
-                                <div class=""card-title d-flex align-items-center"">
-                                    <i class=""fa fa-user-check mr-2""></i>
-                                    <h4>Currently Enrolled</h4>
-                                </div>
-                                <div class=""card-text text-muted"">
-                                    <p>You are currently enrolled in this course.</p>
-                                </div>
-                                <div class=""mt-3"">
-                                    <a class=""btn btn-info"" href=""{{ Course.ClassWorkspaceLink }}"">View Course Workspace</a>
-                                </div>
-                            </div>
-                            
-                        </div>
-
-
-                        {% when 'Pass' or 'Fail' %}
-                        <div class=""card"">
-                            
-                            <div class=""card-body"">
-                                <div class=""card-title d-flex align-items-center"">
-                                    <i class=""fa fa-rotate-left mr-2""></i>
-                                    <h4>History</h4>
-                                </div>
-                                <div class=""text-muted"">You completed this class on {{
-                                    Course.MostRecentParticipation.LearningCompletionDateTime | Date: 'MMMM dd, yyyy' }}</div>
-        
-                                <div class=""mt-3"">
-                                    <a href=""{{ Course.ClassWorkspaceLink }}"">View Class Work</a>
-                                </div>
-                            </div>
-                            
-                        </div>
-
-                        {% else %}
-
-                        <div class=""card"">
-
-                            <div class=""card-body"">
-                                <div class=""card-title d-flex align-items-center"">
-                                    <i class=""fa fa-calendar-alt mr-2""></i>
-                                    <h4>Upcoming Schedule</h4>
-                                </div>
-
-                                <div class=""card-text d-flex flex-column gap-1"">
-
-                                    <div class=""text-muted"">
-                                        <p class=""text-bold mb-0"">Next Session Semester: </p>
-                                        {% if Course.NextSemester.Name %}
-                                        <p>{{ Course.NextSemester.Name }}</p>
-                                        {% else %}
-                                        <p>TBD</p>
-                                        {% endif %}
-                                    </div>
-
-                                    <div class=""text-muted"">
-                                        <p class=""text-bold mb-0"">{{ 'Instructor' | PluralizeForQuantity:facilitatorCount
-                                            }}:</p>
-                                        <p>{{ facilitators }}</p>
-                                    </div>
-
-                                    {% for requirementType in requirementTypes %}
-
-                                    {% assign requirementsText = Course.CourseRequirements |
-                                    Where:'RequirementType',requirementType | Select:'RequiredLearningCourse' |
-                                    Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
-                                    <div class=""text-muted"">
-                                        <div class=""d-flex align-items-center"">
-                                            <p class=""text-bold mb-0"">{{ requirementType | Pluralize }}</p>
-                                            {% if course.UnmetPrerequisites %}
-                                            <i class=""fa fa-check-circle text-success ml-2""></i>
-                                            {% else %}
-                                            <i class=""fa fa-exclamation-circle text-danger ml-2""></i>
-                                            {% endif %}
-                                        </div>
-                                        <p>{{ requirementsText }}</p>
-                                    </div>
-
-                                    {% endfor %}
-
-                                    <div class=""mt-3"">
-
-                                        {% if course.UnmetPrerequisites != empty %}
-                                        <a class=""btn btn-info"" href=""{{ Course.CourseEnrollmentLink }}"">Enroll</a>
-                                        {% else %}
-                                        <div class=""btn btn-info disabled"">Enroll</div>
-                                        {% endif %}
-
-                                    </div>
-
-                                </div>
-                            </div>
-                        </div>
-
-                    {% endcase %}
-
+                <div class=""card rounded-lg mb-4"">
+                    <div class=""card-body"">
+                        <div class=""card-title d-flex align-items-center"">
+							<h4 class=""m-0""><span><i class=""fa fa-clipboard-list mr-2""></i></span>Requirements
+							    {% if CourseInfo.UnmetPrerequisites != empty %}
+                                    <i class=""fa fa-exclamation-circle text-danger""></i>
+                                    </h4>
+                                {% else %}
+                                    <i class=""fa fa-check-circle text-success""></i>
+                                    </h4>
+                                {% endif %}
+							</h4>
+						</div>
+						<div class=""card-text text-muted"">
+							{% if CourseInfo.CourseRequirements != empty %}
+                                {% assign requirementsText = CourseInfo.CourseRequirements |
+                                Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:',',' and' | Default:'None' %}
+                                {% if CourseInfo.UnmetPrerequisites != empty %}
+                                    </p>
+                                    <p class=""mb-0"">{{requirementsText}}</p>
+                                    <p class=""text-danger mb-0 mt-3"">You do not meet the course requirements.</p>
+                                {% else %}
+                                    </p>
+                                    <p class=""mb-0"">{{requirementsText}}</p>
+                                {% endif %}
+                            {% else %}
+                            <p class=""mb-0"">None</p>
+                            {% endif %}
+						</div>
+                    </div>
                 </div>
+                
+                {% assign today = 'Now' | Date:'yyyy-MM-dd' | AsDateTime %}
+                {% assign hasClasses = false %}
+                {% for semesterInfo in CourseInfo.Semesters %}
+                    
+                    {% for classInfo in semesterInfo.AvailableClasses %}
+                        {% if semesterInfo.EnrollmentCloseDate == null or semesterInfo.EnrollmentCloseDate >= today %}
+                            {% assign hasClasses = true %}
+						{% endif %}
+						//- CURRENTLY ENROLLED
+						{% assign isActiveSemester = semesterInfo.StartDate == null 
+						    or today >= semesterInfo.StartDate %}
+						{% if classInfo.IsEnrolled 
+						and classInfo.StudentParticipant.LearningCompletionStatus == ""Incomplete"" 
+						and isActiveSemester %} 
+							
+							<div class=""card rounded-lg mb-4"">
+								<div class=""card-body"">
+									<div class=""card-title d-flex align-items-center"">
+										<i class=""fa fa-user-check mr-2""></i>
+										<h4 class=""m-0"">Currently Enrolled</h4>
+									</div>
+									<div class=""card-text text-muted mb-3"">
+										<p>You are currently enrolled in this course.</p>
+										<p class=""text-gray-800""><i class=""fa fa-arrow-right mr-2""></i>{{classInfo.Name}}</p>
+									</div>
+									<div>
+										<a class=""btn btn-info"" href=""{{ classInfo.WorkspaceLink }}"">View Class Workspace</a>
+									</div>
+								</div>
+							</div>
+                        {% elseif classInfo.StudentParticipant and classInfo.StudentParticipant.LearningCompletionStatus != ""Incomplete"" %}
+							
+                            //- HISTORICAL ACCESS
+                            {% if CourseInfo.AllowHistoricalAccess == true %}
+                            
+                                <div class=""card rounded-lg mb-4"">
+                                    
+                                    <div class=""card-body"">
+                                        <div class=""card-title d-flex align-items-center"">
+                                            <i class=""fa fa-rotate-left mr-2""></i>
+                                            <h4 class=""m-0"">History</h4>
+                                        </div>
+                                        <div class=""text-muted"">You completed this class on {{
+                                            classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}.</div>
+
+                                        {% if classInfo.StudentParticipant.LearningGradingSystemScale.Name != empty %}
+                                        <div class=""mt-3"">
+                                            <div class=""text-muted"">
+                                                <p class=""text-bold mb-0"">Grade</p>
+                                                <p class=""mb-0"">{{ classInfo.StudentParticipant.LearningGradingSystemScale.Name }}</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+
+                                        <div class=""mt-2"">
+                                            <a href=""{{ classInfo.WorkspaceLink }}"">View Class Workspace</a>
+                                        </div>
+                                    </div>
+                                    
+                                </div>
+							 
+							//- NO HISTORICAL ACCESS
+							{% else %}
+                                
+                                <div class=""card rounded-lg mb-4"">
+                                    
+                                    <div class=""card-body"">
+                                        <div class=""card-title d-flex align-items-center"">
+                                            <i class=""fa fa-rotate-left mr-2""></i>
+                                            <h4 class=""m-0"">History</h4>
+                                        </div>
+                                        <div class=""text-muted"">You completed this class on {{
+                                            classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}</div>
+
+                                        {% if classInfo.StudentParticipant.LearningGradingSystemScale.Name != empty %}
+                                        <div class=""mt-3"">
+                                            <div class=""text-muted"">
+                                                <p class=""text-bold mb-0"">Grade</p>
+                                                <p class=""mb-0"">{{ classInfo.StudentParticipant.LearningGradingSystemScale.Name }}</p>
+                                            </div>
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                </div>
+                                
+                            {% endif %}
+                        {% endif %}
+                    {% endfor %}
+                {% endfor %}
+                                
+                {% if hasClasses == false %} //- NO UPCOMING SEMESTERS OR CLASSES
+                    <div class=""card rounded-lg"">
+                        <div class=""card-body"">
+                            <h4 class=""mt-0"">No Available Upcoming Classes</h4>
+                            <p class=""text-gray-600"">Please check back again later.</p>
+                        </div>
+                    </div>
+                {% else %}
+                    <div class=""card rounded-lg"">
+                        <div class=""card-body"">
+                            <h4 class=""card-title mt-0""><i class=""fa fa-chalkboard-teacher mr-2""></i>Classes</h4>
+                            
+                            //- SCOPING TO CLASS DETAILS
+                            
+                            {% for semesterInfo in CourseInfo.Semesters %}
+
+                                {% assign semesterStartDate = semesterInfo.StartDate | Date: 'sd' %}
+                                {% assign semesterEndDate = semesterInfo.EndDate | Date: 'sd' %}
+                                {% if CourseInfo.ProgramInfo.ConfigurationMode == ""AcademicCalendar"" %}
+                                    <div class=""py-1"">
+                                        <h5 class=""mt-0 mb-0"">{{semesterInfo.Name}}</h5>
+                                        {% if semesterStartDate and semesterEndDate %}
+                                            <p class=""text-gray-600"">{{semesterStartDate}}-{{semesterEndDate}}</p>
+                                        {% elseif semesterEndDate != empty %}
+                                            <p class=""text-gray-600"">{{semesterStartDate}}</p>
+                                        {% else %}
+                                            <p class=""text-gray-600"">Date Pending</p>
+                                        {% endif %}
+                                    </div>
+                                {% endif %}
+                                        
+                                {% for classInfo in semesterInfo.AvailableClasses %}
+                                    {% assign facilitatorsText = classInfo.Facilitators | Select:'Name' | Join:', ' | ReplaceLast:',',' and' | Default:'TBD' %}
+                                   
+                                    <div class=""card rounded-lg bg-gray-100 mb-4"">
+                                        <div class=""card-body pb-0"">
+                                            <div class=""d-grid grid-flow-row gap-0 mb-3""> //- BEGIN CLASS DETAILS
+                                                
+                                                {% if CourseInfo.ProgramInfo.ConfigurationMode == ""AcademicCalendar"" %}
+                                                    <p class=""text-bold"">{{classInfo.Name}}
+                                                    {% if classInfo.IsEnrolled and classInfo.StudentParticipant.LearningCompletionStatus == ""Incomplete"" %}
+                                                        <span class=""text-normal align-top badge bg-info"">Enrolled</span>
+                                                    {% elseif classInfo.IsEnrolled %}
+														<span class=""text-normal align-top badge bg-success"">Recently Completed</span>
+                                                    {% endif %}
+                                                    </p>
+                                                {% else %}
+                                                <h4 class=""mt-0"">Class Details</h4>
+                                                {% endif %}
+                                                
+                                                <div class=""d-flex flex-column"">
+                                                    {% if facilitatorsText %}
+                                                        <div class=""text-gray-600"">
+                                                            <p class=""text-bold mb-0"">Facilitators: 
+                                                            <p>{{facilitatorsText}}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if classInfo.Campus %}
+                                                        <div class=""text-gray-600"">
+                                                            <p class=""text-bold mb-0"">Campus: 
+                                                            <p>{{classInfo.Campus}}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if classInfo.Location and classInfo.Location != '' %}
+                                                        <div class=""text-gray-600"">
+                                                            <p class=""text-bold mb-0"">Location: 
+                                                            <p>{{classInfo.Location}}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    {% if classInfo.Schedule %}
+                                                        <div class=""text-gray-600"">
+                                                            <p class=""text-bold mb-0"">Schedule: 
+                                                            <p>{{classInfo.Schedule}}</p>
+                                                        </div>
+                                                    {% endif %}
+                                                    
+                                                    {% if classInfo.IsEnrolled  == false %} //- NEVER ENROLLED?
+                                                        {% if semesterInfo.IsEnrolled == true and classInfo.IsEnrolled == false %}
+                                                            {% if CourseInfo.ProgramInfo.ConfigurationMode == ""AcademicCalendar"" %}
+                                                                <p class=""text-danger"">You've already enrolled in this course this semester.</p>
+                                                            {% else %}
+                                                                <p class=""text-danger"">You've already enrolled in a version of this course.</p>
+                                                            {% endif %}
+                                                        {% elseif classInfo.CanEnroll == false %}
+                                                            {% if classInfo.EnrollmentErrorKey == 'class_full' %}
+                                                                <p class=""text-danger"">Class is full.</p>
+                                                            {% endif %}
+                                                        
+                                                        {% else %}
+                                                            {% if CourseInfo.ProgramInfo.ConfigurationMode != ""AcademicCalendar"" or semesterInfo.IsEnrolled  == false %}
+                                                                <div>
+                                                                    <a class=""btn btn-default"" href=""{{ classInfo.EnrollmentLink }}"">Enroll</a>
+                                                                </div>
+                                                            {% endif %}
+                                                        {% endif %}
+                                                    {% endif %}
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                {% endfor %}
+       
+                            {% endfor %}
+                        
+                        </div>
+                    </div>        
+                    
+                {% endif %}
+
             </div>
         </div>
     </div>
@@ -307,6 +414,12 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         }
 
         #endregion Keys
+
+        /// <summary>
+        /// Whether the ShowCompletionStatus block setting is configured to "Show".
+        /// </summary>
+        /// <returns><c>true</c> if the completion status should be shown; otherwise <c>false</c>.</returns>
+        private bool ShowCompletionStatus => GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
 
         #region Methods
 
@@ -323,7 +436,7 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         /// <inheritdoc/>
         protected override string GetInitialHtmlContent()
         {
-            return GetHtmlContent( true );
+            return GetHtmlContent();
         }
 
         /// <summary>
@@ -334,72 +447,65 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningCourseDetailBlockBox box )
         {
-            box.CourseHtml = GetHtmlContent(false);
+            box.CourseHtml = GetHtmlContent();
         }
 
         /// <summary>
-        /// Gets the html content for the block.
+        /// Gets the HTML content for the block.
         /// </summary>
         /// <param name="includeNextSessionFiltering">Optional filter to restrict courses to those within the block setting's "Next Session Date Range".</param>
         /// <returns>The resolved lava template.</returns>
-        private string GetHtmlContent( bool includeNextSessionFiltering = false )
+        private string GetHtmlContent()
         {
             var courseId = RequestContext.PageParameterAsId( PageParameterKey.LearningCourseId );
             var currentPerson = GetCurrentPerson();
             var learningCourseService = new LearningCourseService( RockContext );
-            var semesterDateRange = includeNextSessionFiltering ?
-                RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now ) :
-                null;
+            var semesterDateRange = RockDateTimeHelper.CalculateDateRangeFromDelimitedValues(
+                GetAttributeValue( AttributeKey.NextSessionDateRange ), RockDateTime.Now );
 
             var publicOnly = GetAttributeValue( AttributeKey.PublicOnly ).AsBoolean();
+            var mergeFields = RequestContext.GetCommonMergeFields();
 
-            var course = includeNextSessionFiltering ?
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, publicOnly, semesterDateRange.Start, semesterDateRange.End ) :
-                learningCourseService.GetPublicCourseDetails( courseId, currentPerson?.Id, publicOnly );
+            // Get the course details or a default value.
+            var course = learningCourseService.GetPublicCourseDetails(
+                courseId,
+                currentPerson,
+                publicOnly,
+                semesterDateRange.Start,
+                semesterDateRange.End ) ?? new LearningCourseService.PublicLearningCourseBag
+                {
+                    Semesters = new List<LearningCourseService.PublicLearningSemesterBag>(),
+                    ProgramInfo = new LearningProgramService.PublicLearningProgramBag(),
+                };
 
-            course.DescriptionAsHtml = new StructuredContentHelper( course.Entity?.Description ?? string.Empty ).Render();
+            course.DescriptionAsHtml = new StructuredContentHelper( course.Description )
+                .Render()
+                .ResolveMergeFields( mergeFields );
 
-            var enrolledClassIdKey = course.MostRecentParticipation?.LearningClassId > 0 ?
-                IdHasher.Instance.GetHash( course.MostRecentParticipation.LearningClassId ) :
-                course.NextSemester?.LearningClasses?.FirstOrDefault()?.IdKey;
-            var queryParams = new Dictionary<string, string>
-            {
-                [PageParameterKey.LearningProgramId] = course.Program.IdKey,
-                [PageParameterKey.LearningCourseId] = course.Entity.IdKey,
-                ["LearningClassId"] = enrolledClassIdKey
-            };
+            AddClassSpecificProperties( course );
 
-            course.ClassWorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
-            course.CourseEnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
-
-            var mergeFields = this.RequestContext.GetCommonMergeFields( currentPerson );
-            mergeFields.Add( "Course", course );
-            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
+            mergeFields.Add( "CourseInfo", course );
+            mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus );
 
             var template = GetAttributeValue( AttributeKey.CourseDetailTemplate ) ?? string.Empty;
             return template.ResolveMergeFields( mergeFields );
         }
 
-        /// <summary>
-        /// Whether the ShowCompletionStatus block setting us configured to "Show".
-        /// </summary>
-        /// <returns><c>true</c> if the completion status should be shown; otherwise <c>false</c>.</returns>
-        private bool ShowCompletionStatus()
-        {
-            return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
-        }
-
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            var breadCrumbText = "Course Description";
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.LearningCourseId ) ?? "";
+            var entityName = entityKey.Length > 0 ? new LearningCourseService( RockContext ).GetSelect( entityKey, p => p.Name ) : "New Course";
+
             // Include only the parameters necessary to construct the breadcrumb
             // (prevent unused/unnecessary query string parameters). 
             var includedParamKeys = new[] { "learningprogramid", "learningcourseid" };
-            var paramsToInclude = pageReference.Parameters.Where( kv => includedParamKeys.Contains( kv.Key.ToLower() ) ).ToDictionary( kv => kv.Key, kv => kv.Value );
+            var paramsToInclude = pageReference.Parameters
+                .Where( kv => includedParamKeys.Contains( kv.Key.ToLower() ) )
+                .ToDictionary( kv => kv.Key, kv => kv.Value );
 
             var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, paramsToInclude );
-            var breadCrumb = new BreadCrumbLink( breadCrumbText ?? "", breadCrumbPageRef );
+            var breadCrumb = new BreadCrumbLink( entityName ?? "Course Description", breadCrumbPageRef );
 
             return new BreadCrumbResult
             {
@@ -408,6 +514,29 @@ Select:'RequiredLearningCourse' | Select:'PublicName' | Join:', ' | ReplaceLast:
                     breadCrumb
                 }
             };
+        }
+
+        /// <summary>
+        /// Adds class specific properties that require configuration from the block.
+        /// </summary>
+        /// <param name="course"></param>
+        private void AddClassSpecificProperties( LearningCourseService.PublicLearningCourseBag course )
+        {
+            foreach ( var semester in course.Semesters )
+            {
+                foreach ( var availableClass in semester.AvailableClasses )
+                {
+                    var queryParams = new Dictionary<string, string>
+                    {
+                        [PageParameterKey.LearningProgramId] = course.ProgramInfo.IdKey,
+                        [PageParameterKey.LearningCourseId] = course.IdKey,
+                        ["LearningClassId"] = availableClass.IdKey
+                    };
+
+                    availableClass.EnrollmentLink = this.GetLinkedPageUrl( AttributeKey.CourseEnrollmentPage, queryParams );
+                    availableClass.WorkspaceLink = this.GetLinkedPageUrl( AttributeKey.ClassWorkspacePage, queryParams );
+                }
+            }
         }
 
         #endregion

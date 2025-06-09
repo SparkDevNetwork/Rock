@@ -109,6 +109,65 @@ export function toTitleCase(str: string | null): string {
     });
 }
 
+type KebabCaseOptions = {
+    /** Keep intentional multiple dashes. */
+    preserveMultipleDashes?: boolean;
+    /** Allow a leading dashes. */
+    allowLeadingDashes?: boolean;
+    /** Allow a trailing dashes. */
+    allowTrailingDashes?: boolean;
+    /** Keep special characters (except spaces). */
+    allowSpecialChars?: boolean;
+};
+
+/**
+ * Converts the string to kebab-case.
+ *
+ * @example
+ * toKebabCase("helloWorLd") // "hello-wor-ld"
+ *
+ * @param str
+ */
+export function toKebabCase(str: string, options: KebabCaseOptions = {}): string {
+    const {
+        preserveMultipleDashes = false,
+        allowLeadingDashes = false,
+        allowTrailingDashes = false,
+        allowSpecialChars = false,
+    } = options;
+
+    let result = str.trim();
+
+    // Convert camelCase or PascalCase to kebab-case.
+    result = result.replace(/([a-z])([A-Z])/g, "$1-$2");
+
+    // Replace spaces with dashes.
+    result = result.replace(/\s+/g, "-");
+
+    // Remove special characters (if not allowed).
+    if (!allowSpecialChars) {
+        result = result.replace(/[^a-zA-Z0-9-]/g, "");
+    }
+
+    // Collapse multiple dashes unless explicitly preserved.
+    if (!preserveMultipleDashes) {
+        result = result.replace(/-+/g, "-");
+    }
+
+    // Ensure lowercase.
+    result = result.toLowerCase();
+
+    // Handle leading/trailing dashes.
+    if (!allowLeadingDashes) {
+        result = result.replace(/^-+/, "");
+    }
+    if (!allowTrailingDashes) {
+        result = result.replace(/-+$/, "");
+    }
+
+    return result;
+}
+
 /**
  * Capitalize the first character
  */
@@ -315,6 +374,63 @@ export function createHash(str: string): number {
 
     return hash;
 }
+
+/**
+ * Generates a cryptographically strong SHA-256 hash of a given string.
+ *
+ * This is a secure hash function ideal for caching, fingerprinting, or comparing
+ * large or variable input data like HTML emails, templates, or user-generated content.
+ *
+ * - ✅ Collision-resistant
+ * - ✅ Safe for HTML/email body hashing
+ * - ❌ Slightly slower (async) but reliable for content comparison
+ *
+ * @param str - The input string to hash.
+ * @returns A Promise resolving to a 64-character hex-encoded SHA-256 hash string.
+ *
+ * @example
+ * const key = await createStrongHash("<html>Your email here</html>");
+ */
+export async function createHashSha256(str: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(str);
+    const hashBuffer = await crypto.subtle.digest("SHA-256", data);
+
+    return Array.from(new Uint8Array(hashBuffer))
+        .map(b => b.toString(16).padStart(2, "0"))
+        .join("");
+}
+
+/**
+ * Replaces all instances of `search` in `str` with `replace`.
+ * @param str The source string.
+ * @param search The string to search for.
+ * @param replace The string to replace with.
+ */
+export function replaceAll(str: string, search: string, replace: string): string {
+    return str.replace(new RegExp(search, "g"), replace);
+}
+
+/**
+ * Attempts to parse the JSON and returns undefined if it could not be parsed.
+ *
+ * @param value The JSON value to parse.
+ *
+ * @returns The object that represents the JSON or undefined.
+ */
+export function safeParseJson<T>(value: string | null | undefined): T | undefined {
+    if (!value) {
+        return undefined;
+    }
+
+    try {
+        return JSON.parse(value);
+    }
+    catch {
+        return undefined;
+    }
+}
+
 export default {
     asCommaAnd,
     containsHtmlTag,
@@ -323,6 +439,7 @@ export default {
     isNullOrWhiteSpace,
     isWhiteSpace,
     isEmpty,
+    toKebabCase,
     toTitleCase,
     upperCaseFirstCharacter,
     pluralize,
@@ -330,5 +447,7 @@ export default {
     padLeft,
     padRight,
     truncate,
-    createHash
+    createHash,
+    replaceAll,
+    safeParseJson,
 };

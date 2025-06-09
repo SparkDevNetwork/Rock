@@ -25,5 +25,20 @@ namespace Rock.SystemKey
         /// The device has cutter
         /// </summary>
         public const string DEVICE_HAS_CUTTER = "core_device_HasCutter";
+
+        /// <summary>
+        /// The printer device DPI setting for rendering labels.
+        /// </summary>
+        public const string DEVICE_PRINTER_DPI = "core_device_PrinterDpi";
+
+        /// <summary>
+        /// The kiosk device will enable registration mode and allow adding families.
+        /// </summary>
+        public const string DEVICE_KIOSK_ALLOW_ADDING_FAMILIES = "core_device_KioskAllowAddingFamilies";
+
+        /// <summary>
+        /// The kiosk device will enable registration mode and allow editing families.
+        /// </summary>
+        public const string DEVICE_KIOSK_ALLOW_EDITING_FAMILIES = "core_device_KioskAllowEditingFamilies";
     }
 }

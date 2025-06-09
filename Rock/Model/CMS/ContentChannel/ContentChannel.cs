@@ -23,6 +23,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Newtonsoft.Json;
+
 using Rock.Cms;
 using Rock.Data;
 using Rock.Lava;
@@ -38,6 +39,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannel" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_CHANNEL )]
     public partial class ContentChannel : Model<ContentChannel>, ICacheable, ICampusFilterable
     {
@@ -50,6 +52,7 @@ namespace Rock.Model
         /// The content channel type identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int ContentChannelTypeId { get; set; }
 
         /// <summary>

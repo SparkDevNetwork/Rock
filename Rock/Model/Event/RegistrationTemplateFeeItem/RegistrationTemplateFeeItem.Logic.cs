@@ -17,6 +17,7 @@ using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -50,5 +51,12 @@ namespace Rock.Model
             usageCountRemaining = this.MaximumUsageCount.Value - feeUsedCount - otherRegistrantsUsedCount;
             return usageCountRemaining;
         }
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => RegistrationTemplateFee ?? base.ParentAuthority;
+
+        #endregion
     }
 }

@@ -18,8 +18,10 @@
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Constants;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.FinancialPledgeEntry;
 using Rock.ViewModels.Utility;
@@ -64,43 +66,52 @@ namespace Rock.Blocks.Finance
     [DefinedValueField( "New Connection Status",
         Key = AttributeKey.NewConnectionStatus,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
-        Description = "Person connection status to assign to a new user.",
+        Description = "The connection status to use for new individuals (default = 'Participant').",
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PARTICIPANT,
         Order = 3 )]
 
+    [DefinedValueField( "New Record Source",
+        Key = AttributeKey.NewRecordSource,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        Description = "The record source to use for new individuals (default = 'Pledge'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_PLEDGE,
+        Order = 4 )]
+
     [DateRangeField( "Pledge Date Range",
         Key = AttributeKey.PledgeDateRange,
         Description = "Date range of the pledge.",
         IsRequired = false,
-        Order = 4 )]
+        Order = 5 )]
 
     [BooleanField( "Show Pledge Frequency",
         Key = AttributeKey.ShowPledgeFrequency,
         Description = "Show the pledge frequency option to the user.",
         DefaultValue = "false",
-        Order = 5 )]
+        Order = 6 )]
 
     [BooleanField( "Require Pledge Frequency",
         Key = AttributeKey.RequirePledgeFrequency,
         Description = "Require that a user select a specific pledge frequency (when pledge frequency is shown).",
         DefaultValue = "false",
-        Order = 6 )]
+        Order = 7 )]
 
     [TextField( "Save Button Text",
         Key = AttributeKey.SaveButtonText,
         Description = "The Text to shown on the Save button",
         IsRequired = true,
         DefaultValue = "Save",
-        Order = 7 )]
+        Order = 8 )]
 
     [TextField( "Note Message",
         Key = AttributeKey.NoteMessage,
         Description = "Message to show at the bottom of the create pledge block.",
         IsRequired = false,
         DefaultValue = "Note: This commitment is a statement of intent and may be changed as your circumstances change.",
-        Order = 8 )]
+        Order = 9 )]
 
     [CodeEditorField( "Receipt Text",
         Key = AttributeKey.ReceiptText,
@@ -108,7 +119,7 @@ namespace Rock.Blocks.Finance
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
-        Order = 9,
+        Order = 10,
         DefaultValue =
         @"
 <h1>Thank You!</h1>
@@ -125,7 +136,7 @@ namespace Rock.Blocks.Finance
         Description = "Email template to use after submitting a new pledge. Leave blank to not send an email.",
         IsRequired = false,
         DefaultSystemCommunicationGuid = "",
-        Order = 10 )]
+        Order = 11 )]
 
     [GroupTypeField( "Select Group Type",
         Key = AttributeKey.SelectGroupType,
@@ -133,14 +144,14 @@ namespace Rock.Blocks.Finance
         IsRequired = false,
         DefaultValue = "",
         Category = "",
-        Order = 11 )]
+        Order = 12 )]
 
     [TextField( "Pledge Term",
         Key = AttributeKey.PledgeTerm,
         Description = "The Text to display as the pledge term on the pledge amount input label.",
         IsRequired = false,
         DefaultValue = "Pledge",
-        Order = 12 )]
+        Order = 13 )]
 
     [DefinedValueField(
         "Phone Types",
@@ -149,7 +160,7 @@ namespace Rock.Blocks.Finance
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
         IsRequired = false,
         AllowMultiple = true,
-        Order = 13 )]
+        Order = 14 )]
 
     [DefinedValueField(
         "Required Phone Types",
@@ -158,7 +169,7 @@ namespace Rock.Blocks.Finance
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE,
         IsRequired = false,
         AllowMultiple = true,
-        Order = 14 )]
+        Order = 15 )]
 
     #endregion
 
@@ -183,6 +194,7 @@ namespace Rock.Blocks.Finance
             public const string EnableSmartNames = "EnableSmartNames";
             public const string Account = "Account";
             public const string NewConnectionStatus = "NewConnectionStatus";
+            public const string NewRecordSource = "NewRecordSource";
             public const string PledgeDateRange = "PledgeDateRange";
             public const string ShowPledgeFrequency = "ShowPledgeFrequency";
             public const string RequirePledgeFrequency = "RequirePledgeFrequency";
@@ -428,7 +440,7 @@ namespace Rock.Blocks.Finance
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -478,7 +490,7 @@ namespace Rock.Blocks.Finance
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -617,7 +629,8 @@ namespace Rock.Blocks.Finance
                     ConnectionStatusValueId = definedValue.Id,
                     IsSystem = false,
                     RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
-                    RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id
+                    RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id,
+                    RecordSourceValueId = GetRecordSourceValueId()
                 };
 
                 if ( entityBag.PhoneNumbers != null )
@@ -646,6 +659,18 @@ namespace Rock.Blocks.Finance
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId()
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.NewRecordSource ).AsGuid() )?.Id;
         }
 
         /// <summary>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Layout" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly )]
     [Rock.SystemGuid.EntityTypeGuid( "9DACC861-FED4-47FC-946D-D6A120FF6D56")]
     public partial class Layout : Model<Layout>, ICacheable
     {
@@ -60,6 +61,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> that represents the Id of the <see cref="Rock.Model.Site"/> that this layout is associated with.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int SiteId { get; set; }
 
         /// <summary>

@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :data="gridDataSource"
+    <Grid
+          :definition="gridDefinitionBag"
+          :data="gridDataSource"
           keyField="idKey"
           title="Announcements"
           itemTerm="Announcement"
@@ -25,15 +27,15 @@
                     title="Publish Date"
                     field="publishDateTime"
                     :filter="dateValueFilter"
-                    filterValue="publishDateTime"
-                    visiblePriority="xs" />
+                    visiblePriority="sm" />
 
         <Column
                 name="communicationMode"
                 title="Communication Mode"
-                :filter="textValueFilter"
-                filterValue="communicationMode"
-                quickFilterValue="communicationMode"
+                field="communicationMode"
+                :filter="pickExistingValueFilter"
+                :filterValue="getCommunicationModeText"
+                :quickFilterValue="getCommunicationModeText"
                 visiblePriority="xs">
             <template #format="{ row }">
                 <span v-html="getCommunicationModeHtml(row.communicationMode)"></span>
@@ -44,7 +46,7 @@
                        title="Sent"
                        field="communicationSent"
                        :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       visiblePriority="sm" />
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
     </Grid>
@@ -53,10 +55,11 @@
 <script setup lang="ts">
     import { PropType, reactive, ref } from "vue";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { Column, BooleanColumn, DateColumn, TextColumn, booleanValueFilter, dateValueFilter, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { Column, BooleanColumn, DateColumn, TextColumn, booleanValueFilter, dateValueFilter, pickExistingValueFilter, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { CommunicationMode, CommunicationModeDescription } from "@Obsidian/Enums/Lms/communicationMode";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -67,12 +70,15 @@
     }>();
 
     const props = defineProps({
+        gridDefinitionBag: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: true
+        },
         isAddEnabled: {
             type: Object as PropType<boolean>,
             required: true,
             default: false
         },
-
         isDeleteEnabled: {
             type: Object as PropType<boolean>,
             required: true,
@@ -101,6 +107,16 @@
             default:
                 return `<span class="label label-default">${CommunicationModeDescription[mode]}</span>`;
         }
+    }
+
+    /**
+     * Gets the filter value text to use for the name column.
+     *
+     * @param row The row to be filtered.
+     */
+    function getCommunicationModeText(row: Record<string, unknown>): string {
+        const mode = row["communicationMode"] as CommunicationMode;
+        return CommunicationModeDescription[mode];
     }
 
     /**

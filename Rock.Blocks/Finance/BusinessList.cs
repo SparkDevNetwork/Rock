@@ -153,7 +153,7 @@ namespace Rock.Blocks.Finance
             var searchTerm = PageParameter( "SearchTerm" );
             if ( !string.IsNullOrWhiteSpace( searchTerm ) )
             {
-                businessQueryable = businessQueryable.Where( p => p.LastName.Contains( searchTerm ) );
+                businessQueryable = searchTerm.IsSingleSpecialCharacter() ? Enumerable.Empty<Person>().AsQueryable() : businessQueryable.Where( p => p.LastName.Contains( searchTerm ) );
             }
 
             // Project the data to BusinessListBag

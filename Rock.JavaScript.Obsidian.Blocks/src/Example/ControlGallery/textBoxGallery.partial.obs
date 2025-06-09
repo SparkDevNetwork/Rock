@@ -125,13 +125,13 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import RockFormFieldPropsTable from "./rockFormFieldPropsTable.partial.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const text = ref("Some two-way bound text");
     const label = ref("Enter Some Text");

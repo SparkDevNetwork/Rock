@@ -18,9 +18,19 @@
                 <TextBox v-model="iconCssClass"
                          label="Icon CSS Class" />
 
-                <CheckBox v-model="requiresViewSecurity"
-                          label="Requires View Security"
-                          help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="requiresViewSecurity"
+                                  label="Requires View Security"
+                                  help="Enable this to always do a security check before displaying images of this type. Leave disabled for files that can be viewed by any user." />
+                    </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="allowAnonymous"
+                                  label="Allow Anonymous"
+                                  help="Enable this to allow anyone to upload files of this type without checking Edit permissions." />
+                    </div>
+                </div>
+
                 <ComponentPicker v-model="storageEntityType"
                                  containerType="Rock.Storage.ProviderContainer, Rock"
                                  label="Storage Type"
@@ -42,17 +52,9 @@
                             <DeleteColumn @click="onDeleteAttribute" />
                         </Grid>
                     </div>
-                    <Modal v-model="isAttributeModalOpen" title="Step Participant Attributes">
+                    <Modal v-model="isAttributeModalOpen" title="Binary File Type Attributes">
 
                         <RockForm v-model:submit="saveAttribute" @submit="onSaveAttribute">
-                            <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                                Please correct the following:
-                                <ul>
-                                    <li v-for="error of attributeErrors">
-                                        {{ error }}
-                                    </li>
-                                </ul>
-                            </NotificationBox>
                             <AttributeEditor v-model="binaryFileTypeAttribute" :reservedKeyNames="reservedKeyNames" />
                         </RockForm>
 
@@ -79,22 +81,22 @@
         <div class="row">
 
             <div class="col-md-6">
-                <TextBox v-model="maxFileSizeBytes"
-                         label="Max File Size"
-                         help="The max size allowed for the files in bytes. Leaving this blank will allow any size, 0 is not allowed."
-                         :minimumValue="1"
-                         :rules="[validateIntegerValue, 'gte:1']">
+                <NumberBox v-model="maxFileSizeBytes"
+                           label="Max File Size"
+                           help="The max size allowed for the files in bytes. Leaving this blank will allow any size, 0 is not allowed."
+                           :minimumValue="1">
                     <template #inputGroupAppend>
                         <span class="input-group-addon">Bytes</span>
                     </template>
-                </TextBox>
-                <TextBox v-model="maxWidth" label="Maximum Width"
-                         :rules="[validateIntegerValue, 'gte:0']"
-                         help="Sets the maximum width for images in pixels. Leave this field blank for no limit." />
-                <TextBox v-model="maxHeight"
-                         label="Maximum Height"
-                         help="Sets the maximum height in pixels. Leave this field blank for no limit."
-                         :rules="[validateIntegerValue, 'gte:0']" />
+                </NumberBox>
+                <NumberBox v-model="maxWidth"
+                           label="Maximum Width"
+                           :minimumValue="0"
+                           help="Sets the maximum width for images in pixels. Leave this field blank for no limit." />
+                <NumberBox v-model="maxHeight"
+                           label="Maximum Height"
+                           help="Sets the maximum height in pixels. Leave this field blank for no limit."
+                           :minimumValue="0" />
                 <CheckBox v-model="preferredRequired"
                           label="Preferred Settings Required"
                           help="Should the preferred settings for this file type be the required settings?" />
@@ -108,6 +110,7 @@
     import { PropType, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import Grid, { EditColumn, TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
     import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
@@ -121,17 +124,18 @@
     import { PublicEditableAttributeBag } from "@Obsidian/ViewModels/Utility/publicEditableAttributeBag";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { BinaryFileTypeBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeBag";
     import { BinaryFileTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileTypeDetail/binaryFileTypeDetailOptionsBag";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<BinaryFileTypeBag>,
+            type: Object as PropType<ValidPropertiesBox<BinaryFileTypeBag>>,
             required: true
         },
 
@@ -142,39 +146,39 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: BinaryFileTypeBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<BinaryFileTypeBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
-    const requiresViewSecurity = propertyRef(props.modelValue.requiresViewSecurity, "RequiresViewSecurity");
-    const storageEntityType = propertyRef(props.modelValue.storageEntityType ?? {}, "StorageEntityTypeId");
-    const maxFileSizeBytes = propertyRef(props.modelValue.maxFileSizeBytes?.toString() ?? "", "MaxFileSizeBytes");
-    const maxWidth = propertyRef(props.modelValue.maxWidth?.toString() ?? "", "MaxWidth");
-    const maxHeight = propertyRef(props.modelValue.maxHeight?.toString() ?? "", "MaxHeight");
-    const preferredRequired = propertyRef(props.modelValue.preferredRequired, "PreferredRequired");
-    const cacheToServerFileSystem = propertyRef(props.modelValue.cacheToServerFileSystem, "CacheToServerFileSystem");
-    const cacheControlHeaderSettings = propertyRef(props.modelValue.cacheControlHeaderSettings ?? null, "CacheControlHeaderSettings");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "IconCssClass");
+    const requiresViewSecurity = propertyRef(props.modelValue?.bag?.requiresViewSecurity ?? false, "RequiresViewSecurity");
+    const allowAnonymous = propertyRef(props.modelValue?.bag?.allowAnonymous ?? false, "AllowAnonymous");
+    const storageEntityType = propertyRef(props.modelValue?.bag?.storageEntityType ?? {}, "StorageEntityTypeId");
+    const maxFileSizeBytes = propertyRef(props.modelValue?.bag?.maxFileSizeBytes, "MaxFileSizeBytes");
+    const maxWidth = propertyRef(props.modelValue?.bag?.maxWidth, "MaxWidth");
+    const maxHeight = propertyRef(props.modelValue?.bag?.maxHeight, "MaxHeight");
+    const preferredRequired = propertyRef(props.modelValue?.bag?.preferredRequired ?? false, "PreferredRequired");
+    const cacheToServerFileSystem = propertyRef(props.modelValue?.bag?.cacheToServerFileSystem ?? false, "CacheToServerFileSystem");
+    const cacheControlHeaderSettings = propertyRef(props.modelValue?.bag?.cacheControlHeaderSettings ?? null, "CacheControlHeaderSettings");
 
-    const editModeMessage = ref(props.modelValue.editModeMessage);
-    const restrictedEdit = ref(props.modelValue.restrictedEdit);
+    const editModeMessage = ref(props.modelValue?.bag?.editModeMessage ?? "");
+    const restrictedEdit = ref(props.modelValue?.bag?.restrictedEdit ?? "");
 
-    const binaryFileTypeAttributes = ref(props.modelValue.binaryFileTypeAttributes ?? []);
+    const binaryFileTypeAttributes = ref(props.modelValue?.bag?.binaryFileTypeAttributes ?? []);
     const isAttributeModalOpen = ref(false);
     const saveAttribute = ref(false);
     const binaryFileTypeAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributeErrors = ref<string[]>([]);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, name, iconCssClass, requiresViewSecurity, storageEntityType, maxFileSizeBytes, maxWidth, maxHeight, preferredRequired, cacheToServerFileSystem, cacheControlHeaderSettings];
+    const propRefs = [description, name, iconCssClass, requiresViewSecurity, allowAnonymous, storageEntityType, maxFileSizeBytes, maxWidth, maxHeight, preferredRequired, cacheToServerFileSystem, cacheControlHeaderSettings];
 
     // #endregion
 
@@ -202,24 +206,6 @@
         };
     }
 
-    function validateIntegerValue(value: unknown): string | boolean {
-
-        const stringValue = value as string;
-
-        if (stringValue) {
-            const num = Number(value);
-            if (!isValidNumber(num)) {
-                return "must be a valid number.";
-            }
-        }
-
-        return true;
-    }
-
-    function isValidNumber(num: number): boolean {
-        return !isNaN(num) && isFinite(num);
-    }
-
     // #endregion
 
     // #region Event Handlers
@@ -229,11 +215,9 @@
             fieldTypeGuid: FieldType.Text
         } as PublicEditableAttributeBag;
         isAttributeModalOpen.value = true;
-        attributeErrors.value = [];
     }
 
     function onEditAttribute(key: string): void {
-        attributeErrors.value = [];
         const selectedBinaryFileTypeAttribute = binaryFileTypeAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedBinaryFileTypeAttribute) {
@@ -297,55 +281,64 @@
     }
 
     const onStartSaveAttribute = (): void => {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(binaryFileTypeAttribute.value?.key ?? "");
-        saveAttribute.value = !isExistingKey;
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
+        saveAttribute.value = true;
     };
 
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(requiresViewSecurity, props.modelValue.requiresViewSecurity);
-        updateRefValue(storageEntityType, props.modelValue.storageEntityType ?? {});
-        updateRefValue(maxFileSizeBytes, props.modelValue.maxFileSizeBytes?.toString() ?? "");
-        updateRefValue(maxWidth, props.modelValue.maxWidth?.toString() ?? "");
-        updateRefValue(maxHeight, props.modelValue.maxHeight?.toString() ?? "");
-        updateRefValue(preferredRequired, props.modelValue.preferredRequired);
-        updateRefValue(cacheToServerFileSystem, props.modelValue.cacheToServerFileSystem);
-        updateRefValue(cacheControlHeaderSettings, props.modelValue.cacheControlHeaderSettings ?? null);
-        updateRefValue(binaryFileTypeAttributes, props.modelValue.binaryFileTypeAttributes ?? []);
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+        updateRefValue(requiresViewSecurity, props.modelValue?.bag?.requiresViewSecurity ?? false);
+        updateRefValue(allowAnonymous, props.modelValue?.bag?.allowAnonymous ?? false);
+        updateRefValue(storageEntityType, props.modelValue?.bag?.storageEntityType ?? {});
+        updateRefValue(maxFileSizeBytes, props.modelValue?.bag?.maxFileSizeBytes);
+        updateRefValue(maxWidth, props.modelValue?.bag?.maxWidth);
+        updateRefValue(maxHeight, props.modelValue?.bag?.maxHeight);
+        updateRefValue(preferredRequired, props.modelValue?.bag?.preferredRequired ?? false);
+        updateRefValue(cacheToServerFileSystem, props.modelValue?.bag?.cacheToServerFileSystem ?? false);
+        updateRefValue(cacheControlHeaderSettings, props.modelValue?.bag?.cacheControlHeaderSettings ?? null);
+        updateRefValue(binaryFileTypeAttributes, props.modelValue?.bag?.binaryFileTypeAttributes ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, binaryFileTypeAttributes, ...propRefs], () => {
-        const newValue: BinaryFileTypeBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            name: name.value,
-            iconCssClass: iconCssClass.value,
-            requiresViewSecurity: requiresViewSecurity.value,
-            storageEntityType: storageEntityType.value,
-            maxFileSizeBytes: toNumberOrNull(maxFileSizeBytes.value),
-            maxWidth: toNumberOrNull(maxWidth.value),
-            maxHeight: toNumberOrNull(maxHeight.value),
-            preferredRequired: preferredRequired.value,
-            cacheToServerFileSystem: cacheToServerFileSystem.value,
-            cacheControlHeaderSettings: cacheControlHeaderSettings.value,
-            binaryFileTypeAttributes: binaryFileTypeAttributes.value
+        const newValue: ValidPropertiesBox<BinaryFileTypeBag> = {
+            bag: { ...props.modelValue.bag } as BinaryFileTypeBag
         };
 
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "requiresViewSecurity", requiresViewSecurity.value);
+        setPropertiesBoxValue(newValue, "allowAnonymous", allowAnonymous.value);
+        setPropertiesBoxValue(newValue, "storageEntityType", storageEntityType.value);
+        setPropertiesBoxValue(newValue, "maxFileSizeBytes", toNumberOrNull(maxFileSizeBytes.value));
+        setPropertiesBoxValue(newValue, "maxWidth", toNumberOrNull(maxWidth.value));
+        setPropertiesBoxValue(newValue, "maxHeight", toNumberOrNull(maxHeight.value));
+        setPropertiesBoxValue(newValue, "preferredRequired", preferredRequired.value);
+        setPropertiesBoxValue(newValue, "cacheToServerFileSystem", cacheToServerFileSystem.value);
+        setPropertiesBoxValue(newValue, "cacheControlHeaderSettings", cacheControlHeaderSettings.value);
+        setPropertiesBoxValue(newValue, "binaryFileTypeAttributes", binaryFileTypeAttributes.value);
+
         emit("update:modelValue", newValue);
+    });
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== binaryFileTypeAttribute.value?.key);
+        }
+        else {
+            if (binaryFileTypeAttribute.value?.key && !reservedKeyNames.value.some(k => k === binaryFileTypeAttribute.value?.key)) {
+                reservedKeyNames.value.push(binaryFileTypeAttribute.value.key);
+            }
+        }
     });
 
     // Watch for any changes to props that represent properties and then

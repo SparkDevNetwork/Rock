@@ -41,6 +41,9 @@ registerFieldType(FieldTypeGuids.Asset, new AssetFieldType());
 import { AssetStorageProviderFieldType } from "./assetStorageProviderField.partial";
 registerFieldType(FieldTypeGuids.AssetStorageProvider, new AssetStorageProviderFieldType());
 
+import { AttendanceFieldType } from "./attendanceField.partial";
+registerFieldType(FieldTypeGuids.Attendance, new AttendanceFieldType());
+
 import { AttributeFieldType } from "./attributeField.partial";
 registerFieldType(FieldTypeGuids.Attribute, new AttributeFieldType());
 
@@ -58,6 +61,9 @@ registerFieldType(FieldTypeGuids.Backgroundcheck, new BackgroundCheckFieldType()
 
 import { BenevolenceRequestFieldType } from "./benevolenceRequestField.partial";
 registerFieldType(FieldTypeGuids.BenevolenceRequest, new BenevolenceRequestFieldType());
+
+import { BenevolenceTypeFieldType } from "./benevolenceTypeField.partial";
+registerFieldType(FieldTypeGuids.BenevolenceType, new BenevolenceTypeFieldType());
 
 import { BinaryFileFieldType } from "./binaryFileField.partial";
 registerFieldType(FieldTypeGuids.BinaryFile, new BinaryFileFieldType());
@@ -79,6 +85,9 @@ registerFieldType(FieldTypeGuids.Campus, new CampusFieldType());
 
 import { CampusesFieldType } from "./campusesField.partial";
 registerFieldType(FieldTypeGuids.Campuses, new CampusesFieldType());
+
+import { CaptchaFieldType } from "./captchaField.partial";
+registerFieldType(FieldTypeGuids.Captcha, new CaptchaFieldType());
 
 import { CategoriesFieldType } from "./categoriesField.partial";
 registerFieldType(FieldTypeGuids.Categories, new CategoriesFieldType());
@@ -233,6 +242,12 @@ registerFieldType(FieldTypeGuids.FinancialAccounts, new FinancialAccountsFieldTy
 import { FinancialGatewayFieldType } from "./financialGatewayField.partial";
 registerFieldType(FieldTypeGuids.FinancialGateway, new FinancialGatewayFieldType());
 
+import { FinancialStatementTemplateFieldType } from "./financialStatementTemplateField.partial";
+registerFieldType(FieldTypeGuids.FinancialStatementTemplate, new FinancialStatementTemplateFieldType());
+
+import { FinancialTransactionFieldType } from "./financialTransactionField.partial";
+registerFieldType(FieldTypeGuids.FinancialTransaction, new FinancialTransactionFieldType());
+
 import { FileFieldType } from "./fileField.partial";
 registerFieldType(FieldTypeGuids.File, new FileFieldType());
 
@@ -305,6 +320,9 @@ registerFieldType(FieldTypeGuids.Location, new LocationFieldType());
 import { LocationListFieldType } from "./locationListField.partial";
 registerFieldType(FieldTypeGuids.LocationList, new LocationListFieldType());
 
+import { MarkdownFieldType } from "./markdownField.partial";
+registerFieldType(FieldTypeGuids.Markdown, new MarkdownFieldType());
+
 import { MatrixFieldType } from "./matrixField.partial";
 registerFieldType(FieldTypeGuids.Matrix, new MatrixFieldType());
 
@@ -356,6 +374,9 @@ registerFieldType(FieldTypeGuids.PageReference, new PageReferenceFieldType());
 import { PersonFieldType } from "./personField.partial";
 registerFieldType(FieldTypeGuids.Person, new PersonFieldType());
 
+import { PrayerRequestFieldType } from "./prayerRequestField.partial";
+registerFieldType(FieldTypeGuids.PrayerRequest, new PrayerRequestFieldType());
+
 import { RangeSliderFieldType } from "./rangeSliderField.partial";
 registerFieldType(FieldTypeGuids.RangeSlider, new RangeSliderFieldType());
 
@@ -391,6 +412,9 @@ registerFieldType(FieldTypeGuids.Schedule, new ScheduleFieldType());
 
 import { SchedulesFieldType } from "./schedulesField.partial";
 registerFieldType(FieldTypeGuids.Schedules, new SchedulesFieldType());
+
+import { SecondaryAuthsFieldType } from "./secondaryAuthsField.partial";
+registerFieldType(FieldTypeGuids.SecondaryAuths, new SecondaryAuthsFieldType());
 
 import { SecurityRoleFieldType } from "./securityRoleField.partial";
 registerFieldType(FieldTypeGuids.SecurityRole, new SecurityRoleFieldType());

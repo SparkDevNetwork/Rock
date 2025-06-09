@@ -21,7 +21,9 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.AI;
 using Rock.Lava;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -31,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Prayer" )]
     [Table( "PrayerRequest" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "F13C8FD2-7702-4C79-A6A9-86440DD5DE13")]
     public partial class PrayerRequest : Model<PrayerRequest>, ICategorized
     {
@@ -88,6 +91,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [IncludeForReporting]
+        [EnableAttributeQualification]
         public int? CategoryId { get; set; }
 
         /// <summary>
@@ -241,17 +245,20 @@ namespace Rock.Model
         /// <summary>
         /// Gets or sets the Original Text of the PrayerRequest.
         /// </summary>
+        [DataMember]
         public string OriginalRequest { get; set; }
 
         /// <summary>
         /// Gets or sets the identified emotional sentiment DefinedValueId (if any).
         /// </summary>
+        [DataMember]
         public int? SentimentEmotionValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the bitmask of moderation flags for the PrayerRequest.
         /// </summary>
-        public long ModerationFlags { get; set; }
+        [DataMember]
+        public ModerationFlags ModerationFlags { get; set; } = ModerationFlags.None;
 
         #endregion Entity Properties
 

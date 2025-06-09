@@ -18,11 +18,13 @@
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.AI;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerRequestDetail;
 using Rock.Web.Cache;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -39,7 +41,7 @@ namespace Rock.Blocks.Prayer
     [Category( "Prayer" )]
     [Description( "Displays the details of a particular prayer request." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -91,6 +93,21 @@ namespace Rock.Blocks.Prayer
         Category = "",
         Order = 6 )]
 
+    [BooleanField(
+        "Enable AI Disclaimer",
+        Description = "If enabled and the PrayerRequest Text was sent to an AI automation the configured AI Disclaimer will be shown.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.EnableAIDisclaimer,
+        Order = 7 )]
+
+    [TextField(
+        "AI Disclaimer",
+        Description = "The message to display indicating the Prayer Request text may have been modified by an AI automation.",
+        IsRequired = false,
+        DefaultValue = "This request may have been modified by an AI for formatting and privacy. Please be aware that errors may be present.",
+        Key = AttributeKey.AIDisclaimer,
+        Order = 8 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "d1e21128-c831-4535-b8df-0ec928dcbba4" )]
@@ -122,6 +139,8 @@ namespace Rock.Blocks.Prayer
             public const string SetCurrentPersonToRequester = "SetCurrentPersonToRequester";
             public const string DefaultCategory = "DefaultCategory";
             public const string ExpireDays = "ExpireDays";
+            public const string EnableAIDisclaimer = "EnableAIDisclaimer";
+            public const string AIDisclaimer = "AIDisclaimer";
         }
 
         #endregion
@@ -157,7 +176,9 @@ namespace Rock.Blocks.Prayer
             var options = new PrayerRequestDetailOptionsBag
             {
                 IsLastNameRequired = GetAttributeValue( AttributeKey.RequireLastName ).AsBooleanOrNull() ?? true,
-                IsCampusRequired = GetAttributeValue( AttributeKey.RequireCampus ).AsBooleanOrNull() ?? false
+                IsCampusRequired = GetAttributeValue( AttributeKey.RequireCampus ).AsBooleanOrNull() ?? false,
+                IsAIDisclaimerEnabled = GetAttributeValue( AttributeKey.EnableAIDisclaimer ).AsBooleanOrNull() ?? true,
+                AIDisclaimer = GetAttributeValue( AttributeKey.AIDisclaimer )
             };
             return options;
         }
@@ -254,6 +275,17 @@ namespace Rock.Blocks.Prayer
                 return null;
             }
 
+            var flags = Enum.GetValues( typeof( ModerationFlags ) );
+            var moderationFlags = new List<string>();
+
+            foreach ( ModerationFlags flag in flags )
+            {
+                if ( entity.ModerationFlags.HasFlag( flag ) && flag != ModerationFlags.None )
+                {
+                    moderationFlags.Add( flag.ToString().SplitCase() );
+                }
+            }
+
             return new PrayerRequestBag
             {
                 IdKey = entity.IdKey,
@@ -274,7 +306,10 @@ namespace Rock.Blocks.Prayer
                 PrayerCount = entity.PrayerCount,
                 RequestedByPersonAlias = entity.RequestedByPersonAlias.ToListItemBag(),
                 Text = entity.Text,
-                FullName = entity.FullName
+                FullName = entity.FullName,
+                ModerationFlags = moderationFlags,
+                OriginalRequest = entity.OriginalRequest,
+                Sentiment = entity.SentimentEmotionValueId.HasValue ? DefinedValueCache.GetName( entity.SentimentEmotionValueId ) : string.Empty
             };
         }
 
@@ -293,7 +328,7 @@ namespace Rock.Blocks.Prayer
             var bag = GetCommonEntityBag( entity );
             bag.Text = entity.Text.ScrubHtmlAndConvertCrLfToBr();
             bag.Answer = entity.Answer.ScrubHtmlAndConvertCrLfToBr();
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -312,7 +347,7 @@ namespace Rock.Blocks.Prayer
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             // If there is no email for the prayer request detail entity, set it to the requester's 
             if ( string.IsNullOrWhiteSpace( entity.Email ) && entity.RequestedByPersonAlias != null )
@@ -403,7 +438,7 @@ namespace Rock.Blocks.Prayer
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;

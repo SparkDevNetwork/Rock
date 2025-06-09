@@ -36,5 +36,13 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialBatchDetail
         /// Gets or sets the GL code for the account used in the financial batch transaction
         /// </summary>
         public string GlCode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the order.
+        /// </summary>
+        /// <value>
+        /// The order.
+        /// </value>
+        public int Order { get; set; }
     }
 }

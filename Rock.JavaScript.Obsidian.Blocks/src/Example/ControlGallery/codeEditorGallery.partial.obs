@@ -1,0 +1,153 @@
+<template>
+    <GalleryAndResult :value="value"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      displayAsRaw>
+        <CodeEditor v-model="value" :theme="theme" :mode="mode" :editorHeight="editorHeight" :editor="editorType" :noLineWrap="!lineWrap" :disabled="disabled" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <DropDownList label="Theme" v-model="theme" :items="editorType == 'ace' ? aceThemeOptions : monacoThemeOptions" />
+                </div>
+
+                <div class="col-md-3">
+                    <DropDownList label="Mode" v-model="mode" :items="modeOptions" />
+                </div>
+
+                <div class="col-md-3">
+                    <DropDownList label="Editor Library" v-model="editorType" :items="editorTypeItems" />
+                </div>
+
+                <div class="col-md-3">
+                    <NumberBox label="Editor Height" v-model="editorHeight" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox label="Line Wrap" v-model="lineWrap" />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox label="Read Only" v-model="disabled" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watchEffect } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { buildExampleCode, getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const aceThemes = [
+        "ambiance",
+        "chrome",
+        "chaos",
+        "clouds_midnight",
+        "cobalt",
+        "crimson_editor",
+        "dawn",
+        "dreamweaver",
+        "eclipse",
+        "github",
+        "idle_fingers",
+        "kr_theme",
+        "merbivore",
+        "merbivore_soft",
+        "mono_industrial",
+        "monokai",
+        "pastel_on_dark",
+        "rock",
+        "solarized_dark",
+        "solarized_light",
+        "terminal",
+        "textmate",
+        "tomorrow",
+        "tomorrow_night",
+        "tomorrow_night_blue",
+        "tomorrow_night_bright",
+        "tomorrow_night_eighties",
+        "twilight",
+        "vibrant_ink",
+        "vs-dark",
+        "xcode",
+    ] as const;
+
+    const aceThemeOptions = aceThemes.map(theme => ({ value: theme, text: theme } as ListItemBag));
+
+    const monacoThemes = [
+        "vs",
+        "vs-dark",
+        "hc-light",
+        "hc-black",
+    ] as const;
+
+    const monacoThemeOptions = monacoThemes.map(theme => ({ value: theme, text: theme } as ListItemBag));
+
+    type AceTheme = (typeof aceThemes)[number];
+    type MonacoTheme = (typeof monacoThemes)[number];
+    type Theme = AceTheme | MonacoTheme;
+
+    const modes = [
+        "csharp",
+        "css",
+        "html",
+        "javascript",
+        "lava",
+        "less",
+        "markdown",
+        "powershell",
+        "sql",
+        "text",
+        "typescript",
+        "xml",
+    ] as const;
+
+    const modeOptions = modes.map(theme => ({ value: theme, text: theme } as ListItemBag));
+
+    type Mode = (typeof modes)[number];
+
+    const editorTypeItems: ListItemBag[] = [
+        { value: "ace", text: "Ace" },
+        { value: "monaco", text: "Monaco" }
+    ];
+
+    const theme = ref<Theme>("rock");
+    const mode = ref<Mode>("text");
+    const editorHeight = ref(500);
+    const editorType = ref<"ace" | "monaco">("ace");
+
+    const lineWrap = ref(true);
+    const disabled = ref(false);
+
+    watchEffect(() => {
+        if (editorType.value === "ace") {
+            theme.value = "rock";
+        }
+        else {
+            theme.value = "vs-dark";
+        }
+    });
+
+    const value = ref("");
+
+    const exampleCode = computed((): string => {
+        const attrs: Record<string, unknown> = {
+            theme,
+            mode,
+            editorHeight,
+            editor: editorType.value == "monaco" ? "monaco" : undefined,
+            noLineWrap: !lineWrap.value,
+            disabled: disabled.value
+        };
+
+        return buildExampleCode("CodeEditor", attrs, true);
+    });
+    const importCode = getSfcControlImportPath("codeEditor");
+</script>

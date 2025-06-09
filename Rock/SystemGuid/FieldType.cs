@@ -27,6 +27,11 @@ namespace Rock.SystemGuid
         public const string ACHIEVEMENT_TYPE = "593132CF-BA5D-462F-97F6-94DCC0BFFE6F";
 
         /// <summary>
+        /// Adaptive Message field type
+        /// </summary>
+        public const string ADAPTIVE_MESSAGE = "55CC533A-99D2-418F-B93E-73EA098ABDAE";
+
+        /// <summary>
         /// Address field type
         /// </summary>
         public const string ADDRESS = "0A495222-23B7-41D3-82C8-D484CDB75D17";
@@ -59,6 +64,11 @@ namespace Rock.SystemGuid
         /// <summary>
         /// Attribute field type
         /// </summary>
+        public const string ATTENDANCE = "45F2BE0A-43C2-40D6-9888-68A2E72ACD06";
+
+        /// <summary>
+        /// Attribute field type
+        /// </summary>
         public const string ATTRIBUTE = "99B090AA-4D7E-46D8-B393-BF945EA1BA8B";
 
         /// <summary>
@@ -85,6 +95,11 @@ namespace Rock.SystemGuid
         /// Benevolence Request field type
         /// </summary>
         public const string BENEVOLENCE_REQUEST = "44EEC881-3C07-4A58-ACC4-0F21D873DBE0";
+
+        /// <summary>
+        /// Benevolence Type field type
+        /// </summary>
+        public const string BENEVOLENCE_TYPE = "7BD3C3A3-DF4A-41EB-BF13-29EDB166078B";
 
         /// <summary>
         /// Binary File field type
@@ -397,6 +412,16 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_GATEWAY = "7B34F9D8-6BBA-423E-B50E-525ABB3A1013";
 
         /// <summary>
+        /// Financial Statement Template field type
+        /// </summary>
+        public const string FINANCIAL_STATEMENT_TEMPLATE = "9E0CD807-D69F-4888-A9BE-BCD11DD083FE";
+
+        /// <summary>
+        /// Financial Transaction field type
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION = "04C66B8E-2DBD-4799-875E-FFFD818EDD91";
+
+        /// <summary>
         /// Gender field type
         /// </summary>
         public const string GENDER = "2E28779B-4C76-4142-AE8D-49EA31DDB503";
@@ -685,6 +710,11 @@ namespace Rock.SystemGuid
         /// Schedules field type
         /// </summary>
         public const string SCHEDULES = "EC6A5CAF-F6A2-47A4-9CBA-6E1C53D7E59B";
+
+        /// <summary>
+        /// Secondary auths field type
+        /// </summary>
+        public const string SECONDARY_AUTHS = "98F57599-2DC3-4022-BE33-14A22C3043E1";
 
         /// <summary>
         /// Security Role field type

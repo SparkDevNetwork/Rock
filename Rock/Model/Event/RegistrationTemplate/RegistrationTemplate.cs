@@ -36,6 +36,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplate" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.REGISTRATION_TEMPLATE )]
     public partial class RegistrationTemplate : Model<RegistrationTemplate>, IHasActiveFlag, ICategorized, ICampusFilterable
     {
@@ -620,6 +621,18 @@ namespace Rock.Model
         [DataMember]
         public int? ConnectionStatusValueId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
+        /// the source of <see cref="RegistrationRegistrant"/>s added to <see cref="RegistrationInstance"/>s that are
+        /// linked to this template. This can be overridden by <see cref="RegistrationInstance.RegistrantRecordSourceValueId"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
+        public int? RegistrantRecordSourceValueId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -820,6 +833,17 @@ namespace Rock.Model
         [DataMember]
         public virtual DefinedValue ConnectionStatusValue { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
+        /// of <see cref="RegistrationRegistrant"/>s added to <see cref="RegistrationInstance"/>s that are linked to
+        /// this template. This can be overridden by <see cref="RegistrationInstance.RegistrantRecordSourceValue"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue RegistrantRecordSourceValue { get; set; }
+
         #endregion Navigation Properties
 
         #region Methods
@@ -856,6 +880,7 @@ namespace Rock.Model
             this.HasOptional( t => t.RegistrationWorkflowType ).WithMany().HasForeignKey( t => t.RegistrationWorkflowTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.RegistrantWorkflowType ).WithMany().HasForeignKey( t => t.RegistrantWorkflowTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( t => t.RequiredSignatureDocumentTemplate ).WithMany().HasForeignKey( t => t.RequiredSignatureDocumentTemplateId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RegistrantRecordSourceValue ).WithMany().HasForeignKey( p => p.RegistrantRecordSourceValueId ).WillCascadeOnDelete( false );
         }
     }
 

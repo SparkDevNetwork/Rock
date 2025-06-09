@@ -45,11 +45,7 @@ namespace Rock.Model
                     authAuditLog.Action = auth.Action;
                     authAuditLog.ChangeDateTime = RockDateTime.Now;
                     authAuditLog.SpecialRole = auth.SpecialRole;
-                    var currentPersonAlias = rockContext.GetCurrentPersonAlias();
-                    if ( currentPersonAlias != null )
-                    {
-                        authAuditLog.ChangeByPersonAliasId = currentPersonAlias.Id;
-                    }
+                    authAuditLog.ChangeByPersonAliasId = rockContext.GetCurrentPersonAliasId();
 
                     authAuditLogService.Add( authAuditLog );
 

@@ -18,10 +18,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
+using Rock.Net;
+using Rock.Security;
+using Rock.ViewModels.Controls;
 
 #if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
@@ -53,10 +60,7 @@ namespace Rock.Reporting
         /// <value>
         /// The section.
         /// </value>
-        public virtual string Section
-        {
-            get { return "Advanced"; }
-        }
+        public virtual string Section => "Advanced";
 
         /// <summary>
         /// Gets the attribute value defaults.
@@ -83,13 +87,121 @@ namespace Rock.Reporting
         public abstract string ColumnPropertyName { get; }
 
         /// <summary>
+        /// Gets the type of the column field.
+        /// Override this property to specify a Type other than the default of System.String
+        /// </summary>
+        /// <value>
+        /// The type of the column field.
+        /// </value>
+        public virtual Type ColumnFieldType => typeof( string );
+
+        /// <summary>
+        /// Gets the default column header text.
+        /// Override this property to specify a Header that is different from the ColumnPropertyName.
+        /// </summary>
+        /// <value>
+        /// The default column header text.
+        /// </value>
+        public virtual string ColumnHeaderText => ColumnPropertyName;
+
+        /// <summary>
+        /// The URL that will be used to load the Obsidian component. This may
+        /// be a path prefixed with "~/" instead of a full absolute URL. This should
+        /// return <c>null</c> to indicate Obsidian is not supported and an empty
+        /// string to indicate it is supported but no UI is required.
+        /// </summary>
+        public virtual string ObsidianFileUrl => null;
+
+        #endregion
+
+        #region Configuration
+
+        /// <summary>
+        /// Gets the definition of the Obsidian component that will be used to
+        /// render the UI for editing the data select.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use for any database access that is required.</param>
+        /// <param name="requestContext">The context describing the current request.</param>
+        /// <returns>An instance of <see cref="DynamicComponentDefinitionBag"/> that describes how to render the UI.</returns>
+        [RockInternal( "17.0" )]
+        public virtual DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Executes a request that is sent from the UI component to the server
+        /// component. This is used to handle any dynamic updates that are
+        /// required by the UI in order to operate correctly.
+        /// </summary>
+        /// <param name="request">The request object from the UI component.</param>
+        /// <param name="securityGrant">The security grant that is providing additional authorization to this request.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="requestContext">The context that describes the current network request being processed.</param>
+        /// <returns>A dictionary of values that will be returned to the UI component.</returns>
+        [RockInternal( "17.0" )]
+        public virtual Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the component data that will be provided to the Obsidian component
+        /// when it is initialized. This should include representations of the current
+        /// values as well as any additional data required to initialize the UI.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>A dictionary of strings that will be provided to the Obsidian component.</returns>
+        [RockInternal( "17.0" )]
+        public virtual Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// Gets the selection string that will be saved to the database from
+        /// the data returned by the Obsidian component.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="data">The data the was returned by the Obsidian component.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>The string of text that represents the selection which will be written to the database.</returns>
+        [RockInternal( "17.0" )]
+        public virtual string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return string.Empty;
+        }
+
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Gets the title of the DataSelectComponent.
+        /// Override this property to specify a Title that is different from the ColumnPropertyName.
+        /// </summary>
+        /// <value>
+        /// The title.
+        /// </value>
+        public virtual string GetTitle( Type entityType )
+        {
+            return this.ColumnPropertyName;
+        }
+
+        /// <summary>
         /// Comma-delimited list of the Entity properties that should be used for Sorting. Normally, you should leave this as null which will make it sort on the returned field 
         /// To disable sorting for this field, return string.Empty;
         /// </summary>
         /// <value>
         /// The sort expression.
         /// </value>
-        public virtual string SortProperties ( string selection )
+        public virtual string SortProperties( string selection )
         {
             return null;
         }
@@ -107,37 +219,32 @@ namespace Rock.Reporting
         }
 
         /// <summary>
-        /// Gets the type of the column field.
-        /// Override this property to specify a Type other than the default of System.String
+        /// Gets the attribute value from selection.
         /// </summary>
-        /// <value>
-        /// The type of the column field.
-        /// </value>
-        public virtual Type ColumnFieldType
+        /// <param name="attributeKey">The attribute key.</param>
+        /// <param name="selection">The selection.</param>
+        /// <returns></returns>
+        public string GetAttributeValueFromSelection( string attributeKey, string selection )
         {
-            get
+            Dictionary<string, string> values;
+            try
             {
-                return typeof( System.String );
+                values = Newtonsoft.Json.JsonConvert.DeserializeObject( selection, typeof( Dictionary<string, string> ) ) as Dictionary<string, string>;
             }
+            catch
+            {
+                return string.Empty;
+            }
+
+            if ( values != null && values.ContainsKey( attributeKey ) )
+            {
+                return values[attributeKey];
+            }
+
+            return string.Empty;
         }
 
-        /// <summary>
-        /// Gets the default column header text.
-        /// Override this property to specify a Header that is different from the ColumnPropertyName.
-        /// </summary>
-        /// <value>
-        /// The default column header text.
-        /// </value>
-        public virtual string ColumnHeaderText
-        {
-            get { return this.ColumnPropertyName; }
-        }
-
-        #endregion
-
-        #region Public Methods
-
-#if REVIEW_WEBFORMS
+#if WEBFORMS
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -149,21 +256,7 @@ namespace Rock.Reporting
             BoundField result = Rock.Web.UI.Controls.Grid.GetGridField( this.ColumnFieldType );
             return result;
         }
-#endif
 
-        /// <summary>
-        /// Gets the title of the DataSelectComponent.
-        /// Override this property to specify a Title that is different from the ColumnPropertyName.
-        /// </summary>
-        /// <value>
-        /// The title.
-        /// </value>
-        public virtual string GetTitle( Type entityType )
-        {
-            return this.ColumnPropertyName;
-        }
-
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -228,35 +321,7 @@ namespace Rock.Reporting
 
             return values;
         }
-#endif
 
-        /// <summary>
-        /// Gets the attribute value from selection.
-        /// </summary>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <param name="selection">The selection.</param>
-        /// <returns></returns>
-        public string GetAttributeValueFromSelection( string attributeKey, string selection )
-        {
-            Dictionary<string, string> values;
-            try
-            {
-                values = Newtonsoft.Json.JsonConvert.DeserializeObject( selection, typeof( Dictionary<string, string> ) ) as Dictionary<string, string>;
-            }
-            catch
-            {
-                return string.Empty;
-            }
-
-            if ( values != null && values.ContainsKey( attributeKey ) )
-            {
-                return values[attributeKey];
-            }
-
-            return string.Empty;
-        }
-
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the attributes selection values.
         /// </summary>

@@ -38,7 +38,7 @@ namespace Rock.Logging
     /// point in time.
     /// </summary>
     /// <seealso cref="Rock.Logging.IRockLogReader" />
-    [RockInternal( "1.17", true )]
+    [RockInternal( "17.0", true )]
     public class RockSerilogReader : IRockLogReader
     {
         private readonly JsonSerializer _jsonSerializer;
@@ -277,9 +277,17 @@ namespace Rock.Logging
             try
             {
                 var evt = LogEventReader.ReadFromString( logLine, _jsonSerializer );
+                string category;
 
-                var category = evt.Properties["SourceContext"].ToString();
-                evt.RemovePropertyIfPresent( "SourceContext" );
+                if ( evt.Properties.ContainsKey( "SourceContext" ) )
+                {
+                    category = evt.Properties["SourceContext"].ToString();
+                    evt.RemovePropertyIfPresent( "SourceContext" );
+                }
+                else
+                {
+                    category = "Legacy";
+                }
 
                 var message = evt.RenderMessage();
                 category = category.Replace( "\"", "" );
@@ -293,11 +301,13 @@ namespace Rock.Logging
                     Message = message
                 };
             }
-            catch ( Exception ex )
+            catch
             {
                 // In rare instances it is possible that the event didn't get completely flushed to the log
                 // and when that happens it won't be able to be correctly parsed so we need to handle that gracefully.
-                ExceptionLogService.LogException( ex );
+                // Just keep track of the number of failed events. Don't log to exception
+                // history since that could flood the exception log with a lot of errors
+                // in a corrupt log file.
                 _malformedLogEventCount++;
                 return null;
             }

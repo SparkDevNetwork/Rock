@@ -36,6 +36,7 @@ using System.Web;
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Net;
+using Rock.Observability;
 using Rock.Tasks;
 using Rock.Transactions;
 using Rock.UniversalSearch;
@@ -119,6 +120,15 @@ namespace Rock.Data
         /// </remarks>
         /// <value><c>true</c> if RealTime messages should be sent by this context; otherwise, <c>false</c>.</value>
         public bool IsRealTimeEnabled { get; set; } = true;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether Rock-to-chat synchronization attempts should be made in response to
+        /// calls to one of the SaveChanges methods.
+        /// </summary>
+        /// <remarks>
+        /// <see langword="true"/> by default.
+        /// </remarks>
+        internal bool IsRockToChatSyncEnabled { get; set; } = true;
 
         #endregion
 
@@ -378,13 +388,13 @@ namespace Rock.Data
 
             SaveErrorMessages = new List<string>();
 
-            // Try to get the current person alias and id
-            PersonAlias personAlias = GetCurrentPersonAlias();
+            // Try to get the current person alias id
+            var  personAliasId = GetCurrentPersonAliasId();
 
             bool enableAuditing = GlobalAttributesCache.Value( "EnableAuditing" ).AsBoolean();
 
             // Evaluate the current context for items that have changes
-            var updatedItems = RockPreSave( this, personAlias, enableAuditing );
+            var updatedItems = RockPreSave( this, personAliasId, enableAuditing );
 
             // If update was not cancelled by triggered workflow
             if ( updatedItems != null )
@@ -452,7 +462,7 @@ namespace Rock.Data
                 // If any items changed process audit and triggers
                 if ( updatedItems.Any() )
                 {
-                    RockPostSave( updatedItems, personAlias, enableAuditing );
+                    RockPostSave( updatedItems, enableAuditing );
 
                     if ( args.IsAchievementsEnabled )
                     {
@@ -521,7 +531,9 @@ namespace Rock.Data
         /// <summary>
         /// Gets the current person alias.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The primary alias</returns>
+        [Obsolete( "Use GetCurrentPersonAliasId() instead." )]
+        [RockObsolete( "18.0" )]
         internal PersonAlias GetCurrentPersonAlias()
         {
 #if REVIEW_WEBFORMS
@@ -535,6 +547,34 @@ namespace Rock.Data
             }
 #endif
 
+            if ( Net.RockRequestContextAccessor.Current != null )
+            {
+                return Net.RockRequestContextAccessor.Current.CurrentPerson?.PrimaryAlias;
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the current person alias Id.
+        /// </summary>
+        /// <returns>The Id of the current person's primary alias.</returns>
+        internal int? GetCurrentPersonAliasId()
+        {
+            if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
+            {
+                var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+                if ( currentPerson != null && currentPerson.PrimaryAliasId != null )
+                {
+                    return currentPerson.PrimaryAliasId;
+                }
+            }
+
+            if ( Net.RockRequestContextAccessor.Current != null )
+            {
+                return Net.RockRequestContextAccessor.Current.CurrentPerson?.PrimaryAliasId;
+            }
+
             return null;
         }
 
@@ -545,14 +585,22 @@ namespace Rock.Data
         /// <param name="personAlias">The person alias.</param>
         /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
         /// <returns></returns>
+        [Obsolete( "Use RockPreSave( DbContext dbContext, int? PersonAliasId, bool enableAuditing ) instead." )]
+        [RockObsolete( "18.0" )]
         protected virtual List<ContextItem> RockPreSave( DbContext dbContext, PersonAlias personAlias, bool enableAuditing = false )
         {
-            int? personAliasId = null;
-            if ( personAlias != null )
-            {
-                personAliasId = personAlias.Id;
-            }
+            return RockPreSave( dbContext, personAlias?.Id, enableAuditing );
+        }
 
+        /// <summary>
+        /// Updates the Created/Modified data for any model being created or modified
+        /// </summary>
+        /// <param name="dbContext">The database context.</param>
+        /// <param name="personAliasId">The person alias Id.</param>
+        /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
+        /// <returns></returns>
+        protected virtual List<ContextItem> RockPreSave( DbContext dbContext, int? personAliasId, bool enableAuditing = false )
+        {
             // This triggers the change detection, so it must be called before
             // we check for the implied relationship changes.
             var entries = dbContext.ChangeTracker.Entries().ToList();
@@ -632,7 +680,7 @@ namespace Rock.Data
                         // instead of passing "true" the trigger model and UI would support a
                         // on-value-changed checkbox (or perhaps it should be the default/only behavior)
                         // and its value would be passed in to the onValueChange
-                        if ( !TriggerWorkflows( contextItem, WorkflowTriggerType.PreSave, personAlias ) )
+                        if ( !TriggerWorkflows( contextItem, WorkflowTriggerType.PreSave ) )
                         {
                             // If any workflow has aborted the save operation
                             // then let all the save hooks know the save was
@@ -688,7 +736,7 @@ namespace Rock.Data
                     }
                     else if ( entry.State == EntityState.Deleted )
                     {
-                        if ( !TriggerWorkflows( contextItem, WorkflowTriggerType.PreDelete, personAlias ) )
+                        if ( !TriggerWorkflows( contextItem, WorkflowTriggerType.PreDelete ) )
                         {
                             // Let all the hooks that were called know that
                             // the save was aborted.
@@ -744,9 +792,21 @@ namespace Rock.Data
         /// Creates audit logs and/or triggers workflows for items that were changed
         /// </summary>
         /// <param name="updatedItems">The updated items.</param>
-        /// <param name="personAlias">The person alias.</param>
+        /// <param name="personAlias">The person alias (NOT USED; hasn't been used in years).</param>
         /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
+        [Obsolete( "Use RockPostSave( List<ContextItem> updatedItems, bool enableAuditing = false ) instead." )]
+        [RockObsolete( "18.0" )]
         protected virtual void RockPostSave( List<ContextItem> updatedItems, PersonAlias personAlias, bool enableAuditing = false )
+        {
+            RockPostSave( updatedItems, enableAuditing );
+        }
+
+        /// <summary>
+        /// Creates audit logs and/or triggers workflows for items that were changed
+        /// </summary>
+        /// <param name="updatedItems">The updated items.</param>
+        /// <param name="enableAuditing">if set to <c>true</c> [enable auditing].</param>
+        protected virtual void RockPostSave( List<ContextItem> updatedItems, bool enableAuditing = false )
         {
             // Triggers when the post-save actions have completed.
             var tcsPostSave = new TaskCompletionSource<bool>();
@@ -791,17 +851,17 @@ namespace Rock.Data
 
                     if ( item.State == EntityContextState.Detached || item.State == EntityContextState.Deleted )
                     {
-                        TriggerWorkflows( item, WorkflowTriggerType.PostDelete, personAlias );
+                        TriggerWorkflows( item, WorkflowTriggerType.PostDelete );
                     }
                     else
                     {
                         if ( item.PreSaveState == EntityContextState.Added )
                         {
-                            TriggerWorkflows( item, WorkflowTriggerType.PostAdd, personAlias );
+                            TriggerWorkflows( item, WorkflowTriggerType.PostAdd );
                         }
 
-                        TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave, personAlias );
-                        TriggerWorkflows( item, WorkflowTriggerType.PostSave, personAlias );
+                        TriggerWorkflows( item, WorkflowTriggerType.ImmediatePostSave );
+                        TriggerWorkflows( item, WorkflowTriggerType.PostSave );
                     }
 
                     if ( item.Entity is IEntity entity )
@@ -857,6 +917,15 @@ namespace Rock.Data
                 ExecuteAfterCommit( () =>
                 {
                     CallPostSaveHooks( updatedItems );
+
+                    using ( var activity = ObservabilityHelper.StartActivity( "Processing Change Monitors" ) )
+                    {
+                        foreach ( var item in updatedItems )
+                        {
+                            Core.Automation.Triggers.EntityChangeMonitor.ProcessEntity( item );
+                        }
+                    }
+
                     tcsPostSave.SetResult( true );
                 } );
             }
@@ -1162,7 +1231,7 @@ namespace Rock.Data
 
             // ensure CreatedDateTime and ModifiedDateTime is set
             var currentDateTime = RockDateTime.Now;
-            var currentPersonAliasId = this.GetCurrentPersonAlias()?.Id;
+            var currentPersonAliasId = this.GetCurrentPersonAliasId();
 
             foreach ( var record in records )
             {
@@ -1246,8 +1315,8 @@ namespace Rock.Data
         public virtual int BulkUpdate<T>( IQueryable<T> queryable, Expression<Func<T, T>> updateFactory ) where T : class
         {
             var currentDateTime = RockDateTime.Now;
-            PersonAlias currentPersonAlias = this.GetCurrentPersonAlias();
-            var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAlias );
+            var currentPersonAliasId = this.GetCurrentPersonAliasId();
+            var rockExpressionVisitor = new RockBulkUpdateExpressionVisitor( currentDateTime, currentPersonAliasId );
             var updatedExpression = rockExpressionVisitor.Visit( updateFactory ) as Expression<Func<T, T>> ?? updateFactory;
             int recordsUpdated = queryable.Update( updatedExpression, batchUpdateBuilder =>
             {
@@ -1300,9 +1369,8 @@ namespace Rock.Data
         /// </summary>
         /// <param name="item">The item.</param>
         /// <param name="triggerType">Type of the trigger.</param>
-        /// <param name="personAlias">The person alias.</param>
         /// <returns></returns>
-        private bool TriggerWorkflows( ContextItem item, WorkflowTriggerType triggerType, PersonAlias personAlias )
+        private bool TriggerWorkflows( ContextItem item, WorkflowTriggerType triggerType  )
         {
             IEntity entity = item.Entity;
             Dictionary<string, PropertyInfo> properties = null;
@@ -1818,10 +1886,6 @@ namespace Rock.Data
             /// Gets the collection of property names that have been modified. This
             /// will include any additional changes made during the PreSave event.
             /// </summary>
-            /// <remarks>
-            /// This is a relatively expensive operation of up to 1.5ms so this
-            /// propery should not be accessed unless you really need to.
-            /// </remarks>
             /// <value>A collection of modified property names.</value>
             public IReadOnlyList<string> ModifiedProperties => _lazyModifiedProperties.Value;
 
@@ -1871,22 +1935,36 @@ namespace Rock.Data
                     var originalValues = new Dictionary<string, object>();
 
 #if REVIEW_NET5_0_OR_GREATER
-                    foreach ( var p in DbEntityEntry.OriginalValues.Properties )
+                    // Accessing the OriginalValues property creates a new
+                    // instance of the object that tracks the values, which
+                    // is expensive. On a Person object, this can take 0.03ms
+                    // by itself, which adds up quickly if we access the
+                    // property during the following loop.
+                    var entityOriginalValues = DbEntityEntry.OriginalValues;
+
+                    foreach ( var p in entityOriginalValues.Properties )
                     {
                         originalValues.Add( p.Name, DbEntityEntry.OriginalValues[p] );
                     }
 #else
-                    foreach ( var p in DbEntityEntry.OriginalValues.PropertyNames )
+                    // Accessing the OriginalValues property creates a new
+                    // instance of the object that tracks the values, which
+                    // is expensive. On a Person object, this can take 0.03ms
+                    // by itself, which adds up quickly if we access the
+                    // property during the following loop.
+                    var entityOriginalValues = DbEntityEntry.OriginalValues;
+
+                    foreach ( var p in entityOriginalValues.PropertyNames )
                     {
-                        originalValues.Add( p, DbEntityEntry.OriginalValues[p] );
+                        originalValues.Add( p, entityOriginalValues[p] );
                     }
 #endif
 
+
                     OriginalValues = originalValues;
 
-
                     // Construct this lazily because not all save hooks will
-                    // even use this. It takes about 0.6ms to run.
+                    // even use this. It takes about 0.03ms to run.
                     _lazyModifiedProperties = new Lazy<IReadOnlyList<string>>( () =>
                     {
                         if ( PreSaveState != EntityContextState.Modified )
@@ -1896,10 +1974,17 @@ namespace Rock.Data
 
                         var modifiedProperties = new List<string>();
 
+                        // Accessing the CurrentValues property creates a new
+                        // instance of the object that tracks the values, which
+                        // is expensive. On a Person object, this can take 0.03ms
+                        // by itself, which adds up quickly if we access the
+                        // property during the following loop.
+                        var currentValues = DbEntityEntry.CurrentValues;
+
                         foreach ( var p in OriginalValues.Keys )
                         {
                             var originalValue = OriginalValues[p];
-                            var currentValue = DbEntityEntry.CurrentValues[p];
+                            var currentValue = currentValues[p];
 
                             // Both are null, no change.
                             if ( originalValue == null && currentValue == null )
@@ -1922,6 +2007,10 @@ namespace Rock.Data
 
                         return modifiedProperties;
                     } );
+                }
+                else
+                {
+                    _lazyModifiedProperties = new Lazy<IReadOnlyList<string>>( () => null );
                 }
             }
         }

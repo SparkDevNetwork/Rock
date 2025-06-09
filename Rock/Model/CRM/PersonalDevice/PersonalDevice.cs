@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,6 +20,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Mobile;
 
 namespace Rock.Model
 {
@@ -30,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "PersonalDevice" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "E9CD3369-E087-4809-9952-F2DCD6B8816B")]
     public partial class PersonalDevice : Model<PersonalDevice>
     {
@@ -196,6 +198,30 @@ namespace Rock.Model
         /// for contact.
         /// </value>
         public DateTime? LastVerifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the location permission status.
+        /// </summary>
+        [DataMember]
+        public LocationPermissionStatus LocationPermissionStatus { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether precise location is enabled.
+        /// </summary>
+        [DataMember]
+        public bool IsPreciseLocationEnabled { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value of when the location permission was last disabled.
+        /// </summary>
+        [DataMember]
+        public DateTime? LocationPermissionDisabledDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this device is enabled for beacon monitoring.
+        /// </summary>
+        [DataMember]
+        public bool IsBeaconMonitoringEnabled { get; set; }
 
         #endregion
 

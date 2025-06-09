@@ -16,7 +16,8 @@
                     <TextBox v-model="internalName"
                              label="Internal Name"
                              rules="required"
-                             help="The internal page name to use when administering this page" />
+                             help="The internal page name to use when administering this page"
+                             @blur="handleInternalNameBlur" />
 
                     <TextBox v-model="pageTitle"
                              label="Page Title"
@@ -129,6 +130,10 @@
                                         help="Helps classify the purpose of the page. This is written to interactions as individuals view the page. You can provide options here by editing the Interaction Intent Defined Type."
                                         :multiple="true"
                                         :definedTypeGuid="intentDefinedTypeGuid" />
+                    <ValueList v-model="countriesRestrictedFromAccessing"
+                               label="Countries Restricted from Accessing"
+                               help="Select the countries from which access will be restricted to this page. Users attempting to connect from these locations will be blocked."
+                               :customValues="countries" />
                     <div v-if="showContextDetails">
                         <fieldset>
                             <h4>Context Parameters</h4>
@@ -155,14 +160,14 @@
                 </div>
                 <div v-if="enableRateLimiting">
                     <div class="col-md-6">
-                        <NumberBox v-model="rateLimitPeriodDuration" label="Max Request Per Period" />
-                    </div>
-                    <div class="col-md-6">
-                        <NumberBox v-model="rateLimitRequestPerPeriod" label="Rate Limit Period">
+                        <NumberBox v-model="rateLimitPeriodDurationSeconds" label="Rate Limit Period">
                             <template #inputGroupAppend>
                                 <span class="input-group-addon">seconds</span>
                             </template>
                         </NumberBox>
+                    </div>
+                    <div class="col-md-6">
+                        <NumberBox v-model="rateLimitRequestPerPeriod" label="Max Request Per Period" />
                     </div>
                 </div>
             </div>
@@ -200,6 +205,7 @@
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import CacheabilityPicker from "@Obsidian/Controls/cacheabilityPicker.obs";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import ValueList from "@Obsidian/Controls/valueList.obs";
     import { setPropertiesBoxValue, watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { PagePropertiesBag } from "@Obsidian/ViewModels/Blocks/Administration/PageProperties/pagePropertiesBag";
@@ -244,7 +250,8 @@
     const layouts = ref(props.options.layoutItems ?? []);
     const displayWhenItems = ref(props.options.displayWhenItems ?? []);
     const intentDefinedTypeGuid = ref(props.options.intentDefinedTypeGuid ?? "");
-    const enableRateLimiting = ref(!!props.modelValue.bag?.rateLimitPeriodDuration || !!props.modelValue.bag?.rateLimitRequestPerPeriod);
+    const enableRateLimiting = ref(!!props.modelValue.bag?.rateLimitPeriodDurationSeconds || !!props.modelValue.bag?.rateLimitRequestPerPeriod);
+    const countries = ref(props.options.countries ?? []);
 
     const attributes = ref(props.modelValue.bag?.attributes ?? {});
     const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
@@ -279,8 +286,9 @@
     const bodyCssClass = propertyRef(props.modelValue.bag?.bodyCssClass ?? "", "BodyCssClass");
     const pageRoute = ref(props.modelValue.bag?.pageRoute ?? "");
     const intents = ref(props.modelValue.bag?.intents);
+    const countriesRestrictedFromAccessing = ref(props.modelValue.bag?.countriesRestrictedFromAccessing ?? []);
     const cacheControlHeaderSettings = propertyRef(props.modelValue.bag?.cacheControlHeaderSettings ?? null, "CacheControlHeaderSettings");
-    const rateLimitPeriodDuration = propertyRef(props.modelValue.bag?.rateLimitPeriodDuration, "RateLimitPeriodDuration");
+    const rateLimitPeriodDurationSeconds = propertyRef(props.modelValue.bag?.rateLimitPeriodDurationSeconds, "RateLimitPeriodDurationSeconds");
     const rateLimitRequestPerPeriod = propertyRef(props.modelValue.bag?.rateLimitRequestPerPeriod, "RateLimitRequestPerPeriod");
     const headerContent = propertyRef(props.modelValue.bag?.headerContent ?? "", "HeaderContent");
     const blockContexts = ref(props.modelValue.bag?.blockContexts?.map(context => ({ ...context, text: context.text ?? "" })) ?? []);
@@ -289,7 +297,7 @@
     // objects returned by propertyRef().
     const propRefs = [parentPage, internalName, pageTitle, browserTitle, layout, menuDisplayIcon, iconCssClass, description,
         pageDisplayTitle, pageDisplayBreadCrumb, pageDisplayIcon, pageDisplayDescription, displayInNavWhen, menuDisplayDescription, menuDisplayChildPages, breadCrumbDisplayName, breadCrumbDisplayIcon,
-        requiresEncryption, enableViewState, includeAdminFooter, allowIndexing, bodyCssClass, cacheControlHeaderSettings, rateLimitPeriodDuration, rateLimitRequestPerPeriod, headerContent];
+        requiresEncryption, enableViewState, includeAdminFooter, allowIndexing, bodyCssClass, cacheControlHeaderSettings, rateLimitPeriodDurationSeconds, rateLimitRequestPerPeriod, headerContent];
 
     // #endregion
 
@@ -383,17 +391,30 @@
         updateRefValue(bodyCssClass, props.modelValue.bag?.bodyCssClass ?? "");
         updateRefValue(pageRoute, props.modelValue.bag?.pageRoute ?? "");
         updateRefValue(intents, props.modelValue.bag?.intents);
+        updateRefValue(countriesRestrictedFromAccessing, props.modelValue.bag?.countriesRestrictedFromAccessing ?? []);
         updateRefValue(cacheControlHeaderSettings, props.modelValue.bag?.cacheControlHeaderSettings ?? null);
-        updateRefValue(rateLimitPeriodDuration, props.modelValue.bag?.rateLimitPeriodDuration);
+        updateRefValue(rateLimitPeriodDurationSeconds, props.modelValue.bag?.rateLimitPeriodDurationSeconds);
         updateRefValue(rateLimitRequestPerPeriod, props.modelValue.bag?.rateLimitRequestPerPeriod);
         updateRefValue(headerContent, props.modelValue.bag?.headerContent ?? "");
         updateRefValue(blockContexts, props.modelValue.bag?.blockContexts?.map(context => ({ ...context, text: context.text ?? "" })) ?? []);
         updateRefValue(breadCrumbDisplayIcon, props.modelValue.bag?.breadCrumbDisplayIcon ?? false);
     });
 
+    // Handle the blur event on the Internal Name field so that we can auto-fill pageTitle and browserTitle textboxes.
+    function handleInternalNameBlur(): void {
+        if (internalName.value) {
+            if (!pageTitle.value || pageTitle.value.trim() === "") {
+                pageTitle.value = internalName.value;
+            }
+            if (!browserTitle.value || browserTitle.value.trim() === "") {
+                browserTitle.value = internalName.value;
+            }
+        }
+    }
+
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, site, pageRoute, intents, blockContexts, ...propRefs], () => {
+    watch([attributeValues, site, pageRoute, intents, countriesRestrictedFromAccessing, blockContexts, ...propRefs], () => {
         const newValue: ValidPropertiesBox<PagePropertiesBag> = {
             bag: { ...props.modelValue.bag } as PagePropertiesBag
         };
@@ -430,8 +451,9 @@
         setPropertiesBoxValue(newValue, "bodyCssClass", bodyCssClass.value);
         setPropertiesBoxValue(newValue, "pageRoute", pageRoute.value);
         setPropertiesBoxValue(newValue, "intents", intents.value);
+        setPropertiesBoxValue(newValue, "countriesRestrictedFromAccessing", countriesRestrictedFromAccessing.value);
         setPropertiesBoxValue(newValue, "cacheControlHeaderSettings", cacheControlHeaderSettings.value);
-        setPropertiesBoxValue(newValue, "rateLimitPeriodDuration", rateLimitPeriodDuration.value);
+        setPropertiesBoxValue(newValue, "rateLimitPeriodDurationSeconds", rateLimitPeriodDurationSeconds.value);
         setPropertiesBoxValue(newValue, "rateLimitRequestPerPeriod", rateLimitRequestPerPeriod.value);
         setPropertiesBoxValue(newValue, "headerContent", headerContent.value);
         setPropertiesBoxValue(newValue, "blockContexts", blockContexts.value);

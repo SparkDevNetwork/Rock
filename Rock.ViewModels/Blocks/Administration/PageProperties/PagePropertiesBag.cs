@@ -186,7 +186,7 @@ namespace Rock.ViewModels.Blocks.Administration.PageProperties
         /// <summary>
         /// Gets or sets the rate limit period (in seconds).
         /// </summary>
-        public int? RateLimitPeriodDuration { get; set; }
+        public int? RateLimitPeriodDurationSeconds { get; set; }
 
         /// <summary>
         /// Gets or sets the rate limit request per period.
@@ -229,6 +229,14 @@ namespace Rock.ViewModels.Blocks.Administration.PageProperties
         /// The intents.
         /// </value>
         public List<ListItemBag> Intents { get; set; }
+
+        /// <summary>
+        /// Gets or sets the defined value GUIDs for countries from which access will be restricted to this page.
+        /// </summary>
+        /// <value>
+        /// The defined value GUIDs for countries from which access will be restricted to this page.
+        /// </value>
+        public List<Guid> CountriesRestrictedFromAccessing { get; set; }
 
         /// <summary>
         /// Gets or sets the block contexts.

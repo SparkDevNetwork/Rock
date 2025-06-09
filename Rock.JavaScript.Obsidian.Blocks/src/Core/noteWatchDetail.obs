@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError && !options.hidePanel"
                  v-model:mode="panelMode"
@@ -27,7 +27,7 @@
         </template>
 
         <template #edit>
-            <EditPanel v-model="noteWatchEditBag" :options="options" @propertyChanged="onPropertyChanged" :errorDetails="noteWatchErrorDetails" />
+            <EditPanel v-model="noteWatchEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" :errorDetails="noteWatchErrorDetails" />
         </template>
     </DetailBlock>
 </template>
@@ -41,16 +41,15 @@
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
     import EditPanel from "./NoteWatchDetail/editPanel.partial.obs";
     import ViewPanel from "./NoteWatchDetail/viewPanel.partial.obs";
-    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./NoteWatchDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { NoteWatchBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchDetail/noteWatchBag";
     import { NoteWatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchDetail/noteWatchDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<NoteWatchBag, NoteWatchDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
@@ -59,25 +58,18 @@
 
     const noteWatchViewBag = ref(config.entity);
     const noteWatchErrorDetails = ref("");
-    const noteWatchEditBag = ref<NoteWatchBag>({} as NoteWatchBag);
+    const noteWatchEditBag = ref<ValidPropertiesBox<NoteWatchBag>>({
+        bag: {} as NoteWatchBag
+    });
 
     const entityTypeGuid = EntityType.NoteWatch;
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
-    const validProperties = [
-        "attributeValues",
-        "allowOverride",
-        "entityType",
-        "isWatching",
-        "note",
-        "noteType",
-        "watcherGroup",
-        "watcherPersonAlias",
-        "entityId"
-    ];
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: noteWatchEditBag
+    });
 
     const anticipatedErrors = [
         "WatcherMustBeSelected",
@@ -85,8 +77,6 @@
         "UnableToOverride",
         "NoteTypeDoesNotAllowWatch"
     ];
-
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(noteWatchEditBag, validProperties, invokeBlockAction), undefined, true);
 
     // #endregion
 
@@ -182,35 +172,21 @@
      * @returns true if the panel should enter edit mode; otherwise false.
      */
     async function onEdit(): Promise<boolean> {
-        const result = await invokeBlockAction<DetailBlockBox<NoteWatchBag, NoteWatchDetailOptionsBag>>("Edit", {
+        const result = await invokeBlockAction<ValidPropertiesBox<NoteWatchBag>>("Edit", {
             key: noteWatchViewBag.value?.idKey
         });
 
-        if (result.isSuccess && result.data && result.data.entity) {
-            noteWatchEditBag.value = result.data.entity;
+        if (result.isSuccess && result.data && result.data.bag) {
+            noteWatchEditBag.value = {
+                bag: result.data.bag,
+                validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
+            };
 
             return true;
         }
         else {
             return false;
         }
-    }
-
-    /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
     }
 
     /**
@@ -222,14 +198,8 @@
     async function onSave(): Promise<boolean | string> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<NoteWatchBag, NoteWatchDetailOptionsBag> = {
-            entity: noteWatchEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
         const result = await invokeBlockAction<string>("Save", {
-            box: data
+            box: noteWatchEditBag.value
         });
 
         if (result.isSuccess && result.data) {
@@ -252,8 +222,6 @@
 
     // #endregion
 
-    provideSecurityGrant(securityGrant);
-
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
         blockError.value = config.errorMessage;
@@ -262,7 +230,7 @@
         blockError.value = "The specified note watch could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        noteWatchEditBag.value = config.entity;
+        noteWatchEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 

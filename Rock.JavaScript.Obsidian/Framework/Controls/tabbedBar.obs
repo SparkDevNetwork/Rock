@@ -81,10 +81,11 @@
     padding: 6px 12px;
     border-radius: 4px;
     transition: background-color 0.25s ease, color 0.25s ease;
+    background-color: #f5f5f5;
 }
 
 .tabbed-bar.pills > .toolbar-nav > li:hover .title {
-    background-color: #f5f5f5;
+    background-color: #EBEBEB;
 }
 
 .tabbed-bar.pills > .toolbar-nav > li.active .title {
@@ -103,7 +104,7 @@
 <script setup lang="ts">
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
-    import { computed, nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch, onMounted, onUnmounted } from "vue";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -124,7 +125,13 @@
         type: {
             type: String as PropType<"tabs" | "pills">,
             default: "tabs"
-        }
+        },
+
+        /** The key for the selected tab to be tracked in the Query String. */
+        selectedTabQueryParameterKey: {
+            type: String,
+            required: false
+        },
     });
 
     const emit = defineEmits<{
@@ -133,6 +140,7 @@
 
     const toolbarNavElement = ref<HTMLElement>();
     const selectedTab = useVModelPassthrough(props, "modelValue", emit);
+    const selectedTabQueryParameterKey = ref(props.selectedTabQueryParameterKey ?? "");
     const overflowTabs = ref<ListItemBag[]>([]);
     let resizeObserver: ResizeObserver | undefined;
     let resizeTimer: number | undefined;
@@ -154,6 +162,18 @@
             };
         });
     });
+
+    /** Whether the query string parameter property has a value. */
+    const shouldManageQueryString = computed(() => selectedTabQueryParameterKey.value.length > 0);
+
+    /** Handles the browser's back button click with respect to selected tab Query params. */
+    function handleBackButton(): void {
+        const tab = new URLSearchParams(window.location.search).get(selectedTabQueryParameterKey.value) ?? "";
+
+        if (tab && tab !== selectedTab.value) {
+            selectedTab.value = tab;
+        }
+    }
 
     // #endregion
 
@@ -209,6 +229,23 @@
                 clearInterval(resizeTimer);
                 resizeTimer = undefined;
             }
+        }
+    }
+
+    /** Updates the current URL with the value of the selected tab for the specified query string parameter (if specified). */
+    function updateUrlWithSelectedTab(): void {
+        // If the control's not configured with a query string parameter don't do anything.
+        if (!shouldManageQueryString.value) {
+            return;
+        }
+
+        const queryParams = new URLSearchParams(window.location.search);
+        const selectedTabName = selectedTab.value ?? "";
+        const queryParamValue = queryParams.get(selectedTabQueryParameterKey.value) ?? "";
+
+        if (queryParamValue !== selectedTabName) {
+            queryParams.set(selectedTabQueryParameterKey.value, selectedTabName);
+            history.pushState(null, "", "?" + queryParams.toString());
         }
     }
 
@@ -340,6 +377,21 @@
     // Any time the selected tab changes or our list of tabs change then we
     // need to recalculate the overflow tabs.
     watch([selectedTab, () => props.tabs], () => {
+        updateUrlWithSelectedTab();
         nextTick(updateOverflowTabs);
+    });
+
+    onMounted(() => {
+        if (shouldManageQueryString) {
+            // Listen for the browser back button click and update the selected tab.
+            window.addEventListener("popstate", handleBackButton);
+        }
+    });
+
+    onUnmounted(() => {
+        if (shouldManageQueryString) {
+            // Remove the listener.
+            window.removeEventListener("popstate", handleBackButton);
+        }
     });
 </script>

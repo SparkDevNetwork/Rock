@@ -97,14 +97,6 @@
                 </Grid>
             </div>
             <Modal v-model="isAttributeModalOpen" title="Content Channel Item Attributes" saveText="Save" @save="onSaveAttribute">
-                <NotificationBox v-show="attributeErrors.length > 0" alertType="validation">
-                    Please correct the following:
-                    <ul>
-                        <li v-for="error of attributeErrors">
-                            {{ error }}
-                        </li>
-                    </ul>
-                </NotificationBox>
                 <AttributeEditor v-model="itemAttribute" :reservedKeyNames="reservedKeyNames" />
             </Modal>
         </Panel>
@@ -148,10 +140,9 @@
                                  help="The Content Channel Item Publishing Point will be used for the Item URL in the RSS feed." />
                         <div class="row">
                             <div class="col-md-4">
-                                <TextBox v-model="timeToLive"
-                                         :rules="validateNumberValue"
-                                         label="Time to Live (TTL)"
-                                         help="The number of minutes a feed can stay cached before it is refreshed from the source." />
+                                <NumberBox v-model="timeToLive"
+                                           label="Time to Live (TTL)"
+                                           help="The number of minutes a feed can stay cached before it is refreshed from the source." />
                             </div>
                         </div>
                     </div>
@@ -183,6 +174,7 @@
     import { PropType, computed, reactive, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
@@ -200,7 +192,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import ModalAlert from "@Obsidian/Controls/modalAlert.obs";
     import AttributeEditor from "@Obsidian/Controls/attributeEditor.obs";
-    import { useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { ContentChannelBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelDetail/contentChannelBag";
     import { ContentChannelDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/ContentChannelDetail/contentChannelDetailOptionsBag";
@@ -213,10 +205,11 @@
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ContentChannelBag>,
+            type: Object as PropType<ValidPropertiesBox<ContentChannelBag>>,
             required: true
         },
 
@@ -227,49 +220,48 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ContentChannelBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<ContentChannelBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const contentChannelTypeValue = propertyRef(props.modelValue.contentChannelType?.value ?? "", "ContentChannelTypeId");
-    const categories = propertyRef(props.modelValue.categories ?? [], "Categories");
-    const isStructuredContent = propertyRef(props.modelValue.isStructuredContent, "IsStructuredContent");
-    const structuredContentToolValue = propertyRef(props.modelValue.structuredContentToolValue ?? null, "StructuredContentToolValueId");
-    const contentControlType = propertyRef(props.modelValue.contentControlType.toString(), "ContentControlType");
-    const rootImageDirectory = propertyRef(props.modelValue.rootImageDirectory ?? "", "RootImageDirectory");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
-    const enableRss = propertyRef(props.modelValue.enableRss ?? "", "EnableRss");
-    const channelUrl = propertyRef(props.modelValue.channelUrl ?? "", "ChannelUrl");
-    const timeToLive = propertyRef(props.modelValue.timeToLive || "0", "TimeToLive");
-    const itemUrl = propertyRef(props.modelValue.itemUrl ?? "", "ItemUrl");
-    const isTaggingEnabled = propertyRef(props.modelValue.isTaggingEnabled, "IsTaggingEnabled");
-    const itemTagCategory = propertyRef(props.modelValue.itemTagCategory ?? null, "ItemTagCategoryId");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const contentChannelTypeValue = propertyRef(props.modelValue?.bag?.contentChannelType?.value ?? "", "ContentChannelTypeId");
+    const categories = propertyRef(props.modelValue?.bag?.categories ?? [], "Categories");
+    const isStructuredContent = propertyRef(props.modelValue?.bag?.isStructuredContent ?? false, "IsStructuredContent");
+    const structuredContentToolValue = propertyRef(props.modelValue?.bag?.structuredContentToolValue ?? null, "StructuredContentToolValueId");
+    const contentControlType = propertyRef(props.modelValue?.bag?.contentControlType?.toString() ?? "", "ContentControlType");
+    const rootImageDirectory = propertyRef(props.modelValue?.bag?.rootImageDirectory ?? "", "RootImageDirectory");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "IconCssClass");
+    const enableRss = propertyRef(props.modelValue?.bag?.enableRss ?? false, "EnableRss");
+    const channelUrl = propertyRef(props.modelValue?.bag?.channelUrl ?? "", "ChannelUrl");
+    const timeToLive = propertyRef(props.modelValue?.bag?.timeToLive ?? 0, "TimeToLive");
+    const itemUrl = propertyRef(props.modelValue?.bag?.itemUrl ?? "", "ItemUrl");
+    const isTaggingEnabled = propertyRef(props.modelValue?.bag?.isTaggingEnabled ?? false, "IsTaggingEnabled");
+    const itemTagCategory = propertyRef(props.modelValue?.bag?.itemTagCategory ?? null, "ItemTagCategoryId");
 
-    const settings = ref(props.modelValue.settings ?? []);
-    const isContentLibraryEnabled = ref(props.modelValue.isContentLibraryEnabled);
-    const licenseTypeGuid = ref(props.modelValue.licenseTypeGuid ?? "");
-    const summaryAttributeGuid = ref(props.modelValue.summaryAttributeGuid ?? "");
-    const authorAttributeGuid = ref(props.modelValue.authorAttributeGuid ?? "");
-    const imageAttributeGuid = ref(props.modelValue.imageAttributeGuid ?? "");
+    const settings = ref(props.modelValue?.bag?.settings ?? []);
+    const isContentLibraryEnabled = ref(props.modelValue?.bag?.isContentLibraryEnabled ?? false);
+    const licenseTypeGuid = ref(props.modelValue?.bag?.licenseTypeGuid ?? "");
+    const summaryAttributeGuid = ref(props.modelValue?.bag?.summaryAttributeGuid ?? "");
+    const authorAttributeGuid = ref(props.modelValue?.bag?.authorAttributeGuid ?? "");
+    const imageAttributeGuid = ref(props.modelValue?.bag?.imageAttributeGuid ?? "");
     const licenceMessage = ref("");
     const isChannelTypeModalVisible = ref(false);
 
     const childChannel = ref("");
     const isContentChannelModalOpen = ref(false);
-    const childContentChannels = ref(props.modelValue.childContentChannels ?? []);
+    const childContentChannels = ref(props.modelValue?.bag?.childContentChannels ?? []);
     const contentChannelList = ref(props.options.contentChannelList ?? []);
 
-    const itemAttributes = ref(props.modelValue.itemAttributes ?? []);
+    const itemAttributes = ref(props.modelValue?.bag?.itemAttributes ?? []);
     const isAttributeModalOpen = ref(false);
     const itemAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributeErrors = ref<string[]>([]);
     const invokeBlockAction = useInvokeBlockAction();
 
     const contentLibraryAttributes = ref(props.options.contentLibraryAttributes ?? []);
@@ -279,7 +271,7 @@
     const availableLicenses = ref(props.options.availableLicenses ?? []);
     const isOrganizationConfigured = ref(props.options.isOrganizationConfigured);
     const disableContentField = ref(props.options.disableContentField);
-    const editorType = ref(props.modelValue.isStructuredContent == true ? "1" : "2");
+    const editorType = ref(props.modelValue?.bag?.isStructuredContent == true ? "1" : "2");
     const editorTypes = [
         {
             text: "Structured Content",
@@ -361,28 +353,6 @@
         };
     }
 
-    function validateNumberValue(value: unknown): string | boolean {
-
-        const stringValue = value as string;
-
-        if (stringValue) {
-            if (!isValidNumber(stringValue)) {
-                return "must be a valid number.";
-            }
-        }
-
-        return true;
-    }
-
-    function isValidNumber(value: string | null | undefined): boolean {
-        if (!value) {
-            return false;
-        }
-
-        const num = Number(value);
-        return !isNaN(num) && isFinite(num);
-    }
-
     // #endregion
 
     // #region Event Handlers
@@ -433,11 +403,9 @@
             fieldTypeGuid: FieldType.Text
         } as PublicEditableAttributeBag;
         isAttributeModalOpen.value = true;
-        attributeErrors.value = [];
     }
 
     const onEditAttribute = async (key: string): Promise<void> => {
-        attributeErrors.value = [];
         const selectedAttribute = itemAttributes.value.find(x => x.guid === key);
         // If attribute exists set it as current attribute for editing.
         if (selectedAttribute) {
@@ -453,7 +421,7 @@
         // Close modal and remove deleted attribute from the current collection of attributes.
         isAttributeModalOpen.value = false;
         itemAttributes.value = itemAttributes.value.filter(s => s.guid !== key);
-        reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== key);
+        reservedKeyNames.value = itemAttributes.value.map(k => k.key!);
 
         // Update the grid.
         if (attributesGridData.rows) {
@@ -466,44 +434,36 @@
     };
 
     function onSaveAttribute(): void {
-        attributeErrors.value = [];
-        const isExistingKey = reservedKeyNames.value.includes(itemAttribute.value?.key ?? "") && !itemAttribute.value?.guid;
+        if (itemAttribute.value) {
+            const index = itemAttributes.value.findIndex(a => a.guid === itemAttribute.value?.guid);
+            if (index !== -1) {
+                // Get the updated attribute and rowItem.
+                let editedAttribute = itemAttributes.value.find(a => a.guid == itemAttribute.value?.guid);
+                let rowItem = attributesGridData.rows?.find(x => x.key == itemAttribute.value?.guid);
 
-        if (isExistingKey) {
-            attributeErrors.value.push("There is already an existing property with the key value you entered or the key has illegal characters. Please select a different key value and use only letters, numbers and underscores.");
-        }
-        else {
-            if (itemAttribute.value) {
-                const index = itemAttributes.value.findIndex(a => a.guid === itemAttribute.value?.guid);
-                if (index !== -1) {
-                    // Get the updated attribute and rowItem.
-                    let editedAttribute = itemAttributes.value.find(a => a.guid == itemAttribute.value?.guid);
-                    let rowItem = attributesGridData.rows?.find(x => x.key == itemAttribute.value?.guid);
-
-                    if (editedAttribute) {
-                        // Replace old attribute with updated attribute.
-                        editedAttribute = itemAttribute.value;
-                        itemAttributes.value.splice(index, 1, editedAttribute);
-                    }
-
-                    if (rowItem && attributesGridData.rows && editedAttribute) {
-                        // Update GridRowItem so changes are reflected in the UI.
-                        const rowIndex = attributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.guid);
-                        rowItem = convertToAttributeGridRowItem(editedAttribute);
-                        attributesGridData.rows?.splice(rowIndex, 1, rowItem);
-                    }
-                }
-                else {
-                    itemAttribute.value.guid = newGuid();
-                    itemAttributes.value.push(itemAttribute.value);
-
-                    // Add new RowItem to the grid to represent the newly added attribute.
-                    const newRowItem = convertToAttributeGridRowItem(itemAttribute.value);
-                    attributesGridData.rows?.push(newRowItem);
+                if (editedAttribute) {
+                    // Replace old attribute with updated attribute.
+                    editedAttribute = itemAttribute.value;
+                    itemAttributes.value.splice(index, 1, editedAttribute);
                 }
 
-                isAttributeModalOpen.value = false;
+                if (rowItem && attributesGridData.rows && editedAttribute) {
+                    // Update GridRowItem so changes are reflected in the UI.
+                    const rowIndex = attributesGridData.rows.findIndex(r => r.key === itemAttribute.value?.guid);
+                    rowItem = convertToAttributeGridRowItem(editedAttribute);
+                    attributesGridData.rows?.splice(rowIndex, 1, rowItem);
+                }
             }
+            else {
+                itemAttribute.value.guid = newGuid();
+                itemAttributes.value.push(itemAttribute.value);
+
+                // Add new RowItem to the grid to represent the newly added attribute.
+                const newRowItem = convertToAttributeGridRowItem(itemAttribute.value);
+                attributesGridData.rows?.push(newRowItem);
+            }
+
+            isAttributeModalOpen.value = false;
         }
     }
 
@@ -517,7 +477,7 @@
     */
     async function onOrderChanged(item: Record<string, unknown>, beforeItem: Record<string, unknown> | null): Promise<boolean> {
         const data = {
-            idKey: props.modelValue?.idKey,
+            idKey: props.modelValue?.bag?.idKey,
             guid: item["guid"],
             beforeGuid: beforeItem?.["guid"] ?? null
         };
@@ -526,72 +486,81 @@
 
         return result.isSuccess;
     }
+
+    watch(isAttributeModalOpen, () => {
+        if (isAttributeModalOpen.value) {
+            reservedKeyNames.value = reservedKeyNames.value.filter(k => k !== itemAttribute.value?.key);
+        }
+        else {
+            if (itemAttribute.value?.key && !reservedKeyNames.value.some(k => k === itemAttribute.value?.key)) {
+                reservedKeyNames.value.push(itemAttribute.value.key);
+            }
+        }
+    });
+
     // # endregion
 
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(contentChannelTypeValue, props.modelValue.contentChannelType?.value ?? "");
-        updateRefValue(categories, props.modelValue.categories ?? []);
-        updateRefValue(isStructuredContent, props.modelValue.isStructuredContent);
-        updateRefValue(structuredContentToolValue, props.modelValue.structuredContentToolValue ?? null);
-        updateRefValue(contentControlType, props.modelValue.contentControlType.toString());
-        updateRefValue(rootImageDirectory, props.modelValue.rootImageDirectory ?? "");
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(enableRss, props.modelValue.enableRss);
-        updateRefValue(channelUrl, props.modelValue.channelUrl ?? "");
-        updateRefValue(timeToLive, props.modelValue.timeToLive ?? "");
-        updateRefValue(itemUrl, props.modelValue.itemUrl ?? "");
-        updateRefValue(isTaggingEnabled, props.modelValue.isTaggingEnabled);
-        updateRefValue(itemTagCategory, props.modelValue.itemTagCategory ?? null);
-        updateRefValue(settings, props.modelValue.settings ?? []);
-        updateRefValue(isContentLibraryEnabled, props.modelValue.isContentLibraryEnabled);
-        updateRefValue(licenseTypeGuid, props.modelValue.licenseTypeGuid ?? "");
-        updateRefValue(summaryAttributeGuid, props.modelValue.summaryAttributeGuid ?? "");
-        updateRefValue(authorAttributeGuid, props.modelValue.authorAttributeGuid ?? "");
-        updateRefValue(imageAttributeGuid, props.modelValue.imageAttributeGuid ?? "");
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(contentChannelTypeValue, props.modelValue?.bag?.contentChannelType?.value ?? "");
+        updateRefValue(categories, props.modelValue?.bag?.categories ?? []);
+        updateRefValue(isStructuredContent, props.modelValue?.bag?.isStructuredContent ?? false);
+        updateRefValue(structuredContentToolValue, props.modelValue?.bag?.structuredContentToolValue ?? null);
+        updateRefValue(contentControlType, props.modelValue?.bag?.contentControlType.toString() ?? "");
+        updateRefValue(rootImageDirectory, props.modelValue?.bag?.rootImageDirectory ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+        updateRefValue(enableRss, props.modelValue?.bag?.enableRss ?? false);
+        updateRefValue(channelUrl, props.modelValue?.bag?.channelUrl ?? "");
+        updateRefValue(timeToLive, props.modelValue?.bag?.timeToLive ?? 0);
+        updateRefValue(itemUrl, props.modelValue?.bag?.itemUrl ?? "");
+        updateRefValue(isTaggingEnabled, props.modelValue?.bag?.isTaggingEnabled ?? false);
+        updateRefValue(itemTagCategory, props.modelValue?.bag?.itemTagCategory ?? null);
+        updateRefValue(settings, props.modelValue?.bag?.settings ?? []);
+        updateRefValue(isContentLibraryEnabled, props.modelValue?.bag?.isContentLibraryEnabled ?? false);
+        updateRefValue(licenseTypeGuid, props.modelValue?.bag?.licenseTypeGuid ?? "");
+        updateRefValue(summaryAttributeGuid, props.modelValue?.bag?.summaryAttributeGuid ?? "");
+        updateRefValue(authorAttributeGuid, props.modelValue?.bag?.authorAttributeGuid ?? "");
+        updateRefValue(imageAttributeGuid, props.modelValue?.bag?.imageAttributeGuid ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, settings, itemAttributes, childContentChannels, ...contentLibraryRefs, ...propRefs], () => {
-        const newValue: ContentChannelBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            name: name.value,
-            contentChannelType: {
-                text: "",
-                value: contentChannelTypeValue.value
-            },
-            categories: categories.value,
-            isStructuredContent: isStructuredContent.value,
-            structuredContentToolValue: structuredContentToolValue.value,
-            contentControlType: toNumber(contentControlType.value),
-            rootImageDirectory: rootImageDirectory.value,
-            iconCssClass: iconCssClass.value,
-            enableRss: enableRss.value,
-            channelUrl: channelUrl.value,
-            timeToLive: timeToLive.value,
-            itemUrl: itemUrl.value,
-            isTaggingEnabled: isTaggingEnabled.value,
-            itemTagCategory: itemTagCategory.value,
-            settings: settings.value,
-            itemAttributes: itemAttributes.value,
-            childContentChannels: childContentChannels.value,
-            isContentLibraryEnabled: isContentLibraryEnabled.value,
-            licenseTypeGuid: licenseTypeGuid.value,
-            summaryAttributeGuid: summaryAttributeGuid.value,
-            authorAttributeGuid: authorAttributeGuid.value,
-            imageAttributeGuid: imageAttributeGuid.value,
+        const newValue: ValidPropertiesBox<ContentChannelBag> = {
+            bag: { ...props.modelValue.bag } as ContentChannelBag,
         };
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "categories", categories.value);
+        setPropertiesBoxValue(newValue, "isStructuredContent", isStructuredContent.value);
+        setPropertiesBoxValue(newValue, "structuredContentToolValue", structuredContentToolValue.value);
+        setPropertiesBoxValue(newValue, "contentControlType", toNumber(contentControlType.value));
+        setPropertiesBoxValue(newValue, "rootImageDirectory", rootImageDirectory.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "enableRss", enableRss.value);
+        setPropertiesBoxValue(newValue, "channelUrl", channelUrl.value);
+        setPropertiesBoxValue(newValue, "timeToLive", timeToLive.value);
+        setPropertiesBoxValue(newValue, "itemUrl", itemUrl.value);
+        setPropertiesBoxValue(newValue, "isTaggingEnabled", isTaggingEnabled.value);
+        setPropertiesBoxValue(newValue, "itemTagCategory", itemTagCategory.value);
+        setPropertiesBoxValue(newValue, "settings", settings.value);
+        setPropertiesBoxValue(newValue, "itemAttributes", itemAttributes.value);
+        setPropertiesBoxValue(newValue, "childContentChannels", childContentChannels.value);
+        setPropertiesBoxValue(newValue, "isContentLibraryEnabled", isContentLibraryEnabled.value);
+        setPropertiesBoxValue(newValue, "licenseTypeGuid", licenseTypeGuid.value);
+        setPropertiesBoxValue(newValue, "summaryAttributeGuid", summaryAttributeGuid.value);
+        setPropertiesBoxValue(newValue, "authorAttributeGuid", authorAttributeGuid.value);
+        setPropertiesBoxValue(newValue, "imageAttributeGuid", imageAttributeGuid.value);
+        setPropertiesBoxValue(newValue, "contentChannelType", { text: "", value: contentChannelTypeValue.value });
 
-        if (props.modelValue.idKey && props.modelValue.contentChannelType?.value !== contentChannelTypeValue.value && childContentChannels.value.length > 0) {
+        if (props.modelValue?.bag?.idKey && props.modelValue?.bag?.contentChannelType?.value !== contentChannelTypeValue.value && childContentChannels.value.length > 0) {
             isChannelTypeModalVisible.value = true;
         }
 
@@ -639,10 +608,10 @@
 
     watch(licenseTypeGuid, async () => {
         licenceMessage.value = "";
-        if (props.modelValue.idKey) {
+        if (props.modelValue?.bag?.idKey) {
             const data = {
                 selectedLicenseType: licenseTypeGuid.value,
-                idKey: props.modelValue.idKey
+                idKey: props.modelValue.bag.idKey
             };
 
             const result = await invokeBlockAction<{ isMessageVisible: boolean, message: string }>("GetLicenseMessage", data);

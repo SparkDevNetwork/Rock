@@ -39,6 +39,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <Rock:NotificationBox ID="nbNotAuthorizedToView" runat="server" NotificationBoxType="Warning" Visible="false" />
         <!-- Edit Panel -->
         <asp:Panel ID="pnlEditDetail" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
@@ -342,7 +343,7 @@
 
                     <Rock:DataTextBox ID="dtbResultSummary" runat="server" Label="Details" ValidationGroup="valViewResult" SourceTypeName="Rock.Model.BenevolenceResult, Rock" TextMode="MultiLine" Rows="3" PropertyName="ResultSummary" />
 
-                    <Rock:DynamicPlaceholder ID="phViewResultAttributes" runat="server" />
+                    <Rock:AttributeValuesContainer ID="avcViewResultAttributes" runat="server" />
                 </Content>
             </Rock:ModalDialog>
         </asp:Panel>

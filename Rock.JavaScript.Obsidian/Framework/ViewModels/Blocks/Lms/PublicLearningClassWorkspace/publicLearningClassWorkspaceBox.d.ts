@@ -22,8 +22,9 @@
 //
 
 import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
+import { LearningCompletionStatus } from "@Obsidian/Enums/Lms/learningCompletionStatus";
 import { Guid } from "@Obsidian/Types";
-import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
 import { LearningClassAnnouncementBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassAnnouncementDetail/learningClassAnnouncementBag";
 import { LearningClassContentPageBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassContentPageDetail/learningClassContentPageBag";
 import { LearningClassFacilitatorBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassFacilitatorBag";
@@ -34,10 +35,16 @@ import { PublicLearningClassWorkspaceNotificationBag } from "@Obsidian/ViewModel
 /** Gets or sets the information required to render the Public Learning Class Workspace block. */
 export type PublicLearningClassWorkspaceBox = {
     /** Gets or sets the list of activities for this learning class. */
-    activities?: LearningActivityCompletionBag[] | null;
+    activities?: LearningClassActivityCompletionBag[] | null;
 
     /** Gets or sets the announcements specific to this class and student. */
     announcements?: LearningClassAnnouncementBag[] | null;
+
+    /** Gets or sets the date the class was completed. */
+    classCompletionDate?: string | null;
+
+    /** Gets or sets the completion status of the class for the individual. */
+    classCompletionStatus: LearningCompletionStatus;
 
     /** Gets or sets the id for the class. */
     classIdKey?: string | null;
@@ -59,6 +66,9 @@ export type PublicLearningClassWorkspaceBox = {
 
     /** Gets or sets the current Grade scale that the student has achieved in the class (if configured to show grades). */
     currentGrade?: LearningGradingSystemScaleBag | null;
+
+    /** Whether announcements are enabled. */
+    enableAnnouncements: boolean;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that

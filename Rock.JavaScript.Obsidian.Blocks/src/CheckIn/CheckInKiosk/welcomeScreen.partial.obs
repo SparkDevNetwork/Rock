@@ -96,6 +96,8 @@
     const invokeBlockAction = useInvokeBlockAction();
     const http = useHttp();
 
+    let promotionTimer: number | undefined;
+
     // #region Values
 
     let documentKeyboardBuffer: string = "";
@@ -167,6 +169,20 @@
         }
         else {
             classes.push("kiosk-not-open");
+        }
+
+        // Determine if we have any camera configuration enabled. If not then
+        // we add a class to disable the camera button. On the stock theme this
+        // hides the button completely.
+        const isCameraEnabled = props.configuration.kiosk?.isCameraEnabled
+            && barcodeButtonElement.value
+            && cameraDeviceId.value;
+        const isIpadCameraEnabled = props.configuration.kiosk
+            && props.configuration.kiosk.cameraMode !== CameraBarcodeConfiguration.Off
+            && isIpadAppWithCamera(props.configuration.kiosk);
+
+        if (!isCameraEnabled && !isIpadCameraEnabled) {
+            classes.push("camera-disabled");
         }
 
         return classes;
@@ -447,6 +463,11 @@
             window.clearTimeout(updateKioskStatusTimer);
             updateKioskStatusTimer = undefined;
         }
+
+        if (promotionTimer !== undefined) {
+            window.clearTimeout(promotionTimer);
+            promotionTimer = undefined;
+        }
     }
 
     /**
@@ -518,6 +539,22 @@
      */
     function onScanBarcodeClick(): void {
         startNativeCamera(true);
+    }
+
+    async function onPromotionTimer(): Promise<void> {
+        try {
+            await updatePromotionList();
+        }
+        finally {
+            // Undefined means we have shut down this component.
+            if (promotionTimer !== undefined) {
+                // Update promotions again in another 5 minutes, with some random
+                // shift up to another minute.
+                let seconds = 5 * 60;
+                seconds += Math.random() * 60;
+                promotionTimer = window.setTimeout(onPromotionTimer, seconds * 1000);
+            }
+        }
     }
 
     // #endregion
@@ -610,6 +647,9 @@
         document.addEventListener("keypress", onDocumentKeyPress);
 
         updatePromotionList();
+
+        // Update the promotion list after 5 minutes.
+        promotionTimer = window.setTimeout(onPromotionTimer, 5 * 60 * 1000);
     });
 
     // Perform any cleanup when this component is about to be removed from

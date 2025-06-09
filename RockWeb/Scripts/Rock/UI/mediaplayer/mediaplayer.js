@@ -252,9 +252,11 @@ var Rock;
                     }
                 }
                 if (startPosition < this.watchBits.length) {
-                    this.player.currentTime = startPosition;
+                    if (this.player.currentTime !== startPosition) {
+                        this.player.currentTime = startPosition;
+                    }
                 }
-                else {
+                else if (this.player.currentTime != 0) {
                     this.player.currentTime = 0;
                 }
                 this.writeDebugMessage(`Set starting position at: ${startPosition}`);

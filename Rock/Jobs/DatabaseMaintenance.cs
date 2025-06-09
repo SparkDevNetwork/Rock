@@ -378,29 +378,38 @@ namespace Rock.Jobs
             parms.Add( "@UseONLINEIndexRebuild", useONLINEIndexRebuild );
 
             var qry = @"
-SELECT 
-				dbschemas.[name] as [Schema], 
-				dbtables.[name] as [Table], 
-				dbindexes.[name] as [Index],
-				dbindexes.[type_desc] as [IndexType],
-				CONVERT(INT, indexstats.avg_fragmentation_in_percent) as [FragmentationPercent] ,
-				indexstats.page_count as [PageCount]
-			FROM 
-				sys.dm_db_index_physical_stats (DB_ID(), NULL, NULL, NULL, NULL) AS indexstats
-				INNER JOIN sys.tables dbtables on dbtables.[object_id] = indexstats.[object_id]
-				INNER JOIN sys.schemas dbschemas on dbtables.[schema_id] = dbschemas.[schema_id]
-				INNER JOIN sys.indexes AS dbindexes ON dbindexes.[object_id] = indexstats.[object_id]
-				AND indexstats.index_id = dbindexes.index_id
-			WHERE 
-				indexstats.database_id = DB_ID()
-                AND dbindexes.[name] IS NOT NULL
-				AND indexstats.page_count > @PageCountLimit
-				AND indexstats.avg_fragmentation_in_percent > @MinFragmentation
-";
+            SELECT 
+	              [dbschemas].[name] as [Schema]
+	            , [dbtables].[name] as [Table]
+	            , [dbindexes].[name] as [Index]
+	            , [dbindexes].[type_desc] as [IndexType]
+	            , CONVERT(INT, [indexstats].[avg_fragmentation_in_percent]) AS [FragmentationPercent]
+	            , [indexstats].[page_count] as [PageCount]
+	            , [dbindexes].[fill_factor] as [FillFactor]
+            FROM 
+	            sys.dm_db_index_physical_stats (DB_ID(), NULL, NULL, NULL, NULL) AS [indexstats]
+	            INNER JOIN sys.tables AS [dbtables]
+		            ON
+			            [dbtables].[object_id] = [indexstats].[object_id]
+	            INNER JOIN sys.schemas AS [dbschemas]
+		            ON
+			            [dbtables].[schema_id] = [dbschemas].[schema_id]
+	            INNER JOIN sys.indexes AS [dbindexes]
+		            ON
+			            [dbindexes].[object_id] = [indexstats].[object_id]
+		            AND	[indexstats].[index_id] = [dbindexes].[index_id]
+            WHERE 
+		            [indexstats].[database_id] = DB_ID()
+                AND	[dbindexes].[name] IS NOT NULL
+	            AND	(
+		            [dbindexes].[fill_factor] = 80
+		            OR (
+			            [indexstats].[page_count] > @PageCountLimit
+			            AND [indexstats].[avg_fragmentation_in_percent] > @MinFragmentation
+		            )
+	            )";
 
             var dataTable = DbService.GetDataTable( qry, System.Data.CommandType.Text, parms, commandTimeoutSeconds );
-
-            var rebuildFillFactorOption = "FILLFACTOR = 80";
 
             var indexInfoList = dataTable.Rows.OfType<DataRow>().Select( row => new
             {
@@ -408,7 +417,8 @@ SELECT
                 TableName = row["Table"].ToString(),
                 IndexName = row["Index"].ToString(),
                 IndexType = row["IndexType"].ToString(),
-                FragmentationPercent = row["FragmentationPercent"].ToString().AsIntegerOrNull()
+                FragmentationPercent = row["FragmentationPercent"].ToString().AsIntegerOrNull(),
+                FillFactor = row["FillFactor"].ToString().AsIntegerOrNull(),
             } );
 
             // let C# do the sorting.
@@ -427,7 +437,16 @@ SELECT
                 _databaseMaintenanceTaskResults.Add( databaseMaintenanceTaskResult );
 
                 var rebuildSQL = $"ALTER INDEX [{indexInfo.IndexName}] ON [{indexInfo.SchemaName}].[{indexInfo.TableName}]";
-                if ( indexInfo.FragmentationPercent > minimumFragmentationPercentage )
+
+                var rebuildFillFactorOption = $"FILLFACTOR = {indexInfo.FillFactor}";
+                var isFillFactorEighty = ( indexInfo.FillFactor == 80 );
+                if ( isFillFactorEighty )
+                {
+                    rebuildFillFactorOption = "FILLFACTOR = 100";
+                }
+
+                var shouldExecuteRebuild = ( indexInfo.FragmentationPercent > minimumFragmentationPercentage ) || isFillFactorEighty;
+                if ( shouldExecuteRebuild )
                 {
                     var commandOption = rebuildFillFactorOption;
                     if ( useONLINEIndexRebuild && ( indexInfo.IndexType != "SPATIAL" && indexInfo.IndexType != "XML" ) )

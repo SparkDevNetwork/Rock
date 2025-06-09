@@ -520,7 +520,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     Key = kvp.Value.Key,
                     Name = kvp.Value.Name,
                     Order = kvp.Value.Order,
-                    Value = ""
+                    Value = "",
+                    TextValue = request.GetAttributeTextValue( kvp.Value.Key )
                 } );
 
             // Add all the values to those attributes.
@@ -545,7 +546,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
         /// <returns>A list of editable attribute values.</returns>
         private List<PublicEditableAttributeValueViewModel> GetPublicEditableAttributeValues( IHasAttributes request )
         {
-            var attributes = request.GetPublicAttributesForEdit( RequestContext.CurrentPerson )
+            var attributes = request.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: true )
                 .ToDictionary( kvp => kvp.Key, kvp => new PublicEditableAttributeValueViewModel
                 {
                     AttributeGuid = kvp.Value.AttributeGuid,
@@ -560,7 +561,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                     Value = ""
                 } );
 
-            request.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
+            request.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: true )
                 .ToList()
                 .ForEach( kvp =>
                 {
@@ -1347,6 +1348,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( options.OpportunityGuid );
 
                 connectionRequest.ConnectionOpportunityId = newOpportunity.Id;
+                connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
 
                 //
                 // Set the new connection status, which requires a lookup.
@@ -1710,7 +1712,7 @@ namespace Rock.Blocks.Types.Mobile.Connection
                 // Set any custom request attribute values.
                 if ( requestDetails.AttributeValues != null )
                 {
-                    request.SetPublicAttributeValues( requestDetails.AttributeValues, RequestContext.CurrentPerson );
+                    request.SetPublicAttributeValues( requestDetails.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 }
 
                 // Add an activity that the connector was assigned or changed.
@@ -2312,8 +2314,8 @@ namespace Rock.Blocks.Types.Mobile.Connection
 
                 return ActionOk( new AttributesAndValuesViewModel
                 {
-                    Attributes = groupMember.GetPublicAttributesForEdit( RequestContext.CurrentPerson ),
-                    Values = groupMember.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson )
+                    Attributes = groupMember.GetPublicAttributesForEdit( RequestContext.CurrentPerson, enforceSecurity: true ),
+                    Values = groupMember.GetPublicAttributeValuesForEdit( RequestContext.CurrentPerson, enforceSecurity: true )
                 } );
             }
         }
@@ -3108,6 +3110,11 @@ namespace Rock.Blocks.Types.Mobile.Connection
             /// </summary>
             /// <value>The value.</value>
             public string Value { get; set; }
+
+            /// <summary>
+            /// Gets or sets the text value.
+            /// </summary>
+            public string TextValue { get; set; }
         }
 
         /// <summary>

@@ -6,13 +6,15 @@
                      :label="label"
                      :displayStyle="displayStyle"
                      :items="actualTypeItems"
+                     :showBlankItem="true"
                      :multiple="false" />
     <BaseAsyncPicker v-model="internalRoleValue"
                      v-bind="standardProps"
                      :label="roleLabel"
                      :displayStyle="displayStyle"
                      :items="actualRoleItems"
-                     :multiple="false" />
+                     :showBlankItem="true"
+                     :multiple="multiple" />
 </template>
 
 <script setup lang="ts">
@@ -29,7 +31,7 @@
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<ListItemBag | null>,
+            type: Object as PropType<ListItemBag | ListItemBag[] | null>,
             required: true
         },
 
@@ -153,7 +155,9 @@
      * Gets all the data needed to fill in the pickers when we're given a value to start
      */
     async function loadRoleOptionsFromValue(): Promise<void> {
-        const groupRoleGuid = toGuidOrNull(props.modelValue?.value);
+        const role = Array.isArray(props.modelValue) ? props.modelValue[0] : props.modelValue;
+        const roles = props.modelValue;
+        const groupRoleGuid = toGuidOrNull(role?.value);
 
         if (!groupRoleGuid || areEqual(groupRoleGuid, emptyGuid)) {
             loadedRoleItems.value = [];
@@ -174,7 +178,7 @@
             // Wait for watchers of the group type to fire so we don't undo the next line
             await nextTick();
 
-            internalRoleValue.value = result.data.selectedGroupRole ?? null;
+            internalRoleValue.value = roles ?? null;
         }
         else {
             console.error(result.errorMessage ?? "Unknown error while loading data.");
@@ -207,7 +211,7 @@
 
     // #region Initialization
 
-    if (props.modelValue) {
+    if (Array.isArray(props.modelValue) || props.modelValue?.value) {
         // Load the type and list of items based on the selected value
         loadRoleOptionsFromValue();
     }

@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -64,6 +65,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( PersonalDevice.PersonalDeviceQueryableAttributeValue ), nameof( PersonalDeviceAttributeValues ) )]
+    public partial class PersonalDevice
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<PersonalDeviceQueryableAttributeValue> PersonalDeviceAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class PersonalDeviceQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -129,8 +148,12 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
+            target.IsBeaconMonitoringEnabled = source.IsBeaconMonitoringEnabled;
+            target.IsPreciseLocationEnabled = source.IsPreciseLocationEnabled;
             target.LastSeenDateTime = source.LastSeenDateTime;
             target.LastVerifiedDateTime = source.LastVerifiedDateTime;
+            target.LocationPermissionDisabledDateTime = source.LocationPermissionDisabledDateTime;
+            target.LocationPermissionStatus = source.LocationPermissionStatus;
             target.MACAddress = source.MACAddress;
             target.Manufacturer = source.Manufacturer;
             target.Model = source.Model;

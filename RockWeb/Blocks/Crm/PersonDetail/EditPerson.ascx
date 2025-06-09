@@ -74,6 +74,8 @@
                                         <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Connection Status" Required="true" />
                                     </div>
                                     <div class="col-sm-6">
+                                        <Rock:RockLiteral ID="lRecordSourceReadOnly" runat="server" Label="Record Source" />
+                                        <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" />
                                     </div>
                                 </div>
                                 <Rock:RockRadioButtonList ID="rblGender" runat="server" RepeatDirection="Horizontal" Label="Gender">
@@ -81,7 +83,7 @@
                                     <asp:ListItem Text="Female" Value="Female" />
                                     <asp:ListItem Text="Unknown" Value="Unknown" />
                                 </Rock:RockRadioButtonList>
-                                <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birth Day" />
+                                <Rock:BirthdayPicker ID="bpBirthDay" runat="server" Label="Birth Date" />
                                 <asp:Panel ID="pnlGradeGraduation" runat="server" CssClass="form-row">
                                     <div class="col-xs-6 col-sm-3">
                                         <Rock:GradePicker ID="ddlGradePicker" runat="server" UseAbbreviation="true" UseGradeOffsetAsValue="true" />
@@ -158,6 +160,19 @@
                                     <asp:ListItem Text="Email" Value="1" />
                                     <asp:ListItem Text="SMS" Value="2" />
                                 </Rock:RockRadioButtonList>
+
+                                <asp:Panel ID="pnlChatPreferences" runat="Server">
+                                    <Rock:RockDropDownList ID="ddlIsChatProfilePublic" runat="server" CssClass="input-width-xl" Label="Is Chat Profile Public" Help="If enabled, the person's profile will be visible in the external chat system.">
+                                        <asp:ListItem Value="" Text="Inherit from System Default" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                    <Rock:RockDropDownList ID="ddlIsChatOpenDirectMessageAllowed" runat="server" CssClass="input-width-xl" Label="Is Chat Open Direct Message Allowed" Help="If enabled, the person can receive direct messages from anybody in the external chat system. Otherwise, only people who are members of a shared, non-public chat channel may initiate a new direct message with this person.">
+                                        <asp:ListItem Value="" Text="Inherit from System Default" />
+                                        <asp:ListItem Value="n" Text="No" />
+                                        <asp:ListItem Value="y" Text="Yes" />
+                                    </Rock:RockDropDownList>
+                                </asp:Panel>
 
                                 <Rock:NotificationBox ID="nbCommunicationPreferenceWarning" runat="server" NotificationBoxType="Warning" Visible="false" />
 

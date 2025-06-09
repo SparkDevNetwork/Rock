@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using Rock.Data;
+using Rock.Security;
 
 #if REVIEW_NET5_0_OR_GREATER
 using DbEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
@@ -124,6 +125,13 @@ namespace Rock.Model
 
             return base.ToString();
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => EventItem ?? base.ParentAuthority;
 
         #endregion
     }

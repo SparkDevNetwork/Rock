@@ -353,7 +353,7 @@ namespace Rock.Web.Cache
         }
 
         /// <summary>
-        /// Gets the legacy global attribute values as merge fields for dotLiquid merging.
+        /// Gets the legacy global attribute values as merge fields for Lava merging.
         /// Note: You should use LavaHelper.GetCommonMergeFields instead of this
         /// </summary>
         /// <param name="currentPerson">The current person.</param>
@@ -462,6 +462,12 @@ namespace Rock.Web.Cache
         {
             get
             {
+                var useDefaultState = SystemSettings.GetValue( SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION ).AsBoolean();
+                if ( !useDefaultState )
+                {
+                    return string.Empty;
+                }
+
                 // Check to see if there is an global attribute for organization address
                 var locGuid = GetValue( "OrganizationAddress" ).AsGuidOrNull();
                 if ( !locGuid.HasValue ) return string.Empty;

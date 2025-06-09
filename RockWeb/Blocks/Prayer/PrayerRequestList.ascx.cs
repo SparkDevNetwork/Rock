@@ -751,6 +751,38 @@ namespace RockWeb.Blocks.Prayer
         }
 
         /// <summary>
+        /// Get the tooltip text for a given ModerationFlag.
+        /// </summary>
+        /// <param name="flag">The given moderation flag</param>
+        /// <returns>The Tooltip text</returns>
+        private string GetTooltipTextForFlag( ModerationFlags flag )
+        {
+            switch ( flag )
+            {
+                case ModerationFlags.Hate:
+                    return "Flagged for hate. ";
+
+                case ModerationFlags.Threat:
+                    return "Flagged for threatening content. ";
+
+                case ModerationFlags.SelfHarm:
+                    return "Flagged for self-harm. ";
+
+                case ModerationFlags.Sexual:
+                    return "Flagged for sexual content. ";
+
+                case ModerationFlags.SexualMinor:
+                    return "Flagged for sexual content involving minors. ";
+
+                case ModerationFlags.Violent:
+                    return "Flagged for violent content. ";
+
+                default:
+                    return string.Empty;
+            }
+        }
+
+        /// <summary>
         /// Handles the GridRebind event of the gPrayerRequests control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -777,16 +809,27 @@ namespace RockWeb.Blocks.Prayer
                     lFullname.Text = prayerRequest.FirstName + " " + prayerRequest.LastName;
                 }
 
-                if ( ( ModerationFlags ) prayerRequest.ModerationFlags == ModerationFlags.SelfHarm )
+                var tooltipText = string.Empty;
+
+                foreach ( ModerationFlags flag in Enum.GetValues( typeof( ModerationFlags ) ) )
+                {
+                    if ( flag != ModerationFlags.None && prayerRequest.ModerationFlags.HasFlag( flag ) )
+                    {
+                        var flagText = flag.ToString().SplitCase();
+                        tooltipText += GetTooltipTextForFlag( flag );
+                    }
+                }
+
+                if ( tooltipText.IsNotNullOrWhiteSpace() )
                 {
                     // Ensure the column is visible.
-                    rtfSelfHarmFlag.Visible = true;
+                    rtfModerationFlags.Visible = true;
 
                     // Find the row control and add the icon to it for the self-harm flag.
-                    var lSelfHarmFlag = e.Row.FindControl( "lSelfHarmFlag" ) as RockLiteral;
-                    if (lSelfHarmFlag != null )
+                    var lModerationFlags = e.Row.FindControl( "lModerationFlags" ) as RockLiteral;
+                    if (lModerationFlags != null )
                     {
-                        lSelfHarmFlag.Text = "<i class=\"fa fa-exclamation-triangle text-warning\" data-toggle=\"tooltip\" data-trigger=\"hover\" data-delay=\"250\" title=\"Flagged for self-harm\" ></i>";
+                        lModerationFlags.Text = $"<i class=\"fa fa-exclamation-triangle text-warning\" data-toggle=\"tooltip\" data-trigger=\"hover\" data-delay=\"250\" title=\"{tooltipText}\" ></i>";
                     }
                 }
             }

@@ -18,12 +18,15 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity;
 using System.Linq;
 
 using Humanizer;
 
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -31,6 +34,20 @@ namespace Rock.Model
 {
     public partial class GroupMember
     {
+        #region Properties
+
+        /// <summary>
+        /// Set during very specific cases where Group Membership Requirements need to be
+        /// disabled/skipped. DO NOT use without permission from the team lead before using this property.
+        /// </summary>
+        [NotMapped]
+        [HideFromReporting]
+        [LavaHidden]
+        [RockInternal( "17.0", true )]
+        internal bool IsSkipRequirementsCheckingDuringValidationCheck { get; set; } = false;
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -308,7 +325,16 @@ namespace Rock.Model
             // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
             if ( this.IsNewOrChangedGroupMember( rockContext ) )
             {
-                if ( group.GetGroupRequirements( rockContext ).Any( a => a.MustMeetRequirementToAddMember ) )
+                var isPersonRecord = true;
+                if ( this.Person != null )
+                {
+                    // if it's Business or REST user, then it's NOT a 'person' type record
+                    var isBusiness = this.Person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                    var isRestUser = this.Person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
+                    isPersonRecord = !( isBusiness || isRestUser );
+                }
+
+                if ( isPersonRecord && !this.IsSkipRequirementsCheckingDuringValidationCheck && group.GetGroupRequirements( rockContext ).Any( a => a.MustMeetRequirementToAddMember ) )
                 {
                     var requirementStatusesRequiredForAdd = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId )
                         .Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet

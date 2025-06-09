@@ -97,5 +97,22 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         /// The name search.
         /// </value>
         public ListItemBag NameSearch { get; set; }
+
+        /// <summary>
+        /// Gets or sets the valid properties. Due to the nested nature of the CheckInTypeBag valid properties from the server is added here
+        /// to be used when adding a new configuration is being created since a request to the Edit endpoint won't be made.
+        /// </summary>
+        /// <value>
+        /// The valid properties.
+        /// </value>
+        public List<string> ValidProperties { get; set; }
+
+        /// <summary>
+        /// Gets or sets the promotions content channel options.
+        /// </summary>
+        /// <value>
+        /// The promotions content channel options.
+        /// </value>
+        public List<ListItemBag> PromotionsContentChannelTypeOptions { get; set; }
     }
 }

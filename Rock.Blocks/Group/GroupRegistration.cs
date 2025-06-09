@@ -22,8 +22,10 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupRegistration;
 using Rock.ViewModels.Controls;
 using Rock.Web;
@@ -49,7 +51,6 @@ namespace Rock.Blocks.Group
         Description = "This setting restricts which types of groups a person can be added to, however selecting a specific group via the Group setting will override this restriction.",
         IsRequired = true,
         DefaultValue = Rock.SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP,
-        Category = "",
         Order = 0 )]
 
     [GroupField( "Group",
@@ -57,15 +58,13 @@ namespace Rock.Blocks.Group
         Description = "Optional group to add person to. If omitted, the group's Guid should be passed via the Query string (GroupGuid=).",
         IsRequired = false,
         DefaultValue = "",
-        Category = "",
-        Order = 0 )]
+        Order = 1 )]
 
     [BooleanField( "Enable Passing Group Id",
         Key = AttributeKey.EnablePassingGroupId,
         Description = "If enabled, allows the ability to pass in a group's Id (GroupId=) instead of the Guid.",
         DefaultBooleanValue = true,
-        Category = "",
-        Order = 0 )]
+        Order = 2 )]
 
     [CustomRadioListField( "Mode",
         Key = AttributeKey.Mode,
@@ -73,37 +72,42 @@ namespace Rock.Blocks.Group
         ListSource = "Simple^Simple,Full^Full,FullSpouse^Full With Spouse",
         IsRequired = true,
         DefaultValue = "Simple",
-        Category = "",
-        Order = 1 )]
+        Order = 3 )]
 
     [CustomRadioListField( "Group Member Status",
         Key = AttributeKey.GroupMemberStatus,
-        Description = "The group member status to use when adding person to group (default: 'Pending'.)",
+        Description = "The group member status to use when adding person to group (default: 'Pending').",
         ListSource = "2^Pending,1^Active,0^Inactive",
         IsRequired = true,
         DefaultValue = "2",
-        Category = "",
-        Order = 2 )]
+        Order = 4 )]
 
     [DefinedValueField( "Connection Status",
         Key = AttributeKey.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default: 'Prospect'.)",
+        Description = "The connection status to use for new individuals (default: 'Prospect').",
         IsRequired = true,
         AllowMultiple = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
-        DefaultValue =  "368DD475-242C-49C4-A42C-7278BE690CC2",
-        Category = "",
-        Order = 3 )]
+        DefaultValue = SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_PROSPECT,
+        Order = 5 )]
 
     [DefinedValueField( "Record Status",
         Key = AttributeKey.RecordStatus,
-        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        Description = "The record status to use for new individuals (default: 'Pending').",
         IsRequired = true,
         AllowMultiple = false,
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
-        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
-        Category = "",
-        Order = 4 )]
+        DefaultValue = SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
+        Order = 6 )]
+
+    [DefinedValueField( "Record Source",
+        Key = AttributeKey.RecordSource,
+        Description = "The record source to use for new individuals (default = 'Group Registration'). Can be overridden by a record source specified on the group or its parent group type. If a 'RecordSource' page parameter is found, it will be used instead.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        DefaultValue = SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_GROUP_REGISTRATION,
+        Order = 7 )]
 
     [WorkflowTypeField( "Workflow",
         Key = AttributeKey.Workflow,
@@ -111,8 +115,7 @@ namespace Rock.Blocks.Group
         AllowMultiple = false,
         IsRequired = false,
         DefaultValue = "",
-        Category = "",
-        Order = 5 )]
+        Order = 8 )]
 
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.LavaTemplate,
@@ -125,16 +128,14 @@ namespace Rock.Blocks.Group
 <div class='alert alert-info'>
     Please complete the form below to register for {{ Group.Name }}. 
 </div>",
-        Category = "",
-        Order = 7 )]
+        Order = 9 )]
 
     [LinkedPage( "Result Page",
         Key = AttributeKey.ResultPage,
         Description = "An optional page to redirect user to after they have been registered for the group.",
         IsRequired = false,
         DefaultValue = "",
-        Category = "",
-        Order = 8 )]
+        Order = 10 )]
 
     [CodeEditorField( "Result Lava Template",
         Key = AttributeKey.ResultLavaTemplate,
@@ -147,8 +148,7 @@ namespace Rock.Blocks.Group
 <div class='alert alert-success'>
     You have been registered for {{ Group.Name }}. You should be hearing from the leader soon.
 </div>",
-        Category = "",
-        Order = 9 )]
+        Order = 11 )]
 
     [CustomRadioListField( "Auto Fill Form",
         Key = AttributeKey.AutoFillForm,
@@ -156,35 +156,32 @@ namespace Rock.Blocks.Group
         ListSource = "true^True,false^False",
         IsRequired = true,
         DefaultValue = "true",
-        Category = "",
-        Order = 10 )]
+        Order = 12 )]
 
     [TextField( "Register Button Alt Text",
         Key = AttributeKey.RegisterButtonAltText,
         Description = "Alternate text to use for the Register button (default is 'Register').",
         IsRequired = false,
         DefaultValue = "Register",
-        Category = "",
-        Order = 11 )]
+        Order = 13 )]
 
     [BooleanField( "Prevent Overcapacity Registrations",
         Key = AttributeKey.PreventOvercapacityRegistrations,
         Description = "When set to true, user cannot register for groups that are at capacity or whose default GroupTypeRole are at capacity. If only one spot is available, no spouses can be registered.",
         DefaultBooleanValue = true,
-        Category = "",
-        Order = 12 )]
+        Order = 14 )]
 
     [BooleanField( "Require Email",
         Key = AttributeKey.RequireEmail,
         Description = "Should email be required for registration?",
         DefaultBooleanValue = true,
-        Order = 13 )]
+        Order = 15 )]
 
     [BooleanField( "Require Mobile Phone",
         Key = AttributeKey.RequireMobilePhone,
         Description = "Should mobile phone numbers be required (when visible) for registration?  NOTE: Certain fields such as phone numbers and address are not shown when the block is configured for 'Simple' mode.",
         DefaultBooleanValue = false,
-        Order = 14 )]
+        Order = 16 )]
 
     [CustomDropdownListField(
         "Show SMS Opt-in",
@@ -193,7 +190,7 @@ namespace Rock.Blocks.Group
         ListSource = "Hide,First Adult,All Adults",
         IsRequired = true,
         DefaultValue = "Hide",
-        Order = 15 )]
+        Order = 17 )]
 
     #endregion
 
@@ -218,6 +215,7 @@ namespace Rock.Blocks.Group
             public const string GroupMemberStatus = "GroupMemberStatus";
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
+            public const string RecordSource = "RecordSource";
             public const string Workflow = "Workflow";
             public const string LavaTemplate = "LavaTemplate";
             public const string ResultPage = "ResultPage";
@@ -288,6 +286,12 @@ namespace Rock.Blocks.Group
             if ( recordStatus == null )
             {
                 box.ErrorMessage = "The selected Record Status setting does not exist.";
+            }
+
+            var recordSource = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() );
+            if ( recordSource == null )
+            {
+                box.ErrorMessage = "The selected Record Source setting does not exist.";
             }
 
             var married = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() );
@@ -546,13 +550,13 @@ namespace Rock.Blocks.Group
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="person">The person.</param>
-        /// <param name="workflowType">Type of the workflow.</param>
         /// <param name="groupMembers">The group members.</param>
-        private bool AddPersonToGroup( RockContext rockContext, Person person, WorkflowTypeCache workflowType, List<GroupMember> groupMembers, out string errorMessage )
+        /// <param name="groupMember">The new or existing group member being registered.</param>
+        private bool AddPersonToGroup( RockContext rockContext, Model.Group group, Person person, List<GroupMember> groupMembers, out string errorMessage, out GroupMember groupMember )
         {
-            var group = GetGroup( rockContext );
             var defaultGroupRole = group.GroupType.DefaultGroupRole;
             errorMessage = string.Empty;
+            groupMember = null;
 
             if ( person == null )
             {
@@ -560,7 +564,6 @@ namespace Rock.Blocks.Group
                 return false;
             }
 
-            GroupMember groupMember = null;
             if ( !group.Members
                 .Any( m =>
                     m.PersonId == person.Id &&
@@ -609,19 +612,6 @@ namespace Rock.Blocks.Group
                 }
             }
 
-            if ( groupMember != null && workflowType != null && ( workflowType.IsActive ?? true ) )
-            {
-                try
-                {
-                    var workflow = Rock.Model.Workflow.Activate( workflowType, person.FullName );
-                    new WorkflowService( rockContext ).Process( workflow, groupMember, out List<string> workflowErrors );
-                }
-                catch ( Exception ex )
-                {
-                    ExceptionLogService.LogException( ex );
-                }
-            }
-
             return true;
         }
 
@@ -636,6 +626,20 @@ namespace Rock.Blocks.Group
             {
                 return string.Empty;
             }
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <param name="group">The group the individual is registering for.</param>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId( Rock.Model.Group group )
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? group.GetGroupMemberRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
         }
 
         #endregion
@@ -661,9 +665,27 @@ namespace Rock.Blocks.Group
 
                 var connectionStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() );
                 var recordStatus = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() );
+                int? recordSourceValueId = null;
+
                 var homeAddressType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                 var isSimple = GetAttributeValue( AttributeKey.Mode ) == "Simple";
                 var isFullWithSpouse = GetAttributeValue( AttributeKey.Mode ) == "FullSpouse";
+
+                var targetGroup = GetGroup( rockContext );
+                var groupTypeGuids = this.GetAttributeValue( AttributeKey.AllowedGroupTypes ).SplitDelimitedValues().AsGuidList();
+                var isFromBlockAttribute = GetAttributeValue( AttributeKey.Group ).AsGuidOrNull() == targetGroup.Guid;
+
+                if ( !isFromBlockAttribute && groupTypeGuids.Any() && !groupTypeGuids.Contains( targetGroup.GroupType.Guid ) )
+                {
+                    return ActionBadRequest( "The group is a restricted group type." );
+                }
+
+                // Just flat out don't allow them to add themselves to a
+                // security role - ever.
+                if ( targetGroup.IsSecurityRole )
+                {
+                    return ActionBadRequest( "The group is a restricted group type." );
+                }
 
                 var isCurrentPerson = RequestContext.CurrentPerson != null
                     && RequestContext.CurrentPerson.NickName.IsNotNullOrWhiteSpace()
@@ -691,6 +713,9 @@ namespace Rock.Blocks.Group
                 if ( person == null )
                 {
                     var group = GetGroup( rockContext );
+
+                    recordSourceValueId = GetRecordSourceValueId( group );
+
                     // If so, create the person and family record for the new person
                     person = new Person();
                     person.FirstName = groupRegistrationBag.FirstName.Trim();
@@ -701,6 +726,7 @@ namespace Rock.Blocks.Group
                     person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
                     person.ConnectionStatusValueId = connectionStatus.Id;
                     person.RecordStatusValueId = recordStatus.Id;
+                    person.RecordSourceValueId = recordSourceValueId;
                     person.Gender = Gender.Unknown;
 
                     family = PersonService.SaveNewPerson( person, rockContext, group.CampusId, false );
@@ -808,6 +834,7 @@ namespace Rock.Blocks.Group
 
                             spouse.ConnectionStatusValueId = connectionStatus.Id;
                             spouse.RecordStatusValueId = recordStatus.Id;
+                            spouse.RecordSourceValueId = recordSourceValueId;
                             spouse.Gender = Gender.Unknown;
 
                             spouse.IsEmailActive = true;
@@ -839,6 +866,20 @@ namespace Rock.Blocks.Group
                 }
 
                 string errorMessage = string.Empty;
+                GroupMember newOrExistingGroupMember = null;
+                GroupMember newOrExistingSpouseGroupMember = null;
+
+                // A list containing any new or exisitng Group Members that are currently being registered.
+                List<GroupMember> newOrExistingGroupMembers = new List<GroupMember>();
+
+                // Check to see if a workflow should be launched for each person
+                WorkflowTypeCache workflowType = null;
+                Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
+                if ( workflowTypeGuid.HasValue )
+                {
+                    workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
+                }
+
                 // Save the registrations ( and launch workflows )
                 var newGroupMembers = new List<GroupMember>();
                 // Save the person/spouse and change history 
@@ -846,27 +887,21 @@ namespace Rock.Blocks.Group
                 {
                     rockContext.SaveChanges();
 
-                    // Check to see if a workflow should be launched for each person
-                    WorkflowTypeCache workflowType = null;
-                    Guid? workflowTypeGuid = GetAttributeValue( "Workflow" ).AsGuidOrNull();
-                    if ( workflowTypeGuid.HasValue )
-                    {
-                        workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value );
-                    }
-
-                    bool isAddPersonValid = AddPersonToGroup( rockContext, person, workflowType, newGroupMembers, out errorMessage );
+                    bool isAddPersonValid = AddPersonToGroup( rockContext, targetGroup, person, newGroupMembers, out errorMessage, out newOrExistingGroupMember );
                     if ( !isAddPersonValid )
                     {
                         return false;
                     }
+                    newOrExistingGroupMembers.Add( newOrExistingGroupMember );
 
                     if ( spouse != null )
                     {
-                        isAddPersonValid = AddPersonToGroup( rockContext, spouse, workflowType, newGroupMembers, out errorMessage );
+                        isAddPersonValid = AddPersonToGroup( rockContext, targetGroup, spouse, newGroupMembers, out errorMessage, out newOrExistingSpouseGroupMember );
                         if ( !isAddPersonValid )
                         {
                             return false;
                         }
+                        newOrExistingGroupMembers.Add( newOrExistingSpouseGroupMember );
                     }
 
                     return true;
@@ -874,11 +909,25 @@ namespace Rock.Blocks.Group
 
                 if ( isAddingPeopleToGroupSuccessful )
                 {
-                    var group = GetGroup( rockContext );
+                    foreach ( GroupMember gm in newOrExistingGroupMembers )
+                    {
+                        if ( gm != null && workflowType != null && ( workflowType.IsActive ?? true ) )
+                        {
+                            try
+                            {
+                                var workflow = Rock.Model.Workflow.Activate( workflowType, person.FullName );
+                                new WorkflowService( rockContext ).Process( workflow, gm, out List<string> workflowErrors );
+                            }
+                            catch ( Exception ex )
+                            {
+                                ExceptionLogService.LogException( ex );
+                            }
+                        }
+                    }
 
                     // Show lava content
                     var mergeFields = new Dictionary<string, object>();
-                    mergeFields.Add( "Group", group );
+                    mergeFields.Add( "Group", targetGroup );
                     mergeFields.Add( "GroupMembers", newGroupMembers );
 
                     string template = GetAttributeValue( "ResultLavaTemplate" );

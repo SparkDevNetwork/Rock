@@ -241,6 +241,8 @@ namespace Rock.Rest
         [Authenticate, Secured]
         [ActionName( "GetByCampus" )]
         [EnableQuery]
+        [RockObsolete( "17.0" )]
+        [Obsolete( "The EntityCampusFilter feature is no longer used and will be removed in the future." )]
         public virtual IQueryable<T> GetByCampus( [FromUri] int campusId )
         {
             /*

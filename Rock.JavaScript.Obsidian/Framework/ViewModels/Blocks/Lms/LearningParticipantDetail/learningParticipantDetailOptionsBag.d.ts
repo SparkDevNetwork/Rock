@@ -21,9 +21,16 @@
 // </copyright>
 //
 
+import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type LearningParticipantDetailOptionsBag = {
+    /** Gets or sets whether the current person is authorized to view grades. */
+    canViewGrades: boolean;
+
     /** Gets or sets the list of available roles for the class. */
     classRoles?: ListItemBag[] | null;
+
+    /** Gets or sets the configuration mode of the Program. */
+    configurationMode: ConfigurationMode;
 };

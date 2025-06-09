@@ -469,6 +469,7 @@ namespace Rock.Model
             ShowSmsOptIn = template.ShowSmsOptIn;
             SmsOptInText = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.SMS_OPT_IN_MESSAGE_LABEL );
             ConnectionStatusValueId = template.ConnectionStatusValueId;
+            RecordSourceValueId = instance.GetRegistrantRecordSourceValueId();
 
             // Workflow type ids
             WorkflowTypeIds = new List<int>();
@@ -832,6 +833,22 @@ namespace Rock.Model
         /// The connection status value identifier.
         /// </value>
         public int? ConnectionStatusValueId { get; private set; }
+
+        /// <summary>
+        /// Gets the record source value identifier, according to the registration template and instance.
+        /// </summary>
+        /// <value>
+        /// The record source value identifier, according to the registration template and instance.
+        /// </value>
+        public int? RecordSourceValueId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the actual record source value identifier, taking into account page parameter, cookie and default values.
+        /// </summary>
+        /// <value>
+        /// The actual record source value identifier, taking into account page parameter, cookie and default values.
+        /// </value>
+        public int? ActualRecordSourceValueId { get; set; }
 
         /// <summary>
         /// Gets the group type identifier.

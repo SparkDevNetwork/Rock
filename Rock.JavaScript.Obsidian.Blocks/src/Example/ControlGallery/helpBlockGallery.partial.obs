@@ -1,0 +1,23 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <HelpBlock :text="text" />
+        Hover over the symbol to the left to view HelpBlock in action
+
+        <template #settings>
+            <TextBox label="Text" v-model="text" help="The text for the help tooltip to display" rules="required" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const text = ref("This is some helpful text that explains something.");
+    const importCode = getSfcControlImportPath("helpBlock");
+    const exampleCode = `<HelpBlock text="text" />`;
+</script>

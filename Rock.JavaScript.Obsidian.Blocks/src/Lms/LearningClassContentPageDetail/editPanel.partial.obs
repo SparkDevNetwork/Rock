@@ -4,6 +4,7 @@
         <div class="row">
             <div class="col-md-6">
                 <TextBox v-model="title"
+                         :maxLength="250"
                          label="Page Title"
                          help="The title that will be used for the page in the navigation."
                          rules="required" />

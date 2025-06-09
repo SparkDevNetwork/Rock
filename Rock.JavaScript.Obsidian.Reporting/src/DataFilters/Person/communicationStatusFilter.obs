@@ -1,0 +1,42 @@
+<template>
+    <NumberBox v-model="communicationId" label="Communication ID" rules="required" />
+    <DropDownList v-model="communicationStatus"
+                  :items="communicationStatusOptions"
+                  :showBlankItem="false"
+                  label="Communication Status"
+                  help="Specifies the type of Communication Status that the recipient must have to be included in the result."
+                  rules="required" />
+</template>
+
+<script setup lang="ts">
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ref, watch } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps(dataViewFilterProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const communicationStatusOptions: ListItemBag[] = [
+        { text: "Open", value: "0" },
+        { text: "Clicked", value: "1" },
+        { text: "Unopened", value: "2" },
+        { text: "Failed", value: "3" },
+    ];
+
+    const communicationId = ref<number | null>(toNumberOrNull(props.modelValue.communicationId));
+    const communicationStatus = ref<string>(props.modelValue.communicationStatus ?? "0");
+
+    watch([communicationId, communicationStatus], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            communicationId: `${communicationId.value ?? "0"}`,
+            communicationStatus: communicationStatus.value
+        });
+    });
+</script>

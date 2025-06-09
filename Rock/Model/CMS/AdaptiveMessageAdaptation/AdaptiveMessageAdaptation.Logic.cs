@@ -15,11 +15,11 @@
 // </copyright>
 //
 
-using Rock.Data;
+using System.Data.Entity;
+
+using Rock.Security;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
-using System.Data.Entity;
-using System.Linq;
 
 namespace Rock.Model
 {
@@ -49,6 +49,13 @@ namespace Rock.Model
             AdaptiveMessageAdaptationCache.UpdateCachedEntity( this.Id, entityState );
             AdaptiveMessageCache.FlushItem( this.AdaptiveMessageId );
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => AdaptiveMessage ?? base.ParentAuthority;
 
         #endregion
     }

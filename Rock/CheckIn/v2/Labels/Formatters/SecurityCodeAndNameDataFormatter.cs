@@ -48,6 +48,13 @@ namespace Rock.CheckIn.v2.Labels.Formatters
                 Name = "Code NickName",
                 Value = "Code NickName"
             } );
+
+            Options.Add( new DataFormatterOptionBag
+            {
+                Key = "0f75ea6d-95f7-4c67-8e63-44129c996bf5",
+                Name = "Code",
+                Value = "Code"
+            } );
         }
 
         /// <inheritdoc/>
@@ -60,6 +67,10 @@ namespace Rock.CheckIn.v2.Labels.Formatters
             else if ( optionValue == "Code NickName" )
             {
                 return $"{value.SecurityCode} {value.Person?.NickName}";
+            }
+            else if ( optionValue == "Code" )
+            {
+                return value.SecurityCode ?? string.Empty;
             }
             else
             {

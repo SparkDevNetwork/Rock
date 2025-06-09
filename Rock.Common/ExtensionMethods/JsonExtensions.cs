@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections;
 using System.Collections.Generic;
 using System.Dynamic;
 using System.Runtime.CompilerServices;
@@ -35,7 +36,31 @@ namespace Rock
         /// Contains the singleton serialize settings that match the specified
         /// options key.
         /// </summary>
-        private static readonly Dictionary<string, JsonSerializerSettings> _jsonSerializeSettingsCache = new Dictionary<string, JsonSerializerSettings>();
+        private static Dictionary<string, JsonSerializerSettings> _jsonSerializeSettingsCache = new Dictionary<string, JsonSerializerSettings>();
+
+        /// <inheritdoc cref="ReferenceEqualityComparer"/>
+        private static IEqualityComparer _referenceEqualityComparer;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// The equality comparer to use when serializing objects to JSON. This
+        /// allows for custom comparison of objects when doing cyclical
+        /// reference detection.
+        /// </summary>
+        internal static IEqualityComparer ReferenceEqualityComparer
+        {
+            set
+            {
+                _referenceEqualityComparer = value;
+
+                // Clear the cache to make sure we generate new settings with
+                // the new reference equality comparer.
+                _jsonSerializeSettingsCache = new Dictionary<string, JsonSerializerSettings>();
+            }
+        }
 
         #endregion
 
@@ -274,6 +299,7 @@ namespace Rock
         {
             var settings = new JsonSerializerSettings
             {
+                EqualityComparer = _referenceEqualityComparer,
                 ReferenceLoopHandling = ReferenceLoopHandling.Ignore,
                 Formatting = indentOutput ? Formatting.Indented : Formatting.None
             };

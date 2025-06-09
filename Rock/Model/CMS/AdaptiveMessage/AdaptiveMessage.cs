@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
@@ -26,6 +27,7 @@ using Rock.Data;
 using Rock.Web.Cache;
 
 namespace Rock.Model
+
 {
     /// <summary>
     /// 
@@ -33,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "AdaptiveMessage" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ADAPTIVE_MESSAGE )]
     public partial class AdaptiveMessage : Model<AdaptiveMessage>, IHasActiveFlag, ICacheable
     {
@@ -77,6 +80,26 @@ namespace Rock.Model
         [DataMember]
         public bool IsActive { get; set; } = true;
 
+        /// <summary>
+        /// Gets or sets the optional start date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing start date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.DateTime"/> representing end date of the <see cref="Rock.Model.AdaptiveMessage"/>.
+        /// </value>
+        [DataMember]
+        [Column( TypeName = "Date" )]
+        public DateTime? EndDate { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -104,13 +127,13 @@ namespace Rock.Model
         /// A collection of <see cref="Rock.Model.Category">Categories</see> that this Content Channel is associated with.
         /// </value>
         [DataMember]
-        public virtual ICollection<Category> Categories
+        public virtual ICollection<AdaptiveMessageCategory> AdaptiveMessageCategories
         {
-            get { return _categories ?? ( _categories = new Collection<Category>() ); }
-            set { _categories = value; }
+            get { return _adaptiveMessageCategories ?? ( _adaptiveMessageCategories = new Collection<AdaptiveMessageCategory>() ); }
+            set { _adaptiveMessageCategories = value; }
         }
 
-        private ICollection<Category> _categories;
+        private ICollection<AdaptiveMessageCategory> _adaptiveMessageCategories;
 
         #endregion Navigation Properties
     }
@@ -127,16 +150,6 @@ namespace Rock.Model
         /// </summary>
         public AdaptiveMessageConfiguration()
         {
-#if REVIEW_WEBFORMS
-            this.HasMany( a => a.Categories )
-                .WithMany()
-                .Map( a =>
-                {
-                    a.MapLeftKey( "AdaptiveMessageId" );
-                    a.MapRightKey( "CategoryId" );
-                    a.ToTable( "AdaptiveMessageCategory" );
-                } );
-#endif
         }
     }
 

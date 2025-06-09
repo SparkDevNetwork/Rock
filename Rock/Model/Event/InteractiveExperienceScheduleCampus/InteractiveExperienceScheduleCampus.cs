@@ -29,6 +29,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "InteractiveExperienceScheduleCampus" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "ABEF4137-F25B-4B2E-AF01-2CEFF704FC11" )]
     public partial class InteractiveExperienceScheduleCampus : Model<InteractiveExperienceScheduleCampus>
     {

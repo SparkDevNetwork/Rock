@@ -44,7 +44,7 @@ namespace Rock.DownhillCss
         private static CssUtilitiesInternal Instance { get; set; }
 
         /// <summary>
-        /// Builds the Downhill CSS framework.\
+        /// Builds the Downhill CSS framework.
         /// </summary>
         /// <param name="settings"></param>
         /// <returns></returns>
@@ -789,6 +789,12 @@ icon {
     color: ?color-primary-strong;
 }
 
+/*** Switch ***/
+^switch {
+    color: ?color-primary-strong;
+    /* maui-thumb-color: ?color-primary-soft; */
+}
+
 /*** Buttons ***/
 /* Primary */
 .btn.btn-primary {
@@ -990,19 +996,6 @@ icon {
     border-color: ?color-brand-strong;
     border-width: 1;
     background-color: transparent;
-}
-
-.flyout-menu ^listview {
-    background-color: ?color-brand;
-}
-
-.flyout-menu ^boxview {
-    background-color: #fff;
-    opacity: 0.4;
-}
-
-.flyout-menu-item {
-    font-size: 21;
 }
 
 /* Button Sizes */
@@ -1496,6 +1489,19 @@ icon {
 
 .text-subtitle {
     font-size: subtitle;
+}
+
+.flyout-menu ^listview {
+    background-color: ?color-brand;
+}
+
+.flyout-menu ^boxview {
+    background-color: #fff;
+    opacity: 0.4;
+}
+
+.flyout-menu-item {
+    font-size: 21;
 }
 
 .text-caption {
@@ -2628,7 +2634,7 @@ formfield .required-indicator {
 
 ^VerticalIconButton.contact-button-disabled .contact-button-icon,
 ^VerticalIconButton.contact-button-disabled .contact-button-text {
-  color: ?color-primary-100;
+  color: ?color-primary;
 }
 
 .connection-request-detail-content .request-details {

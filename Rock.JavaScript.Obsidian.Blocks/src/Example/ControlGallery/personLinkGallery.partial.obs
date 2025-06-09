@@ -1,0 +1,70 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
+
+        <div :style="{ textAlign, 'margin-top': placement == 'top' ? '150px' : '0' }">
+            <PersonLink :personId="personId" :personName="personName" :photoId="photoId" :role="role" :popOverPlacement="placement" />
+        </div>
+        <div class="mt-5 text-center" v-if="textAlign != 'left'">
+            <strong>Note:</strong> The link has been moved to demonstrate the placement position of the pop over better.
+            Changing the pop over placement does not normally move PersonLink around, just the position of the pop over.
+        </div>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox v-model="personName" label="Person Name" />
+                </div>
+                <div class="col-md-4">
+                    <TextBox v-model="role" label="Role" />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox v-model="photoId"
+                               label="Photo ID"
+                               help="NOTE: Providing a photo ID only adds a dot. Currently, this does nothing else and the value does not matter, as long as a value is provided." />
+                </div>
+                <div class="col-md-4">
+                    <NumberBox v-model="personId" label="Person ID" />
+                </div>
+                <div class="col-md-4">
+                    <DropDownList v-model="placement" :items="placementOptions" label="Pop Over Placement" :showBlankItem="false" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import PersonLink from "@Obsidian/Controls/personLink.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const placement = ref<"right" | "left" | "top" | "bottom">("right");
+    const textAlign = computed(() => {
+        if (placement.value == "right") {
+            return "left";
+        }
+
+        if (placement.value == "left") {
+            return "right";
+        }
+
+        return "center";
+    });
+
+    const placementOptions = [
+        { text: "Top", value: "top" },
+        { text: "Right (Default)", value: "right" },
+        { text: "Bottom", value: "bottom" },
+        { text: "Left", value: "left" },
+    ];
+    const personName = ref("Ted Decker");
+    const role = ref("Member");
+    const photoId = ref(0);
+    const personId = ref(1);
+    const importCode = getSfcControlImportPath("personLink");
+    const exampleCode = `<PersonLink :personId="56" personName="Ted Decker" role="Member" popOverPlacement="right" />`;
+</script>

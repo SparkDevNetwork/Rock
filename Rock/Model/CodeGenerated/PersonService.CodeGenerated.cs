@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -62,6 +63,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( Person.PersonQueryableAttributeValue ), nameof( PersonAttributeValues ) )]
+    public partial class Person
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<PersonQueryableAttributeValue> PersonAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class PersonQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -145,6 +164,8 @@ namespace Rock.Model
             target.GivingLeaderId = source.GivingLeaderId;
             target.GraduationYear = source.GraduationYear;
             target.InactiveReasonNote = source.InactiveReasonNote;
+            target.IsChatOpenDirectMessageAllowed = source.IsChatOpenDirectMessageAllowed;
+            target.IsChatProfilePublic = source.IsChatProfilePublic;
             target.IsDeceased = source.IsDeceased;
             target.IsEmailActive = source.IsEmailActive;
             target.IsLockedAsChild = source.IsLockedAsChild;
@@ -157,11 +178,13 @@ namespace Rock.Model
             target.NickNamePronunciationOverride = source.NickNamePronunciationOverride;
             target.PhotoId = source.PhotoId;
             target.PreferredLanguageValueId = source.PreferredLanguageValueId;
+            target.PrimaryAliasGuid = source.PrimaryAliasGuid;
             target.PrimaryAliasId = source.PrimaryAliasId;
             target.PrimaryCampusId = source.PrimaryCampusId;
             target.PrimaryFamilyId = source.PrimaryFamilyId;
             target.PronunciationNote = source.PronunciationNote;
             target.RaceValueId = source.RaceValueId;
+            target.RecordSourceValueId = source.RecordSourceValueId;
             target.RecordStatusLastModifiedDateTime = source.RecordStatusLastModifiedDateTime;
             target.RecordStatusReasonValueId = source.RecordStatusReasonValueId;
             target.RecordStatusValueId = source.RecordStatusValueId;

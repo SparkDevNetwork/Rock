@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Workflow" )]
     [Table( "Workflow" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.WORKFLOW )]
     public partial class Workflow : Model<Workflow>
     {
@@ -44,6 +45,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the WorkflowTypeId of the <see cref="Rock.Model.WorkflowType"/> that is being executed.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int WorkflowTypeId { get; set; }
 
         /// <summary>

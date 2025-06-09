@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -26,6 +25,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -36,7 +37,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on based on the current age in years" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Age" )]
-    [Rock.SystemGuid.EntityTypeGuid( "4911C63D-71BB-4686-AAA3-D66EA41DA465")]
+    [Rock.SystemGuid.EntityTypeGuid( "4911C63D-71BB-4686-AAA3-D66EA41DA465" )]
     public class AgeFilter : DataFilterComponent
     {
         #region Properties
@@ -61,6 +62,43 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/ageFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length > 2 )
+            {
+                return new Dictionary<string, string>
+                {
+                    { "comparisonType", selectionValues[0] },
+                    { "age", selectionValues[1] },
+                    { "ageRange", selectionValues[2] },
+                };
+            }
+
+            return new Dictionary<string, string>();
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return $"{data.GetValueOrDefault( "comparisonType", "" )}|{data.GetValueOrDefault( "age", "" )}|{data.GetValueOrDefault( "ageRange", "" )}";
         }
 
         #endregion
@@ -132,9 +170,9 @@ function() {
                 {
                     return string.Format( "Age {0}", comparisonType.ConvertToString() );
                 }
-                else if (comparisonType == ComparisonType.Between)
+                else if ( comparisonType == ComparisonType.Between )
                 {
-                    return string.Format( "Age {0} {1}", comparisonType.ConvertToString(), values[2].Replace(",", " and ") );
+                    return string.Format( "Age {0} {1}", comparisonType.ConvertToString(), values[2].Replace( ",", " and " ) );
                 }
                 else
                 {
@@ -270,7 +308,7 @@ function() {
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             int? ageValue = values[1].AsIntegerOrNull();
 
-            var rockContext = (RockContext)serviceInstance.Context;
+            var rockContext = ( RockContext ) serviceInstance.Context;
 
             var personAgeQuery = new PersonService( rockContext ).Queryable();
             MemberExpression idExpression = Expression.Property( parameterExpression, "Id" );

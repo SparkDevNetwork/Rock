@@ -1,0 +1,40 @@
+<template>
+    <GroupTypePicker v-model="groupTypes"
+                     label="Group Types"
+                     :displayStyle="PickerDisplayStyle.List"
+                     :columnCount="2"
+                     multiple />
+    <CheckBox v-model="includeChildGroupTypes" label="Include Child Group Type(s)" />
+    <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+</template>
+
+<script setup lang="ts">
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString, RangeType } from "@Obsidian/Utility/slidingDateRange";
+    import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const groupTypes = ref<ListItemBag[]>(safeParseJson(props.modelValue.groupTypes) ?? []);
+    const includeChildGroupTypes = ref<boolean>(asBoolean(props.modelValue.includeChildGroupTypes));
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    watch([groupTypes, includeChildGroupTypes, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            groupTypes: JSON.stringify(groupTypes.value),
+            includeChildGroupTypes: asTrueOrFalseString(includeChildGroupTypes.value),
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.All }),
+        });
+    });
+</script>

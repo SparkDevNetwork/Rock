@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using Rock.ViewModels.Blocks.Cms.AdaptiveMessageAdaptationDetail;
 using Rock.ViewModels.Blocks.Cms.ContentCollectionDetail;
@@ -56,6 +57,16 @@ namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
         public string Name { get; set; }
 
         /// <summary>
+        /// Gets or sets the start date for this Adaptive Message.
+        /// </summary>
+        public DateTime? StartDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date for this Adaptive Message.
+        /// </summary>
+        public DateTime? EndDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the adaptations grid data.
         /// </summary>
         /// <value>
@@ -80,5 +91,21 @@ namespace Rock.ViewModels.Blocks.Cms.AdaptiveMessageDetail
         /// The adaptation Attributes
         /// </summary>
         public List<PublicEditableAttributeBag> AdaptationAttributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the reserved key names.
+        /// </summary>
+        /// <value>
+        /// The reserved key names.
+        /// </value>
+        public List<string> ReservedKeyNames { get; set; }
+
+        /// <summary>
+        /// Gets or sets the message reserved key names.
+        /// </summary>
+        /// <value>
+        /// The message reserved key names.
+        /// </value>
+        public List<string> MessageReservedKeyNames { get; set; }
     }
 }

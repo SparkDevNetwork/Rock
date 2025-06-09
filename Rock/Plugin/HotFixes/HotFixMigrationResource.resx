@@ -232,7 +232,19 @@
   <data name="_177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge" type="System.Resources.ResXFileRef, System.Windows.Forms">
     <value>177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
-  <data name="_216_open_bible_on_notebook" type="System.Resources.ResXFileRef, System.Windows.Forms">
-    <value>216_open_bible_on_notebook.jpg;System.Drawing.Bitmap, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a</value>
+  <data name="_216_open_bible_on_notebook_jpg" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>216_open_bible_on_notebook.jpg.bin;System.Byte[], mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="_221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
+  </data>
+  <data name="_250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails" type="System.Resources.ResXFileRef, System.Windows.Forms">
+    <value>250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails.sql;System.String, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089;Windows-1252</value>
   </data>
 </root>

@@ -40,6 +40,7 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "ContentChannelItem" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONTENT_CHANNEL_ITEM )]
     [ContentCollectionIndexable( typeof( Rock.Cms.ContentCollection.Indexers.ContentChannelItemIndexer ), typeof( Rock.Cms.ContentCollection.IndexDocuments.ContentChannelItemDocument ) )]
     public partial class ContentChannelItem : Model<ContentChannelItem>, IOrdered, IRockIndexable, IHasAdditionalSettings
@@ -54,6 +55,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [EnableAttributeQualification]
         [IgnoreCanDelete]
         public int ContentChannelId { get; set; }
 
@@ -65,6 +67,7 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         [HideFromReporting]
+        [EnableAttributeQualification]
         public int ContentChannelTypeId { get; set; }
 
         /// <summary>
@@ -244,7 +247,6 @@ namespace Rock.Model
         public ContentLibraryItemExperienceLevel? ExperienceLevel { get; set; }
 
         /// <inheritdoc/>
-        [RockInternal( "1.16.4" )]
         [DataMember]
         public string AdditionalSettingsJson { get; set; }
 

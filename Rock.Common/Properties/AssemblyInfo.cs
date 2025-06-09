@@ -19,7 +19,7 @@ using System.Runtime.InteropServices;
 [assembly: InternalsVisibleTo( "Rock.Blocks" )]
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
 [assembly: InternalsVisibleTo( "Rock.Lava.Tests" )]
-[assembly: InternalsVisibleTo( "Rock.Tests.UnitTests" )]
+[assembly: InternalsVisibleTo( "Rock.Tests" )]
 
 #if !WEBFORMS
 [assembly: InternalsVisibleTo( "Rock.NG" )]

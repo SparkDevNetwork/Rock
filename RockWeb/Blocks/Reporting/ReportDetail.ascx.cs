@@ -16,9 +16,11 @@
 
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Web;
@@ -69,8 +71,15 @@ namespace RockWeb.Blocks.Reporting
         IsRequired = false,
         Order = 3 )]
 
+    [BooleanField(
+        "Use Obsidian Components",
+        Key = AttributeKey.UseObsidianComponents,
+        Description = "Switches the filter components to use Obsidian if supported.",
+        DefaultBooleanValue = true,
+        Category = "Advanced" )]
+
     [Rock.SystemGuid.BlockTypeGuid( "E431DBDF-5C65-45DC-ADC5-157A02045CCD" )]
-    public partial class ReportDetail : RockBlock
+    public partial class ReportDetail : RockBlock, IRockBlockType
     {
         #region Attribute Keys
 
@@ -80,6 +89,7 @@ namespace RockWeb.Blocks.Reporting
             public const string DatabaseTimeout = "DatabaseTimeout";
             public const string DataViewPage = "DataViewPage";
             public const string Report = "Report";
+            public const string UseObsidianComponents = "UseObsidianComponents";
         }
 
         #endregion Attribute Keys
@@ -168,6 +178,28 @@ namespace RockWeb.Blocks.Reporting
 
                 BindGrid( reportReadOnly, false );
             }
+        }
+
+        #endregion
+
+        #region IRockBlockType
+
+        /// <inheritdoc/>
+        int IRockBlockType.BlockId => ( ( IRockBlockType ) this ).BlockCache.Id;
+
+        /// <inheritdoc/>
+        BlockCache IRockBlockType.BlockCache { get; set; }
+
+        /// <inheritdoc/>
+        PageCache IRockBlockType.PageCache { get; set; }
+
+        /// <inheritdoc/>
+        RockRequestContext IRockBlockType.RequestContext { get; set; }
+
+        /// <inheritdoc/>
+        System.Threading.Tasks.Task<object> IRockBlockType.GetBlockInitializationAsync( RockClientType clientType )
+        {
+            throw new NotImplementedException();
         }
 
         #endregion
@@ -393,7 +425,7 @@ namespace RockWeb.Blocks.Reporting
 
                     11/30/2022 - CWR
                     If there is a dataview for the report, use its DbContext.  This null check is necessary because a report does not require a dataview.
-                    
+
                  */
                 if ( report.DataView != null )
                 {
@@ -690,7 +722,17 @@ namespace RockWeb.Blocks.Reporting
                     var dataSelectComponent = this.GetDataSelectComponent( rockContext, reportField.DataSelectComponentEntityTypeId ?? 0 );
                     if ( dataSelectComponent != null )
                     {
-                        reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
+                        if ( placeHolder.Controls.Count >= 1 && placeHolder.Controls[0] is ObsidianDynamicComponentWrapper obsidianWrapper )
+                        {
+                            var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+                            var reportEntityType = EntityTypeCache.Get( etpEntityType.SelectedEntityTypeId.Value, rockContext ).GetEntityType();
+
+                            reportField.Selection = dataSelectComponent.GetSelectionFromObsidianComponentData( reportEntityType, obsidianWrapper.ComponentData, rockContext, requestContext );
+                        }
+                        else
+                        {
+                            reportField.Selection = dataSelectComponent.GetSelection( placeHolder.Controls.OfType<Control>().ToArray() );
+                        }
                     }
                 }
                 else if ( reportFieldType == ReportFieldType.Attribute )
@@ -1088,6 +1130,11 @@ namespace RockWeb.Blocks.Reporting
                 quickReturnLava.ResolveMergeFields( quickReturnMergeFields );
             }
 
+            if ( !report.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
+            {
+                return;
+            }
+
             pnlDetails.Visible = true;
             hfReportId.Value = report.Id.ToString();
 
@@ -1332,7 +1379,7 @@ namespace RockWeb.Blocks.Reporting
 
             if ( report.DataView != null )
             {
-                lDataView.Visible = UserCanEdit;
+                lDataView.Visible = report.DataView.IsAuthorized( Authorization.VIEW, CurrentPerson );
 
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "DataViewId", report.DataViewId.ToString() );
@@ -1528,8 +1575,43 @@ namespace RockWeb.Blocks.Reporting
                 var dataSelectComponent = GetDataSelectComponent( rockContext, fieldSelection.AsInteger() );
                 if ( dataSelectComponent != null )
                 {
-                    Control[] dataSelectControls = dataSelectComponent.CreateChildControls( phDataSelectControls );
-                    SetDataSelectControlsValidationGroup( dataSelectControls, this.BlockValidationGroup );
+                    var useWebForms = true;
+
+                    if ( GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean() )
+                    {
+                        var requestContext = RockPage?.RequestContext;
+                        var reportEntityType = EntityTypeCache.Get( etpEntityType.SelectedEntityTypeId.Value, rockContext ).GetEntityType();
+
+                        var definition = dataSelectComponent.GetComponentDefinition( reportEntityType, string.Empty, rockContext, requestContext );
+
+                        if ( definition == null && dataSelectComponent.ObsidianFileUrl != null )
+                        {
+                            definition = new Rock.ViewModels.Controls.DynamicComponentDefinitionBag
+                            {
+                                Url = ResolveUrl( dataSelectComponent.ObsidianFileUrl )
+                            };
+                        }
+
+                        if ( definition != null )
+                        {
+                            var obsidianWrapper = new ObsidianDynamicComponentWrapper
+                            {
+                                ID = $"{ID}_obsidianComponentWrapper",
+                                ComponentGuid = EntityTypeCache.Get( fieldSelection.AsInteger(), rockContext ).Guid,
+                                ComponentDefinition = definition
+                            };
+
+                            phDataSelectControls.Controls.Add( obsidianWrapper );
+
+                            useWebForms = false;
+                        }
+                    }
+
+                    if ( useWebForms )
+                    {
+                        Control[] dataSelectControls = dataSelectComponent.CreateChildControls( phDataSelectControls );
+                        SetDataSelectControlsValidationGroup( dataSelectControls, this.BlockValidationGroup );
+                    }
                 }
             }
             else if ( reportFieldType == ReportFieldType.Attribute )
@@ -1766,8 +1848,18 @@ namespace RockWeb.Blocks.Reporting
                 PlaceHolder phDataSelectControls = panelWidget.ControlsOfTypeRecursive<PlaceHolder>().FirstOrDefault( a => a.ID == panelWidget.ID + "_phDataSelectControls" );
                 if ( phDataSelectControls != null )
                 {
-                    var dataSelectControls = phDataSelectControls.Controls.OfType<Control>().ToArray();
-                    dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection ?? string.Empty );
+                    if ( phDataSelectControls.Controls.Count >= 1 && phDataSelectControls.Controls[0] is ObsidianDynamicComponentWrapper obsidianWrapper )
+                    {
+                        var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+                        var reportEntityType = EntityTypeCache.Get( etpEntityType.SelectedEntityTypeId.Value, rockContext ).GetEntityType();
+
+                        obsidianWrapper.ComponentData = dataSelectComponent.GetObsidianComponentData( reportEntityType, reportField.Selection ?? string.Empty, rockContext, requestContext );
+                    }
+                    else
+                    {
+                        var dataSelectControls = phDataSelectControls.Controls.OfType<Control>().ToArray();
+                        dataSelectComponent.SetSelection( dataSelectControls, reportField.Selection ?? string.Empty );
+                    }
                 }
             }
         }
@@ -1787,6 +1879,34 @@ namespace RockWeb.Blocks.Reporting
 
         #endregion
 
+
+        #region Block Actions
+
+        /// <summary>
+        /// Executes a request from the UI component to be processed by the
+        /// server component. This is used to load additional information after
+        /// the component has been initialized.
+        /// </summary>
+        /// <param name="componentGuid">The unique identifier of the component that will handle the request.</param>
+        /// <param name="request">The object that describes the parameters of the request.</param>
+        /// <param name="securityGrantToken">The security grant token that was created when the component was initialized.</param>
+        /// <returns>The response from the server component.</returns>
+        [BlockAction]
+        public BlockActionResult ExecuteComponentRequest( Guid componentGuid, Dictionary<string, string> request, string securityGrantToken )
+        {
+            var securityGrant = SecurityGrant.FromToken( securityGrantToken ) ?? new SecurityGrant();
+            var filterEntityType = EntityTypeCache.Get( componentGuid );
+            var component = DataSelectContainer.GetComponent( filterEntityType?.GetEntityType()?.FullName );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var result = component?.ExecuteComponentRequest( request, securityGrant, rockContext, RequestContext );
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, result );
+            }
+        }
+
+        #endregion
         #region ReportFieldInfo Class
 
         /// <summary>

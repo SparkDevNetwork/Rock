@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -57,7 +58,31 @@ namespace Rock.Model
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, CommunicationResponse.FriendlyTypeName );
                 return false;
             }
+
+            if ( new Service<LearningClassActivityCompletion>( Context ).Queryable().Any( a => a.SentNotificationCommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, LearningClassActivityCompletion.FriendlyTypeName );
+                return false;
+            }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( Communication.CommunicationQueryableAttributeValue ), nameof( CommunicationAttributeValues ) )]
+    public partial class Communication
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<CommunicationQueryableAttributeValue> CommunicationAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class CommunicationQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -121,6 +146,7 @@ namespace Rock.Model
             target.BCCEmails = source.BCCEmails;
             target.CCEmails = source.CCEmails;
             target.CommunicationTemplateId = source.CommunicationTemplateId;
+            target.CommunicationTopicValueId = source.CommunicationTopicValueId;
             target.CommunicationType = source.CommunicationType;
             target.EmailMetricsReminderOffsetDays = source.EmailMetricsReminderOffsetDays;
             target.EmailMetricsReminderSentDateTime = source.EmailMetricsReminderSentDateTime;
@@ -136,6 +162,7 @@ namespace Rock.Model
             target.Message = source.Message;
             target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;
+            target.PersonalizationSegments = source.PersonalizationSegments;
             target.PushData = source.PushData;
             target.PushImageBinaryFileId = source.PushImageBinaryFileId;
             target.PushMessage = source.PushMessage;
@@ -159,6 +186,7 @@ namespace Rock.Model
             target.SMSMessage = source.SMSMessage;
             target.Status = source.Status;
             target.Subject = source.Subject;
+            target.Summary = source.Summary;
             target.SystemCommunicationId = source.SystemCommunicationId;
             target.UrlReferrer = source.UrlReferrer;
             target.CreatedDateTime = source.CreatedDateTime;

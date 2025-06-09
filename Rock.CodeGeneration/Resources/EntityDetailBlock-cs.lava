@@ -186,7 +186,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
                 entity.LoadAttributes( RockContext );
             }
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );{% endif %}
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: {% if UseEntitySecurity %}true{% else %}false{% endif %} );{% endif %}
 
             return bag;
         }
@@ -206,7 +206,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
                 entity.LoadAttributes( RockContext );
             }
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );{% endif %}
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: {% if UseEntitySecurity %}true{% else %}false{% endif %} );{% endif %}
 
             return bag;
         }
@@ -227,7 +227,7 @@ namespace Rock.Blocks.{{ DomainNamespace }}
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: {% if UseEntitySecurity %}true{% else %}false{% endif %} );
                 } );
 
             {% endif %}return true;

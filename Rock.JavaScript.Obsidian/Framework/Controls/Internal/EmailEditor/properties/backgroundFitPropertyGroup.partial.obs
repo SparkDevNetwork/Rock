@@ -1,0 +1,90 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <CheckBoxListProperty v-bind="$attrs"
+                          :label="label"
+                          help="This controls how the image is positioned in the block. &quot;Repeat&quot; will tile the image to take up all the available space. &quot;Center&quot; will position the image horizontally in the center of the available space."
+                          :items="[
+                              {
+                                  text: 'Repeat',
+                                  value: get<BackgroundFit>('repeat')
+                              },
+                              {
+                                  text: 'Center',
+                                  value: get<BackgroundFit>('center')
+                              }
+                          ]"
+                          :valueProvider="valueProviderOverride ?? valueProvider!" />
+</template>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import CheckBoxListProperty from "./checkBoxListProperty.partial.obs";
+    import { createBackgroundFitProvider } from "../providers.partial";
+    import { BackgroundFit, ValueProvider } from "../types.partial";
+    import { get } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Background Fit" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Overrides the value provider.
+         */
+        valueProviderOverride: {
+            type: Object as PropType<ValueProvider<BackgroundFit[] | null | undefined> | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<BackgroundFit[] | null | undefined> | undefined>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<BackgroundFit[] | null | undefined> | undefined {
+        if (props.valueProviderOverride) {
+            return;
+        }
+
+        return createBackgroundFitProvider(props.element, props.copyToElements);
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements], () => {
+        valueProvider.value?.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        valueProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
+</script>

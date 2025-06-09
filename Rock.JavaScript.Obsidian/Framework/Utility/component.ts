@@ -14,12 +14,13 @@
 // limitations under the License.
 // </copyright>
 
-import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, VNode, watch, WatchOptions, render, isVNode, createVNode } from "vue";
+import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, VNode, watch, WatchOptions, render, createVNode } from "vue";
 import { deepEqual } from "./util";
 import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
 import { ControlLazyMode } from "@Obsidian/Enums/Controls/controlLazyMode";
 import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle";
+import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
 import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
 import { toNumberOrNull } from "./numberUtils";
@@ -385,6 +386,94 @@ export function useStandardAsyncPickerProps(props: ExtractPropTypes<StandardAsyn
 
     return propValues;
 }
+
+// #endregion
+
+// #region Dynamic Components
+
+export type StandardDynamicComponentProps = {
+    modelValue: {
+        type: PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    options: {
+        type: PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    executeRequest: {
+        type: PropType<(request: Record<string, string | null | undefined>) => Promise<Record<string, string | null | undefined> | null>>,
+        required: true
+    }
+};
+
+/**
+ * The standard props that are available to an instantiated component by the
+ * dynamicComponent.obs component.
+ */
+export const standardDynamicComponentProps: StandardDynamicComponentProps = {
+    modelValue: {
+        type: Object as PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    options: {
+        type: Object as PropType<Record<string, string | null | undefined>>,
+        required: true
+    },
+
+    executeRequest: {
+        type: Function as PropType<(request: Record<string, string | null | undefined>) => Promise<Record<string, string | null | undefined> | null>>,
+        required: true
+    }
+};
+
+// #endregion
+
+// #region Data View Filters
+
+type DataViewFilterProps = StandardDynamicComponentProps & {
+    /**
+     * The mode this filter is operating in.
+     */
+    filterMode: {
+        type: PropType<FilterMode>,
+        required: true
+    }
+};
+
+/** The standard component props that will be passed to DataView Filter components. */
+export const dataViewFilterProps: DataViewFilterProps = {
+    ...standardDynamicComponentProps,
+
+    filterMode: {
+        type: Number as PropType<FilterMode>,
+        required: true
+    }
+};
+
+// #endregion
+
+// #region Data View Selects
+
+type DataViewSelectProps = {
+    /**
+     * The component data value from the C# component class.
+     */
+    modelValue: {
+        type: PropType<Record<string, string | undefined | null>>,
+        required: true
+    }
+};
+
+/** The standard component props that will be passed to DataView Select components. */
+export const dataViewSelectProps: DataViewSelectProps = {
+    modelValue: {
+        type: Object as PropType<Record<string, string | undefined | null>>,
+        required: true
+    }
+};
 
 // #endregion
 

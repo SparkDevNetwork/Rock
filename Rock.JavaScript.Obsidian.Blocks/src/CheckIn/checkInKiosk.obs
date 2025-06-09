@@ -2,8 +2,12 @@
 <template>
     <div v-if="loginRequiredUrl" class="p-4">
         <NotificationBox alertType="warning">
-            Check-in is not configured for anonymous access and you are not logged in.
-            Please update block settings or <a :href="loginRequiredUrl">login</a>.
+            <div>
+                Check-in is not configured for anonymous access and you are not logged in.
+                Please update block settings or login.
+            </div>
+
+            <a :href="loginRequiredUrl" class="btn btn-primary mt-3">Login</a>
         </NotificationBox>
     </div>
 
@@ -96,12 +100,14 @@
                 <SuccessScreen v-if="currentScreen === Screen.Success"
                                :configuration="configuration"
                                :session="currentSession"
+                               @done="onHome"
                                @updateActions="onUpdateActions($event, Screen.Success)"
                                @checkInFamily="onRegistrationCheckInFamily" />
 
                 <CheckoutSuccessScreen v-if="currentScreen === Screen.CheckoutSuccess"
                                        :configuration="configuration"
                                        :session="currentSession"
+                                       @done="onHome"
                                        @updateActions="onUpdateActions($event, Screen.CheckoutSuccess)" />
 
                 <template v-for="supervisorScreen in supervisorScreens">
@@ -173,6 +179,7 @@
     import { FamilySearchMode } from "@Obsidian/Enums/CheckIn/familySearchMode";
     import { AttendanceUpdatedMessageBag } from "@Obsidian/ViewModels/Event/attendanceUpdatedMessageBag";
     import { Guid } from "@Obsidian/Types";
+    import { showDialog } from "@Obsidian/Utility/dialogs";
 
     const blockConfiguration = useConfigurationValues<Record<string, unknown>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -269,7 +276,8 @@
      * screens already.
      */
     const isConfigureHidden = computed((): boolean => {
-        return currentScreen.value >= SupervisorScreen.Login;
+        return !configuration.value.template?.isSupervisorEnabled
+            || currentScreen.value >= SupervisorScreen.Login;
     });
 
     // #endregion
@@ -397,6 +405,97 @@
         }
     }
 
+    /**
+     * Wait for Rock to be ready by hitting the version API endpoint. Once it
+     * responds with success then reload the kiosk to reconnect to real-time.
+     */
+    async function reloadKioskWhenRockIsReady(): Promise<void> {
+        console.warn("Network issues detected. Attempting to reconnect to Rock.");
+
+        if (idleTimer !== undefined) {
+            window.clearInterval(idleTimer);
+            idleTimer = undefined;
+        }
+
+        // Create a set of elements to contain the message.
+        const bodyDiv = document.createElement("div");
+        const iconElement = document.createElement("i");
+        const messageDiv = document.createElement("div");
+
+        // Create a nice HTML message with an icon.
+        bodyDiv.classList.add("d-flex", "gap-3", "align-items-center");
+        iconElement.classList.add("fa", "fa-network-wired", "fa-2x", "fa-fw", "text-muted");
+        messageDiv.innerText = "We are having some network issues. Please wait while we reconnect to the server.";
+
+        bodyDiv.appendChild(iconElement);
+        bodyDiv.appendChild(messageDiv);
+
+        showDialog({
+            message: bodyDiv,
+            hideCloseButton: true,
+            buttons: []
+        });
+
+        // Wait 2 seconds initially to give a chance for the dialog to be seen.
+        await new Promise(resolve => setTimeout(resolve, 5000));
+
+        // It is intentional that we loop forever here.
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            // We want to wait a minimum of 30 seconds per loop.
+            const iterationPromise = new Promise(resolve => setTimeout(resolve, 30000));
+
+            // Wait up to 30 seconds for the network request to complete.
+            // AbortController is only supported on iOS 12.1 and above.
+            let abortController: AbortController | undefined;
+            let abortTimeoutId: number | undefined;
+
+            if (window.AbortController) {
+                abortController = new AbortController();
+                abortTimeoutId = window.setTimeout(() => abortController?.abort(), 30000);
+            }
+
+            try {
+                await fetch("/api/v2/checkin/Configuration", {
+                    method: "POST",
+                    body: "{}",
+                    headers: {
+                        "Content-Type": "application/json"
+                    },
+                    signal: abortController?.signal
+                });
+
+                if (abortTimeoutId !== undefined) {
+                    clearTimeout(abortTimeoutId);
+                }
+
+                // If we got this far then the request completed. We don't really
+                // case what the response code is, because even an error code
+                // means that Rock is handling requests again.
+                console.warn("Rock appears to be back up. Reloading kiosk.");
+
+                // Wait a couple seconds to give Rock a chance to settle.
+                await new Promise(resolve => setTimeout(resolve, 2000));
+
+                // Redirect back to ourselves to try and reconnect.
+                const url = window.location.href;
+                window.location.href = url;
+                return;
+            }
+            catch (error) {
+                // If it was an error other than the timeout abort, then display
+                // the error in the console.
+                if (!abortController?.signal.aborted) {
+                    console.warn(error);
+                }
+            }
+
+            console.warn("Rock still appears to be down. Waiting to retry.");
+
+            await iterationPromise;
+        }
+    }
+
     // #endregion
 
     // #region Event Handlers
@@ -461,19 +560,8 @@
      */
     function onIdleTimerCheck(): void {
         if (currentScreen.value === Screen.Welcome) {
-            const tenMinutes = 10 * 60 * 1000;
-
-            // If on the welcome screen with no activity for 10 minutes then
-            // force a reload to reconnect.
-            if (isRealTimeDisconnected && Date.now() - lastActivity > tenMinutes) {
-                if (idleTimer !== undefined) {
-                    window.clearInterval(idleTimer);
-                    idleTimer = undefined;
-                }
-
-                // Redirect back to ourselves to try and reconnect.
-                const url = window.location.href;
-                window.location.href = url;
+            if (isRealTimeDisconnected) {
+                reloadKioskWhenRockIsReady();
             }
 
             return;
@@ -677,13 +765,7 @@
         if (isRealTimeDisconnected) {
             // If we lost real-time connection, force a reconnect when coming
             // back to the welcome screen.
-            if (idleTimer !== undefined) {
-                window.clearInterval(idleTimer);
-                idleTimer = undefined;
-            }
-
-            const url = window.location.href;
-            window.location.href = url;
+            reloadKioskWhenRockIsReady();
         }
         else if (isKioskRefreshNeeded) {
             onRefreshKioskConfiguration();

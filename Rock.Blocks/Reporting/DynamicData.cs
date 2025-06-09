@@ -360,6 +360,7 @@ namespace Rock.Blocks.Reporting
                         ColumnType.Currency,
                         ColumnType.Date,
                         ColumnType.DateTime,
+                        ColumnType.Html,
                         ColumnType.Number,
                         ColumnType.Person
                     };
@@ -412,8 +413,6 @@ namespace Rock.Blocks.Reporting
             box.IsLavaTemplateDisplayMode = dataResults.Config.IsLavaTemplateDisplayMode;
             box.NavigationUrls = GetBoxNavigationUrls( dataResults );
             box.SecurityGrantToken = GetSecurityGrantToken();
-
-            SetDynamicPageTitle( dataResults );
 
             return box;
         }
@@ -721,7 +720,7 @@ namespace Rock.Blocks.Reporting
                 // Do not change this to use Rock's `ToCamelCase()` extension method,
                 // as this block's private `GetCamelCase()` method is more thorough,
                 // and will cover cases that are more likely to be encountered within
-                // the the block's dynamic query value.
+                // the block's dynamic query value.
                 c.CamelCaseName = GetCamelCase( c.SplitCaseName );
             } );
         }
@@ -794,82 +793,40 @@ namespace Rock.Blocks.Reporting
             var mergeFields = dataResults.Config.MergeFields;
             var i = 1;
 
-#if REVIEW_WEBFORMS
-            if ( LavaService.RockLiquidIsEnabled )
+            var tableFields = new List<Dictionary<string, object>>();
+            foreach ( DataTable dataTable in dataSet.Tables )
             {
-                var tableFields = new List<Dictionary<string, object>>();
-                foreach ( DataTable dataTable in dataSet.Tables )
+                var lavaRows = new List<DataRowLavaData>();
+                foreach ( DataRow row in dataTable.Rows )
                 {
-                    var lavaRows = new List<DataRowDrop>();
-                    foreach ( DataRow row in dataTable.Rows )
-                    {
-                        lavaRows.Add( new DataRowDrop( row ) );
-                    }
-
-                    // Add a collection of all the tables as a merge field (even if only one table),
-                    // to allow the template to iterate over them.
-                    var tableField = new Dictionary<string, object>
-                    {
-                        { "rows", lavaRows }
-                    };
-
-                    tableFields.Add( tableField );
-
-                    // Continue to add the following merge fields to maintain compatibility with
-                    // lava templates that were written before this Obsidian version of the block
-                    // (and therefore before the 'tables' merge field) was added.
-                    if ( dataSet.Tables.Count > 1 )
-                    {
-                        mergeFields.Add( "table" + i.ToString(), tableField );
-                    }
-                    else
-                    {
-                        mergeFields.Add( "rows", lavaRows );
-                    }
-
-                    i++;
+                    lavaRows.Add( new DataRowLavaData( row ) );
                 }
 
-                mergeFields.Add( "tables", tableFields );
-            }
-            else
-#endif
-            {
-                var tableFields = new List<Dictionary<string, object>>();
-                foreach ( DataTable dataTable in dataSet.Tables )
+                // Add a collection of all the tables as a merge field (even if only one table),
+                // to allow the template to iterate over them.
+                var tableField = new Dictionary<string, object>
                 {
-                    var lavaRows = new List<DataRowLavaData>();
-                    foreach ( DataRow row in dataTable.Rows )
-                    {
-                        lavaRows.Add( new DataRowLavaData( row ) );
-                    }
+                    { "rows", lavaRows }
+                };
 
-                    // Add a collection of all the tables as a merge field (even if only one table),
-                    // to allow the template to iterate over them.
-                    var tableField = new Dictionary<string, object>
-                    {
-                        { "rows", lavaRows }
-                    };
+                tableFields.Add( tableField );
 
-                    tableFields.Add( tableField );
-
-                    // Continue to add the following merge fields to maintain compatibility with
-                    // lava templates that were written before this Obsidian version of the block
-                    // (and therefore before the 'tables' merge field) was added.
-                    if ( dataSet.Tables.Count > 1 )
-                    {
-                        mergeFields.Add( "table" + i.ToString(), tableField );
-                    }
-                    else
-                    {
-                        mergeFields.Add( "rows", lavaRows );
-                    }
-
-                    i++;
+                // Continue to add the following merge fields to maintain compatibility with
+                // lava templates that were written before this Obsidian version of the block
+                // (and therefore before the 'tables' merge field) was added.
+                if ( dataSet.Tables.Count > 1 )
+                {
+                    mergeFields.Add( "table" + i.ToString(), tableField );
+                }
+                else
+                {
+                    mergeFields.Add( "rows", lavaRows );
                 }
 
-                mergeFields.Add( "tables", tableFields );
+                i++;
             }
+
+            mergeFields.Add( "tables", tableFields );
         }
 
         /// <summary>
@@ -1542,6 +1499,7 @@ namespace Rock.Blocks.Reporting
 
             if ( GetAttributeValue( AttributeKey.EnableQuickReturn ).AsBoolean() )
             {
+                SetDynamicPageTitle( dataResults );
                 response.QuickReturnPageTitle = dataResults.PageTitle;
             }
 
@@ -1924,6 +1882,7 @@ namespace Rock.Blocks.Reporting
             public const string CurrencyValue = "currency";
             public const string DateValue = "date";
             public const string DateTimeValue = "dateTime";
+            public const string HtmlValue = "html";
             public const string NumberValue = "number";
             public const string PersonValue = "person";
             public const string TextValue = "text";
@@ -1939,6 +1898,9 @@ namespace Rock.Blocks.Reporting
 
             private static readonly ListItemBag _dateTime = new ListItemBag { Text = "Date Time", Value = DateTimeValue };
             public static ListItemBag DateTime => _dateTime;
+
+            private static readonly ListItemBag _html = new ListItemBag { Text = "HTML", Value = HtmlValue };
+            public static ListItemBag Html => _html;
 
             private static readonly ListItemBag _number = new ListItemBag { Text = "Number", Value = NumberValue };
             public static ListItemBag Number => _number;
@@ -2186,58 +2148,6 @@ namespace Rock.Blocks.Reporting
             /// </summary>
             public LavaTemplateResultsBag LavaTemplateResults { get; set; }
         }
-
-#if REVIEW_WEBFORMS
-        /// <summary>
-        /// An object to represent data table rows within the lava template, when RockLiquid lava processing is enabled.
-        /// </summary>
-        private class DataRowDrop : DotLiquid.Drop, ILavaDataDictionary
-        {
-            private readonly DataRow _dataRow;
-
-            public DataRowDrop( DataRow dataRow )
-            {
-                _dataRow = dataRow;
-            }
-
-            public override object BeforeMethod( string method )
-            {
-                if ( _dataRow.Table.Columns.Contains( method ) )
-                {
-                    return _dataRow[method];
-                }
-
-                return null;
-            }
-
-            public List<string> AvailableKeys
-            {
-                get
-                {
-                    var keys = new List<string>();
-                    foreach ( DataColumn column in _dataRow.Table.Columns )
-                    {
-                        keys.Add( column.ColumnName );
-                    }
-                    return keys;
-                }
-            }
-
-            public bool ContainsKey( string key )
-            {
-                return _dataRow.Table.Columns.Contains( key );
-            }
-
-            public object GetValue( string key )
-            {
-                if ( _dataRow.Table.Columns.Contains( key ) )
-                {
-                    return _dataRow[key];
-                }
-                return null;
-            }
-        }
-#endif
 
         /// <summary>
         /// An object to represent data table rows within the lava template.

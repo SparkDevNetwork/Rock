@@ -1,7 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div>
-        <button class="btn btn-default btn-sm"
+        <button v-if="isVisible"
+                class="btn btn-default btn-sm"
                 :title="title"
                 :disabled="isDisabled"
                 @click.prevent.stop="onClick">
@@ -19,11 +20,27 @@
 
     const isRunning = ref(false);
 
+    const isVisible = computed((): boolean => {
+        if (typeof props.column.props.visible === "function") {
+            return props.column.props.visible(props.row);
+        }
+
+        return true;
+    });
+
     const isDisabled = computed((): boolean => {
-        return isRunning.value;
+        if (typeof props.column.props.disabled === "function") {
+            return isRunning.value || props.column.props.disabled(props.row);
+        }
+
+        return isRunning.value || !!props.column.props.disabled;
     });
 
     const title = computed((): string | undefined => {
+        if (typeof props.column.props.tooltip === "string") {
+            return props.column.props.tooltip;
+        }
+
         if (typeof props.column.props.title === "string") {
             return props.column.props.title;
         }
@@ -70,4 +87,3 @@
     }
 
 </script>
-

@@ -15,18 +15,14 @@
 // </copyright>
 //
 using System;
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
 
 using Rock.Data;
-using Rock.Enums.Lms;
 using Rock.Model;
-using Rock.Utility;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -44,99 +40,23 @@ namespace Rock.Reporting.DataSelect.Group
         #region Properties
 
         /// <inheritdoc/>
-        public override string AppliesToEntityType
-        {
-            get
-            {
-                return typeof( Rock.Model.Person ).FullName;
-            }
-        }
+        public override string AppliesToEntityType => typeof( Rock.Model.Person ).FullName;
 
         /// <inheritdoc/>
-        public override string Section
-        {
-            get
-            {
-                return "LMS";
-            }
-        }
+        public override string Section => "LMS";
 
         /// <inheritdoc/>
-        public override string ColumnPropertyName
-        {
-            get
-            {
-                return "HasCompletedProgram";
-            }
-        }
+        public override string ColumnPropertyName => "HasCompletedProgram";
 
         /// <inheritdoc/>
-        public override Type ColumnFieldType
-        {
-            get { return typeof( ProgramCompletionData ); }
-        }
+        public override Type ColumnFieldType => typeof( bool );
 
         /// <inheritdoc/>
-        public override string ColumnHeaderText
-        {
-            get
-            {
-                return "Has Completed Program";
-            }
-        }
+        public override string ColumnHeaderText => "Has Completed Program";
 
         #endregion
 
         #region Methods
-
-#if REVIEW_WEBFORMS
-        /// <inheritdoc/>
-        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
-        {
-            var result = new CallbackField();
-
-            result.OnFormatDataValue += ( sender, e ) =>
-            {
-                var programData = e.DataValue as ProgramCompletionData;
-
-                if ( programData == null )
-                {
-                    e.FormattedValue = string.Empty;
-                }
-                else
-                {
-                    switch ( programData.CompletionStatus )
-                    {
-                        case CompletionStatus.Pending:
-                            e.FormattedValue = $"Pending Completion";
-                            break;
-                        case CompletionStatus.Completed:
-                            if ( programData.EndDate.HasValue )
-                            {
-                                e.FormattedValue = $"Completed on {programData.EndDate.Value.ToShortDateString()}";
-                            }
-                            else
-                            {
-                                e.FormattedValue = "Completed";
-                            }
-                            break;
-                        case CompletionStatus.Expired:
-                            if ( programData.EndDate.HasValue )
-                            {
-                                e.FormattedValue = $"Expired on {programData.EndDate.Value.ToShortDateString()}";
-                            }
-                            else
-                            {
-                                e.FormattedValue = "Expired";
-                            }
-                            break;
-                    }
-                }
-            };
-
-            return result;
-        }
-#endif
 
         /// <inheritdoc/>
         public override string GetTitle( Type entityType )
@@ -153,27 +73,15 @@ namespace Rock.Reporting.DataSelect.Group
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
             // Define Control: Output Format DropDown List
-            var ddlProgram = new RockDropDownList();
-            ddlProgram.ID = parentControl.GetChildControlInstanceName( _CtlProgram );
-            ddlProgram.Label = "Completed Program";
-            ddlProgram.Help = "The Learning Program that should have been completed during the specified time frame.";
-
-            var programs = new LearningProgramService( new RockContext() ).Queryable().AsNoTracking()
-               .Where( p => p.IsActive )
-               .Select( p => new
-               {
-                   p.Id,
-                   p.Name
-               } )
-               .ToList()
-               .OrderBy( a => a.Name );
-            ddlProgram.Items.Clear();
-            ddlProgram.Items.Insert( 0, new ListItem() );
-            foreach ( var program in programs )
+            var ddlProgram = new RockDropDownList
             {
-                var programName = program.Name ?? string.Empty;
-                ddlProgram.Items.Add( new ListItem( programName, program.Id.ToString() ) );
-            }
+                ID = parentControl.GetChildControlInstanceName( _CtlProgram ),
+                Label = "Completed Program",
+                Help = "The Learning Program that should have been completed during the specified time frame.",
+                Required = true
+            };
+
+            DataFilter.Person.HasCompletedProgramFilter.SetProgramItems( ddlProgram );
 
             parentControl.Controls.Add( ddlProgram );
 
@@ -207,13 +115,13 @@ namespace Rock.Reporting.DataSelect.Group
             var ddlProgram = controls.GetByName<DropDownList>( _CtlProgram );
             var slidingDateRangePicker = controls.GetByName<SlidingDateRangePicker>( _CtlSlidingDateRange );
 
-            var settings = new HasCompletedProgramSelectSettings
+            var settings = new SelectionConfig
             {
-                LearningProgramId = ddlProgram.SelectedValue.AsIntegerOrNull(),
+                LearningProgramGuid = ddlProgram.SelectedValue.AsGuidOrNull(),
                 SlidingDateRangeDelimitedValues = slidingDateRangePicker.DelimitedValues
             };
 
-            return settings.ToSelectionString();
+            return settings.ToJson();
         }
 
         /// <summary>
@@ -226,14 +134,9 @@ namespace Rock.Reporting.DataSelect.Group
             var ddlProgram = controls.GetByName<RockDropDownList>( _CtlProgram );
             var slidingDateRangePicker = controls.GetByName<SlidingDateRangePicker>( _CtlSlidingDateRange );
 
-            var settings = new HasCompletedProgramSelectSettings( selection );
+            var settings = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
 
-            if ( !settings.IsValid )
-            {
-                return;
-            }
-
-            ddlProgram.SelectedValue = settings.LearningProgramId.ToString();
+            ddlProgram.SetValue( settings.LearningProgramGuid );
             slidingDateRangePicker.DelimitedValues = settings.SlidingDateRangeDelimitedValues;
         }
 #endif
@@ -241,43 +144,14 @@ namespace Rock.Reporting.DataSelect.Group
         /// <inheritdoc/>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            var settings = new HasCompletedProgramSelectSettings( selection );
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( settings.SlidingDateRangeDelimitedValues );
+            var selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
+            var selectedProgramGuid = selectionConfig.LearningProgramGuid;
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
 
-            var programQuery = settings.LearningProgramId.HasValue ?
-                new LearningProgramCompletionService( context ).Queryable()
-                    .AsNoTracking()
-                    .Include( c => c.PersonAlias )
-                    .Where( c => c.LearningProgramId == settings.LearningProgramId ) :
-                new List<LearningProgramCompletion>().AsQueryable();
+            var completionQuery = DataFilter.Person.HasCompletedProgramFilter.GetFilterQuery( context, selectedProgramGuid, dateRange );
 
-            if ( dateRange.Start.HasValue || dateRange.End.HasValue )
-            {
-                programQuery = programQuery.Where( c => c.EndDate.HasValue );
-
-                if ( dateRange.Start.HasValue )
-                {
-                    var startDate = dateRange.Start.Value;
-                    programQuery = programQuery.Where( c => c.EndDate >= startDate );
-                }
-
-                if ( dateRange.End.HasValue )
-                {
-                    var endDate = dateRange.End.Value;
-                    programQuery = programQuery.Where( c => c.EndDate <= endDate );
-                }
-            }
             var personQuery = new PersonService( context ).Queryable()
-                .AsNoTracking()
-                .Select( p => programQuery
-                    .Where( c => c.PersonAlias.PersonId == p.Id )
-                    .Select( c => new ProgramCompletionData
-                    {
-                        EndDate = c.EndDate,
-                        CompletionStatus = c.CompletionStatus
-                    } )
-                    .FirstOrDefault()
-                );
+                .Where( p => completionQuery.Any( c => c.PersonAlias.PersonId == p.Id ) );
 
             var selectExpression = SelectExpressionExtractor.Extract( personQuery, entityIdProperty, "p" );
 
@@ -289,21 +163,18 @@ namespace Rock.Reporting.DataSelect.Group
         private const string _CtlProgram = "ddlProgram";
         private const string _CtlSlidingDateRange = "slidingDateRangePicker";
 
-        private class ProgramCompletionData
-        {
-            public DateTime? EndDate { get; set; }
-            public CompletionStatus CompletionStatus { get; set; }
-        }
-
-        private class HasCompletedProgramSelectSettings : SettingsStringBase
+        /// <summary>
+        /// Get and set the filter settings from DataViewFilter.Selection.
+        /// </summary>
+        private class SelectionConfig
         {
             /// <summary>
-            /// Gets or sets the learning program identifier to filter to.
+            /// Gets or sets the learning program unique identifier to filter to.
             /// </summary>
             /// <value>
-            /// The learning program identifiers.
+            /// The learning program unique identifier.
             /// </value>
-            public int? LearningProgramId { get; set; }
+            public Guid? LearningProgramGuid { get; set; }
 
             /// <summary>
             /// Gets or sets the sliding date range.
@@ -313,30 +184,14 @@ namespace Rock.Reporting.DataSelect.Group
             /// </value>
             public string SlidingDateRangeDelimitedValues { get; set; }
 
-            public HasCompletedProgramSelectSettings()
+            /// <summary>
+            /// Parses the specified selection from a JSON or delimited string.
+            /// </summary>
+            /// <param name="selection">The selection.</param>
+            /// <returns></returns>
+            public static SelectionConfig Parse( string selection )
             {
-
-            }
-
-            public HasCompletedProgramSelectSettings( string settingsString )
-            {
-                FromSelectionString( settingsString );
-            }
-
-            protected override IEnumerable<string> OnGetParameters()
-            {
-                var settings = new List<string>();
-
-                settings.Add( LearningProgramId.ToStringSafe() );
-                settings.Add( SlidingDateRangeDelimitedValues.Replace( "|", ";" ).ToStringSafe() );
-
-                return settings;
-            }
-
-            protected override void OnSetParameters( int version, IReadOnlyList<string> parameters )
-            {
-                LearningProgramId = DataComponentSettingsHelper.GetParameterOrDefault( parameters, 0, string.Empty ).AsIntegerOrNull();
-                SlidingDateRangeDelimitedValues = DataComponentSettingsHelper.GetParameterOrEmpty( parameters, 1 ).Replace( ";", "|" );
+                return selection.FromJsonOrNull<SelectionConfig>();
             }
         }
     }

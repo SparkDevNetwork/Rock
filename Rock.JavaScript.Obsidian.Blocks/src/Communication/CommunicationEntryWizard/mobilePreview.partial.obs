@@ -1,0 +1,45 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="confirmation-preview-panel">
+        <div class="mobile-preview-outer">
+            <div class="mobile-preview-inner">
+                <slot></slot>
+            </div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.mobile-preview-outer {
+    position: relative;
+    width: 361px;
+    height: 653px;
+    border-radius: var(--rounded-xlarge);
+    padding: var(--spacing-small);
+    margin-left: auto;
+    margin-right: auto;
+    background-color: var(--color-interface-strong);
+}
+
+.mobile-preview-inner {
+    /* Position relative so slotted elements can absolutely position. */
+    position: relative;
+
+    border-radius: var(--rounded-medium);
+    height: 100%;
+    overflow: hidden;
+}
+
+.confirmation-preview-panel {
+    display: flex;
+    align-items: flex-start;
+
+    padding: var(--panel-body-padding);
+
+    background-color: var(--color-interface-soft);
+}
+</style>
+
+<script setup lang="ts">
+    // Script goes here
+</script>

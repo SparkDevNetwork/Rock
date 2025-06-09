@@ -280,20 +280,7 @@ namespace Rock.Data
             {
                 if ( HistoryItems.Any() )
                 {
-                    Task.Run( () =>
-                    {
-                        try
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                rockContext.BulkInsert( HistoryItems );
-                            }
-                        }
-                        catch ( SystemException ex )
-                        {
-                            ExceptionLogService.LogException( ex, null );
-                        }
-                    } );
+                    new SaveHistoryTransaction( HistoryItems ).Enqueue();
                 }
             }
         }
@@ -640,13 +627,13 @@ namespace Rock.Data
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) )
             {
-                return this.AttributeValues[key].Value;
+                return this.AttributeValues[key].Value ?? string.Empty;
             }
 
             if ( this.Attributes != null &&
                 this.Attributes.ContainsKey( key ) )
             {
-                return this.Attributes[key].DefaultValue;
+                return this.Attributes[key].DefaultValue ?? string.Empty;
             }
 
             return null;
@@ -717,7 +704,7 @@ namespace Rock.Data
             if ( this.AttributeValues != null &&
                 this.AttributeValues.ContainsKey( key ) )
             {
-                this.AttributeValues[key].Value = value;
+                this.AttributeValues[key].Value = value ?? string.Empty;
             }
         }
 

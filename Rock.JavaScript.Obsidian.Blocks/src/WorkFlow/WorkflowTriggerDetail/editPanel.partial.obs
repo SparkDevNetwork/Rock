@@ -76,7 +76,7 @@
 <script setup lang="ts">
     import { PropType, ref, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { watchPropertyChanges, useInvokeBlockAction, setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { WorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowTriggerDetail/workflowTriggerBag";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
@@ -87,10 +87,11 @@
     import { Guid } from "@Obsidian/Types";
     import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<WorkflowTriggerBag>,
+            type: Object as PropType<ValidPropertiesBox<WorkflowTriggerBag>>,
             required: true
         },
 
@@ -101,25 +102,25 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: WorkflowTriggerBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<WorkflowTriggerBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const workflowTriggerType = propertyRef(props.modelValue.workflowTriggerType ?? "", "WorkflowTriggerType");
-    const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
-    const workflowType = propertyRef(props.modelValue.workflowType ?? null, "WorkflowTypeId");
-    const workflowName = propertyRef(props.modelValue.workflowName ?? "", "WorkflowName");
-    const entityTypeQualifierColumn = propertyRef(props.modelValue.entityTypeQualifierColumn ?? "", "EntityTypeQualifierColumn");
-    const entityTypeQualifierValue = propertyRef(props.modelValue.entityTypeQualifierValue ?? "", "EntityTypeQualifierValue");
-    const entityTypeQualifierValuePrevious = propertyRef(props.modelValue.entityTypeQualifierValuePrevious ?? "", "EntityTypeQualifierValuePrevious");
-    const entityTypeQualifierValueAlt = ref(props.modelValue.entityTypeQualifierValueAlt ?? "");
-    const workflowTriggerTypes = ref(props.modelValue.workflowTriggerTypes ?? []);
-    const qualifierValueLabel = ref(props.modelValue.entityTypeQualifierValueLabel ?? "Or value is");
-    const showPreviousAndAltQualifierValueTextBoxes = ref(props.modelValue.showPreviousAndAltQualifierValueTextBoxes ?? true);
-    const qualifierColumns = ref(props.modelValue.qualifierColumns ?? []);
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const workflowTriggerType = propertyRef(props.modelValue?.bag?.workflowTriggerType ?? "", "WorkflowTriggerType");
+    const entityType = propertyRef(props.modelValue?.bag?.entityType ?? {}, "EntityTypeId");
+    const workflowType = propertyRef(props.modelValue?.bag?.workflowType ?? null, "WorkflowTypeId");
+    const workflowName = propertyRef(props.modelValue?.bag?.workflowName ?? "", "WorkflowName");
+    const entityTypeQualifierColumn = propertyRef(props.modelValue?.bag?.entityTypeQualifierColumn ?? "", "EntityTypeQualifierColumn");
+    const entityTypeQualifierValue = propertyRef(props.modelValue?.bag?.entityTypeQualifierValue ?? "", "EntityTypeQualifierValue");
+    const entityTypeQualifierValuePrevious = propertyRef(props.modelValue?.bag?.entityTypeQualifierValuePrevious ?? "", "EntityTypeQualifierValuePrevious");
+    const entityTypeQualifierValueAlt = ref(props.modelValue?.bag?.entityTypeQualifierValueAlt ?? "");
+    const workflowTriggerTypes = ref(props.modelValue?.bag?.workflowTriggerTypes ?? []);
+    const qualifierValueLabel = ref(props.modelValue?.bag?.entityTypeQualifierValueLabel ?? "Or value is");
+    const showPreviousAndAltQualifierValueTextBoxes = ref(props.modelValue?.bag?.showPreviousAndAltQualifierValueTextBoxes ?? true);
+    const qualifierColumns = ref(props.modelValue?.bag?.qualifierColumns ?? []);
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -181,31 +182,32 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(workflowTriggerType, props.modelValue.workflowTriggerType ?? "");
-        updateRefValue(entityType, props.modelValue.entityType ?? {});
-        updateRefValue(workflowType, props.modelValue.workflowType ?? {});
-        updateRefValue(workflowName, props.modelValue.workflowName ?? "");
-        updateRefValue(entityTypeQualifierColumn, props.modelValue.entityTypeQualifierColumn ?? "");
-        updateRefValue(entityTypeQualifierValue, props.modelValue.entityTypeQualifierValue ?? "");
-        updateRefValue(entityTypeQualifierValuePrevious, props.modelValue.entityTypeQualifierValuePrevious ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(workflowTriggerType, props.modelValue?.bag?.workflowTriggerType ?? "");
+        updateRefValue(entityType, props.modelValue?.bag?.entityType ?? {});
+        updateRefValue(workflowType, props.modelValue?.bag?.workflowType ?? {});
+        updateRefValue(workflowName, props.modelValue?.bag?.workflowName ?? "");
+        updateRefValue(entityTypeQualifierColumn, props.modelValue?.bag?.entityTypeQualifierColumn ?? "");
+        updateRefValue(entityTypeQualifierValue, props.modelValue?.bag?.entityTypeQualifierValue ?? "");
+        updateRefValue(entityTypeQualifierValuePrevious, props.modelValue?.bag?.entityTypeQualifierValuePrevious ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([...propRefs, entityTypeQualifierValueAlt], () => {
-        const newValue: WorkflowTriggerBag = {
-            ...props.modelValue,
-            isActive: isActive.value,
-            workflowTriggerType: workflowTriggerType.value,
-            entityType: entityType.value,
-            workflowType: workflowType.value,
-            workflowName: workflowName.value,
-            entityTypeQualifierColumn: entityTypeQualifierColumn.value,
-            entityTypeQualifierValue: entityTypeQualifierValue.value,
-            entityTypeQualifierValuePrevious: entityTypeQualifierValuePrevious.value,
-            entityTypeQualifierValueAlt: entityTypeQualifierValueAlt.value,
+        const newValue: ValidPropertiesBox<WorkflowTriggerBag> = {
+            bag: { ...props.modelValue.bag } as WorkflowTriggerBag
         };
+
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "workflowTriggerType", workflowTriggerType.value);
+        setPropertiesBoxValue(newValue, "entityType", entityType.value);
+        setPropertiesBoxValue(newValue, "workflowType", workflowType.value);
+        setPropertiesBoxValue(newValue, "workflowName", workflowName.value);
+        setPropertiesBoxValue(newValue, "entityTypeQualifierColumn", entityTypeQualifierColumn.value);
+        setPropertiesBoxValue(newValue, "entityTypeQualifierValue", entityTypeQualifierValue.value);
+        setPropertiesBoxValue(newValue, "entityTypeQualifierValuePrevious", entityTypeQualifierValuePrevious.value);
+        setPropertiesBoxValue(newValue, "entityTypeQualifierValueAlt", entityTypeQualifierValueAlt.value);
 
         emit("update:modelValue", newValue);
     });

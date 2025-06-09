@@ -1567,27 +1567,39 @@ namespace Rock.Model
                 }
             }
 
-            // Mark engagement on the enrollment map
-            streak.EngagementMap = SetBit( streakTypeCache, streak.EngagementMap, alignedDateOfEngagement, true, out errorMessage );
+            // Mark engagement on the enrollment map. But only if it isn't already set.
+            // It isn't uncommon for people to have multiple attendance records that could
+            // affect the same streak on a single day for weekend check-in. Save some
+            // processing time on those subsequent check-in sessions.
+            var isStreakSet = IsBitSet( streakTypeCache, streak.EngagementMap, alignedDateOfEngagement, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
                 return null;
             }
 
-            // Entity Framework cannot detect in-place changes to byte arrays, so force set the properties to modified state
-            var streakContextEntry = rockContext.Entry( streak );
-
-            if ( streakContextEntry.State == EntityState.Unchanged )
+            if ( !isStreakSet )
             {
-                streakContextEntry.State = EntityState.Modified;
-                streakContextEntry.Property( se => se.EngagementMap ).IsModified = true;
+                streak.EngagementMap = SetBit( streakTypeCache, streak.EngagementMap, alignedDateOfEngagement, true, out errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    return null;
+                }
+
+                // Entity Framework cannot detect in-place changes to byte arrays, so force set the properties to modified state
+                var streakContextEntry = rockContext.Entry( streak );
+
+                if ( streakContextEntry.State == EntityState.Unchanged )
+                {
+                    streakContextEntry.State = EntityState.Modified;
+                    streakContextEntry.Property( se => se.EngagementMap ).IsModified = true;
+                }
             }
 
             // Ensure the occurrence bit is set on the streak type model. Check first if it is already set because updating the streak type
             // occurrence map means that all streaks need to be recalculated, so it's expensive
-            var streakType = Get( streakTypeCache.Id );
-            var isOccurrenceSet = IsBitSet( streakTypeCache, streakType.OccurrenceMap, alignedDateOfEngagement, out errorMessage );
+            var isOccurrenceSet = IsBitSet( streakTypeCache, streakTypeCache.OccurrenceMap, alignedDateOfEngagement, out errorMessage );
 
             if ( !errorMessage.IsNullOrWhiteSpace() )
             {
@@ -1596,6 +1608,7 @@ namespace Rock.Model
 
             if ( !isOccurrenceSet )
             {
+                var streakType = Get( streakTypeCache.Id );
                 streakType.OccurrenceMap = SetBit( streakTypeCache, streakType.OccurrenceMap, alignedDateOfEngagement, true, out errorMessage );
 
                 if ( !errorMessage.IsNullOrWhiteSpace() )
@@ -1623,17 +1636,19 @@ namespace Rock.Model
         /// <param name="attendance">The attendance.</param>
         public static void HandleAttendanceRecord( Attendance attendance )
         {
-            var rockContext = new RockContext();
-            var streakTypeService = new StreakTypeService( rockContext );
-            streakTypeService.HandleAttendanceRecordForStreak( attendance?.Id, out var errorMessage );
+            using ( var rockContext = new RockContext() )
+            {
+                var streakTypeService = new StreakTypeService( rockContext );
+                streakTypeService.HandleAttendanceRecordForStreak( attendance?.Id, out var errorMessage );
 
-            if ( !errorMessage.IsNullOrWhiteSpace() )
-            {
-                ExceptionLogService.LogException( $"Error while handling attendance record for streaks: {errorMessage}" );
-            }
-            else
-            {
-                rockContext.SaveChanges();
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    ExceptionLogService.LogException( $"Error while handling attendance record for streaks: {errorMessage}" );
+                }
+                else
+                {
+                    rockContext.SaveChanges();
+                }
             }
         }
 
@@ -1643,18 +1658,20 @@ namespace Rock.Model
         /// <param name="attendanceId">The attendance identifier.</param>
         public static void HandleAttendanceRecord( int attendanceId )
         {
-            var rockContext = new RockContext();
-            var streakTypeService = new StreakTypeService( rockContext );
-
-            streakTypeService.HandleAttendanceRecordForStreak( attendanceId, out var errorMessage );
-
-            if ( !errorMessage.IsNullOrWhiteSpace() )
+            using ( var rockContext = new RockContext() )
             {
-                ExceptionLogService.LogException( $"Error while handling attendance record for streaks: {errorMessage}" );
-            }
-            else
-            {
-                rockContext.SaveChanges();
+                var streakTypeService = new StreakTypeService( rockContext );
+
+                streakTypeService.HandleAttendanceRecordForStreak( attendanceId, out var errorMessage );
+
+                if ( !errorMessage.IsNullOrWhiteSpace() )
+                {
+                    ExceptionLogService.LogException( $"Error while handling attendance record for streaks: {errorMessage}" );
+                }
+                else
+                {
+                    rockContext.SaveChanges();
+                }
             }
         }
 
@@ -1674,7 +1691,7 @@ namespace Rock.Model
                 return;
             }
 
-            var attendanceInfo = new AttendanceService( new RockContext() ).Queryable()
+            var attendanceInfo = new AttendanceService( Context as RockContext ).Queryable()
                 .Where( a => a.Id == attendanceId.Value && a.PersonAliasId.HasValue && a.Occurrence.GroupId.HasValue )
                 .Select( s => new
                 {
@@ -1702,7 +1719,7 @@ namespace Rock.Model
 
             // Get the person's streaks
             var personId = attendanceInfo.PersonId;
-            var streakService = new StreakService( new RockContext() );
+            var streakService = new StreakService( Context as RockContext );
             var enrolledInStreakTypeIdQuery = streakService.Queryable()
                 .AsNoTracking()
                 .Where( se => se.PersonAlias.PersonId == personId )
@@ -2461,11 +2478,9 @@ namespace Rock.Model
                         g.Id == structureEntityId ||
                         g.ParentGroupId == structureEntityId );
                 case StreakStructureType.GroupTypePurpose:
-                    var groupTypes = groupTypeService.GetCheckinAreaDescendants( structureEntityId );
-                    groupTypes.Add( GroupTypeCache.Get( structureEntityId ) );
-                    var groupTypePurposeValueIds = groupTypes.ConvertAll( x => x.GroupTypePurposeValueId );
                     return query.Where( g =>
-                        groupTypePurposeValueIds.Contains( g.GroupType.GroupTypePurposeValueId ) );
+                        g.GroupType.GroupTypePurposeValueId == structureEntityId ||
+                        g.GroupType.ParentGroupTypes.Any( pgt => pgt.GroupTypePurposeValueId == structureEntityId ) );
                 default:
                     throw new NotImplementedException( string.Format( "Getting groups for the Structure Type '{0}' is not implemented", structureType ) );
             }

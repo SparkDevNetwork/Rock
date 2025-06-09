@@ -25,6 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.BlockTypeDetail;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Cms
 
     [Rock.SystemGuid.EntityTypeGuid( "81b9bfd5-621d-4e82-84f6-38cae1810332" )]
     [Rock.SystemGuid.BlockTypeGuid( "6c329001-9c04-4090-bed0-12e3f6b88fb6" )]
-    public class BlockTypeDetail : RockDetailBlockType
+    public class BlockTypeDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -65,6 +66,22 @@ namespace Rock.Blocks.Cms
         #region Methods
 
         /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var key = pageReference.GetPageParameter( PageParameterKey.BlockTypeId );
+            var blockTypeId = Rock.Utility.IdHasher.Instance.GetId( key ) ?? key.AsInteger();
+            var blockType = BlockTypeCache.Get( blockTypeId );
+
+            var breadCrumbs = new List<IBreadCrumb>();
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+            breadCrumbs.Add( new BreadCrumbLink( blockType?.Name ?? "New Block Type", breadCrumbPageRef ) );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = breadCrumbs
+            };
+        }
+
         public override object GetObsidianBlockInitialization()
         {
             using ( var rockContext = new RockContext() )
@@ -218,7 +235,7 @@ namespace Rock.Blocks.Cms
                 .Select( b => $"<a href='/admin/cms/sites/{b.SiteId}'>{b.Site.Name}</a> (Site), {b.Zone} (Zone)" )
                 .OrderBy( s => s )
                 .ToList();
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -239,7 +256,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -281,7 +298,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;

@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of connection opportunities
     /// Stored as ConnectionOpportunity.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_OPPORTUNITY )]
     public class ConnectionOpportunityFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

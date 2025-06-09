@@ -52,16 +52,17 @@
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import BinaryFileTypePicker from "@Obsidian/Controls/binaryFileTypePicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { BinaryFileBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileBag";
     import { BinaryFileDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/BinaryFileDetail/binaryFileDetailOptionsBag";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<BinaryFileBag>,
+            type: Object as PropType<ValidPropertiesBox<BinaryFileBag>>,
             required: true
         },
 
@@ -77,24 +78,24 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: BinaryFileBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<BinaryFileBag>): void,
         (e: "propertyChanged", value: string): void
         (e: "labelFileChanged", value: BinaryFileBag): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const fileName = propertyRef(props.modelValue.fileName ?? "", "FileName");
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const file = ref(props.modelValue.file ?? {});
-    const mimeType = propertyRef(props.modelValue.mimeType ?? "", "MimeType");
-    const binaryFileType = propertyRef(props.modelValue.binaryFileType ?? {}, "BinaryFileTypeId");
-    const showBinaryFileType = ref(props.modelValue.showBinaryFileType);
-    const workflowNotificationMessage = ref(props.modelValue.workflowNotificationMessage ?? "");
-    const orphanedBinaryFileIdList = ref(props.modelValue.orphanedBinaryFileIdList ?? []);
-    const binaryFileTypeGuid = ref(toGuidOrNull(props.modelValue.binaryFileType?.value) ?? BinaryFiletype.Default);
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const fileName = propertyRef(props.modelValue?.bag?.fileName ?? "", "FileName");
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const file = ref(props.modelValue?.bag?.file ?? {});
+    const mimeType = propertyRef(props.modelValue?.bag?.mimeType ?? "", "MimeType");
+    const binaryFileType = propertyRef(props.modelValue?.bag?.binaryFileType ?? {}, "BinaryFileTypeId");
+    const showBinaryFileType = ref(props.modelValue?.bag?.showBinaryFileType);
+    const workflowNotificationMessage = ref(props.modelValue?.bag?.workflowNotificationMessage ?? "");
+    const orphanedBinaryFileIdList = ref(props.modelValue?.bag?.orphanedBinaryFileIdList ?? []);
+    const binaryFileTypeGuid = ref(toGuidOrNull(props.modelValue?.bag?.binaryFileType?.value) ?? BinaryFiletype.Default);
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -107,10 +108,10 @@
     // If a file is uploaded run the FileUploaded logic on the server to update some of the missing
     // property values and also run any attached workflows.
     watch(() => file.value, async () => {
-        if (file.value && file.value.value !== props.modelValue.file?.value) {
+        if (file.value && file.value.value !== props.modelValue?.bag?.file?.value) {
             const result = await invokeBlockAction<BinaryFileBag>("FileUploaded", {
                 bag: {
-                    ...props.modelValue,
+                    ...props.modelValue?.bag,
                     attributeValues: attributeValues.value,
                     description: description.value,
                     fileName: fileName.value,
@@ -160,7 +161,7 @@
 
                 // If isLabelFile status changes e.g. after uploading a check-in lable file, emit event so parent block can show
                 // the Edit Label Contents button.
-                if (result.data.isLabelFile != props.modelValue.isLabelFile) {
+                if (result.data.isLabelFile != props.modelValue?.bag?.isLabelFile) {
                     emit("labelFileChanged", result.data);
                 }
             }
@@ -169,31 +170,32 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(fileName, props.modelValue.fileName ?? "");
-        updateRefValue(mimeType, props.modelValue.mimeType ?? "");
-        updateRefValue(binaryFileType, props.modelValue.binaryFileType ?? {});
-        updateRefValue(binaryFileTypeGuid, toGuidOrNull(props.modelValue.binaryFileType?.value) ?? BinaryFiletype.Default);
-        updateRefValue(workflowNotificationMessage, props.modelValue.workflowNotificationMessage ?? "");
-        updateRefValue(orphanedBinaryFileIdList, props.modelValue.orphanedBinaryFileIdList ?? []);
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(fileName, props.modelValue?.bag?.fileName ?? "");
+        updateRefValue(mimeType, props.modelValue?.bag?.mimeType ?? "");
+        updateRefValue(binaryFileType, props.modelValue?.bag?.binaryFileType ?? {});
+        updateRefValue(binaryFileTypeGuid, toGuidOrNull(props.modelValue?.bag?.binaryFileType?.value) ?? BinaryFiletype.Default);
+        updateRefValue(workflowNotificationMessage, props.modelValue?.bag?.workflowNotificationMessage ?? "");
+        updateRefValue(orphanedBinaryFileIdList, props.modelValue?.bag?.orphanedBinaryFileIdList ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, file, ...propRefs], () => {
-        const newValue: BinaryFileBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            fileName: fileName.value,
-            mimeType: mimeType.value,
-            binaryFileType: binaryFileType.value,
-            file: file.value,
-            workflowNotificationMessage: workflowNotificationMessage.value,
-            orphanedBinaryFileIdList: orphanedBinaryFileIdList.value
+        const newValue: ValidPropertiesBox<BinaryFileBag> = {
+            bag: { ...props.modelValue.bag } as BinaryFileBag,
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "fileName", fileName.value);
+        setPropertiesBoxValue(newValue, "mimeType", mimeType.value);
+        setPropertiesBoxValue(newValue, "binaryFileType", binaryFileType.value);
+        setPropertiesBoxValue(newValue, "file", file.value);
+        setPropertiesBoxValue(newValue, "workflowNotificationMessage", workflowNotificationMessage.value);
+        setPropertiesBoxValue(newValue, "orphanedBinaryFileIdList", orphanedBinaryFileIdList.value);
 
         emit("update:modelValue", newValue);
     });

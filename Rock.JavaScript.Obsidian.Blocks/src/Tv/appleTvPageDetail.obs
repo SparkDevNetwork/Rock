@@ -1,13 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <Panel type="block" :title="panelName" :headerSecondaryActions="headerSecondaryActions">
 
         <template #headerActions>
-            <span class="action clickable text-info" v-if="appleTvPageEditBag.idKey" title="Copy Page Guid to Clipboard" @click="onExportClick">
+            <span class="action clickable text-info" v-if="appleTvPageEditBag?.bag?.idKey" title="Copy Page Guid to Clipboard" @click="onExportClick">
                 <i class="fa fa-clipboard"></i>
             </span>
         </template>
@@ -17,7 +17,7 @@
                 <EditPanel v-if="panelMode === DetailPanelMode.Add || panelMode === DetailPanelMode.Edit"
                            v-model="appleTvPageEditBag"
                            :options="options"
-                           @propertyChanged="onPropertyChanged" />
+                           @propertyChanged="baseBlock.onPropertyChanged" />
             </RockForm>
 
             <Modal v-model="showAuditDetailsModal" title="Audit Details">
@@ -29,11 +29,15 @@
             <div v-if="panelMode !== DetailPanelMode.View">
                 <RockButton :btnSize="BtnSize.Default"
                             :btnType="BtnType.Primary"
+                            autoDisable
+                            autoLoading
                             @click="onSaveForm">
                     Save
                 </RockButton>
                 <RockButton :btnSize="BtnSize.Default"
                             :btnType="BtnType.Link"
+                            autoDisable
+                            autoLoading
                             @click="onSaveAndContinueEditingForm">
                     Save Continue Editing
                 </RockButton>
@@ -62,34 +66,21 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import { getSecurityGrant, provideSecurityGrant, refreshDetailAttributes, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { debounce } from "@Obsidian/Utility/util";
+    import { useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { NavigationUrlKey } from "./AppleTvPageDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { AppleTvPageBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/appleTvPageBag";
     import { AppleTvPageDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/AppleTvPageDetail/appleTvPageDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const securityGrant = getSecurityGrant(config.securityGrantToken);
 
     // #region Values
 
     const blockError = ref("");
     const errorMessage = ref("");
-
-    const appleTvPageEditBag = ref(config.entity ?? {} as AppleTvPageBag);
-    const submitForm = ref(false);
-    const redirectAfterSave = ref(true);
-    const resetKey = ref("");
-    const showAuditDetailsModal = ref(false);
-    const panelName = appleTvPageEditBag.value?.name ?? "New Page";
-
-    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
-
-    // The properties that are being edited in the UI. This is used to
-    // inform the server which incoming values have valid data in them.
     const validProperties = [
         "attributeValues",
         "name",
@@ -99,7 +90,21 @@
         "rockCacheability"
     ];
 
-    const refreshAttributesDebounce = debounce(() => refreshDetailAttributes(appleTvPageEditBag, validProperties, invokeBlockAction), undefined, true);
+    const appleTvPageEditBag = ref<ValidPropertiesBox<AppleTvPageBag>>({
+        bag: config.entity ?? {} as AppleTvPageBag,
+        validProperties: config.entity ? Object.keys(config.entity) : validProperties
+    });
+
+    const submitForm = ref(false);
+    const redirectAfterSave = ref(true);
+    const resetKey = ref("");
+    const showAuditDetailsModal = ref(false);
+    const panelName = appleTvPageEditBag.value?.bag?.name ?? "New Page";
+    const panelMode = ref<DetailPanelMode>(DetailPanelMode.Edit);
+    const baseBlock = useEntityDetailBlock({
+        blockConfig: config,
+        entity: appleTvPageEditBag
+    });
 
     // #endregion
 
@@ -109,13 +114,13 @@
      * The identifier key value for this entity.
      */
     const entityKey = computed((): string => {
-        return appleTvPageEditBag.value?.idKey ?? "";
+        return appleTvPageEditBag.value?.bag?.idKey ?? "";
     });
 
     const headerSecondaryActions = computed((): PanelAction[] | undefined => {
         const actions: PanelAction[] = [];
 
-        if (appleTvPageEditBag.value.idKey) {
+        if (appleTvPageEditBag.value?.bag?.idKey) {
             actions.push({
                 type: "default",
                 title: "Audit Details",
@@ -132,10 +137,6 @@
 
     // #endregion
 
-    // #region Functions
-
-    // #endregion
-
     // #region Event Handlers
 
     const onAuditClick = (): void => {
@@ -143,7 +144,7 @@
     };
 
     const onExportClick = (event: Event): void => {
-        navigator.clipboard.writeText(appleTvPageEditBag.value?.pageGuid ?? "");
+        navigator.clipboard.writeText(appleTvPageEditBag.value?.bag?.pageGuid ?? "");
 
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         const jquery = <any>window[<any>"$"];
@@ -166,23 +167,6 @@
     }
 
     /**
-     * Event handler for when a value has changed that has an associated
-     * C# property name. This is used to detect changes to values that
-     * might cause qualified attributes to either show up or not show up.
-     *
-     * @param propertyName The name of the C# property that was changed.
-     */
-    function onPropertyChanged(propertyName: string): void {
-        // If we don't have any qualified attribute properties or this property
-        // is not one of them then do nothing.
-        if (!config.qualifiedAttributeProperties || !config.qualifiedAttributeProperties.some(n => n.toLowerCase() === propertyName.toLowerCase())) {
-            return;
-        }
-
-        refreshAttributesDebounce();
-    }
-
-    /**
      * Event handler for the panel's Save event. Send the data to the server
      * to be saved and then leave edit mode or redirect to target page.
      *
@@ -191,14 +175,8 @@
     async function onSave(): Promise<void> {
         errorMessage.value = "";
 
-        const data: DetailBlockBox<AppleTvPageBag, AppleTvPageDetailOptionsBag> = {
-            entity: appleTvPageEditBag.value,
-            isEditable: true,
-            validProperties: validProperties
-        };
-
-        const result = await invokeBlockAction<AppleTvPageBag | string>("Save", {
-            box: data
+        const result = await invokeBlockAction<ValidPropertiesBox<AppleTvPageBag> | string>("Save", {
+            box: appleTvPageEditBag.value
         });
 
         if (result.isSuccess && result.data) {
@@ -228,10 +206,7 @@
         submitForm.value = true;
     }
 
-
     // #endregion
-
-    provideSecurityGrant(securityGrant);
 
     // Handle any initial error conditions or the need to go into edit mode.
     if (config.errorMessage) {
@@ -241,7 +216,7 @@
         blockError.value = "The specified page could not be viewed.";
     }
     else if (!config.entity.idKey) {
-        appleTvPageEditBag.value = config.entity;
+        appleTvPageEditBag.value = { bag: config.entity };
         panelMode.value = DetailPanelMode.Add;
     }
 </script>

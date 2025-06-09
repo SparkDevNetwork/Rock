@@ -99,6 +99,9 @@
                                 <Rock:RockDropDownList ID="ddlGroupStatusDefinedType" runat="server" Label="Group Status Defined Type" Help="Select the defined type to use when setting the group's status. Leave this blank if you don't want groups to prompt for group status." EnhanceForLongLists="true" />
                                 <Rock:RockCheckBox ID="cbShowAdministrator" runat="server" Label="Show Administrator"
                                     Help="This setting determines if groups of this type support assigning an administrator for each group." />
+
+                                <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" Help="The record source for group members added to groups of this type." />
+                                <Rock:RockCheckBox ID="cbAllowGroupSpecificRecordSource" runat="server" Label="Allow Specific Group Record Source" Help="Determines if groups of this type should be allowed to override the record source." />
                             </div>
                             <div class="col-md-6">
                                 <div class="row">
@@ -158,6 +161,66 @@
                                 </div>
                             </div>
                         </div>
+                    </Rock:PanelWidget>
+
+                    <%-- Peer Network --%>
+                    <Rock:PanelWidget ID="wpPeerNetwork" runat="server" Title="Peer Network">
+                        <Rock:RockCheckBox ID="cbEnablePeerNetwork" runat="server" AutoPostBack="true" Label="Enable Peer Network" Help="Determines if groups of this type should be used to build peer network relationships among group members." OnCheckedChanged="cbEnablePeerNetwork_CheckedChanged" />
+                        <asp:Panel ID="pnlPeerNetwork" runat="server">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:RockRadioButtonList ID="rblRelationshipStrength" runat="server" Label="Relationship Strength" Help="Sets the relationship strength for individuals in groups of this type. Advanced settings offer additional customization options based on the individual's role in the group." RepeatDirection="Horizontal" CssClass="js-relationship-strength" />
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockCheckBox ID="cbEnableRelationshipGrowth" runat="server" Label="Enable Relationship Growth Over Time" Help="Enable this setting to allow relationship strength to grow over time as individuals spend more time together in the group." />
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <Rock:Switch ID="swShowPeerNetworkAdvancedSettings" runat="server" AutoPostBack="true" Text="Show Advanced Settings" OnCheckedChanged="swShowPeerNetworkAdvancedSettings_CheckedChanged" />
+                                </div>
+                            </div>
+                            <asp:Panel ID="pnlPeerNetworkAdvanced" runat="server" Visible="false">
+                                <Rock:RockLiteral ID="lRelationshipStrenghAdvanced" runat="server">
+                                    You can adjust the relationship score below based on the relationship type of the group members. For instance, if the group members have a strong relationship with the leaders but do not know other non-leaders, you can reduce or eliminate the relationship score percentage between non-leaders.
+                                </Rock:RockLiteral>
+                                <div class="d-grid grid-cols-3 gap-2" style="width: max-content;">
+                                    <div></div>
+                                    <div class="d-flex align-items-center">
+                                        <label class="control-label">
+                                            Leader
+                                        </label>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <label class="control-label">
+                                            Non-Leader
+                                        </label>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <label class="control-label">
+                                            Leader
+                                        </label>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <Rock:RockTextBox ID="tbLeaderToLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" Placeholder="100%" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <Rock:RockTextBox ID="tbLeaderToNonLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" Placeholder="100%" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <label class="control-label">
+                                            Non-Leader
+                                        </label>
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <Rock:RockTextBox ID="tbNonLeaderToLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" Placeholder="100%" />
+                                    </div>
+                                    <div class="d-flex align-items-center">
+                                        <Rock:RockTextBox ID="tbNonLeaderToNonLeaderRelationshipMultiplier" runat="server" CssClass="input-width-sm" Placeholder="100%" />
+                                    </div>
+                                </div>
+                            </asp:Panel>
+                        </asp:Panel>
                     </Rock:PanelWidget>
 
                     <%-- RSVP Settings --%>
@@ -233,7 +296,7 @@
                                     </div>
                                 </Rock:RockControlWrapper>
                                 <Rock:RockDropDownList ID="ddlAttendanceRule" runat="server" Label="Check-in Rule"
-                                    Help="The rule that check in should use when a person attempts to check in to a group of this type.  If 'None' is selected, user will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, user will be added to group if they don't already belong.  If 'Already Belongs' is selected, user must already be a member of the group or they will not be allowed to check in." />
+                                    Help="The rule that decides what happens when someone tries to check in to a group of this type.  If 'None' is selected, the individual will not be added to group and is not required to belong to group.  If 'Add On Check In' is selected, the individual will be added to group if they do not already belong.  If 'Already Enrolled in Group' is selected, the individual must already be a member of the group to check in." />
                                 <Rock:RockDropDownList ID="ddlPrintTo" runat="server" Label="Print Using"
                                     Help="When printing check-in labels, should the device's printer or the location's printer be used?  Note: the device has a similar setting which takes precedence over this setting.">
                                     <asp:ListItem Text="Device Printer" Value="1" />
@@ -459,6 +522,27 @@
                         </div>
                     </Rock:PanelWidget>
 
+                    <Rock:PanelWidget ID="wpChat" runat="server" Title="Chat">
+                        <Rock:NotificationBox ID="nbChatRunSyncJob" runat="server" NotificationBoxType="Info" Text="You'll need to run the Chat Sync Job after saving, for these changes to take effect in chat channels of this type." />
+                        <Rock:NotificationBox ID="nbDisableChatChannels" runat="server" NotificationBoxType="Warning" Visible="false" />
+                        <div class="row">
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbIsChatAllowed" runat="server" Label="Enable Chat" Help="If enabled, groups of this type are allowed to participate in the chat system as a chat channel." AutoPostBack="true" OnCheckedChanged="cbIsChatAllowed_CheckedChanged" />
+                                <Rock:RockCheckBox ID="cbIsChatEnabledForAllGroups" runat="server" Label="Enable Chat for All Groups" Help="If enabled, all groups of this type have the chat feature enabled by default." />
+                                <Rock:RockCheckBox ID="cbIsLeavingChatChannelAllowed" runat="server" Label="Allow Members to Leave Channel" Help="If enabled, individuals are allowed to leave chat channels of this type." />
+                            </div>
+                            <div class="col-md-6">
+                                <Rock:RockCheckBox ID="cbIsChatChannelPublic" runat="server" Label="Make Channel Public" Help="If enabled, chat channels of this type are public. A public channel is visible to everyone when performing a search. This also implies that the channel may be joined by any person via the chat application." />
+                                <Rock:RockCheckBox ID="cbIsChatChannelAlwaysShown" runat="server" Label="Always Show Channel" Help="If enabled, chat channels of this type are always shown in the channel list even if the person has not joined the channel. This also implies that the channel may be joined by any person via the chat application." />
+                                <Rock:RockDropDownList ID="ddlChatPushNotificationMode" runat="server" CssClass="input-width-xl" Label="Push Notification Mode" Help="Controls how push notifications are sent for chat channels of this type.">
+                                    <asp:ListItem Value="0" Text="All Messages" />
+                                    <asp:ListItem Value="1" Text="Mentions" />
+                                    <asp:ListItem Value="2" Text="Silent" />
+                                </Rock:RockDropDownList>
+                            </div>
+                        </div>
+                    </Rock:PanelWidget>
+
                     <Rock:PanelWidget ID="wpDisplay" runat="server" Title="Display Options">
                         <div class="row">
                             <div class="col-md-6">
@@ -523,16 +607,23 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <Rock:RockCheckBox ID="cbIsLeader" runat="server" Label="Is Leader" Help="Are people with this role in group considered a 'Leader' of the group?" />
+                        <Rock:RockCheckBox ID="cbIsLeader" runat="server" Label="Is Leader" Help="Are individuals with this role in group considered a 'Leader' of the group?" />
                         <Rock:RockCheckBox ID="cbReceiveRequirementsNotifications" runat="server" Label="Receive Requirements Notifications" Help="Should this role receive notifications of group members who do not meet their requirements? In order for these notifications to be sent you will need to setup a 'Process Group Requirements Notification Job'." />
-                        <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Help="Should users with this role be able to view this group regardless of the security settings on the group?" />
-                        <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Help="Should users with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
-                        <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Help="Should users with this role be able to manage the members of this group regardless of the security settings on the group?" />
-                        <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Is Check-in Allowed" Help="Used with the &quot;already belongs&quot; check-in filter to only allow certain roles to check into a group." />
+                        <Rock:RockCheckBox ID="cbCanView" runat="server" Label="Can View" Help="Should individuals with this role be able to view this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbCanEdit" runat="server" Label="Can Edit" Help="Should individuals with this role be able to edit the details and members of this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbCanManageMembers" runat="server" Label="Can Manage Members" Help="Should individuals with this role be able to manage the members of this group regardless of the security settings on the group?" />
+                        <Rock:RockCheckBox ID="cbIsCheckInAllowed" runat="server" Label="Can Check In to Group" Help="Should individuals with this role be allowed to check in to this group? Note that this only applies if the 'Check-in Rule' is set to &quot;Already Enrolled In Group&quot; in your check-in configuration." />
+                        <Rock:RockCheckBox ID="cbIsExcludedFromPeerNetwork" runat="server" Label="Exclude from Peer Network" Help="Should individuals with this role be excluded from the group's peer network?" />
+                        <Rock:RockCheckBox ID="cbCanTakeAttendance" runat="server" Label="Can Take Attendance" Help="Should individuals with this role be allowed to take attendance for this group regardless of the group's security settings?" />
                     </div>
                     <div class="col-md-6">
                         <Rock:NumberBox ID="nbMinimumRequired" runat="server" NumberType="Integer" Label="Minimum Required" Help="The minimum number of people with this role that group should allow." />
                         <Rock:NumberBox ID="nbMaximumAllowed" runat="server" NumberType="Integer" Label="Maximum Allowed" Help="The maximum number of people with this role that group should allow." />
+                        <Rock:RockDropDownList ID="ddlChatRole" runat="server" Label="Chat Role" Help="The role of the chat individual, to be synchronized with the external chat system.">
+                            <asp:ListItem Value="0" Text="Member" />
+                            <asp:ListItem Value="1" Text="Moderator" />
+                            <asp:ListItem Value="2" Text="Administrator" />
+                        </Rock:RockDropDownList>
                         <asp:CustomValidator ID="cvAllowed" runat="server" Display="None" OnServerValidate="cvAllowed_ServerValidate"
                             ValidationGroup="Roles" ErrorMessage="The Minimum Required should be less than Maximum Allowed." />
                         <asp:PlaceHolder ID="phGroupTypeRoleAttributes" runat="server" />
@@ -644,6 +735,41 @@
             </Content>
         </Rock:ModalDialog>
 
+        <script>
+
+            Sys.Application.add_load(function () {
+                var $thisBlock = $('#<%= upGroupType.ClientID %>');
+
+                addRelationshipStrengthTooltips();
+
+                function addRelationshipStrengthTooltips() {
+                    var $relStrength = $thisBlock.find('.js-relationship-strength');
+                    if (!$relStrength.length) {
+                        return;
+                    }
+
+                    addTooltip('0', 'No established relationship or interaction.');
+                    addTooltip('5', 'Basic interactions with a familiar but limited bond.');
+                    addTooltip('10', 'Frequent interactions characterized by a strong and supportive relationship.');
+                    addTooltip('20', 'Intense and trusted relationship with a high level of personal engagement and understanding.');
+
+                    function addTooltip(value, tooltip) {
+                        var $label = $relStrength
+                            .find('input[type="radio"][value="' + value + '"]')
+                            .closest('label');
+
+                        $label.attr('title', tooltip);
+                        $label.tooltip();
+
+                        // Hide the tooltip when a selection is made.
+                        $label.find('input[type="radio"]').on('click', function () {
+                            $label.tooltip('hide');
+                        });
+                    }
+                }
+            });
+
+        </script>
 
     </ContentTemplate>
 </asp:UpdatePanel>

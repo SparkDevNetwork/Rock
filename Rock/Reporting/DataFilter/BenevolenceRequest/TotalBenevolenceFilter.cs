@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.BenevolenceRequest
@@ -32,10 +34,10 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
     /// <summary>
     ///
     /// </summary>
-    [Description("Filter Benevolence Requests based on Total Amount")]
-    [Export(typeof(DataFilterComponent))]
-    [ExportMetadata("ComponentName", "Benevolence Total Amount")]
-    [Rock.SystemGuid.EntityTypeGuid( "5EFE9EF4-EF64-4A1B-8E3C-E55D2981870F")]
+    [Description( "Filter Benevolence Requests based on Total Amount" )]
+    [Export( typeof( DataFilterComponent ) )]
+    [ExportMetadata( "ComponentName", "Benevolence Total Amount" )]
+    [Rock.SystemGuid.EntityTypeGuid( "5EFE9EF4-EF64-4A1B-8E3C-E55D2981870F" )]
     public class TotalAmountFilter : DataFilterComponent
     {
         #region Properties
@@ -48,7 +50,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof(Rock.Model.BenevolenceRequest).FullName; }
+            get { return typeof( Rock.Model.BenevolenceRequest ).FullName; }
         }
 
         /// <summary>
@@ -74,7 +76,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <value>
         /// The title.
         /// </value>
-        public override string GetTitle(Type entityType)
+        public override string GetTitle( Type entityType )
         {
             return "Total Amount";
         }
@@ -88,10 +90,50 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <value>
         /// The client format script.
         /// </value>
-        public override string GetClientFormatSelection(Type entityType)
+        public override string GetClientFormatSelection( Type entityType )
         {
             return @"'Total Amount ' + $('select', $content).find(':selected').text() + ( $('input', $content).filter(':visible').length ?  (' \'' +  $('input', $content).filter(':visible').val()  + '\'') : '' ) ";
         }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/BenevolenceRequest/totalBenevolenceFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length > 1 )
+            {
+                return new Dictionary<string, string>
+                {
+                    { "comparisonType", selectionValues[0] },
+                    { "amount", selectionValues[1] },
+                };
+            }
+
+            return new Dictionary<string, string>();
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return $"{data.GetValueOrDefault( "comparisonType", "" )}|{data.GetValueOrDefault( "amount", "" )}";
+        }
+
+        #endregion
+
+        #region Public Methods
 
         /// <summary>
         /// Formats the selection.
@@ -99,23 +141,23 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override string FormatSelection(Type entityType, string selection)
+        public override string FormatSelection( Type entityType, string selection )
         {
-            var values = selection.Split('|');
-            if (values.Length == 1)
+            var values = selection.Split( '|' );
+            if ( values.Length == 1 )
             {
-                return string.Format("Total Amount is {0}", values[0]);
+                return string.Format( "Total Amount is {0}", values[0] );
             }
-            else if (values.Length >= 2)
+            else if ( values.Length >= 2 )
             {
-                ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>(ComparisonType.StartsWith);
-                if (comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank)
+                ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
+                if ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank )
                 {
-                    return string.Format("Total Amount {0}", comparisonType.ConvertToString());
+                    return string.Format( "Total Amount {0}", comparisonType.ConvertToString() );
                 }
                 else
                 {
-                    return string.Format("Total Amount {0} '{1}'", comparisonType.ConvertToString(), values[1]);
+                    return string.Format( "Total Amount {0} '{1}'", comparisonType.ConvertToString(), values[1] );
                 }
             }
             else
@@ -129,21 +171,21 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// Creates the child controls.
         /// </summary>
         /// <returns></returns>
-        public override Control[] CreateChildControls(Type entityType, FilterField filterControl)
+        public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
             var controls = new List<Control>();
 
-            var ddlIntegerCompare = ComparisonHelper.ComparisonControl(ComparisonHelper.NumericFilterComparisonTypes);
-            ddlIntegerCompare.ID = string.Format("{0}_{1}", filterControl.ID, controls.Count());
-            ddlIntegerCompare.AddCssClass("js-filter-compare");
-            filterControl.Controls.Add(ddlIntegerCompare);
-            controls.Add(ddlIntegerCompare);
+            var ddlIntegerCompare = ComparisonHelper.ComparisonControl( ComparisonHelper.NumericFilterComparisonTypes );
+            ddlIntegerCompare.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+            ddlIntegerCompare.AddCssClass( "js-filter-compare" );
+            filterControl.Controls.Add( ddlIntegerCompare );
+            controls.Add( ddlIntegerCompare );
 
             var currencyBox = new CurrencyBox();
-            currencyBox.ID = string.Format("{0}_{1}", filterControl.ID, controls.Count());
-            currencyBox.AddCssClass("js-filter-control");
-            filterControl.Controls.Add(currencyBox);
-            controls.Add(currencyBox);
+            currencyBox.ID = string.Format( "{0}_{1}", filterControl.ID, controls.Count() );
+            currencyBox.AddCssClass( "js-filter-control" );
+            filterControl.Controls.Add( currencyBox );
+            controls.Add( currencyBox );
 
             return controls.ToArray();
         }
@@ -155,24 +197,24 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <param name="filterControl">The filter control.</param>
         /// <param name="writer">The writer.</param>
         /// <param name="controls">The controls.</param>
-        public override void RenderControls(Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls)
+        public override void RenderControls( Type entityType, FilterField filterControl, HtmlTextWriter writer, Control[] controls )
         {
             DropDownList ddlCompare = controls[0] as DropDownList;
             CurrencyBox currencyBox = controls[1] as CurrencyBox;
 
-            writer.AddAttribute("class", "row form-row field-criteria");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
-            writer.AddAttribute("class", "col-md-4");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
-            ddlCompare.RenderControl(writer);
+            writer.AddAttribute( "class", "row form-row field-criteria" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            writer.AddAttribute( "class", "col-md-4" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
 
-            ComparisonType comparisonType = (ComparisonType)(ddlCompare.SelectedValue.AsInteger());
-            currencyBox.Style[HtmlTextWriterStyle.Display] = (comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank) ? "none" : string.Empty;
+            ComparisonType comparisonType = ( ComparisonType ) ( ddlCompare.SelectedValue.AsInteger() );
+            currencyBox.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
-            writer.AddAttribute("class", "col-md-8");
-            writer.RenderBeginTag(HtmlTextWriterTag.Div);
-            currencyBox.RenderControl(writer);
+            writer.AddAttribute( "class", "col-md-8" );
+            writer.RenderBeginTag( HtmlTextWriterTag.Div );
+            currencyBox.RenderControl( writer );
             writer.RenderEndTag();
 
             writer.RenderEndTag();  // row
@@ -184,12 +226,12 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
-        public override string GetSelection(Type entityType, Control[] controls)
+        public override string GetSelection( Type entityType, Control[] controls )
         {
             DropDownList ddlCompare = controls[0] as DropDownList;
             CurrencyBox currencyBox = controls[1] as CurrencyBox;
 
-            return string.Format("{0}|{1}", ddlCompare.SelectedValue, currencyBox.Text);
+            return string.Format( "{0}|{1}", ddlCompare.SelectedValue, currencyBox.Text );
         }
 
         /// <summary>
@@ -198,14 +240,14 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <param name="entityType">Type of the entity.</param>
         /// <param name="controls">The controls.</param>
         /// <param name="selection">The selection.</param>
-        public override void SetSelection(Type entityType, Control[] controls, string selection)
+        public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            var values = selection.Split('|');
+            var values = selection.Split( '|' );
 
             DropDownList ddlCompare = controls[0] as DropDownList;
             CurrencyBox currencyBox = controls[1] as CurrencyBox;
 
-            if (values.Length == 2)
+            if ( values.Length == 2 )
             {
                 ddlCompare.SelectedValue = values[0];
                 currencyBox.Text = values[1];
@@ -221,18 +263,18 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <param name="parameterExpression">The parameter expression.</param>
         /// <param name="selection">The selection.</param>
         /// <returns></returns>
-        public override Expression GetExpression(Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection)
+        public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var values = selection.Split('|');
+            var values = selection.Split( '|' );
 
-            ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>(ComparisonType.EqualTo);
+            ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             decimal? amountValue = values[1].AsDecimalOrNull();
 
-            var qry = new BenevolenceRequestService((RockContext)serviceInstance.Context).Queryable();
-            var totalAmountEqualQuery = qry.Where(p => p.BenevolenceResults.Sum(a => a.Amount) == amountValue);
+            var qry = new BenevolenceRequestService( ( RockContext ) serviceInstance.Context ).Queryable();
+            var totalAmountEqualQuery = qry.Where( p => p.BenevolenceResults.Sum( a => a.Amount ) == amountValue );
 
-            BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.BenevolenceRequest>(totalAmountEqualQuery, parameterExpression, "p") as BinaryExpression;
-            BinaryExpression result = FilterExpressionExtractor.AlterComparisonType(comparisonType, compareEqualExpression, null);
+            BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.BenevolenceRequest>( totalAmountEqualQuery, parameterExpression, "p" ) as BinaryExpression;
+            BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );
 
             return result;
         }

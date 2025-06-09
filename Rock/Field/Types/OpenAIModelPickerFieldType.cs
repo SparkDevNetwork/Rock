@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     ///     In this particular use-case the picker should only be used when configuring an AI Provider
     ///     which is not a task which needs to be completed often.
     /// </remarks>
+    [Rock.Attribute.FieldTypeUsage( FieldTypeUsage.System )]
     [Rock.SystemGuid.FieldTypeGuid( "216F0510-90ED-4CCB-BC8B-2F5F1470DC2C")]
     public class OpenAIModelPickerFieldType : UniversalItemPickerFieldType
     {

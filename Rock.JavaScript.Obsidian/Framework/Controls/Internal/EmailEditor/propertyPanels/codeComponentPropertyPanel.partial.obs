@@ -1,0 +1,79 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :componentMigrationHelper="codeComponentHelper"
+                                :hasPaddedBody="true"
+                                title="Lava"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
+        <template v-if="componentHelper?.contentWrapper">
+            <div class="row">
+                <div class="col-sm-12">
+                    <InnerHtmlProperty :element="componentHelper.contentWrapper"
+                                       label="Code"
+                                       :mergeFields="mergeFields"
+                                       mode="code" />
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <p class="text-muted text-sm mb-3">
+                        *Keep in mind: Most email clients do not support interactive elements like JavaScript or Flash. Use basic HTML for higher likelihood of compatibility
+                    </p>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-sm-12">
+                    <PaddingProperty :element="componentHelper.marginWrapper.td"
+                                     label="Margin" />
+                </div>
+            </div>
+        </template>
+    </ComponentPropertyPanelBase>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import InnerHtmlProperty from "../properties/innerHtmlProperty.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import { getCodeComponentHelper } from "../utils.partial";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        mergeFields: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: false
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+        (e: "migrate", value: Element): void;
+    }>();
+
+    // #region Values
+
+    const codeComponentHelper = getCodeComponentHelper();
+    const componentHelper = ref(codeComponentHelper.getElements(props.componentElement));
+
+    // #endregion Values
+
+    // #region Watchers
+
+    watch(() => props.componentElement, () => {
+        componentHelper.value = codeComponentHelper.getElements(props.componentElement);
+    });
+
+    // #endregion Watchers
+</script>

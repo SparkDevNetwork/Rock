@@ -149,7 +149,18 @@ namespace RockWeb.Blocks.Communication
         IsRequired = false,
         Order = 14 )]
 
+    // *** Advanced Category attributes.
+
+    [BooleanField( "Disable Navigation Shortcuts",
+        Key = AttributeKey.DisableNavigationShortcuts,
+        Description = "When enabled, the block will turn off the keyboard shortcuts (arrow keys) used to navigate the steps.",
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Category = "Advanced",
+        Order = 100 )]
+
     #endregion Block Attributes
+
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD )]
     public partial class CommunicationEntryWizard : RockBlock
     {
@@ -174,6 +185,8 @@ namespace RockWeb.Blocks.Communication
             public const string DefaultAsBulk = "DefaultAsBulk";
             public const string EnablePersonParameter = "EnablePersonParameter";
             public const string DisableAddingIndividualsToRecipientLists = "DisableAddingIndividualsToRecipientLists";
+
+            public const string DisableNavigationShortcuts = "DisableNavigationShortcuts";
         }
 
         #endregion Attribute Keys
@@ -458,6 +471,7 @@ function onTaskCompleted( resultData )
 
             if ( !Page.IsPostBack )
             {
+                ConfigureNavigationShortcuts();
                 hfNavigationHistoryInstance.Value = Guid.NewGuid().ToString();
                 ShowDetail( PageParameter( PageParameterKey.CommunicationId ).AsInteger() );
             }
@@ -1583,7 +1597,7 @@ function onTaskCompleted( resultData )
             var emailTransportEnabled = _emailTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.Email );
             var smsTransportEnabled = _smsTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.SMS );
             var pushTransportEnabled = _pushTransportEnabled && allowedCommunicationTypes.Contains( CommunicationType.PushNotification );
-            var recipientPreferenceEnabled = allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference );
+            var recipientPreferenceEnabled = ( emailTransportEnabled || smsTransportEnabled || pushTransportEnabled ) && allowedCommunicationTypes.Contains( CommunicationType.RecipientPreference );
 
             // only prompt for Medium Type if more than one will be visible
             if ( emailTransportEnabled )
@@ -3439,6 +3453,10 @@ function onTaskCompleted( resultData )
             {
                 communication = UpdateCommunication( rockContext );
                 var sampleCommunicationRecipient = GetSampleCommunicationRecipient( communication, rockContext );
+                if ( communication.Id != default( int ) )
+                {
+                    hfCommunicationId.Value = communication.Id.ToString();
+                }
 
                 Person currentPerson;
                 if ( communication.CreatedByPersonAlias != null && communication.CreatedByPersonAlias.Person != null )
@@ -3820,6 +3838,57 @@ function onTaskCompleted( resultData )
             }
         }
 
+        /// <summary>
+        /// Enables the navigation shortcuts (arrow keys) unless the block
+        /// setting has disabled them.
+        /// </summary>
+        private void ConfigureNavigationShortcuts()
+        {
+            if ( GetAttributeValue( AttributeKey.DisableNavigationShortcuts ).AsBoolean() )
+            {
+                return;
+            }
+
+            btnRecipientSelectionNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnRecipientSelectionNext.ToolTip = "Alt+🡆";
+
+            btnRecipientListNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnRecipientListNext.ToolTip = "Alt+🡆";
+
+            btnCommunicationDeliveryPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnCommunicationDeliveryPrevious.ToolTip = "Alt+🡄";
+            btnCommunicationDeliveryNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnCommunicationDeliveryNext.ToolTip = "Alt+🡆";
+
+            btnTemplateSelectionPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnTemplateSelectionPrevious.ToolTip = "Alt+🡄";
+            btnTemplateSelectionNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnTemplateSelectionNext.ToolTip = "Alt+🡆";
+
+            btnEmailEditorPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnEmailEditorPrevious.ToolTip = "Alt+🡄";
+            btnEmailEditorNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnEmailEditorNext.ToolTip = "Alt+🡆";
+
+            btnEmailSummaryPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnEmailSummaryPrevious.ToolTip = "Alt+🡄";
+            btnEmailSummaryNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnEmailSummaryNext.ToolTip = "Alt+🡆";
+
+            btnMobileTextEditorPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnMobileTextEditorPrevious.ToolTip = "Alt+🡄";
+            btnMobileTextEditorNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnMobileTextEditorNext.ToolTip = "Alt+🡆";
+
+            btnPushEditorPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnPushEditorPrevious.ToolTip = "Alt+🡄";
+            btnPushEditorNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnPushEditorNext.ToolTip = "Alt+🡆";
+
+            btnConfirmationPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnConfirmationPrevious.ToolTip = "Alt+🡄";
+        }
+
         #region Support Classes
 
         /// <summary>
@@ -4196,7 +4265,13 @@ function onTaskCompleted( resultData )
                 // Add new recipients
                 ReportProgress( progressReporter, 5, activityMessage: "Creating Recipients List..." );
 
-                var recipientPersonIdQuery = GetRecipientPersonIdPersistedList( recipientPersonIdList, rockContext );
+                /*
+                 SK - 12/6/2024
+                 A new RockContext is created in the lines below because GetRecipientPersonIdPersistedList internally calls RockContext.SaveChanges.
+                 However, the goal is to prevent the Communication entity, created through the original RockContext, from being saved.
+                */
+                var newRockContext = new RockContext();
+                var recipientPersonIdQuery = GetRecipientPersonIdPersistedList( recipientPersonIdList, newRockContext );
 
                 if ( recipientPersonIdQuery == null )
                 {
@@ -4205,7 +4280,7 @@ function onTaskCompleted( resultData )
 
                 using ( var recipientPersonLookupActivity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Update Communication Recipients > Create Recipient Person Lookup Dictionary" ) )
                 {
-                    var recipientPersonsLookup = new PersonService( rockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
+                    var recipientPersonsLookup = new PersonService( newRockContext ).Queryable().Where( a => recipientPersonIdQuery.Contains( a.Id ) )
                         .Select( a => new
                         {
                             PersonId = a.Id,

@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
 
-    <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -16,6 +16,7 @@
                  :isDeleteVisible="false"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
+                 :isFullScreenVisible="false"
                  :isSecurityHidden="true"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
@@ -46,6 +47,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { BlockTypeBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockTypeDetail/blockTypeBag";
     import { BlockTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/BlockTypeDetail/blockTypeDetailOptionsBag";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 
     const config = useConfigurationValues<DetailBlockBox<BlockTypeBag, BlockTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -82,7 +84,7 @@
      * The entity name to display in the block panel.
      */
     const panelName = computed((): string => {
-        return  blockTypeViewBag.value?.name ?? "";
+        return blockTypeViewBag.value?.name ?? "";
     });
 
     /**
@@ -226,7 +228,8 @@
                 return true;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
-                return false;
+                window.location.href = makeUrlRedirectSafe(result.data);
+                return true;
             }
         }
 

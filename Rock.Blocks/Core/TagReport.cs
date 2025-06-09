@@ -22,10 +22,6 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
-#if REVIEW_WEBFORMS
-using DotLiquid;
-#endif
-
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;

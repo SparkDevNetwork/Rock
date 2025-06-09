@@ -70,8 +70,9 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
             <div class="meta-body">
                 <span class="note-caption">
                     {% if NoteOptions.DisplayNoteTypeHeading %}
-                    {{ note.NoteType.Name }}
+                        {{ note.NoteType.Name }}
                     {% endif %}
+
                     {% comment %}Private notes always have a caption, so go by the person instead.{% endcomment %}
                     {% if note.Caption == '' or note.IsPrivateNote %}
                         {% if note.CreatedByPersonId %}
@@ -80,9 +81,12 @@ any CSS Classes that are prefixed with 'js-' are hooks that are required for edi
                             {{ note.NoteType.Name }}
                         {% endif %}
                     {% else %}
-                    {{ note.Caption }}
+                        {{ note.Caption }}
                     {% endif %}
-                    <span v-if="note.ApprovalStatus == 0" class="pull-right mr-1 label label-warning">Pending Approval</span>
+
+                    {% if note.NoteType.RequiresApprovals and note.ApprovalStatus == "PendingApproval" %}
+                        <span class="pull-right mr-1 label label-warning">Pending Approval</span>
+                    {% endif %}
                 </span>
 
                 <span class="note-details">

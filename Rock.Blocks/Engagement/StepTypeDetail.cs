@@ -27,9 +27,11 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StepTypeDetail;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -101,7 +103,7 @@ namespace Rock.Blocks.Engagement
 
     [Rock.SystemGuid.EntityTypeGuid( "458b0a6c-73d6-456a-9a94-56b5ae3f0592" )]
     [Rock.SystemGuid.BlockTypeGuid( "487ecb63-bdf3-41a1-be67-c5faab5f27c1" )]
-    public class StepTypeDetail : RockDetailBlockType
+    public class StepTypeDetail : RockDetailBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -165,29 +167,41 @@ namespace Rock.Blocks.Engagement
         #region Methods
 
         /// <inheritdoc/>
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var key = pageReference.GetPageParameter( PageParameterKey.StepTypeId );
+                var pageParameters = new Dictionary<string, string>();
+
+                var name = new StepTypeService( rockContext )
+                    .GetSelect( key, mf => mf.Name );
+
+                if ( name != null )
+                {
+                    pageParameters.Add( PageParameterKey.StepTypeId, key );
+                }
+
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+                var breadCrumb = new BreadCrumbLink( name ?? "New Step Type", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+                };
+            }
+        }
         public override object GetObsidianBlockInitialization()
         {
             using ( var rockContext = GetRockContext() )
             {
                 var box = new DetailBlockBox<StepTypeBag, StepTypeDetailOptionsBag>();
-                var stepProgramKey = PageParameter( PageParameterKey.StepProgramId );
-                var stepTypeKey = PageParameter( PageParameterKey.StepTypeId );
 
-                var stepProgramId = !PageCache.Layout.Site.DisablePredictableIds ? Rock.Utility.IdHasher.Instance.GetId( stepProgramKey ) ?? stepProgramKey.AsInteger() : 0;
-                var stepTypeId = !PageCache.Layout.Site.DisablePredictableIds ? Rock.Utility.IdHasher.Instance.GetId( stepTypeKey ) ?? stepTypeKey.AsInteger() : 0;
+                SetBoxInitialEntityState( box, rockContext );
 
-                if ( stepProgramId == 0 && stepTypeId == 0 )
-                {
-                    box.ErrorMessage = "A new Step cannot be added because there is no Step Program available in this context.";
-                }
-                else
-                {
-                    SetBoxInitialEntityState( box, rockContext );
-
-                    box.NavigationUrls = GetBoxNavigationUrls();
-                    box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                    box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StepType>();
-                }
+                box.NavigationUrls = GetBoxNavigationUrls();
+                box.Options = GetBoxOptions( box.IsEditable, rockContext );
+                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StepType>();
 
                 return box;
             }
@@ -202,9 +216,10 @@ namespace Rock.Blocks.Engagement
         /// <returns>The options that provide additional details to the block.</returns>
         private StepTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
+            var stepType = GetStepType();
             var options = new StepTypeDetailOptionsBag()
             {
-                StepStatuses = GetStepStatuses().ToListItemBagList(),
+                StepStatuses = GetStepStatuses( stepType ).ToListItemBagList(),
                 TriggerTypes = new List<ListItemBag>
                 {
                     new ListItemBag() { Text = "Step Completed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() },
@@ -220,9 +235,9 @@ namespace Rock.Blocks.Engagement
         /// Gets all the available step statuses.
         /// </summary>
         /// <returns></returns>
-        private List<StepStatus> GetStepStatuses()
+        private List<StepStatus> GetStepStatuses( StepType stepType )
         {
-            var stepProgramId = GetStepProgramId();
+            var stepProgramId = GetStepProgramId( stepType );
             return _stepStatuses ?? ( _stepStatuses = new StepStatusService( GetRockContext() ).Queryable().Where( s => s.StepProgramId == stepProgramId ).ToList() );
         }
 
@@ -335,7 +350,7 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             var defaultDateRange = GetDefaultDateRange();
 
@@ -428,15 +443,15 @@ namespace Rock.Blocks.Engagement
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             bag.PreRequisites = entity.StepTypePrerequisites.Select( p => p.PrerequisiteStepType.Guid.ToString() ).ToList();
-            bag.AvailablePreRequisites = GetPrerequisiteStepsList();
+            bag.AvailablePreRequisites = GetPrerequisiteStepsList( entity );
 
             // Get the step type attributes for the grid in the edit view.
             var stepTypeAttributes = GetStepTypeAttributes( GetRockContext(), entity.Id.ToString() ).ConvertAll( e => new StepAttributeBag()
             {
-                Attribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( e ),
+                Attribute = PublicAttributeHelper.GetPublicEditableAttribute( e ),
                 FieldType = FieldTypeCache.Get( e.FieldTypeId )?.Name,
             } );
             bag.StepAttributes = stepTypeAttributes;
@@ -450,8 +465,8 @@ namespace Rock.Blocks.Engagement
                 Guid = wt.Guid,
                 WorkflowTrigger = GetTriggerType( wt.TriggerType, wt.TypeQualifier ),
                 WorkflowType = wt.WorkflowType.ToListItemBag(),
-                PrimaryQualifier = GetStepStatuses().Find(ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
-                SecondaryQualifier = GetStepStatuses().Find(ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
+                PrimaryQualifier = GetStepStatuses( entity ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
+                SecondaryQualifier = GetStepStatuses( entity ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
             } ).ToList();
             bag.Workflows = workflowTriggers;
             bag.WorkflowTriggerGridData = GetWorkflowTriggersGridBuilder().Build( workflowTriggers );
@@ -518,7 +533,7 @@ namespace Rock.Blocks.Engagement
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -532,7 +547,14 @@ namespace Rock.Blocks.Engagement
         /// <returns>The <see cref="StepType"/> to be viewed or edited on the page.</returns>
         private StepType GetInitialEntity( RockContext rockContext )
         {
-            return _stepType = GetInitialEntity<StepType, StepTypeService>( rockContext, PageParameterKey.StepTypeId );
+            var entity = GetInitialEntity<StepType, StepTypeService>( rockContext, PageParameterKey.StepTypeId );
+
+            if ( entity?.Id == 0 )
+            {
+                entity.StepProgramId = GetStepProgramId( entity );
+            }
+
+            return entity;
         }
 
         /// <summary>
@@ -541,18 +563,25 @@ namespace Rock.Blocks.Engagement
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
-            var stepType = GetStepType();
-            var queryParams = new Dictionary<string, string>();
+            var stepTypeId = PageParameter( PageParameterKey.StepTypeId );
+            var stepProgramId = PageParameter( PageParameterKey.StepProgramId );
+            var linkedPageQueryParams = new Dictionary<string, string>();
+            var parentPageQueryParams = new Dictionary<string, string>();
 
-            if ( stepType != null )
+            if ( !string.IsNullOrWhiteSpace( stepTypeId ) )
             {
-                queryParams[PageParameterKey.StepTypeId] = stepType.Id.ToString();
+                linkedPageQueryParams[PageParameterKey.StepTypeId] = stepTypeId;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( stepProgramId ) )
+            {
+                parentPageQueryParams[PageParameterKey.StepProgramId] = stepProgramId;
             }
 
             return new Dictionary<string, string>
             {
-                [AttributeKey.BulkEntryPage] = this.GetLinkedPageUrl( AttributeKey.BulkEntryPage, queryParams ),
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [AttributeKey.BulkEntryPage] = this.GetLinkedPageUrl( AttributeKey.BulkEntryPage, linkedPageQueryParams ),
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( parentPageQueryParams )
             };
         }
 
@@ -610,7 +639,7 @@ namespace Rock.Blocks.Engagement
             {
                 // Create a new entity.
                 entity = new StepType();
-                entity.StepProgramId = GetStepProgramId();
+                entity.StepProgramId = GetStepProgramId( entity );
                 entityService.Add( entity );
             }
 
@@ -663,12 +692,12 @@ namespace Rock.Blocks.Engagement
         {
             if ( _stepType == null )
             {
-                var stepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsIntegerOrNull();
+                var stepTypeId = GetStepTypeId();
 
                 if ( stepTypeId > 0 )
                 {
                     var stepTypeService = new StepTypeService( GetRockContext() );
-                    _stepType = stepTypeService.Queryable( "StepProgram, StepTypePrerequisites" ).FirstOrDefault( stat => stat.Id == stepTypeId.Value );
+                    _stepType = stepTypeService.Queryable( "StepProgram, StepTypePrerequisites" ).FirstOrDefault( stat => stat.Id == stepTypeId );
                 }
             }
 
@@ -679,23 +708,30 @@ namespace Rock.Blocks.Engagement
         /// Gets the step program identifier.
         /// </summary>
         /// <returns></returns>
-        private int GetStepProgramId()
+        private int GetStepProgramId( StepType stepType )
         {
-            var stepType = GetStepType();
-
-            int programId = 0;
-
-            if ( stepType != null )
+            if ( stepType != null && stepType.StepProgramId > 0 )
             {
-                programId = stepType.StepProgramId;
+                return stepType.StepProgramId;
             }
 
-            if ( programId == 0 )
+            var programIdParam = PageParameter( PageParameterKey.StepProgramId );
+            if ( !string.IsNullOrWhiteSpace( programIdParam ) )
             {
-                programId = RequestContext.GetPageParameter( PageParameterKey.StepProgramId ).AsInteger();
+                var programId = programIdParam.AsIntegerOrNull();
+                if ( programId.HasValue )
+                {
+                    return programId.Value;
+                }
+
+                var programCache = StepProgramCache.Get( programIdParam, !PageCache.Layout.Site.DisablePredictableIds );
+                if ( programCache != null )
+                {
+                    return programCache.Id;
+                }
             }
 
-            return programId;
+            return 0;
         }
 
         /// <summary>
@@ -704,15 +740,15 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private int GetStepTypeId()
         {
-            return RequestContext.GetPageParameter( PageParameterKey.StepTypeId ).AsInteger();
+            return StepTypeCache.Get( PageParameter( PageParameterKey.StepTypeId ), !PageCache.Layout.Site.DisablePredictableIds )?.Id ?? 0;
         }
 
         /// <summary>
         /// Get the selection list for Prerequisite Steps.
         /// </summary>
-        private List<ListItemBag> GetPrerequisiteStepsList()
+        private List<ListItemBag> GetPrerequisiteStepsList( StepType stepType )
         {
-            var programId = GetStepProgramId();
+            var programId = GetStepProgramId( stepType );
             var stepTypeId = GetStepTypeId();
             var stepsService = new StepTypeService( GetRockContext() );
             List<StepType> prerequisiteStepTypes;
@@ -803,7 +839,7 @@ namespace Rock.Blocks.Engagement
                 .Select( i => i.Value )
                 .ToList();
 
-            var avgDaysToComplete = daysToCompleteList.Any() ? ( int ) daysToCompleteList.Average() : 0;
+            var avgDaysToComplete = daysToCompleteList.Any() ? ( int )daysToCompleteList.Average() : 0;
 
             return template.ResolveMergeFields( new Dictionary<string, object>
             {
@@ -923,7 +959,7 @@ namespace Rock.Blocks.Engagement
                 showActivitySummary = stepsQuery.Any();
             }
 
-            return  showActivitySummary;
+            return showActivitySummary;
         }
 
         /// <summary>
@@ -1037,7 +1073,7 @@ namespace Rock.Blocks.Engagement
         private GridBuilder<StepAttributeBag> GetAttributesGridBuilder()
         {
             return new GridBuilder<StepAttributeBag>()
-                .AddTextField( "idKey", a => a.Attribute.Key )
+                .AddTextField( "idKey", a => a.Attribute.Guid.ToString() )
                 .AddTextField( "attributeName", a => a.Attribute.Name )
                 .AddTextField( "fieldType", a => a.FieldType )
                 .AddField( "allowSearch", a => a.Attribute.IsAllowSearch );
@@ -1155,8 +1191,8 @@ namespace Rock.Blocks.Engagement
 
                     var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings
                     {
-                        FromStatusId = GetStepStatuses().Find( ss => ss.Guid.ToString() == stepTypeWorkflowTrigger.PrimaryQualifier )?.Id,
-                        ToStatusId = GetStepStatuses().Find( ss => ss.Guid.ToString() == stepTypeWorkflowTrigger.SecondaryQualifier )?.Id,
+                        FromStatusId = GetStepStatuses( entity ).Find( ss => ss.Guid.ToString() == stepTypeWorkflowTrigger.PrimaryQualifier )?.Id,
+                        ToStatusId = GetStepStatuses( entity ).Find( ss => ss.Guid.ToString() == stepTypeWorkflowTrigger.SecondaryQualifier )?.Id,
                     };
 
                     workflowTrigger.WorkflowTypeId = stepTypeWorkflowTrigger.WorkflowType.GetEntityId<WorkflowType>( rockContext ).Value;
@@ -1166,7 +1202,7 @@ namespace Rock.Blocks.Engagement
                 }
 
                 // Update Prerequisites
-                var stepProgramId = GetStepProgramId();
+                var stepProgramId = GetStepProgramId( entity );
                 var stepTypeId = GetStepTypeId();
                 var uiPrerequisiteStepTypeGuids = box.Entity.PreRequisites.ConvertAll( x => x.AsGuid() );
                 var stepTypes = entityService.Queryable().Where( x => x.StepProgramId == stepProgramId && x.IsActive ).ToList();
@@ -1276,7 +1312,10 @@ namespace Rock.Blocks.Engagement
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                return ActionOk( this.GetParentPageUrl( new Dictionary<string, string>
+                {
+                    {  PageParameterKey.StepProgramId, PageParameter( PageParameterKey.StepProgramId ) },
+                } ) );
             }
         }
 
@@ -1357,12 +1396,12 @@ namespace Rock.Blocks.Engagement
                 {
                     FieldTypeGuid = FieldTypeCache.Get( Rock.SystemGuid.FieldType.TEXT ).Guid
                 };
-                modalTitle = ActionTitle.Add(  isNew ? "new Attribute for Participants in this Step Type." : $"new Attribute for Participants in {entity.Name}." );
+                modalTitle = ActionTitle.Add( isNew ? "new Attribute for Participants in this Step Type." : $"new Attribute for Participants in {entity.Name}." );
             }
             else
             {
                 var attribute = attributes.Find( a => a.Guid == attributeGuid );
-                editableAttribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+                editableAttribute = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
                 modalTitle = ActionTitle.Edit( $"Attribute for Participants in Step Type \"{entity.Name}\"." );
             }
 

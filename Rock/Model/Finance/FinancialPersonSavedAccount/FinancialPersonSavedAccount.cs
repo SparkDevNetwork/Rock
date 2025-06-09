@@ -34,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialPersonSavedAccount" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "F5244E64-53DB-4707-A398-D248616A776D")]
     public partial class FinancialPersonSavedAccount : Model<FinancialPersonSavedAccount>
     {

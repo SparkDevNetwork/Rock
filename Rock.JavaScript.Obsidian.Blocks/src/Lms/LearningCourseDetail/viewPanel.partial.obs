@@ -1,15 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <TabbedContent :tabs="courseDetailTabs">
+    <TabbedContent :tabs="courseDetailTabs" v-model:selectedTab="internalSelectedTab">
         <template #tabpane="{ item }">
             <template v-if="item === 'Overview'" class="row">
 
-                <div class="col-md-4">
-                    <ImageWithIcon :imageFileGuid="imageGuid"
-                                :highlightColor="highlightColor"
-                                :iconCssClass="iconCssClass" />
+                <div class="col-md-4 course-detail-billboard">
+                    <Billboard :imageFileGuid="imageGuid"
+                               :highlightColor="highlightColor"
+                               :iconCssClass="iconCssClass" />
                 </div>
-                <div class="col-md-8">
+                <div class="col-md-8 course-detail-content">
                     <fieldset>
                         <ValueDetailList :modelValue="topValues" />
                         <div class="row">
@@ -34,6 +34,7 @@
 </template>
 
 <script setup lang="ts">
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { computed, PropType, ref } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
@@ -47,7 +48,7 @@
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { asYesNoOrNull } from "@Obsidian/Utility/booleanUtils";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
-    import ImageWithIcon from "@Obsidian/Controls/imageWithIcon.obs";
+    import Billboard from "@Obsidian/Controls/billboard.obs";
 
     const props = defineProps({
         modelValue: {
@@ -58,8 +59,17 @@
         options: {
             type: Object as PropType<LearningCourseDetailOptionsBag>,
             required: true
+        },
+
+        selectedTab: {
+            type: String,
+            required: true
         }
     });
+
+    const emit = defineEmits<{
+        (e: "update:selectedTab", value: string): void
+    }>();
 
     // #region Values
 
@@ -67,6 +77,7 @@
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const descriptionAsHtml = ref(props.modelValue?.descriptionAsHtml ?? "");
+    const internalSelectedTab = useVModelPassthrough(props, "selectedTab", emit);
 
     // #endregion
 
@@ -107,7 +118,7 @@
         }
 
         // On-Demand mode doesn't allow  course credits.
-        if (isOnDemandMode.value === false){
+        if (isOnDemandMode.value === false) {
             valueBuilder.addTextValue("Credits", (props.modelValue.credits ?? 0).toString());
         }
 
@@ -131,7 +142,7 @@
         const emptyValue = "<br />";
 
         const courseCode = props.modelValue.courseCode ?? "";
-        if (courseCode.length > 0){
+        if (courseCode.length > 0) {
             valueBuilder.addTextValue("Course Code", courseCode);
         }
 

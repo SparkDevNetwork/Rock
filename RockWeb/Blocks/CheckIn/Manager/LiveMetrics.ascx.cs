@@ -1238,6 +1238,11 @@ namespace RockWeb.Blocks.CheckIn.Manager
 
         private List<int> GetChildGroupIdDescendants( NavigationGroupType navGroupType )
         {
+            // If we get stuck in a recursion loop somehow, this will throw a
+            // InsufficientExecutionStackException instead of taking down the
+            // entire process.
+            System.Runtime.CompilerServices.RuntimeHelpers.EnsureSufficientExecutionStack();
+
             var childGroupIds = navGroupType.ChildGroupIds.ToList();
             if ( navGroupType != null )
             {

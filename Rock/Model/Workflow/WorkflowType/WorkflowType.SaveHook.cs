@@ -77,6 +77,17 @@ namespace Rock.Model
                     }
                 }
 
+                // Ensure the entity has a valid slug before saving.
+                var desiredSlug = this.Entity.Slug.IsNotNullOrWhiteSpace() ? this.Entity.Slug : this.Entity.Name;
+                if ( this.State == EntityContextState.Added )
+                {
+                    this.Entity.Slug = new WorkflowTypeService( this.RockContext ).GetUniqueSlug( desiredSlug );
+                }
+                else if ( this.State == EntityContextState.Modified )
+                {
+                    this.Entity.Slug = new WorkflowTypeService( this.RockContext ).GetUniqueSlug( desiredSlug, this.Entity.Id );
+                }
+
                 if ( Entry.State == EntityContextState.Modified )
                 {
                     var workflowIdPrefix = Entry.OriginalValues[nameof( WorkflowIdPrefix )].ToStringSafe();

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Event" )]
     [Table( "RegistrationTemplateDiscount" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "88D94ECB-FCEE-4A00-ACB9-FF90BDBA7A17")]
     public partial class RegistrationTemplateDiscount : Model<RegistrationTemplateDiscount>, IOrdered
     {

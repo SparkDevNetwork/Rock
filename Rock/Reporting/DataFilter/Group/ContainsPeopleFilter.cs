@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -24,7 +24,10 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -35,9 +38,9 @@ namespace Rock.Reporting.DataFilter.Group
     ///     A Data Filter to select Groups based on the number of group members that also exist in a Person Data View.
     /// </summary>
     [Description( "Filter groups based on the number of group members that also exist in a filtered set of people." )]
-    [Export( typeof(DataFilterComponent) )]
+    [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Contains People" )]
-    [Rock.SystemGuid.EntityTypeGuid( "79E9FE53-3BAD-4935-B8AE-BC412615F057")]
+    [Rock.SystemGuid.EntityTypeGuid( "79E9FE53-3BAD-4935-B8AE-BC412615F057" )]
     public class ContainsPeopleFilter : DataFilterComponent
     {
         #region Settings
@@ -123,7 +126,7 @@ namespace Rock.Reporting.DataFilter.Group
         /// </value>
         public override string AppliesToEntityType
         {
-            get { return typeof(Model.Group).FullName; }
+            get { return typeof( Model.Group ).FullName; }
         }
 
         /// <summary>
@@ -135,6 +138,62 @@ namespace Rock.Reporting.DataFilter.Group
         public override string Section
         {
             get { return "Member Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/containsPeopleFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new FilterSettings( selection );
+            var data = new Dictionary<string, string>();
+
+            if ( !settings.IsValid )
+            {
+                return data;
+            }
+
+            var dataView = new DataViewService( rockContext ).Get( settings.PersonDataViewGuid.GetValueOrDefault() );
+
+            if ( dataView == null )
+            {
+                return data;
+            }
+
+            var dataViewBag = new ListItemBag
+            {
+                Value = dataView.Guid.ToString(),
+                Text = dataView.ToString()
+            };
+
+            data.AddOrReplace( "dataView", dataViewBag.ToCamelCaseJson( false, true ) );
+            data.AddOrReplace( "comparisonType", settings.PersonCountComparison.ConvertToInt().ToString() );
+            data.AddOrReplace( "count", settings.PersonCount.ToString() );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new FilterSettings();
+
+            settings.PersonDataViewGuid = data.GetValueOrNull( "dataView" )?.FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+            settings.PersonCountComparison = ( ComparisonType ) ( data.GetValueOrNull( "comparisonType" )?.AsIntegerOrNull() ?? 1 );
+            settings.PersonCount = data.GetValueOrDefault( "count", "0" ).AsInteger();
+
+            return settings.ToSelectionString();
         }
 
         #endregion
@@ -195,12 +254,12 @@ function ()
 
             string result = GetTitle( null );
 
-            if (!settings.IsValid)
+            if ( !settings.IsValid )
             {
                 return result;
             }
 
-            using (var context = new RockContext())
+            using ( var context = new RockContext() )
             {
                 var dataView = new DataViewService( context ).Get( settings.PersonDataViewGuid.GetValueOrDefault() );
 
@@ -258,9 +317,9 @@ function ()
             filterControl.Controls.Add( nbCount );
 
             // Populate the Data View Picker
-            dvpDataView.EntityTypeId = EntityTypeCache.Get( typeof(Model.Person) ).Id;
+            dvpDataView.EntityTypeId = EntityTypeCache.Get( typeof( Model.Person ) ).Id;
 
-            return new Control[] {dvpDataView, ddlCompare, nbCount};
+            return new Control[] { dvpDataView, ddlCompare, nbCount };
         }
 
         /// <summary>
@@ -334,7 +393,7 @@ function ()
 
             var settings = new FilterSettings( selection );
 
-            if (!settings.IsValid)
+            if ( !settings.IsValid )
             {
                 return;
             }
@@ -359,7 +418,7 @@ function ()
         {
             var settings = new FilterSettings( selection );
 
-            var context = (RockContext)serviceInstance.Context;
+            var context = ( RockContext ) serviceInstance.Context;
 
             //
             // Define Candidate People.
@@ -372,7 +431,7 @@ function ()
 
             var personQuery = personService.Queryable();
 
-            if (dataView != null)
+            if ( dataView != null )
             {
                 personQuery = DataComponentSettingsHelper.FilterByDataView( personQuery, dataView, personService );
             }

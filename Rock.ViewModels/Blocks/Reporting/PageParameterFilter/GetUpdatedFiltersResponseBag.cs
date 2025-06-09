@@ -40,5 +40,11 @@ namespace Rock.ViewModels.Blocks.Reporting.PageParameterFilter
         /// Gets or sets the filter page parameters.
         /// </summary>
         public Dictionary<string, string> FilterPageParameters { get; set; }
+
+        /// <summary>
+        /// Gets or sets the navigation urls.
+        /// </summary>
+        /// <value>The navigation urls.</value>
+        public Dictionary<string, string> NavigationUrls { get; set; }
     }
 }

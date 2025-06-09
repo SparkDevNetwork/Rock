@@ -82,7 +82,7 @@ namespace Rock.Communication.Transport
         /// <summary>
         /// The current application lock.
         /// </summary>
-        private static object _currentAppLock = new object();
+        private static readonly object _currentAppLock = new object();
 
         #endregion
 
@@ -266,6 +266,7 @@ namespace Rock.Communication.Transport
                                         devices = service.Queryable()
                                             .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.IsActive && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
                                             .Select( p => p.DeviceRegistrationId )
+                                            .Distinct()
                                             .ToList();
                                     }
 
@@ -627,6 +628,7 @@ namespace Rock.Communication.Transport
                                         devices = service.Queryable()
                                             .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.IsActive && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
                                             .Select( p => p.DeviceRegistrationId )
+                                            .Distinct()
                                             .ToList();
                                     }
 

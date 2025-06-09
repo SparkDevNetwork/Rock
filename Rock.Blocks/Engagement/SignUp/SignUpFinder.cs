@@ -424,15 +424,11 @@ namespace Rock.Blocks.Engagement.SignUp
 
         #region Properties
 
-        public bool IsAuthenticated
+        public bool IsAuthenticatedOrImpersonated
         {
             get
             {
-#if REVIEW_NET5_0_OR_GREATER
-                throw new NotImplementedException();
-#else
-                return this.RequestContext.CurrentUser?.IsAuthenticated == true;
-#endif
+                return this.RequestContext.CurrentPerson != null;
             }
         }
 
@@ -741,7 +737,7 @@ namespace Rock.Blocks.Engagement.SignUp
 
             var isLocationSortEnabled = GetAttributeValue( AttributeKey.DisplayLocationSort ).AsBoolean();
 
-            return isLocationSortEnabled || this.IsAuthenticated;
+            return isLocationSortEnabled || this.IsAuthenticatedOrImpersonated;
         }
 
         /// <summary>
@@ -1125,7 +1121,7 @@ namespace Rock.Blocks.Engagement.SignUp
             var sortByProvidedLocation = !string.IsNullOrWhiteSpace( selectedFilters.LocationSort ) && GetAttributeValue( AttributeKey.DisplayLocationSort ).AsBoolean();
             var filterByProvidedRange = selectedFilters.LocationRange.GetValueOrDefault() > 0 && GetShouldDisplayLocationRangeFilter();
 
-            var calculateDistances = this.IsAuthenticated
+            var calculateDistances = this.IsAuthenticatedOrImpersonated
                 || sortByProvidedLocation
                 || filterByProvidedRange;
 
@@ -1278,7 +1274,7 @@ namespace Rock.Blocks.Engagement.SignUp
                     }
                 }
             }
-            else if ( this.IsAuthenticated )
+            else if ( this.IsAuthenticatedOrImpersonated )
             {
                 var person = this.RequestContext.CurrentPerson;
                 if ( person != null )

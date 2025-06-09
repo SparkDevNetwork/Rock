@@ -29,6 +29,7 @@
     import RockFormField from "./rockFormField.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DefinedValuePickerGetDefinedValuesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/definedValuePickerGetDefinedValuesOptionsBag";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { useHttp } from "@Obsidian/Utility/http";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
@@ -45,6 +46,9 @@
         placeholder: {
             type: String as PropType<string>,
             default: ""
+        },
+        modelModifiers: {
+            type: Object as PropType<{ hex?: boolean } | undefined>
         }
     });
 
@@ -52,28 +56,76 @@
         (e: "update:modelValue", value: string): void;
     }>();
 
-    const internalValue = ref(props.modelValue);
+    const internalValue = ref(getModifiedValue(props.modelValue));
     const colorPicker = ref<HTMLElement>();
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     let $colorPicker: any;
 
-    watch(() => props.modelValue, () => {
-        if (props.modelValue) {
-            if (props.modelValue !== internalValue.value) {
-                $colorPicker?.colorpicker("setValue", props.modelValue);
+    watch(() => props.modelValue, (newValue) => {
+        newValue = getModifiedValue(newValue);
+
+        if (newValue) {
+            if (newValue !== internalValue.value) {
+                $colorPicker?.colorpicker("setValue", newValue);
             }
         }
         else if ($colorPicker) {
-            // When we try to call setValue with an emptys tring it freaks out
+            // When we try to call setValue with an empty string it freaks out
             // and puts "#aN" in the text box.
             const c = $colorPicker?.data("colorpicker").createColor("");
             $colorPicker.data("colorpicker").color = c;
             $colorPicker?.data("colorpicker").updateComponent("transparent");
         }
 
-        internalValue.value = props.modelValue;
+        internalValue.value = newValue;
     });
+
+    watch(internalValue, (newValue) => {
+        newValue = getModifiedValue(newValue);
+
+        if (newValue !== getModifiedValue(props.modelValue)) {
+            emit("update:modelValue", newValue);
+        }
+    });
+
+    function getModifiedValue(value: string): string {
+        if (props.modelModifiers?.hex && value) {
+            if (value.startsWith("#") && value.length < 7) {
+                // The color is being entered manually so do not modify it yet.
+                return value;
+            }
+
+            const color = new RockColor(value);
+            const hex = color.toHex();
+            const hexToCompare = hex.toLowerCase();
+
+            const isHexBlack = hexToCompare === "#000000"
+                || hexToCompare === "#000"
+                || hexToCompare === "#000f"
+                || hexToCompare === "#000000ff";
+
+            const valueToCompare = value.toLowerCase().replace(/ /g, "");
+            const isValueBlack = valueToCompare === "#000000"
+                || valueToCompare === "#000"
+                || valueToCompare === "#000f"
+                || valueToCompare === "#000000ff"
+                || valueToCompare === "black"
+                || valueToCompare === "rgb(0,0,0)"
+                || valueToCompare === "rgba(0,0,0,1)";
+
+            if (isHexBlack && !isValueBlack) {
+                // Do not modify value. It is likely being entered manually by the user.
+                return value;
+            }
+            else {
+                return hex;
+            }
+        }
+
+        // The color picker wants things in lower case.
+        return value.toLowerCase();
+    }
 
     /**
      * Load color swatch defined type from server to display at the bottom of the picker.
@@ -107,10 +159,10 @@
         // Vue will not detect the change if it happens from jQuery, so we need
         // to detect the change and make sure Vue knows.
         $colorPicker.on("changeColor", () => {
-            const newValue = <string>$colorPicker.find("> input").val();
+            const newValue = getModifiedValue(<string>$colorPicker.find("> input").val() ?? "");
+
             if (internalValue.value !== newValue) {
                 internalValue.value = newValue;
-                emit("update:modelValue", newValue);
             }
         });
     });

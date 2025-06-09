@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "NotificationMessageType" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "36FB1038-8836-429F-BAD4-04D32892D6D0" )]
     public partial class NotificationMessageType : Model<NotificationMessageType>, ICacheable
     {

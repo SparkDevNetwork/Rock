@@ -177,7 +177,7 @@ namespace Rock.Model
                 GetNameForHistory( originalModel?.FinancialPaymentDetail ?? FinancialPaymentDetail ),
                 typeof( FinancialPersonSavedAccount ),
                 Id,
-                dbContext.GetCurrentPersonAlias()?.Id,
+                dbContext.GetCurrentPersonAliasId(),
                 dbContext.SourceOfChange );
         }
 

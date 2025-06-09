@@ -72,6 +72,7 @@ namespace Rock.Blocks.Mobile.CheckIn
         Description = "The attributes to display when adding a person.",
         AllowMultiple = true,
         EntityTypeName = "Rock.Model.Person",
+        IsRequired = false,
         Order = 4,
         Key = AttributeKey.AddPersonAttributes )]
 
@@ -387,7 +388,7 @@ namespace Rock.Blocks.Mobile.CheckIn
                     },
                     PossibleSchedules = session.GetAllPossibleScheduleBags(),
                     People = session.GetAttendeeBags(),
-                    CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags(),
+                    CurrentlyCheckedInAttendances = session.GetCurrentAttendanceBags( areas, kiosk, locations ),
                     ConfigurationTemplate = director.GetConfigurationTemplateBag( configurationGroupType )
                 } );
             }
@@ -484,14 +485,17 @@ namespace Rock.Blocks.Mobile.CheckIn
             {
                 var director = new CheckInDirector( RockContext );
                 var session = director.CreateSession( configuration );
-                var sessionRequest = new AttendanceSessionRequest( options.Session );
+                var sessionRequest = new AttendanceSessionRequest( options.Session )
+                {
+                    PerformedByPersonId = RequestContext.CurrentPerson?.IdKey
+                };
 
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RequestContext.ClientInformation.IpAddress );
 
                 if ( !options.Session.IsPending )
                 {
                     var cts = new CancellationTokenSource( 5000 );
-                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, null, new LabelPrintProvider(), cts.Token );
+                    await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, null, null, new LabelPrintProvider(), cts.Token );
                 }
 
                 return ActionOk( new MobileCheckInResultBag
@@ -542,7 +546,7 @@ namespace Rock.Blocks.Mobile.CheckIn
                 var result = session.ConfirmAttendance( options.SessionGuid );
 
                 var cts = new CancellationTokenSource( 5000 );
-                await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
 
                 return ActionOk( new MobileCheckInResultBag
                 {
@@ -592,7 +596,7 @@ namespace Rock.Blocks.Mobile.CheckIn
                 var result = session.Checkout( sessionRequest, options.AttendanceIds, kiosk );
 
                 var cts = new CancellationTokenSource( 5000 );
-                await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
 
                 return ActionOk( result );
             }
@@ -715,13 +719,13 @@ namespace Rock.Blocks.Mobile.CheckIn
                 return ActionBadRequest( "Kiosk not found." );
             }
 
-            if ( !kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean() )
+            if ( !GetAttributeValue( AttributeKey.AllowAddFamilyMember ).AsBoolean() )
             {
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }
 
             var registration = new Rock.CheckIn.v2.FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
-            var existingRegistrants = registration.GetFamilyMemberBags( RequestContext.CurrentPerson.PrimaryFamily );
+            var existingRegistrants = registration.GetFamilyMemberBags( RequestContext.CurrentPerson.PrimaryFamily, null );
             var newRegistrants = options.People.Where( box => box.Bag.Id.IsNullOrWhiteSpace() );
 
             existingRegistrants.AddRange( newRegistrants );

@@ -73,8 +73,6 @@ namespace Rock.Blocks.Cms
 
             public const string FilterPath = "filter-path";
 
-            public const string FilterCategory = "filter-category";
-
             public const string FilterSystemTypes = "filter-system-types";
 
             public const string FilterObsidianBlocks = "filter-obsidian-blocks";
@@ -89,9 +87,6 @@ namespace Rock.Blocks.Cms
 
         protected string FilterPath => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterPath );
-
-        protected string FilterCategory => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterCategory );
 
         protected string FilterSystemTypes => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterSystemTypes );
@@ -166,10 +161,6 @@ namespace Rock.Blocks.Cms
             if ( !string.IsNullOrEmpty( FilterPath ) )
             {
                 query = query.Where( bt => bt.Path.Contains( FilterPath ) );
-            }
-            if ( !string.IsNullOrEmpty( FilterCategory ) )
-            {
-                query = query.Where( bt => bt.Category.Contains( FilterCategory ) );
             }
             if ( !string.IsNullOrEmpty( FilterSystemTypes ) )
             {

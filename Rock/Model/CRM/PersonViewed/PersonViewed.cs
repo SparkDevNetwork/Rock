@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [Table( "PersonViewed" )]
     [NotAudited]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "AF13DF44-4EE7-4492-AEE4-6BD2A62F9C76")]
     public partial class PersonViewed : Entity<PersonViewed>
     {

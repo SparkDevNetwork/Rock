@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 
@@ -25,6 +26,7 @@ using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Cms;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -218,6 +220,19 @@ namespace RockWeb.Blocks.Administration
                 else
                 {
                     dvpPageIntents.Visible = false;
+                }
+
+                var serverIpAddress = HttpContext.Current.Request.ServerVariables["LOCAL_ADDR"];
+                var locationCountries = DefinedTypeCache.GetLocationCountryListItemBagList( true )
+                    .ToDictionary( l => l.Value, l => l.Text );
+
+                if ( locationCountries.Any() )
+                {
+                    vlCountriesRestrictedFromAccessing.CustomValues = locationCountries;
+                    vlCountriesRestrictedFromAccessing.Visible = true;
+                }
+                else {
+                    vlCountriesRestrictedFromAccessing.Visible = false;
                 }
             }
             else
@@ -577,7 +592,7 @@ namespace RockWeb.Blocks.Administration
             cbAllowIndexing.Checked = page.AllowIndexing;
 
             cbEnableRateLimiting.Checked = page.IsRateLimited;
-            nbRateLimitPeriodDuration.IntegerValue = page.RateLimitPeriodDuration;
+            nbRateLimitPeriodDurationSeconds.IntegerValue = page.RateLimitPeriodDurationSeconds;
             nbRequestPerPeriod.IntegerValue = page.RateLimitRequestPerPeriod;
 
             if ( page.CacheControlHeaderSettings != null )
@@ -610,6 +625,15 @@ namespace RockWeb.Blocks.Administration
                 {
                     dvpPageIntents.ClearSelection();
                 }
+            }
+
+            var pageAdditionalSettings = page.GetAdditionalSettings<PageAdditionalSettings>();
+            if ( pageAdditionalSettings.CountriesRestrictedFromAccessing?.Any() == true )
+            {
+                vlCountriesRestrictedFromAccessing.Value = pageAdditionalSettings
+                    .CountriesRestrictedFromAccessing
+                    .Select( g => g.ToString() )
+                    .JoinStrings( "|" );
             }
 
             // Add enctype attribute to page's <form> tag to allow file upload control to function
@@ -806,17 +830,27 @@ namespace RockWeb.Blocks.Administration
 
             if ( cbEnableRateLimiting.Checked )
             {
-                page.RateLimitPeriodDuration = nbRateLimitPeriodDuration.IntegerValue;
+                page.RateLimitPeriodDurationSeconds = nbRateLimitPeriodDurationSeconds.IntegerValue;
                 page.RateLimitRequestPerPeriod = nbRequestPerPeriod.IntegerValue;
             }
             else
             {
-                page.RateLimitPeriodDuration = null;
+                page.RateLimitPeriodDurationSeconds = null;
                 page.RateLimitRequestPerPeriod = null;
             }
 
             page.Description = tbDescription.Text;
             page.HeaderContent = ceHeaderContent.Text;
+
+            var countriesRestrictedFromAccessing = vlCountriesRestrictedFromAccessing.Value
+                .Split( new[] { '|' }, StringSplitOptions.RemoveEmptyEntries )
+                .Distinct()
+                .AsGuidList();
+
+            var pageAdditionalSettings = page.GetAdditionalSettings<PageAdditionalSettings>();
+            pageAdditionalSettings.CountriesRestrictedFromAccessing = countriesRestrictedFromAccessing;
+
+            page.SetAdditionalSettings( pageAdditionalSettings );
 
             // update PageContexts
             foreach ( var pageContext in page.PageContexts.ToList() )

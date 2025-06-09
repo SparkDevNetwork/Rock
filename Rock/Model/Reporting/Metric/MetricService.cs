@@ -459,9 +459,30 @@ FROM (
                             metric.LastRunDateTime = scheduleDateTime;
                             metricResult.MetricValuesCalculated += resultValues.Count();
 
+                            // Logic for adding the metric values to the database:
+                            // If we have specific dates and times from the source (such as SQL)
+                            // then we look for any existing metric values for that same
+                            // timestamp and remove them. This allows, for example, a weekly
+                            // metric value that is updated daily as the week progresses.
                             if ( resultValues.Any() )
                             {
                                 List<MetricValue> metricValuesToAdd = new List<MetricValue>();
+                                var metricValuesToRemove = new List<MetricValue>();
+                                var metricValueDateKeys = resultValues
+                                    .Select( a => a.MetricValueDateTime.ToDateKey() )
+                                    .Distinct()
+                                    .ToList();
+
+                                // Grab the existing values from the database
+                                // that might need to be deleted.
+                                var existingMetricValues = metricValueService.Queryable()
+                                    .Include( mv => mv.MetricValuePartitions )
+                                    .Where( mv => mv.MetricId == metric.Id
+                                        && mv.MetricValueType == MetricValueType.Measure
+                                        && mv.MetricValueDateKey.HasValue
+                                        && metricValueDateKeys.Contains( mv.MetricValueDateKey.Value ) )
+                                    .ToList();
+
                                 foreach ( var resultValue in resultValues )
                                 {
                                     var metricValue = new MetricValue();
@@ -516,60 +537,27 @@ FROM (
                                     }
                                     else
                                     {
+                                        // If we are running with specific dates and times from
+                                        // the source, then we need to delete any values that
+                                        // match that exact date and time so we can replace them
+                                        // with new values.
+                                        if ( getMetricValueDateTimeFromResultSet )
+                                        {
+                                            metricValuesToRemove.AddRange( GetExistingMetricValues( existingMetricValues, metricValue ) );
+                                        }
+
                                         metricValuesToAdd.Add( metricValue );
                                     }
                                 }
 
-                                var dbTransaction = rockContextForMetricValues.Database.BeginTransaction();
-                                var measureMetricValueType = MetricValueType.Measure;
-
-                                if ( getMetricValueDateTimeFromResultSet )
-                                {
-                                    var metricValueDateTimes = metricValuesToAdd.Select( a => a.MetricValueDateTime ).Distinct().ToList();
-                                    foreach ( var metricValueDateTime in metricValueDateTimes )
-                                    {
-                                        bool alreadyHasMetricValues = metricValueService.Queryable()
-                                            .Where( a => a.MetricId == metric.Id && a.MetricValueDateTime == metricValueDateTime && a.MetricValueType == measureMetricValueType ).Any();
-                                        if ( alreadyHasMetricValues )
-                                        {
-                                            // Use direct SQL to remove any existing metric values.
-                                            rockContextForMetricValues.Database.ExecuteSqlCommand(
-                                                @"
-                                                    DELETE
-                                                    FROM MetricValuePartition
-                                                    WHERE MetricValueId IN (
-                                                        SELECT Id
-                                                        FROM MetricValue
-                                                        WHERE MetricId = @metricId
-                                                        AND MetricValueDateTime = @metricValueDateTime
-                                                        AND MetricValueType = @measureMetricValueType
-                                                    )
-                                                ",
-                                                new SqlParameter( "@metricId", metric.Id ),
-                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ),
-                                                new SqlParameter( "@measureMetricValueType", measureMetricValueType ) );
-
-                                            rockContextForMetricValues.Database.ExecuteSqlCommand(
-                                                @"
-                                                    DELETE
-                                                    FROM MetricValue
-                                                    WHERE MetricId = @metricId
-                                                    AND MetricValueDateTime = @metricValueDateTime
-                                                    AND MetricValueType = @measureMetricValueType
-                                                ",
-                                                new SqlParameter( "@metricId", metric.Id ),
-                                                new SqlParameter( "@metricValueDateTime", metricValueDateTime ),
-                                                new SqlParameter( "@measureMetricValueType", measureMetricValueType ) );
-                                        }
-                                    }
-                                }
+                                // Remove any existing metric values that should be replaced.
+                                metricValuePartitionService.DeleteRange( metricValuesToRemove.SelectMany( mv => mv.MetricValuePartitions ).DistinctBy( mvp => mvp.Id ) );
+                                metricValueService.DeleteRange( metricValuesToRemove.DistinctBy( mv => mv.Id ) );
 
                                 metricValueService.AddRange( metricValuesToAdd );
 
                                 // Disable SaveChanges PrePostProcessing since there could be hundreds or thousands of metric values getting inserted or updated.
                                 rockContextForMetricValues.SaveChanges( true );
-
-                                dbTransaction.Commit();
                             }
 
                             /*
@@ -590,6 +578,30 @@ FROM (
             }
 
             return metricResult;
+        }
+
+        /// <summary>
+        /// Searches the list of existing metric values for any that match the
+        /// new metric value. This match is done on metric id, value date time,
+        /// and partition values.
+        /// </summary>
+        /// <param name="existingMetricValues">The existing metric values to search.</param>
+        /// <param name="newMetricValue">The new metric value that will be added.</param>
+        /// <returns>A collection of matching metric values.</returns>
+        private static List<MetricValue> GetExistingMetricValues( List<MetricValue> existingMetricValues, MetricValue newMetricValue )
+        {
+            // Look for metric values that:
+            // 1. Are for the same MetricId.
+            // 2. Match the exact date and time of the new value.
+            // 3. Have the same number of partitions.
+            // 4. Have the same EntityId and MetricPartitionId for each partition (order not important).
+            var existingMetricValueSet = existingMetricValues
+                .Where( mv => mv.MetricId == newMetricValue.MetricId
+                    && mv.MetricValueDateTime == newMetricValue.MetricValueDateTime
+                    && mv.MetricValuePartitions.Count == newMetricValue.MetricValuePartitions.Count
+                    && mv.MetricValuePartitions.All( mvp => newMetricValue.MetricValuePartitions.Any( mvpNew => mvpNew.MetricPartitionId == mvp.MetricPartitionId && mvpNew.EntityId == mvp.EntityId ) ) );
+
+            return existingMetricValueSet.ToList();
         }
 
         /// <summary>

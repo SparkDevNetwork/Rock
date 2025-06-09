@@ -29,6 +29,14 @@ export const Group = {
     GroupBenevolence: "02FA0881-3552-42B8-A519-D021139B800F",
     /** The Calendar Administrators Group guid */
     GroupCalendarAdministrators: "FDA9D63F-B0B1-43E8-8B82-0255E5D99F26",
+    /** The Chat Administrators group guid */
+    GroupChatAdministrators: "B06096FC-5E98-4DC9-A1EA-7FED844B65C5",
+    /** The group used to identify people who are globally banned from chat */
+    GroupChatBanList: "C9E3A59F-3B5E-43B1-9D97-191EF82D73C4",
+    /** The parent group for all chat direct messages. */
+    GroupChatDirectMessages: "79C99867-5244-43E7-A3BF-625186A77D20",
+    /** The parent group for all shared chat channels. */
+    GroupChatSharedChannels: "FE7ED8BF-CA24-471B-A509-E595A17E1B0E",
     /** The Communication Administrators Group guid */
     GroupCommunicationAdministrators: "B1906B7D-1A1E-41B9-BBA4-F4482CECAF7B",
     /** The group of communication approvers */
@@ -43,6 +51,8 @@ export const Group = {
     GroupFinanceAdministrators: "6246A7EF-B7A3-4C8C-B1E4-3FF114B84559",
     /** The Finance Users Group guid */
     GroupFinanceUsers: "2539CF5D-E2CE-4706-8BBF-4A9DF8E763E9",
+    /** Role for individuals allowed to develop Lava Applications. */
+    GroupLavaApplicationDevelopers: "F88EC798-2DCC-119C-4459-CF0F304CC036",
     /** The security group used by mobile app */
     GroupMobileApp: "EDD336D5-1429-41D9-8D41-2581A05F0E16",
     /** RSR - Mobile Application Users */
@@ -59,6 +69,6 @@ export const Group = {
     GroupStaffLikeMembers: "300BA2C8-49A3-44BA-A82A-82E3FD8C3745",
     /** Gets the staff member group guid (Staff Users) */
     GroupStaffMembers: "2C112948-FF4C-46E7-981A-0257681EADF4",
-    /** WEB - Admistration */
+    /** WEB - Administration */
     GroupWebAdministrators: "1918E74F-C00D-4DDD-94C4-2E7209CE12C3",
 };

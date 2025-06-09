@@ -18,7 +18,7 @@ using System;
 using System.Collections.Generic;
 
 using Rock.Enums.Lms;
-using Rock.ViewModels.Blocks.Lms.LearningActivityCompletionDetail;
+using Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassAnnouncementDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassContentPageDetail;
 using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
@@ -35,7 +35,7 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// <summary>
         /// Gets or sets the list of activities for this learning class.
         /// </summary>
-        public List<LearningActivityCompletionBag> Activities { get; set; }
+        public List<LearningClassActivityCompletionBag> Activities { get; set; }
 
         /// <summary>
         /// Gets or sets the announcements specific to this class and student.
@@ -46,6 +46,16 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// Gets or sets the id for the class.
         /// </summary>
         public string ClassIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date the class was completed.
+        /// </summary>
+        public DateTime? ClassCompletionDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the completion status of the class for the individual.
+        /// </summary>
+        public LearningCompletionStatus ClassCompletionStatus { get; set; }
 
         /// <summary>
         /// Gets or sets the custom content pages for the class.
@@ -76,6 +86,11 @@ namespace Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace
         /// Gets or sets the current Grade scale that the student has achieved in the class (if configured to show grades).
         /// </summary>
         public LearningGradingSystemScaleBag CurrentGrade {  get; set; }
+
+        /// <summary>
+        /// Whether announcements are enabled.
+        /// </summary>
+        public bool EnableAnnouncements { get; set; }
 
         /// <summary>
         /// Gets or sets the list of facilitators for the learning class.

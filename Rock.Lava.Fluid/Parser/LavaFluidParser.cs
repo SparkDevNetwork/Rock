@@ -15,13 +15,15 @@
 // </copyright>
 //
 using System.Collections.Generic;
-using System.Diagnostics;
 using System.Linq;
+
 using Fluid;
 using Fluid.Ast;
 using Fluid.Parser;
 using Fluid.Values;
+
 using Parlot.Fluent;
+
 using static Parlot.Fluent.Parsers;
 
 namespace Rock.Lava.Fluid
@@ -87,8 +89,20 @@ namespace Rock.Lava.Fluid
         #endregion
 
         #region Constructors
+        /*
+            4/29/2025 - NA
+
+            When using Lava blocks (e.g., {% lava %}) inside a for loop defined outside of Lava tags, the `continue` and `break` tags do not behave as
+            expected — they are ignored and the loop continues execution. This behavior differs from both Fluid and Shopify Liquid where control
+            flow is honored regardless of tag location. Fluid v2.20+ will throw a parse exceptions until the new AllowLiquidTag is enabled.
+
+            Reason: Fluid introduced a new `AllowLiquidTag` option in v2.20. When upgrading Fluid, we’ll need to set
+                    `AllowLiquidTag = true` to restore compatibility with wrapped control tags.
+        */
         public LavaFluidParser()
-            : base()
+            // Functions are being enabled as an experimental feature.
+            // Do not use in production.
+            : base( new FluidParserOptions { AllowFunctions = true } )
         {
             CreateLavaDocumentParsers();
 
@@ -100,7 +114,9 @@ namespace Rock.Lava.Fluid
             RegisterLavaOperators();
 
             DefineLavaElementParsers();
-            DefineLavaTrueFalseAsCaseInsensitive();
+            // Functions are being enabled as an experimental feature.
+            // Do not use in production.
+            DefineLavaTrueFalseAsCaseInsensitive( true );
             DefineLavaDocumentParsers();
         }
 
@@ -120,7 +136,7 @@ namespace Rock.Lava.Fluid
         /// <summary>
         /// Redefines the True/False keywords to be case-insensitive.
         /// </summary>
-        private void DefineLavaTrueFalseAsCaseInsensitive()
+        private void DefineLavaTrueFalseAsCaseInsensitive( bool allowFunctions )
         {
             // To redefine the True and False parsers, we need to rebuild the Fluid Primary expression parser.
             // Fluid defines a Primary expression as: primary => STRING | BOOLEAN | EMPTY | MEMBER | NUMBER.
@@ -130,10 +146,15 @@ namespace Rock.Lava.Fluid
 
             var indexer = Between( LBracket, Primary, RBracket ).Then<MemberSegment>( x => new IndexerSegment( x ) );
 
+            var call = allowFunctions
+                ? LParen.SkipAnd( FunctionCallArgumentsList ).AndSkip( RParen ).Then<MemberSegment>( x => new FunctionCallSegment( x ) )
+                : LParen.Error<MemberSegment>( ErrorMessages.FunctionsNotAllowed );
+
             var member = Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ).And(
                 ZeroOrMany(
                     Dot.SkipAnd( Identifier.Then<MemberSegment>( x => new IdentifierSegment( x ) ) )
-                    .Or( indexer ) ) )
+                    .Or( indexer )
+                    .Or( call ) ) )
                 .Then( x =>
                 {
                     x.Item2.Insert( 0, x.Item1 );

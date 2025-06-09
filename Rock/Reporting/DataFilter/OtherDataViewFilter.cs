@@ -24,6 +24,9 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,7 +38,7 @@ namespace Rock.Reporting.DataFilter
     [Description( "Filter entities using another dataview" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Other Data View Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "068C1177-68E5-4D08-8386-96EE3C9880F1")]
+    [Rock.SystemGuid.EntityTypeGuid( "068C1177-68E5-4D08-8386-96EE3C9880F1" )]
     public class OtherDataViewFilter : DataFilterComponent, IDataFilterWithOverrides, IRelatedChildDataView
     {
         #region Properties
@@ -74,6 +77,66 @@ namespace Rock.Reporting.DataFilter
             {
                 return int.MaxValue;
             }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/otherDataViewFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = SelectionConfig.Parse( selection );
+            var persistedDataViews = DataViewCache.All().Where( dv => dv.IsPersisted() ).Select( dv => dv.Guid.ToString() ).ToList();
+            var dataView = DataViewCache.Get( settings.DataViewId.GetValueOrDefault() );
+            var dataViewBag = new ListItemBag();
+
+            if ( dataView != null )
+            {
+                dataViewBag = new ListItemBag
+                {
+                    Value = dataView.Guid.ToString(),
+                    Text = dataView.Name
+                };
+            }
+
+            var data = new Dictionary<string, string>
+            {
+                { "entityTypeGuid", EntityTypeCache.Get( entityType )?.Guid.ToString() ?? null },
+                { "dataView", dataViewBag.ToCamelCaseJson( false, true ) },
+                { "usePersisted", settings.UsePersisted.ToTrueFalse() },
+                { "persistedDataViews", persistedDataViews.ToJson() }
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var dataViewId = 0;
+            var usePersisted = data.GetValueOrDefault( "usePersisted", "True" ).AsBooleanOrNull() ?? true;
+            var dataViewJson = data.GetValueOrNull( "dataView" );
+
+            if ( dataViewJson != null )
+            {
+                var dataViewGuid = dataViewJson.FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull() ?? Guid.Empty;
+                var dataView = DataViewCache.Get( dataViewGuid );
+                dataViewId = dataView?.Id ?? 0;
+            }
+
+            var settings = new SelectionConfig { DataViewId = dataViewId, UsePersisted = usePersisted };
+
+            return settings.ToJson();
         }
 
         #endregion
@@ -391,7 +454,7 @@ namespace Rock.Reporting.DataFilter
                 // Verify that there is not a child filter that uses this view (would result in stack-overflow error)
                 if ( DataViewService.IsViewInFilter( dataView, dataView.DataViewFilter ) )
                 {
-                    throw new System.Exception( $"The {dataView.Name} data view references itself recursively within the {this.FormatSelection( entityType, selection ) } data filter." );
+                    throw new System.Exception( $"The {dataView.Name} data view references itself recursively within the {this.FormatSelection( entityType, selection )} data filter." );
                 }
 
                 if ( selectionConfig.UsePersisted == false )

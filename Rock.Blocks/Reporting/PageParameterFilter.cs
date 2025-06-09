@@ -19,15 +19,19 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Web;
+using System.Web.Routing;
 
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Obsidian.UI;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Reporting.PageParameterFilter;
 using Rock.ViewModels.Cms;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Reporting
 {
@@ -38,7 +42,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Page Parameter Filter" )]
     [Category( "Reporting" )]
     [Description( "Filter block that passes the filter values as query string parameters." )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -46,13 +50,13 @@ namespace Rock.Blocks.Reporting
         Key = AttributeKey.BlockTitleText,
         Description = "The text to display as the block title.",
         Category = "CustomSetting",
-        DefaultValue = "" )]
+        DefaultValue = "" )] // The legacy default value was "BlockTitle", but this doesn't allow the admin to clear the title.
 
     [TextField( "Block Title Icon CSS Class",
         Key = AttributeKey.BlockTitleIconCssClass,
         Description = "The CSS class name to use for the block title icon.",
         Category = "CustomSetting",
-        DefaultValue = "fa fa-filter" )]
+        DefaultValue = "" )] // The legacy default value was "fa fa-filter", but this doesn't allow the admin to clear the icon.
 
     [BooleanField( "Show Block Title",
         Key = AttributeKey.ShowBlockTitle,
@@ -116,45 +120,6 @@ namespace Rock.Blocks.Reporting
     [Rock.SystemGuid.BlockTypeGuid( "842DFBC2-DA38-465D-BFD2-B6C8585AA3BF" )]
     public class PageParameterFilter : RockBlockType, IHasCustomActions
     {
-        #region Legacy Block Checklist
-
-        //#region Methods
-
-        ///// <summary>
-        ///// Generates the query string.
-        ///// </summary>
-        ///// <returns></returns>
-        //private NameValueCollection GenerateQueryString()
-        //{
-        //    var queryString = HttpUtility.ParseQueryString( String.Empty );
-
-        //    // Don't create a query string if the block's page does not match the current page. This
-        //    // would be the case when editing the settings from 'Admin Tools > CMS Settings > Pages'.
-        //    // Without this check the block would thrown an exception as CurrentParameters would be
-        //    // null. This may not be the _best_ place for this check, but the correct change may
-        //    // need a major refactor.
-        //    if ( RockPage.PageId != BlockCache.PageId )
-        //    {
-        //        return queryString;
-        //    }
-
-        //    foreach ( var parameter in CurrentParameters )
-        //    {
-        //        if ( parameter.Key != "PageId" )
-        //        {
-        //            queryString.Set( parameter.Key, parameter.Value.ToString() );
-        //        }
-        //    }
-
-        //    Proceed to build query string from filter controls or default values...
-
-        //    return queryString;
-        //}
-
-        //#endregion
-
-        #endregion Legacy Block Checklist
-
         #region Keys
 
         private static class AttributeKey
@@ -177,6 +142,11 @@ namespace Rock.Blocks.Reporting
             public const string RedirectPage = "RedirectPage";
         }
 
+        private static class PersonPreferenceKey
+        {
+            public const string FilterPrefix = "Filter-";
+        }
+
         #endregion Keys
 
         #region Fields
@@ -184,6 +154,10 @@ namespace Rock.Blocks.Reporting
         private List<ListItemBag> _filterButtonSizeItems;
 
         private List<ListItemBag> _filterSelectionActionItems;
+
+        private PersonPreferenceCollection _personPreferences;
+
+        private static readonly string _filterEnforceBlankValue = "FILTER_ENFORCE_BLANK_VALUE";
 
         #endregion Fields
 
@@ -237,6 +211,19 @@ namespace Rock.Blocks.Reporting
 
         private Person CurrentPerson => this.RequestContext.CurrentPerson;
 
+        private PersonPreferenceCollection PersonPreferences
+        {
+            get
+            {
+                if ( _personPreferences == null )
+                {
+                    _personPreferences = this.GetBlockPersonPreferences();
+                }
+
+                return _personPreferences;
+            }
+        }
+
         #endregion Properties
 
         #region Methods
@@ -282,7 +269,7 @@ namespace Rock.Blocks.Reporting
                 FilterSelectionAction = settings.FilterSelectionAction,
                 IsLegacyReloadEnabled = settings.IsLegacyReloadEnabled,
                 SecurityGrantToken = customSettingsBox.SecurityGrantToken,
-                NavigationUrls = GetBoxNavigationUrls()
+                NavigationUrls = GetNavigationUrls( privateFilterValues )
             };
 
             return box;
@@ -504,8 +491,8 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <summary>
-        /// Gets the private value for each filter from the URL or the filter's corresponding block setting default
-        /// value, as well as the keys of filters that actually have a startup value defined.
+        /// Gets the private value for each filter from the URL, person preferences or the filter's corresponding block
+        /// setting default value, as well as the keys of filters that actually have a startup value defined.
         /// </summary>
         /// <param name="filterAttributes">The filter attributes.</param>
         /// <returns>The startup private filter values and the keys of filters with startup values defined.</returns>
@@ -520,14 +507,17 @@ namespace Rock.Blocks.Reporting
                 filterKeysWithStartupValues: new List<string>()
             );
 
+            // Override defaults with any values from person preferences.
+            LoadFiltersFromPersonPreferences( values.privateFilterValues );
+
             foreach ( var filterAttribute in filterAttributes )
             {
                 var filterKey = filterAttribute.Key;
 
-                // Look in the URL for a value to override the default.
+                // A value in the URL should override the default or person preference.
                 if ( this.RequestContext.GetPageParameters().ContainsKey( filterKey ) )
                 {
-                    // Override the default value (this might be an empty string).
+                    // Keep in mind, this might be an empty string (to clear current value).
                     values.privateFilterValues.AddOrReplace( filterKey, PageParameter( filterKey ) );
                 }
 
@@ -567,57 +557,147 @@ namespace Rock.Blocks.Reporting
                 errorMessage: ( string ) null
             );
 
-            // Override the page parameter values on the rock request context using the provided private filter values.
-            ApplyPageParameterOverrides( privateFilterValues );
+            /*
+                12/5/2024 - JPH
 
-            // Next, build the current collection of filters and their available values. Since `GetPublicAttributesForEdit`
-            // will sometimes depend on current page parameter values for some field types (which we've already set above),
-            // those filters whose AVAILABLE values are dependent upon the SELECTED values of other filters can now properly
-            // build themselves.
-            try
-            {
-                filters.publicFilters = this.BlockCache.GetPublicAttributesForEdit( this.CurrentPerson, enforceSecurity: true, a => filterAttributes.Any( f => f.Key == a.Key ) );
-            }
-            catch
-            {
-                filters.errorMessage = "Not all filter controls could be built. The most likely cause of this issue is a misconfigured filter.";
-                return filters;
-            }
+                Dynamic filters can be built to depend upon one another, with an unpredictable degree of interdependency.
+                It's ultimately up to the Rock admin to build filter relationships that play nicely together, but we'll
+                try our best to make dependencies work as expected by attempting to remove dependent selections that are
+                no longer valid. We'll do this by looping over each of the filters and triggering subsequent loops (of the
+                same complete set of filters) whenever we detect that we've cleared a no-longer-valid value, as OTHER
+                filters might depend on the value we've just cleared. To prevent infinite loops, we'll allow each filter
+                to trigger a follow-up loop only once (e.g. if there are 5 filters, we'll allow looping over the complete
+                set up to a max of 5 times). This approach doesn't 100% guarantee that all interdependent filters will
+                behave as expected, but it should cover most scenarios.
 
-            // For each provided private filter value, ensure it's allowed based on its corresponding public filter's
-            // configuration values. If not, set an empty string value for that filter in both the private and public
-            // dictionaries. Note that we're iterating in the order of the provided filter attributes, so it's up to the
-            // admin to dictate the order in which this validation will take place.
-            foreach ( var filterAttribute in filterAttributes )
-            {
-                var filterKey = filterAttribute.Key;
 
-                if ( !filters.publicFilters.TryGetValue( filterKey, out var currentFilter ) || currentFilter == null )
+                Consider the following simple example:
+
+                1) Single-Select "Birth Month" filter:
+                ------------------------------------
+                SELECT DISTINCT([BirthMonth]) AS [Value]
+                    , [BirthMonth] AS [Text]
+                FROM [Person]
+                WHERE [BirthMonth] IS NOT NULL
+                    AND [BirthMonth] <> ''
+                ORDER BY [BirthMonth];
+
+                2) Single-Select "Last Name" filter (that depends on the "Birth Month" filter selection):
+                -----------------------------------------------------------------------------------------
+                DECLARE @BirthMonth INT = TRY_CONVERT(INT, '{{ PageParameter.BirthMonth }}');
+
+                SELECT DISTINCT([LastName]) AS [Value]
+                    , [LastName] AS [Text]
+                FROM [Person]
+                WHERE [BirthMonth] = @BirthMonth
+                ORDER BY [LastName];
+
+                3) Single-Select "Specific Person" filter (that depends on both previous filter selections):
+                --------------------------------------------------------------------------------------------
+                DECLARE @BirthMonth INT = TRY_CONVERT(INT, '{{ PageParameter.BirthMonth }}')
+                    , @LastName NVARCHAR(50) = '{{ PageParameter.LastName }}';
+
+                SELECT [Guid] AS [Value]
+                    , CONCAT([NickName], ' ', [LastName]) AS [Text]
+                FROM [Person]
+                WHERE [BirthMonth] = @BirthMonth
+                    AND [LastName] = @LastName;
+
+
+                The challenge is, if the "Birth Month" filter is changed we need to check BOTH of the remaining filters
+                and their current selections, to ensure that they're still valid, as each of their values are based on
+                the selected values of the filters that came before them. By looping over the complete set up to 3 times
+                - and clearing no-longer-valid values at each step - we should effectively put the UI in an accurate
+                state that's ready for the individual to make new selections based on the current lists of available
+                values.
+
+                Reason: Ensure no-longer-valid previous selections are cleared when filters depend on each other.
+             */
+
+            bool wasFilterValueCleared;
+            var loopCount = 0;
+
+            do
+            {
+                wasFilterValueCleared = false;
+
+                // Override the page parameter values on the rock request context using the current private filter values.
+                ApplyPageParameterOverrides( privateFilterValues );
+
+                // Next, build the current collection of filters and their available values. Since `GetPublicAttributesForEdit`
+                // will sometimes depend on current page parameter values for some field types (which we've already set above),
+                // those filters whose AVAILABLE values are dependent upon the SELECTED values of other filters can now properly
+                // build themselves.
+                try
                 {
-                    // We couldn't find a public filter for the specified key; this could happen if the current person
-                    // doesn't have access to the filter due to security restrictions.
-                    filters.publicFilters.Remove( filterKey );
-                    privateFilterValues.Remove( filterKey );
-                    continue;
+                    filters.publicFilters = this.BlockCache.GetPublicAttributesForEdit( this.CurrentPerson, enforceSecurity: true, a => filterAttributes.Any( f => f.Key == a.Key ) );
+                }
+                catch
+                {
+                    filters.errorMessage = "Not all filter controls could be built. The most likely cause of this issue is a misconfigured filter.";
+                    return filters;
                 }
 
-                // Get the provided private value for this filter.
-                privateFilterValues.TryGetValue( filterKey, out var privateFilterValue );
-
-                // Get the public edit value for the provided private value.
-                var publicFilterValue = PublicAttributeHelper.GetPublicEditValue( filterAttribute, privateFilterValue );
-
-                // If an empty string was returned for the public edit value, assume the private value is not valid.
-                if ( publicFilterValue.IsNullOrWhiteSpace() )
+                // Validate each filter.
+                foreach ( var filterAttribute in filterAttributes )
                 {
-                    filters.publicFilterValues.AddOrReplace( filterKey, string.Empty );
-                    privateFilterValues.AddOrReplace( filterKey, string.Empty );
-                    continue;
+                    var filterKey = filterAttribute.Key;
+
+                    // Get the current private value for this filter.
+                    privateFilterValues.TryGetValue( filterKey, out var privateFilterValue );
+
+                    if ( !filters.publicFilters.TryGetValue( filterKey, out var currentFilter ) || currentFilter == null )
+                    {
+                        // We couldn't find a public filter for the specified key; this could happen if the current person
+                        // doesn't have access to the filter due to security restrictions.
+                        filters.publicFilters.Remove( filterKey );
+                        privateFilterValues.Remove( filterKey );
+
+                        if ( privateFilterValue.IsNotNullOrWhiteSpace() )
+                        {
+                            wasFilterValueCleared = true;
+                        }
+
+                        continue;
+                    }
+
+                    if ( privateFilterValue.IsNotNullOrWhiteSpace() && filterAttribute.ConfigurationValues?.ContainsKey( "values" ) == true )
+                    {
+                        // Ensure the current private value is valid according to the filter configuration's available values.
+                        var configuredValues = Rock.Field.Helper.GetConfiguredValues( filterAttribute.ConfigurationValues );
+                        if ( !configuredValues.ContainsKey( privateFilterValue ) )
+                        {
+                            // The current private value is not valid; clear it.
+                            privateFilterValue = string.Empty;
+                            privateFilterValues.AddOrReplace( filterKey, privateFilterValue );
+
+                            wasFilterValueCleared = true;
+                        }
+                    }
+
+                    // Get the public edit value for the current private value.
+                    var publicFilterValue = PublicAttributeHelper.GetPublicValueForEdit( filterAttribute, privateFilterValue );
+
+                    // If an empty string was returned for the public edit value, assume the private value is not valid.
+                    if ( publicFilterValue.IsNullOrWhiteSpace() )
+                    {
+                        filters.publicFilterValues.AddOrReplace( filterKey, string.Empty );
+                        privateFilterValues.AddOrReplace( filterKey, string.Empty );
+
+                        if ( privateFilterValue.IsNotNullOrWhiteSpace() )
+                        {
+                            wasFilterValueCleared = true;
+                        }
+
+                        continue;
+                    }
+
+                    // Otherwise, add the public edit value for this valid private value.
+                    filters.publicFilterValues.AddOrReplace( filterKey, publicFilterValue );
                 }
 
-                // Otherwise, add the public edit value for this valid private value.
-                filters.publicFilterValues.AddOrReplace( filterKey, publicFilterValue );
-            }
+                loopCount++;
+            } while ( wasFilterValueCleared && loopCount <= filterAttributes.Count );
 
             return filters;
         }
@@ -638,6 +718,24 @@ namespace Rock.Blocks.Reporting
                 return;
             }
 
+            /*
+                12/4/2024 - JPH
+
+                We sometimes need to manipulate page parameters on initial page load (e.g. the page/block is loaded with
+                no filters applied, but person preferences override this with previously-selected values. In this case
+                (since the initial page load is still handled by legacy, Web Forms code), we need to modify the low-level,
+                legacy route value dictionary to represent the current page parameter overrides, so Lava templates have
+                access to these values when building this block's initial filters.
+
+                Reason: Ensure page parameter overrides are accurately applied upon initial page load.
+             */
+            RouteValueDictionary legacyRouteValueDictionary = null;
+            if ( HttpContext.Current?.Handler is RockPage rockPage )
+            {
+                legacyRouteValueDictionary = rockPage.Page?.RouteData?.Values;
+            }
+
+            // This collection represents the Obsidian page parameters.
             var pageParameters = this.RequestContext.GetPageParameters();
             foreach ( var paramOverride in pageParameterOverrides )
             {
@@ -647,6 +745,13 @@ namespace Rock.Blocks.Reporting
                 if ( overrideValue.IsNullOrWhiteSpace() )
                 {
                     // Remove existing parameters whose override value is empty.
+                    // Legacy page parameters.
+                    if ( legacyRouteValueDictionary?.ContainsKey( overrideKey ) == true )
+                    {
+                        legacyRouteValueDictionary.Remove( overrideKey );
+                    }
+
+                    // Obsidian page parameters.
                     if ( pageParameters.ContainsKey( overrideKey ) )
                     {
                         pageParameters.Remove( overrideKey );
@@ -656,6 +761,13 @@ namespace Rock.Blocks.Reporting
                 }
 
                 // Add the new value (which might override an existing value).
+                // Legacy page parameters.
+                if ( legacyRouteValueDictionary != null )
+                {
+                    legacyRouteValueDictionary[overrideKey] = overrideValue;
+                }
+
+                // Obsidian page parameters.
                 pageParameters[overrideKey] = overrideValue;
             }
 
@@ -714,17 +826,58 @@ namespace Rock.Blocks.Reporting
         }
 
         /// <summary>
-        /// Gets the box navigation URLs required for the page to operate.
+        /// Loads filter values from person preferences, and overrides the current values in place, within the provided
+        /// <paramref name="privateFilterValues"/> collection.
         /// </summary>
+        /// <param name="privateFilterValues">The currently-selected private filter values.</param>
+        private void LoadFiltersFromPersonPreferences( Dictionary<string, string> privateFilterValues )
+        {
+            foreach ( var filterKvp in privateFilterValues.ToList() )
+            {
+                var preferenceValue = this.PersonPreferences.GetValue( $"{PersonPreferenceKey.FilterPrefix}{filterKvp.Key}" );
+                if ( preferenceValue == _filterEnforceBlankValue )
+                {
+                    privateFilterValues[filterKvp.Key] = string.Empty;
+                }
+                else if ( preferenceValue.IsNotNullOrWhiteSpace() )
+                {
+                    privateFilterValues[filterKvp.Key] = preferenceValue;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Saves the provided private filter values to person preferences.
+        /// </summary>
+        /// <param name="privateFilterValues">The currently-selected private filter values.</param>
+        private void SaveFiltersToPersonPreferences( Dictionary<string, string> privateFilterValues )
+        {
+            foreach ( var filterKvp in privateFilterValues )
+            {
+                this.PersonPreferences.SetValue( $"{PersonPreferenceKey.FilterPrefix}{filterKvp.Key}", filterKvp.Value );
+            }
+
+            this.PersonPreferences.Save();
+        }
+
+        /// <summary>
+        /// Gets the navigation URLs required for the page to operate.
+        /// </summary>
+        /// <param name="privateFilterValues">The currently-selected private filter values.</param>
         /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
+        private Dictionary<string, string> GetNavigationUrls( Dictionary<string, string> privateFilterValues )
         {
             var urls = new Dictionary<string, string>();
 
             var redirectPage = GetAttributeValue( AttributeKey.RedirectPage );
             if ( redirectPage.IsNotNullOrWhiteSpace() )
             {
-                urls.Add( NavigationUrlKey.RedirectPage, this.GetLinkedPageUrl( AttributeKey.RedirectPage ) );
+                // When looking for a matching route, only provide parameters that actually have a value defined.
+                var queryParams = privateFilterValues
+                    .Where( kvp => kvp.Value.IsNotNullOrWhiteSpace() )
+                    .ToDictionary( kvp => kvp.Key, kvp => kvp.Value );
+
+                urls.Add( NavigationUrlKey.RedirectPage, this.GetLinkedPageUrl( AttributeKey.RedirectPage, queryParams ) );
             }
 
             return urls;
@@ -893,7 +1046,7 @@ namespace Rock.Blocks.Reporting
                     return ActionBadRequest( "Unable to find filter to edit." );
                 }
 
-                editableFilter.Filter = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+                editableFilter.Filter = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
             }
 
             return ActionOk( editableFilter );
@@ -1042,11 +1195,44 @@ namespace Rock.Blocks.Reporting
                 return ActionInternalServerError( errorMessage );
             }
 
+            #region Save Person Preferences
+
+            // For each currently-selected private value, if there is a default value defined in block settings, but the
+            // individual has cleared the value, write a known "FILTER_ENFORCE_BLANK_VALUE" to their person preference,
+            // so we can know to override the default value the next time they load the block.
+            var personPreferenceValues = new Dictionary<string, string>( privateFilterValues );
+            var defaultPrivateFilterValues = GetDefaultPrivateFilterValues( filterAttributes );
+            foreach ( var personPreferenceKvp in personPreferenceValues.ToList() )
+            {
+                if ( personPreferenceKvp.Value.IsNotNullOrWhiteSpace() )
+                {
+                    // There's a value currently selected; no need to force a blank value.
+                    continue;
+                }
+
+                if ( defaultPrivateFilterValues[personPreferenceKvp.Key].IsNullOrWhiteSpace() )
+                {
+                    // No need to override an already-empty default value.
+                    continue;
+                }
+
+                // Override the default value with the known "FILTER_ENFORCE_BLANK_VALUE".
+                personPreferenceValues[personPreferenceKvp.Key] = _filterEnforceBlankValue;
+            }
+
+            SaveFiltersToPersonPreferences( personPreferenceValues );
+
+            #endregion Save Person Preferences
+
             var response = new GetUpdatedFiltersResponseBag
             {
                 PublicFilters = publicFilters,
                 PublicFilterValues = publicFilterValues,
-                FilterPageParameters = privateFilterValues
+                // Note that we're still sending the unmodified private filter values back out the door (and not the
+                // person preference values), as we don't want to accidentally send our "FILTER_ENFORCE_BLANK_VALUE"
+                // to the client; it's intended only for internal use.
+                FilterPageParameters = privateFilterValues,
+                NavigationUrls = GetNavigationUrls( privateFilterValues )
             };
 
             return ActionOk( response );
@@ -1069,6 +1255,8 @@ namespace Rock.Blocks.Reporting
                 errorMessage
             ) = GetCurrentFilters( filterAttributes, privateFilterValues );
 
+            SaveFiltersToPersonPreferences( privateFilterValues );
+
             if ( errorMessage.IsNotNullOrWhiteSpace() )
             {
                 return ActionInternalServerError( errorMessage );
@@ -1078,7 +1266,8 @@ namespace Rock.Blocks.Reporting
             {
                 PublicFilters = publicFilters,
                 PublicFilterValues = publicFilterValues,
-                FilterPageParameters = privateFilterValues
+                FilterPageParameters = privateFilterValues,
+                NavigationUrls = GetNavigationUrls( privateFilterValues )
             };
 
             return ActionOk( response );

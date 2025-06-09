@@ -32,8 +32,10 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to select an integer value using a slider
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.Advanced )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.RANGE_SLIDER )]
+    [IconSvg( @"<svg viewBox=""0 0 16 16"" xmlns=""http://www.w3.org/2000/svg""><path d=""M14.5625 6.875H12.375V5.4375C12.375 5.19688 12.1781 5 11.9375 5H11.0625C10.8219 5 10.625 5.19688 10.625 5.4375V6.875H1.4375C1.19688 6.875 1 7.07188 1 7.3125V8.1875C1 8.42812 1.19688 8.625 1.4375 8.625H10.625V10.0625C10.625 10.3031 10.8219 10.5 11.0625 10.5H11.9375C12.1781 10.5 12.375 10.3031 12.375 10.0625V8.625H14.5625C14.8031 8.625 15 8.42812 15 8.1875V7.3125C15 7.07188 14.8031 6.875 14.5625 6.875Z"" /></svg>" )]
     public class RangeSliderFieldType : FieldType
     {
         #region Formatting

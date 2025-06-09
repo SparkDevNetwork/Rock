@@ -15,16 +15,14 @@
 // </copyright>
 //
 
+using System;
+using System.ComponentModel;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
-using Rock.Security;
 using Rock.ViewModels.Blocks.Reporting.InteractionComponentDetail;
-using Rock.Web;
 using Rock.Web.Cache;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
 
 namespace Rock.Blocks.Reporting
 {
@@ -105,25 +103,24 @@ namespace Rock.Blocks.Reporting
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = GetInitializationBox( rockContext );
+            var box = GetInitializationBox();
+            return box;
+        }
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-
-                return box;
-            }
+        /// <inheritdoc/>
+        protected override string GetInitialHtmlContent()
+        {
+            var box = GetInitializationBox();
+            return box.Content;
         }
 
         /// <summary>
         /// Gets the initialization box.
         /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns></returns>
-        private InteractionComponentDetailInitializationBox GetInitializationBox( RockContext rockContext )
+        private InteractionComponentDetailInitializationBox GetInitializationBox()
         {
             var interactionId = PageParameter( PageParameterKey.ComponentId ).AsInteger();
-            var interactionComponent = new InteractionComponentService( rockContext ).Get( interactionId );
+            var interactionComponent = new InteractionComponentService( RockContext ).Get( interactionId );
             var box = new InteractionComponentDetailInitializationBox();
 
             if ( interactionComponent != null )
@@ -131,31 +128,28 @@ namespace Rock.Blocks.Reporting
                 IEntity interactionEntity = null;
                 if ( interactionComponent.EntityId.HasValue )
                 {
-                    interactionEntity = GetComponentEntity( rockContext, interactionComponent );
+                    interactionEntity = GetComponentEntity( RockContext, interactionComponent );
                 }
 
-                if ( BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) || interactionComponent.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+                var mergeFields = RequestContext.GetCommonMergeFields( GetCurrentPerson() );
+                mergeFields.TryAdd( MergeFieldKeys.Person, GetCurrentPerson() );
+                mergeFields.Add( MergeFieldKeys.InteractionChannel, interactionComponent.InteractionChannel );
+                mergeFields.Add( MergeFieldKeys.InteractionComponent, interactionComponent );
+                mergeFields.Add( MergeFieldKeys.InteractionComponentEntity, interactionEntity );
+
+                if ( interactionEntity != null )
                 {
-                    var mergeFields = RequestContext.GetCommonMergeFields( GetCurrentPerson() );
-                    mergeFields.TryAdd( MergeFieldKeys.Person, GetCurrentPerson() );
-                    mergeFields.Add( MergeFieldKeys.InteractionChannel, interactionComponent.InteractionChannel );
-                    mergeFields.Add( MergeFieldKeys.InteractionComponent, interactionComponent );
-                    mergeFields.Add( MergeFieldKeys.InteractionComponentEntity, interactionEntity );
-
-                    if ( interactionEntity != null )
-                    {
-                        mergeFields.Add( MergeFieldKeys.InteractionComponentEntityName, interactionEntity.ToString() );
-                    }
-                    else
-                    {
-                        mergeFields.Add( MergeFieldKeys.InteractionComponentEntityName, string.Empty );
-                    }
-
-                    box.ComponentName = interactionComponent.Name;
-                    box.Content = interactionComponent.InteractionChannel.ComponentDetailTemplate.IsNotNullOrWhiteSpace() ?
-                        interactionComponent.InteractionChannel.ComponentDetailTemplate.ResolveMergeFields( mergeFields ) :
-                        GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields );
+                    mergeFields.Add( MergeFieldKeys.InteractionComponentEntityName, interactionEntity.ToString() );
                 }
+                else
+                {
+                    mergeFields.Add( MergeFieldKeys.InteractionComponentEntityName, string.Empty );
+                }
+
+                box.ComponentName = interactionComponent.Name;
+                box.Content = interactionComponent.InteractionChannel.ComponentDetailTemplate.IsNotNullOrWhiteSpace() ?
+                    interactionComponent.InteractionChannel.ComponentDetailTemplate.ResolveMergeFields( mergeFields ) :
+                    GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields );
             }
             else
             {
@@ -182,28 +176,6 @@ namespace Rock.Blocks.Reporting
             }
 
             return componentEntity;
-        }
-
-        /// <summary>
-        /// Gets the box navigation URLs required for the page to operate.
-        /// </summary>
-        /// <returns>A dictionary of key names and URL values.</returns>
-        private Dictionary<string, string> GetBoxNavigationUrls()
-        {
-            return new Dictionary<string, string>
-            {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
-            };
-        }
-
-        /// <summary>
-        /// If this Attribute is a reference to a PageRoute, this will return the Route, otherwise it will return the normal URL
-        /// </summary>
-        /// <param name="attributeKey">The attribute key.</param>
-        /// <returns></returns>
-        public string LinkedPageRoute( string attributeKey )
-        {
-            return new PageReference( GetAttributeValue( attributeKey ) ).Route;
         }
 
         #endregion

@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -189,13 +189,11 @@
             key: financialGatewayViewBag.value?.idKey
         });
 
-        console.log("before: ", financialGatewayEditBag.value);
         if (result.isSuccess && result.data && result.data.bag) {
             financialGatewayEditBag.value = {
                 bag: result.data.bag,
                 validProperties: result.data.validProperties ?? Object.keys(result.data.bag)
             };
-            console.log("after: ", financialGatewayEditBag.value);
 
             return true;
         }

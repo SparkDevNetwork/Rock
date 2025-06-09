@@ -29,7 +29,7 @@
                     visiblePriority="xs"
                     headerClass="title-right"
                     itemClass="justify-content-end text-right"
-                    width="8%">
+                    width="5%">
             <template #format="{ row }">
                 <span v-if="row.date">{{ RockDateTime.parseISO(row.date)?.toASPString("d") }}</span>
                 <span v-else>N/A</span>
@@ -117,6 +117,8 @@
                     title="Email"
                     field="contactEmail"
                     :filter="textValueFilter"
+                    width="5%"
+                    itemClass="break-word"
                     visiblePriority="md" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
@@ -126,6 +128,7 @@
                       iconClass="fa fa-clone"
                       visiblePriority="xs"
                       :excludeFromExport="true"
+                      width="65"
                       @click="onCopyClick" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
@@ -139,6 +142,10 @@
 <style>
 .title-right .grid-column-title {
     text-align: right;
+}
+
+.break-word {
+    word-break: break-all;
 }
 </style>
 
@@ -212,9 +219,11 @@
     */
     function getContentItemsColumnFilterValue(row: Record<string, unknown>): string {
         let filterValue = "";
-        const contentItems = row.contentItems as string[];
+        const contentItemsString = row.contentItems as string;
+        const contentItems = getContentChannelItems(contentItemsString);
         for (const contentItem of contentItems) {
-            filterValue += contentItem;
+            filterValue += contentItem.title;
+            filterValue += ` (${contentItem.name})`;
         }
 
         return filterValue;
@@ -226,7 +235,7 @@
     * @param row The row to be filtered.
     */
     function getRegistrationColumnFilterValue(row: Record<string, unknown>): string {
-        return row.registration as string;
+        return row.registration as string ?? "";
     }
 
     /**
@@ -235,7 +244,7 @@
     * @param row The row to be filtered.
     */
     function getGroupColumnFilterValue(row: Record<string, unknown>): string {
-        return row.group as string;
+        return row.group as string ?? "";
     }
 
     /**
@@ -258,14 +267,12 @@
         if (value) {
             const formattedContentItems = value.split(",");
             for (const formattedContentItem of formattedContentItems) {
-                const contentItem = {} as Record<string, string>;
-                const contentItemDetails = formattedContentItem.split("|");
-
-                if (contentItemDetails.length > 0) {
-                    contentItem.url = contentItemDetails[0];
-                    contentItem.title = contentItemDetails[1];
-                    contentItem.name = contentItemDetails[2];
-                }
+                const [url, title, name] = formattedContentItem.split("|");
+                const contentItem = {
+                    url: url,
+                    title: title,
+                    name: name
+                } as Record<string, string>;
 
                 contentItems.push(contentItem);
             }

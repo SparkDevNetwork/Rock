@@ -346,7 +346,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( attributeGuidList.Any() )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag  )  );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag  )  );
             }
 
             return bag;
@@ -433,7 +433,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
 
             if ( attributeGuidList.Any() )
             {
-                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
+                bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false, attributeFilter: a => attributeGuidList.Any( ag => a.Guid == ag ) );
             }
 
             return bag;
@@ -464,7 +464,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
@@ -792,14 +792,6 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                     .Select( r => r.Id )
                     .FirstOrDefault();
                 var knownRelationshipOwner = UpdateGroupMember( business.Id, knownRelationshipGroupType, "Known Relationship", null, knownRelationshipOwnerRoleId, RockContext );
-
-                // Add/Update Implied Relationship Group Type
-                var impliedRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK.AsGuid() );
-                int impliedRelationshipOwnerRoleId = impliedRelationshipGroupType.Roles
-                    .Where( r => r.Guid.Equals( Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid() ) )
-                    .Select( r => r.Id )
-                    .FirstOrDefault();
-                var impliedRelationshipOwner = UpdateGroupMember( business.Id, impliedRelationshipGroupType, "Implied Relationship", null, impliedRelationshipOwnerRoleId, RockContext );
 
                 RockContext.SaveChanges();
 

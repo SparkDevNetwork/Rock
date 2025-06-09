@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -10,7 +10,9 @@
                  :labels="blockLabels"
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.MediaAccount"
+                 :footerSecondaryActions="footerActions"
                  entityTypeName="MediaAccount"
+                 :isFullScreenVisible="false"
                  :isAuditHidden="true"
                  :isBadgesVisible="true"
                  :isDeleteVisible="isEditable"
@@ -46,6 +48,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { MediaAccountBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountBag";
     import { MediaAccountDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaAccountDetail/mediaAccountDetailOptionsBag";
+    import { alert } from "@Obsidian/Utility/dialogs";
 
     const config = useConfigurationValues<DetailBlockBox<MediaAccountBag, MediaAccountDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -129,6 +132,33 @@
 
 
         return labels;
+    });
+
+    const footerActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View) {
+            return [];
+        }
+        const footerActionsPanelActions: PanelAction[] = [
+            {
+                iconCssClass: "fa fa-download",
+                title: "Download all data from provider.",
+                type: "default",
+                handler: async () => {
+                    errorMessage.value = "";
+
+                    const result = await invokeBlockAction<string>("SyncWithProvider", {
+                        key: mediaAccountViewBag.value?.idKey
+                    });
+
+                    if (result.isSuccess && result.data) {
+                        alert(result.data);
+                    }
+                    else {
+                        errorMessage.value = result.errorMessage ?? "Unknown error while trying to sync with provider.";
+                    }
+                }
+            }];
+        return footerActionsPanelActions;
     });
 
     const isEditable = computed((): boolean => {

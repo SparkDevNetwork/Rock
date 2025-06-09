@@ -17,13 +17,14 @@
 
 using System.Collections.Generic;
 using Rock.ViewModels.Utility;
+using Rock.ViewModels.Controls;
 
 namespace Rock.ViewModels.Blocks.Engagement.Steps
 {
     /// <summary>
     /// Box of properties for initializing the StepNode block
     /// </summary>
-    public class StepFlowInitializationBox: FlowNodeDiagramSettingsBag
+    public class StepFlowInitializationBox : SankeyDiagramSettingsBag
     {
         /// <summary>
         /// Gets or sets the list of campuses
@@ -61,7 +62,7 @@ namespace Rock.ViewModels.Blocks.Engagement.Steps
         /// <value>
         /// List of Flow Diagram Edges
         /// </value>
-        public List<FlowNodeDiagramEdgeBag> Edges { get; set; }
+        public List<SankeyDiagramEdgeBag> Edges { get; set; }
 
         /// <summary>
         /// Gets or sets the list of nodes
@@ -69,6 +70,6 @@ namespace Rock.ViewModels.Blocks.Engagement.Steps
         /// <value>
         /// List of Flow Diagram Nodes
         /// </value>
-        public List<FlowNodeDiagramNodeBag> Nodes { get; set; }
+        public List<SankeyDiagramNodeBag> Nodes { get; set; }
     }
 }

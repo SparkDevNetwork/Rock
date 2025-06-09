@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Finance" )]
     [Table( "FinancialBatch" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.FINANCIAL_BATCH )]
     public partial class FinancialBatch : Model<FinancialBatch>
     {

@@ -8,10 +8,12 @@
         </div>
 
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <div class="attendance-cards">
                 <AttendanceCard v-for="attendance in aggregateAttendance"
-                                :attendance="attendance" />
+                                :attendance="attendance"
+                                :hidePhoto="!!session.configuration.template?.isPhotoHidden" />
             </div>
 
             <div class="messages">
@@ -49,6 +51,7 @@
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
         (event: "checkInFamily", familyId: string): void;
+        (event: "done"): void;
     }>();
 
     const browserBus = useBlockBrowserBus();
@@ -146,6 +149,14 @@
             });
         }
 
+        actions.push({
+            type: "primary",
+            title: "Done",
+            key: "next",
+            disabled: false,
+            handler: onDoneClick
+        });
+
         emit("updateActions", actions);
     }
 
@@ -157,6 +168,13 @@
         if (props.session.currentFamilyId) {
             emit("checkInFamily", props.session.currentFamilyId);
         }
+    }
+
+    /**
+     * Handles the click event for the done button.
+     */
+    async function onDoneClick(): Promise<void> {
+        emit("done");
     }
 
     // #endregion

@@ -35,6 +35,7 @@ namespace Rock.Model
     [Table( "PersonPreference" )]
     [CodeGenExclude( CodeGenFeature.DefaultRestController )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON_PREFERENCE )]
     public partial class PersonPreference : Entity<PersonPreference>
     {

@@ -32,10 +32,10 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import AssetPicker from "@Obsidian/Controls/Internal/assetPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
 
 

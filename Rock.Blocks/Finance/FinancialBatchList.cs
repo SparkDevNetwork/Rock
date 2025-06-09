@@ -317,7 +317,7 @@ namespace Rock.Blocks.Finance
 
             // Load any attribute column configuration.
             var gridAttributeIds = _gridAttributes.Value.Select( a => a.Id ).ToList();
-            Helper.LoadFilteredAttributes( items.Select( d => d.Batch ), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+            Helper.LoadFilteredAttributes( items.Select( d => d.Batch ).ToList(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
 
             // Load the account summary data into memory.
             var batchIdQry = GetBatchQueryable( rockContext ).Select( b => b.Id );
@@ -328,15 +328,17 @@ namespace Rock.Blocks.Finance
                 .GroupBy( ftd => new
                 {
                     BatchId = ftd.Transaction.BatchId.Value,
-                    ftd.AccountId
+                    ftd.AccountId,
                 } )
                 .Select( grp => new
                 {
                     grp.Key.BatchId,
                     grp.Key.AccountId,
+                    Order = grp.Max( ftd => ftd.Account.Order ),
                     Amount = grp.Sum( ftd => ftd.Amount )
                 } )
                 .ToList()
+                .OrderBy( a => a.Order )
                 .GroupBy( a => a.BatchId )
                 .ToDictionary( grp => grp.Key, grp => grp.ToList() );
 

@@ -23,9 +23,7 @@ using System.Linq;
 #if REVIEW_WEBFORMS
 using System.Web.Hosting;
 
-using DotLiquid;
 #endif
-
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -244,7 +242,7 @@ namespace Rock.Blocks.Cms
             var attributes = GetSiteAttributes( RockContext, entity.Id.ToString() );
 
             bag.SiteAttributes = new List<PublicEditableAttributeBag>();
-            bag.SiteAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute ) ) );
+            bag.SiteAttributes.AddRange( attributes.Select( attribute => PublicAttributeHelper.GetPublicEditableAttribute( attribute ) ) );
             bag.BinaryFileTypeGuid = GetAttributeValue( AttributeKey.DefaultFileType ).AsGuid();
 
 
@@ -265,7 +263,7 @@ namespace Rock.Blocks.Cms
 #else
             bag.AllowsCompile = new Rock.Web.UI.RockTheme( entity.Theme ).AllowsCompile;
 #endif
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -280,7 +278,7 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -415,7 +413,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -844,7 +842,7 @@ namespace Rock.Blocks.Cms
             else
             {
                 var attribute = attributes.FirstOrDefault( a => a.Guid == attributeGuid );
-                editableAttribute = PublicAttributeHelper.GetPublicEditableAttributeViewModel( attribute );
+                editableAttribute = PublicAttributeHelper.GetPublicEditableAttribute( attribute );
                 modalTitle = ActionTitle.Edit( "attribute for pages of site " + entity.Name );
             }
 

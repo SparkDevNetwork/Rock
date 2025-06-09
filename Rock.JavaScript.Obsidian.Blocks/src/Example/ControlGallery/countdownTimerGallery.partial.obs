@@ -1,0 +1,34 @@
+<template>
+    <GalleryAndResult :value="seconds"
+                      :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        Counting down:
+        <CountdownTimer v-model="seconds" />
+
+        <template #settings>
+            <form class="form-inline" @submit.prevent="reset">
+                <NumberBox label="Reset Timer to (seconds)" v-model="setToSeconds" />
+                <RockButton type="submit">Set Timer</RockButton>
+            </form>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CountdownTimer from "@Obsidian/Controls/countdownTimer.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const seconds = ref(300);
+    const setToSeconds = ref(300);
+
+    const reset = (): void => {
+        seconds.value = setToSeconds.value;
+    };
+    const importCode = getSfcControlImportPath("countdownTimer");
+    const exampleCode = `<CountdownTimer v-model="seconds" />`;
+</script>

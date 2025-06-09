@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -151,6 +152,24 @@ namespace Rock.Model
         }
     }
 
+    [HasQueryableAttributes( typeof( Campus.CampusQueryableAttributeValue ), nameof( CampusAttributeValues ) )]
+    public partial class Campus
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<CampusQueryableAttributeValue> CampusAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class CampusQueryableAttributeValue : QueryableAttributeValue
+        {
+        }
+    }
+
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
@@ -207,6 +226,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this Campus target, Campus source )
         {
             target.Id = source.Id;
+            target.BeaconId = source.BeaconId;
             target.CampusStatusValueId = source.CampusStatusValueId;
             target.CampusTypeValueId = source.CampusTypeValueId;
             target.ClosedDate = source.ClosedDate;

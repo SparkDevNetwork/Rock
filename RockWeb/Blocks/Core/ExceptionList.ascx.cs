@@ -1158,10 +1158,7 @@ namespace RockWeb.Blocks.Administration
         {
             var settings = new Dictionary<string, string>();
 
-            if ( ddlSite.SelectedValue != All.IdValue )
-            {
-                settings[FilterSettingName.Site] = ddlSite.SelectedValue;
-            }
+            settings[FilterSettingName.Site] = ddlSite.SelectedValue;
 
             settings[FilterSettingName.User] = ppUser.PersonId.ToStringSafe();
             settings[FilterSettingName.Page] = ppPage.SelectedValueAsInt( true ).ToStringSafe();
@@ -1180,6 +1177,11 @@ namespace RockWeb.Blocks.Administration
         {
             if ( filterName == FilterSettingName.Site )
             {
+                if ( value == All.IdValue )
+                {
+                    return All.Text;
+                }
+
                 int siteId;
                 if ( int.TryParse( value, out siteId ) )
                 {
@@ -1253,8 +1255,8 @@ namespace RockWeb.Blocks.Administration
 
             filterQuery = exceptionService.FilterByOutermost( filterQuery );
 
-            // Filter by: SiteId
-            if ( args.SiteId.GetValueOrDefault(0) != 0 )
+            // Filter by: SiteId - Only apply if not "All"
+            if ( args.SiteId.GetValueOrDefault(0) != 0 && args.SiteId.Value.ToString() != All.IdValue )
             {
                 filterQuery = filterQuery.Where( e => e.SiteId == args.SiteId.Value );
             }

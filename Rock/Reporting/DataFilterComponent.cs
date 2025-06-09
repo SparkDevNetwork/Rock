@@ -17,12 +17,19 @@
 using System;
 using System.Collections.Generic;
 using System.Linq.Expressions;
+#if WEBFORMS
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
+
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Extension;
 using Rock.Model;
+using Rock.Net;
+using Rock.Security;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting
@@ -84,11 +91,13 @@ namespace Rock.Reporting
         /// <value>
         /// A set of key-value pairs representing the option names and values.
         /// </value>
+        [Obsolete]
+        [RockObsolete( "17.0" )]
         public virtual Dictionary<string, object> Options
         {
             get
             {
-#if REVIEW_WEBFORMS
+#if WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     return HttpContext.Current.Items[$"{this.GetType().FullName}:Options"] as Dictionary<string, object>;
@@ -100,7 +109,7 @@ namespace Rock.Reporting
 
             set
             {
-#if REVIEW_WEBFORMS
+#if WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     HttpContext.Current.Items[$"{this.GetType().FullName}:Options"] = value;
@@ -114,64 +123,107 @@ namespace Rock.Reporting
         }
 
         /// <summary>
+        /// The URL that will be used to load the Obsidian component. This may
+        /// be a path prefixed with "~/" instead of a full absolute URL. This should
+        /// return <c>null</c> to indicate Obsidian is not supported and an empty
+        /// string to indicate it is supported but no UI is required.
+        /// </summary>
+        public virtual string ObsidianFileUrl => null;
+
+        /// <summary>
         /// The _Options when HttpContext.Current is null
         /// NOTE: ThreadStatic is per thread, but ASP.NET threads are ThreadPool threads, so they will be used again.
         /// see https://www.hanselman.com/blog/ATaleOfTwoTechniquesTheThreadStaticAttributeAndSystemWebHttpContextCurrentItems.aspx
         /// So be careful and only use the [ThreadStatic] trick if absolutely necessary
         /// </summary>
         [ThreadStatic]
+        [Obsolete]
+        [RockObsolete( "17.0" )]
         private static Dictionary<string, object> _nonHttpContextOptions;
-   
+
         #endregion
 
-        #region Public Methods
+        #region Configuration
 
         /// <summary>
-        /// Gets the user-friendly title used to identify the filter component.
+        /// Gets the definition of the Obsidian component that will be used to
+        /// render the UI for editing the data filter.
         /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <returns>The name of the filter.</returns>
-        public abstract string GetTitle( Type entityType );
-
-        /// <summary>
-        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
-        /// will set the description of the filter to whatever is returned by this property.  If including script, the
-        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
-        /// referencing this property.
-        /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <returns>The client format script.</returns>
-        public virtual string GetClientFormatSelection( Type entityType )
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use for any database access that is required.</param>
+        /// <param name="requestContext">The context describing the current request.</param>
+        /// <returns>An instance of <see cref="DynamicComponentDefinitionBag"/> that describes how to render the UI.</returns>
+        [RockInternal( "17.0" )]
+        public virtual DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", GetTitle( entityType ) );
+            return null;
         }
 
         /// <summary>
-        /// Provides a user-friendly description of the specified filter values.
+        /// Executes a request that is sent from the UI component to the server
+        /// component. This is used to handle any dynamic updates that are
+        /// required by the UI in order to operate correctly.
         /// </summary>
-        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
-        /// <param name="selection">A formatted string representing the filter settings.</param>
-        /// <returns>A string containing the user-friendly description of the settings.</returns>
-        public virtual string FormatSelection( Type entityType, string selection )
+        /// <param name="request">The request object from the UI component.</param>
+        /// <param name="securityGrant">The security grant that is providing additional authorization to this request.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="requestContext">The context that describes the current network request being processed.</param>
+        /// <returns>A dictionary of values that will be returned to the UI component.</returns>
+        [RockInternal( "17.0" )]
+        public virtual Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
         {
-            ComparisonType comparisonType = ComparisonType.StartsWith;
-            string value = string.Empty;
-
-            string[] options = selection.Split( '|' );
-            if ( options.Length > 0 )
-            {
-                comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
-            }
-
-            if ( options.Length > 1 )
-            {
-                value = options[1];
-            }
-
-            return string.Format( "{0} {1} '{2}'", GetTitle( entityType ), comparisonType.ConvertToString(), value );
+            return null;
         }
 
 #if REVIEW_WEBFORMS
+        /// <summary>
+        /// Gets the component data that will be provided to the Obsidian component
+        /// when it is initialized. This should include representations of the current
+        /// values as well as any additional data required to initialize the UI.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>A dictionary of strings that will be provided to the Obsidian component.</returns>
+        [RockInternal( "17.0" )]
+        public virtual Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string>();
+        }
+
+        /// <summary>
+        /// Gets the selection string that will be saved to the database from
+        /// the data returned by the Obsidian component.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="data">The data the was returned by the Obsidian component.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that describes the current request.</param>
+        /// <returns>The string of text that represents the selection which will be written to the database.</returns>
+        [RockInternal( "17.0" )]
+        public virtual string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the related data view that this filter references. This is used
+        /// to ensure data integrity so that the related data view can't be
+        /// deleted while another data view is referencing it.
+        /// </summary>
+        /// <param name="entityType">The <see cref="Type"/> of the entity this applies to, such as <see cref="Model.Person"/>.</param>
+        /// <param name="selection">The selection string from the database.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <returns>The identifier of the related data view or <c>null</c> if there isn't one.</returns>
+        [RockInternal( "18.0" )]
+        public virtual int? GetRelatedDataViewId( Type entityType, string selection, RockContext rockContext )
+        {
+            return null;
+        }
+
+#if WEBFORMS
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// Implement this version of CreateChildControls if your DataFilterComponent supports different FilterModes
@@ -291,6 +343,55 @@ namespace Rock.Reporting
         }
 #endif
 
+        #endregion
+
+        #region Public Methods
+
+        /// <summary>
+        /// Gets the user-friendly title used to identify the filter component.
+        /// </summary>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <returns>The name of the filter.</returns>
+        public abstract string GetTitle( Type entityType );
+
+        /// <summary>
+        /// Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
+        /// will set the description of the filter to whatever is returned by this property.  If including script, the
+        /// controls parent container can be referenced through a '$content' variable that is set by the control before 
+        /// referencing this property.
+        /// </summary>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <returns>The client format script.</returns>
+        public virtual string GetClientFormatSelection( Type entityType )
+        {
+            return string.Format( "'{0} ' + $('select', $content).find(':selected').text() + ' \\'' + $('input', $content).val() + '\\''", GetTitle( entityType ) );
+        }
+
+        /// <summary>
+        /// Provides a user-friendly description of the specified filter values.
+        /// </summary>
+        /// <param name="entityType">The System Type of the entity to which the filter will be applied.</param>
+        /// <param name="selection">A formatted string representing the filter settings.</param>
+        /// <returns>A string containing the user-friendly description of the settings.</returns>
+        public virtual string FormatSelection( Type entityType, string selection )
+        {
+            ComparisonType comparisonType = ComparisonType.StartsWith;
+            string value = string.Empty;
+
+            string[] options = selection.Split( '|' );
+            if ( options.Length > 0 )
+            {
+                comparisonType = options[0].ConvertToEnum<ComparisonType>( ComparisonType.StartsWith );
+            }
+
+            if ( options.Length > 1 )
+            {
+                value = options[1];
+            }
+
+            return string.Format( "{0} {1} '{2}'", GetTitle( entityType ), comparisonType.ConvertToString(), value );
+        }
+
         /// <summary>
         /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.
         /// </summary>
@@ -302,31 +403,5 @@ namespace Rock.Reporting
         public abstract Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection );
 
         #endregion
-
-        #region Protected Methods
-
-        #endregion
     }
-
-    #region Enums
-
-    /// <summary>
-    /// 
-    /// </summary>
-    public enum FilterMode
-    {
-        /// <summary>
-        /// Render the UI and process the filter as a simple filter
-        /// This mode can be set if the filter just needs to be simple with minimal UI (like on a public page)
-        /// </summary>
-        SimpleFilter,
-
-        /// <summary>
-        /// Render and process as an advanced filter 
-        /// This will be the mode when configuring as a Data Filter
-        /// </summary>
-        AdvancedFilter
-    }
-
-    #endregion
 }

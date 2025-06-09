@@ -115,9 +115,11 @@ namespace Rock.Blocks.Lms
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<LearningProgram> GetListQueryable( RockContext rockContext )
+        protected override List<LearningProgram> GetListItems( IQueryable<LearningProgram> queryable, RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext );
+            return queryable.ToList()
+                .Where( lp => lp.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .ToList();
         }
 
         /// <inheritdoc/>
@@ -137,6 +139,12 @@ namespace Rock.Blocks.Lms
                 .AddField( "isPublic", a => a.IsPublic )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<LearningProgram> GetOrderedListQueryable( IQueryable<LearningProgram> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( s => s.Name );
         }
 
         #endregion
@@ -161,7 +169,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningProgram.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningProgram.FriendlyTypeName}." );
             }
 
             entityService.Delete( entity.Id );
@@ -181,11 +189,11 @@ namespace Rock.Blocks.Lms
         {
             var disablePredicatableIds = PageCache.Layout.Site.DisablePredictableIds;
             var programId = new LearningProgramService( RockContext ).GetSelect( key, p => p.Id, !disablePredicatableIds );
-            var entityService = new LearningActivityService( RockContext );
+            var entityService = new LearningClassActivityService( RockContext );
 
             var hasCompletions = entityService.Queryable()
                 .Where( c => c.LearningClass.LearningCourse.LearningProgramId == programId )
-                .Any( c => c.LearningActivityCompletions.Any() );
+                .Any( c => c.LearningClassActivityCompletions.Any() );
 
             return ActionOk( hasCompletions );
         }

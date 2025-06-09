@@ -22,6 +22,7 @@
 //
 
 import { LearningClassFacilitatorBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassFacilitatorBag";
+import { LearningClassLocationBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassDetail/learningClassLocationBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -54,6 +55,9 @@ export type LearningClassBag = {
     /** Gets or sets the related LearningGradingSystem. */
     gradingSystem?: ListItemBag | null;
 
+    /** Gets or sets the GroupCapacity (maximum allowed students override). */
+    groupCapacity?: number | null;
+
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
@@ -64,7 +68,7 @@ export type LearningClassBag = {
     isPublic: boolean;
 
     /** Gets or Sets the Location that is associated with the LearningClass. */
-    location?: ListItemBag | null;
+    location?: LearningClassLocationBag | null;
 
     /** Gets or sets the Name of the Group. This property is required. */
     name?: string | null;

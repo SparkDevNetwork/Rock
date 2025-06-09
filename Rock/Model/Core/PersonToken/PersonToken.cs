@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "PersonToken" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.None )]
     [Rock.SystemGuid.EntityTypeGuid( "846B2BCE-7101-46B9-B89C-CD68073712CE")]
     public partial class PersonToken : Entity<PersonToken>
     {

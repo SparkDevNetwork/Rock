@@ -81,7 +81,19 @@ namespace Rock.Model
         {
             if ( IsOptOutMessage( message.Message ) )
             {
-                return ProcessOptOut( message );
+                var optOutResponse = ProcessOptOut( message );
+                if ( optOutResponse != null )
+                {
+                    return optOutResponse;
+                }
+            }
+            else if ( IsOptInMessage( message.Message ) )
+            {
+                var optInResponse = ProcessOptIn( message );
+                if ( optInResponse != null )
+                {
+                    return optInResponse;
+                }
             }
 
             var errorMessage = string.Empty;
@@ -297,7 +309,7 @@ namespace Rock.Model
 #endif
         }
 
-        #region Opt Out
+        #region Opt Out/Opt In
 
         /// <summary>
         /// Checks the message body to see if an opt-out keyword was sent.
@@ -328,18 +340,29 @@ namespace Rock.Model
         /// <param name="message">The <see cref="SmsMessage"/> that was received.</param>
         private static List<SmsActionOutcome> ProcessOptOut( SmsMessage message )
         {
+            var isPhoneUpdated = false;
+
             var cleanedNumber = PhoneNumber.CleanNumber( message.FromNumber );
             using ( var rockContext = new RockContext() )
             {
                 var phoneNumberService = new PhoneNumberService( rockContext );
-                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
+                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
 
                 foreach ( var phoneNumber in phoneNumbers )
                 {
                     phoneNumber.IsMessagingEnabled = false;
+                    phoneNumber.IsMessagingOptedOut = true;
+                    phoneNumber.MessagingOptedOutDateTime = RockDateTime.Now;
+                    isPhoneUpdated = true;
                 }
 
                 rockContext.SaveChanges();
+            }
+
+            if ( !isPhoneUpdated )
+            {
+                // If we didn't do anything, don't return a response.
+                return null;
             }
 
             return new List<SmsActionOutcome>
@@ -360,7 +383,81 @@ namespace Rock.Model
             };
         }
 
-        #endregion Opt Out
+        /// <summary>
+        /// Checks the message body to see if an opt-in keyword was sent.
+        /// </summary>
+        /// <param name="messageBody">The message body.</param>
+        /// <returns></returns>
+        private static bool IsOptInMessage( string messageBody )
+        {
+            List<string> optInKeywords = new List<string>
+            {
+                "START", "YES", "UNSTOP"
+            };
+
+            foreach ( var keyword in optInKeywords )
+            {
+                if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
+                {
+                    return true;
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Disables messaging if an opt-in keyword was received.
+        /// </summary>
+        /// <param name="message">The <see cref="SmsMessage"/> that was received.</param>
+        private static List<SmsActionOutcome> ProcessOptIn( SmsMessage message )
+        {
+            var isPhoneUpdated = false;
+
+            var cleanedNumber = PhoneNumber.CleanNumber( message.FromNumber );
+            using ( var rockContext = new RockContext() )
+            {
+                var phoneNumberService = new PhoneNumberService( rockContext );
+                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
+
+                foreach ( var phoneNumber in phoneNumbers )
+                {
+                    if ( !phoneNumber.IsMessagingEnabled )
+                    {
+                        phoneNumber.IsMessagingEnabled = true;
+                        phoneNumber.IsMessagingOptedOut = false;
+                        phoneNumber.MessagingOptedOutDateTime = null;
+                        isPhoneUpdated = true;
+                    }
+                }
+
+                rockContext.SaveChanges();
+            }
+
+            if ( !isPhoneUpdated )
+            {
+                // If we didn't do anything, don't return a response.
+                return null;
+            }
+
+            return new List<SmsActionOutcome>
+            {
+                new SmsActionOutcome
+                {
+                    ActionName = "SMSOptIn",
+                    ShouldProcess = true,
+                    IsInteractionLogged = false,
+                    ErrorMessage = string.Empty,
+                    Response = new SmsMessage
+                    {
+                        ToNumber = cleanedNumber,
+                        FromNumber = message.ToNumber,
+                        Message = "You have opted in to messages."
+                    }
+                }
+            };
+        }
+
+        #endregion Opt Out/Opt In
 
         #region Support classes
 

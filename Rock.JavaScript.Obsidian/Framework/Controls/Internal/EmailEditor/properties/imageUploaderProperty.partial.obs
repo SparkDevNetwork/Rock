@@ -1,0 +1,42 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ImageUploader v-model="internalValue"
+                   v-bind="$attrs"
+                   :binaryFileTypeGuid="BinaryFileType.CommunicationImage"
+                   :disableLabel="!label"
+                   :label="label"
+                   :uploadAsTemporary="true" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ValueProvider } from "../types.partial";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import { BinaryFiletype as BinaryFileType } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        label: {
+            type: String as PropType<string>,
+            default: "Image Uploader"
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<ListItemBag | null | undefined>>,
+            required: true
+        }
+    });
+
+    // #region Computed Props
+
+    const internalValue = computed<ListItemBag | null | undefined>({
+        get(): ListItemBag | null | undefined {
+            return props.valueProvider.value;
+        },
+        set(value: ListItemBag | null | undefined): void {
+            props.valueProvider.value = value;
+        }
+    });
+
+    // #endregion Computed Props
+</script>

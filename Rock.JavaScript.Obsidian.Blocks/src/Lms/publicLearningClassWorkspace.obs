@@ -4,289 +4,300 @@
         <div v-html="headerHtml"></div>
 
         <div class="workspace-block-error-notification">
-            <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+            <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-            <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+            <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
         </div>
 
-        <div class="workspace-block-container">
+        <div class="workspace-block-container" v-if="!blockError">
             <div class="workspace-tab-bar" v-if="isAcademicCalendarMode">
-                <ul class="nav nav-pills">
+                <ul class="nav nav-pills d-flex gap-2">
                     <li v-for="tab in tabs" role="presentation" :class="{ 'active': tab === selectedTab }">
                         <a href="#" @click.prevent="onSelectTab(tab)">{{ tab }}</a>
                     </li>
                 </ul>
-
-                <div class="facilitator-portal" v-if="isFacilitator">
-                    <a :href="facilitatorPortalUrl">Facilitator Portal</a>
-                </div>
+                <ul class="nav nav-pills d-flex align-items-end" v-if="isFacilitator">
+                    <li class="facilitator-portal" role="presentation">
+                        <a :href="facilitatorPortalUrl">Facilitator Portal</a>
+                    </li>
+                </ul>
             </div>
+
+            <NotificationBox v-if="classCompletionDate" class="text-center" alertType="default">{{ studentCompletionText }}</NotificationBox>
 
             <div class="content-page-section" v-if="selectedContentTab">
                 <div class="content-page-container">
-                    <h3 class="mt-0">
-                        {{ selectedContentTab.title }}
-                    </h3>
-                    <div class="content-page-content">
-                        <span v-html="selectedContentTab.content"></span>
-                    </div>
+                    <span v-html="selectedContentTab.content"></span>
                 </div>
             </div>
 
-            <div class="workspace-class-overview row" v-if="selectedTab === overviewTab">
-                <div class="col-md-8">
-                    <div class="notification-section">
+            <div class="workspace-class-overview" v-if="selectedTab === overviewTab">
+                <div class="workspace-class-sidebar overview-container">
+
+                    <div class="overview-section">
                         <h3 class="title">
-                            Notifications
+                            Overview
                         </h3>
 
-                        <div class="notification-cards row">
-                            <template v-for="notification in notifications">
-                                <div class="col-md-4">
-                                    <div class="card card-notification">
+                        <div class="section section-facilitators" v-if="showFacilitators()">
+                            <h4 class="section-label facilitators-label">{{ facilitatorsLabel }}</h4>
+
+                            <div class="facilitators-list">
+                                <span v-for="f in facilitators" :key="f.idKey ?? ''" class="facilitator-list-item">
+                                    <div class="facilitator-name">{{ f.facilitatorName }}</div>
+                                    <a class="facilitator-email" v-if="f.facilitatorEmail" :href="'mailto:' + f.facilitatorEmail"> {{ f.facilitatorEmail }}</a>
+                                </span>
+                            </div>
+                        </div>
+
+                        <div class="section section-progress">
+                            <h4 class="section-label class-progress-label">Class Progress</h4>
+
+                            <div class="class-progress-bar">
+                                <ProgressBar :percent="percentComplete" />
+                            </div>
+                            <div class="class-progress-tasks">
+                                {{ completedActivitiesCount }} out of {{ activities.length }} {{ pluralize('task', activities.length) }} completed
+                            </div>
+                        </div>
+
+                        <div class="section section-grade" v-if="showGrades">
+                            <h4 class="section-label grade-label">{{ currentGradeLabel }}</h4>
+
+                            <div class="current-grade" v-if="showGrades">
+                                <template v-if="currentGrade && hasGradedActivities">
+                                    <span :class="['label', currentGrade.isPassing ? 'label-success' : 'label-warning']">
+                                        {{ currentGrade.name ?? '' }}
+                                    </span>
+                                </template>
+                                <template v-else>
+                                    <span class="label label-default empty-grade">
+                                        -
+                                    </span>
+                                </template>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="announcements-container" v-if="enableAnnouncements">
+                    <div class="announcements-section">
+                        <div class="announcement-cards-container">
+                            <h3 class="title">
+                                Announcements
+                            </h3>
+
+                            <div class="announcement-cards-container empty-announcements-container" v-if="!hasAnnouncements">
+                                <i class="fa fa-comment-slash fa-2x no-announcements-icon"></i>
+                                <h6 class="no-announcements-title">No Announcements</h6>
+                                <div class="no-announcements-text">Future announcements will display here.</div>
+                            </div>
+
+                            <template v-for="(announcement, index) in announcements" :key="announcement.idKey">
+                                <div class="card card-announcement" :class="getRowCssClass(index, announcements.length)"
+                                     v-if="index < maxOverviewItemsToShow || isViewingAllAnnouncements">
+                                    <div class="card-body">
+                                        <small class="card-date"
+                                               :ref="(el) => addTooltip(el as Element)"
+                                               data-toggle="tooltip"
+                                               data-placement="auto"
+                                               data-container="body"
+                                               :data-original-title="getFormattedDate(announcement.publishDateTime)">
+                                            {{ getElapsedTime(announcement.publishDateTime) }}
+                                        </small>
+                                        <h5 class="announcement-title">
+                                            {{ announcement.title }}
+                                        </h5>
+                                        <div class="announcement-content">
+                                            <span v-html="announcement.description"></span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </template>
+
+                            <div class="view-all-button" :class="announcementOverflowContainerClass" v-if="hasAnnouncementOverflow">
+                                <RockButton
+                                            btnType="link"
+                                            @click="isViewingAllAnnouncements = !isViewingAllAnnouncements">
+                                    {{ announcementsOverflowText }}<i :class="announcementsOverflowIconClass"></i>
+                                </RockButton>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="notifications-container">
+                    <div class="notification-cards-container">
+                        <div class="notifications-section">
+                            <h3 class="title">
+                                Notifications
+                            </h3>
+
+                            <div class="notification-cards-container empty-notifications-container" v-if="!hasNotifications">
+                                <i class="fa fa-bell-slash-o fa-2x no-notifications-icon"></i>
+                                <h6 class="no-notifications-title">No Notifications</h6>
+                                <div class="no-notifications-text">Future notifications will display here.</div>
+                            </div>
+
+                            <div class="notification-cards notification-section">
+                                <template v-for="(notification, index) in notifications">
+                                    <div class="card card-notification" :class="getRowCssClass(index, notifications.length)"
+                                         v-if="index < maxOverviewItemsToShow || isViewingAllNotifications">
                                         <div class="card-body">
                                             <span :class="'badge badge-' + notification.labelType">
                                                 {{ notification.labelText }}
                                             </span>
 
-                                            <h5 class="notification-title">{{ notification.title }}</h5>
-
-                                            <div class="notification-content">
-                                                {{ notification.content }}
+                                            <div class="d-flex flex-column gap-1">
+                                                <h5 class="notification-title">{{ notification.title }}</h5>
+                                                <div class="notification-content"
+                                                     :ref="(el) => addTooltip(el as Element)"
+                                                     data-toggle="tooltip"
+                                                     data-placement="auto"
+                                                     data-container="body"
+                                                     :data-original-title="getFormattedDate(notification.notificationDateTime)">
+                                                    {{ notification.content }}
+                                                </div>
                                             </div>
                                         </div>
                                     </div>
-                                </div>
-                            </template>
-                        </div>
-                    </div>
+                                </template>
 
-                    <div class="announcements-section">
-                        <h3 class="title">
-                            Announcements
-                        </h3>
-                        <template v-for="announcement in announcements" :key="announcement.idKey">
-                            <div class="announcement-container">
-                                <small>
-                                    {{ formattedDate(announcement.publishDateTime) }}
-                                </small>
-                                <h5 class="announcement-title">
-                                    {{ announcement.title }}
-                                </h5>
-                                <div class="announcement-content">
-                                    <span v-html="announcement.description"></span>
+                                <div class="view-all-button" :class="notificationsOverflowContainerClass" v-if="hasNotificationsOverflow">
+                                    <RockButton
+                                                btnType="link"
+                                                @click="isViewingAllNotifications = !isViewingAllNotifications">
+                                        {{ notificationsOverflowText }}<i :class="notificationsOverflowIconClass"></i>
+                                    </RockButton>
                                 </div>
                             </div>
-                        </template>
+                        </div>
                     </div>
                 </div>
-                <div class="col-md-4 workspace-class-sidebar">
 
-                    <div class="section section-facilitators" v-if="showFacilitators()">
-                        <h4 class="mt-0">{{ facilitatorsLabel }}</h4>
-
-                        <div class="facilitators-list d-flex flex-column">
-                            <span v-for="f in facilitators" :key="f.idKey ?? ''" class="facilitator-list-item">
-                                <a v-if="f.facilitatorEmail" :href="'mailto:' + f.facilitatorEmail"> {{ f.facilitatorEmail }}</a>
-                                {{ f.facilitatorName }}
-                            </span>
-                        </div>
-                    </div>
-
-                    <div class="section section-progress">
-                        <h4 class="mt-0">Class Progress</h4>
-
-                        <div class="class-progress-bar">
-                            <ProgressBar :percent="percentComplete" />
-                        </div>
-                        <div class="class-progress-tasks">
-                            {{ completedActivitiesCount }} out of {{ activities.length }} {{ pluralize('task', activities.length) }} completed
-                        </div>
-                    </div>
-
-                    <div class="section section-progress" v-if="showGrades">
-                        <h4 class="mt-0">Current Grade</h4>
-
-                        <div class="current-grade" v-if="showGrades && currentGrade">
-                            <span v-if="showGrades && currentGrade"
-                                  :class="['label', currentGrade.isPassing ? 'label-success' : 'label-warning']">
-                                {{ currentGrade.name ?? '' }}
-                            </span>
-                        </div>
-                    </div>
-
-
-                </div>
             </div>
 
             <div class="workspace-block-content" v-if="selectedTab === activitiesTab">
-                <CustomSelect
-                              v-model="viewingCompletionBag"
-                              :items="activities"
-                              wrapperClass="workspace-navigation-pane"
-                              itemKey="learningActivityIdKey"
-                              :itemClass="getActivityContainerClasses"
-                              :disabledKey="isActivityUnavailable"
-                              :mobileThreshold="767"
-                              selectedClass="is-selected">
-                    <template #placeholder>
-                        <p class="text-muted">Tap here to select an activity</p>
-                    </template>
-                    <template #default="{ item }">
-                        <div class="activity-item-content">
-                            <span class="activity-item-icon icon-stack-container fa-stack">
-                                <i :class="activityIconStackClasses(item)"></i>
-                                <i class="icon fa-stack-1x" :class="item.activityBag?.activityComponent?.iconCssClass"></i>
-                            </span>
+                <div class="empty-activities-container" v-if="activities.length === 0">
 
-                            <div class="activity-item-details">
-                                <h5>{{ item?.activityBag?.name }}</h5>
-                                <div class="activity-item-time" >
-                                    <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
-                                    <div v-if="item.facilitatorComment" class="label label-default"><i class="fa fa-comment"></i> Comments</div>
+                </div>
+                <template v-if="activities.length > 0">
+                    <CustomSelect
+                                  v-model="viewingCompletionBag"
+                                  :items="activities"
+                                  wrapperClass="workspace-navigation-pane"
+                                  itemKey="learningClassActivityIdKey"
+                                  :itemClass="getActivityContainerClasses"
+                                  :disabledKey="isActivityUnavailable"
+                                  :mobileThreshold="767"
+                                  selectedClass="is-selected">
+                        <template #placeholder>
+                            <p class="text-muted">Tap here to select an activity</p>
+                        </template>
+
+                        <template #default="{ item }">
+                            <div class="activity-item-content"
+                                 :ref="(el) => addTooltip(el as Element)"
+                                 data-toggle="tooltip"
+                                 data-placement="auto"
+                                 data-container="body"
+                                 :data-original-title="getActivityTooltip(item)">
+                                <div class="activity-item-completion-container">
+                                    <i v-if="isCompleted(item)" class="fa fa-check-circle fa-2x text-success"></i>
+                                    <i v-if="!isCompleted(item)" class="fa fa-circle-o fa-2x is-incomplete"></i>
+                                </div>
+                                <div class="activity-item-detail-container">
+                                    <h5 class="activity-name">{{ item?.classActivityBag?.name }}</h5>
+                                    <div class="activity-item-time">
+                                        <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
+                                    </div>
+                                    <div class="activity-label-container" v-html="getActivityLabel(item)">
+                                    </div>
+                                </div>
+                                <div class="activity-item-grade-container">
+                                    <div class="activity-item-grade-content">
+                                        <span v-if="isCompleted(item) && !item.requiresScoring" class="badge badge-grade" :style="getGradeBageStyles(item)">
+                                            {{ getBadgeText(item) }}
+                                        </span>
+                                    </div>
                                 </div>
                             </div>
+                        </template>
+                    </CustomSelect>
+
+                    <div class="workspace-main-content">
+                        <div v-if="showCompletedScreen"
+                             class="course-completed-content">
+                            <div>
+                                <i class="fa fa-check-circle fa-5x text-success"></i>
+                            </div>
+
+                            <h2>Congratulations {{ currentPersonNickName }}!</h2>
+                            <p>You've successfully completed {{ config.courseName }}.</p>
                         </div>
 
-                        <div class="activity-item-status text-right">
-                            <span v-if="isCompleted(item)" class="badge badge-grade" :style="getGradeBageStyles(item)">
-                                {{ getBadgeText(item) }}
-                            </span>
-                        </div>
-                    </template>
-                </CustomSelect>
-                <div class="workspace-main-content">
-                    <h1 class="mt-0">
-                        {{ viewingCompletionBag.activityBag?.name ?? "" }}
-                    </h1>
-                    <div class="activity-time">
-                        {{ getActivityTimeText(viewingCompletionBag) }}
+                        <template v-else>
+                            <div class="workspace-main-content-header">
+                                <h3 class="workspace-main-content-title">
+                                    {{ viewingCompletionBag.classActivityBag?.name ?? "" }}
+                                </h3>
+                                <div class="activity-time">
+                                    {{ getActivityTimeText(viewingCompletionBag) }}
+                                </div>
+                            </div>
+
+                            <div class="facilitator-comments-container" v-if="viewingCompletionBag.facilitatorComment">
+                                <NotificationBox alertType="info">
+                                    <div class="facilitator-comment-label">
+                                        Facilitator Comment:
+                                    </div>
+                                    <div class="facilitator-comment-text">
+                                        {{ viewingCompletionBag.facilitatorComment }}
+                                    </div>
+                                </NotificationBox>
+
+                            </div>
+
+                            <activityTypeComponent v-else
+                                                   :activityBag="viewingCompletionBag.classActivityBag"
+                                                   :completionBag="viewingCompletionBag"
+                                                   :screenToShow="screenToShow"
+                                                   @commentChanged="onCommentChanged"
+                                                   @completionValuesChanged="onCompletionValuesChanged"
+                                                   @closed="onClosed"
+                                                   @completed="onCompleted" />
+                        </template>
                     </div>
-                    <activityTypeComponent
-                                           v-model:activityBag="viewingCompletionBag.activityBag"
-                                           v-model:completionBag="viewingCompletionBag"
-                                           :screenToShow="screenToShow"
-                                           @closed="onClosed"
-                                           @completed="onCompleted" />
-                </div>
+
+                </template>
             </div>
         </div>
     </div>
 </template>
-<style>
-/* Workspace Tabbar */
-.workspace-tab-bar {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: var(--spacing-large);
-    align-items: center;
-}
-
-/* Workspace Class Overview */
-.workspace-class-sidebar .section {
-    margin: var(--spacing-large) 0;
-    padding: var(--spacing-medium);
-}
-
-.notification-section,
-.announcment-section {
-    margin-bottom: var(--spacing-large);
-}
-
-.notification-section .title,
-.announcment-section .title {
-    margin-bottom: var(--spacing-medium);
-    margin-top: 0;
-}
-
-.notification-title,
-.announcement-title {
-    margin: var(--spacing-tiny) 0;
-}
-
-/* Workspace Activities */
-@media (min-width: 768px) {
-    .workspace-block-content {
-        display: flex;
-    }
-
-    .workspace-navigation-pane {
-        width: 33%;
-        min-width: 300px;
-        margin-right: var(--spacing-xlarge);
-        align-self: baseline;
-    }
-
-    .workspace-main-content {
-        width: 67%;
-    }
-}
-
-/* Activity List */
-.custom-select-item-content {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-}
-
-.activity-item-content {
-    display: flex;
-    align-items: center;
-}
-
-.activity-item-content .activity-item-icon {
-    margin-right: var(--spacing-xsmall);
-}
-
-.activity-item-content h5 {
-    margin: 0;
-}
-
-.activity-item-content .activity-item-icon .icon {
-    color: #fff;
-}
-
-.custom-select-mobile-wrapper {
-    margin-bottom: var(--spacing-large);
-    /* add spacing below the activity selector on mobile */
-}
-
-.available {
-    background-color: var(--color-interface-softer);
-}
-
-.not-available {
-    background-color: var(--color-interface-softer);
-}
-
-.is-completed {
-    background-color: var(--color-interface-softer);
-}
-
-.is-selected {
-    background-color: var(--color-interface-soft);
-}
-</style>
 
 <script setup lang="ts">
     import { Component, computed, defineAsyncComponent, nextTick, onMounted, ref, toValue, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import ProgressBar from "@Obsidian/Controls/progressBar.obs";
     import CustomSelect from "@Obsidian/Controls/customSelect.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
-    import { LearningActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningActivityCompletionDetail/learningActivityCompletionBag";
+    import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
     import { PublicLearningClassWorkspaceBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceBox";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
+    import { CompletionExtraValues, ComponentScreen } from "@Obsidian/Controls/Internal/LearningActivity/learningActivity";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { NavigationUrlKey } from "./PublicLearningClassWorkspace/types.partial";
     import { AvailabilityCriteria } from "@Obsidian/Enums/Lms/availabilityCriteria";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
     onConfigurationValuesChanged(useReloadBlock());
 
     // #region Values
@@ -297,21 +308,15 @@
     const backButtonClicked = ref(false);
     const headerHtml = config.headerHtml ?? "";
     const screenToShow = ref(ComponentScreen.Completion);
+    const showCompletedScreen = ref(false);
 
     /** The promise source for the completed event handler.
      *  Ensures the onClosed event handler waits for the onCompleted. */
     let completedPromiseSource = new PromiseCompletionSource<void>();
 
-    const params = new URLSearchParams(window.location.search);
-    const selectedActivityIdKey = params.get("activity") ?? "";
+    const activities = ref<LearningClassActivityCompletionBag[]>(config.activities ?? []);
 
-    const activities = ref<LearningActivityCompletionBag[]>(config.activities ?? []);
-
-    const viewingCompletionBag = ref((
-        selectedActivityIdKey.length > 0 ?
-            activities.value?.find(a => a.learningActivityIdKey === selectedActivityIdKey && a.isAvailable) :
-            activities.value?.find(a => a.isAvailable)
-    ) ?? {} as LearningActivityCompletionBag);
+    const viewingCompletionBag = ref(getInitialActivitySelection());
 
     const announcements = ref(config.announcements ?? []);
     const isAcademicCalendarMode = ref(config.programConfigurationMode === ConfigurationMode.AcademicCalendar);
@@ -319,14 +324,18 @@
     const isFacilitator = ref(config.isCurrentPersonFacilitator ?? false);
     const facilitatorPortalUrl = ref(config.navigationUrls?.[NavigationUrlKey.FacilitatorPortalPage] ?? "");
     const facilitators = ref(config.facilitators ?? []);
-    const notificationsToShow = ref(config.numberOfNotificationsToShow);
-    const notifications = ref(config.notifications?.filter((_, i) => i < notificationsToShow.value) ?? []);
+
+    const maxOverviewItemsToShow = ref(config.numberOfNotificationsToShow);
+    const isViewingAllAnnouncements = ref(false);
+    const isViewingAllNotifications = ref(false);
+    const notifications = ref(config.notifications ?? []);
     const showGrades = ref(config.showGrades);
     const currentGrade = ref(config.currentGrade);
+    const enableAnnouncements = ref(config.enableAnnouncements);
 
     const overviewTab = ref("Class Overview");
     const activitiesTab = ref("Activities / Assignments");
-    const contentTabs = ref(config.contentPages ?? []);
+    const contentTabs = ref((config.contentPages ?? []).filter(c => (c.content ?? "").length > 0));
 
     const activityTypeComponent = ref<Component | null>(null);
 
@@ -334,20 +343,70 @@
 
     // #region Computed Values
 
+    /** The container classes used for the Show All/Show Less button (announcements). */
+    const announcementOverflowContainerClass = computed(() => isViewingAllAnnouncements.value === true ? "show-less" : "show-all");
+
+    /** The icon class to use for the announcements overflow toggle button. */
+    const announcementsOverflowIconClass = computed(() => isViewingAllAnnouncements.value === true ? "fa fa-chevron-up" : "fa fa-chevron-down");
+
+    /** The text to display for the announcements overflow toggle button. */
+    const announcementsOverflowText = computed(() => isViewingAllAnnouncements.value === true ? "Show Less" : "Show All");
+
     /** An array of completed activities. */
-    const completedActivitiesCount = computed(() => activities.value.filter(a => !!a.completedDate).length);
+    const completedActivitiesCount = computed(() => activities.value.filter(a => isCompleted(a)).length);
 
     /** The activityComponent.componentUrl from the ActivityBag or an empty string. */
-    const componentUrl = computed(() => viewingCompletionBag.value?.activityBag?.activityComponent?.componentUrl ?? "");
+    const componentUrl = computed(() => viewingCompletionBag.value?.classActivityBag?.activityComponent?.componentUrl ?? "");
+
+    const currentGradeLabel = computed(() => isClassCompletedAndGraded.value === true ? "Final Grade" : "Current Grade");
 
     /** The properly pluralized text for the Facilitator(s). */
     const facilitatorsLabel = computed(() => facilitators.value.length > 1 ? "Facilitators" : "Facilitator");
+
+    /** Whether there are any announcements. */
+    const hasAnnouncements = computed(() => announcements.value.length > 0);
+
+    /** Whether there are more announcements than are configured to be shown by default. */
+    const hasAnnouncementOverflow = computed(() => announcements.value.length > maxOverviewItemsToShow.value);
+
+    /** True if the student has completed an activity and that activity doesn't require scoring. */
+    const hasGradedActivities = computed(() => activities.value.some(a => isCompleted(a) && !a.requiresScoring && Number(a.classActivityBag?.points) > 0));
+
+    /** Whether there are any notifications. */
+    const hasNotifications = computed(() => notifications.value.length > 0);
+
+    /** Whether there are more notifications than are configured to be shown by default. */
+    const hasNotificationsOverflow = computed(() => notifications.value.length > maxOverviewItemsToShow.value);
+
+    /** Whether there are any activities not yet completed by the student or facilitator. */
+    const hasIncompleteActivities = computed(() => activities.value.some(a => !isCompleted(a)));
+
+    /** Considered complete if there are no activities that are incomplete or require scoring */
+    const isClassCompletedAndGraded = computed(() => !activities.value.some(a => !isCompleted(a) || a.requiresScoring));
+
+    /** The container classes used for the Show All/Show Less button (notifications). */
+    const notificationsOverflowContainerClass = computed(() => isViewingAllNotifications.value === true ? "show-less" : "show-all");
+
+    /** The icon class to use for the notifications overflow toggle button. */
+    const notificationsOverflowIconClass = computed(() => isViewingAllNotifications.value === true ? "fa fa-chevron-up" : "fa fa-chevron-down");
+
+    /** The text to display for the notifications overflow toggle button. */
+    const notificationsOverflowText = computed(() => isViewingAllNotifications.value === true ? "Show Less" : "Show All");
 
     /** The percentage (0 - 100) of completed activities. */
     const percentComplete = computed(() => activities.value.length > 0 ? (completedActivitiesCount.value / activities.value.length * 100) : 0);
 
     /** The name of the currently selected content tab (or null). */
     const selectedContentTab = computed(() => contentTabs.value.find(t => t.title?.toLowerCase() === selectedTab.value?.toLowerCase()));
+
+    const classCompletionDate = ref(RockDateTime.parseISO(config.classCompletionDate ?? ""));
+
+    /** The completion text to show when the class has been completed by the student. */
+    const studentCompletionText = computed(() =>
+        classCompletionDate.value != null ?
+            `You completed this class on ${classCompletionDate.value?.toASPString("d")}` :
+            ""
+    );
 
     /** The list of all tab names (overview, activities and all content pages). */
     const tabs = computed(() =>
@@ -356,45 +415,105 @@
                 .filter(t => t.length > 0))
     );
 
+    const currentPersonNickName = computed((): string => {
+        return store.state.currentPerson?.nickName ?? "";
+    });
+
     // #endregion
 
     // #region Functions
+
+    /**
+     * Gets the initial activity selection based on the query string or the
+     * calculated activity based on various criteria.
+     *
+     * @returns The initial activity to be selected.
+     */
+    function getInitialActivitySelection(): LearningClassActivityCompletionBag {
+        const params = new URLSearchParams(window.location.search);
+
+        // First see if everything is completed, if so show the completed screen.
+        if (activities.value.every(a => a.completedDate)) {
+            showCompletedScreen.value = true;
+            return {} as LearningClassActivityCompletionBag;
+        }
+
+        // If they have a selected activity in the query string, use that.
+        if (params.get("activity")) {
+            const paramActivity = activities.value.find(a => a.learningClassActivityIdKey === params.get("activity") && a.isAvailable && !a.completedDate);
+
+            if (paramActivity) {
+                return paramActivity;
+            }
+        }
+
+        // Nothing from the query string, or it wasn't found, so look for the
+        // first available activity.
+        const nextActivity = activities.value.find(a => a.isAvailable && !a.completedDate);
+
+        if (nextActivity) {
+            return nextActivity;
+        }
+
+        // If there are no available activities, look for the last activity
+        // that was completed.
+        const lastCompletedActivity = [...activities.value].reverse().find(a => a.completedDate);
+
+        if (lastCompletedActivity) {
+            return lastCompletedActivity;
+        }
+
+        return {} as LearningClassActivityCompletionBag;
+    }
+
+    /**
+     * Gets css classes for the index position in an array: index-#, is-first, is-last.
+     * Using classes rather than :not() selectors increases browser
+     * @param index the current index in the array.
+     * @param arraySize The total length of the array.
+     */
+    function getRowCssClass(index: number, arraySize: number): string[] {
+        return [
+            `index-${index}`,
+            index === 0 ? "is-first" : "not-first",
+            index === arraySize - 1 ? "is-last" : "not-last"
+        ];
+    }
 
     function isCompleted(activity): boolean {
         return activity.isStudentCompleted || activity.isFacilitatorCompleted;
     }
 
-    function getBadgeText(activity: LearningActivityCompletionBag): string | undefined {
+    function getBadgeText(activity: LearningClassActivityCompletionBag): string | undefined {
         if (isCompleted(activity) && activity.gradeName) {
             return activity.gradeName;
         }
     }
 
-    function getGradeBageStyles(activity: LearningActivityCompletionBag): string | undefined {
+    function getGradeBageStyles(activity: LearningClassActivityCompletionBag): string | undefined {
         if (!activity.gradeColor) {
             return;
         }
 
-        const pair = RockColor.calculateColorPair(new RockColor(activity.gradeColor as string));
-        const backgroundColor = pair.backgroundColor.toRgba();
-        const foreColor = pair.foregroundColor.toRgba();
+        const backgroundColor = new RockColor(activity.gradeColor as string).toRgba();
+        const foreColor = new RockColor("#292828B0").toRgba();
 
         if (isCompleted(activity) && activity.gradeName) {
             return `background-color: ${backgroundColor}; color: ${foreColor};`;
         }
     }
 
-    function isDueSoonAndIncomplete(activity: LearningActivityCompletionBag): boolean {
+    function isDueSoonAndIncomplete(activity: LearningClassActivityCompletionBag): boolean {
         return !isCompleted(activity) && (activity.isDueSoon || activity.isLate);
     }
 
     /** The CSS classes to apply to the activity container. */
-    function getActivityContainerClasses(activity: LearningActivityCompletionBag): string {
+    function getActivityContainerClasses(activity: LearningClassActivityCompletionBag): string {
         const classes = activity.isAvailable === true ? ["available"] : ["not-available"];
 
         classes.push("activity-navigation-item-container");
 
-        if (activity.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey) {
+        if (activity.learningClassActivityIdKey === viewingCompletionBag.value.learningClassActivityIdKey) {
             classes.push("is-selected");
         }
 
@@ -403,6 +522,13 @@
         }
 
         return classes.join(" ");
+    }
+
+    /** Add the tooltip for the activity disabled help text. */
+    function addTooltip(element: Element | null): void {
+        if (element) {
+            tooltip(element);
+        }
     }
 
     function showFacilitators(): boolean {
@@ -414,58 +540,120 @@
     }
 
     /** Classes to apply to the activity icon stack. */
-    function activityIconStackClasses(activity: LearningActivityCompletionBag): string[] {
-        const completionStatusClass = isCompleted(activity) ? "text-success" : "text-muted";
-        return ["fa", "fa-circle", "fa-stack-2x", completionStatusClass];
-    }
+    function getActivityLabel(activity: LearningClassActivityCompletionBag): string {
+        // Needs Grading, Comment Available, Late, Due Today
+        if (activity.requiresScoring) {
+            return "<span class='label label-info'>Needs Grading</span>";
+        }
+        else if (activity.facilitatorComment) {
+            return "<span class='label label-default'>Comment Available</span>";
+        }
+        else if (activity.isLate) {
+            return "<span class='label label-danger'>Late</span>";
+        }
+        else if (activity.isDueSoon) {
+            const dueDate = RockDateTime.parseISO(activity.dueDate ?? "");
 
-    /** Gets the text for the activity's relevant time (e.g. completed when, due when etc.). */
-    function getActivityTimeText(activity: LearningActivityCompletionBag): string {
-        if (isCompleted(activity)) {
-            return `Completed: ${getElapsedTime(activity.completedDate?.toString() ?? "")}`;
-        }
-        else if (activity.isDueSoon || activity.isLate) {
-            return `Due: ${getElapsedTime(activity.dueDate?.toString() ?? "")}`;
-        }
-        else if (!activity.isAvailable) {
-            return activity.availableDate == null ?
-                "Prerequisite Step Not Met" :
-                `Available: ${getElapsedTime(activity.availableDate?.toString() ?? "")}`;
+            const today = RockDateTime.now().date;
+            if (dueDate?.date.isEqualTo(today)) {
+                return "<span class='label label-success'>Due Today</span>";
+            }
         }
 
         return "";
     }
 
+    /** Gets the text for the activity's relevant time (e.g. completed when, due when etc.). */
+    function getActivityTimeText(activity: LearningClassActivityCompletionBag): string {
+        if (isCompleted(activity) && activity.completedDate) {
+            return `Completed: ${getElapsedTime(activity.completedDate?.toString() ?? "")} `;
+        }
+        else if (activity.isDueSoon || activity.isLate) {
+            return `Due: ${getElapsedTime(activity.dueDate?.toString() ?? "")} `;
+        }
+
+        return "";
+    }
+
+    function getActivityTooltip(activity: LearningClassActivityCompletionBag): string {
+        if (activity.isAvailable) {
+            return "";
+        }
+
+        const date = RockDateTime.parseISO(activity.availableDate ?? "");
+        return activity.availableDate ?
+            `This activity is scheduled to be available on ${date?.toASPString("d")}` :
+            "Activity is unavailable until you complete prerequisite activities.";
+    }
+
     /** The function that formats the date for display. */
-    function formattedDate(date: string | null | undefined): string {
-        return RockDateTime.parseISO(date ?? "")?.localDateTime?.toASPString("MMMM d, yyyy") ?? "";
+    function getFormattedDate(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.localDateTime?.toASPString("d") ?? "";
     }
 
     /** The time elapsed since the specified date in a human-readable format. */
-    function getElapsedTime(date: string): string {
-        return RockDateTime.parseISO(date)?.localDateTime.toElapsedString() ?? "";
+    function getElapsedTime(date: string | null | undefined): string {
+        return RockDateTime.parseISO(date ?? "")?.localDateTime.toElapsedString() ?? "";
     }
 
-    function isActivityUnavailable(activity: LearningActivityCompletionBag | null): boolean {
-        return !activity?.isAvailable;
+    function isActivityUnavailable(activity: LearningClassActivityCompletionBag | null): boolean {
+        return activity?.isAvailable !== true;
     }
 
     // #endregion
 
     // #region Event Handlers
 
+    function onCommentChanged(comment: string): void {
+        const newValue = { ...viewingCompletionBag.value };
+
+        newValue.studentComment = comment;
+
+        viewingCompletionBag.value = newValue;
+    }
+
+    function onCompletionValuesChanged(values: Record<string, string>, extra?: CompletionExtraValues): void {
+        const newValue = { ...viewingCompletionBag.value };
+
+        newValue.completionValues = values;
+
+        if (extra) {
+            // We don't allow student to update points earned, so we don't check
+            // the pointsEarned value.
+
+            if (extra.binaryFile !== undefined) {
+                newValue.binaryFile = extra.binaryFile;
+            }
+        }
+
+        viewingCompletionBag.value = newValue;
+    }
+
     /**
      * Called when the activity component's closed emit is fired. Because completed
-     *  and closed may be called together - this event handler awaits the resolution
-     * of the completedPromiseSource.
+     * and closed may be called together - this event handler awaits the resolution
+     * of the completedPromiseSource (if the activity is not yet completed).
      */
     async function onClosed(): Promise<void> {
-        await completedPromiseSource.promise;
+        if (!isCompleted(viewingCompletionBag.value)) {
+            await completedPromiseSource.promise;
+        }
 
-        const currentIndex = activities.value.findIndex(a => a.learningActivityIdKey === viewingCompletionBag.value.learningActivityIdKey);
-        const nextAvailableActivity = activities.value?.find((a, i) => i > currentIndex && a.isAvailable && !isCompleted(a));
+        const currentIndex = activities.value.findIndex(a => a.learningClassActivityIdKey === viewingCompletionBag.value.learningClassActivityIdKey);
+        let nextAvailableActivity = activities.value
+            ?.find((a, i) => i > currentIndex && a.isAvailable && !a.completedDate);
+
+        // If there was no available activity after our index look for one before it (starting at the beginning).
+        if (!nextAvailableActivity) {
+            nextAvailableActivity = activities.value
+                ?.find((a, i) => i < currentIndex && a.isAvailable && !a.completedDate);
+        }
+
         if (nextAvailableActivity) {
             viewingCompletionBag.value = nextAvailableActivity;
+        }
+        else if (activities.value.every(a => a.completedDate)) {
+            showCompletedScreen.value = true;
         }
     }
 
@@ -482,20 +670,20 @@
         completedPromiseSource = new PromiseCompletionSource<void>();
 
         if (wasSuccessful) {
-            var result = await invokeBlockAction<LearningActivityCompletionBag>("CompleteActivity", {
+            var result = await invokeBlockAction<LearningClassActivityCompletionBag>("CompleteActivity", {
                 activityCompletionBag: viewingCompletionBag.value
             });
 
             if (result.statusCode === 200 && result.data) {
                 // If the result was successful, update the activity with the new values.
-                const index = activities.value?.findIndex(a => a.learningActivityIdKey === result.data?.learningActivityIdKey) ?? -1;
+                const index = activities.value?.findIndex(a => a.learningClassActivityIdKey === result.data?.learningClassActivityIdKey) ?? -1;
 
                 if (activities.value && index >= 0) {
                     activities.value[index] = result.data;
 
                     // Only set the viewing completion bag to the returned data if it matches.
                     // It's possible the another available activity was selected between submission and response.
-                    if (viewingCompletionBag.value.learningActivityIdKey === result.data.learningActivityIdKey) {
+                    if (viewingCompletionBag.value.learningClassActivityIdKey === result.data.learningClassActivityIdKey) {
                         viewingCompletionBag.value = result.data;
                     }
 
@@ -505,7 +693,7 @@
                     const hasNextActivity = nextActivityIndex < activities.value?.length;
                     const nextActivity = hasNextActivity ? activities.value[nextActivityIndex] : null;
 
-                    if (nextActivity != null && nextActivity.activityBag?.availabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
+                    if (nextActivity != null && nextActivity.classActivityBag?.availabilityCriteria === AvailabilityCriteria.AfterPreviousCompleted) {
                         nextActivity.availableDate = result.data.completedDate;
                         nextActivity.isAvailable = true;
                     }
@@ -513,6 +701,11 @@
 
                 // Reload the activity component.
                 activityTypeComponent.value = defineAsyncComponent(async () => await import(componentUrl.value));
+
+                // If this was the last incomplete activity set the classCompletionDate.
+                if (!hasIncompleteActivities.value && !classCompletionDate.value) {
+                    classCompletionDate.value = RockDateTime.now();
+                }
 
                 completedPromiseSource.resolve();
                 return true;
@@ -547,14 +740,14 @@
      * activityType component are in-sync.
      */
     watch(viewingCompletionBag, (cur, prev) => {
-        const previousIdKey = toValue(prev)?.learningActivityIdKey;
-        const currentIdKey = toValue(cur)?.learningActivityIdKey;
+        const previousIdKey = toValue(prev)?.learningClassActivityIdKey;
+        const currentIdKey = toValue(cur)?.learningClassActivityIdKey;
 
         if (previousIdKey === currentIdKey) {
             return;
         }
 
-        const previousSelectedIndex = activities.value.findIndex(a => a.learningActivityIdKey === previousIdKey);
+        const previousSelectedIndex = activities.value.findIndex(a => a.learningClassActivityIdKey === previousIdKey);
 
         // Update the current selection before moving to the new selection.
         // This ensures that any work completed by the student isn't lost when clicking to another task.
@@ -570,6 +763,8 @@
             queryParams.set("activity", currentIdKey ?? "");
             history.pushState(null, "", "?" + queryParams.toString());
         }
+
+        showCompletedScreen.value = false;
     });
 
     // Handle any initial error conditions or the need to go into edit mode.
@@ -605,7 +800,7 @@
         }
 
         if (idKey) {
-            const newActivitySelection = activities.value.find(a => a.learningActivityIdKey === idKey);
+            const newActivitySelection = activities.value.find(a => a.learningClassActivityIdKey === idKey);
 
             if (newActivitySelection) {
                 viewingCompletionBag.value = newActivitySelection;
@@ -614,4 +809,5 @@
 
         void nextTick(() => backButtonClicked.value = false);
     });
+
 </script>

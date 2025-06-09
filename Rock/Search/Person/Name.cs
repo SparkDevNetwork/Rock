@@ -74,6 +74,11 @@ namespace Rock.Search.Person
         /// <inheritdoc/>
         public override IOrderedQueryable<object> SearchQuery( string searchTerm )
         {
+            if ( searchTerm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<object>().AsQueryable().OrderBy( _ => true );
+            }
+
             bool allowFirstNameSearch = GetAttributeValue( "FirstNameSearch" ).AsBooleanOrNull() ?? false;
 
             return new PersonService( new RockContext() )
@@ -87,6 +92,11 @@ namespace Rock.Search.Person
         /// <returns></returns>
         public override IQueryable<string> Search( string searchterm )
         {
+            if ( searchterm.IsSingleSpecialCharacter() )
+            {
+                return Enumerable.Empty<string>().AsQueryable();
+            }
+
             bool allowFirstNameSearch = GetAttributeValue( "FirstNameSearch" ).AsBooleanOrNull() ?? false;
 
             bool reversed = false;

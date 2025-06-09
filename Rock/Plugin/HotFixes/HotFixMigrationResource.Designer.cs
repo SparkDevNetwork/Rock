@@ -434,7 +434,8 @@ namespace Rock.Plugin.HotFixes {
         ///    BEGIN
         ///	
         ///	    -- configuration of the duration in weeks
-        ///	    DECLARE @GivingDurationLongWeeks int = 52        /// [rest of string was truncated]&quot;;.
+        ///	    DECLARE @GivingDurationLongWeeks int = 52
+        /// [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _052_MigrationRollupsForV8_1_spCrm_FamilyAnalyticsGiving {
             get {
@@ -867,7 +868,7 @@ namespace Rock.Plugin.HotFixes {
                 return ResourceManager.GetString("_167_FixGoogleStaticMapShortcodeFluid_updateGoogleStaticMap", resourceCulture);
             }
         }
-
+        
         /// <summary>
         ///   Looks up a localized string similar to ALTER PROCEDURE[dbo].[spCheckin_BadgeAttendance]
         ///                  @PersonId int
@@ -879,8 +880,7 @@ namespace Rock.Plugin.HotFixes {
         ///              BEGIN
         ///                  DECLARE @cROLE_ADULT uniqueidentifier = &apos;2639F9A5-2AAE-4E48-A8C3-4FFE86681E42&apos;
         ///              
-        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429CB9&apos;
-        ///      [rest of string was truncated]&quot;;.
+        ///                  DECLARE @cROLE_CHILD uniqueidentifier = &apos;C8B1814F-6AA7-4055-B2D7-48FE20429 [rest of string was truncated]&quot;;.
         /// </summary>
         public static string _177_AddAdultAttendanceTypeAttributeToFamilyAttendanceBadge {
             get {
@@ -889,12 +889,90 @@ namespace Rock.Plugin.HotFixes {
         }
         
         /// <summary>
-        ///   Looks up a localized resource of type System.Drawing.Bitmap.
+        ///   Looks up a localized resource of type System.Byte[].
         /// </summary>
-        public static System.Drawing.Bitmap _216_open_bible_on_notebook {
+        public static byte[] _216_open_bible_on_notebook_jpg {
             get {
-                object obj = ResourceManager.GetObject("_216_open_bible_on_notebook", resourceCulture);
-                return ((System.Drawing.Bitmap)(obj));
+                object obj = ResourceManager.GetObject("_216_open_bible_on_notebook_jpg", resourceCulture);
+                return ((byte[])(obj));
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure updates the peer network for an individual&apos;s following.
+        ///    &lt;/summary&gt;
+        ///    &lt;remarks&gt;
+        ///        FOLLOWING PEER NETWORK NOTES
+        ///        1.  Any already-existing peer network connections will be updated with a current timestamp.
+        ///        2.  Any missing connections will be added.
+        ///        3.  A static relationship score of 5 will be enforced for all such connections.
+        ///        4.  Any no-longer-matching connections will be deleted (if an individual is no l [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing {
+            get {
+                return ResourceManager.GetString("_221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure updates the peer network for groups.
+        ///    &lt;/summary&gt;
+        ///    &lt;remarks&gt;
+        ///        GROUP PEER NETWORK NOTES
+        ///        1.  The group processing will have 3 phases:
+        ///            a. Update the peer network connections in the PeerNetwork table.
+        ///            b. Recalc the relationship score for each connection with logic for time adjusting. We need to do this as a
+        ///               separate step as some of the individuals who previously had peer connections are no l [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections {
+            get {
+                return ResourceManager.GetString("_221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///    &lt;summary&gt;
+        ///        This stored procedure updates the peer network for groups.
+        ///    &lt;/summary&gt;
+        ///    &lt;remarks&gt;
+        ///        GROUP PEER NETWORK NOTES
+        ///        1.  The group processing will have 3 phases:
+        ///            a. Update the peer network connections in the PeerNetwork table.
+        ///            b. Recalc the relationship score for each connection with logic for time adjusting. We need to do this as a
+        ///               separate step as some of the individuals who previously had peer connections are no l [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections {
+            get {
+                return ResourceManager.GetString("_225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This procedure takes a communication list (group) or communication and returns all of the
+        ///		recipients along with the data needed to determine if the individual can recieve an email,
+        ///		sms or push notification.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		All of the fields needed to drive the communication wizard.
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;ListId&apos; datatype=&apos;int&apos;&gt;The group id of the communication list or the communication id.&lt;/param&gt;
+        ///	&lt;param name=&apos;ListType&apos; datatype=&apos;int&apos;&gt;1 = Communicati [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails {
+            get {
+                return ResourceManager.GetString("_250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails", resourceCulture);
             }
         }
     }

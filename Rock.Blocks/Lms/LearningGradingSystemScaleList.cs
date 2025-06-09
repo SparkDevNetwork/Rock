@@ -105,9 +105,7 @@ namespace Rock.Blocks.Lms
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            var entity = new LearningGradingSystemScale();
-
-            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -146,7 +144,6 @@ namespace Rock.Blocks.Lms
                 .AddTextField( "description", a => a.Description )
                 .AddField( "thresholdPercentage", a => a.ThresholdPercentage )
                 .AddField( "isPassing", a => a.IsPassing )
-                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );
         }
 
@@ -196,9 +193,9 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"{LearningGradingSystemScale.FriendlyTypeName} not found." );
             }
 
-            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete ${LearningGradingSystemScale.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {LearningGradingSystemScale.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

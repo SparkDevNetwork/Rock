@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class StepStatus
@@ -42,5 +44,12 @@ namespace Rock.Model
                 return "#f3f3f3";
             }
         }
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => StepProgram ?? base.ParentAuthority;
+
+        #endregion
     }
 }

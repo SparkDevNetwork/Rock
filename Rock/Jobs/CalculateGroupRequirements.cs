@@ -142,8 +142,8 @@ namespace Rock.Jobs
                             qryGroupMemberRequirementsAlreadyOK = qryGroupMemberRequirementsAlreadyOK.Where( a => a.RequirementMetDateTime.HasValue );
                         }
 
-                        // Only run the group requirements calculation on group members that are not inactive.
-                        var groupMemberQry = groupMemberService.Queryable().Where( gm => gm.GroupMemberStatus != GroupMemberStatus.Inactive );
+                        // Only run the group requirements calculation on group members that are not inactive or archived.
+                        var groupMemberQry = groupMemberService.Queryable().Where( gm => gm.GroupMemberStatus != GroupMemberStatus.Inactive && !gm.IsArchived );
 
                         if ( groupRequirement.GroupId.HasValue )
                         {

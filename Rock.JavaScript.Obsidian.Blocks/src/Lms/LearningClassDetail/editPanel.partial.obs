@@ -5,6 +5,7 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
+                         :maxLength="100"
                          rules="required" />
 
             </div>
@@ -64,6 +65,18 @@
                 <CampusPicker v-model="campus" label="Campus" forceVisible showBlankItem />
             </div>
         </div>
+
+        <Panel title="Advanced Settings" :hasCollapse="true" class="mt-4">
+            <div class="row">
+                <div class="col-md-6">
+                    <NumberBox v-model="groupCapacity"
+                               :minimumValue="0"
+                               label="Maximum Students (Override)"
+                               help="The maximum number of students this class can have."
+                               inputClasses="input-width-md" />
+                </div>
+            </div>
+        </Panel>
     </fieldset>
 </template>
 
@@ -71,6 +84,8 @@
     import { computed, PropType, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import LocationPicker from "@Obsidian/Controls/locationPicker.obs";
     import { LocationPickerMode, LocationPickerModeFlag } from "@Obsidian/Enums/Controls/locationPickerMode";
@@ -83,6 +98,7 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AddressControlBag } from "@Obsidian/ViewModels/Controls/addressControlBag";
     import numberUtils from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
@@ -111,14 +127,34 @@
     const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
     const isPublic = propertyRef(props.modelValue.bag?.isPublic ?? false, "IsPublic");
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const groupCapacity = propertyRef(props.modelValue.bag?.groupCapacity, "GroupCapacity");
     const semester = propertyRef(props.modelValue.bag?.semester?.value ?? "", "Semester");
     const schedule = propertyRef(props.modelValue.bag?.schedule, "Schedule");
-    const location = propertyRef<ListItemBag | undefined>(props.modelValue.bag?.location ?? undefined, "Location");
+    const locationBag = propertyRef(props.modelValue.bag?.location ?? undefined, "Location");
     const campus = propertyRef(props.modelValue.bag?.campus, "Campus");
     const gradingSystem = propertyRef(props.modelValue.bag?.gradingSystem?.value ?? "", "GradingSystem");
 
     const semesters = props.options.semesters ?? [];
     const gradingSystems = props.options.gradingSystems ?? [];
+
+    const location = computed<ListItemBag | AddressControlBag | undefined>({
+        get: () => locationBag.value?.namedLocation ?? locationBag.value?.address ?? undefined,
+        set: (newValue) => {
+            if (newValue && "value" in newValue) {
+                locationBag.value = {
+                    namedLocation: newValue
+                };
+            }
+            else if (newValue && "street1" in newValue) {
+                locationBag.value = {
+                    address: newValue
+                };
+            }
+            else {
+                locationBag.value = undefined;
+            }
+        }
+    });
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
@@ -127,9 +163,10 @@
         , isActive
         , isPublic
         , description
+        , groupCapacity
         , semester
         , schedule
-        , location
+        , locationBag
         , campus
         , gradingSystem
     ];
@@ -162,9 +199,10 @@
         updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
         updateRefValue(isPublic, props.modelValue.bag?.isPublic ?? false);
         updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(groupCapacity, props.modelValue.bag?.groupCapacity);
         updateRefValue(semester, props.modelValue.bag?.semester?.value ?? "");
         updateRefValue(schedule, props.modelValue.bag?.schedule ?? {});
-        updateRefValue(location, props.modelValue.bag?.location ?? undefined);
+        updateRefValue(locationBag, props.modelValue.bag?.location ?? undefined);
         updateRefValue(campus, props.modelValue.bag?.campus ?? {});
         updateRefValue(gradingSystem, props.modelValue.bag?.gradingSystem?.value ?? "");
     });
@@ -180,9 +218,10 @@
         setPropertiesBoxValue(newValue, "isActive", isActive.value);
         setPropertiesBoxValue(newValue, "isPublic", isPublic.value);
         setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "groupCapacity", groupCapacity.value);
         setPropertiesBoxValue(newValue, "semester", { value: semester.value });
         setPropertiesBoxValue(newValue, "schedule", schedule.value);
-        setPropertiesBoxValue(newValue, "location", location.value);
+        setPropertiesBoxValue(newValue, "location", locationBag.value);
         setPropertiesBoxValue(newValue, "campus", campus.value);
         setPropertiesBoxValue(newValue, "gradingSystem", { value: gradingSystem.value });
 

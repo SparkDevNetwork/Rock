@@ -66,12 +66,6 @@ namespace Rock.Blocks.CheckIn
         Key = AttributeKey.ShowCountsByLocation,
         Order = 1 )]
 
-    [ContentChannelField( "Promotions Content Channel",
-        Description = "The content channel to use for displaying promotions on the kiosk welcome screen.",
-        Key = AttributeKey.PromotionsContentChannel,
-        IsRequired = false,
-        Order = 2 )]
-
     [CustomDropdownListField( "REST Key",
         Description = "If your kiosk pages are configured for anonymous access then you must create a REST key with access to the check-in API endpoints and select it here.",
         Key = AttributeKey.RestKey,
@@ -104,7 +98,6 @@ namespace Rock.Blocks.CheckIn
         {
             public const string SetupPage = "SetupPage";
             public const string ShowCountsByLocation = "ShowCountsByLocation";
-            public const string PromotionsContentChannel = "PromotionsContentChannel";
             public const string RestKey = "RestKey";
             public const string IdleTimeout = "IdleTimeout";
             public const string SelectAllSchedulesAutomatically = "SelectAllSchedulesAutomatically";
@@ -207,13 +200,12 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         /// Gets the promotion items that should be displayed on kiosks at the
         /// specified location.
         /// </summary>
+        /// <param name="configuration">The check-in configuration template data to use when pulling the promotions.</param>
         /// <param name="campusId">The identifier of the <see cref="Campus"/> to filter items for.</param>
         /// <returns>A collection of <see cref="PromotionBag"/> objects that represent the promotions to display.</returns>
-        private List<PromotionBag> GetPromotionItems( int? campusId )
+        private List<PromotionBag> GetPromotionItems( TemplateConfigurationData configuration, int? campusId )
         {
-            var promotionContentChannelGuid = GetAttributeValue( AttributeKey.PromotionsContentChannel ).AsGuidOrNull();
-
-            if ( !promotionContentChannelGuid.HasValue )
+            if ( !configuration.PromotionContentChannelGuid.HasValue )
             {
                 return new List<PromotionBag>();
             }
@@ -222,7 +214,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .Queryable()
                 .AsNoTracking()
                 .Include( cc => cc.Items )
-                .Where( cc => cc.Guid == promotionContentChannelGuid.Value )
+                .Where( cc => cc.Guid == configuration.PromotionContentChannelGuid.Value )
                 .FirstOrDefault();
 
             if ( contentChannel == null )
@@ -540,6 +532,9 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         private void PopulatePersonAttributeBags( EditFamilyResponseBag responseBag, TemplateConfigurationData template, Model.Group familyGroup )
         {
             var tempPerson = new Person();
+            var familyAttributeGuids = template.RequiredAttributeGuidsForFamilies
+                .Union( template.OptionalAttributeGuidsForFamilies )
+                .ToList();
             var adultAttributeGuids = template.RequiredAttributeGuidsForAdults
                 .Union( template.OptionalAttributeGuidsForAdults )
                 .ToList();
@@ -563,7 +558,10 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 false,
                 a => childAttributeGuids.Contains( a.Guid ) );
 
-            responseBag.FamilyAttributes = familyGroup.GetPublicAttributesForEdit( RequestContext.CurrentPerson );
+            responseBag.FamilyAttributes = familyGroup.GetPublicAttributesForEdit(
+                RequestContext.CurrentPerson,
+                false,
+                a => familyAttributeGuids.Contains( a.Guid ) );
 
             foreach ( var attribute in responseBag.AdultAttributes.Values )
             {
@@ -658,7 +656,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         private async Task<PrintResponseBag> PrintLabelsForAttendanceId( CheckInDirector director, DeviceCache kiosk, DeviceCache printer, int attendanceId )
         {
             // Use the new label format for re-printing.
-            var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceId }, kiosk, false );
+            var labels = director.LabelProvider.RenderLabels( new List<int> { attendanceId }, kiosk, printer, false );
 
             var errorMessages = labels.Where( l => l.Error.IsNotNullOrWhiteSpace() )
                 .Select( l => l.Error )
@@ -671,21 +669,13 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
             labels = labels.Where( l => l.Error.IsNullOrWhiteSpace() ).ToList();
 
-            if ( printer != null )
-            {
-                foreach ( var label in labels )
-                {
-                    label.PrintTo = printer;
-                }
-            }
-
             // Print the labels with a 5 second timeout.
             var cts = new CancellationTokenSource( 5_000 );
             var printProvider = new LabelPrintProvider();
             var clientLabelBags = labels.Where( l => l.PrintFrom == PrintFrom.Client )
                 .Select( l => new ClientLabelBag
                 {
-                    PrinterAddress = l.PrintTo.IPAddress,
+                    PrinterAddress = l.PrintTo?.IPAddress,
                     Data = Convert.ToBase64String( l.Data )
                 } )
                 .ToList();
@@ -796,11 +786,11 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         [BlockAction]
         public BlockActionResult GetPromotionList( string templateId, string kioskId )
         {
-            var promotionContentChannelGuid = GetAttributeValue( AttributeKey.PromotionsContentChannel ).AsGuidOrNull();
+            var configuration = GroupTypeCache.GetByIdKey( templateId, RockContext )?.GetCheckInConfiguration( RockContext );
 
-            if ( !promotionContentChannelGuid.HasValue )
+            if ( configuration == null )
             {
-                return ActionOk( new List<PromotionBag>() );
+                return ActionBadRequest( "Invalid check-in template." );
             }
 
             var kiosk = DeviceCache.GetByIdKey( kioskId, RockContext );
@@ -810,7 +800,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Invalid kiosk." );
             }
 
-            return ActionOk( GetPromotionItems( kiosk.GetCampusId() ) );
+            return ActionOk( GetPromotionItems( configuration, kiosk.GetCampusId() ) );
         }
 
         /// <summary>
@@ -963,13 +953,15 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 .Select( fm => fm.PersonId )
                 .ToList();
 
-            var canCheckInRoleId = GroupTypeRoleCache
-                .Get( SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_CAN_CHECK_IN.AsGuid(), RockContext )
-                .Id;
+            var knownRelationshipGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS );
+            var canCheckInRoleIds = knownRelationshipGroupType.Roles
+                .Where( r => r.GetAttributeValue( "CanCheckin" ).AsBoolean() )
+                .Select( r => r.Id )
+                .ToList();
 
             foreach ( var familyMemberPersonId in familyMemberPersonIds )
             {
-                groupMemberService.DeleteKnownRelationship( familyMemberPersonId, attendeeIdNumber.Value, canCheckInRoleId );
+                groupMemberService.DeleteKnownRelationships( familyMemberPersonId, attendeeIdNumber.Value, canCheckInRoleIds );
             }
 
             RockContext.SaveChanges();
@@ -1032,7 +1024,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
         /// <summary>
         /// Verifies that the PIN code is valid and can be used. This is used
-        /// by the UI to perform the initial login step to the admins creen.
+        /// by the UI to perform the initial login step to the admins screen.
         /// </summary>
         /// <param name="pinCode">The PIN code to validate.</param>
         /// <returns>A 200-OK status if the PIN code was valid.</returns>
@@ -1041,7 +1033,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         {
             var director = new CheckInDirector( RockContext );
 
-            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage, true ) )
             {
                 return ActionBadRequest( errorMessage );
             }
@@ -1138,11 +1130,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var printer = kiosk.PrinterDeviceId.HasValue
                 ? DeviceCache.Get( kiosk.PrinterDeviceId.Value, RockContext )
                 : null;
-
-            if ( printer == null )
-            {
-                return ActionBadRequest( "This kiosk does not have a printer defined." );
-            }
 
             var attendanceIdNumber = IdHasher.Instance.GetId( attendanceId );
 
@@ -1399,7 +1386,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 }
 
                 group.LoadAttributes( RockContext );
-                group.Members.Select( gm => gm.Person ).LoadAttributes( RockContext );
+                group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( RockContext );
             }
             else
             {
@@ -1421,10 +1408,20 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Kiosk not found." );
             }
 
-            if ( !kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean() )
+            if ( group.Id == 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() )
             {
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }
+            else if ( group.Id != 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+
+            var canCheckInMembers = new CheckInDirector( RockContext )
+                .CreateSession( template )
+                .SearchProvider
+                .GetCanCheckInFamilyMembersQuery( group.IdKey )
+                .ToList();
 
             var registration = new FamilyRegistration( RockContext, RequestContext.CurrentPerson, template );
             var knownRelationshipsCache = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), RockContext ).Roles;
@@ -1448,7 +1445,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var response = new EditFamilyResponseBag
             {
                 Family = registration.GetFamilyBag( group ),
-                People = group != null ? registration.GetFamilyMemberBags( group ) : null,
+                People = group != null ? registration.GetFamilyMemberBags( group, canCheckInMembers ) : null,
                 IsAlternateIdFieldVisibleForAdults = template.IsAlternateIdFieldVisibleForAdults,
                 IsAlternateIdFieldVisibleForChildren = template.IsAlternateIdFieldVisibleForChildren,
                 IsSmsButtonVisible = template.IsSmsButtonVisible,
@@ -1494,6 +1491,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var template = GroupTypeCache.GetByIdKey( options.TemplateId, RockContext )
                 ?.GetCheckInConfiguration( RockContext );
             var kiosk = DeviceCache.GetByIdKey( options.KioskId, RockContext );
+            var familyId = options.Family?.Bag?.Id;
 
             if ( template == null )
             {
@@ -1505,7 +1503,11 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Kiosk not found." );
             }
 
-            if ( !kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean() )
+            if ( familyId.IsNullOrWhiteSpace() && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+            else if ( familyId.IsNotNullOrWhiteSpace() && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
             {
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }

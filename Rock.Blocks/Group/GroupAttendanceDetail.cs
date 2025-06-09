@@ -31,6 +31,7 @@ using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Group.GroupAttendanceDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -1344,6 +1345,7 @@ namespace Rock.Blocks.Group
 
             var groupLocationSchedulesQuery = groupLocationsQuery
                 .SelectMany( gl => gl.Schedules )
+                .Where( a => a.IsActive )
                 .OrderBy( s => s.Name )
                 .Distinct();
 
@@ -1650,17 +1652,21 @@ namespace Rock.Blocks.Group
         /// </summary>
         private string GetBackPageUrl( OccurrenceData occurrenceData )
         {
+            var returnUrl = this.PageParameter( PageParameterKey.ReturnUrl );
+
+            // This was originally being added to the back button URL, but
+            // that prevented it from being used for it's normal purpose. So
+            // it was decided to treat it like a normal "returnUrl" parameter
+            // and just redirect to this URL when the back button is clicked.
+            if ( returnUrl.IsNotNullOrWhiteSpace() )
+            {
+                return returnUrl;
+            }
+
             var queryParams = new Dictionary<string, string>
             {
                 { PageParameterKey.GroupId, occurrenceData.Group.Id.ToString() }
             };
-
-            var returnUrl = this.PageParameter( PageParameterKey.ReturnUrl );
-
-            if ( returnUrl.IsNotNullOrWhiteSpace() )
-            {
-                queryParams.Add( PageParameterKey.ReturnUrl, returnUrl );
-            }
 
             var groupTypeIds = this.GroupTypeIdsPageParameter;
 
@@ -2460,10 +2466,13 @@ namespace Rock.Blocks.Group
                         .Include( g => g.GroupType )
                         .Include( g => g.Schedule );
 
-                var groupId = this._block.GroupIdPageParameter.AsIntegerOrNull();
-                var groupGuid = this._block.GroupIdPageParameter.AsGuidOrNull();
+                var groupKey = this._block.GroupIdPageParameter;
+                var groupId =  groupKey.AsIntegerOrNull();
+                var allowPredictableIds = !this._block.PageCache.Layout.Site.DisablePredictableIds;
+                groupId = !groupId.HasValue ? IdHasher.Instance.GetId( groupKey ) : groupId.Value;
+                var groupGuid = groupKey.AsGuidOrNull();
 
-                if ( groupId.HasValue )
+                if ( groupId.HasValue && allowPredictableIds )
                 {
                     query = query.Where( g => g.Id == groupId.Value );
                 }
@@ -2471,7 +2480,9 @@ namespace Rock.Blocks.Group
                 {
                     query = query.Where( g => g.Guid == groupGuid.Value );
                 }
-                else
+
+
+                if ( groupId == null )
                 {
                     // The GroupId page parameter is not an integer ID
                     // nor a guid ID so return null.
@@ -2492,7 +2503,7 @@ namespace Rock.Blocks.Group
 
                 var currentPerson = this._block.GetCurrentPerson();
 
-                if ( !group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson ) && !group.IsAuthorized( Authorization.EDIT, currentPerson ) )
+                if ( !group.IsAuthorized( Authorization.MANAGE_MEMBERS, currentPerson ) && !group.IsAuthorized( Authorization.EDIT, currentPerson ) && !group.IsAuthorized( Authorization.TAKE_ATTENDANCE, currentPerson ) )
                 {
                     return null;
                 }

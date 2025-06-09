@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     /// Implements the <see cref="Rock.Field.FieldType" />
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DOCUMENT_TYPE )]
     public class DocumentTypeFieldType : FieldType, IEntityReferenceFieldType

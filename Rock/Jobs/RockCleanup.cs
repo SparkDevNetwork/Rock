@@ -34,8 +34,8 @@ using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
-using Rock.Net.Geolocation;
 using Rock.Observability;
+using Rock.Pdf;
 using Rock.Web.Cache;
 
 namespace Rock.Jobs
@@ -194,7 +194,7 @@ namespace Rock.Jobs
         /// running from inside a unit test. This includes things like network
         /// operations or steps which modify on-disk content.
         /// </summary>
-        internal bool IsRunningFromUnitTest { get; set; }
+        static internal bool IsRunningFromUnitTest { get; set; }
 
         /// <inheritdoc cref="RockJob.Execute()" />
         public override void Execute()
@@ -271,7 +271,7 @@ namespace Rock.Jobs
             // Note run Workflow Log Cleanup before Workflow Cleanup to avoid timing out if a Workflow has lots of workflow logs (there is a cascade delete)
             RunCleanupTask( "workflow", () => CleanUpWorkflows() );
 
-            RunCleanupTask( "unused attribute value", () => CleanupOrphanedAttributes() );
+            RunCleanupTask( "unused attribute value", CleanupUnusedAttributeValues );
 
             RunCleanupTask( "transient communication", () => CleanupTransientCommunications() );
 
@@ -284,6 +284,9 @@ namespace Rock.Jobs
 
             // Search for and delete group memberships duplicates (same person, group, and role)
             RunCleanupTask( "group membership", () => GroupMembershipCleanup() );
+
+            // Search for and delete previous family location if it's the same as their current home address.
+            RunCleanupTask( "family location", () => DeleteDuplicatePreviousFamilyLocations() );
 
             RunCleanupTask( "primary family", () => UpdateMissingPrimaryFamily() );
 
@@ -320,7 +323,7 @@ namespace Rock.Jobs
 
             RunCleanupTask( "upcoming event date", () => UpdateEventNextOccurrenceDates() );
 
-            RunCleanupTask( "older chrome engines", () => RemoveOlderChromeEngines() );
+            RunCleanupTask( "non-default chrome engines", () => RemoveNonDefaultChromeEngines() );
 
             RunCleanupTask( "legacy sms phone numbers", () => SynchronizeLegacySmsPhoneNumbers() );
 
@@ -337,8 +340,6 @@ namespace Rock.Jobs
             RunCleanupTask( "stale anonymous visitor", () => RemoveStaleAnonymousVisitorRecord() );
 
             RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
-
-            RunCleanupTask( "update geolocation database", () => UpdateGeolocationDatabase() );
 
             /*
              * 21-APR-2022 DMV
@@ -848,9 +849,6 @@ namespace Rock.Jobs
             // Known Relationship Group
             resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS ), Rock.SystemGuid.GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid(), commandTimeout );
 
-            // Implied Relationship Group
-            resultCount += AddMissingRelationshipGroups( GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_PEER_NETWORK ), Rock.SystemGuid.GroupRole.GROUPROLE_PEER_NETWORK_OWNER.AsGuid(), commandTimeout );
-
             // Find family groups that have no members or that have only 'inactive' people (record status) and mark the groups inactive.
             using ( var familyRockContext = CreateRockContext() )
             {
@@ -964,12 +962,13 @@ namespace Rock.Jobs
                 // Update Person records that have an empty or placeholder PrimaryAlias reference.
                 var people = personService.Queryable( personSearchOptions )
                     .Include( p => p.Aliases )
-                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 )
+                    .Where( p => p.PrimaryAliasId == null || p.PrimaryAliasId == 0 || p.PrimaryAliasGuid == null )
                     .Take( 300 );
 
                 foreach ( var person in people )
                 {
                     person.PrimaryAliasId = person.PrimaryAlias?.Id;
+                    person.PrimaryAliasGuid = person.PrimaryAlias?.Guid;
                     resultCount++;
                 }
 
@@ -1227,6 +1226,7 @@ namespace Rock.Jobs
             var workflowContext = CreateRockContext();
 
             var workflowService = new WorkflowService( workflowContext );
+            var connectionRequestWorkflowService = new ConnectionRequestWorkflowService( workflowContext );
 
             var completedWorkflows = workflowService.Queryable().AsNoTracking()
                 .Where( w => w.WorkflowType.CompletedWorkflowRetentionPeriod.HasValue && w.CompletedDateTime.HasValue
@@ -1241,7 +1241,7 @@ namespace Rock.Jobs
             {
                 // Verify that the workflow is not being used by something important by letting CanDelete tell
                 // us if it's OK to delete.
-                if ( workflowService.CanDelete( workflow, out _ ) )
+                if ( workflowService.IsEligibleForDelete( workflow, out _ ) )
                 {
                     workflowIdsSafeToDelete.Add( workflow.Id );
                 }
@@ -1249,6 +1249,7 @@ namespace Rock.Jobs
                 // to prevent a SQL complexity exception, do a bulk delete anytime the workflowIdsSafeToDelete gets too big
                 if ( workflowIdsSafeToDelete.Count >= batchAmount )
                 {
+                    BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                     totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
                     workflowIdsSafeToDelete = new List<int>();
                 }
@@ -1256,6 +1257,7 @@ namespace Rock.Jobs
 
             if ( workflowIdsSafeToDelete.Any() )
             {
+                BulkDeleteInChunks( connectionRequestWorkflowService.Queryable().Where( c => workflowIdsSafeToDelete.Contains( c.WorkflowId ) ), batchAmount, commandTimeout );
                 totalRowsDeleted += BulkDeleteInChunks( workflowService.Queryable().Where( a => workflowIdsSafeToDelete.Contains( a.Id ) ), batchAmount, commandTimeout );
             }
 
@@ -1365,7 +1367,7 @@ namespace Rock.Jobs
             var avatarCachePath = args.AvatarCachePath;
             var validationMessages = new List<string>();
 
-            if ( System.Web.Hosting.HostingEnvironment.IsHosted || args.HostName == "RockSchedulerIIS" )
+            if ( ( System.Web.Hosting.HostingEnvironment.IsHosted || args.HostName == "RockSchedulerIIS" ) && !args.IsUnitTest )
             {
                 if ( !string.IsNullOrEmpty( cacheDirectoryPath ) )
                 {
@@ -1722,6 +1724,19 @@ namespace Rock.Jobs
         }
 
         /// <summary>
+        /// Cleans up any attribute values that are no longer needed.
+        /// </summary>
+        /// <returns>The number of records deleted.</returns>
+        private int CleanupUnusedAttributeValues()
+        {
+            var recordsDeleted = CleanupOrphanedAttributes();
+
+            recordsDeleted += CleanupEmptyAttributeValues();
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
         /// Cleanups the orphaned attributes.
         /// </summary>
         /// <returns></returns>
@@ -1793,6 +1808,36 @@ namespace Rock.Jobs
                 var entityIdsQuery = new Service<T>( rockContext ).AsNoFilter().Select( a => a.Id );
                 var orphanedAttributeValuesQuery = attributeValueService.Queryable().Where( a => a.EntityId.HasValue && a.Attribute.EntityTypeId == entityTypeId.Value && !entityIdsQuery.Contains( a.EntityId.Value ) );
                 recordsDeleted += BulkDeleteInChunks( orphanedAttributeValuesQuery, batchAmount, commandTimeout );
+            }
+
+            return recordsDeleted;
+        }
+
+        /// <summary>
+        /// Cleans up empty attribute values that no longer need to exist in the database.
+        /// </summary>
+        /// <returns>The number of records deleted.</returns>
+        private int CleanupEmptyAttributeValues()
+        {
+            int recordsDeleted = 0;
+
+            using ( var rockContext = CreateRockContext() )
+            {
+                var attributeValueService = new AttributeValueService( rockContext );
+
+                /*
+                    6/5/2025 - JJZ
+
+                    Originally this was checking for empty strings (`av.Value = ""`), but SQL equates an emoji
+                    with an empty string, so instead we're not checking for string length, which accurately checks
+                    for empty strings and doesn't give a false positive on emojis. This was reported in this issue:
+                    https://github.com/SparkDevNetwork/Rock/issues/6291
+                */
+                var emptyValuesQuery = attributeValueService.Queryable()
+                    .Where( av => av.Value == null || av.Value.Length == 0 )
+                    .WithQueryableAttributeValues();
+
+                recordsDeleted += BulkDeleteInChunks( emptyValuesQuery, batchAmount, commandTimeout );
             }
 
             return recordsDeleted;
@@ -2165,6 +2210,39 @@ namespace Rock.Jobs
 
             // Return the count of memberships deleted
             return groupMemberIds.Count();
+        }
+
+        private int DeleteDuplicatePreviousFamilyLocations()
+        {
+            var rockContext = CreateRockContext();
+
+            var groupLocationService = new GroupLocationService( rockContext );
+            var familyGroupTypeId = GroupTypeCache.GetFamilyGroupType().Id;
+            var previousLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_PREVIOUS ).Id;
+            var homeLocationTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME ).Id;
+
+            var duplicateFamilyLocations = groupLocationService.Queryable()
+                .Where( gl => gl.Group.GroupTypeId == familyGroupTypeId )
+                .GroupBy( gl => new { gl.GroupId, gl.LocationId } )
+                .Where( g => g.Count() > 1 )
+                .ToList();
+            var recordsToDelete = new List<GroupLocation>();
+
+            foreach ( var duplicateFamilyLocation in duplicateFamilyLocations )
+            {
+                var previousLocation = duplicateFamilyLocation.FirstOrDefault( x => x.GroupLocationTypeValueId == previousLocationTypeId );
+                var isOtherDuplicateHomeLocation = duplicateFamilyLocation.Any( gl => gl.GroupLocationTypeValueId == homeLocationTypeId );
+
+                if ( previousLocation != null && isOtherDuplicateHomeLocation )
+                {
+                    recordsToDelete.Add( previousLocation );
+                }
+            }
+
+            groupLocationService.DeleteRange( recordsToDelete );
+            rockContext.SaveChanges();
+
+            return recordsToDelete.Count;
         }
 
         /// <summary>
@@ -2810,26 +2888,28 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
         }
 
         /// <summary>
-        /// Removes older unused versions of the chrome engine
+        /// Removes all installed versions of Chrome that do not match the default browser version, ensuring only the required version remains.
         /// </summary>
         /// <returns></returns>
-        private int RemoveOlderChromeEngines()
+        private int RemoveNonDefaultChromeEngines()
         {
             var options = new PuppeteerSharp.BrowserFetcherOptions()
             {
-                Product = PuppeteerSharp.Product.Chrome,
+                Browser = PuppeteerSharp.SupportedBrowser.Chrome,
                 Path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" )
             };
 
             var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );
-            var olderVersions = browserFetcher.LocalRevisions().Where( r => r != PuppeteerSharp.BrowserFetcher.DefaultChromiumRevision );
+            var olderVersions = browserFetcher.GetInstalledBrowsers().Where( r => r.BuildId != PdfGenerator.BrowserVersion && r.Browser == options.Browser );
+            int totalRemoved = 0;
 
             foreach ( var version in olderVersions )
             {
-                browserFetcher.Remove( version );
+                browserFetcher.Uninstall( version.BuildId );
+                totalRemoved++;
             }
 
-            return olderVersions.Count();
+            return totalRemoved;
         }
 
         /// <summary>
@@ -3480,20 +3560,6 @@ SET @UpdatedCampusCount = @CampusCount;
         }
 
         /// <summary>
-        /// Updates Rock's geolocation database.
-        /// </summary>
-        /// <returns>1 if the database was updated successfully.</returns>
-        private int UpdateGeolocationDatabase()
-        {
-            if ( !IsRunningFromUnitTest )
-            {
-                IpGeoLookup.Instance.UpdateDatabase();
-            }
-
-            return 1;
-        }
-
-        /// <summary>
         /// Creates a new <see cref="RockContext"/> that is properly configured
         /// for use on this instance.
         /// </summary>
@@ -3595,6 +3661,13 @@ SET @UpdatedCampusCount = @CampusCount;
             /// If set to null, all expired files are removed.
             /// </summary>
             public int? CacheMaximumFilesToRemove;
+
+            /// <summary>
+            /// <c>true</c> if the action is being executed from a unit test. This
+            /// disables a few features that are only valid under a full running
+            /// Rock instance (such as mapping IIS paths).
+            /// </summary>
+            public bool IsUnitTest { get; set; }
         }
     }
 }

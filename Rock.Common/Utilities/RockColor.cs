@@ -593,14 +593,14 @@ namespace Rock.Utility
             {
                 case ColorRecipe.Lightest:
                     {
-                        recipeSaturation = .88;
-                        recipeLuminosity = .87;
+                        recipeSaturation = .96;
+                        recipeLuminosity = .95;
                         break;
                     }
                 case ColorRecipe.Light:
                     {
-                        recipeSaturation = .10;
-                        recipeLuminosity = .95;
+                        recipeSaturation = .44;
+                        recipeLuminosity = .84;
                         break;
                     }
                 case ColorRecipe.Medium:

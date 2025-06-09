@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -23,6 +24,10 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Workflow
@@ -33,7 +38,7 @@ namespace Rock.Reporting.DataFilter.Workflow
     [Description( "Filter workflows by workflow type" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Workflow Type Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "48975139-45A8-4CCC-BC03-FDB32B9BB7C6")]
+    [Rock.SystemGuid.EntityTypeGuid( "48975139-45A8-4CCC-BC03-FDB32B9BB7C6" )]
     public class WorkflowTypeFilter : DataFilterComponent
     {
         #region Properties
@@ -58,6 +63,38 @@ namespace Rock.Reporting.DataFilter.Workflow
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Workflow/workflowTypeFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            ListItemBag workflowType = WorkflowTypeCache
+                .Get( selection.AsGuidOrNull() ?? Guid.Empty )
+                ?.ToListItemBag();
+
+            return new Dictionary<string, string>
+            {
+                ["workflowType"] = workflowType?.ToCamelCaseJson( false, true )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrNull( "workflowType" )?.FromJsonOrNull<ListItemBag>()?.Value ?? string.Empty;
         }
 
         #endregion
@@ -209,7 +246,7 @@ function() {
                     workflowTypeId = workflowType.Id;
                 }
 
-                var qry = new WorkflowService( (RockContext)serviceInstance.Context ).Queryable()
+                var qry = new WorkflowService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( p => p.WorkflowTypeId == workflowTypeId );
 
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Workflow>( qry, parameterExpression, "p" );

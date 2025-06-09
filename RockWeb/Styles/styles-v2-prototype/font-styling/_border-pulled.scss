@@ -1,0 +1,27 @@
+
+// This files is being imported by './_font-styling-core.scss'
+
+.fa-border,
+.ti-border {
+    border-radius: .1em;
+    border: solid .08em var(--color-interface-strong);
+    padding: .2em .25em .15em;
+  }
+  
+.fa-pull-left,
+.ti-pull-left { float: left; }
+
+.fa-pull-right
+.ti-pull-right { float: right; }
+
+.ti, .fa, .fas, .far, .fal, .fab {
+    &.fa-pull-left,
+    &.ti-pull-left {
+        margin-right: .3em; 
+    }
+    &.fa-pull-right,
+    &.ti-pull-right {
+        margin-left: .3em; 
+    }
+}
+  

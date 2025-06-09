@@ -2,10 +2,18 @@
 <template>
     <div class="supervisor-login-screen">
         <MainPanel title="Supervisor Login"
-                   subtitle="Enter your PIN to login as a supervisor">
-            <TextBox v-model="pinCode"
-                     class="pin-code"
-                     @keypress.enter="onLoginClick" />
+                   subtitle="Enter your PIN to login as a supervisor"
+                   :configuration="configuration">
+            <!--
+                The form is here to prevent iOS from causing the Return key
+                to become a Go key and triggering a WebForms postback.
+            -->
+            <RockForm>
+                <TextBox v-model="pinCode"
+                         class="pin-code"
+                         type="password"
+                         @keypress.enter="onLoginClick" />
+            </RockForm>
 
             <NumberPad v-model="pinCode"
                        documentListener
@@ -22,7 +30,8 @@
 
         <MainPanel title="Current Counts"
                    subtitle="Below are the current check-in counts"
-                   class="flex-grow-1">
+                   class="flex-grow-1"
+                   :configuration="configuration">
             <SupervisorLoginScreenCounts :counts="counts"
                                          :showCountsByLocation="showCountsByLocation" />
         </MainPanel>
@@ -41,6 +50,7 @@
     import { alert } from "@Obsidian/Utility/dialogs";
     import { SupervisorScreen, SupervisorScreenData, AttendanceCountGroup, KioskButton } from "./types.partial";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
 
     const props = defineProps({
         configuration: {

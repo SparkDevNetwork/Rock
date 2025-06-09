@@ -1,0 +1,592 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="confirmation-step">
+        <Panel panelBodyCssClass="panel-body-wizard"
+               type="block">
+            <template #title>
+                <div class="confirmation-panel-title">
+                    <span>{{ title }}</span>
+                    <HighlightLabel labelType="info">{{ recipientsLabel }}</HighlightLabel>
+                </div>
+            </template>
+
+            <template #subheaderLeft>
+                {{ communicationName }}
+            </template>
+
+            <template v-if="communicationType === CommunicationType.RecipientPreference && viewItems.length > 1" #subheaderRight>
+                <div class="select-view">
+                    <ButtonGroup v-model="selectedView"
+                                 btnSize="xs"
+                                 :disabled="isSaving || isSending"
+                                 :items="viewItems" />
+                </div>
+            </template>
+
+            <template #default>
+                <div class="panel-body-contents">
+                    <div class="row d-md-flex">
+                        <div class="col-xs-12 col-md-4 confirmation-detail-panel">
+                            <dl>
+                                <template v-if="communicationTopicValueName">
+                                    <dt>Topic</dt>
+                                    <dd>{{ communicationTopicValueName }}</dd>
+                                </template>
+
+                                <dt>Medium</dt>
+                                <dd>{{ selectedView }}</dd>
+
+                                <template v-if="communicationListGroupName">
+                                    <dt>Recipient List</dt>
+                                    <dd>{{ communicationListGroupName }}</dd>
+                                </template>
+
+                                <template v-if="segmentNames">
+                                    <dt>Segments</dt>
+                                    <dd>{{ segmentNames.join(', ') }}</dd>
+                                </template>
+
+                                <dt>When To Send</dt>
+                                <dd>{{ futureSendDateTime ? 'Later' : 'Now' }}</dd>
+
+                                <template v-if="futureSendDateTime">
+                                    <dt>Date</dt>
+                                    <dd>{{ whenToSendDate }}</dd>
+
+                                    <dt>Time</dt>
+                                    <dd>{{ whenToSendTime }}</dd>
+                                </template>
+                            </dl>
+
+                            <hr />
+
+                            <dl>
+                                <template v-if="selectedView === 'Email' && emailAttachmentNames">
+                                    <dt>Attachments</dt>
+                                    <dd>
+                                        <template v-for="(emailAttachmentName, index) in emailAttachmentNames" :key="index">
+                                            {{ emailAttachmentName }}
+                                            <br v-if="index < emailAttachmentNames.length - 1" />
+                                        </template>
+                                    </dd>
+                                </template>
+
+                                <template v-if="selectedView === 'SMS' && smsAttachmentNames">
+                                    <dt>Attachments</dt>
+                                    <dd>
+                                        <template v-for="(smsAttachmentName, index) in smsAttachmentNames" :key="index">
+                                            {{ smsAttachmentName }}
+                                            <br v-if="index < smsAttachmentNames.length - 1" />
+                                        </template>
+                                    </dd>
+                                </template>
+
+                                <dt>Bulk Communication</dt>
+                                <dd>{{ isBulkCommunication ? 'Yes' : 'No' }}</dd>
+                            </dl>
+                        </div>
+
+                        <EmailPreview v-if="selectedView === 'Email'"
+                                      :bccEmails="bccEmails"
+                                      :ccEmails="ccEmails"
+                                      :fromAddress="fromAddress"
+                                      :fromName="fromName"
+                                      :message="messagePreview"
+                                      :replyToEmail="replyToEmail"
+                                      :subject="subject"
+                                      :to="emailTo"
+                                      class="col-xs-12 col-md-8" />
+
+                        <SmsMobilePreview v-else-if="selectedView === 'SMS'"
+                                          :class="['col-xs-12 col-md-8', breakpointHelper.breakpoint]"
+                                          :smsFromNumberName="smsFromNumberName"
+                                          :smsAttachmentLinks="smsAttachmentLinks"
+                                          :smsMessage="smsMessage" />
+
+                        <PushNotificationMobilePreview v-else-if="selectedView === 'Push'"
+                                                       :class="['col-xs-12 col-md-8', breakpointHelper.breakpoint]"
+                                                       :pushMessage="pushMessage"
+                                                       :pushTitle="pushTitle" />
+                    </div>
+
+                    <svg width="0" height="0" style="position: absolute;">
+                        <defs>
+                            <!-- Define the path -->
+                            <path id="triangle-slide-path" d="M0 629 L337 629 L337 50 C250 50, 150 150, 150 300 C150 450, 50 550, 0 629Z" />
+
+                            <!-- Define the clipPath referencing the path -->
+                            <clipPath id="triangle-slide">
+                                <use xlink:href="#triangle-slide-path" />
+                            </clipPath>
+                        </defs>
+                    </svg>
+                </div>
+            </template>
+
+            <template #footerActions>
+                <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowLeft'"
+                            :disabled="isSaving || isSending"
+                            @click="onPreviousClicked()">Previous</RockButton>
+            </template>
+
+            <template #footerSecondaryActions>
+                <RockButton :disabled="isSaving || isSending"
+                            @click="onSaveClicked">
+                    Save as Draft
+                </RockButton>
+                <RockButton :disabled="isSaving || isSending"
+                            btnType="primary"
+                            @click="onSendClicked">
+                    Send
+                </RockButton>
+            </template>
+        </Panel>
+
+        <LoadingOverlay :isVisible="isSaving || isSending"
+                        targetSelector=".confirmation-step" />
+
+        <Modal v-model="isSendModalShown"
+               cancelText="Cancel"
+               saveText="Confirm"
+               title="Confirm Communication"
+               @save="onConfirmSendClicked">
+            Are you sure you want to send this message to {{ recipientsLabel.toLocaleLowerCase() }}?
+        </Modal>
+    </div>
+</template>
+
+<style scoped>
+:deep(.panel-body-wizard) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+}
+
+.panel-body-contents {
+    flex: 1;
+    overflow-x: hidden;
+    overflow-y: auto;
+}
+
+:deep(.panel-sub-header) {
+    background-color: var(--color-interface-softer);
+    border-color: var(--color-interface-soft);
+}
+
+.confirmation-panel-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+dl dt {
+    font-weight: var(--font-weight-semibold);
+}
+
+dl dt,
+dl dd {
+    color: var(--color-interface-strong);
+}
+
+dl:not(.dl-horizontal) dt {
+    margin-top: var(--spacing-small);
+}
+
+dl:not(.dl-horizontal) dt:first-child {
+    margin-top: 0;
+}
+
+.select-view :deep(.btn-group) {
+    display: flex;
+    flex-wrap: nowrap;
+}
+
+:deep(.confirmation-preview-panel.xs) {
+    padding: 0;
+    background: none;
+}
+</style>
+
+
+<script setup lang="ts">
+    import { computed, onMounted, PropType, ref, watch } from "vue";
+    import EmailPreview from "./emailPreview.partial.obs";
+    import LoadingOverlay from "./loadingOverlay.partial.obs";
+    import PushNotificationMobilePreview from "./pushNotificationMobilePreview.partial.obs";
+    import SmsMobilePreview from "./smsMobilePreview.partial.obs";
+    import { BinaryFileAttachment, BlockActionCallbacks } from "./types.partial";
+    import { get, useBreakpointHelper } from "./utils.partial";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { vShortcut } from "@Obsidian/Directives/shortcut";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+
+    type View = "Email" | "SMS" | "Push";
+
+    const props = defineProps({
+        allowedMediums: {
+            type: Object as PropType<CommunicationType[]>,
+            required: true
+        },
+
+        areNavigationShortcutsDisabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        bccEmails: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        ccEmails: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        communicationListGroupName: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        communicationName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        communicationTopicValueName: {
+            type: Object as PropType<string | null | undefined>,
+            required: true
+        },
+
+        communicationType: {
+            type: Number as PropType<CommunicationType>,
+            required: true
+        },
+
+        emailAttachmentNames: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: true
+        },
+
+        emailTo: {
+            type: Object as PropType<string | null | undefined>,
+            required: true
+        },
+
+        fromAddress: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        fromName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        futureSendDateTime: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        isBulkCommunication: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        message: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        previewHtmlProcessor: {
+            type: Object as PropType<(previewHtml: string) => string | null | undefined | Promise<string | null | undefined>>,
+            required: true
+        },
+
+        pushMessage: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        pushTitle: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        recipientsLabel: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        replyToEmail: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        segmentNames: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: true
+        },
+
+        smsAttachmentLinks: {
+            type: Object as PropType<BinaryFileAttachment[]>,
+            required: true
+        },
+
+        smsAttachmentNames: {
+            type: Object as PropType<string[] | null | undefined>,
+            required: true
+        },
+
+        smsFromNumberName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        smsMessage: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        subject: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "nextStep"): void;
+        (e: "previousStep"): void;
+        (e: "sendTestCommunication"): void;
+        (e: "saveCommunication", value: BlockActionCallbacks): void;
+        (e: "sendCommunication", value: BlockActionCallbacks): void;
+    }>();
+
+    const breakpointHelper = useBreakpointHelper();
+
+    type StandardListItemBag = {
+        [P in keyof Pick<ListItemBag, "text" | "value">]-?: NonNullable<ListItemBag[P]>;
+    };
+
+    // #region Values
+
+    // UI state.
+    const isSaveSuccessMessageShown = ref<boolean>(false);
+    const isSendSuccessMessageShown = ref<boolean>(false);
+    const isSaving = ref<boolean>(false);
+    const isSending = ref<boolean>(false);
+    const selectedView = ref<View>(getView());
+    const isSendModalShown = ref<boolean>(false);
+    const isPreviewLoading = ref<boolean>(false);
+    const messagePreview = ref<string>(props.message);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const viewItems = computed<StandardListItemBag[]>(() => {
+        if (props.communicationType === CommunicationType.RecipientPreference) {
+            return [
+                {
+                    value: get<View>("Email"),
+                    text: get<View>("Email")
+                },
+                {
+                    value: get<View>("SMS"),
+                    text: get<View>("SMS")
+                }
+            ];
+        }
+        else if (props.communicationType === CommunicationType.Email) {
+            return [
+                {
+                    value: get<View>("Email"),
+                    text: get<View>("Email")
+                }
+            ];
+        }
+        else if (props.communicationType === CommunicationType.SMS) {
+            return [
+                {
+                    value: get<View>("SMS"),
+                    text: get<View>("SMS")
+                }
+            ];
+        }
+        else if (props.communicationType === CommunicationType.PushNotification) {
+            return [
+                {
+                    value: get<View>("Push"),
+                    text: get<View>("Push")
+                }
+            ];
+        }
+        else {
+            return [];
+        }
+    });
+
+    const futureSendRockDateTime = computed<RockDateTime | null | undefined>(() => {
+        if (props.futureSendDateTime) {
+            return RockDateTime.parseISO(props.futureSendDateTime);
+        }
+        else {
+            return null;
+        }
+    });
+
+    const whenToSendDate = computed<string | null | undefined>(() => {
+        if (futureSendRockDateTime.value) {
+            return futureSendRockDateTime.value.toASPString("dddd, MMM. d, yyyy");
+        }
+        else {
+            return null;
+        }
+    });
+
+    const whenToSendTime = computed<string | null | undefined>(() => {
+        if (futureSendRockDateTime.value) {
+            return futureSendRockDateTime.value.toASPString("h:mm tt");
+        }
+        else {
+            return null;
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getView(): View {
+        switch (props.communicationType) {
+            case CommunicationType.SMS:
+                return "SMS";
+            case CommunicationType.PushNotification:
+                return "Push";
+            case CommunicationType.Email:
+                return "Email";
+            case CommunicationType.RecipientPreference:
+                if (props.allowedMediums.includes(CommunicationType.Email)) {
+                    return "Email";
+                }
+                else if (props.allowedMediums.includes(CommunicationType.SMS)) {
+                    return "SMS";
+                }
+                else if (props.allowedMediums.includes(CommunicationType.PushNotification)) {
+                    return "Push";
+                }
+
+                break;
+            default:
+                break;
+        }
+
+        console.error("Communication type unknown. Displaying email preview.");
+        return "Email";
+    }
+
+    async function loadEmailPreviewIfNecessary(): Promise<void> {
+        if (viewItems.value.some((item => item.value === get<View>("Email")))) {
+            isPreviewLoading.value = true;
+            try {
+                const result = props.previewHtmlProcessor(props.message);
+
+                if (isPromise(result)) {
+                    messagePreview.value = await result ?? props.message;
+                }
+                else {
+                    messagePreview.value = result ?? props.message;
+                }
+            }
+            catch {
+                messagePreview.value = props.message;
+            }
+            finally {
+                isPreviewLoading.value = false;
+            }
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onPreviousClicked(): void {
+        emit("previousStep");
+    }
+
+    function onSaveClicked(): void {
+        if (isSaving.value) {
+            // Prevent multiple saves.
+            return;
+        }
+
+        isSaving.value = true;
+
+        emit("saveCommunication", {
+            onSuccess() {
+                isSaveSuccessMessageShown.value = true;
+                isSaving.value = false;
+            },
+            onError() {
+                isSaving.value = false;
+            }
+        });
+    }
+
+    function onSendClicked(): void {
+        isSendModalShown.value = true;
+    }
+
+    function onConfirmSendClicked(): void {
+        isSendModalShown.value = false;
+
+        if (isSending.value) {
+            // Prevent multiple sends.
+            return;
+        }
+
+        isSending.value = true;
+
+        emit("sendCommunication", {
+            onSuccess() {
+                isSendSuccessMessageShown.value = true;
+                isSending.value = false;
+            },
+            onError() {
+                isSending.value = false;
+            }
+        });
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.message, async () => {
+        await loadEmailPreviewIfNecessary();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(async () => {
+        await loadEmailPreviewIfNecessary();
+    });
+
+    // #endregion Hooks
+</script>

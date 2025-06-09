@@ -1,0 +1,39 @@
+
+// Ace Editor - this is an override of the default Ace Editor theme
+
+
+// =============================================================
+// Table of Content           
+//  + Base style
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.ace-tm, .ace-github {
+    .ace_gutter-active-line {
+        background: var(--color-interface-soft) !important;
+    }
+}
+
+.ace-tm, .ace-github {
+    .ace_marker-layer .ace_active-line {
+        background-color: var(--color-interface-softer) !important;
+    }
+}
+.ace_scroller {
+    background-color: var(--color-interface-softest) !important;
+}
+.ace_line {
+    color: var(--color-interface-strongest);
+}
+
+.ace_editor .ace_marker-layer .ace_selection {
+    background: rgba(0, 120, 215, 0.4)
+}
+
+.ace-tm, .ace-github {
+    .ace_gutter {
+        background: var(--color-interface-softer) !important;
+    }
+}
+// ====================== END BASE STYLE ======================

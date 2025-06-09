@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +39,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether they have attended the campus(es) a specific number of times" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Campus Attendance Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "B2335AA5-FA0E-4685-833B-7A77F1F55CFF")]
+    [Rock.SystemGuid.EntityTypeGuid( "B2335AA5-FA0E-4685-833B-7A77F1F55CFF" )]
     public class AttendanceCampusFilter : DataFilterComponent
     {
         #region Properties
@@ -61,6 +64,72 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Attendance"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/attendanceCampusFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length > 3 )
+            {
+                var campusBags = selectionValues[0].Split( ',' ).AsGuidList()
+                    .Select( guid => CampusCache.Get( guid )?.ToListItemBag() )
+                    .Where( bag => bag != null )
+                    .ToList();
+
+                var dateRange = "";
+                var lastXWeeks = selectionValues[3].AsIntegerOrNull();
+                if ( lastXWeeks.HasValue )
+                {
+                    // selection was from when it just simply a LastXWeeks instead of Sliding Date Range
+                    // Last X Weeks was treated as "LastXWeeks * 7" days, so we have to convert it to a SlidingDateRange of Days to keep consistent behavior
+                    dateRange = $"Last|{lastXWeeks * 7}|Day||";
+                }
+                else
+                {
+                    // convert from comma-delimited to pipe since we store it as comma delimited so that we can use pipe delimited for the selection values
+                    dateRange = selectionValues[3].Replace( ',', '|' );
+                }
+
+                return new Dictionary<string, string>
+                {
+                    {"campuses", campusBags.ToCamelCaseJson(false, true) },
+                    { "comparisonType", selectionValues[1] },
+                    { "attendedCount", selectionValues[2] },
+                    { "dateRange", dateRange }
+                };
+            }
+
+            return new Dictionary<string, string>();
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var campusGuids = data.GetValueOrDefault( "campuses", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( c => c.Value?.AsGuidOrNull() ?? Guid.Empty )
+                .Where( g => g != Guid.Empty )
+                .ToList()
+                .AsDelimited( "," );
+
+            var selection = $"{campusGuids}|{data.GetValueOrDefault( "comparisonType", "" )}|{data.GetValueOrDefault( "attendedCount", "" )}|{data.GetValueOrDefault( "dateRange", "" ).Replace( '|', ',' )}";
+
+            return selection;
         }
 
         #endregion
@@ -418,7 +487,7 @@ function() {
 
             var rockContext = serviceInstance.Context as RockContext;
             var attendanceQry = new AttendanceService( rockContext ).Queryable().Where( a => a.DidAttend.HasValue && a.DidAttend.Value );
-            attendanceQry = attendanceQry.Where( a => a.CampusId.HasValue && campusIds.Contains( (int)a.CampusId ) );
+            attendanceQry = attendanceQry.Where( a => a.CampusId.HasValue && campusIds.Contains( ( int ) a.CampusId ) );
 
             if ( dateRange.Start.HasValue )
             {

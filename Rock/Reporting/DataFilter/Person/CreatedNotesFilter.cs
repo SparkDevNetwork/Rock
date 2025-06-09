@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -37,7 +39,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people whether they have created notes" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Created Note Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "47D8B19F-CA20-4C4E-9E9A-ECE5702648F2")]
+    [Rock.SystemGuid.EntityTypeGuid( "47D8B19F-CA20-4C4E-9E9A-ECE5702648F2" )]
     public class CreatedNotesFilter : DataFilterComponent
     {
         #region Properties
@@ -67,6 +69,74 @@ namespace Rock.Reporting.DataFilter.Person
         private const string _CtlNoteTypes = "cblNoteTypes";
         private const string _CtlSlidingDateRangePicker = "slidingDateRangePicker";
         private const string _CtlMinimumCount = "nbMinimumCount";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/createdNotesFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
+            var noteTypesOptions = NoteTypeCache.All()
+                .Where( a => a.EntityTypeId == entityTypeIdPerson )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => a.ToListItemBag() )
+                .ToList();
+
+            var noteTypes = config?.NoteTypeIds
+                ?.Select( nt => NoteTypeCache.Get( nt )?.Guid )
+                .Where( nt => nt != null )
+                .ToList()
+                ?? new List<Guid?>();
+
+            var data = new Dictionary<string, string>
+            {
+                { "noteTypeOptions", noteTypesOptions.ToCamelCaseJson(false, true) },
+                { "noteTypes", noteTypes.ToJson() },
+                { "dateRange", config?.DelimitedValues },
+                { "minimumCount", config?.MinimumCount.ToString() },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var noteTypes = data.GetValueOrNull( "noteTypes" )?.FromJsonOrNull<List<Guid>>();
+            var noteTypeIds = new List<int>();
+
+            if ( noteTypes != null )
+            {
+                noteTypeIds = noteTypes
+                    .Select( nt => NoteTypeCache.Get( nt )?.Id )
+                    .Where( id => id.HasValue )
+                    .Select( id => id.Value )
+                    .ToList();
+            }
+
+            var selectionConfig = new SelectionConfig
+            {
+                NoteTypeIds = noteTypeIds,
+                DelimitedValues = data.GetValueOrNull( "dateRange" ),
+                MinimumCount = data.GetValueOrNull( "minimumCount" )?.AsIntegerOrNull() ?? 1
+            };
+
+            return selectionConfig.ToJson();
+        }
 
         #endregion
 
@@ -166,7 +236,8 @@ namespace Rock.Reporting.DataFilter.Person
             return result;
         }
 
-#if REVIEW_WEBFORMS
+#if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -259,6 +330,7 @@ namespace Rock.Reporting.DataFilter.Person
                 nbMinimumCount.IntegerValue = selectionConfig.MinimumCount;
             }
         }
+
 #endif
 
         /// <summary>

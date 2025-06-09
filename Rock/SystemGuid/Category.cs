@@ -69,6 +69,15 @@ namespace Rock.SystemGuid
 
         #endregion
 
+        #region Email Section Categories
+
+        /// <summary>
+        /// Start Sections Category
+        /// </summary>
+        public const string EMAIL_SECTION_STARTER_SECTIONS = "760C6F4D-F7BF-4818-9BDF-DF7650F2A468";
+
+        #endregion
+
         #region History Categories
 
         /// <summary>
@@ -280,6 +289,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SYSTEM_COMMUNICATION_SIGNUP_GROUP_CONFIRMATION = "CB279EE1-9A12-4837-9A14-1F36B6F7CDAF";
 
+        /// <summary>
+        /// The system communication Form Builder Category guid.
+        /// </summary>
+        public const string SYSTEM_COMMUNICATION_FORM_BUILDER = "E3696A97-3F69-4AA8-8DDF-7AC628CAF060";
+
         #endregion
 
         #region Merge Template Categories
@@ -369,6 +383,15 @@ namespace Rock.SystemGuid
         /// Lava Shortcode Category Guid
         /// </summary>
         public const string LAVA_SHORTCODE_AI = "125FB37E-5540-48A6-4A74-A49D1C1324F8";
+
+        #endregion
+
+        #region Personalization Segment Categories
+
+        /// <summary>
+        /// Communications Personalization Segment Category Guid
+        /// </summary>
+        public const string PERSONALIZATION_SEGMENT_COMMUNICATIONS = "F80DADC1-AF83-4953-BDA6-6A9F046EA8E6";
 
         #endregion
     }

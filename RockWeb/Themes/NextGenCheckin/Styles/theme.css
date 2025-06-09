@@ -1,6 +1,6 @@
 /* CSS Overrides Top Start */
-@import url('/Styles/style-v2/icons/fontawesome-icon.css');
-@import url('/Styles/style-v2/icons/fontawesome-solid.css');
+@import url('/Styles/styles-v2-prototype/icons/fontawesome-icon.css');
+@import url('/Styles/styles-v2-prototype/icons/fontawesome-solid.css');
 /* CSS Overrides Top End */
 
 @charset "UTF-8";
@@ -16,7 +16,8 @@ html {
 }
 
 body {
-  margin: 0;
+    margin: 0;
+    overflow: hidden; /* Prevents drag scrolling the window beyond the body's bounds  */
 }
 
 article,
@@ -348,7 +349,7 @@ th {
   --input-border: var(--color-interface-soft);
 }
 
-@supports (color-mix(in srgb, red 50%, white 50%)) {
+@supports (color: color-mix(in srgb, red 50%, white 50%)) {
   :root {
     --color-critical-tint: color-mix(in srgb, var(--color-critical-strong) 50%, #FFF var(--tint-white-percentage));
     --color-critical-shade: color-mix(in srgb, var(--color-critical-strong) 100%, #000 var(--shade-black-percentage));

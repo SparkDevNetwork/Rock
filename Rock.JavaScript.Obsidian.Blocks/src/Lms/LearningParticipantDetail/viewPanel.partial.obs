@@ -1,9 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-
         <div class="row">
-            <div class="col-md-6">
+            <div class="col-md-6" v-if="canViewGrades && gradeText">
                 <ValueDetailList :modelValue="leftSideValues" />
             </div>
 
@@ -63,6 +62,7 @@
                 </DateColumn>
 
                 <TextColumn
+                            v-if="canViewGrades"
                             name="grade"
                             title="Grade"
                             field="grade"
@@ -86,6 +86,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -107,10 +108,26 @@
     // #region Values
 
     const note = ref(props.modelValue?.note ?? "");
+    const currentGradePercent = ref(props.modelValue?.currentGradePercent ?? 0);
+    const currentGradeText = ref(props.modelValue?.currentGradeText ?? "");
+    const gradeText = computed(() => {
+        const hasGradeText = currentGradeText.value?.trim() !== "";
+        const percentText = currentGradePercent.value ? `${currentGradePercent.value}%` : "";
+
+        if (hasGradeText) {
+            return `${currentGradeText.value} (${percentText})`;
+        }
+
+        return percentText;
+    });
+
+    const isAcademicCalendarMode = computed(() => props.options.configurationMode === ConfigurationMode.AcademicCalendar);
 
     // #endregion
 
     // #region Computed Values
+
+    const canViewGrades = computed(() => props.options.canViewGrades ?? false);
 
     /** The values to display at half-width on the left side of the block. */
     const leftSideValues = computed((): ValueDetailListItem[] => {
@@ -120,9 +137,9 @@
             return valueBuilder.build();
         }
 
-        const gradePercentText = props.modelValue.currentGradePercent ? `(${props.modelValue.currentGradePercent}%)` : "";
-        const gradeText = props.modelValue.currentGradeText ? `${props.modelValue.currentGradeText} ${gradePercentText}` : gradePercentText;
-        valueBuilder.addTextValue("Current Grade", gradeText);
+        if (gradeText.value) {
+            valueBuilder.addTextValue("Current Grade", gradeText.value);
+        }
 
         return valueBuilder.build();
     });
@@ -135,7 +152,7 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.absences != null) {
+        if (isAcademicCalendarMode.value === true && props.modelValue.absences != null) {
             valueBuilder.addHtmlValue("Absences", `<div class='label label-${props.modelValue.absencesLabelStyle}'>${props.modelValue.absences}</div>`);
         }
 

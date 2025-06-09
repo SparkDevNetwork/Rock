@@ -239,7 +239,7 @@ namespace Rock.Transactions
                 }
                 catch ( Exception ex )
                 {
-                    errorHandler( new Exception( $"Exception in RockQueue.Drain(): {transaction.GetType().Name}", ex ) );
+                    errorHandler( new Exception( $"Unhandled exception in RockQueue.Drain(): {transaction.GetType().Name} {transaction.ToJson()}", ex ) );
                 }
             }
         }
@@ -419,6 +419,24 @@ namespace Rock.Transactions
                     }
                 }
             }
+        }
+
+        /// <summary>
+        /// Clears the queue without executing the actions. This should only
+        /// be used during unit testing.
+        /// </summary>
+        internal static void Clear()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            while ( TransactionQueue.TryDequeue( out _ ) )
+                ;
+#pragma warning restore CS0618 // Type or member is obsolete
+
+            while ( _standardTransactionQueue.TryDequeue( out _ ) )
+                ;
+
+            while ( _fastTransactionQueue.TryDequeue( out _ ) )
+                ;
         }
 
         #endregion

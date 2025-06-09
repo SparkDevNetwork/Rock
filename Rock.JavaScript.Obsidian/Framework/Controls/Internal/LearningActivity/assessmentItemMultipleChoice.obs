@@ -18,7 +18,7 @@
                              :disabled="disabled"
                              :inputClasses="'answer-text-box-' + index"
                              :label="index === 0 ? 'Answers' : ''"
-                             rules="required" />
+                             :rules="index === 0 ? 'required' : undefined" />
 
                     <button
                             aria-label="Remove this answer"
@@ -56,83 +56,6 @@
         </div>
     </div>
 </template>
-<style scoped>
-.lms-assessment-item-multiple-choice-container > div {
-    display: flex;
-    flex-direction: column;
-}
-
-.add-answer-button > i.fa-plus-circle {
-    border-radius: 4px;
-    background-color: var(--color-default-soft);
-    color: var(--color-default-strong);
-    padding: 8px;
-    cursor: pointer;
-}
-
-.answers-list {
-    display: flex;
-    flex-direction: column;
-    margin-bottom: 4px;
-    padding-right: 12px;
-}
-
-.answer-row {
-    display: grid;
-    grid-template-columns: calc(100% - 30px) 25px;
-    column-gap: 8px;
-}
-
-/*
-    Because each answer-row is a single row grid use margin instead of row-gap.
-    Skip the first row since the label includes margin-bottom already.
-*/
-.answer-row:not(.answer-row-0) {
-    margin-bottom: 12px;
-}
-
-/* Textbox for an answer. */
-.answer-row:first-child {
-    grid-column: 1;
-}
-
-/* Remove button for an answer. */
-.answer-ro:last-child {
-    grid-column: 2;
-    padding: 3px;
-    max-height: 38px;
-}
-
-/* Add a margin-top to the first Remove button to offset the label of the first answer. */
-.answer-row-0  > .remove-answer-button {
-    margin-top: 25px;
-    margin-bottom: 12px;
-}
-
-.correct-answer-field {
-    width: 80%;
-}
-
-/* Summary specific styles  */
-.summary-screen-question-header {
-    display: flex;
-    justify-content: space-between;
-}
-
-.summary-answers-list {
-    display: block;
-    margin: 8px;
-
-}
-
-.multiple-choice-item-question.summary-screen {
-    font-weight: bold;
-}
-
-.label.label-default.selected-response {
-    background-color: var(--color-interface-medium);
-}
-</style>
 
 <script setup lang="ts">
     import { PropType, computed, ref, toValue, watch } from "vue";
@@ -141,7 +64,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { ComponentScreen } from "./learningActivity";
-    import { AssessmentItem, MultipleChoiceItem } from "./assessmentLearningActivity.partial";
+    import { AssessmentItem } from "./assessmentLearningActivity.partial";
 
     const props = defineProps({
         disabled: {
@@ -151,7 +74,7 @@
 
         /** The assessment item's configuration. */
         modelValue: {
-            type: Object as PropType<MultipleChoiceItem | AssessmentItem>,
+            type: Object as PropType<AssessmentItem>,
             required: true
         },
 
@@ -162,18 +85,18 @@
     });
 
     const emit = defineEmits<{
-        (event: "update:modelValue", value: MultipleChoiceItem | AssessmentItem): void
+        (event: "update:modelValue", value: AssessmentItem): void
     }>();
 
-    const modelValue = ref(props.modelValue as MultipleChoiceItem);
-
-    const question = ref(modelValue.value?.question ?? "");
-    const helpText = ref(modelValue.value?.helpText ?? "");
-    const answers = ref(modelValue.value?.answers ?? []);
-    const response = ref(modelValue.value?.response ?? "");
-    const correctAnswer = ref(modelValue.value?.correctAnswer ?? "");
+    const question = ref(props.modelValue.question ?? "");
+    const helpText = ref(props.modelValue.helpText ?? "");
+    const answers = ref(props.modelValue.answers ?? ["", "", ""]);
+    const response = ref(props.modelValue.response ?? "");
+    const correctAnswer = ref(props.modelValue.correctAnswer ?? "");
     const isCorrect = computed(() => response.value === correctAnswer.value);
-    const answersAsListItems = computed(() => answers.value.map(a => {
+
+    const answersWithText = computed(() => answers.value.filter(a => !!a));
+    const answersAsListItems = computed(() => answersWithText.value.map(a => {
         return { value: a, text: a } as ListItemBag;
     }));
 
@@ -204,15 +127,15 @@
             `<span class="badge-danger badge">Incorrect</span>`
     );
 
-    watch([question, helpText, answers, correctAnswer], () => {
-        const newModelValue = {
-            typeName: props.modelValue?.typeName,
+    watch([question, helpText, answersWithText, correctAnswer], () => {
+        const newModelValue: AssessmentItem = {
+            ...props.modelValue,
             question: question.value,
             helpText: helpText.value,
-            answers: answers.value,
+            answers: answersWithText.value,
             correctAnswer: correctAnswer.value,
             uniqueId: props.modelValue?.uniqueId
-        } as MultipleChoiceItem;
+        };
 
         emit("update:modelValue", newModelValue);
     }, { deep: true });
@@ -220,10 +143,10 @@
     /** Watch for modified component completion. */
     watch(response, () => {
         const newModelValue = {
-            ...toValue(modelValue.value),
-        } as MultipleChoiceItem;
+            ...props.modelValue,
+            response: response.value
+        };
 
-        newModelValue.response = response.value;
         emit("update:modelValue", newModelValue);
     });
 

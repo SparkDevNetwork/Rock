@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -52,12 +53,32 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            // ignoring Registration,RegistrationTemplateId
+
             if ( new Service<RegistrationRegistrant>( Context ).Queryable().Any( a => a.RegistrationTemplateId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", RegistrationTemplate.FriendlyTypeName, RegistrationRegistrant.FriendlyTypeName );
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( RegistrationTemplate.RegistrationTemplateQueryableAttributeValue ), nameof( RegistrationTemplateAttributeValues ) )]
+    public partial class RegistrationTemplate
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<RegistrationTemplateQueryableAttributeValue> RegistrationTemplateAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class RegistrationTemplateQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -153,6 +174,7 @@ namespace Rock.Model
             target.PaymentReminderFromName = source.PaymentReminderFromName;
             target.PaymentReminderSubject = source.PaymentReminderSubject;
             target.PaymentReminderTimeSpan = source.PaymentReminderTimeSpan;
+            target.RegistrantRecordSourceValueId = source.RegistrantRecordSourceValueId;
             target.RegistrantsSameFamily = source.RegistrantsSameFamily;
             target.RegistrantTerm = source.RegistrantTerm;
             target.RegistrantWorkflowTypeId = source.RegistrantWorkflowTypeId;

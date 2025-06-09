@@ -1,0 +1,293 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="internalValue"
+           :cancelText="isSaving ? '' : 'Cancel'"
+           :isSaveButtonDisabled="isSaving"
+           :isCloseButtonHidden="isSaving"
+           saveText="Save"
+           title="Save As Template"
+           @save="onSaveClicked"
+           @closeModal="onCancelClicked">
+
+        <ButtonGroup v-if="modes.length > 1"
+                     v-model="mode"
+                     :items="modes" />
+
+        <template v-if="mode === 'saveAs'">
+            <TextBox v-model="name"
+                     :disabled="isSaving"
+                     label="Name"
+                     placeholder="New Template"
+                     rules="required" />
+
+            <TextBox v-model="description"
+                     :disabled="isSaving"
+                     label="Description"
+                     textMode="multiline" />
+
+            <div class="row">
+                <div class="col-sm-6">
+                    <CategoryPicker v-model="category"
+                                    blankValue="Select Category"
+                                    :disabled="isSaving"
+                                    :entityTypeGuid="EntityType.CommunicationTemplate"
+                                    label="Category"
+                                    rules="required" />
+                </div>
+
+                <div class="col-sm-6">
+                    <CheckBox v-model="isStarter"
+                              help="Starter templates appear at the top of the selection screen for the selected category."
+                              label="Starter" />
+                </div>
+            </div>
+        </template>
+
+        <template v-else-if="mode === 'save'">
+            <StaticFormControl :modelValue="originalName" label="Name" />
+            <StaticFormControl :modelValue="originalDescription" label="Description" />
+            <StaticFormControl v-model="originalCategoryText" label="Category" />
+        </template>
+
+        <template v-else>
+            <template v-if="false">
+                <!-- This shouldn't happen but adding just in case. -->
+            </template>
+            Please close this window and try again.
+        </template>
+
+        <NotificationBox v-if="saveError" alertType="warning">{{ saveError }}</NotificationBox>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { BlockActionCallbacks } from "./types.partial";
+    import { get } from "./utils.partial";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { CommunicationEntryWizardCommunicationTemplateDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationTemplateDetailBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { truncate } from "@Obsidian/Utility/stringUtils";
+    import { EmailEditorApi } from "@Obsidian/Controls/emailEditor";
+
+    type Mode = "save" | "saveAs";
+    type StandardListItemBag = {
+        [P in keyof Pick<ListItemBag, "text" | "value">]-?: NonNullable<ListItemBag[P]>;
+    };
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        api: {
+            type: Object as PropType<EmailEditorApi | null | undefined>,
+            required: false,
+        },
+
+        communicationTemplate: {
+            type: Object as PropType<CommunicationEntryWizardCommunicationTemplateDetailBag>,
+            required: true
+        },
+
+        bodyWidth: {
+            type: Number as PropType<number | null | undefined>
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "save", value: CommunicationEntryWizardCommunicationTemplateDetailBag, blockActionCallbacks: BlockActionCallbacks): void;
+        (e: "saveAs", value: CommunicationEntryWizardCommunicationTemplateDetailBag, blockActionCallbacks: BlockActionCallbacks): void;
+        (e: "cancel"): void;
+        (e: "update:modelValue", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    // UI state.
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+    const saveError = ref<string | null | undefined>();
+    const isSaving = ref<boolean>(false);
+    const mode = ref<Mode>("saveAs");
+
+    // Model state.
+    const name = ref<string>(props.communicationTemplate.name ? truncate(`Copy of ${props.communicationTemplate.name}`, 100) : "");
+    const description = ref<string>(props.communicationTemplate.description ?? "");
+    const category = ref<ListItemBag | null | undefined>(props.communicationTemplate.category);
+    const isStarter = ref<boolean>(props.communicationTemplate.isStarter);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const modes = computed<StandardListItemBag[]>(() => {
+        if (props.communicationTemplate.isSystem) {
+            return [
+                {
+                    text: "Save As New Template",
+                    value: get<Mode>("saveAs")
+                }
+            ];
+        }
+        else {
+            return [
+                {
+                    text: "Overwrite Existing Template",
+                    value: get<Mode>("save")
+                },
+                {
+                    text: "Save As New Template",
+                    value: get<Mode>("saveAs")
+                }
+            ];
+        }
+    });
+
+    const originalName = computed<string>(() => {
+        return props.communicationTemplate.name ?? "";
+    });
+
+    const originalDescription = computed<string>(() => {
+        return props.communicationTemplate.description ?? "";
+    });
+
+    const originalCategoryText = computed<string>(() => {
+        return props.communicationTemplate.category?.text ?? "";
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getFileName(name: string): string {
+        return `communication_template_preview_${name.replace(" ", "_")}.png`;
+    }
+
+    function useTemporaryRenderElement(callback: (tempElement: HTMLElement) => Promise<void>): void {
+        let tempRenderElement: HTMLIFrameElement | null | undefined;
+
+        try {
+            // First, we must clone and clean the HTML so it can be saved without runtime code.
+            tempRenderElement = document.createElement("iframe");
+            tempRenderElement.onload = async () => {
+                await callback(tempRenderElement!.contentDocument!.body);
+                // Remove the temporary element from the DOM.
+                tempRenderElement?.remove();
+            };
+            tempRenderElement.srcdoc = props.communicationTemplate?.message ?? "";
+
+            // Add the clone temporarily to the get html2canvas to work.
+            // This should be fine as the modal will be displayed over the document.
+            document.body.append(tempRenderElement);
+        }
+        catch {
+            // Remove the temporary element from the DOM.
+            tempRenderElement?.remove();
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    async function onSaveClicked(): Promise<void> {
+        saveError.value = null;
+
+        // Generate a new thumbnail image every time the section is saved.
+        useTemporaryRenderElement(async tempElement => {
+            if (!props.api) {
+                saveError.value = "You don't have access to create the template preview image.";
+                return;
+            }
+
+            try {
+                isSaving.value = true;
+                saveError.value = null;
+
+                const thumbnailInfo = await props.api.createBinaryFileImageFromElement({
+                    element: tempElement,
+                    fileName: getFileName(name.value),
+                    elementWidth: props.bodyWidth ?? undefined,
+                    binaryFileTypeGuid: BinaryFiletype.Default
+                });
+
+                // Save.
+                const bag: CommunicationEntryWizardCommunicationTemplateDetailBag = {
+                    ...props.communicationTemplate,
+
+                    imageFile: thumbnailInfo.binaryFile
+                };
+
+                const blockActionCallbacks: BlockActionCallbacks = {
+                    onError(error?: string | null | undefined) {
+                        isSaving.value = false;
+                        saveError.value = error ?? "Unable to save the template.";
+                    },
+                    onSuccess() {
+                        // Hide the modal.
+                        internalValue.value = false;
+
+                        isSaving.value = false;
+                    }
+                };
+
+                // In "Save As" mode, also update the editable fields.
+                if (mode.value === "saveAs") {
+                    bag.category = category.value;
+                    bag.name = name.value;
+                    bag.description = description.value;
+                    bag.isStarter = isStarter.value;
+
+                    emit("saveAs", bag, blockActionCallbacks);
+                }
+                else {
+                    emit("save", bag, blockActionCallbacks);
+                }
+            }
+            catch {
+                isSaving.value = false;
+                saveError.value = "You don't have access to create the template preview image.";
+            }
+        });
+    }
+
+    function onCancelClicked(): void {
+        // Hide the modal.
+        internalValue.value = false;
+
+        emit("cancel");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Hooks
+
+    watch(internalValue, (newValue) => {
+        if (newValue) {
+            // Initialize model data.
+            name.value = props.communicationTemplate.name ? truncate(`Copy of ${props.communicationTemplate.name}`, 100) : "";
+            description.value = props.communicationTemplate.description ?? "";
+            category.value = props.communicationTemplate.category;
+            isStarter.value = props.communicationTemplate.isStarter;
+        }
+        else {
+            // Clear all fields.
+            name.value = "";
+            description.value = "";
+            category.value = null;
+            isStarter.value = false;
+        }
+    });
+
+    // #endregion Hooks
+</script>

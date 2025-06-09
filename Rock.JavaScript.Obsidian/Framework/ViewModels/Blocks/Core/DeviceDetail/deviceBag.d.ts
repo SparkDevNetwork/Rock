@@ -82,4 +82,7 @@ export type DeviceBag = {
 
     /** Gets or sets a flag that overrides which printer the print job is set to. */
     printToOverride: PrintTo;
+
+    /** The device that will act as a proxy for this device. */
+    proxyDevice?: ListItemBag | null;
 };

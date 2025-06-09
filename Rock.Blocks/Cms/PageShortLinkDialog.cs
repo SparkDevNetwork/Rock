@@ -25,6 +25,8 @@ using Rock.Blocks;
 using Rock.Cms;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkDetail;
 using Rock.ViewModels.Utility;
@@ -91,6 +93,8 @@ namespace Rock.Blocks.Cms
             {
                 box.Entity.Token = new PageShortLinkService( RockContext ).GetUniqueToken( SiteCache.GetId( box.Entity.Site.Value.AsGuid() ) ?? 0, minTokenLength );
             }
+
+            box.SecurityGrantToken = RenewSecurityGrantToken();
 
             return box;
         }
@@ -197,7 +201,7 @@ namespace Rock.Blocks.Cms
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             box.IfValidProperty( nameof( box.Bag.UtmSettings ), () =>
@@ -214,6 +218,20 @@ namespace Rock.Blocks.Cms
             } );
 
             return true;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            var utmCampaignType = DefinedTypeCache.Get( SystemGuid.DefinedType.UTM_CAMPAIGN.AsGuid(), RockContext );
+            var utmMediumType = DefinedTypeCache.Get( SystemGuid.DefinedType.UTM_MEDIUM.AsGuid(), RockContext );
+            var utmSourceType = DefinedTypeCache.Get( SystemGuid.DefinedType.UTM_SOURCE.AsGuid(), RockContext );
+
+            return new SecurityGrant()
+                .AddRule( new AddDefinedValueToTypeGrantRule( utmCampaignType.Id ) )
+                .AddRule( new AddDefinedValueToTypeGrantRule( utmMediumType.Id ) )
+                .AddRule( new AddDefinedValueToTypeGrantRule( utmSourceType.Id ) )
+                .ToToken();
         }
 
         #endregion

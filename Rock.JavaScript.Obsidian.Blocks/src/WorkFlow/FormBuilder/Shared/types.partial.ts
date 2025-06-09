@@ -332,6 +332,11 @@ export type FormGeneral = {
      */
     template?: Guid | null;
 
+    /**
+     * The unique slug for the workflow type.
+     */
+    slug?: string | null;
+
     /** The category that this form belongs to for organization purposes. */
     category?: ListItemBag | null;
 
@@ -360,7 +365,7 @@ export type FormCompletionAction = {
     type?: FormCompletionActionType;
 
     /**
-     * contains the HTML message content that should be displayed to the
+     * Contains the text message content that should be displayed to the
      * individual after the form has been submitted.
      */
     message?: string | null;
@@ -444,6 +449,12 @@ export type FormPersonEntry = {
      * for Person.RecordStatusValue when a new Person is created.
      */
     recordStatus?: Guid | null;
+
+    /**
+     * The DefinedValue unique identifier that specifies the value used
+     * for Person.RecordSourceValue when a new Person is created.
+     */
+    recordSource?: Guid | null;
 
     /**
      * The DefinedValue unique identifier that specifies the value used for

@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "SystemPhoneNumber" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "66D62A9F-13CD-4160-8653-211B2A4ABF16" )]
     public partial class SystemPhoneNumber : Model<SystemPhoneNumber>, IOrdered, ICacheable
     {
@@ -103,6 +104,7 @@ namespace Rock.Model
         /// </summary>
         /// <value><c>true</c> if this instance supports SMS; otherwise, <c>false</c>.</value>
         [DataMember]
+        [EnableAttributeQualification]
         public bool IsSmsEnabled { get; set; }
 
         /// <summary>
@@ -111,6 +113,7 @@ namespace Rock.Model
         /// </summary>
         /// <value><c>true</c> if this phohe number will forward incoming messages; otherwise, <c>false</c>.</value>
         [DataMember]
+        [EnableAttributeQualification]
         public bool IsSmsForwardingEnabled { get; set; }
 
         /// <summary>

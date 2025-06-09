@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
@@ -27,6 +28,7 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Finance.SavedAccountList;
+using Rock.ViewModels.Finance;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -39,7 +41,17 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "List of a person's saved accounts that can be used to delete an account." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web, SiteType.Mobile )]
+
+    #region Block Attributes
+
+    [LinkedPage( "Detail Page",
+        Description = "Page used to view details of a saved account.",
+        IsRequired = false,
+        Key = AttributeKey.DetailPage,
+        SiteTypes = Enums.Cms.SiteTypeFlags.Mobile )]
+
+    #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "ad9c4aac-54bb-498d-9bd3-47d8f21b9549" )]
     [Rock.SystemGuid.BlockTypeGuid( "e20b2fe2-2708-4e9a-b9fb-b370e8b0e702" )]
@@ -47,6 +59,52 @@ namespace Rock.Blocks.Finance
     [ContextAware( typeof( Person ) )]
     public class SavedAccountList : RockEntityListBlockType<FinancialPersonSavedAccount>
     {
+        #region Keys
+
+        /// <summary>
+        /// The attribute keys for the block.
+        /// </summary>
+        private static class AttributeKey
+        {
+            public const string DetailPage = "DetailPage";
+        }
+
+        /// <summary>
+        /// The gateways that are supported in Rock Mobile.
+        /// </summary>
+        private static class MobileSupportedGateway
+        {
+            public const string MyWell = "C55F91AC-07F6-484B-B2FF-6EE7D82D7E93";
+        }
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the detail page GUID.
+        /// </summary>
+        protected Guid? DetailPageGuid => GetAttributeValue( AttributeKey.DetailPage ).AsGuidOrNull();
+
+        /// <summary>
+        /// Gets the MyWell gateway or returns null if it does not exist.
+        /// </summary>
+        protected FinancialGateway MyWellGateway
+        {
+            get
+            {
+                if ( _myWellGateway == null )
+                {
+                    _myWellGateway = new FinancialGatewayService( RockContext ).Get( MobileSupportedGateway.MyWell, false );
+                }
+
+                return _myWellGateway;
+            }
+        }
+        private FinancialGateway _myWellGateway;
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
@@ -98,6 +156,7 @@ namespace Rock.Blocks.Finance
             return savedAccounts.AsQueryable();
         }
 
+        /// <inheritdoc />
         protected override IQueryable<FinancialPersonSavedAccount> GetOrderedListQueryable( IQueryable<FinancialPersonSavedAccount> queryable, RockContext rockContext )
         {
             return queryable.OrderBy( a => a.Name );
@@ -111,6 +170,10 @@ namespace Rock.Blocks.Finance
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "accountNumber", a => a.FinancialPaymentDetail?.AccountNumberMasked )
+                .AddTextField( "imageSource", a => a.FinancialPaymentDetail?.GetCreditCardImageSource() )
+                .AddTextField( "description", a => a.FinancialPaymentDetail?.GetDescription() )
+                .AddTextField( "expirationDate", a => a.FinancialPaymentDetail?.ExpirationDate )
+                .AddTextField( "guid", a => a.Guid.ToString() )
                 .AddTextField( "accountType", a => a.FinancialPaymentDetail?.CurrencyAndCreditCardType );
         }
 
@@ -148,6 +211,56 @@ namespace Rock.Blocks.Finance
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Adds a new payment method for the current person.
+        /// </summary>
+        /// <param name="options">The options to add the new payment method with.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public BlockActionResult AddSavedAccountFromToken( SavedAccountTokenBag options )
+        {
+            if ( RequestContext.CurrentPerson == null )
+            {
+                return ActionBadRequest( "You must be logged in to add a payment method." );
+            }
+
+            if ( options == null || options.Token.IsNullOrWhiteSpace() || options.CurrencyTypeValueId.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "Invalid request. Token and Currency Type are required parameters." );
+            }
+
+            var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( RockContext );
+
+            var transactionTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
+            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, transactionTypeId, out var errorMessage );
+
+            if ( savedAccount == null )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            return ActionOk( savedAccount.Guid );
+        }
+
+        #endregion
+
+        #region IRockMobileBlockType
+
+        /// <inheritdoc />
+        public override object GetMobileConfigurationValues()
+        {
+            MyWellGateway?.LoadAttributes();
+
+            return new
+            {
+                DetailPage = DetailPageGuid,
+
+                // Since this block only supports the MyWell gateway (for adding a payment method), we can fetch the public key
+                // from the gateway attributes safely.
+                PublicKey = MyWellGateway?.GetAttributeValue( "PublicApiKey" ),
+            };
         }
 
         #endregion

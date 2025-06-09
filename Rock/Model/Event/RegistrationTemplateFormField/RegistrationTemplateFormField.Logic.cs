@@ -21,6 +21,7 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+using Rock.Security;
 using Rock.Web.Cache;
 
 namespace Rock.Model
@@ -59,6 +60,13 @@ namespace Rock.Model
 
         #endregion ICacheable
 
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => RegistrationTemplateForm ?? base.ParentAuthority;
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -93,6 +101,21 @@ namespace Rock.Model
             )
             {
                 return;
+            }
+
+            if ( this.AttributeId.HasValue )
+            {
+                // If linked to an attribute, check that the attribute exists and IsActive.
+                if ( this.Attribute != null && !this.Attribute.IsActive )
+                {
+                    return;
+                }
+
+                var attribute = AttributeCache.Get( this.AttributeId.Value );
+                if ( attribute == null || !attribute.IsActive )
+                {
+                    return;
+                }
             }
 
             // Find or add the parent form's collection.

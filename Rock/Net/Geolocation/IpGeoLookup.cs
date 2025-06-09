@@ -28,6 +28,7 @@ using RestSharp.Extensions;
 
 using Rock.Model;
 using Rock.Observability;
+using Rock.SystemKey;
 using Rock.Web.Cache;
 
 namespace Rock.Net.Geolocation
@@ -68,6 +69,41 @@ namespace Rock.Net.Geolocation
         private string _previousEtagValue;
         private DatabaseReader _locationDatabase;
 
+        /// <summary>
+        /// A helper method to lazily get or create the list of country codes for countries whose access should be
+        /// globally restricted.
+        /// </summary>
+        /// <returns>The lazy list of country codes for countries whose access should be globally restricted.</returns>
+        private static Lazy<HashSet<string>> GetOrCreateGloballyRestrictedCountryCodes()
+        {
+            return new Lazy<HashSet<string>>( () =>
+            {
+                var restrictedCountryGuids = Rock.Web.SystemSettings
+                    .GetValue( SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING )
+                    .SplitDelimitedValues( "|", StringSplitOptions.RemoveEmptyEntries )
+                    .AsGuidList();
+
+                if ( !restrictedCountryGuids.Any() )
+                {
+                    return new HashSet<string>();
+                }
+
+                return DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES )
+                    .DefinedValues
+                    .Where( dv =>
+                        dv.Value.IsNotNullOrWhiteSpace()
+                        && restrictedCountryGuids.Contains( dv.Guid )
+                    )
+                    .Select( dv => dv.Value.ToUpper() )
+                    .ToHashSet();
+            } );
+        }
+
+        /// <summary>
+        /// The backing field for the <see cref="GloballyRestrictedCountryCodes"/> property.
+        /// </summary>
+        private static Lazy<HashSet<string>> _globallyRestrictedCountryCodes = GetOrCreateGloballyRestrictedCountryCodes();
+
         #endregion Fields
 
         #region Properties
@@ -86,6 +122,11 @@ namespace Rock.Net.Geolocation
         /// The country defined type cache.
         /// </summary>
         private DefinedTypeCache CountryDefinedTypeCache => DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.LOCATION_COUNTRIES );
+
+        /// <summary>
+        /// Gets the list of country codes for countries whose access should be globally restricted.
+        /// </summary>
+        public static HashSet<string> GloballyRestrictedCountryCodes => _globallyRestrictedCountryCodes.Value;
 
         #endregion Properties
 
@@ -191,6 +232,14 @@ namespace Rock.Net.Geolocation
 
                 InitializeDatabase();
             }
+        }
+
+        /// <summary>
+        /// Releases static <see cref = "GloballyRestrictedCountryCodes" /> when updated values should be loaded into memory.
+        /// </summary>
+        public static void ReinitializeGloballyRestrictedCountryCodes()
+        {
+            _globallyRestrictedCountryCodes = GetOrCreateGloballyRestrictedCountryCodes();
         }
 
         /// <summary>

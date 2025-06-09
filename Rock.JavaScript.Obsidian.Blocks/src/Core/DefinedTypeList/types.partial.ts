@@ -15,16 +15,6 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
 export const enum NavigationUrlKey {
     DetailPage = "DetailPage"
 }
-
-export const enum PreferenceKey {
-    FilterCategory = "filter-category"
-}
-
-export type GridSettingsOptions = {
-    category: ListItemBag;
-};

@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "BinaryFileType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "62AF597F-F193-412B-94EA-291CF713327D")]
     public partial class BinaryFileType : Model<BinaryFileType>, ICacheable
     {
@@ -83,6 +84,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32" /> representing the Id of the storage service <see cref="Rock.Model.EntityType"/>.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? StorageEntityTypeId { get; set; }
 
         /// <summary>

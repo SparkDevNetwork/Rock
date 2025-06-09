@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock v-if="!blockError"
                  v-model:mode="panelMode"
@@ -22,11 +22,11 @@
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
-            <ViewPanel :modelValue="learningCourseViewBag" :options="options" />
+            <ViewPanel :modelValue="learningCourseViewBag" :options="options" v-model:selectedTab="selectedTab" />
         </template>
 
         <template #edit>
-            <EditPanel v-model="learningCourseEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" />
+            <EditPanel v-model="learningCourseEditBag" :options="options" @propertyChanged="baseBlock.onPropertyChanged" v-model:selectedTab="selectedTab" />
         </template>
     </DetailBlock>
 </template>
@@ -75,6 +75,8 @@
 
     const panelMode = ref<DetailPanelMode>(DetailPanelMode.View);
 
+    const selectedTab = ref("Overview");
+
     // #endregion
 
     // #region Computed Values
@@ -103,21 +105,6 @@
             return labels;
         }
 
-        if (learningCourseViewBag.value?.isActive === true) {
-            labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "info"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
-                title: "Inactive",
-                type: "danger"
-            });
-        }
-
         if (learningCourseViewBag.value?.isPublic === true) {
             labels.push({
                 title: "Public",
@@ -128,6 +115,13 @@
             labels.push({
                 title: "Internal",
                 type: "warning"
+            });
+        }
+
+        if (learningCourseViewBag.value?.isActive === false) {
+            labels.push({
+                title: "Inactive",
+                type: "danger"
             });
         }
 

@@ -23,6 +23,10 @@
 
 /** Service Job guids */
 export const ServiceJob = {
+    /** The job for calculating peer networks for individuals. */
+    CalculatePeerNetwork: "D3172560-0E8C-4E69-A477-56ABC018FEEF",
+    /** The job for performing synchronization tasks between Rock and the external chat system. */
+    ChatSyncJob: "80202290-66DF-4289-8938-4FA6B84E3EE2",
     /** The collect hosting metrics job - collect metrics regarding database connections, Etc. */
     CollectHostingMetrics: "36FA38CA-9DB0-40A8-BABD-5411121B4809",
     /** The data migrations 120 add communication get queued index */
@@ -132,10 +136,16 @@ export const ServiceJob = {
     DataMigrations167ChopPledgeEntryBlock: "8E8C177E-DE88-47B2-AD9A-FC6AD5965882",
     /** The Job to run Post v16.7 to populate EntityIntents from AdditionalSettingsJson. */
     DataMigrations167PopulateEntityIntentsFromAdditionalSettingsJson: "155C2051-1513-4BB3-83AD-8D37EBBC3F59",
+    /** The Job to run Post v16.8 to update indexes. */
+    DataMigrations168UpdateIndexes: "E27CF068-B7DA-4AD0-ABC0-380AB68F1778",
+    /** The Job to run Post v17.0 to add new and update existing indexes to support the Peer Network feature. */
+    DataMigrations170AddAndUpdatePeerNetworkIndexes: "195DDB5A-FF1C-438E-BCA4-37EBC3D0F558",
     /** The Job to run Post v17.0 Data Migrations to chop Block. */
     DataMigrations170ChopObsidianBlocks: "74265B89-31DF-4430-84D4-8343C64F2580",
     /** The Job to run Post v17.0 Data Migrations to chop Shortened Link Block. */
     DataMigrations170ChopShortenedLinksBlock: "8899363A-C52B-4D82-88C2-CA199D73E95C",
+    /** The Job to run Post v17.0 Interaction Index Migration . */
+    DataMigrations170InteractionIndexPostMigrationJob: "9984C806-FAEE-4005-973B-9FBE21948972",
     /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
     DataMigrations170RemoveCommunicationRecipientListBlock: "54CCFFFD-83A8-4BB6-A699-DDE34310BFE6",
     /** The post update data migration job to remove the legacy Communication Recipient List Webforms block. */
@@ -144,6 +154,29 @@ export const ServiceJob = {
     DataMigrations170RemoveLegacyPreferences: "46d98280-7611-4588-831d-6924e2be9da6",
     /** The Job to run Post v17.0 Data Migrations to swap Block. */
     DataMigrations170SwapObsidianBlocks: "EA16D2B2-35CB-4E6B-A6A7-CBD6BCA5998F",
+    /** The job for swapping DefinedTypeDetail and DefinedValueList with Webforms Block. */
+    DataMigrations170SwapWebformsBlocks: "AD8A38F7-1FCC-47CD-893F-9B4335DD7E08",
+    /** The Job to run Post v17.0 Update Person PrimaryPersonAliasGuid. */
+    DataMigrations170UpdatePersonPrimaryPersonAliasGuid: "11A4E70F-899F-4B1D-BB25-12768E487A24",
+    /** The job to run Post v17.1 Data Migrations to add an index on the CommunicationRecipient table. */
+    DataMigrations171AddCommunicationrecipientIndex: "9C04D469-FB52-438E-B725-D4211139A933",
+    /** The Job to run Post v17.1 Data Migrations to chop Block. */
+    DataMigrations171ChopObsidianBlocks: "C5AE8BF4-C83C-4695-9233-1B1D5D2801D7",
+    /** The job to run Post v17.1 Data Migrations to migrate login history from the History table to the HistoryLogin table. */
+    DataMigrations171MigrateLoginHistory: "D5E7B461-748F-4A01-BA3F-FA7BEF6AC0F0",
+    /**
+     * The job to run Post v17.1 Data Migration to upset the Attendance Occurrence
+     * table with RootGroupTypeId values for existing data.
+     */
+    DataMigrations171PopulateAttendanceRootGroupType: "e6755275-02ca-4159-af16-1e4cdcfa22d0",
+    /** The job to run Post v17.1 Data Migrations to update an existing index on the CommunicationRecipient table. */
+    DataMigrations171UpdateCommunicationrecipientIndex: "EB00BD84-D89C-44B4-8C0C-56322074C9C4",
+    /** The Job to run Post v18.0 Data Migrations to chop Block. */
+    DataMigrations180ChopObsidianBlocks: "6BFCE2DE-5B38-4B71-8737-423AF51A39B1",
+    /** The job to run Post v18.0 Data Migrations to delete the deprecated GroupLocationHistoricalSchedule table from the database. */
+    DataMigrations180DeleteGrouplocationhistoricalschedule: "6A76B67B-9C25-4C02-8BC6-06B23EC8C7C3",
+    /** The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table. */
+    DataMigrations180UpdateCommunicationrecipientIndex: "FE519BCE-CCB8-42B7-A14C-1620859F23E8",
     /**
      * The Post Update Data Migration Job to chop the Schedule Detail, Asset Storage Provider Detail, Page Short Link Detail, Streak Type Detail,
      * Following Event Type Detail, Financial Batch Detail
@@ -178,7 +211,7 @@ export const ServiceJob = {
     RockCleanup: "1A8238B1-038A-4295-9FDE-C6D93002A5D7",
     /** The Job to send an email digest with an attendance summary of all child groups to regional group leaders */
     SendGroupAttendanceDigest: "9F9E9C3B-FC58-4939-A272-4FA86D44CE7B",
-    /** The job for sending available learning activity notifications. Rock.Jobs.SendLearningActivityNotifications. */
+    /** The job for sending available learning activity notifications. Rock.Jobs.SendLearningNotifications. */
     SendLearningActivityNotifications: "0075859b-8dc3-4e95-9075-89198886fcb4",
     /** The steps automation job - add steps based on people in a dataview */
     StepsAutomation: "97858941-0447-49D6-9E35-B03665FEE965",

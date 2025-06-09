@@ -23,7 +23,7 @@ using System.Linq.Expressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-using DotLiquid;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -1525,21 +1525,11 @@ namespace RockWeb.Blocks.Groups
                 // If a map is to be shown
                 if ( showMap && groups.Any() )
                 {
-                    Template template = null;
                     ILavaTemplate lavaTemplate = null;
 
-                    if ( LavaService.RockLiquidIsEnabled )
-                    {
-                        template = LavaHelper.CreateDotLiquidTemplate( GetAttributeValue( AttributeKey.MapInfo ) );
+                    var parseResult = LavaService.ParseTemplate( GetAttributeValue( AttributeKey.MapInfo ) );
 
-                        LavaHelper.VerifyParseTemplateForCurrentEngine( GetAttributeValue( AttributeKey.MapInfo ) );
-                    }
-                    else
-                    {
-                        var parseResult = LavaService.ParseTemplate( GetAttributeValue( AttributeKey.MapInfo ) );
-
-                        lavaTemplate = parseResult.Template;
-                    }
+                    lavaTemplate = parseResult.Template;
 
                     // Add mapitems for all the remaining valid group locations
                     var groupMapItems = new List<MapItem>();
@@ -1578,16 +1568,9 @@ namespace RockWeb.Blocks.Groups
 
                             string infoWindow;
 
-                            if ( LavaService.RockLiquidIsEnabled )
-                            {
-                                infoWindow = template.Render( Hash.FromDictionary( mergeFields ) );
-                            }
-                            else
-                            {
-                                var result = LavaService.RenderTemplate( lavaTemplate, mergeFields );
+                            var result = LavaService.RenderTemplate( lavaTemplate, mergeFields );
 
-                                infoWindow = result.Text;
-                            }
+                            infoWindow = result.Text;
 
                             // Add a map item for group
                             var mapItem = new FinderMapItem( gl.Location );
@@ -1841,11 +1824,17 @@ namespace RockWeb.Blocks.Groups
             // add styling to map
             string styleCode = "null";
             var markerColors = new List<string>();
+            string mapId = string.Empty;
 
             DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( AttributeKey.MapStyle ).AsInteger() );
             if ( dvcMapStyle != null )
             {
-                styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                var dynamicMapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                if ( dynamicMapStyle.IsNotNullOrWhiteSpace() )
+                {
+                    styleCode = dynamicMapStyle;
+                }
+                mapId = dvcMapStyle.GetAttributeValue( "core_GoogleMapId" );
 
                 var colorsSetting = dvcMapStyle.GetAttributeValue( "Colors" ) ?? string.Empty;
                 markerColors = colorsSetting
@@ -1920,7 +1909,7 @@ namespace RockWeb.Blocks.Groups
 
         var mapStyle = {3};
         var mapId = '{15}';
-        var isDefaultMapId = mapId === 'DEFAULT_MAP_ID';
+        var isMapIdEmpty = !mapId;
 
         var polygonColorIndex = 0;
         var polygonColors = [{5}];
@@ -1935,20 +1924,21 @@ namespace RockWeb.Blocks.Groups
             // Set default map options
             var mapOptions = {{
                  mapTypeId: 'roadmap'
-                ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
                 ,maxZoom: {11}
                 ,minZoom: {12}
                 ,zoom: {9}
             }};
 
-            if (!isDefaultMapId) {{
+            if (!isMapIdEmpty) {{
                 mapOptions.mapId = mapId;
+            }} else {{
+                mapOptions.styles = mapStyle;
             }}
 
             // Display a map on the page
             map = new google.maps.Map(document.getElementById('map_canvas'), mapOptions);
-            google.maps.event.addDomListener(map, 'zoom_changed', function() {{
+            google.maps.event.addListener(map, 'zoom_changed', function() {{
                 var zoomThreshold = {13};
                 var zoomAmount = {14};
 
@@ -1976,7 +1966,7 @@ namespace RockWeb.Blocks.Groups
                     var marker = allMarkers[i];
                     var updatedMarker;
 
-                    if (isDefaultMapId) {{
+                    if (isMapIdEmpty) {{
                         var pinImage = {{
                             path: marker.icon.path,
                             fillColor: marker.icon.fillColor,
@@ -2113,7 +2103,7 @@ namespace RockWeb.Blocks.Groups
 
         function openInfoWindow(marker) {{
             infoWindow.setContent( $('<div/>').html(marker.info_window).text() );
-            if (isDefaultMapId) {{
+            if (isMapIdEmpty) {{
                 infoWindow.open(map, marker);
             }}
             else {{
@@ -2142,7 +2132,7 @@ namespace RockWeb.Blocks.Groups
                     color = '#' + color;
                 }}
 
-                if (isDefaultMapId) {{
+                if (isMapIdEmpty) {{
                     var pinImage = {{
                         path: ""{10}"",
                         fillColor: color,
@@ -2319,8 +2309,6 @@ namespace RockWeb.Blocks.Groups
 
             var markerDefinedValueId = GetAttributeValue( AttributeKey.MapMarker ).AsIntegerOrNull();
             var marker = "M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z";
-            var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
-            mapId = mapId.IsNullOrWhiteSpace() ? "DEFAULT_MAP_ID" : mapId;
 
             if ( markerDefinedValueId != null )
             {

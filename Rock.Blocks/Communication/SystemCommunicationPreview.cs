@@ -34,7 +34,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "System Communication Preview" )]
     [Category( "Communication" )]
     [Description( "Create a preview and send a test message for the given system communication using the selected date and target person." )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

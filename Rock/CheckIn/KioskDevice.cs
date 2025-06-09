@@ -14,13 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-#if REVIEW_WEBFORMS
-using DotLiquid;
-#endif
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
+
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -404,6 +402,7 @@ namespace Rock.CheckIn
             groupLocationList
                 .Select( l => l.Group )
                 .DistinctBy( g => g.Id )
+                .ToList()
                 .LoadAttributes( rockContext );
 
             // The above call only loaded Attributes for the first Group of a given ID.
@@ -586,7 +585,7 @@ namespace Rock.CheckIn
         /// <returns>
         ///   <c>true</c> if the specified key contains key; otherwise, <c>false</c>.
         /// </returns>
-        public bool ContainsKey(object key)
+        public bool ContainsKey( object key )
         {
             return AvailableKeys.Contains( key.ToStringSafe() );
         }

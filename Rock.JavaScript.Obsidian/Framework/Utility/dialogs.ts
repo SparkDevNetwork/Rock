@@ -25,7 +25,7 @@ declare const Rock: any;
 /** The options that describe the dialog. */
 export type DialogOptions = {
     /** The text to display inside the dialog. */
-    message: string;
+    message: string | HTMLElement;
 
     /** A list of buttons to display, rendered left to right. */
     buttons: ButtonOptions[];
@@ -35,6 +35,12 @@ export type DialogOptions = {
      * will be chosen automatically.
      */
     container?: string | Element;
+
+    /**
+     * Determines if the standard close button in the corner of the dialog
+     * should be hidden.
+     */
+    hideCloseButton?: boolean;
 
     /**
      * An optional cancellation token that will dismiss the dialog automatically
@@ -176,7 +182,13 @@ export function showDialog(options: DialogOptions): Promise<string> {
         const container = document.fullscreenElement || document.body;
         const body = document.createElement("div");
         let autoFocus: null | HTMLElement = null;
-        body.innerText = options.message;
+
+        if (options.message instanceof HTMLElement) {
+            body.appendChild(options.message);
+        }
+        else {
+            body.innerText = options.message;
+        }
 
         const buttons: HTMLElement[] = [];
 
@@ -233,13 +245,19 @@ export function showDialog(options: DialogOptions): Promise<string> {
             buttons.push(btn);
         }
 
-        // Construct the close (cancel) button.
-        const closeButton = createCloseButton();
-        closeButton.addEventListener("click", () => {
-            clearDialog("cancel");
-        });
+        const dialogBody: HTMLElement[] = [body];
 
-        const dialog = createDialog([closeButton, body], buttons);
+        if (!options.hideCloseButton) {
+            // Construct the close (cancel) button.
+            const closeButton = createCloseButton();
+            closeButton.addEventListener("click", () => {
+                clearDialog("cancel");
+            });
+
+            dialogBody.splice(0, 0, closeButton);
+        }
+
+        const dialog = createDialog(dialogBody, buttons);
         const backdrop = createBackdrop();
 
         const modal = dialog.querySelector(".modal") as HTMLElement;
@@ -351,5 +369,5 @@ export function showSecurity(entityTypeIdKey: Guid | string | number, entityIdKe
  * @param pageId The page identifier
  */
 export function showChildPages(pageId: Guid | string | number): void {
-    Rock.controls.modal.show(undefined, `/pages/${pageId}?t=Child Pages&amp;pb=&amp;sb=Done`);
+    Rock.controls.modal.show(undefined, `/pages/${pageId}?t=Child Pages&pb=&sb=Done`);
 }

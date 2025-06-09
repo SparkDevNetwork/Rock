@@ -37,6 +37,7 @@ namespace Rock.Field.Types
     /// Stored as a comma-delimited pair of DefinedValue.Guids: lowerGuid,upperGuid
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DEFINED_VALUE_RANGE )]
     public class DefinedValueRangeFieldType : FieldType, IEntityReferenceFieldType
@@ -327,6 +328,7 @@ namespace Rock.Field.Types
             controls.Add( ddl );
             ddl.AutoPostBack = true;
             ddl.SelectedIndexChanged += OnQualifierUpdated;
+            ddl.Required = true;
             ddl.Label = "Defined Type";
             ddl.Help = "The Defined Type to select values from.";
 

@@ -35,11 +35,17 @@ export type InitializationBox = {
     /** Gets or sets the additional time sign-ups header HTML. */
     additionalTimeSignUpsHeaderHtml?: string | null;
 
+    /** Gets or sets the confirmed button text. */
+    confirmedButtonText?: string | null;
+
     /** Gets or sets the current schedule button text. */
     currentScheduleButtonText?: string | null;
 
     /** Gets or sets the current schedule header HTML. */
     currentScheduleHeaderHtml?: string | null;
+
+    /** Gets or sets the decline button text. */
+    declineButtonText?: string | null;
 
     /**
      * Gets or sets the error message. A non-empty value indicates that

@@ -34,6 +34,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Metric Field Type.  Stored as Metric's Guid.
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.METRIC )]
     public class MetricFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

@@ -119,11 +119,48 @@ export class TransformHelper {
         const rightAnchor = ["top-right", "middle-right", "bottom-right"].includes(this.lastAnchor ?? "");
         const bottomAnchor = ["bottom-left", "bottom-center", "bottom-right"].includes(this.lastAnchor ?? "");
 
-        // Get the new values.
-        let newX = this.node.x();
-        let newY = this.node.y();
+        let newX: number;
+        let newY: number;
         let newWidth = this.node.width() * this.node.scaleX();
         let newHeight = this.node.height() * this.node.scaleY();
+
+        let stageWidth: number;
+        let stageHeight: number;
+
+        const rotation = Math.round(this.node.rotation());
+
+        // Rotate all our values to make the math easier. So if we are rotated
+        // at -90 (text reads from bottom to top) then the "newX" value becomes
+        // the bottom edge of the field and the bottom of the canvas becomes
+        // the left edge.
+        if (rotation === -90) {
+            newX = this.stage.height() - this.node.y();
+            newY = this.node.x();
+
+            stageWidth = this.stage.height();
+            stageHeight = this.stage.width();
+        }
+        else if (rotation === 90) {
+            newX = this.node.y();
+            newY = this.stage.width() - this.node.x();
+
+            stageWidth = this.stage.height();
+            stageHeight = this.stage.width();
+        }
+        else if (rotation === 180) {
+            newX = this.stage.width() - this.node.x();
+            newY = this.stage.height() - this.node.y();
+
+            stageWidth = this.stage.width();
+            stageHeight = this.stage.height();
+        }
+        else {
+            newX = this.node.x();
+            newY = this.node.y();
+
+            stageWidth = this.stage.width();
+            stageHeight = this.stage.height();
+        }
 
         // If this is a left side anchor then attempt to snap the x position,
         // otherwise if it is a right anchor then attempt to snap the width.
@@ -174,8 +211,8 @@ export class TransformHelper {
                 newWidth = 20;
             }
         }
-        else if (newWidth + newX > this.stage.width()) {
-            newWidth = this.stage.width() - newX;
+        else if (newWidth + newX > stageWidth) {
+            newWidth = stageWidth - newX;
         }
 
         // If the new height is too small force it to the minimum size.
@@ -189,8 +226,19 @@ export class TransformHelper {
                 newHeight = 20;
             }
         }
-        else if (newHeight + this.node.y() > this.stage.height()) {
-            newHeight = this.stage.height() - this.node.y();
+        else if (newHeight + newY > stageHeight) {
+            newHeight = stageHeight - newY;
+        }
+
+        // Rotate our value back.
+        if (rotation === -90) {
+            [newX, newY] = [newY, this.stage.height() - newX];
+        }
+        else if (rotation === 90) {
+            [newX, newY] = [this.stage.width() - newY, newX];
+        }
+        else if (rotation === 180) {
+            [newX, newY] = [this.stage.width() - newX, this.stage.height() - newY];
         }
 
         // Set the new values.

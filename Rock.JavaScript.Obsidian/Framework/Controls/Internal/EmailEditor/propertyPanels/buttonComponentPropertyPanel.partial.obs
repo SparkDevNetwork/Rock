@@ -1,0 +1,157 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :componentMigrationHelper="buttonComponentHelper"
+                                title="Button"
+                                @clone="$emit('clone')"
+                                @complete="$emit('complete')"
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
+        <template v-if="componentHelper?.linkButton">
+            <AccordionGroup>
+                <Accordion title="Button Text">
+                    <TextContentProperty :element="componentHelper.linkButton"
+                                         label="Button Text"
+                                         @change="onButtonTextChanged" />
+
+                    <AnchorPropertyGroup :element="componentHelper.linkButton" />
+
+                    <FontPropertyGroup :element="componentHelper.linkButton"
+                                       :visibilityOptions="{
+                                           isJustifyTextHidden: true
+                                       }" />
+
+                </Accordion>
+
+                <Accordion title="Button Styling">
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <AlignAttributeProperty :element="componentHelper.marginWrapper.td"
+                                                    label="Horizontal Alignment" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <ColorPickerProperty label="Background Color"
+                                                 :valueProvider="backgroundColorProvider" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <BorderRadiusProperty :element="componentHelper.marginWrapper.borderWrapper.td"
+                                                  help="Outlook and Windows Mail email clients do not support rounded corners." />
+                        </div>
+                    </div>
+
+                    <div v-if="buttonWidthValuesProvider" class="row">
+                        <div class="col-sm-12">
+                            <ButtonWidthProperty :valueProvider="buttonWidthValuesProvider" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <PaddingProperty :element="componentHelper.marginWrapper.td"
+                                             label="Margin" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <PaddingProperty :element="componentHelper.linkButton" />
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <BorderPropertyGroup :element="componentHelper.marginWrapper.borderWrapper.td" />
+                        </div>
+                    </div>
+                </Accordion>
+            </AccordionGroup>
+        </template>
+    </ComponentPropertyPanelBase>
+</template>
+
+<style scoped>
+:deep(.picker-label) {
+    display: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { onUnmounted, PropType, ref, watch } from "vue";
+    import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
+    import Accordion from "../accordion.partial.obs";
+    import AccordionGroup from "../accordionGroup.partial.obs";
+    import AlignAttributeProperty from "../properties/alignAttributeProperty.partial.obs";
+    import AnchorPropertyGroup from "../properties/anchorPropertyGroup.partial.obs";
+    import BorderPropertyGroup from "../properties/borderPropertyGroup.partial.obs";
+    import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
+    import ButtonWidthProperty from "../properties/buttonWidthProperty.partial.obs";
+    import ColorPickerProperty from "../properties/colorPickerProperty.partial.obs";
+    import FontPropertyGroup from "../properties/fontPropertyGroup.partial.obs";
+    import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import TextContentProperty from "../properties/textContentProperty.partial.obs";
+    import { ButtonWidthValues, ValueProvider } from "../types.partial";
+    import { getButtonComponentHelper } from "../utils.partial";
+    import { createButtonWidthValuesProvider, createComponentBackgroundColorProvider } from "../providers.partial";
+
+    const props = defineProps({
+        componentElement: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "clone"): void;
+        (e: "complete"): void;
+        (e: "delete"): void;
+        (e: "migrate", value: Element): void;
+    }>();
+
+    // #region Values
+
+    const buttonComponentHelper = getButtonComponentHelper();
+    const componentHelper = ref(buttonComponentHelper.getElements(props.componentElement));
+    const buttonWidthValuesProvider = ref<ValueProvider<ButtonWidthValues | null | undefined> | null | undefined>(componentHelper.value ? createButtonWidthValuesProvider(componentHelper.value.marginWrapper.borderWrapper.table) : null);
+    const backgroundColorProvider = ref(createComponentBackgroundColorProvider(props.componentElement));
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    function onButtonTextChanged(value: string | null): void {
+        if (componentHelper.value?.linkButton) {
+            componentHelper.value.linkButton.setAttribute("title", value ?? "");
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(() => props.componentElement, (element: HTMLElement) => {
+        componentHelper.value = buttonComponentHelper.getElements(element);
+
+        buttonWidthValuesProvider.value?.dispose();
+        buttonWidthValuesProvider.value = componentHelper.value ? createButtonWidthValuesProvider(componentHelper.value.marginWrapper.borderWrapper.table) : null;
+    });
+
+    // #endregion
+
+    // #region Hooks
+
+    onUnmounted(() => {
+        buttonWidthValuesProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
+</script>

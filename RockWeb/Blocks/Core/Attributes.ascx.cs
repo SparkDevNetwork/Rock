@@ -607,6 +607,17 @@ namespace RockWeb.Blocks.Core
         {
             edtAttribute.AttributeEntityTypeId = ddlAttrEntityType.SelectedValueAsInt( false );
             edtAttribute.CategoryIds = new List<int>();
+
+            var entityTypeCache = edtAttribute.AttributeEntityTypeId.HasValue
+                ? EntityTypeCache.Get( edtAttribute.AttributeEntityTypeId.Value )
+                : null;
+
+            var entityTypeQualifierColumn = tbAttrQualifierField.Visible
+                ? tbAttrQualifierField.Text
+                : ddlAttrQualifierField.SelectedValue;
+
+            UpdateQualifierField( entityTypeCache, entityTypeQualifierColumn );
+            UpdateQualifierFieldWarning();
         }
 
         /// <summary>
@@ -616,8 +627,26 @@ namespace RockWeb.Blocks.Core
         /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
         protected void tbAttrQualifier_TextChanged( object sender, EventArgs e )
         {
-            edtAttribute.AttributeEntityTypeQualifierColumn = tbAttrQualifierField.Text;
+            if ( tbAttrQualifierField.Visible )
+            {
+                edtAttribute.AttributeEntityTypeQualifierColumn = tbAttrQualifierField.Text;
+                UpdateQualifierFieldWarning();
+            }
+
             edtAttribute.AttributeEntityTypeQualifierValue = tbAttrQualifierValue.Text;
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlAttrQualifierField control.
+        /// This is called when displaying the drop down instead of the text box for the
+        /// qualifier column.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void ddlAttrQualifierField_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            edtAttribute.AttributeEntityTypeQualifierColumn = ddlAttrQualifierField.SelectedValue;
+            tbAttrQualifierField.Text = ddlAttrQualifierField.SelectedValue;
         }
 
         /// <summary>
@@ -919,9 +948,11 @@ namespace RockWeb.Blocks.Core
             }
 
             Type type = null;
+            EntityTypeCache entityTypeCache = null;
             if ( attributeModel.EntityTypeId.HasValue && attributeModel.EntityTypeId > 0 )
             {
-                type = EntityTypeCache.Get( attributeModel.EntityTypeId.Value ).GetEntityType();
+                entityTypeCache = EntityTypeCache.Get( attributeModel.EntityTypeId.Value );
+                type = entityTypeCache.GetEntityType();
             }
             edtAttribute.ReservedKeyNames = attributeService.GetByEntityTypeQualifier( attributeModel.EntityTypeId, attributeModel.EntityTypeQualifierColumn, attributeModel.EntityTypeQualifierValue, true )
                  .Where( a => a.Id != attributeId )
@@ -942,9 +973,15 @@ namespace RockWeb.Blocks.Core
                 ddlAttrEntityType.SetValue( attributeModel.EntityTypeId.HasValue ? attributeModel.EntityTypeId.Value.ToString() : "0" );
                 tbAttrQualifierField.Text = attributeModel.EntityTypeQualifierColumn;
                 tbAttrQualifierValue.Text = attributeModel.EntityTypeQualifierValue;
+
+                UpdateQualifierField( entityTypeCache, attributeModel.EntityTypeQualifierColumn );
             }
 
             ShowDialog( "Attribute", true );
+
+            // This must be called after show dialog so that the Visible check
+            // in the method works correctly.
+            UpdateQualifierFieldWarning();
         }
 
         /// <summary>
@@ -975,6 +1012,83 @@ namespace RockWeb.Blocks.Core
                         ShowDialog( "AttributeValue", true );
                     }
                 }
+            }
+        }
+
+        /// <summary>
+        /// Update the qualifier field to match the new entity type. This will
+        /// switch back and forth between the text field and the dropdown list
+        /// as required.
+        /// </summary>
+        /// <param name="entityTypeCache">The entity type or <c>null</c> if the global entity is being used.</param>
+        /// <param name="entityTypeQualifierColumn">The current qualifier column text value.</param>
+        private void UpdateQualifierField( EntityTypeCache entityTypeCache, string entityTypeQualifierColumn )
+        {
+            var qualifiedProperties = entityTypeCache?.GetAttributeQualifierProperties() ?? new List<string>();
+            var isLegacyPlugin = entityTypeCache?.Name.StartsWith( "Rock.Model." ) == false && qualifiedProperties.Count == 0;
+
+            ddlAttrQualifierField.Items.Clear();
+            ddlAttrQualifierField.Items.Add( new ListItem() );
+
+            foreach ( var property in qualifiedProperties.OrderBy( p => p ) )
+            {
+                ddlAttrQualifierField.Items.Add( new ListItem( property, property ) );
+            }
+
+            // Check for legacy plugins that have not defined qualified properties
+            // yet. This check should be removed in Rock v18.
+            if ( isLegacyPlugin )
+            {
+                tbAttrQualifierField.Visible = true;
+                ddlAttrQualifierField.Visible = false;
+            }
+
+            // If the qualifier column is blank or a valid value then show
+            // the dropdown. Otherwise show the text input.
+            else if ( entityTypeQualifierColumn.IsNullOrWhiteSpace() || qualifiedProperties.Contains( entityTypeQualifierColumn ) )
+            {
+                tbAttrQualifierField.Visible = false;
+                ddlAttrQualifierField.Visible = true;
+                ddlAttrQualifierField.SelectedValue = entityTypeQualifierColumn;
+            }
+            else
+            {
+                tbAttrQualifierField.Visible = true;
+                ddlAttrQualifierField.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Updates the visibility of the invalid qualifier field warning. If
+        /// the text input is displayed and the value does not match a valid
+        /// qualifier value then the warning is displayed.
+        /// </summary>
+        private void UpdateQualifierFieldWarning()
+        {
+            if ( !tbAttrQualifierField.Visible || tbAttrQualifierField.Text.IsNullOrWhiteSpace() )
+            {
+                nbInvalidQualifier.Visible = false;
+                return;
+            }
+
+            EntityTypeCache entityTypeCache = null;
+
+            if ( edtAttribute.AttributeEntityTypeId.HasValue )
+            {
+                entityTypeCache = EntityTypeCache.Get( edtAttribute.AttributeEntityTypeId.Value );
+            }
+
+            var qualifiedProperties = entityTypeCache?.GetAttributeQualifierProperties() ?? new List<string>();
+            var isLegacyPlugin = entityTypeCache?.Name.StartsWith( "Rock.Model." ) == false && qualifiedProperties.Count == 0;
+
+            if ( !isLegacyPlugin && !qualifiedProperties.Contains( tbAttrQualifierField.Text ) )
+            {
+                nbInvalidQualifier.Visible = true;
+                nbInvalidQualifier.Text = $"The Qualifier Field '{tbAttrQualifierField.Text}' is not fully supported and will not work correctly in some places in Rock. See the model map for the supported fields.";
+            }
+            else
+            {
+                nbInvalidQualifier.Visible = false;
             }
         }
 

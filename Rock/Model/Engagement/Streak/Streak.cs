@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "Streak" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.STREAK )]
     public partial class Streak : Model<Streak>
     {
@@ -45,6 +46,7 @@ namespace Rock.Model
         [Index( "IX_StreakTypeId", IsUnique = false )]
         [Index( "IX_StreakTypeId_PersonAliasId", 0, IsUnique = true )]
 #endif
+        [EnableAttributeQualification]
         public int StreakTypeId { get; set; }
 
         /// <summary>

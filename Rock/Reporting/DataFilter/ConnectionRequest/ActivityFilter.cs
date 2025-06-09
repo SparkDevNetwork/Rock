@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
@@ -23,8 +24,11 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ConnectionRequest
@@ -35,7 +39,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
     [Description( "Would allow filtering by activity types." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Activity Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "1511AFEF-1E60-4056-B861-5EBED0362BE4")]
+    [Rock.SystemGuid.EntityTypeGuid( "1511AFEF-1E60-4056-B861-5EBED0362BE4" )]
     public class ActivityFilter : DataFilterComponent
     {
         #region Properties
@@ -60,6 +64,59 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ConnectionRequest/activityFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var activityTypeOptions = new ConnectionActivityTypeService( new RockContext() ).Queryable( "ConnectionType" )
+                .AsNoTracking()
+                .Where( a => a.IsActive )
+                .OrderBy( a => a.ConnectionTypeId.HasValue )
+                .ThenBy( a => a.Name )
+                .ToList()
+                .Select( a => a.ToListItemBag() )
+                .ToList();
+
+            var isBlank = selection.Trim() == string.Empty;
+
+            return new Dictionary<string, string>
+            {
+                { "activityType", config?.ConnectionActivityTypeGuid?.ToString() },
+                { "activityTypeOptions", activityTypeOptions.ToCamelCaseJson(false, true) },
+                { "comparisonType", (isBlank ? ComparisonType.GreaterThanOrEqualTo : config?.IntegerCompare).ConvertToInt().ToString() },
+                { "minimumCount", isBlank ? "1" : config?.MinimumCount.ToString() },
+                { "dateRange", config?.SlidingDateRangeDelimitedValues },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig
+            {
+                ConnectionActivityTypeGuid = data.GetValueOrNull( "activityType" )?.AsGuid(),
+                IntegerCompare = data.GetValueOrDefault( "comparisonType", ComparisonType.GreaterThanOrEqualTo.ConvertToInt().ToString() ).ConvertToEnum<ComparisonType>(),
+                MinimumCount = data.GetValueOrDefault( "minimumCount", "1" ).AsInteger(),
+                SlidingDateRangeDelimitedValues = data.GetValueOrDefault( "dateRange", "All||||" ),
+            };
+
+            return selectionConfig.ToJson();
         }
 
         #endregion
@@ -133,7 +190,8 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             return s;
         }
 
-#if REVIEW_WEBFORMS
+#if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -290,6 +348,7 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             slidingDateRangePicker.DelimitedValues = selectionConfig.SlidingDateRangeDelimitedValues;
             ddlActivityType.SetValue( selectionConfig.ConnectionActivityTypeGuid );
         }
+
 #endif
 
         /// <summary>

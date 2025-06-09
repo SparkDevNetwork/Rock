@@ -93,7 +93,8 @@ namespace Rock.Blocks.Lms
         {
             var options = new LearningProgramCompletionListOptionsBag();
 
-            var configurationMode = new LearningProgramService( RockContext ).GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.ConfigurationMode );
+            var configurationMode = new LearningProgramService( RockContext )
+                .GetSelect( PageParameter( PageParameterKey.LearningProgramId ), p => p.ConfigurationMode );
 
             options.ShowSemesterColumn = configurationMode == ConfigurationMode.AcademicCalendar;
 
@@ -106,30 +107,31 @@ namespace Rock.Blocks.Lms
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var queryParams = new Dictionary<string, string>
+            {
+                [PageParameterKey.LearningProgramId] = PageParameter( PageParameterKey.LearningProgramId ),
+                ["LearningProgramCompletionId"] = "((Key))"
+            };
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "LearningProgramCompletionId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<LearningProgramCompletion> GetListQueryable( RockContext rockContext )
         {
-#if REVIEW_NET5_0_OR_GREATER
-            IQueryable<LearningProgramCompletion> queryable = base.GetListQueryable( rockContext )
-#else
+            var programId = new LearningProgramService( rockContext )
+                .GetSelect(
+                    PageParameter( PageParameterKey.LearningProgramId ),
+                    p => p.Id,
+                    !this.PageCache.Layout.Site.DisablePredictableIds );
+
             var queryable = base.GetListQueryable( rockContext )
-#endif
                 .Include( a => a.PersonAlias )
                 .Include( a => a.PersonAlias.Person )
-                .Include( a => a.LearningProgram );
-
-            var contextProgram = RequestContext.GetContextEntity<LearningProgram>();
-
-            if ( contextProgram?.Id > 0 )
-            {
-                queryable = queryable.Where( a => a.LearningProgramId == contextProgram.Id );
-            }
+                .Include( a => a.LearningProgram )
+                .Where( a => a.LearningProgramId == programId );
 
             return queryable;
         }
@@ -146,7 +148,13 @@ namespace Rock.Blocks.Lms
                 .AddDateTimeField( "endDate", a => a.EndDate )
                 .AddField( "status", a => a.CompletionStatus );
 
-            if ( RequestContext.GetContextEntity<LearningProgram>()?.ConfigurationMode == ConfigurationMode.AcademicCalendar )
+            var configurationMode = new LearningProgramService( RockContext )
+                .GetSelect(
+                    PageParameter( PageParameterKey.LearningProgramId ),
+                    p => p.ConfigurationMode,
+                    !this.PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( configurationMode == ConfigurationMode.AcademicCalendar )
             {
                 grid.AddTextField( "semester", a => a.LearningProgram.LearningSemesters?
                     .FirstOrDefault( s =>
@@ -183,7 +191,7 @@ namespace Rock.Blocks.Lms
 
                 if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
                 {
-                    return ActionBadRequest( $"Not authorized to delete ${LearningProgramCompletion.FriendlyTypeName}." );
+                    return ActionBadRequest( $"Not authorized to delete {LearningProgramCompletion.FriendlyTypeName}." );
                 }
 
                 if ( !entityService.CanDelete( entity, out var errorMessage ) )

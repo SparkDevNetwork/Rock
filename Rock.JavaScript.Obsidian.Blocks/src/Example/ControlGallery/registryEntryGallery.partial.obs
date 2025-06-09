@@ -1,0 +1,34 @@
+<template>
+    <GalleryAndResult :value="entry" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <RockForm v-model:submit="submit">
+            <RegistryEntry label="Registry Entry" v-model="entry" :rules="isRequired ? 'required' : ''" class="text-primary" />
+            <RockButton @click="submit = true">Validate</RockButton>
+        </RockForm>
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <CheckBox v-model="isRequired" label="Required" />
+                </div>
+            </div>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RegistryEntry from "@Obsidian/Controls/registryEntry.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const entry = ref<string>("");
+    const submit = ref(false);
+    const isRequired = ref(false);
+    const importCode = getSfcControlImportPath("registryEntry");
+    const exampleCode = `<RegistryEntry label="Registry Entry" v-model="phoneNumber" />`;
+</script>

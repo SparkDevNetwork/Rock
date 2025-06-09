@@ -17,6 +17,11 @@
                                   label="Template"
                                   :items="sources.formTemplateOptions ?? undefined" />
 
+                    <TextBox v-model="slug"
+                             label="Slug"
+                             rules="required"
+                             @blur="$emit('getUniqueSlug')" />
+
                     <CategoryPicker v-model="category"
                                     label="Category"
                                     rules="required"
@@ -76,6 +81,7 @@
 
     const emit = defineEmits<{
         (e: "update:modelValue", value: FormGeneral): void;
+        (e: "getUniqueSlug"): void;
     }>();
 
     const sources = useFormSources();
@@ -83,6 +89,7 @@
     const name = ref(props.modelValue.name ?? "");
     const description = ref(props.modelValue.description ?? "");
     const template = ref(props.modelValue.template ?? "");
+    const slug = ref(props.modelValue.slug ?? "");
     const category = ref(props.modelValue.category ?? null);
     const entryStarts = ref(props.modelValue.entryStarts ?? "");
     const entryEnds = ref(props.modelValue.entryEnds ?? "");
@@ -98,10 +105,11 @@
         updateRefValue(category, props.modelValue.category ?? null);
         updateRefValue(entryStarts, props.modelValue.entryStarts ?? "");
         updateRefValue(entryEnds, props.modelValue.entryEnds ?? "");
+        updateRefValue(slug, props.modelValue.slug ?? "");
     });
 
     // Watch for changes on any of our internal values and then update the modelValue.
-    watch([name, description, template, category, isLoginRequired, entryStarts, entryEnds], () => {
+    watch([name, description, template, category, isLoginRequired, entryStarts, entryEnds, slug], () => {
         const newValue: FormGeneral = {
             ...props.modelValue,
             name: name.value,
@@ -111,6 +119,7 @@
             isLoginRequired: isLoginRequired.value,
             entryStarts: entryStarts.value,
             entryEnds: entryEnds.value,
+            slug: slug.value
         };
 
         emit("update:modelValue", newValue);

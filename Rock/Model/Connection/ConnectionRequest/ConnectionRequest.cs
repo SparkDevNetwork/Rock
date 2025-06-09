@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,10 @@ using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
 using Rock.Data;
 using Rock.Lava;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -32,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "ConnectionRequest" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.CONNECTION_REQUEST )]
     public partial class ConnectionRequest : Model<ConnectionRequest>, IOrdered
     {
@@ -45,6 +48,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int ConnectionOpportunityId { get; set; }
 
         /// <summary>
@@ -102,6 +106,7 @@ namespace Rock.Model
         /// The campus identifier.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -168,6 +173,7 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int ConnectionTypeId { get; set; }
 
         /// <summary>

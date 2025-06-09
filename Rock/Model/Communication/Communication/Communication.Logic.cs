@@ -66,6 +66,7 @@ namespace Rock.Model
         }
 
         #endregion Properties
+
         #region ISecured
 
         /// <summary>
@@ -91,7 +92,8 @@ namespace Rock.Model
             }
         }
 
-        #endregion
+        #endregion ISecured
+
         #region Methods
 
         /// <summary>
@@ -159,7 +161,38 @@ namespace Rock.Model
         /// <returns></returns>
         public bool HasPendingRecipients( RockContext rockContext )
         {
-            return new CommunicationRecipientService( rockContext ).Queryable().Where( a => a.CommunicationId == this.Id && a.Status == Model.CommunicationRecipientStatus.Pending ).Any();
+            return GetRecipientsQry( rockContext ).Where( a => a.Status == CommunicationRecipientStatus.Pending ).Any();
+        }
+
+        /// <summary>
+        /// Updates CommunicationRecipients who are stuck in the "Sending" status, setting the status to failed if they have been there for 2 days or more, and setting the status back to Pending otherwise.
+        /// </summary>
+        public void UpdateSendingRecipients()
+        {
+            var expirationDate = RockDateTime.Now.AddDays( -2 );
+            using ( var rockContext = new RockContext() )
+            {
+                // If any recipients have been in "Sending" status (or reset to "Pending" status from "Sending") for 2 days, set the status to failed, instead.
+                var expiredSendingRecipients = GetRecipientsQry( rockContext ).Where( a => ( a.Status == CommunicationRecipientStatus.Sending || a.Status == CommunicationRecipientStatus.Pending ) && a.FirstSendAttemptDateTime <= expirationDate ).ToList();
+                foreach ( var expiredSendingRecipient in expiredSendingRecipients )
+                {
+                    expiredSendingRecipient.Status = CommunicationRecipientStatus.Failed;
+                    expiredSendingRecipient.StatusNote = "Recipient locked in Sending status.";
+                }
+
+                // Any recipients stuck in "Sending" for less than two days get set back to "Pending".
+                var sendingRecipients = GetRecipientsQry( rockContext ).Where( a => a.Status == CommunicationRecipientStatus.Sending && ( !a.FirstSendAttemptDateTime.HasValue || a.FirstSendAttemptDateTime > expirationDate ) ).ToList();
+                foreach ( var sendingRecipient in sendingRecipients )
+                {
+                    sendingRecipient.Status = CommunicationRecipientStatus.Pending;
+                    sendingRecipient.StatusNote = "Recipient reverted to Pending status after initial attempt.";
+
+                    // This should already be set when the recipient was set to "Sending", but let's be certain the clock has started.
+                    sendingRecipient.FirstSendAttemptDateTime = sendingRecipient.FirstSendAttemptDateTime ?? RockDateTime.Now;
+                }
+
+                rockContext.SaveChanges();
+            }
         }
 
         /// <summary>
@@ -182,46 +215,91 @@ namespace Rock.Model
         /// <returns></returns>
         public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, int? listGroupId, SegmentCriteria segmentCriteria, List<int> segmentDataViewIds )
         {
-            IQueryable<GroupMember> groupMemberQuery = null;
             if ( listGroupId.HasValue )
             {
                 var groupMemberService = new GroupMemberService( rockContext );
-                var personService = new PersonService( rockContext );
+                var groupMemberQuery = groupMemberService.Queryable()
+                    .Where( a => a.GroupId == listGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
                 var dataViewService = new DataViewService( rockContext );
+                var segmentDataViews = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking();
 
-                groupMemberQuery = groupMemberService.Queryable().Where( a => a.GroupId == listGroupId.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+                return GetCommunicationListMembersInternal( rockContext, groupMemberQuery, segmentCriteria, segmentDataViews );
+            }
+            else
+            {
+                return null;
+            }
+        }
 
-                Expression segmentExpression = null;
-                ParameterExpression paramExpression = personService.ParameterExpression;
-                var segmentDataViewList = dataViewService.GetByIds( segmentDataViewIds ).AsNoTracking().ToList();
-                foreach ( var segmentDataView in segmentDataViewList )
+        /// <summary>
+        /// Gets the communication list members.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="listGroupGuid">The group unique identifier.</param>
+        /// <param name="segmentCriteria">The segment criteria.</param>
+        /// <param name="segmentDataViewGuids">The segment data view unique identifiers.</param>
+        /// <returns></returns>
+        public static IQueryable<GroupMember> GetCommunicationListMembers( RockContext rockContext, Guid? listGroupGuid, SegmentCriteria segmentCriteria, List<Guid> segmentDataViewGuids )
+        {
+            if ( listGroupGuid.HasValue )
+            {
+                var groupMemberService = new GroupMemberService( rockContext );
+                var groupMemberQuery = groupMemberService.Queryable()
+                    .Where( a => a.Group.Guid == listGroupGuid.Value && a.GroupMemberStatus == GroupMemberStatus.Active );
+
+                var dataViewService = new DataViewService( rockContext );
+                var segmentDataViews = dataViewService.GetByGuids( segmentDataViewGuids ).AsNoTracking();
+
+                return GetCommunicationListMembersInternal( rockContext, groupMemberQuery, segmentCriteria, segmentDataViews );
+            }
+            else
+            {
+                return Enumerable.Empty<GroupMember>().AsQueryable();
+            }
+        }
+
+        /// <summary>
+        /// Gets the communication list members.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="groupMemberQuery">The group member query.</param>
+        /// <param name="segmentCriteria">The segment criteria.</param>
+        /// <param name="segmentDataViews">The segment data views.</param>
+        /// <returns></returns>
+        private static IQueryable<GroupMember> GetCommunicationListMembersInternal( RockContext rockContext, IQueryable<GroupMember> groupMemberQuery, SegmentCriteria segmentCriteria, IQueryable<DataView> segmentDataViews )
+        {
+            var personService = new PersonService( rockContext );
+
+            Expression segmentExpression = null;
+            ParameterExpression paramExpression = personService.ParameterExpression;
+            foreach ( var segmentDataView in segmentDataViews )
+            {
+                var exp = segmentDataView.GetExpression( personService, paramExpression );
+                if ( exp != null )
                 {
-                    var exp = segmentDataView.GetExpression( personService, paramExpression );
-                    if ( exp != null )
+                    if ( segmentExpression == null )
                     {
-                        if ( segmentExpression == null )
+                        segmentExpression = exp;
+                    }
+                    else
+                    {
+                        if ( segmentCriteria == SegmentCriteria.All )
                         {
-                            segmentExpression = exp;
+                            segmentExpression = Expression.AndAlso( segmentExpression, exp );
                         }
                         else
                         {
-                            if ( segmentCriteria == SegmentCriteria.All )
-                            {
-                                segmentExpression = Expression.AndAlso( segmentExpression, exp );
-                            }
-                            else
-                            {
-                                segmentExpression = Expression.OrElse( segmentExpression, exp );
-                            }
+                            segmentExpression = Expression.OrElse( segmentExpression, exp );
                         }
                     }
                 }
+            }
 
-                if ( segmentExpression != null )
-                {
-                    var personQry = personService.Get( paramExpression, segmentExpression );
-                    groupMemberQuery = groupMemberQuery.Where( a => personQry.Any( p => p.Id == a.PersonId ) );
-                }
+            if ( segmentExpression != null )
+            {
+                var personQry = personService.Get( paramExpression, segmentExpression );
+                groupMemberQuery = groupMemberQuery.Join( personQry, g => g.PersonId, p => p.Id, ( g, p ) => g );
             }
 
             return groupMemberQuery;
@@ -545,6 +623,60 @@ INNER JOIN @DuplicateRecipients dr
         }
 
         /// <summary>
+        /// Retrieves an <see cref="IQueryable{GroupMember}"/> of communication list members
+        /// who match the specified personalization segment filters.
+        /// </summary>
+        /// <param name="rockContext">The database context.</param>
+        /// <param name="communicationListGroupId">The ID of the communication list (group).</param>
+        /// <param name="segmentCriteria">
+        /// The matching criteria:
+        /// <list type="bullet">
+        /// <item><description><see cref="SegmentCriteria.Any"/> - Matches members with at least one of the specified segments.</description></item>
+        /// <item><description><see cref="SegmentCriteria.All"/> - Matches members with all specified segments.</description></item>
+        /// </list>
+        /// </param>
+        /// <param name="personalizationSegmentIds">A list of personalization segment IDs to filter by.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{GroupMember}"/> containing group members who meet the specified criteria.
+        /// </returns>
+        private static IQueryable<GroupMember> GetPersonalizedCommunicationListMembersQuery( RockContext rockContext, int communicationListGroupId, SegmentCriteria segmentCriteria, List<int> personalizationSegmentIds )
+        {
+            var groupMemberQuery = new GroupMemberService( rockContext ).Queryable();
+            var personAliasQuery = new PersonAliasService( rockContext ).Queryable();
+            var personAliasPersonalizationQuery = new PersonalizationSegmentService( rockContext ).GetPersonAliasPersonalizationSegmentQuery();
+
+            return groupMemberQuery
+                .Where( gm => gm.GroupId == communicationListGroupId && gm.GroupMemberStatus == GroupMemberStatus.Active && gm.Person.PrimaryAliasId.HasValue )
+                .Where( gm =>
+                    !personalizationSegmentIds.Any()
+                    || (
+                        segmentCriteria == SegmentCriteria.Any
+                        && personAliasQuery.Any( pa =>
+                            pa.PersonId == gm.PersonId
+                            && personAliasPersonalizationQuery.Any( pap =>
+                                pa.Id == pap.PersonAliasId
+                                && personalizationSegmentIds.Contains( pap.PersonalizationEntityId )
+                            )
+                        )
+                    )
+                    || (
+                        segmentCriteria == SegmentCriteria.All
+                        && personAliasQuery.Where( pa =>
+                            pa.PersonId == gm.PersonId
+                        ).SelectMany( pa =>
+                            personAliasPersonalizationQuery.Where( pap =>
+                                pa.Id == pap.PersonAliasId
+                                && personalizationSegmentIds.Contains( pap.PersonalizationEntityId )
+                            )
+                            .Select( pap => pap.PersonalizationEntityId )
+                        )
+                        .Distinct()
+                        .Count() == personalizationSegmentIds.Count
+                    )
+                );
+        }
+
+        /// <summary>
         /// Refresh the recipients list.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
@@ -558,10 +690,21 @@ INNER JOIN @DuplicateRecipients dr
 
             using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Refresh Communication Recipient List" ) )
             {
-                var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
-                var segmentDataViewIds = new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
+                IQueryable<GroupMember> qryCommunicationListMembers;
 
-                var qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
+                var personalizationSegmentIds = this.PersonalizationSegments.SplitDelimitedValues().AsIntegerList();
+
+                if ( personalizationSegmentIds.Any() )
+                {
+                    qryCommunicationListMembers = GetPersonalizedCommunicationListMembersQuery( rockContext, this.ListGroupId.Value, this.SegmentCriteria, personalizationSegmentIds );
+                }
+                else
+                {
+                    var segmentDataViewGuids = this.Segments.SplitDelimitedValues().AsGuidList();
+                    var segmentDataViewIds = new DataViewService( rockContext ).GetByGuids( segmentDataViewGuids ).Select( a => a.Id ).ToList();
+
+                    qryCommunicationListMembers = GetCommunicationListMembers( rockContext, ListGroupId, this.SegmentCriteria, segmentDataViewIds );
+                }
 
                 // NOTE: If this is a scheduled communication, don't include Members that were added after the scheduled FutureSendDateTime.
                 // However, don't exclude if the date added can't be determined or they will never be sent a scheduled communication.
@@ -741,7 +884,7 @@ INNER JOIN @DuplicateRecipients dr
             return this.Name ?? this.Subject ?? base.ToString();
         }
 
-        #endregion
+        #endregion Methods
 
         #region Static Methods
 
@@ -807,8 +950,14 @@ INNER JOIN @DuplicateRecipients dr
             {
                 var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
 
-                // Set the SendDateTime of the Communication
-                dbCommunication.SendDateTime = RockDateTime.Now;
+                dbCommunication.UpdateSendingRecipients();
+
+                if ( !dbCommunication.HasPendingRecipients( rockContext ) )
+                {
+                    // Set the SendDateTime of the Communication
+                    dbCommunication.SendDateTime = RockDateTime.Now;
+                }
+
                 rockContext.SaveChanges();
             }
         }
@@ -902,8 +1051,14 @@ INNER JOIN @DuplicateRecipients dr
             {
                 var dbCommunication = new CommunicationService( rockContext ).Get( communication.Id );
 
-                // Set the SendDateTime of the Communication
-                dbCommunication.SendDateTime = RockDateTime.Now;
+                dbCommunication.UpdateSendingRecipients();
+
+                if ( !dbCommunication.HasPendingRecipients( rockContext ) )
+                {
+                    // Set the SendDateTime of the Communication
+                    dbCommunication.SendDateTime = RockDateTime.Now;
+                }
+
                 rockContext.SaveChanges();
             }
         }
@@ -950,6 +1105,11 @@ INNER JOIN @DuplicateRecipients dr
 UPDATE cr
 SET cr.[ModifiedDateTime] = @Now
     , cr.[Status] = @SendingStatus
+    , cr.[FirstSendAttemptDateTime] = CASE
+        WHEN cr.[FirstSendAttemptDateTime] IS NOT NULL
+            THEN cr.[FirstSendAttemptDateTime]
+            ELSE @FirstSendAttemptDateTime
+        END
 OUTPUT INSERTED.[Id]
 FROM [CommunicationRecipient] cr
 WHERE cr.[Id] IN (
@@ -969,6 +1129,7 @@ WHERE cr.[Id] IN (
                         new SqlParameter( "@MediumEntityTypeId", mediumEntityId ),
                         new SqlParameter( "@PendingStatus", CommunicationRecipientStatus.Pending ),
                         new SqlParameter( "@SendingStatus", CommunicationRecipientStatus.Sending ),
+                        new SqlParameter( "@FirstSendAttemptDateTime", RockDateTime.Now ),
                         new SqlParameter( "@PreviousSendLockExpiredDateTime", previousSendLockExpiredDateTime ),
                         new SqlParameter( "@Now", RockDateTime.Now )
                     ).FirstOrDefault();
@@ -986,6 +1147,6 @@ WHERE cr.[Id] IN (
             return recipient;
         }
 
-        #endregion
+        #endregion Static Methods
     }
 }

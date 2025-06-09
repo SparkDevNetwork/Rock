@@ -1,0 +1,45 @@
+<template>
+    <div class="row">
+        <div class="col-md-5">
+            <DataViewPicker v-model="dataView"
+                            label="Data View"
+                            :entityTypeGuid="props.modelValue.entityTypeGuid"
+                            showBlankItem />
+        </div>
+        <div class="col-md-5 pt-4" v-show="showUsePersisted">
+            <InlineCheckBox v-model="usePersisted" label="Use Persisted" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const dataView = ref<ListItemBag>(safeParseJson(props.modelValue.dataView) ?? {});
+    const usePersisted = ref<boolean>(asBooleanOrNull(props.modelValue.usePersisted) ?? true);
+    const persistedDataViews = safeParseJson<string[]>(props.modelValue.persistedDataViews) ?? [];
+
+    // Only show "use persisted" checkbox if the selected data view is persisted.
+    const showUsePersisted = computed(() => {
+        return dataView.value?.value && persistedDataViews.includes(dataView.value.value);
+    });
+
+    watch([dataView, usePersisted], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            dataView: JSON.stringify(dataView.value),
+            usePersisted: asTrueOrFalseString(usePersisted.value),
+        });
+    });
+</script>

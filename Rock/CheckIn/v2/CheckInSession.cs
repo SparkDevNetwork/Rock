@@ -23,6 +23,7 @@ using Rock.Data;
 using Rock.Enums.CheckIn;
 using Rock.Model;
 using Rock.Observability;
+using Rock.Utility;
 using Rock.ViewModels.CheckIn;
 using Rock.Web.Cache;
 
@@ -194,6 +195,27 @@ namespace Rock.CheckIn.v2
         {
             var opportunities = Director.GetAllOpportunities( possibleAreas, kiosk, locations );
             var groupMemberQry = GetGroupMembersQueryForFamily( familyId );
+
+            // Apply any age restriction filtering.
+            if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideAdults )
+            {
+                var thisYear = RockDateTime.Now.Year;
+
+                // If we are hiding adults then we want to hide anyone that has
+                // been classified as an adult. Except if they have a future
+                // graduation date since that probably means they are a
+                // high-schooler that is 18+. While technically an adult, we
+                // would want to include them when allowing check-in of kids.
+                groupMemberQry = groupMemberQry
+                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Adult
+                        || ( gm.Person.GraduationYear.HasValue && gm.Person.GraduationYear >= thisYear ) );
+            }
+            else if ( TemplateConfiguration.AgeRestriction == AgeRestrictionMode.HideChildren )
+            {
+                groupMemberQry = groupMemberQry
+                    .Where( gm => gm.Person.AgeClassification != AgeClassification.Child );
+            }
+
             var members = GetFamilyMemberBags( familyId, groupMemberQry );
 
             LoadAttendees( members, opportunities );
@@ -272,7 +294,14 @@ namespace Rock.CheckIn.v2
             {
                 activity?.AddTag( "rock.checkin.conversion_provider", Director.ConversionProvider.GetType().FullName );
 
-                return Director.ConversionProvider.GetFamilyMemberBags( familyId, groupMembers );
+                return Director.ConversionProvider.GetFamilyMemberBags( familyId, groupMembers )
+                    .OrderBy( member => member.RoleOrder )
+                    .ThenBy( member => member.Person.BirthYear )
+                    .ThenBy( member => member.Person.BirthMonth )
+                    .ThenBy( member => member.Person.BirthDay )
+                    .ThenBy( member => member.Person.Gender )
+                    .ThenBy( member => member.Person.NickName )
+                    .ToList();
             }
         }
 
@@ -282,11 +311,6 @@ namespace Rock.CheckIn.v2
         /// <param name="attendee">The attendee whose opportunities will be filtered.</param>
         public void FilterPersonOpportunities( Attendee attendee )
         {
-            if ( IsOverrideEnabled )
-            {
-                return;
-            }
-
             using ( var activity = ObservabilityHelper.StartActivity( $"Filter Opportunities For {attendee.Person.NickName}" ) )
             {
                 activity?.AddTag( "rock.checkin.opportunity_filter_provider", OpportunityFilterProvider.GetType().FullName );
@@ -388,8 +412,11 @@ namespace Rock.CheckIn.v2
         /// <see cref="Attendee.RecentAttendances"/> property has
         /// been populated for each attendee.
         /// </summary>
+        /// <param name="possibleAreas">The possible areas that are to be considered when generating the opportunities.</param>
+        /// <param name="kiosk">The optional kiosk to use.</param>
+        /// <param name="locations">The list of locations to use.</param>
         /// <returns>A list of attendance bags.</returns>
-        public List<AttendanceBag> GetCurrentAttendanceBags()
+        public List<AttendanceBag> GetCurrentAttendanceBags( IReadOnlyCollection<GroupTypeCache> possibleAreas, DeviceCache kiosk, IReadOnlyCollection<NamedLocationCache> locations )
         {
             using ( var activity = ObservabilityHelper.StartActivity( "Get Current Attendance Bags" ) )
             {
@@ -398,10 +425,16 @@ namespace Rock.CheckIn.v2
                 var checkedInAttendances = new List<AttendanceBag>();
                 var today = RockDateTime.Today;
 
+                if ( locations == null && kiosk != null )
+                {
+                    locations = kiosk.GetAllLocations().ToList();
+                }
+
                 foreach ( var attendee in Attendees )
                 {
                     var activeAttendances = attendee.RecentAttendances
                         .Where( a => a.StartDateTime >= today
+                            && a.DidAttend
                             && !a.EndDateTime.HasValue )
                         .ToList();
 
@@ -427,6 +460,28 @@ namespace Rock.CheckIn.v2
                         if ( !schedule.WasScheduleOrCheckInActiveForCheckOut( now ) )
                         {
                             continue;
+                        }
+
+                        // If we have areas to filter by then check if this
+                        // attendance record fits the criteria.
+                        if ( possibleAreas != null )
+                        {
+                            var areaId = IdHasher.Instance.GetId( attendance.GroupTypeId );
+
+                            if ( !possibleAreas.Any( a => a.Id == areaId ) )
+                            {
+                                continue;
+                            }
+                        }
+
+                        // If we have locations to filter by then check if
+                        // this attendance record fits the criteria.
+                        if ( locations != null )
+                        {
+                            if ( !locations.Any( l => l.Id == location.Id ) )
+                            {
+                                continue;
+                            }
                         }
 
                         var attendanceBag = Director.ConversionProvider.GetAttendanceBag( attendance, attendee );

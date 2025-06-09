@@ -30,6 +30,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsDimFamilyHeadOfHousehold" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [HideFromReporting]
     [Rock.SystemGuid.EntityTypeGuid( "89730008-FD3F-49BE-9084-6CC5EA4DC4B3")]
     public class AnalyticsDimFamilyHeadOfHousehold : AnalyticsDimPersonBase<AnalyticsDimFamilyHeadOfHousehold>

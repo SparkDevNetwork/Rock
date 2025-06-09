@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,6 +25,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.FinancialTransaction
@@ -35,7 +37,7 @@ namespace Rock.Reporting.DataFilter.FinancialTransaction
     [Description( "Filter Transactions based on Total Amount" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Transaction Total Amount" )]
-    [Rock.SystemGuid.EntityTypeGuid( "356D67D8-2D00-4C7F-921D-95DD78769B39")]
+    [Rock.SystemGuid.EntityTypeGuid( "356D67D8-2D00-4C7F-921D-95DD78769B39" )]
     public class TotalAmountFilter : DataFilterComponent
     {
         #region Properties
@@ -60,6 +62,42 @@ namespace Rock.Reporting.DataFilter.FinancialTransaction
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/FinancialTransaction/totalAmountFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length > 1 )
+            {
+                return new Dictionary<string, string>
+                {
+                    { "comparisonType", selectionValues[0] },
+                    { "amount", selectionValues[1] },
+                };
+            }
+
+            return new Dictionary<string, string>();
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return $"{data.GetValueOrDefault( "comparisonType", "" )}|{data.GetValueOrDefault( "amount", "" )}";
         }
 
         #endregion
@@ -167,7 +205,7 @@ namespace Rock.Reporting.DataFilter.FinancialTransaction
             ddlCompare.RenderControl( writer );
             writer.RenderEndTag();
 
-            ComparisonType comparisonType = (ComparisonType)( ddlCompare.SelectedValue.AsInteger() );
+            ComparisonType comparisonType = ( ComparisonType ) ( ddlCompare.SelectedValue.AsInteger() );
             currencyBox.Style[HtmlTextWriterStyle.Display] = ( comparisonType == ComparisonType.IsBlank || comparisonType == ComparisonType.IsNotBlank ) ? "none" : string.Empty;
 
             writer.AddAttribute( "class", "col-md-8" );
@@ -228,8 +266,8 @@ namespace Rock.Reporting.DataFilter.FinancialTransaction
             ComparisonType comparisonType = values[0].ConvertToEnum<ComparisonType>( ComparisonType.EqualTo );
             decimal? amountValue = values[1].AsDecimalOrNull();
 
-            var qry = new FinancialTransactionService( (RockContext)serviceInstance.Context ).Queryable();
-            var totalAmountEqualQuery = qry.Where( p => p.TransactionDetails.Sum(a => a.Amount) == amountValue );
+            var qry = new FinancialTransactionService( ( RockContext ) serviceInstance.Context ).Queryable();
+            var totalAmountEqualQuery = qry.Where( p => p.TransactionDetails.Sum( a => a.Amount ) == amountValue );
 
             BinaryExpression compareEqualExpression = FilterExpressionExtractor.Extract<Rock.Model.FinancialTransaction>( totalAmountEqualQuery, parameterExpression, "p" ) as BinaryExpression;
             BinaryExpression result = FilterExpressionExtractor.AlterComparisonType( comparisonType, compareEqualExpression, null );

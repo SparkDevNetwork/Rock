@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,9 +22,13 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 /*
@@ -44,7 +48,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Filter people on whether they registered (registrar) or were registered (registrant) in the designated registration instance." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Registration Instance Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "1F51DA3B-22FE-4093-9DAA-5492B5FB17DA")]
+    [Rock.SystemGuid.EntityTypeGuid( "1F51DA3B-22FE-4093-9DAA-5492B5FB17DA" )]
     public class InRegistrationInstanceFilter : DataFilterComponent
     {
         #region Properties
@@ -69,6 +73,73 @@ namespace Rock.Reporting.DataSelect.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/inRegistrationInstanceFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string> {
+                { "selection", selection }, // TODO remove selection
+                { "person", "2" },
+                { "onWaitList", null }
+            };
+
+            if ( selection.IsNullOrWhiteSpace() )
+            {
+                return data;
+            }
+
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+
+            var registrationTemplate = new RegistrationTemplateService( rockContext ).Get( selectionConfig.RegistrationTemplateId );
+            data.Add( "template", registrationTemplate?.ToListItemBag().ToCamelCaseJson( false, true ) );
+
+            var registrationInstance = new RegistrationInstanceService( rockContext ).Get( selectionConfig.RegistrationInstanceGuid ?? Guid.Empty );
+            data.Add( "instance", registrationInstance?.ToListItemBag().ToCamelCaseJson( false, true ) );
+
+            data.AddOrReplace( "person", selectionConfig.RegistrationType.ConvertToInt().ToString() );
+            data.AddOrReplace( "onWaitList", selectionConfig.OnWaitList?.ToTrueFalse() );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            SelectionConfig selectionConfig = new SelectionConfig();
+
+            var templateGuid = data.GetValueOrNull( "template" )?.FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+
+            if ( templateGuid.HasValue )
+            {
+                var template = new RegistrationTemplateService( rockContext ).Get( templateGuid.Value );
+                selectionConfig.RegistrationTemplateId = template.Id;
+            }
+            else
+            {
+                var template = new RegistrationTemplateService( rockContext ).Queryable().FirstOrDefault();
+                selectionConfig.RegistrationTemplateId = template.Id;
+            }
+
+            var instanceGuid = data.GetValueOrNull( "instance" )?.FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+            selectionConfig.RegistrationInstanceGuid = instanceGuid;
+
+            selectionConfig.RegistrationType = ( RegistrationTypeSpecifier ) data.GetValueOrDefault( "person", "2" ).AsInteger();
+            selectionConfig.OnWaitList = data.GetValueOrNull( "onWaitList" )?.AsBooleanOrNull();
+            return selectionConfig.ToJson();
         }
 
         #endregion
@@ -148,7 +219,8 @@ function() {
             }
         }
 
-#if REVIEW_WEBFORMS
+#if WEBFORMS
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -328,6 +400,7 @@ function() {
                 ddlOnWaitList.SetValue( string.Empty );
             }
         }
+
 #endif
 
         /// <summary>

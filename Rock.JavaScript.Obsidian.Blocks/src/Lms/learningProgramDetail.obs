@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning">{{ blockError }}</NotificationBox>
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
-    <NotificationBox v-if="errorMessage" alertType="danger">{{ errorMessage }}</NotificationBox>
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
 
     <DetailBlock
                  v-if="!blockError"
@@ -17,7 +17,7 @@
                  entityTypeName="LearningProgram"
                  :isBadgesVisible="false"
                  :isSecurityHidden="isSecurityHidden"
-                 :footerSecondaryActions="footerSecondaryActions"
+                 :footerActions="footerActions"
                  :headerActions="headerSecondaryActions"
                  :isEditVisible="showEditButton"
                  :onDelete="onDelete"
@@ -154,16 +154,8 @@
             });
         }
 
-        if (learningProgramViewBag.value?.isActive === true) {
+        if (learningProgramViewBag.value?.isActive === false) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
-                title: "Active",
-                type: "success"
-            });
-        }
-        else {
-            labels.push({
-                iconCssClass: "far fa-lightbulb",
                 title: "Inactive",
                 type: "danger"
             });
@@ -175,25 +167,37 @@
     /**
      * The footer secondary actions for the block panel.
      */
-    const footerSecondaryActions = computed((): PanelAction[] => {
-        if (panelMode.value != DetailPanelMode.View) {
+    const footerActions = computed((): PanelAction[] => {
+        if (panelMode.value != DetailPanelMode.View || !isEditable.value) {
             return [];
         }
 
-        const secondaryActions: PanelAction[] = [];
+        const footerActions: PanelAction[] = [];
 
-        if (displayMode.value === "Summary") {
-            secondaryActions.push({
-                iconCssClass: "fa fa-cog",
-                title: "Configure",
+        if (displayMode.value === "Detail") {
+            // In 'Detail' mode provide a link to the 'Summary' mode.
+            footerActions.push({
+                iconCssClass: "fa fa-chalkboard",
+                title: "Back to Program Overview",
                 type: "default",
                 handler: async () => {
-                    await onConfigure();
+                    await onViewAlternateDetailPage();
+                }
+            });
+        }
+        else {
+            // In 'Summary' mode provide a link to the 'Detail' mode.
+            footerActions.push({
+                iconCssClass: "fa fa-cog",
+                title: "Configure Program",
+                type: "default",
+                handler: async () => {
+                    await onViewAlternateDetailPage();
                 }
             });
         }
 
-        return secondaryActions;
+        return footerActions;
     });
 
     const isEditable = computed((): boolean => config.isEditable === true);
@@ -237,7 +241,7 @@
      *
      * @returns true if the panel should enter edit mode; otherwise false.
      */
-    async function onConfigure(): Promise<boolean | string> {
+    async function onViewAlternateDetailPage(): Promise<boolean | string> {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage];
         }
@@ -280,7 +284,7 @@
         });
 
         if (result.isSuccess && result.data && result.data.bag) {
-            learningProgramEditBag.value.bag = result.data.bag;
+            learningProgramEditBag.value = result.data;
 
             return true;
         }

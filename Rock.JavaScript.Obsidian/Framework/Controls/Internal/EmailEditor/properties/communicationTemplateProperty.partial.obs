@@ -1,0 +1,52 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList v-model="communicationTemplateGuidOrEmptyString"
+                  :items="communicationTemplates ?? []"
+                  label="Template"
+                  :popupContainerOverride="documentBody" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        communicationTemplateGuid: {
+            type: String as PropType<Guid | null | undefined>,
+            required: false
+        },
+
+        communicationTemplates: {
+            type: Object as PropType<ListItemBag[] | null | undefined>,
+            required: false
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Template" as const
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
+    }>();
+
+    const documentBody = document.body;
+
+    // #region Values
+
+    const communicationTemplateGuidOrEmptyString = ref<string>(toGuidOrNull(props.communicationTemplateGuid) ?? "");
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(communicationTemplateGuidOrEmptyString, value => {
+        emit("update:communicationTemplateGuid", toGuidOrNull(value));
+    });
+
+    // #endregion
+</script>

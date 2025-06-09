@@ -37,6 +37,7 @@ namespace Rock.Model
     [RockDomain( "Engagement" )]
     [Table( "StreakTypeExclusion" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "1F00C782-F8A2-4CFA-B7DF-E5B3B6D36069")]
     public partial class StreakTypeExclusion : Model<StreakTypeExclusion>, ICacheable
     {

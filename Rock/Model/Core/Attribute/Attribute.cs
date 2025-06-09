@@ -23,7 +23,10 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
+
+using Rock.Attribute;
 using Rock.Data;
+using Rock.Lava;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -35,8 +38,9 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "Attribute" )]
     [DataContract]
+    [CodeGenerateRest( ~( Enums.CodeGenerateRestEndpoint.ReadAttributeValues | Enums.CodeGenerateRestEndpoint.UpdateAttributeValues ) )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ATTRIBUTE )]
-    public partial class Attribute : Model<Attribute>, IOrdered, ICacheable
+    public partial class Attribute : Model<Attribute>, IOrdered, ICacheable, IHasAdditionalSettings
     {
         /// <summary>
         /// The Qualifier on null entity types to distinguish a 'System Setting' from a Global Attribute
@@ -156,6 +160,16 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string DefaultValue { get; set; }
+
+        /// <summary>
+        /// Gets the value checksum. This is a hash of <see cref="DefaultValue"/> that
+        /// is automatically calculated by the database.
+        /// </summary>
+        /// <value>The value checksum.</value>
+        [DataMember]
+        [DatabaseGenerated( DatabaseGeneratedOption.Computed )]
+        [LavaHidden]
+        public int DefaultValueChecksum { get; private set; }
 
         /// <summary>
         /// Gets or sets the default persisted text value.
@@ -331,6 +345,11 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public bool IsSuppressHistoryLogging { get; set; }
+
+        /// <inheritdoc/>
+        [RockInternal( "17.0" )]
+        [DataMember]
+        public string AdditionalSettingsJson { get; set; }
 
         #endregion
 

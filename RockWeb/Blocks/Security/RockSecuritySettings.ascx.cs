@@ -19,7 +19,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
-
+using Humanizer;
 using Rock;
 using Rock.Data;
 using Rock.Model;
@@ -105,6 +105,24 @@ namespace RockWeb.Blocks.Security
                 return;
             }
 
+            var requireTwoFactorAuthenticationForAccountProtectionProfiles = cblRequireTwoFactorAuthenticationForAccountProtectionProfiles.SelectedValuesAsInt.ConvertAll( a => ( AccountProtectionProfile ) a );
+
+            var disablePasswordlessSignInForAccountProtectionProfiles = cblDisablePasswordlessSignInForAccountProtectionProfiles.SelectedValuesAsInt.ConvertAll( a => ( AccountProtectionProfile ) a ).ToList();
+
+            var lockedOutProtectionProfiles = requireTwoFactorAuthenticationForAccountProtectionProfiles.Intersect( disablePasswordlessSignInForAccountProtectionProfiles ).ToList();
+
+            if ( lockedOutProtectionProfiles.Count > 0 )
+            {
+                var messagePrefix = lockedOutProtectionProfiles.Count == 1
+                    ? $"{lockedOutProtectionProfiles[0]} account Protection Profile has"
+                    : $"{lockedOutProtectionProfiles.Humanize()} account Protection Profiles have";
+                nbSaveResult.Text = $"{messagePrefix} passwordless sign-in disabled while requiring two-factor authentication. If two-factor authentication (2FA) is enabled without Passwordless login, someone could get locked out.";
+                nbSaveResult.NotificationBoxType = NotificationBoxType.Danger;
+                nbSaveResult.Visible = true;
+
+                return;
+            }
+
             _securitySettingsService.SecuritySettings.DisablePredictableIds = cbDisablePredictableIds.Checked;
 
             _securitySettingsService.SecuritySettings.AccountProtectionProfilesForDuplicateDetectionToIgnore =
@@ -146,6 +164,8 @@ namespace RockWeb.Blocks.Security
             _securitySettingsService.SecuritySettings.PasswordlessSignInSessionDuration = nbPasswordlessSignInSessionDuration.Text.AsInteger();
 
             _securitySettingsService.SecuritySettings.RejectAuthenticationCookiesIssuedBefore = dtpRejectAuthenticationCookiesIssuedBefore.SelectedDateTime;
+
+            _securitySettingsService.SecuritySettings.MessageForDisabledPasswordlessSignIn = tbMessageForDisabledPasswordlessSignIn.Text;
 
             if ( _securitySettingsService.Save() )
             {
@@ -249,6 +269,8 @@ namespace RockWeb.Blocks.Security
 
             cbDisablePredictableIds.Checked = _securitySettingsService.SecuritySettings.DisablePredictableIds;
 
+            tbMessageForDisabledPasswordlessSignIn.Text = _securitySettingsService.SecuritySettings.MessageForDisabledPasswordlessSignIn;
+
             // Clear the 2FA settings when it is not supported.
             if ( !IsTwoFactorAuthenticationSupported() )
             {
@@ -298,13 +320,13 @@ namespace RockWeb.Blocks.Security
         {
             nbPasswordlessSignInDailyIpThrottle.Text = _securitySettingsService.SecuritySettings.PasswordlessSignInDailyIpThrottle.ToString();
             nbPasswordlessSignInSessionDuration.Text = _securitySettingsService.SecuritySettings.PasswordlessSignInSessionDuration.ToString();
-            
+
             cblDisablePasswordlessSignInForAccountProtectionProfiles.SetValues(
                 _securitySettingsService
                     .SecuritySettings
                     .DisablePasswordlessSignInForAccountProtectionProfiles
                     .Select( a => a.ConvertToInt().ToString() ) );
-            
+
             var communicationTemplates = new SystemCommunicationService( new RockContext() ).Queryable().ToList();
             ddlPasswordlessConfirmationCommunicationTemplate.DataSource = communicationTemplates;
             ddlPasswordlessConfirmationCommunicationTemplate.DataBind();

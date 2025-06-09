@@ -1,0 +1,148 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="config.errorMessage" :alertType="AlertType.Warning">
+        {{ config.errorMessage }}
+    </NotificationBox>
+
+    <Panel v-else
+           type="block"
+           title="Chat Configuration">
+
+        <NotificationBox v-if="blockActionMessage" :alertType="blockActionAlertType">
+            {{ blockActionMessage }}
+        </NotificationBox>
+
+        <RockForm @submit="onSave">
+
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="apiKey"
+                             label="API Key"
+                             help="The API key for Rock to use when interacting with the external chat application."
+                             :rules="['noemojisorspecialfonts']"
+                             :disabled="isSaving" />
+                    <TextBox v-model="apiSecret"
+                             label="API Secret"
+                             help="The API secret for Rock to use when interacting with the external chat application."
+                             :rules="['noemojisorspecialfonts']"
+                             :disabled="isSaving" />
+                    <DataViewPicker v-model="chatBadgeDataViews"
+                                    label="Badge Persisted Data Views"
+                                    help="The Persisted Data Views that will be used to populate badges within the external chat application."
+                                    :entityTypeGuid="EntityType.Person"
+                                    :displayPersistedOnly="true"
+                                    :multiple="true"
+                                    :enhanceForLongLists="true"
+                                    :disabled="isSaving" />
+                </div>
+                <div class="col-md-6">
+                    <CheckBox v-model="areChatProfilesVisible"
+                              label="Chat Profiles Are Visible"
+                              help="The system default for whether individuals' profiles are visible in the external chat application. This can be overridden per individual."
+                              :disabled="isSaving" />
+                    <CheckBox v-model="isOpenDirectMessagingAllowed"
+                              label="Open Direct Messaging Is Allowed"
+                              help="The system default for whether individuals can receive direct messages from anybody in the system. This can be overridden per individual."
+                              :disabled="isSaving" />
+                </div>
+            </div>
+
+            <div class="actions">
+                <RockButton :btnType="BtnType.Primary"
+                            type="submit"
+                            :disabled="isSaving">Save</RockButton>
+
+                <RockButton :btnType="BtnType.Link"
+                            :disabled="isSaving"
+                            @click="onCancel">Cancel</RockButton>
+            </div>
+
+        </RockForm>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import { NavigationUrlKey } from "./ChatConfiguration/types.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { ChatConfigurationInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatConfiguration/chatConfigurationInitializationBox";
+    import { ChatConfigurationBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatConfiguration/chatConfigurationBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const config = useConfigurationValues<ChatConfigurationInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const apiKey = ref(config.chatConfigurationBag?.apiKey ?? "");
+    const apiSecret = ref(config.chatConfigurationBag?.apiSecret ?? "");
+    const areChatProfilesVisible = ref(config.chatConfigurationBag?.areChatProfilesVisible ?? false);
+    const isOpenDirectMessagingAllowed = ref(config.chatConfigurationBag?.isOpenDirectMessagingAllowed ?? false);
+    const chatBadgeDataViews = ref<ListItemBag[] | null>(config.chatConfigurationBag?.chatBadgeDataViews ?? null);
+
+    const isSaving = ref(false);
+    const blockActionMessage = ref("");
+    const blockActionAlertType = ref<string | undefined>(undefined);
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    async function onSave(): Promise<void> {
+        if (isSaving.value) {
+            return;
+        }
+
+        try {
+            isSaving.value = true;
+            blockActionMessage.value = "";
+
+            const bag: ChatConfigurationBag = {
+                apiKey: apiKey.value,
+                apiSecret: apiSecret.value,
+                areChatProfilesVisible: areChatProfilesVisible.value,
+                isOpenDirectMessagingAllowed: isOpenDirectMessagingAllowed.value,
+                chatBadgeDataViews: chatBadgeDataViews.value
+            };
+
+            const result = await invokeBlockAction("SaveChatConfiguration", { bag });
+
+            if (!result.isSuccess) {
+                blockActionMessage.value = result.errorMessage || "Unknown error while trying to save chat configuration.";
+                blockActionAlertType.value = AlertType.Warning;
+            }
+            else {
+                blockActionMessage.value = "Settings saved successfully.";
+                blockActionAlertType.value = AlertType.Success;
+            }
+        }
+        finally {
+            isSaving.value = false;
+        }
+    }
+
+    /**
+     * Called when the cancel button is clicked.
+     */
+    function onCancel(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.ParentPage]) {
+            window.location.href = makeUrlRedirectSafe(config.navigationUrls[NavigationUrlKey.ParentPage]);
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

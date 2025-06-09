@@ -35,6 +35,7 @@ namespace Rock.Field.Types
     ///
     /// </summary>
     /// <seealso cref="Rock.Field.FieldType" />
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.ASSET )]
     public class AssetFieldType : FieldType, ISecurityGrantFieldType
@@ -257,12 +258,6 @@ namespace Rock.Field.Types
 
         /// <inheritdoc/>
         public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
-        {
-            AddRulesToSecurityGrant( grant );
-        }
-
-        /// <inheritdoc/>
-        public void AddRulesToSecurityGrant( SecurityGrant grant )
         {
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
             grant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );

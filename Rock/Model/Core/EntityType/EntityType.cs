@@ -32,6 +32,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "EntityType" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.ENTITY_TYPE )]
     public partial class EntityType : Entity<EntityType>, ICacheable
     {

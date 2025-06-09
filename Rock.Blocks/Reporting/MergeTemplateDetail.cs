@@ -29,7 +29,9 @@ using Rock.Model;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Reporting.MergeTemplateDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Reporting
 {
@@ -41,7 +43,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Merge Template Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular merge template." )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -68,6 +70,8 @@ namespace Rock.Blocks.Reporting
         private static class PageParameterKey
         {
             public const string MergeTemplateId = "MergeTemplateId";
+            public const string CategoryId = "CategoryId";
+            public const string ExpandedIds = "ExpandedIds";
             public const string ParentCategoryId = "ParentCategoryId";
         }
 
@@ -104,8 +108,11 @@ namespace Rock.Blocks.Reporting
         /// <returns>The options that provide additional details to the block.</returns>
         private MergeTemplateDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
         {
-            var options = new MergeTemplateDetailOptionsBag();
-
+            var mergeTemplateIdParam = PageParameter( PageParameterKey.MergeTemplateId );
+            var options = new MergeTemplateDetailOptionsBag()
+            {
+                IsBlockVisible = !string.IsNullOrWhiteSpace( mergeTemplateIdParam ),
+            };
             return options;
         }
 
@@ -166,7 +173,6 @@ namespace Rock.Blocks.Reporting
                 return;
             }
 
-            var isViewable = entity.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson );
             entity.LoadAttributes( rockContext );
 
@@ -205,7 +211,7 @@ namespace Rock.Blocks.Reporting
             var mergeTemplateOwnership = GetAttributeValue( AttributeKey.MergeTemplatesOwnership )
                 .ConvertToEnum<Rock.Enums.Controls.MergeTemplateOwnership>( Rock.Enums.Controls.MergeTemplateOwnership.PersonalAndGlobal );
 
-            return new MergeTemplateBag
+            var bag = new MergeTemplateBag
             {
                 IdKey = entity.IdKey,
                 Category = entity.Category.ToListItemBag(),
@@ -216,6 +222,15 @@ namespace Rock.Blocks.Reporting
                 PersonAlias = mergeTemplateOwnership == Rock.Enums.Controls.MergeTemplateOwnership.Personal && entity.Id == 0 ? RequestContext.CurrentPerson.PrimaryAlias.ToListItemBag() : entity.PersonAlias.ToListItemBag(),
                 TemplateBinaryFile = entity.TemplateBinaryFile.ToListItemBag()
             };
+
+            if ( entity.Id == 0 )
+            {
+                var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull() ?? entity.CategoryId;
+                var category = CategoryCache.Get( categoryId );
+                bag.Category = category.ToListItemBag();
+            }
+
+            return bag;
         }
 
         /// <summary>
@@ -232,7 +247,7 @@ namespace Rock.Blocks.Reporting
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -282,7 +297,7 @@ namespace Rock.Blocks.Reporting
                 bag.IsPersonRequired = false;
             }
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -324,7 +339,7 @@ namespace Rock.Blocks.Reporting
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             if ( entity.CategoryId == 0 && entity.PersonAliasId.HasValue )
@@ -355,9 +370,32 @@ namespace Rock.Blocks.Reporting
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            string url;
+            var categoryId = PageParameter( PageParameterKey.ParentCategoryId ).AsIntegerOrNull();
+
+            if ( categoryId.HasValue )
+            {
+                // Cancelling on Add, and we know the categoryId, so we are probably in treeview mode, so navigate to the current page
+                var qryParams = new Dictionary<string, string>();
+                if ( categoryId != 0 )
+                {
+                    qryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                }
+
+                qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+
+                var pageReference = new PageReference( PageCache.Id, 0, qryParams );
+
+                url = pageReference.BuildUrl();
+            }
+            else
+            {
+                url = this.GetParentPageUrl();
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = url
             };
         }
 
@@ -605,10 +643,21 @@ namespace Rock.Blocks.Reporting
                     return ActionBadRequest( errorMessage );
                 }
 
+                var categoryId = entity.CategoryId;
+
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                var queryParams = new Dictionary<string, string>();
+                if ( categoryId != 0 )
+                {
+                    queryParams[PageParameterKey.CategoryId] = categoryId.ToString();
+                }
+
+                queryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
+                var page = new PageReference( PageCache.Id, 0, queryParams, null );
+
+                return ActionOk( page.BuildUrl() );
             }
         }
 

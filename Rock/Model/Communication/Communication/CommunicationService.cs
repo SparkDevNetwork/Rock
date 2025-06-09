@@ -494,86 +494,52 @@ namespace Rock.Model
                 queuedCommunicationsQry = queuedCommunicationsQry.Where( c => c.Status == CommunicationStatus.Approved );
             }
 
-            if ( includeFuture )
-            {
-                // Also limit to communications that:
-                //
-                // [EITHER] (
-                //      Don't have a FutureSendDateTime
-                //      [AND] Have been created within a reasonable timeframe (typically no older than 3 days ago)
-                //      [AND] Have been created long enough ago (beyond any specified delay period)
-                // )
-                // [OR] (
-                //      FutureSendDateTime is on or AFTER the earliest date/time (regardless of when created or approved)
-                // )
-                queuedCommunicationsQry = queuedCommunicationsQry.Where( c =>
-                    // First, try to use the reviewed date to get the queued communications.
-                    (
-                        !c.FutureSendDateTime.HasValue
-                        && c.ReviewedDateTime.HasValue
-                        && c.ReviewedDateTime.Value >= earliestDateTime
-                        && c.ReviewedDateTime.Value <= latestDateTime
+            // Also limit to communications that:
+            //
+            // [EITHER] (
+            //      FutureSendDateTime is on or AFTER the earliest date/time
+            //      [AND] (
+            //          [EITHER] Include all future communications (includeFuture == true)
+            //          [OR] FutureSendDateTime is on or BEFORE the current date/time
+            //      )
+            // )
+            // [OR] (
+            //      Don't have a FutureSendDateTime
+            //      [AND] Have been created within a reasonable timeframe (typically no older than 3 days ago)
+            //      [AND] Have been created long enough ago (beyond any specified delay period, typically 30 minutes)
+            // )
+            queuedCommunicationsQry = queuedCommunicationsQry.Where( c =>
+
+                // First, try to use the future send date to get the queued communications. Note that for this case, we
+                // don't care WHEN the communication was created or approved; it might have been scheduled well in advance,
+                // and is just now coming due to be sent -OR- the caller dictated to query ALL future communications.
+                (
+                    c.FutureSendDateTime.HasValue
+                    && c.FutureSendDateTime.Value >= earliestDateTime
+                    && (
+                        includeFuture == true
+                        || c.FutureSendDateTime.Value <= currentDateTime
                     )
-                    // Next, try to use the created date to get the queued communications.
-                    // This is for communications that are created by legacy plugins that have not switched to using reviewed date.
-                    || (
-                        !c.FutureSendDateTime.HasValue
-                        && !c.ReviewedDateTime.HasValue
-                        && c.CreatedDateTime.HasValue
-                        && c.CreatedDateTime.Value >= earliestDateTime
-                        && c.CreatedDateTime.Value <= latestDateTime
-                    )
-                    // For communications that have a FutureSendDateTime, get all "future send" communications on or after the earliest date/time.
-                    || (
-                        c.FutureSendDateTime.HasValue
-                        && c.FutureSendDateTime.Value >= earliestDateTime
-                    )
-                );
-            }
-            else
-            {
-                // Also limit to communications that:
-                //
-                //  Have been created within a reasonable timeframe (typically no older than 3 days ago)
-                //  [AND] Have been created long enough ago (beyond any specified delay period)
-                //  [AND] (
-                //      don't have a FutureSendDateTime
-                //      [OR] (
-                //          FutureSendDateTime is on or AFTER the earliest date/time
-                //          [AND] FutureSendDateTime is on or BEFORE the current date/time
-                //      )
-                //  )
-                queuedCommunicationsQry = queuedCommunicationsQry.Where( c =>
-                    // First, try to use the reviewed date to get the queued communications.
-                    (
-                        c.ReviewedDateTime.HasValue
-                        && c.ReviewedDateTime.Value >= earliestDateTime
-                        && c.ReviewedDateTime.Value <= latestDateTime
-                        && (
-                            !c.FutureSendDateTime.HasValue
-                            || (
-                                c.FutureSendDateTime.Value >= earliestDateTime
-                                && c.FutureSendDateTime.Value <= currentDateTime
-                            )
-                        )
-                    )
-                    // Next, try to use the created date to get the queued communications.
-                    // This is for communications that are created by legacy plugins that have not switched to using reviewed date.
-                    || (
-                        !c.ReviewedDateTime.HasValue
-                        && c.CreatedDateTime.HasValue
-                        && c.CreatedDateTime.Value >= earliestDateTime
-                        && c.CreatedDateTime.Value <= latestDateTime
-                        && (
-                            !c.FutureSendDateTime.HasValue
-                            || (
-                                c.FutureSendDateTime.Value >= earliestDateTime
-                                && c.FutureSendDateTime.Value <= currentDateTime
-                            )
-                        )
-                    )
-                );
-            }
+                )
+
+                // Next, try to use the reviewed date to get the queued communications.
+                || (
+                    !c.FutureSendDateTime.HasValue
+                    && c.ReviewedDateTime.HasValue
+                    && c.ReviewedDateTime.Value >= earliestDateTime
+                    && c.ReviewedDateTime.Value <= latestDateTime
+                )
+
+                // Finally, try to use the created date to get the queued communications.
+                // This is for communications that are created by legacy plugins that have not switched to using reviewed date.
+                || (
+                    !c.FutureSendDateTime.HasValue
+                    && !c.ReviewedDateTime.HasValue
+                    && c.CreatedDateTime.HasValue
+                    && c.CreatedDateTime.Value >= earliestDateTime
+                    && c.CreatedDateTime.Value <= latestDateTime
+                )
+            );
 
             // Just in case SendDateTime is null (pre-v8 communication), also limit to communications that either have a
             // ListGroupId or have pending (or previous-lock-expired) recipients.
@@ -722,6 +688,43 @@ namespace Rock.Model
                 .Clients
                 .Channel( channelName )
                 .ConversationMarkedAsRead( conversationKey );
+        }
+
+        /// <summary>
+        /// Send all real time notifications for a conversation that has had
+        /// a change to its read status on a new background Task.
+        /// </summary>
+        /// <param name="conversationKey">The key that identifies the conversation that was read.</param>
+        /// <param name="readStatus">The read status that the conversation was changed to.</param>
+        internal static void SendConversationReadStatusChangedRealTimeNotificationsInBackground( string conversationKey, bool readStatus )
+        {
+            Task.Run( async () =>
+            {
+                try
+                {
+                    await SendConversationReadStatusChangedRealTimeNotificationsAsync( conversationKey, readStatus );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            } );
+        }
+
+        /// <summary>
+        /// Send all real time notifications for a conversation that had a change to its read status.
+        /// </summary>
+        /// <param name="conversationKey">The key that identifies the conversation that was changed.</param>
+        /// <param name="readStatus">The read status that the conversation was changed to.</param>
+        /// <returns>A Task representing the asynchronous operation.</returns>
+        internal static async Task SendConversationReadStatusChangedRealTimeNotificationsAsync( string conversationKey, bool readStatus )
+        {
+            var channelName = RealTime.Topics.ConversationParticipantTopic.GetChannelForConversationKey( conversationKey );
+
+            await RealTime.RealTimeHelper.GetTopicContext<RealTime.Topics.IConversationParticipant>()
+                .Clients
+                .Channel( channelName )
+                .ConversationReadStatusChanged( conversationKey, readStatus );
         }
 
         /// <summary>

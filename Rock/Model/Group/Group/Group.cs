@@ -25,6 +25,7 @@ using System.Linq;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
@@ -34,6 +35,53 @@ using Rock.Web.Cache;
 
 namespace Rock.Model
 {
+    /*
+    12/16/2024 - DSH
+
+    Group and LearningClass along with GroupMember and LearningParticipant use
+    a TPT (Table-Per-Type) pattern in Entity Framework. This is not a normal
+    pattern and should not be followed for new work without approval from the
+    product owner. There are some minor issues that can crop up with this
+    pattern so it is not one that we want to follow without considering those
+    potential issues. These issues below are described for Group/LearningClass
+    but they hold true for GroupMember/LearningParticipant as well.
+
+    1. All queries to Group will now be joined to LearningClass by Entity
+    Framework.
+
+    2. GroupService.Get() and GroupService.Queryable() will return an instance
+    of LearningClass if the group has an associated LearningClass. This can
+    cause unexpected results when you then call .GetType() expecting a Group
+    but instead see a LearningClass.
+
+    3. Because the service can return a LearningClass this can cause issues
+    when calling LoadAttributes(). Since the instance is actually a LearningClass
+    it will load the attributes of the LearningClass instead of the Group. For
+    the specific use case we have in LMS, that is desired behavior though it may
+    be unexpected.
+
+    4. Because the service can return a LearningClass this can cause issues
+    when calling LoadAttributes() on a collection of "groups". The collection
+    LoadAttributes() method will inspect the first item's GetType() to determine
+    which attributes to load. If the collection of groups happens to have a
+    LearningClass as the first item with the rest being Group instances, then
+    the wrong attributes will be loaded.
+
+    5. TypeId, TypeName and FriendlyTypeName will be wrong for these instances
+    unless you override them.
+
+    There was some discussion about resolving some of these issues:
+
+    1. Try to fix .Get() and .Queryable(). It was decided that this was not
+    a feasible solution since we would have to somehow translate the instance
+    back into a Group instance, but since that requires a C# runtime check it
+    would be next to impossible to achieve this with .Queryable().
+
+    2. A modification to collection LoadAttributes() was decided against as it
+    would reduce the performance as we'd have to call GetType() on each instance
+    of the collection and then process them separately.
+    */
+
     /// <summary>
     /// Represents A collection of <see cref="Rock.Model.Person"/> entities. This can be a family, small group, Bible study, security group,  etc. Groups can be hierarchical.
     /// </summary>
@@ -43,6 +91,7 @@ namespace Rock.Model
     [RockDomain( "Group" )]
     [Table( "Group" )]
     [DataContract]
+    [CodeGenerateRest]
 
     // Support Analytics Tables, but only for GroupType Family
     [Analytics( "GroupTypeId", "10", true, true )]
@@ -68,6 +117,7 @@ namespace Rock.Model
         /// An <see cref="System.Int32"/> representing the Id of the Group's Parent Group.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? ParentGroupId { get; set; }
 
         /// <summary>
@@ -79,6 +129,7 @@ namespace Rock.Model
         [Required]
         [HideFromReporting]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int GroupTypeId { get; set; }
 
         /// <summary>
@@ -91,6 +142,7 @@ namespace Rock.Model
         [HideFromReporting]
         [DataMember]
         [FieldType( Rock.SystemGuid.FieldType.CAMPUS )]
+        [EnableAttributeQualification]
         public int? CampusId { get; set; }
 
         /// <summary>
@@ -513,10 +565,95 @@ namespace Rock.Model
         /// </para>
         /// </summary>
         /// <value>
-        /// A value that indicates if this gorup is a special needs group.
+        /// A value that indicates if this group is a special needs group.
         /// </value>
         [DataMember]
         public bool IsSpecialNeeds { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether chat is enabled for this group. If set to <see langword="false"/> (or if the parent
+        /// <see cref="GroupType.IsChatAllowed"/> is set to <see langword="false"/>), then the group will not have chat
+        /// enabled. If set to <see langword="true"/>, then it will have chat enabled. If set to <see langword="null"/>,
+        /// then the value from <see cref="GroupType.IsChatEnabledForAllGroups"/> will be used. This should only be used
+        /// when editing the group. Call the <see cref="GetIsChatEnabled"/> method instead to determine if the group is
+        /// being used for chat, as that method will also check the <see cref="GroupType.IsChatAllowed"/> and
+        /// <see cref="GroupType.IsChatEnabledForAllGroups"/> properties.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatEnabledOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether individuals are allowed to leave this chat channel. If set to <see langword="false"/>,
+        /// then they will only be allowed to mute the channel. If set to <see langword="true"/>, then they will be
+        /// allowed to both leave and mute the channel. If set to <see langword="null"/>, then the value of
+        /// <see cref="GroupType.IsLeavingChatChannelAllowed"/> will be used. This should only be used when editing the
+        /// group. Call the <see cref="GetIsLeavingChatChannelAllowed"/> method instead to determine if leaving is
+        /// allowed, as that method will also check the <see cref="GroupType.IsLeavingChatChannelAllowed"/> property.
+        /// </summary>
+        [DataMember]
+        public bool? IsLeavingChatChannelAllowedOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this chat channel is public. A public channel is visible to everyone when performing a
+        /// search. This also implies that the channel may be joined by any person via the chat application. If set to
+        /// <see langword="null"/>, then the value of <see cref="GroupType.IsChatChannelPublic"/> will be used. This
+        /// should only be used when editing the group. Call the <see cref="GetIsChatChannelPublic"/> method instead to
+        /// determine if the chat channel is public, as that method will also check the
+        /// <see cref="GroupType.IsChatChannelPublic"/> property.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatChannelPublicOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether this chat channel is always shown in the channel list even if the person has not joined
+        /// the channel. This also implies that the channel may be joined by any person via the chat application. If set
+        /// to <see langword="null"/>, then the value of <see cref="GroupType.IsChatChannelAlwaysShown"/> will be used.
+        /// This should only be used when editing the group. Call the <see cref="GetIsChatChannelAlwaysShown"/> method
+        /// instead to determine if the chat channel is always shown, as that method will also check the
+        /// <see cref="GroupType.IsChatChannelAlwaysShown"/> property.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatChannelAlwaysShownOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the chat channel avatar binary file identifier. This is the image that will be shown in the
+        /// external chat application for this channel.
+        /// </summary>
+        [DataMember]
+        public int? ChatChannelAvatarBinaryFileId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat
+        /// channel. If set to <see langword="null"/>, then the value of <see cref="GroupType.ChatPushNotificationMode"/>
+        /// will be used. This should only be used when editing the group. Call the <see cref="GetChatPushNotificationMode"/>
+        /// method instead to determine how push notifications are sent, as that method will also check the
+        /// <see cref="GroupType.ChatPushNotificationMode"/> property.
+        /// </summary>
+        [DataMember]
+        public ChatNotificationMode? ChatPushNotificationModeOverride { get; set; }
+
+        /// <summary>
+        /// Gets or sets the identifier of the chat channel in the external chat service. No assumptions should be made
+        /// that if this value is set the channel still exists in the external chat service.
+        /// </summary>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string ChatChannelKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
+        /// the source of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/>
+        /// (or if <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value
+        /// of <see cref="GroupType.GroupMemberRecordSourceValueId"/> will be used. This should only be used when editing
+        /// the group. Call the <see cref="GetGroupMemberRecordSourceValueId"/> method instead to get the value, as that
+        /// method will also check the <see cref="GroupType.GroupMemberRecordSourceValueId"/> property.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
+        public int? GroupMemberRecordSourceValueId { get; set; }
 
         #endregion
 
@@ -727,6 +864,30 @@ namespace Rock.Model
 
         private Dictionary<string, string> _supportedActions;
 
+        /// <summary>
+        /// Gets or sets the chat channel avatar binary file. This is the image that will be shown in the external chat
+        /// application for this channel.
+        /// </summary>
+        /// <value>
+        /// The image binary file.
+        /// </value>
+        [DataMember]
+        public virtual BinaryFile ChatChannelAvatarBinaryFile { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
+        /// of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupType.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value of
+        /// <see cref="GroupType.GroupMemberRecordSourceValue"/> will be used. This should only be used when editing the
+        /// group. Call the <see cref="GetGroupMemberRecordSourceValue"/> method instead to get the value, as that
+        /// method will also check the <see cref="GroupType.GroupMemberRecordSourceValue"/> property.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue GroupMemberRecordSourceValue { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -768,6 +929,8 @@ namespace Rock.Model
             this.HasOptional( p => p.ScheduleCoordinatorPersonAlias ).WithMany().HasForeignKey( p => p.ScheduleCoordinatorPersonAliasId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.InactiveReasonValue ).WithMany().HasForeignKey( p => p.InactiveReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RSVPReminderSystemCommunication ).WithMany().HasForeignKey( p => p.RSVPReminderSystemCommunicationId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ChatChannelAvatarBinaryFile ).WithMany().HasForeignKey( p => p.ChatChannelAvatarBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.GroupMemberRecordSourceValue ).WithMany().HasForeignKey( p => p.GroupMemberRecordSourceValueId ).WillCascadeOnDelete( false );
 
             // Tell EF that we never want archived groups. 
             // This will prevent archived members from being included in any Group queries.

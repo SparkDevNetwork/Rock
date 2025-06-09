@@ -25,6 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,11 +35,37 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of benevolence types
     /// </summary>
     [Serializable]
-    [RockPlatformSupport( Utility.RockPlatform.WebForms )]
-    [Rock.SystemGuid.FieldTypeGuid( "7BD3C3A3-DF4A-41EB-BF13-29EDB166078B" )]
+    [FieldTypeUsage(FieldTypeUsage.System)]
+    [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
+    [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.BENEVOLENCE_TYPE )]
     public class BenevolenceTypeFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
     {
         #region Formatting
+
+        /// <inheritdoc/>
+        public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            Guid? guid = privateValue.AsGuidOrNull();
+            if ( guid.HasValue )
+            {
+                using ( var rockContext = new RockContext() )
+                {
+                    var type = new BenevolenceTypeService( rockContext ).GetNoTracking( guid.Value );
+                    if ( type != null )
+                    {
+                        return type.Name;
+                    }
+                }
+            }
+
+            return string.Empty;
+        }
+
+        /// <inheritdoc/>
+        public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
+        {
+            return privateValue;
+        }
 
         /// <inheritdoc/>
         public override string GetTextValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
@@ -61,7 +88,53 @@ namespace Rock.Field.Types
 
         #endregion
 
-        #region Edit Control
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
+        {
+            // Create a new dictionary to protect against the passed dictionary being changed after we are called.
+            var pubConfig = new Dictionary<string, string>( privateConfigurationValues );
+            var typeList = new List<ListItemBag>();
+
+            var types = new BenevolenceTypeService( new RockContext() )
+                .Queryable().AsNoTracking()
+                .OrderBy( o => o.Name )
+                .Select( o => new
+                {
+                    o.Guid,
+                    o.Name,
+                } )
+                .ToList();
+
+            if ( types.Any() )
+            {
+                foreach ( var type in types )
+                {
+                    var listItem = new ListItemBag
+                    {
+                        Text = type.Name,
+                        Value = type.Guid.ToString().ToUpper()
+                    };
+                    typeList.Add( listItem );
+                }
+            }
+
+            pubConfig.AddOrReplace( "values", typeList.ToCamelCaseJson( false, true ) );
+
+
+            return pubConfig;
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
+        {
+            // Create a new dictionary to protect against the passed dictionary being changed after we are called.
+            var privConfig = new Dictionary<string, string>( publicConfigurationValues );
+            privConfig.Remove( "values" );
+
+            return privConfig;
+        }
 
         #endregion
 

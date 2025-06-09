@@ -1,0 +1,28 @@
+//
+// Value List Control - styling for value list control (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.value-list-rows {
+  .controls-row {
+    margin-bottom: var(--spacing-xsmall);
+    margin-right: 0;
+  }
+  
+  .control-wrapper {
+    width: 100%;
+  }
+
+  .form-control-group:not(.controls-row-full-width) {
+      max-width: 600px;
+  }
+}
+// ====================== END BASE STYLE ======================
+
+

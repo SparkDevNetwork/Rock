@@ -1,0 +1,95 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownListProperty v-bind="$attrs"
+                          :label="label"
+                          help="This controls how the image is displayed. &quot;Fit Width&quot; will adjust the image to take up the full width of the block. &quot;Fill Height&quot; will adjust the image to take up the full height of the block. &quot;Original&quot; will show the original size of your image."
+                          :items="[
+                              {
+                                  text: 'Original',
+                                  value: get<BackgroundSize>('original')
+                              },
+                              {
+                                  text: 'Fit Width',
+                                  value: get<BackgroundSize>('fit-width')
+                              },
+                              {
+                                  text: 'Fit Height',
+                                  value: get<BackgroundSize>('fit-height')
+                              }
+                          ]"
+                          :showBlankItem="false"
+                          :valueProvider="valueProviderOverride ?? valueProvider!" />
+</template>
+
+<script setup lang="ts">
+    import { onMounted, PropType, ref, watch } from "vue";
+    import DropDownListProperty from "./dropDownListProperty.partial.obs";
+    import { createBackgroundSizeProvider } from "../providers.partial";
+    import { BackgroundSize, ValueProvider } from "../types.partial";
+    import { get } from "../utils.partial";
+
+    const props = defineProps({
+        element: {
+            type: Object as PropType<HTMLElement>,
+            required: true
+        },
+
+        label: {
+            type: String as PropType<string>,
+            default: "Background Size" as const
+        },
+
+        /**
+         * Changes are copied to these elements unless style sheet mode is used.
+         */
+        copyToElements: {
+            type: Object as PropType<HTMLElement[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Overrides the value provider.
+         */
+        valueProviderOverride: {
+            type: Object as PropType<ValueProvider<BackgroundSize | null | undefined> | undefined>,
+            required: false
+        }
+    });
+
+    // #region Values
+
+    const valueProvider = ref<ValueProvider<BackgroundSize | null | undefined> | undefined>(
+        createValueProvider()
+    );
+
+    // #endregion Values
+
+    // #region Functions
+
+    function createValueProvider(): ValueProvider<BackgroundSize | null | undefined> | undefined {
+        if (props.valueProviderOverride) {
+            return;
+        }
+
+        return createBackgroundSizeProvider(props.element, props.copyToElements);
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([() => props.element, () => props.copyToElements], () => {
+        valueProvider.value?.dispose();
+        valueProvider.value = createValueProvider();
+    });
+
+    // #endregion Watchers
+
+    // #region Hooks
+
+    onMounted(() => {
+        valueProvider.value?.dispose();
+    });
+
+    // #endregion Hooks
+</script>

@@ -35,6 +35,7 @@ namespace Rock.Model
     [RockDomain( "Communication" )]
     [Table( "Communication" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "C4CCBD91-1264-48BF-BC33-92751C8948B5")]
     public partial class Communication : Model<Communication>, ICommunicationDetails
     {
@@ -88,6 +89,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public string Segments { get; set; }
+
+        /// <summary>
+        /// Gets or sets the personalization segments that list is being filtered to.
+        /// </summary>
+        /// <value>
+        /// The comma-delimited list of <see cref="PersonalizationSegment"/> ids.
+        /// </value>
+        [DataMember]
+        public string PersonalizationSegments { get; set; }
 
         /// <summary>
         /// Gets or sets if communication is targeted to people in all selected segments or any selected segments.
@@ -290,6 +300,12 @@ namespace Rock.Model
         [DataMember]
         public string MessageMetaData { get; set; }
 
+        /// <summary>
+        /// Gets or sets the communication topic defined value.
+        /// </summary>
+        [DataMember]
+        public int? CommunicationTopicValueId { get; set; }
+
         #endregion
 
         #region SMS Properties
@@ -459,6 +475,16 @@ namespace Rock.Model
         [DataMember]
         public DateTime? EmailMetricsReminderSentDateTime { get; set; }
 
+        /// <summary>
+        /// Gets or sets the summary of the Communication
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.String"/> that represents the summary of the communication.
+        /// </value>
+        [DataMember]
+        [MaxLength( 600 )]
+        public string Summary { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -603,6 +629,12 @@ namespace Rock.Model
         /// <inheritdoc cref="SystemCommunicationId"/>
         [DataMember]
         public virtual SystemCommunication SystemCommunication { get; set;  }
+        
+        /// <summary>
+        /// Gets or sets the communication topic defined value.
+        /// </summary>
+        [DataMember]
+        public virtual DefinedValue CommunicationTopicValue { get; set; }
 
         #endregion
     }

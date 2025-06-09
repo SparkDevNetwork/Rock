@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -94,9 +95,9 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<LearningActivity>( Context ).Queryable().Any( a => a.CompletionWorkflowTypeId == item.Id ) )
+            if ( new Service<LearningClassActivity>( Context ).Queryable().Any( a => a.CompletionWorkflowTypeId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, LearningActivity.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", WorkflowType.FriendlyTypeName, LearningClassActivity.FriendlyTypeName );
                 return false;
             }
 
@@ -148,6 +149,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( WorkflowType.WorkflowTypeQueryableAttributeValue ), nameof( WorkflowTypeAttributeValues ) )]
+    public partial class WorkflowType
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<WorkflowTypeQueryableAttributeValue> WorkflowTypeAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class WorkflowTypeQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -229,6 +248,7 @@ namespace Rock.Model
             target.NoActionMessage = source.NoActionMessage;
             target.Order = source.Order;
             target.ProcessingIntervalSeconds = source.ProcessingIntervalSeconds;
+            target.Slug = source.Slug;
             target.SummaryViewText = source.SummaryViewText;
             target.WorkflowExpireDateTime = source.WorkflowExpireDateTime;
             target.WorkflowIdPrefix = source.WorkflowIdPrefix;

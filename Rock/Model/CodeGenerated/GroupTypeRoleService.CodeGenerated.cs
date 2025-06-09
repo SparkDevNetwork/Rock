@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -85,6 +86,24 @@ namespace Rock.Model
         }
     }
 
+    [HasQueryableAttributes( typeof( GroupTypeRole.GroupTypeRoleQueryableAttributeValue ), nameof( GroupTypeRoleAttributeValues ) )]
+    public partial class GroupTypeRole
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<GroupTypeRoleQueryableAttributeValue> GroupTypeRoleAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class GroupTypeRoleQueryableAttributeValue : QueryableAttributeValue
+        {
+        }
+    }
+
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
@@ -143,7 +162,9 @@ namespace Rock.Model
             target.Id = source.Id;
             target.CanEdit = source.CanEdit;
             target.CanManageMembers = source.CanManageMembers;
+            target.CanTakeAttendance = source.CanTakeAttendance;
             target.CanView = source.CanView;
+            target.ChatRole = source.ChatRole;
             target.Description = source.Description;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;

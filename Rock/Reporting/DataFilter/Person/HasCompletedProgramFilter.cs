@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -27,6 +26,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -51,6 +52,54 @@ namespace Rock.Reporting.DataFilter.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasCompletedProgramFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var learningProgramOptions = new LearningProgramService( rockContext )
+                .Queryable()
+                .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
+                .OrderBy( lp => lp.Name )
+                .ToList()
+                .Select( lp => lp.ToListItemBag() )
+                .ToList();
+
+            var data = new Dictionary<string, string>
+            {
+                { "learningProgramOptions", learningProgramOptions.ToCamelCaseJson(false, true) },
+                { "learningProgram", config?.LearningProgramGuid?.ToString() },
+                { "dateRange", config?.SlidingDateRangeDelimitedValues },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig
+            {
+                LearningProgramGuid = data.GetValueOrNull( "learningProgram" )?.AsGuidOrNull(),
+                SlidingDateRangeDelimitedValues = data.GetValueOrNull( "dateRange" ),
+            };
+
+            return selectionConfig.ToJson();
+        }
+
+        #endregion
+
         #region Public Methods
 
         /// <inheritdoc/>
@@ -70,73 +119,68 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override string FormatSelection( Type entityType, string selection )
         {
-            string s = "Completing Program";
-
             var selectionConfig = SelectionConfig.Parse( selection );
-            if ( selectionConfig != null && selectionConfig.LearningProgramId.HasValue )
-            {
-                var program = new LearningProgramService( new RockContext() ).Get( selectionConfig.LearningProgramId.Value );
-                var programName = GetProgramName( program );
-                var dateRangeString = string.Empty;
-                if ( selectionConfig.SlidingDateRangeDelimitedValues.IsNotNullOrWhiteSpace() )
-                {
-                    dateRangeString = "in the Date Range: " + SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
-                }
 
-                s = string.Format(
-                    "Completed the '{0}' program '{1}'",
-                    programName,
-                    dateRangeString );
+            if ( selectionConfig != null && selectionConfig.LearningProgramGuid.HasValue )
+            {
+                var program = new LearningProgramService( new RockContext() ).Get( selectionConfig.LearningProgramGuid.Value );
+                var dateRangeString = SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
+
+                return dateRangeString.IsNotNullOrWhiteSpace()
+                    ? $"Completed the '{program?.Name}' program in the date range '{dateRangeString}'"
+                    : $"Completed the '{program?.Name}' program";
             }
 
-            return s;
+            return "Completed Program";
         }
 
-#if REVIEW_WEBFORMS
+#if WEBFORMS
+
         /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
-            var ddlProgram = new RockDropDownList();
-            ddlProgram.ID = filterControl.GetChildControlInstanceName( "ddlProgram" );
-            ddlProgram.AddCssClass( "js-program" );
-            ddlProgram.Label = "Program";
-            filterControl.Controls.Add( ddlProgram );
-            // Only include active and tracked programs (non-tracked programs won't have LearningProgramCompletion records).
-            var programs = new LearningProgramService( new RockContext() ).Queryable().AsNoTracking()
-                .Where( p => p.IsActive && p.IsCompletionStatusTracked )
-                .ToList()
-                .OrderBy( a => a.Name );
-            ddlProgram.Items.Clear();
-            ddlProgram.Items.Insert( 0, new ListItem() );
-            foreach ( var program in programs )
+            var ddlProgram = new RockDropDownList
             {
-                var programName = GetProgramName( program );
-                ddlProgram.Items.Add( new ListItem( programName, program.Guid.ToString() ) );
-            }
+                ID = filterControl.GetChildControlInstanceName( "ddlProgram" ),
+                Label = "Program",
+                Required = true
+            };
 
-            var slidingDateRangePicker = new SlidingDateRangePicker();
-            slidingDateRangePicker.Label = "Date Range";
-            slidingDateRangePicker.ID = filterControl.GetChildControlInstanceName( "slidingDateRangePicker" );
+            ddlProgram.AddCssClass( "js-program" );
+            filterControl.Controls.Add( ddlProgram );
+            SetProgramItems( ddlProgram );
+
+            var slidingDateRangePicker = new SlidingDateRangePicker
+            {
+                ID = filterControl.GetChildControlInstanceName( "slidingDateRangePicker" ),
+                Label = "Date Range"
+            };
             slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
             filterControl.Controls.Add( slidingDateRangePicker );
 
-            var controls = new Control[2] { ddlProgram, slidingDateRangePicker };
+            return new Control[2] { ddlProgram, slidingDateRangePicker };
+        }
 
-            // convert pipe to comma delimited
-            var defaultDelimitedValues = slidingDateRangePicker.DelimitedValues.Replace( "|", "," );
+        internal static void SetProgramItems( DropDownList ddlProgram )
+        {
+            // Only include active and tracked programs (non-tracked programs won't have LearningProgramCompletion records).
+            var programs = new LearningProgramService( new RockContext() )
+                .Queryable()
+                .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
+                .OrderBy( lp => lp.Name )
+                .Select( lp => new
+                {
+                    lp.Guid,
+                    lp.Name
+                } );
 
-            // set the default values in case this is a newly added filter
-            var selectionConfig = new SelectionConfig()
+            ddlProgram.Items.Clear();
+            ddlProgram.Items.Insert( 0, new ListItem() );
+
+            foreach ( var program in programs )
             {
-                SlidingDateRangeDelimitedValues = defaultDelimitedValues
-            };
-
-            SetSelection(
-                entityType,
-                controls,
-                selectionConfig.ToJson() );
-
-            return controls;
+                ddlProgram.Items.Add( new ListItem( program.Name, program.Guid.ToString() ) );
+            }
         }
 
         /// <inheritdoc/>
@@ -178,7 +222,7 @@ namespace Rock.Reporting.DataFilter.Person
                 var ddlProgram = controls[0] as RockDropDownList;
                 var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
 
-                selectionConfig.LearningProgramId = ddlProgram.SelectedValueAsInt();
+                selectionConfig.LearningProgramGuid = ddlProgram.SelectedValueAsGuid();
                 selectionConfig.SlidingDateRangeDelimitedValues = slidingDateRangePicker.DelimitedValues;
             }
 
@@ -188,31 +232,59 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override void SetSelection( Type entityType, Control[] controls, string selection )
         {
-            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
+            SelectionConfig selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
 
             var ddlProgram = controls[0] as RockDropDownList;
             var slidingDateRangePicker = controls[1] as SlidingDateRangePicker;
 
             slidingDateRangePicker.DelimitedValues = selectionConfig.SlidingDateRangeDelimitedValues;
-            ddlProgram.SetValue( selectionConfig.LearningProgramId );
+            ddlProgram.SetValue( selectionConfig.LearningProgramGuid );
         }
+
 #endif
 
         /// <inheritdoc/>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            SelectionConfig selectionConfig = SelectionConfig.Parse( selection );
-            var selectedProgramId = selectionConfig.LearningProgramId.ToIntSafe();
-
+            var selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
+            var selectedProgramGuid = selectionConfig.LearningProgramGuid;
             var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
             var rockContext = serviceInstance.Context as RockContext;
 
-            var completionQuery = selectedProgramId == 0 ?
-                 new List<LearningProgramCompletion>().AsQueryable() :
-                 new LearningProgramCompletionService( rockContext ).Queryable()
-                    .Include( c => c.PersonAlias )
-                    .Where( c => c.LearningProgramId == selectionConfig.LearningProgramId.Value )
-                    .Where( c => c.CompletionStatus == Enums.Lms.CompletionStatus.Completed );
+            var completionQuery = GetFilterQuery( rockContext, selectedProgramGuid, dateRange );
+
+            // Create the query that will be used for extracting the Person.
+            var personQuery = new PersonService( rockContext )
+                .Queryable()
+                .Where( p => completionQuery.Any( lpc => lpc.PersonAlias.PersonId == p.Id ) );
+
+            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personQuery, parameterExpression, "p" );
+        }
+
+        /// <summary>
+        /// Gets the query with the settings applied. This method allows us to
+        /// ensure we use the same logic in the Data Filter and the Data Select.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="selectedProgramGuid">The unique identifier of the program.</param>
+        /// <param name="dateRange">The date range to limit results to.</param>
+        /// <returns>A queryable that matches the parameters.</returns>
+        internal static IQueryable<LearningProgramCompletion> GetFilterQuery( RockContext rockContext, Guid? selectedProgramGuid, DateRange dateRange )
+        {
+            var completionQuery = new LearningProgramCompletionService( rockContext ).Queryable();
+
+            if ( selectedProgramGuid.HasValue )
+            {
+                completionQuery = completionQuery
+                    .Where( c => c.LearningProgram.Guid == selectedProgramGuid.Value
+                        && c.CompletionStatus == Enums.Lms.CompletionStatus.Completed
+                        && c.EndDate.HasValue );
+            }
+            else
+            {
+                // Make sure we get no results if not properly configured.
+                completionQuery = completionQuery.Where( _ => false );
+            }
 
             if ( dateRange.Start.HasValue )
             {
@@ -226,20 +298,7 @@ namespace Rock.Reporting.DataFilter.Person
                 completionQuery = completionQuery.Where( c => c.EndDate <= endDate );
             }
 
-            // Create the query that will be used for extracting the Person.
-            var personQuery = new PersonService( rockContext ).Queryable().Where( p => completionQuery.Any( c => c.PersonAlias.PersonId == p.Id ) );
-
-            return FilterExpressionExtractor.Extract<Rock.Model.Person>( personQuery, parameterExpression, "p" );
-        }
-
-        /// <summary>
-        /// Handles nulls while getting the program name.
-        /// </summary>
-        /// <param name="program">The <see cref="LearningProgram"/> to return the name for.</param>
-        /// <returns>The program name or an empty string.</returns>
-        private string GetProgramName( LearningProgram program )
-        {
-            return program?.Name ?? string.Empty;
+            return completionQuery;
         }
 
         #endregion
@@ -250,19 +309,12 @@ namespace Rock.Reporting.DataFilter.Person
         protected class SelectionConfig
         {
             /// <summary>
-            /// Initializes a new instance of the <see cref="SelectionConfig"/> class.
-            /// </summary>
-            public SelectionConfig()
-            {
-            }
-
-            /// <summary>
-            /// Gets or sets the learning program identifier to filter to.
+            /// Gets or sets the learning program unique identifier to filter to.
             /// </summary>
             /// <value>
-            /// The learning program identifiers.
+            /// The learning program unique identifier.
             /// </value>
-            public int? LearningProgramId { get; set; }
+            public Guid? LearningProgramGuid { get; set; }
 
             /// <summary>
             /// Gets or sets the sliding date range.

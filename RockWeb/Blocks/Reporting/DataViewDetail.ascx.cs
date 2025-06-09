@@ -17,16 +17,17 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
-using System.Diagnostics;
 using System.Linq;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Blocks;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
@@ -80,8 +81,15 @@ namespace RockWeb.Blocks.Reporting
         DefaultIntegerValue = 180,
         Order = 4 )]
 
+    [BooleanField(
+        "Use Obsidian Components",
+        Key = AttributeKey.UseObsidianComponents,
+        Description = "Switches the filter components to use Obsidian if supported.",
+        DefaultBooleanValue = true,
+        Category = "Advanced" )]
+
     [Rock.SystemGuid.BlockTypeGuid( "EB279DF9-D817-4905-B6AC-D9883F0DA2E4" )]
-    public partial class DataViewDetail : RockBlock
+    public partial class DataViewDetail : RockBlock, IRockBlockType
     {
         #region Attribute Keys
 
@@ -92,6 +100,7 @@ namespace RockWeb.Blocks.Reporting
             public const string DataViewDetailPage = "DataViewDetailPage";
             public const string ReportDetailPage = "ReportDetailPage";
             public const string GroupDetailPage = "GroupDetailPage";
+            public const string UseObsidianComponents = "UseObsidianComponents";
         }
 
         #endregion Attribute Keys
@@ -106,6 +115,7 @@ namespace RockWeb.Blocks.Reporting
 
             public const string ReportId = "ReportId";
             public const string GroupId = "GroupId";
+            public const string ExpandedIds = "ExpandedIds";
         }
 
         #endregion PageParameterKey
@@ -119,6 +129,28 @@ namespace RockWeb.Blocks.Reporting
         }
 
         #endregion ViewStateKey
+
+        #region IRockBlockType
+
+        /// <inheritdoc/>
+        int IRockBlockType.BlockId => ( ( IRockBlockType ) this ).BlockCache.Id;
+
+        /// <inheritdoc/>
+        BlockCache IRockBlockType.BlockCache { get; set; }
+
+        /// <inheritdoc/>
+        PageCache IRockBlockType.PageCache { get; set; }
+
+        /// <inheritdoc/>
+        RockRequestContext IRockBlockType.RequestContext { get; set; }
+
+        /// <inheritdoc/>
+        System.Threading.Tasks.Task<object> IRockBlockType.GetBlockInitializationAsync( RockClientType clientType )
+        {
+            throw new NotImplementedException();
+        }
+
+        #endregion
 
         #region Control Methods
 
@@ -443,9 +475,14 @@ $(document).ready(function() {
             }
 
             var qryParams = new Dictionary<string, string>();
+            var expandedIds = PageParameter( PageParameterKey.ExpandedIds );
             qryParams[PageParameterKey.DataViewId] = dataView.Id.ToString();
             qryParams[PageParameterKey.ParentCategoryId] = null;
-            NavigateToCurrentPageReference( qryParams );
+            if ( expandedIds.IsNotNullOrWhiteSpace() )
+            {
+                qryParams[PageParameterKey.ExpandedIds] = expandedIds;
+            }
+            NavigateToCurrentPage( qryParams );
         }
 
         /// <summary>
@@ -476,7 +513,7 @@ $(document).ready(function() {
                     qryParams[PageParameterKey.CategoryId] = parentCategoryId.ToString();
                     qryParams[PageParameterKey.DataViewId] = null;
                     qryParams[PageParameterKey.ParentCategoryId] = null;
-                    NavigateToCurrentPageReference( qryParams );
+                    NavigateToPage( RockPage.Guid, qryParams );
                 }
                 else
                 {
@@ -541,7 +578,7 @@ $(document).ready(function() {
 
                 qryParams[PageParameterKey.DataViewId] = null;
                 qryParams[PageParameterKey.ParentCategoryId] = null;
-                NavigateToCurrentPageReference( qryParams );
+                NavigateToPage( RockPage.Guid, qryParams );
             }
         }
 
@@ -995,7 +1032,7 @@ $(document).ready(function() {
             var reports = reportService.Queryable().AsNoTracking().Where( r => r.DataViewId == dataView.Id ).OrderBy( r => r.Name );
             var reportDetailPage = GetAttributeValue( AttributeKey.ReportDetailPage );
 
-            foreach ( var report in reports )
+            foreach ( var report in reports.AsEnumerable().Where( r => r.IsAuthorized( Authorization.VIEW, CurrentPerson ) ) )
             {
                 if ( !string.IsNullOrWhiteSpace( reportDetailPage ) )
                 {
@@ -1126,17 +1163,17 @@ $(document).ready(function() {
             {
                 return;
             }
-            else if ( dataView.PersistedScheduleId != null || dataView.PersistedScheduleIntervalMinutes != null  )
+            else if ( dataView.PersistedScheduleId != null || dataView.PersistedScheduleIntervalMinutes != null )
             {
                 // This is a persisted data view...
-                if ( ! dataView.PersistedLastRunDurationMilliseconds.HasValue )
+                if ( !dataView.PersistedLastRunDurationMilliseconds.HasValue )
                 {
                     return;
                 }
 
                 isPersisted = true;
             }
-            else if ( ! dataView.TimeToRunDurationMilliseconds.HasValue )
+            else if ( !dataView.TimeToRunDurationMilliseconds.HasValue )
             {
                 // Otherwise it is not persisted data view, but there is no 'time to run duration' to show.
                 return;
@@ -1341,6 +1378,7 @@ $(document).ready(function() {
         {
             FilterGroup groupControl = sender as FilterGroup;
             FilterField filterField = new FilterField();
+            filterField.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
             filterField.ValidationGroup = this.BlockValidationGroup;
             filterField.IsFilterTypeEnhancedForLongLists = true;
             filterField.DataViewFilterGuid = Guid.NewGuid();
@@ -1349,6 +1387,10 @@ $(document).ready(function() {
             filterField.ID = string.Format( "ff_{0}", filterField.DataViewFilterGuid.ToString( "N" ) );
             filterField.FilteredEntityTypeName = groupControl.FilteredEntityTypeName;
             filterField.Expanded = true;
+
+            // This is required for Obsidian filters so they can initialize any
+            // data that must be sent from C# to Obsidian.
+            filterField.SetSelection( string.Empty );
         }
 
         /// <summary>
@@ -1469,6 +1511,7 @@ $(document).ready(function() {
                 if ( filter.ExpressionType == FilterExpressionType.Filter )
                 {
                     var filterControl = new FilterField();
+                    filterControl.UseObsidian = GetAttributeValue( AttributeKey.UseObsidianComponents ).AsBoolean();
                     filterControl.ValidationGroup = this.BlockValidationGroup;
                     filterControl.IsFilterTypeEnhancedForLongLists = true;
                     parentControl.Controls.Add( filterControl );
@@ -1720,6 +1763,34 @@ $(document).ready(function() {
         {
             Unique = 0,
             NamedSchedule = 1
+        }
+
+        #endregion
+
+        #region Block Actions
+
+        /// <summary>
+        /// Executes a request from the UI component to be processed by the
+        /// server component. This is used to load additional information after
+        /// the component has been initialized.
+        /// </summary>
+        /// <param name="componentGuid">The unique identifier of the component that will handle the request.</param>
+        /// <param name="request">The object that describes the parameters of the request.</param>
+        /// <param name="securityGrantToken">The security grant token that was created when the component was initialized.</param>
+        /// <returns>The response from the server component.</returns>
+        [BlockAction]
+        public BlockActionResult ExecuteComponentRequest( Guid componentGuid, Dictionary<string, string> request, string securityGrantToken )
+        {
+            var securityGrant = SecurityGrant.FromToken( securityGrantToken ) ?? new SecurityGrant();
+            var filterEntityType = EntityTypeCache.Get( componentGuid );
+            var component = Rock.Reporting.DataFilterContainer.GetComponent( filterEntityType?.GetEntityType()?.FullName );
+
+            using ( var rockContext = new RockContext() )
+            {
+                var result = component?.ExecuteComponentRequest( request, securityGrant, rockContext, RequestContext );
+
+                return new BlockActionResult( System.Net.HttpStatusCode.OK, result );
+            }
         }
 
         #endregion

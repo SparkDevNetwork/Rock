@@ -1067,7 +1067,7 @@ namespace Rock.Web.UI.Controls
             _bdpPersonBirthDate = new BirthdayPicker
             {
                 ID = "bdpPersonBirthDate",
-                Label = "Birthdate",
+                Label = "Birth Date",
                 ValidationGroup = ValidationGroup,
                 FormGroupCssClass = "field-birthdate"
             };

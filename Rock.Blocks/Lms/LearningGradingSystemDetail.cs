@@ -119,7 +119,7 @@ namespace Rock.Blocks.Lms
                 return;
             }
 
-            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             // New entity is being created, prepare for edit mode by default.
             if ( box.IsEditable )
@@ -167,7 +167,7 @@ namespace Rock.Blocks.Lms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -182,7 +182,7 @@ namespace Rock.Blocks.Lms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -209,7 +209,7 @@ namespace Rock.Blocks.Lms
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
@@ -218,7 +218,10 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningGradingSystem GetInitialEntity()
         {
-            return GetInitialEntity<LearningGradingSystem, LearningGradingSystemService>( RockContext, PageParameterKey.LearningGradingSystemId );
+            var gradingSystemKey = PageParameter( PageParameterKey.LearningGradingSystemId );
+            var entity = new LearningGradingSystemService( RockContext ).Get( gradingSystemKey, !this.PageCache.Layout.Site.DisablePredictableIds );
+
+            return entity ?? new LearningGradingSystem { IsActive = true };
         }
 
         /// <summary>
@@ -261,7 +264,7 @@ namespace Rock.Blocks.Lms
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningGradingSystem.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningGradingSystem.FriendlyTypeName}." );
                 return false;
             }
 

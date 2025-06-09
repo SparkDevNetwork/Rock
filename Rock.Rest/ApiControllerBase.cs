@@ -17,6 +17,7 @@
 using System;
 using System.Net;
 using System.Net.Http;
+using System.Reflection;
 using System.ServiceModel.Channels;
 using System.Threading;
 using System.Threading.Tasks;
@@ -34,6 +35,14 @@ using Microsoft.AspNetCore.Mvc;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.Rest.Utility;
+using Rock.Web.Cache;
+
+#if WEBFORMS
+using System.Web.Http.Results;
+
+using IActionResult = System.Web.Http.IHttpActionResult;
+#endif
 
 namespace Rock.Rest
 {
@@ -182,36 +191,78 @@ namespace Rock.Rest
             return currentPersonAlias == null ? ( int? ) null : currentPersonAlias.Id;
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
-        /// Creates a response with the NoContent status code.
+        /// Determines whether the current person has is authorized for the
+        /// security action on the current controller action. This will return
+        /// <c>false</c> if the current rest action does not have a
+        /// <see cref="SystemGuid.RestActionGuidAttribute"/>.
         /// </summary>
-        /// <returns>The response.</returns>
-        protected IHttpActionResult NoContent()
+        /// <param name="securityAction">The security action to be authorized.</param>
+        /// <returns><c>true</c> if the current person has access; otherwise, <c>false</c>.</returns>
+        protected bool IsCurrentPersonAuthorized( string securityAction )
         {
-            return StatusCode( System.Net.HttpStatusCode.NoContent );
+            if ( ActionContext.ActionDescriptor is ReflectedHttpActionDescriptor actionDescriptor )
+            {
+                var restGuid = actionDescriptor.MethodInfo.GetCustomAttribute<SystemGuid.RestActionGuidAttribute>()?.Guid;
+
+                if ( restGuid.HasValue )
+                {
+                    var restAction = RestActionCache.Get( restGuid.Value );
+
+                    return restAction?.IsAuthorized( securityAction, RockRequestContext.CurrentPerson ) ?? false;
+                }
+            }
+
+            return false;
+        }
+
+        #region .NET Core compatible methods
+
+        /// <summary>
+        /// Returns a response object to indicate that no content was generated.
+        /// </summary>
+        /// <returns>The response object.</returns>
+        protected IActionResult NoContent()
+        {
+            return new StatusCodeResult( HttpStatusCode.NoContent, this );
         }
 
         /// <summary>
-        /// Creates a response with the Accepted status code.
+        /// Creates a not found response with the given error message.
         /// </summary>
-        /// <typeparam name="T">The type of the content.</typeparam>
-        /// <param name="content">The content.</param>
-        /// <returns>The response</returns>
-        protected IHttpActionResult Accepted<T>( T content )
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>The response object.</returns>
+        protected IActionResult NotFound( string errorMessage )
         {
-            return Content( HttpStatusCode.Accepted, content );
+            var error = new HttpError( errorMessage );
+
+            return new NegotiatedContentResult<HttpError>( HttpStatusCode.NotFound, error, this );
         }
 
-        internal IHttpActionResult BadRequest( RockApiError error )
+        /// <summary>
+        /// Creates an unauthorized response with the given error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>The response object.</returns>
+        protected IActionResult Unauthorized( string errorMessage )
         {
-            return BadRequest( error.Message );
+            var error = new HttpError( errorMessage );
+
+            return new NegotiatedContentResult<HttpError>( HttpStatusCode.Unauthorized, error, this );
         }
 
-        internal IHttpActionResult NotFound( RockApiError error )
+        /// <summary>
+        /// Creates an internals erver error response with the given error message.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns>The response object.</returns>
+        protected IActionResult InternalServerError( string errorMessage )
         {
-            return ResponseMessage( ControllerContext.Request.CreateErrorResponse( HttpStatusCode.NotFound, error.Message ) );
+            var error = new HttpError( errorMessage );
+
+            return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, error, this );
         }
-#endif
+
+        #endregion
     }
 }

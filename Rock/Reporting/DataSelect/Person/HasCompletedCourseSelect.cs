@@ -18,7 +18,6 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
@@ -26,7 +25,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Model;
-using Rock.Utility;
+using Rock.Reporting.DataFilter.Person;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -44,85 +43,23 @@ namespace Rock.Reporting.DataSelect.Group
         #region Properties
 
         /// <inheritdoc/>
-        public override string AppliesToEntityType
-        {
-            get
-            {
-                return typeof( Rock.Model.Person ).FullName;
-            }
-        }
+        public override string AppliesToEntityType => typeof( Rock.Model.Person ).FullName;
 
         /// <inheritdoc/>
-        public override string Section
-        {
-            get
-            {
-                return "LMS";
-            }
-        }
+        public override string Section => "LMS";
 
         /// <inheritdoc/>
-        public override string ColumnPropertyName
-        {
-            get
-            {
-                return "HasCompletedCourse";
-            }
-        }
+        public override string ColumnPropertyName => "HasCompletedCourse";
 
         /// <inheritdoc/>
-        public override Type ColumnFieldType
-        {
-            get { return typeof( CourseCompletionData ); }
-        }
+        public override Type ColumnFieldType => typeof( bool );
 
         /// <inheritdoc/>
-        public override string ColumnHeaderText
-        {
-            get
-            {
-                return "Has Completed Course";
-            }
-        }
+        public override string ColumnHeaderText => "Has Completed Course";
 
         #endregion
 
         #region Methods
-
-#if REVIEW_WEBFORMS
-        /// <inheritdoc/>
-        public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
-        {
-            var result = new CallbackField();
-
-            result.OnFormatDataValue += ( sender, e ) =>
-            {
-                var courseData = e.DataValue as CourseCompletionData;
-
-                if ( courseData == null )
-                {
-                    e.FormattedValue = string.Empty;
-                }
-                else
-                {
-                    switch ( courseData.LearningCompletionStatus )
-                    {
-                        case LearningCompletionStatus.Pass:
-                            e.FormattedValue = $"{courseData.SemesterCompleted} ({courseData.GradeText}: {courseData.GradePercent}%)";
-                            break;
-                        case LearningCompletionStatus.Fail:
-                            e.FormattedValue = $"{courseData.SemesterCompleted} ({courseData.GradeText}: {courseData.GradePercent}%)";
-                            break;
-                        case LearningCompletionStatus.Incomplete:
-                            e.FormattedValue = "Pending Completion";
-                            break;
-                    }
-                }
-            };
-
-            return result;
-        }
-#endif
 
         /// <inheritdoc/>
         public override string GetTitle( Type entityType )
@@ -130,7 +67,6 @@ namespace Rock.Reporting.DataSelect.Group
             return "Has Completed Course";
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -138,34 +74,45 @@ namespace Rock.Reporting.DataSelect.Group
         /// <returns></returns>
         public override System.Web.UI.Control[] CreateChildControls( System.Web.UI.Control parentControl )
         {
-            // Define Control: Output Format DropDown List
-            var ddlCourse = new RockDropDownList();
-            ddlCourse.ID = parentControl.GetChildControlInstanceName( _CtlCourse );
-            ddlCourse.Label = "Completed Course";
-            ddlCourse.Help = "The Learning Course that should have been completed during the specified time frame.";
-
-            var courses = new LearningCourseService( new RockContext() ).Queryable().AsNoTracking()
-               .Where( c => c.IsActive )
-               .Select( c => new
-               {
-                   c.Id,
-                   c.Name
-               } )
-               .ToList()
-               .OrderBy( a => a.Name );
-            ddlCourse.Items.Clear();
-            ddlCourse.Items.Insert( 0, new ListItem() );
-            foreach ( var course in courses )
+            // Create the program drop down.
+            var ddlProgram = new RockDropDownList
             {
-                var courseName = course?.Name ?? string.Empty;
-                ddlCourse.Items.Add( new ListItem( courseName, course.Id.ToString() ) );
-            }
+                ID = parentControl.GetChildControlInstanceName( _CtlProgram ),
+                Label = "Program",
+                Required = true,
+                AutoPostBack = true
+            };
 
+            ddlProgram.AddCssClass( "js-program" );
+            ddlProgram.SelectedIndexChanged += Program_SelectedIndexChanged;
+            parentControl.Controls.Add( ddlProgram );
+            HasCompletedProgramFilter.SetProgramItems( ddlProgram );
+
+            // This is a hack. We don't know why this has to be done this way
+            // because Data Filters work fine without it. But with selects if
+            // you have a conditional control then you have to access the raw
+            // postback data like this so that the SetCourseItems below can
+            // populate the control for the current selection to "stick".
+            var selectedProgramGuid = parentControl.Page.Request.Params[ddlProgram.UniqueID].AsGuidOrNull();
+            ddlProgram.SetValue( selectedProgramGuid );
+
+            // Create the course drop down.
+            var ddlCourse = new RockDropDownList
+            {
+                ID = parentControl.GetChildControlInstanceName( "ddlCourse" ),
+                Label = "Course",
+                Required = true
+            };
+
+            ddlCourse.AddCssClass( "js-course" );
             parentControl.Controls.Add( ddlCourse );
+            HasCompletedCourseFilter.SetCourseItems( ddlProgram, ddlCourse );
 
-            var slidingDateRangePicker = new SlidingDateRangePicker();
-            slidingDateRangePicker.Label = "Date Range";
-            slidingDateRangePicker.ID = parentControl.GetChildControlInstanceName( _CtlSlidingDateRange );
+            var slidingDateRangePicker = new SlidingDateRangePicker
+            {
+                Label = "Date Range",
+                ID = parentControl.GetChildControlInstanceName( _CtlSlidingDateRange )
+            };
             slidingDateRangePicker.AddCssClass( "js-sliding-date-range" );
             parentControl.Controls.Add( slidingDateRangePicker );
 
@@ -178,17 +125,21 @@ namespace Rock.Reporting.DataSelect.Group
             cblStatuses.Items.Clear();
             var completionStatusType = typeof( LearningCompletionStatus );
 
-            foreach ( LearningCompletionStatus enumValue in CompletionStatusesWithCompletedDateValue )
+            foreach ( LearningCompletionStatus enumValue in HasCompletedCourseFilter.CompletionStatusesWithCompletedDateValue )
             {
-                if ( !CompletionStatusesWithCompletedDateValue.Contains( enumValue ) )
-                {
-                    continue;
-                }
-
                 cblStatuses.Items.Add( new ListItem( Enum.GetName( completionStatusType, enumValue ), enumValue.ToString() ) );
             }
 
-            return new System.Web.UI.Control[] { ddlCourse, slidingDateRangePicker, cblStatuses };
+            return new System.Web.UI.Control[] { ddlProgram, ddlCourse, slidingDateRangePicker, cblStatuses };
+        }
+
+        private void Program_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            var container = ( sender as System.Web.UI.Control ).Parent;
+            var ddlProgram = container.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-program" ) );
+            var ddlCourse = container.ControlsOfTypeRecursive<DropDownList>().FirstOrDefault( a => a.HasCssClass( "js-course" ) );
+
+            HasCompletedCourseFilter.SetCourseItems( ddlProgram, ddlCourse );
         }
 
         /// <summary>
@@ -209,31 +160,26 @@ namespace Rock.Reporting.DataSelect.Group
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            var ddlProgram = controls.GetByName<DropDownList>( _CtlCourse );
+            var ddlCourse = controls.GetByName<DropDownList>( _CtlCourse );
             var slidingDateRangePicker = controls.GetByName<SlidingDateRangePicker>( _CtlSlidingDateRange );
             var cblStatuses = controls.GetByName<CheckBoxList>( _CtlStatuses );
 
-            var settings = new HasCompletedCourseSelectSettings
+            var selectionConfig = new SelectionConfig
             {
-                LearningCourseId = ddlProgram.SelectedValue.AsIntegerOrNull(),
+                LearningCourseGuid = ddlCourse.SelectedValue.AsGuidOrNull(),
+                LearningCompletionStatuses = new List<LearningCompletionStatus>(),
                 SlidingDateRangeDelimitedValues = slidingDateRangePicker.DelimitedValues
             };
-
-            var delimitedSelections = string.Empty;
 
             foreach ( ListItem item in cblStatuses.Items )
             {
                 if ( item.Selected && Enum.TryParse<LearningCompletionStatus>( item.Value, out var enumValue ) )
                 {
-                    // Prefix a semi-colon if this is not the first record.
-                    delimitedSelections += delimitedSelections.Length == 0 ?
-                        enumValue.ToString() :
-                        $";{enumValue}";
+                    selectionConfig.LearningCompletionStatuses.Add( enumValue );
                 }
             }
 
-            settings.DelimitedLearningCompletionStatuses = delimitedSelections;
-            return settings.ToSelectionString();
+            return selectionConfig.ToJson();
         }
 
         /// <summary>
@@ -243,86 +189,51 @@ namespace Rock.Reporting.DataSelect.Group
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            var ddlProgram = controls.GetByName<RockDropDownList>( _CtlCourse );
+            var selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
+
+            var ddlProgram = controls.GetByName<RockDropDownList>( _CtlProgram );
+            var ddlCourse = controls.GetByName<RockDropDownList>( _CtlCourse );
             var slidingDateRangePicker = controls.GetByName<SlidingDateRangePicker>( _CtlSlidingDateRange );
             var cblStatuses = controls.GetByName<CheckBoxList>( _CtlStatuses );
 
-            var settings = new HasCompletedCourseSelectSettings( selection );
+            var programGuid = new LearningCourseService( new RockContext() )
+                .Queryable()
+                .Where( lc => lc.Guid == selectionConfig.LearningCourseGuid )
+                .Select( lc => ( Guid? ) lc.LearningProgram.Guid )
+                .FirstOrDefault();
 
-            if ( !settings.IsValid )
-            {
-                return;
-            }
+            ddlProgram.SetValue( programGuid );
 
-            ddlProgram.SelectedValue = settings.LearningCourseId.ToString();
-            slidingDateRangePicker.DelimitedValues = settings.SlidingDateRangeDelimitedValues;
+            HasCompletedCourseFilter.SetCourseItems( ddlProgram, ddlCourse );
+            ddlCourse.SetValue( selectionConfig.LearningCourseGuid );
+
+            slidingDateRangePicker.DelimitedValues = selectionConfig.SlidingDateRangeDelimitedValues;
 
             foreach ( ListItem item in cblStatuses.Items )
             {
                 var isSelected = false;
-
-                if ( settings.LearningCompletionStatuses != null && Enum.TryParse<LearningCompletionStatus>( item.Value, out var enumValue ) )
+                if ( selectionConfig.LearningCompletionStatuses != null && Enum.TryParse<LearningCompletionStatus>( item.Value, out var enumValue ) )
                 {
-                    isSelected = settings.LearningCompletionStatuses.Contains( enumValue );
+                    isSelected = selectionConfig.LearningCompletionStatuses.Contains( enumValue );
                 }
 
                 item.Selected = isSelected;
             }
         }
-#endif
 
         /// <inheritdoc/>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            var settings = new HasCompletedCourseSelectSettings( selection );
-            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( settings.SlidingDateRangeDelimitedValues );
+            var selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
+            var selectedCourseGuid = selectionConfig.LearningCourseGuid;
+            var dateRange = SlidingDateRangePicker.CalculateDateRangeFromDelimitedValues( selectionConfig.SlidingDateRangeDelimitedValues );
+            var completionStatuses = selectionConfig.LearningCompletionStatuses;
 
-            var courseQuery = settings.LearningCourseId.HasValue ?
-                new LearningParticipantService( context ).Queryable()
-                    .AsNoTracking()
-                    .Include( c => c.LearningClass )
-                    .Include( c => c.LearningClass.LearningSemester )
-                    .Include( c => c.LearningGradingSystemScale )
-                    .Where( c => c.LearningClass.LearningCourseId == settings.LearningCourseId ) :
-                new List<LearningParticipant>().AsQueryable();
+            var participantQuery = HasCompletedCourseFilter.GetFilterQuery( context, selectedCourseGuid, dateRange, completionStatuses );
 
-            if ( dateRange.Start.HasValue || dateRange.End.HasValue )
-            {
-                courseQuery = courseQuery.Where( c => c.LearningCompletionDateTime.HasValue );
-
-                if ( dateRange.Start.HasValue )
-                {
-                    var startDate = dateRange.Start.Value;
-                    courseQuery = courseQuery.Where( c => c.LearningCompletionDateTime >= startDate );
-                }
-
-                if ( dateRange.End.HasValue )
-                {
-                    var endDate = dateRange.End.Value;
-                    courseQuery = courseQuery.Where( c => c.LearningCompletionDateTime <= endDate );
-                }
-            }
-
-            // Filter to the selected statuses or to all available options (if nothing is selected).
-            var filterToStatuses = settings.LearningCompletionStatuses.Any() ?
-                settings.LearningCompletionStatuses :
-                CompletionStatusesWithCompletedDateValue;
-
-            courseQuery = courseQuery.Where( c => filterToStatuses.Contains( c.LearningCompletionStatus ) );
-
-            var personQuery = new PersonService( context ).Queryable()
-                .AsNoTracking()
-                .Select( p => courseQuery
-                    .Where( c => c.PersonId == p.Id )
-                    .Select( c => new CourseCompletionData
-                    {
-                        SemesterCompleted = c.LearningClass.LearningSemester.Name,
-                        LearningCompletionStatus = c.LearningCompletionStatus,
-                        GradePercent = c.LearningGradePercent * 100,
-                        GradeText = c.LearningGradingSystemScale.Name
-                    } )
-                    .FirstOrDefault()
-                );
+            var personQuery = new PersonService( context )
+                .Queryable()
+                .Where( p => participantQuery.Any( lp => lp.PersonId == p.Id ) );
 
             var selectExpression = SelectExpressionExtractor.Extract( personQuery, entityIdProperty, "p" );
 
@@ -331,36 +242,23 @@ namespace Rock.Reporting.DataSelect.Group
 
         #endregion
 
+        private const string _CtlProgram = "ddlProgram";
         private const string _CtlCourse = "ddlCourse";
         private const string _CtlSlidingDateRange = "slidingDateRangePicker";
         private const string _CtlStatuses = "cblStatuses";
 
-        private class CourseCompletionData
-        {
-            public string SemesterCompleted { get; set; }
-            public LearningCompletionStatus LearningCompletionStatus { get; set; }
-            public decimal GradePercent { get; set; }
-            public string GradeText { get; set; }
-        }
-
         /// <summary>
-        /// A list of <see cref="LearningCompletionStatus"/> enums that the user can filter against.
+        /// Get and set the filter settings from DataViewFilter.Selection.
         /// </summary>
-        /// <remarks>
-        /// Because the LearningCompletionDateTime filter only includes statuses that would set a value for LearningCompletionDateTime.
-        /// Choosing all (available) has the same effect has choosing none. The results will be filtered to only those that are available.
-        /// </remarks>
-        private readonly List<LearningCompletionStatus> CompletionStatusesWithCompletedDateValue = new List<LearningCompletionStatus> { LearningCompletionStatus.Pass, LearningCompletionStatus.Fail };
-
-        private class HasCompletedCourseSelectSettings : SettingsStringBase
+        protected class SelectionConfig
         {
             /// <summary>
-            /// Gets or sets the learning program identifier to filter to.
+            /// Gets or sets the learning course identifier to filter to.
             /// </summary>
             /// <value>
-            /// The learning program identifiers.
+            /// The learning course identifiers.
             /// </value>
-            public int? LearningCourseId { get; set; }
+            public Guid? LearningCourseGuid { get; set; }
 
             /// <summary>
             /// Gets or sets the completion statuses to filter to.
@@ -368,34 +266,7 @@ namespace Rock.Reporting.DataSelect.Group
             /// <value>
             /// The <see cref="LearningCompletionStatus" /> to filter to.
             /// </value>
-            public List<LearningCompletionStatus> LearningCompletionStatuses
-            {
-                get
-                {
-                    var statuses = new List<LearningCompletionStatus>();
-                    if ( DelimitedLearningCompletionStatuses.IsNotNullOrWhiteSpace() )
-                    {
-                        var statusValues = DelimitedLearningCompletionStatuses.SplitDelimitedValues( ";" );
-                        foreach ( var statusValue in statusValues )
-                        {
-                            if ( Enum.TryParse<LearningCompletionStatus>( statusValue, out var status ) )
-                            {
-                                statuses.Add( status );
-                            }
-                        }
-                    }
-
-                    return statuses;
-                }
-            }
-
-            /// <summary>
-            /// Gets or sets a string of delimited values for filtering the <see cref="LearningCompletionStatus"/>.
-            /// </summary>
-            /// <value>
-            /// The semi-colon delimited list of status values.
-            /// </value>
-            public string DelimitedLearningCompletionStatuses { get; set; }
+            public List<LearningCompletionStatus> LearningCompletionStatuses { get; set; }
 
             /// <summary>
             /// Gets or sets the sliding date range.
@@ -405,33 +276,14 @@ namespace Rock.Reporting.DataSelect.Group
             /// </value>
             public string SlidingDateRangeDelimitedValues { get; set; }
 
-            public HasCompletedCourseSelectSettings()
+            /// <summary>
+            /// Parses the specified selection from a JSON or delimited string.
+            /// </summary>
+            /// <param name="selection">The selection.</param>
+            /// <returns></returns>
+            public static SelectionConfig Parse( string selection )
             {
-
-            }
-
-            public HasCompletedCourseSelectSettings( string settingsString )
-            {
-                FromSelectionString( settingsString );
-            }
-
-            protected override IEnumerable<string> OnGetParameters()
-            {
-                var settings = new List<string>
-                {
-                    LearningCourseId.ToStringSafe(),
-                    SlidingDateRangeDelimitedValues.Replace( "|", ";" ).ToStringSafe(),
-                    DelimitedLearningCompletionStatuses
-                };
-
-                return settings;
-            }
-
-            protected override void OnSetParameters( int version, IReadOnlyList<string> parameters )
-            {
-                LearningCourseId = DataComponentSettingsHelper.GetParameterOrDefault( parameters, 0, string.Empty ).AsIntegerOrNull();
-                SlidingDateRangeDelimitedValues = DataComponentSettingsHelper.GetParameterOrEmpty( parameters, 1 ).Replace( ";", "|" );
-                DelimitedLearningCompletionStatuses = DataComponentSettingsHelper.GetParameterOrDefault( parameters, 2, string.Empty );
+                return selection.FromJsonOrNull<SelectionConfig>();
             }
         }
     }

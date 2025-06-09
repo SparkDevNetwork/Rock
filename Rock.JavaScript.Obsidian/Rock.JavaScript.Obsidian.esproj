@@ -2,5 +2,10 @@
   <PropertyGroup>
     <BuildCommand>npm run build-fast</BuildCommand>
     <CleanCommand>npm run clean</CleanCommand>
+    <NpmInstallCheck>$(PackageJsonDirectory)\node_modules\.install.stamp</NpmInstallCheck>
   </PropertyGroup>
+
+  <Target Name="TriggerNpmInstallOnNextBuild" AfterTargets="CoreClean">
+    <Touch Files="$(PackageJsonDirectory)\package.json" />
+  </Target>
 </Project>

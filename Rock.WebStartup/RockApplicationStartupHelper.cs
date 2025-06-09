@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 using System.Configuration;
 using System.Data.Entity.Migrations.Infrastructure;
 using System.Data.SqlClient;
@@ -23,24 +24,25 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Runtime.InteropServices;
 using System.Threading.Tasks;
 using System.Web;
 
-using DotLiquid;
-
+using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Blocks;
 using Rock.Bus;
+using Rock.Communication.Chat;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Configuration;
 using Rock.Lava;
-using Rock.Lava.DotLiquid;
 using Rock.Lava.Fluid;
-using Rock.Lava.RockLiquid;
 using Rock.Logging;
 using Rock.Model;
+using Rock.Net;
+using Rock.Net.Geolocation;
 using Rock.Observability;
 using Rock.Utility.Settings;
 using Rock.Web.Cache;
@@ -100,6 +102,7 @@ namespace Rock.WebStartup
             LogStartupMessage( "Application Starting" );
 
             InitializeRockApp();
+            Rock.JsonExtensions.ReferenceEqualityComparer = new Rock.Utility.EntityReferenceEqualityComparer();
 
             AppDomain.CurrentDomain.AssemblyResolve += AppDomain_AssemblyResolve;
 
@@ -169,6 +172,21 @@ namespace Rock.WebStartup
             RockLogger.ReloadConfiguration();
             ShowDebugTimingMessage( "RockLogger" );
 
+            using ( ObservabilityHelper.StartActivity( "Startup: Application Startup Stage 1" ) )
+            {
+                RunApplicationStartupStage1( runMigrationFileInfo, ranEFMigrations );
+            }
+        }
+
+        /// <summary>
+        /// Runs the first stage of the application startup that can be traced
+        /// by observability. This requires that EF be configured and that
+        /// observability also be configured.
+        /// </summary>
+        /// <param name="runMigrationFileInfo">The FileInfo that represents the 'Run.Migration' file.</param>
+        /// <param name="ranEFMigrations"><c>true</c> if EF migrations were executed.</param>
+        private static void RunApplicationStartupStage1( FileInfo runMigrationFileInfo, bool ranEFMigrations )
+        {
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
             LogStartupMessage( "Configuring Date Settings" );
@@ -194,6 +212,11 @@ namespace Rock.WebStartup
             }
 
             ShowDebugTimingMessage( "Plugin Migrations" );
+
+            // Create the dynamic attribute value views.
+            LogStartupMessage( "Creating Queryable Attribute Values" );
+            InitializeQueryableAttributeValues();
+            ShowDebugTimingMessage( "Queryable Attribute Values" );
 
             /* 2020-05-20 MDP
                Plugins use Direct SQL to update data,
@@ -269,11 +292,20 @@ namespace Rock.WebStartup
             Rock.Transactions.RockQueue.StartFastQueue();
             ShowDebugTimingMessage( "Rock Fast Queue" );
 
+            // Start the Automation system.
+            LogStartupMessage( "Starting the Automation System" );
+            AutomationTriggerCache.CreateAllMonitors();
+            AutomationEventCache.CreateAllExecutors();
+            ShowDebugTimingMessage( "Automation System" );
+
             bool anyThemesUpdated = UpdateThemes();
             if ( anyThemesUpdated )
             {
                 LogStartupMessage( "Themes are updated" );
             }
+
+            // Update the geolocation database.
+            Task.Run( () => IpGeoLookup.Instance.UpdateDatabase() );
         }
 
         /// <summary>
@@ -289,6 +321,18 @@ namespace Rock.WebStartup
             sc.AddSingleton<IInitializationSettings, WebFormsInitializationSettings>();
             sc.AddSingleton<IDatabaseConfiguration, DatabaseConfiguration>();
             sc.AddSingleton<IHostingSettings, HostingSettings>();
+            sc.AddSingleton<IChatProvider, StreamChatProvider>();
+            sc.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
+            sc.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
+            {
+                WebRootPath = AppDomain.CurrentDomain.BaseDirectory
+            } );
+            sc.AddSingleton<Core.Automation.AutomationTriggerContainer>();
+            sc.AddSingleton<Core.Automation.AutomationEventContainer>();
+
+            sc.AddScoped<RockContext>();
+
+            sc.AddRockLogging();
 
             // Register the class to initialize for InitializationSettings. This
             // is transient so that we always get the current values from the
@@ -526,7 +570,7 @@ namespace Rock.WebStartup
             }
 
             // get the pendingmigrations sorted by name (in the order that they run), then run to the latest migration
-            var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration() );
+            var migrator = new System.Data.Entity.Migrations.DbMigrator( new Rock.Migrations.Configuration( false ) );
             var pendingMigrations = migrator.GetPendingMigrations().OrderBy( a => a );
 
             // double check if there are migrations to run
@@ -808,6 +852,317 @@ namespace Rock.WebStartup
             return result;
         }
 
+        #region Queryable Attribute Values
+
+        /// <summary>
+        /// Initialize all the custom SQL views that handle the queryable
+        /// attribute values for SQL based joins.
+        /// </summary>
+        /// <remarks>
+        /// At this stage, the RockContext is initialized but standard framework
+        /// methods that generate EF queries may or may not work so be careful.
+        /// </remarks>
+        private static void InitializeQueryableAttributeValues()
+        {
+            // Find all core entity types and then all plugin entity types.
+            var types = Reflection.SearchAssembly( typeof( IEntity ).Assembly, typeof( IEntity ) )
+                .Union( Reflection.FindTypes( typeof( IRockEntity ) ) )
+                .Select( t => t.Value )
+                .Where( t => !t.IsAbstract
+                    && t.GetCustomAttribute<NotMappedAttribute>() == null
+                    && t.GetCustomAttribute<HasQueryableAttributesAttribute>() != null )
+                .ToList();
+
+            using ( var rockContext = new RockContext() )
+            {
+                var entityTypeService = new EntityTypeService( rockContext );
+                var knownViews = new List<string>();
+
+                // Execute query to get all existing views and their definitions.
+                var existingViews = rockContext.Database.SqlQuery<SqlViewDefinition>( @"
+SELECT
+    [o].[name] AS [Name],
+    [m].[definition] AS [Definition]
+FROM [sys].[sql_modules] AS [m]
+INNER JOIN [sys].[objects] AS [o] ON [o].[object_id] = [m].[object_id]
+WHERE [o].[name] LIKE 'AttributeValue_%' AND [o].[type] = 'V'
+" ).ToList();
+
+                // Don't use the cache since it might not be safe yet.
+                var entityTypeIds = entityTypeService.Queryable()
+                    .Where( et => et.IsEntity )
+                    .Select( et => new
+                    {
+                        et.Id,
+                        et.Name
+                    } )
+                    .ToList()
+                    .ToDictionary( et => et.Name, et => et.Id );
+
+                // Check each type we found by way of reflection.
+                foreach ( var type in types )
+                {
+                    var hasQueryableAttributesAttribute = type
+                        .GetCustomAttribute<HasQueryableAttributesAttribute>();
+
+                    var entityTableName = type.GetCustomAttribute<TableAttribute>()?.Name;
+
+                    // If the entity is not attributed with HasQueryableAttributesAttribute or
+                    // has not specified a table name, then we can't set up the view.
+                    if ( hasQueryableAttributesAttribute == null || entityTableName.IsNullOrWhiteSpace() )
+                    {
+                        continue;
+                    }
+
+                    // Try to get from our custom cache, otherwise create a new one.
+                    if ( !entityTypeIds.TryGetValue( type.FullName, out var entityTypeId ) )
+                    {
+                        entityTypeId = new EntityTypeService( rockContext ).Get( type, true, null ).Id;
+                    }
+
+                    try
+                    {
+                        var viewName = CreateOrUpdateAttributeValueView( rockContext, type, entityTypeId, entityTableName, existingViews );
+
+                        knownViews.Add( viewName );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( $"Failed to initialize attribute value view for '{type.FullName}'.", ex ) );
+                    }
+                }
+
+                // Drop any old views we no longer need.
+                var oldViewNames = existingViews
+                    .Select( v => v.Name )
+                    .Where( v => !knownViews.Contains( v ) )
+                    .ToList();
+
+                foreach ( var viewName in oldViewNames )
+                {
+                    try
+                    {
+                        rockContext.Database.ExecuteSqlCommand( $"DROP VIEW [{viewName}]" );
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( new Exception( $"Failed to drop attribute value view '{viewName}'.", ex ) );
+                    }
+                }
+            }
+        }
+
+        /// <remarks>
+        /// At this stage, the RockContext is initialized but standard framework
+        /// methods that generate EF queries may or may not work so be careful.
+        /// </remarks>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="type">The CLR type for the model we are generating the SQL View for.</param>
+        /// <param name="entityTypeId">The identifier of the <see cref="EntityType"/> representing <paramref name="type"/>. This will be used to filter attributes.</param>
+        /// <param name="entityTableName">The name of the table that stores the data rows for <paramref name="type"/>.</param>
+        /// <param name="viewDefinitions">The SQL views that are already defined in the database.</param>
+        private static string CreateOrUpdateAttributeValueView( RockContext rockContext, Type type, int entityTypeId, string entityTableName, List<SqlViewDefinition> viewDefinitions )
+        {
+            var viewName = $"AttributeValue_{entityTableName}";
+
+            var existingDefinition = viewDefinitions.Where( v => v.Name == viewName )
+                .Select( v => v.Definition )
+                .FirstOrDefault();
+
+            var query = GenerateQueryForAttributeValueView( type, entityTypeId, entityTableName, rockContext );
+
+            var sql = $@"CREATE VIEW [dbo].[{viewName}]
+AS
+{query}";
+
+            // We only need to create the view if it doesn't exist or doesn't match.
+            if ( existingDefinition == null )
+            {
+                // View doesn't exist.
+                rockContext.Database.ExecuteSqlCommand( sql );
+            }
+            else if ( existingDefinition != sql )
+            {
+                // View exists but doesn't match definition.
+                rockContext.Database.ExecuteSqlCommand( $"DROP VIEW [dbo].[{viewName}]" );
+                rockContext.Database.ExecuteSqlCommand( sql );
+            }
+
+            return viewName;
+        }
+
+        /// <summary>
+        /// Generates the SQL query that will be used to gather all the attribute
+        /// value data for the <paramref name="type"/>.
+        /// </summary>
+        /// <param name="type">The CLR type for the model we are generating the SQL View for.</param>
+        /// <param name="entityTypeId">The identifier of the <see cref="EntityType"/> representing <paramref name="type"/>. This will be used to filter attributes.</param>
+        /// <param name="entityTableName">The name of the table that stores the data rows for <paramref name="type"/>.</param>
+        /// <param name="rockContext">The context that will be used to load additional data from the database.</param>
+        /// <returns>The SQL query to retrieve all the attribute values.</returns>
+        private static string GenerateQueryForAttributeValueView( Type type, int entityTypeId, string entityTableName, RockContext rockContext )
+        {
+            if ( type == typeof( EventItem ) )
+            {
+                return GenerateQueryForEventItemAttributeValueView( entityTypeId, rockContext );
+            }
+
+            var qualifierChecks = string.Empty;
+            var additionalJoins = string.Empty;
+
+            // Find all properties that have been decorated as valid for use
+            // with attribute qualification. We can't use cache yet because
+            // it might not be ready for use.
+            var qualifierColumns = type.GetProperties()
+                .Where( p => p.GetCustomAttribute<EnableAttributeQualificationAttribute>() != null
+                    && p.DeclaringType == type )
+                .Select( p => p.Name )
+                .ToList();
+
+            var typeQualificationAttribute = type.GetCustomAttribute<EnableAttributeQualificationAttribute>();
+
+            if ( typeQualificationAttribute != null )
+            {
+                qualifierColumns = qualifierColumns.Union( typeQualificationAttribute.PropertyNames ).ToList();
+            }
+
+            // If we found any then construct an additional where clause to be
+            // used to limit to those qualifications.
+            if ( qualifierColumns.Any() )
+            {
+                var checks = qualifierColumns
+                    .Select( c => $"([A].[EntityTypeQualifierColumn] = '{c}' AND [A].[EntityTypeQualifierValue] = [E].[{c}])" )
+                    .JoinStrings( "\n        OR " );
+
+                qualifierChecks = $"\n        OR {checks}";
+            }
+
+            if ( type == typeof( Group ) || type == typeof( GroupMember ) )
+            {
+                additionalJoins = "\nLEFT OUTER JOIN [GroupTypeInheritance] AS [GTI] ON [GTI].[Id] = [E].[GroupTypeId]";
+                qualifierChecks += "\n        OR ([A].[EntityTypeQualifierColumn] = 'GroupTypeId' AND [A].[EntityTypeQualifierValue] = [GTI].[InheritedGroupTypeId])";
+            }
+            else if ( type == typeof( GroupType ) )
+            {
+                additionalJoins = "\nLEFT OUTER JOIN [GroupTypeInheritance] AS [GTI] ON [GTI].[Id] = [E].[Id]";
+                qualifierChecks += "\n        OR ([A].[EntityTypeQualifierColumn] = 'Id' AND [A].[EntityTypeQualifierValue] = [GTI].[InheritedGroupTypeId])";
+            }
+
+            return $@"SELECT
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Id] ELSE CAST([A].[Id] + 10000000000 AS BIGINT) END AS [Id],
+    [E].[Id] AS [EntityId],
+    [A].[Id] AS [AttributeId],
+    [A].[Key],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Value] ELSE ISNULL([A].[DefaultValue], '') END AS [Value],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedTextValue] ELSE [A].[DefaultPersistedTextValue] END AS [PersistedTextValue],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedHtmlValue] ELSE [A].[DefaultPersistedHtmlValue] END AS [PersistedHtmlValue],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
+    CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+FROM [{entityTableName}] AS [E]
+CROSS JOIN [Attribute] AS [A]
+LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]{additionalJoins}
+WHERE [A].[EntityTypeId] = {entityTypeId}
+    AND [A].[IsActive] = 1
+    AND (
+        (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = ''){qualifierChecks}
+    )
+";
+        }
+
+        /// <summary>
+        /// Generates the SQL query that will be used to gather all the attribute
+        /// value data for <see cref="EventItem"/>. This is a special query
+        /// because the attributes are pulled from <see cref="EventCalendarItem"/>.
+        /// So we have to run some special logic to pull all the attributes and
+        /// values and then make sure we don't have any duplicates.
+        /// </summary>
+        /// <param name="entityTypeId">The identifier of the <see cref="EntityType"/> that represents <see cref="EventItem"/>. This will be used to filter attributes.</param>
+        /// <param name="rockContext">The context that will be used to load additional data from the database.</param>
+        /// <returns>The SQL query to retrieve all the attribute values.</returns>
+        private static string GenerateQueryForEventItemAttributeValueView( int entityTypeId, RockContext rockContext )
+        {
+            var eventCalendarItemEntityTypeId = new EntityTypeService( rockContext ).Get( typeof( EventCalendarItem ), true, null ).Id;
+
+            return $@"SELECT
+    [PQ].*
+FROM
+(
+    SELECT
+        [UQ].*,
+        ROW_NUMBER() OVER (PARTITION BY [UQ].[EntityId], [UQ].[Key] ORDER BY [UQ].[AttributeId]) AS [row_number]
+    FROM
+    (
+        SELECT
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Id] ELSE CAST([A].[Id] + 10000000000 AS BIGINT) END AS [Id],
+            [E].[Id] AS [EntityId],
+            [A].[Id] AS [AttributeId],
+            [A].[Key],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Value] ELSE ISNULL([A].[DefaultValue], '') END AS [Value],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedTextValue] ELSE [A].[DefaultPersistedTextValue] END AS [PersistedTextValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedHtmlValue] ELSE [A].[DefaultPersistedHtmlValue] END AS [PersistedHtmlValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+        FROM [EventItem] AS [E]
+        CROSS JOIN [Attribute] AS [A]
+        LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [E].[Id]
+        WHERE [A].[EntityTypeId] = {entityTypeId}
+            AND [A].[IsActive] = 1
+            AND (
+                (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = '')
+            )
+        UNION
+        SELECT
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Id] ELSE CAST([A].[Id] + 10000000000 AS BIGINT) END AS [Id],
+            [E].[Id] AS [EntityId],
+            [A].[Id] AS [AttributeId],
+            [A].[Key],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[Value] ELSE ISNULL([A].[DefaultValue], '') END AS [Value],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedTextValue] ELSE [A].[DefaultPersistedTextValue] END AS [PersistedTextValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedHtmlValue] ELSE [A].[DefaultPersistedHtmlValue] END AS [PersistedHtmlValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedTextValue] ELSE [A].[DefaultPersistedCondensedTextValue] END AS [PersistedCondensedTextValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[PersistedCondensedHtmlValue] ELSE [A].[DefaultPersistedCondensedHtmlValue] END AS [PersistedCondensedHtmlValue],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN [AV].[IsPersistedValueDirty] ELSE [A].[IsDefaultPersistedValueDirty] END AS [IsPersistedValueDirty],
+            CASE WHEN ISNULL([AV].[Value], '') != '' THEN 0 ELSE CHECKSUM(ISNULL([A].[DefaultValue], '')) END AS [ValueChecksum]
+        FROM [EventItem] AS [E]
+        INNER JOIN [EventCalendarItem] AS [ECI] ON [ECI].[EventItemId] = [E].[Id]
+        CROSS JOIN [Attribute] AS [A]
+        LEFT OUTER JOIN [AttributeValue] AS [AV] ON [AV].[AttributeId] = [A].[Id] AND [AV].[EntityId] = [ECI].[Id]
+        WHERE [A].[EntityTypeId] = {eventCalendarItemEntityTypeId}
+            AND [A].[IsActive] = 1
+            AND (
+                (ISNULL([A].[EntityTypeQualifierColumn], '') = '' AND ISNULL([A].[EntityTypeQualifierValue], '') = '')
+                OR ([A].[EntityTypeQualifierColumn] = 'EventCalendarId' AND [A].[EntityTypeQualifierValue] = [ECI].[EventCalendarId])
+            )
+    ) AS [UQ]
+) AS [PQ]
+WHERE [PQ].[row_number] = 1
+";
+        }
+
+        /// <summary>
+        /// Contains the name and original SQL used to create a view.
+        /// </summary>
+        private class SqlViewDefinition
+        {
+            /// <summary>
+            /// Gets or sets the name of the view.
+            /// </summary>
+            public string Name { get; set; }
+
+            /// <summary>
+            /// Gets or sets the original SQL used to create the view.
+            /// </summary>
+            public string Definition { get; set; }
+        }
+
+        #endregion
+
+        #region Lava
+
         /// <summary>
         /// Initializes the Lava Service.
         /// </summary>
@@ -816,50 +1171,8 @@ namespace Rock.WebStartup
             // Get the Lava Engine configuration settings.
             Type engineType = null;
 
-            /* [2023-09-25] DL
-             * As of v17, the Lava Engine is configured to use the Fluid Liquid library by default.
-             * The Liquid Framework global setting referenced below is removed in the migration to v17, and should only exist
-             * if it has been manually reinstated to resolve a significant runtime issue.
-             * In a future release, all references to the DotLiquid library will be removed from the Rock codebase and this 
-             * configuration code can also be removed.
-             */
-            var liquidEngineTypeValue = GlobalAttributesCache.Value( Rock.SystemKey.SystemSetting.LAVA_ENGINE_LIQUID_FRAMEWORK )?.ToLower();
-            if ( !string.IsNullOrWhiteSpace( liquidEngineTypeValue ) )
-            {
-                if ( liquidEngineTypeValue == "dotliquid" )
-                {
-                    // The "DotLiquid" configuration setting here corresponds to what is referred to internally as "RockLiquid":
-                    // the Rock-specific fork of the DotLiquid framework.
-                    // This mode executes pre-v13 code to process Lava, and does not use a Lava Engine implementation.
-                    // Note that this should not be confused with the LavaEngine referred to by LavaEngineTypeSpecifier.DotLiquid,
-                    // which is a Lava Engine implementation of the DotLiquid framework used for testing purposes.
-                    LavaService.RockLiquidIsEnabled = true;
-                }
-                else if ( liquidEngineTypeValue == "fluidverification" )
-                {
-                    engineType = typeof( FluidEngine );
-                    LavaService.RockLiquidIsEnabled = true;
-                }
-                else if ( liquidEngineTypeValue == "fluid" )
-                {
-                    engineType = typeof( FluidEngine );
-                    LavaService.RockLiquidIsEnabled = false;
-                }
-                else
-                {
-                    // Log an error for the invalid configuration setting, and continue with the default value.
-                    ExceptionLogService.LogException( $"Invalid Lava Engine Type. The setting value \"{liquidEngineTypeValue}\" is not valid, must be [dotliquid|fluid|fluidverification]. The Fluid engine will be activated by default." );
-
-                    engineType = typeof( FluidEngine );
-                    LavaService.RockLiquidIsEnabled = false;
-                }
-            }
-            else
-            {
-                // The Fluid Engine is the default engine for Rock v17 and above.
-                engineType = typeof( FluidEngine );
-                LavaService.RockLiquidIsEnabled = false;
-            }
+            // The Fluid Engine is the default engine for Rock v17 and above.
+            engineType = typeof( FluidEngine );
 
             InitializeLavaEngines();
 
@@ -867,35 +1180,10 @@ namespace Rock.WebStartup
             {
                 InitializeGlobalLavaEngineInstance( engineType );
             }
-
-            if ( LavaService.RockLiquidIsEnabled )
-            {
-                InitializeRockLiquidLibrary();
-            }
         }
 
         private static void InitializeLavaEngines()
         {
-            // Register the RockLiquid Engine (pre-v13).
-            LavaService.RegisterEngine( ( engineServiceType, options ) =>
-            {
-                var rockLiquidEngine = new RockLiquidEngine();
-
-                InitializeLavaEngineInstance( rockLiquidEngine, options as LavaEngineConfigurationOptions );
-
-                return rockLiquidEngine;
-            } );
-
-            // Register the DotLiquid Engine factory.
-            LavaService.RegisterEngine( ( engineServiceType, options ) =>
-            {
-                var dotLiquidEngine = new DotLiquidEngine();
-
-                InitializeLavaEngineInstance( dotLiquidEngine, options as LavaEngineConfigurationOptions );
-
-                return dotLiquidEngine;
-            } );
-
             // Register the Fluid Engine factory.
             LavaService.RegisterEngine( ( engineServiceType, options ) =>
             {
@@ -921,19 +1209,6 @@ namespace Rock.WebStartup
             };
 
             return engineOptions;
-        }
-
-        private static void InitializeRockLiquidLibrary()
-        {
-            _ = LavaService.NewEngineInstance( typeof( RockLiquidEngine ) );
-
-            // Register the set of filters that are compatible with RockLiquid.
-            Template.RegisterFilter( typeof( Rock.Lava.Filters.TemplateFilters ) );
-            Template.RegisterFilter( typeof( Rock.Lava.RockFilters ) );
-            Template.DefaultIsThreadSafe = true;
-
-            // Initialize the RockLiquid file system.
-            Template.FileSystem = new LavaFileSystem();
         }
 
         /// <summary>
@@ -963,12 +1238,6 @@ namespace Rock.WebStartup
         private static void InitializeLavaEngineInstance( ILavaEngine engine, LavaEngineConfigurationOptions options )
         {
             options = options ?? GetDefaultEngineConfiguration();
-
-            if ( engine.GetType() == typeof( RockLiquidEngine ) )
-            {
-                engine.Initialize( options );
-                return;
-            }
 
             InitializeLavaFilters( engine );
             InitializeLavaTags( engine );
@@ -1128,6 +1397,10 @@ namespace Rock.WebStartup
             engine.RegisterSafeType( typeof( Utilities.ColorPair ) );
         }
 
+        #endregion
+
+        #region Logging
+
         /// <summary>
         /// Logs the error to database (or filesystem if database isn't available)
         /// </summary>
@@ -1235,6 +1508,8 @@ namespace Rock.WebStartup
                 // ignore
             }
         }
+
+        #endregion
 
         /// <summary>
         /// Handles the AssemblyResolve event of the AppDomain.

@@ -147,6 +147,9 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A new instance of <see cref="KioskBag"/>.</returns>
         internal static WebKioskBag GetKioskBag( DeviceCache kiosk )
         {
+            var isAddingFamiliesAllowed = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean();
+            var isEditingFamiliesAllowed = kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean();
+
             var bag = new WebKioskBag
             {
                 Id = kiosk.IdKey,
@@ -155,7 +158,9 @@ namespace Rock.Blocks.CheckIn
                 Type = kiosk.KioskType,
                 IsCameraEnabled = kiosk.HasCamera,
                 CameraMode = kiosk.CameraBarcodeConfigurationType ?? CameraBarcodeConfiguration.Off,
-                IsRegistrationModeEnabled = kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean()
+                IsRegistrationModeEnabled = isAddingFamiliesAllowed || isEditingFamiliesAllowed,
+                IsAddingFamiliesEnabled = isAddingFamiliesAllowed,
+                IsEditingFamiliesEnabled = isEditingFamiliesAllowed
             };
 
             return bag;
@@ -433,7 +438,7 @@ namespace Rock.Blocks.CheckIn
         /// <returns>A collection of <see cref="SavedCheckInConfigurationBag"/> objects.</returns>
         private IReadOnlyCollection<SavedCheckInConfigurationBag> GetSavedConfigurations()
         {
-            var savedConfigurationCache = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS.AsGuid(), RockContext );
+            var savedConfigurationCache = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES.AsGuid(), RockContext );
 
             if ( savedConfigurationCache == null )
             {
@@ -441,6 +446,7 @@ namespace Rock.Blocks.CheckIn
             }
 
             return savedConfigurationCache.DefinedValues
+                .Where( v => v.IsActive )
                 .Select( GetSavedConfigurationBag )
                 .ToList();
         }
@@ -630,7 +636,7 @@ namespace Rock.Blocks.CheckIn
         [BlockAction]
         public BlockActionResult SaveConfiguration( ValidPropertiesBox<SavedCheckInConfigurationBag> box )
         {
-            var savedConfigurationDefinedTypeId = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_CHECKIN_CONFIGURATIONS.AsGuid(), RockContext )?.Id;
+            var savedConfigurationDefinedTypeId = DefinedTypeCache.Get( SystemGuid.DefinedType.SAVED_KIOSK_TEMPLATES.AsGuid(), RockContext )?.Id;
             var definedValueService = new DefinedValueService( RockContext );
             DefinedValue definedValue;
 

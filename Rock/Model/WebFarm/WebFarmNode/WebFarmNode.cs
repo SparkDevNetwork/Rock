@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -33,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "WebFarm" )]
     [Table( "WebFarmNode" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "2338D5C3-E808-408F-B000-E8A7D8A4858C")]
     public partial class WebFarmNode : Model<WebFarmNode>, IHasActiveFlag
     {

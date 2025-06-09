@@ -2,7 +2,8 @@
 <template>
     <div class="registration-edit-individual-screen">
         <MainPanel :title="title"
-                   :subtitle="subtitle">
+                   :subtitle="subtitle"
+                   :configuration="configuration">
             <RockForm v-model:submit="submitForm"
                       @submit="onSaveClick">
 
@@ -60,16 +61,19 @@
                     </div>
 
                     <div class="col-md-6">
-                        <DatePicker v-if="isBirthdateVisible"
-                                    label="Birthdate"
-                                    v-model="birthDate"
-                                    :rules="birthdateRules" />
+                        <DatePartsPicker v-if="isBirthdateVisible"
+                                         label="Birthdate"
+                                         v-model="birthDate"
+                                         requireYear
+                                         :allowFutureDates="false"
+                                         :rules="birthdateRules" />
                     </div>
 
                     <div class="col-md-6">
                         <GradePicker v-if="isGradeVisible"
                                      label="Grade"
                                      v-model="grade"
+                                     showBlankItem
                                      :rules="gradeRules" />
                     </div>
                 </div>
@@ -94,6 +98,12 @@
                 </div>
 
                 <div class="row">
+                    <div class="col-md-6">
+                        <EmailBox v-if="isEmailVisible"
+                                  label="Email"
+                                  v-model="email" />
+                    </div>
+
                     <div class="col-md-6">
                         <TextBox v-if="isAlternateIdVisible"
                                  label="Alternate ID"
@@ -128,9 +138,10 @@
 
 <script setup lang="ts">
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import DatePicker from "@Obsidian/Controls/datePicker.obs";
+    import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import EthnicityPicker from "@Obsidian/Controls/ethnicityPicker.obs";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import GradePicker from "@Obsidian/Controls/gradePicker.obs";
     import MainPanel from "./mainPanel.partial.obs";
     import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
@@ -149,6 +160,8 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
         configuration: {
@@ -178,11 +191,12 @@
     const lastName = ref("");
     const suffix = ref("");
     const isFemale = ref<boolean>();
-    const birthDate = ref("");
+    const birthDate = ref<DatePartsPickerValueBag>();
     const grade = ref<ListItemBag>();
     const phoneNumber = ref("");
     const phoneCountryCode = ref("");
     const isSmsDisabled = ref(true);
+    const email = ref("");
     const alternateId = ref("");
     const race = ref<ListItemBag>();
     const ethnicity = ref<ListItemBag>();
@@ -216,6 +230,10 @@
     // #endregion
 
     // #region Computed Visibility Values
+
+    const isEmailVisible = computed((): boolean => {
+        return isAdult.value;
+    });
 
     const isAlternateIdVisible = computed((): boolean => {
         return isAdult.value
@@ -344,20 +362,26 @@
             props.registrationData.editPersonGuid = person.bag.guid;
         }
 
+        const relationship: ListItemBag = {
+            value: relationshipToAdult.value,
+            text: relationshipToAdultItems.find(r => r.value === relationshipToAdult.value)?.text
+        };
+
         setPropertiesBoxValue(person, "isAdult", isAdult.value);
-        setPropertiesBoxValue(person, "relationshipToAdult", { value: relationshipToAdult.value });
+        setPropertiesBoxValue(person, "relationshipToAdult", relationship);
         setPropertiesBoxValue(person, "isMarried", isMarried.value);
         setPropertiesBoxValue(person, "gender", isFemale.value ? Gender.Female : Gender.Male);
         setPropertiesBoxValue(person, "nickName", nickName.value);
         setPropertiesBoxValue(person, "lastName", lastName.value);
         setPropertiesBoxValue(person, "suffix", { value: suffix.value });
-        setPropertiesBoxValue(person, "birthDate", birthDate.value);
+        setPropertiesBoxValue(person, "birthDate", getDateString(birthDate.value));
         setPropertiesBoxValue(person, "grade", grade.value);
         setPropertiesBoxValue(person, "phoneNumber", {
             number: phoneNumber.value,
             countryCode: phoneCountryCode.value,
             isMessagingEnabled: !isSmsDisabled.value
         });
+        setPropertiesBoxValue(person, "email", email.value);
         setPropertiesBoxValue(person, "alternateId", alternateId.value);
         setPropertiesBoxValue(person, "race", race.value);
         setPropertiesBoxValue(person, "ethnicity", ethnicity.value);
@@ -384,11 +408,12 @@
         nickName.value = person?.bag.nickName ?? "";
         lastName.value = person?.bag.lastName ?? defaultLastName;
         suffix.value = person?.bag.suffix?.value ?? "";
-        birthDate.value = person?.bag.birthDate ?? "";
+        birthDate.value = getDateParts(person?.bag.birthDate);
         grade.value = person?.bag.grade ?? undefined;
         phoneNumber.value = person?.bag.phoneNumber?.number ?? "";
         phoneCountryCode.value = person?.bag.phoneNumber?.countryCode ?? "";
         isSmsDisabled.value = !props.registrationData.isSmsButtonCheckedByDefault;
+        email.value = person?.bag.email ?? "";
         alternateId.value = person?.bag.alternateId ?? "";
         race.value = person?.bag.race ?? undefined;
         ethnicity.value = person?.bag.ethnicity ?? undefined;
@@ -422,6 +447,48 @@
         }
 
         return "";
+    }
+
+    /**
+     * Converts a date in ISO format to a DatePartsPickerValueBag object.
+     *
+     * @param value The ISO representation of the date.
+     *
+     * @returns The date as an object to be used by the DatePartsPicker control.
+     */
+    function getDateParts(value: string | undefined | null): DatePartsPickerValueBag | undefined {
+        if (!value) {
+            return undefined;
+        }
+
+        const date = RockDateTime.parseISO(value);
+
+        if (!date) {
+            return undefined;
+        }
+
+        return {
+            year: date.year,
+            month: date.month,
+            day: date.day
+        };
+    }
+
+    /**
+     * Gets a string to represent the date in ISO format.
+     *
+     * @param value The date from the DatePartsPicker control.
+     *
+     * @returns A string that represents the date as an ISO format or an empty string.
+     */
+    function getDateString(value: DatePartsPickerValueBag | undefined): string {
+        if (!value || !value.year) {
+            return "";
+        }
+
+        const date = RockDateTime.fromParts(value.year, value.month, value.day);
+
+        return date?.toISOString() ?? "";
     }
 
     // #endregion

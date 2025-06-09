@@ -30,13 +30,13 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import PersonBasicEditor from "@Obsidian/Controls/personBasicEditor.obs";
 
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
     import { PersonBasicEditorBag } from "@Obsidian/ViewModels/Rest/Controls/personBasicEditorBag.d";
 
     const value = ref<Partial<PersonBasicEditorBag>>({});

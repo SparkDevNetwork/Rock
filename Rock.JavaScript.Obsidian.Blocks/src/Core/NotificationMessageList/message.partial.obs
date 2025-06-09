@@ -151,7 +151,7 @@
 
         const date = RockDateTime.parseISO(props.message.dateTime);
 
-        return date?.localDateTime.humanizeElapsed() ?? "";
+        return date?.localDateTime.toElapsedString() ?? "";
     });
 
     /**

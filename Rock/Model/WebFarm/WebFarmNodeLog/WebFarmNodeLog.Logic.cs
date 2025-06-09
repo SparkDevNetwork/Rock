@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using Rock.Security;
+
 namespace Rock.Model
 {
     public partial class WebFarmNodeLog
@@ -39,5 +41,12 @@ namespace Rock.Model
             /// </summary>
             Critical = 2
         }
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => WriterWebFarmNode ?? base.ParentAuthority;
+
+        #endregion
     }
 }

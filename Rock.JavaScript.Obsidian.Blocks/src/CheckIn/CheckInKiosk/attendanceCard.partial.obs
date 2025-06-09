@@ -2,7 +2,9 @@
 <template>
     <div class="attendance-card">
         <div class="header">
-            <div class="avatar" :style="avatarStyle"></div>
+            <div v-if="!hidePhoto"
+                 class="avatar"
+                 :style="avatarStyle"></div>
 
             <div class="title">{{ attendance.person.fullName }}</div>
         </div>
@@ -25,7 +27,11 @@
                  class="achievement">
                 <div class="header">
                     <div class="title">{{ achievement.name }}</div>
-                    <div class="subtitle">{{ getProgressText(achievement) }}</div>
+                    <!--
+                    This is intentionally hidden for now pending decision
+                    from PO on how to display this.
+                    -->
+                    <div v-if="false" class="subtitle">{{ getProgressText(achievement) }}</div>
                 </div>
                 <div v-if="achievement.targetCount"
                      class="completion-progress">
@@ -51,6 +57,11 @@
         term: {
             type: String as PropType<string>,
             default: "Checked Into"
+        },
+
+        hidePhoto: {
+            type: Boolean as PropType<boolean>,
+            required: true
         }
     });
 

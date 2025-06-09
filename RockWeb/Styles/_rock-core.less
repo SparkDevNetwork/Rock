@@ -175,6 +175,7 @@
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.min.css";
+@import (less) "styles-v2-prototype/icons/tabler-icon.css";
 
 @import "_page-admin.less";
 @import "_modal.less";
@@ -192,6 +193,7 @@
 @import "_blocks-groups.less";
 @import "_blocks-finance.less";
 @import "_blocks-crm.less";
+@import "_blocks-lms.less";
 @import "_blocks-communication.less";
 @import "_blocks-workflow.less";
 @import "_blocks-events.less";
@@ -540,6 +542,10 @@ th[align="right"] {
     //   color: @panel-heading-text-color;
     // }
 
+    .panel-header-actions {
+      margin-right: 1rem !important;
+    }
+    
     .panel-title {
       small {
         opacity: .5;
@@ -1507,8 +1513,23 @@ div.aspNetDisabled {
 }
 
 
+
 /* Implement Bootstrap v4 borderless tables. */
 .table.table-borderless > tbody > tr > td,
 .table.table-borderless > tbody > tr > th {
   border: 0;
+}
+
+.modal.container.modal-content.rock-modal:has(.ant-select-dropdown) {
+  overflow: visible;
+
+  .modal-header {
+    border-top-left-radius: inherit;
+    border-top-right-radius: inherit;
+  }
+}
+.modal.container.modal-content.rock-modal form {
+  border-bottom-right-radius: inherit;
+  border-bottom-left-radius: inherit;
+
 }

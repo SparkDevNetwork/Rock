@@ -243,7 +243,7 @@ namespace RockWeb.Blocks.Groups
 
         var mapStyle = {1};
         var mapId = '{13}';
-        var isDefaultMapId = mapId === 'DEFAULT_MAP_ID';
+        var isMapIdEmpty = !mapId;
 
         var polygonColorIndex = 0;
         var polygonColors = [{2}];
@@ -263,13 +263,14 @@ namespace RockWeb.Blocks.Groups
             // Set default map options
             var mapOptions = {{
                  mapTypeId: 'roadmap'
-                ,styles: mapStyle
                 ,center: new google.maps.LatLng({7}, {8})
                 ,zoom: {9}
             }};
 
-            if (!isDefaultMapId) {{
+            if (!isMapIdEmpty) {{
                 mapOptions.mapId = mapId;
+            }} else {{
+                mapOptions.styles = mapStyle;
             }}
 
             // Display a map on the page
@@ -376,7 +377,7 @@ namespace RockWeb.Blocks.Groups
                     color = 'FE7569'
                 }}
 
-                if (isDefaultMapId) {{
+                if (isMapIdEmpty) {{
                     var pinImage = {{
                         path: 'M 0,0 C -2,-20 -10,-22 -10,-30 A 10,10 0 1,1 10,-30 C 10,-22 2,-20 0,0 z',
                         fillColor: '#' + color,
@@ -433,7 +434,7 @@ namespace RockWeb.Blocks.Groups
                     return function () {{
                         $.post( Rock.settings.get('baseUrl') + 'api/Groups/GetMapInfoWindow/' + mapItem.EntityId + '/' + mapItem.LocationId, infoWindowRequest, function( data ) {{
                             infoWindow.setContent( data.Result );
-                            if (isDefaultMapId) {{
+                            if (isMapIdEmpty) {{
                                 infoWindow.open(map, marker);
                             }}
                             else {{
@@ -752,11 +753,17 @@ namespace RockWeb.Blocks.Groups
             // add styling to map
             string styleCode = "null";
             var markerColors = new List<string>();
+            string mapId = string.Empty;
 
             DefinedValueCache dvcMapStyle = DefinedValueCache.Get( GetAttributeValue( AttributeKey.MapStyle ).AsGuid() );
             if ( dvcMapStyle != null )
             {
-                styleCode = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                var dynamicMapStyle = dvcMapStyle.GetAttributeValue( "DynamicMapStyle" );
+                if ( dynamicMapStyle.IsNotNullOrWhiteSpace() )
+                {
+                    styleCode = dynamicMapStyle;
+                }
+                mapId = dvcMapStyle.GetAttributeValue( "core_GoogleMapId" );
                 markerColors = dvcMapStyle.GetAttributeValue( "Colors" )
                     .Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries )
                     .ToList();
@@ -794,7 +801,6 @@ namespace RockWeb.Blocks.Groups
 
             // write script to page
             string mapScriptFormat = MAP_SCRIPT_FORMAT_NAME;
-            var mapId = GlobalAttributesCache.Get().GetValue( "core_GoogleMapId" );
 
             string mapScript = string.Format( mapScriptFormat,
                     groupId.Value, // {0}
@@ -810,7 +816,7 @@ namespace RockWeb.Blocks.Groups
                     cbShowAllGroups.Checked.ToTrueFalse(), // {10}
                     gtpGroupType.SelectedGroupTypeIds.AsDelimited(","), // {11}
                     GroupMemberStatus.Active, // {12}
-                    mapId.IsNullOrWhiteSpace() ? "DEFAULT_MAP_ID" : mapId // {13}
+                    mapId // {13}
                 );
 
             ScriptManager.RegisterStartupScript( pnlMap, pnlMap.GetType(), "group-map-script", mapScript, false );

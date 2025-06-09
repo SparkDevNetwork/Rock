@@ -1,8 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <NotificationBox v-if="blockError" alertType="warning" v-text="blockError" />
+    <NotificationBox v-if="blockError" alertType="warning" v-html="blockError" />
 
-    <NotificationBox v-if="errorMessage" alertType="danger" v-text="errorMessage" />
+    <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage" />
 
     <div v-if="isConfirmDeleteVisible" class="panel panel-body">
         <NotificationBox alertType="warning">
@@ -109,7 +109,6 @@
     import { SiteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { confirmDelete } from "@Obsidian/Utility/dialogs";
-    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { useStore } from "@Obsidian/PageState";
@@ -128,8 +127,6 @@
     const submitForm = ref(false);
     const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
-    const params = new URLSearchParams(window.location.search);
-    const isAutoEditMode = ref(asBooleanOrNull(params.get("autoEdit")) ?? false);
     const isCompiling = ref(false);
     const siteUrl = ref(siteViewBag.value?.siteUrl ?? "/");
     const isShowing = ref(false);
@@ -274,7 +271,7 @@
      *
      * @returns false if it should stay on the page; or a string containing a redirect URL.
      */
-     async function onConfirmDelete(): Promise<void> {
+    async function onConfirmDelete(): Promise<void> {
         errorMessage.value = "";
 
         const result = await invokeBlockAction<string>("Delete", {
@@ -293,7 +290,7 @@
      * Event handler for the Cancel Confirm Delete button being clicked. Hides the confirm delete panel.
      *
      */
-     function onCancelConfirmDelete(): void {
+    function onCancelConfirmDelete(): void {
         isConfirmDeleteVisible.value = false;
         isActionButtonsVisible.value = true;
     }
@@ -341,6 +338,8 @@
             else if (result.statusCode === 201 && typeof result.data === "string") {
                 window.location.href = makeUrlRedirectSafe(result.data);
             }
+
+            store.setAreSecondaryBlocksShown(true);
         }
         else {
             errorMessage.value = result.errorMessage ?? "Unknown error while trying to save site.";

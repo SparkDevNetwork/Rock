@@ -21,6 +21,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Linq;
 
 using Rock.Data;
@@ -60,6 +61,24 @@ namespace Rock.Model
                 return false;
             }
             return true;
+        }
+    }
+
+    [HasQueryableAttributes( typeof( RegistrationInstance.RegistrationInstanceQueryableAttributeValue ), nameof( RegistrationInstanceAttributeValues ) )]
+    public partial class RegistrationInstance
+    {
+        /// <summary>
+        /// Gets the entity attribute values. This should only be used inside
+        /// LINQ statements when building a where clause for the query. This
+        /// property should only be used inside LINQ statements for filtering
+        /// or selecting values. Do <b>not</b> use it for accessing the
+        /// attributes after the entity has been loaded.
+        /// </summary>
+        public virtual ICollection<RegistrationInstanceQueryableAttributeValue> RegistrationInstanceAttributeValues { get; set; } 
+
+        /// <inheritdoc/>
+        public class RegistrationInstanceQueryableAttributeValue : QueryableAttributeValue
+        {
         }
     }
 
@@ -138,6 +157,7 @@ namespace Rock.Model
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.PaymentDeadlineDate = source.PaymentDeadlineDate;
+            target.RegistrantRecordSourceValueId = source.RegistrantRecordSourceValueId;
             target.RegistrationInstructions = source.RegistrationInstructions;
             target.RegistrationMeteringThreshold = source.RegistrationMeteringThreshold;
             target.RegistrationTemplateId = source.RegistrationTemplateId;

@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type to select 0 or more Checkin Configuration Areas/Types. (Weekly Service Check-in, Volunteer Check-in, etc)
     /// Stored as a list of GroupType Guids
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CHECK_IN_CONFIGURATION_TYPE )]
     public class CheckinConfigurationTypeFieldType : SelectFromListFieldType, IEntityReferenceFieldType

@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -48,7 +49,7 @@ namespace Rock.Blocks.Workflow
 
     [Rock.SystemGuid.EntityTypeGuid( "3f0d9d0f-a739-4c92-94a7-70b2bbe03f46" )]
     [Rock.SystemGuid.BlockTypeGuid( "a8062fe5-5bcd-48ac-8c37-2124462656a7" )]
-    public class WorkflowTriggerDetail : RockDetailBlockType
+    public class WorkflowTriggerDetail : RockEntityDetailBlockType<WorkflowTrigger, WorkflowTriggerBag>
     {
         #region Keys
 
@@ -69,16 +70,11 @@ namespace Rock.Blocks.Workflow
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new WorkflowTriggerDetailBox();
-
-                SetBoxInitialEntityState( box, rockContext );
-
-                box.NavigationUrls = GetBoxNavigationUrls();
-
-                return box;
-            }
+            var box = new DetailBlockBox<WorkflowTriggerBag, WorkflowTriggerDetailOptionsBag>();
+            SetBoxInitialEntityState( box );
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
+            return box;
         }
 
         /// <summary>
@@ -99,14 +95,26 @@ namespace Rock.Blocks.Workflow
         }
 
         /// <summary>
+        /// Gets the box options required for the component to render the view
+        /// or edit the entity.
+        /// </summary>
+        /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
+        /// <returns>The options that provide additional details to the block.</returns>
+        private WorkflowTriggerDetailOptionsBag GetBoxOptions( bool isEditable )
+        {
+            var options = new WorkflowTriggerDetailOptionsBag();
+
+            return options;
+        }
+
+        /// <summary>
         /// Validates the WorkflowTrigger for any final information that might not be
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="workflowTrigger">The WorkflowTrigger to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the WorkflowTrigger is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateWorkflowTrigger( WorkflowTrigger workflowTrigger, RockContext rockContext, out string errorMessage )
+        private bool ValidateWorkflowTrigger( WorkflowTrigger workflowTrigger, out string errorMessage )
         {
             errorMessage = null;
 
@@ -124,10 +132,9 @@ namespace Rock.Blocks.Workflow
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( WorkflowTriggerDetailBox box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<WorkflowTriggerBag, WorkflowTriggerDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -138,17 +145,44 @@ namespace Rock.Blocks.Workflow
             var canEdit = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
             box.IsEditable = canEdit || !entity.IsSystem;
 
-            box.Entity = GetEntityBag( entity );
-            box.SecurityGrantToken = GetSecurityGrantToken( entity );
+            box.Entity = GetEntityBagForEdit( entity );
 
             if ( !canEdit )
             {
-                box.ReadonlyNotificationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowTrigger.FriendlyTypeName );
+                box.Entity.ReadonlyNotificationMessage = EditModeMessage.ReadOnlyEditActionNotAllowed( WorkflowTrigger.FriendlyTypeName );
             }
             else if ( entity.IsSystem )
             {
-                box.ReadonlyNotificationMessage = EditModeMessage.ReadOnlySystem( WorkflowTrigger.FriendlyTypeName );
+                box.Entity.ReadonlyNotificationMessage = EditModeMessage.ReadOnlySystem( WorkflowTrigger.FriendlyTypeName );
             }
+
+            PrepareDetailBox( box, entity );
+        }
+
+        // <inheritdoc/>
+        protected override WorkflowTriggerBag GetEntityBagForView( WorkflowTrigger entity )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetEntityBag( entity );
+
+            return bag;
+        }
+
+        // <inheritdoc/>
+        protected override WorkflowTriggerBag GetEntityBagForEdit( WorkflowTrigger entity )
+        {
+            if ( entity == null )
+            {
+                return null;
+            }
+
+            var bag = GetEntityBag( entity );
+
+            return bag;
         }
 
         /// <summary>
@@ -189,50 +223,39 @@ namespace Rock.Blocks.Workflow
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( WorkflowTrigger entity, WorkflowTriggerDetailBox box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( WorkflowTrigger entity, ValidPropertiesBox<WorkflowTriggerBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.EntityType ),
-                () => entity.EntityTypeId = box.Entity.EntityType.GetEntityId<EntityType>( rockContext ).Value );
+            box.IfValidProperty( nameof( box.Bag.EntityType ),
+                () => entity.EntityTypeId = box.Bag.EntityType.GetEntityId<EntityType>( RockContext ).Value );
 
-            box.IfValidProperty( nameof( box.Entity.EntityTypeQualifierColumn ),
-                () => entity.EntityTypeQualifierColumn = box.Entity.EntityTypeQualifierColumn );
+            box.IfValidProperty( nameof( box.Bag.EntityTypeQualifierColumn ),
+                () => entity.EntityTypeQualifierColumn = box.Bag.EntityTypeQualifierColumn );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.WorkflowName ),
-                () => entity.WorkflowName = box.Entity.WorkflowName );
+            box.IfValidProperty( nameof( box.Bag.WorkflowName ),
+                () => entity.WorkflowName = box.Bag.WorkflowName );
 
-            box.IfValidProperty( nameof( box.Entity.WorkflowTriggerType ),
-                () => entity.WorkflowTriggerType = box.Entity.WorkflowTriggerType.ConvertToEnum<WorkflowTriggerType>() );
+            box.IfValidProperty( nameof( box.Bag.WorkflowTriggerType ),
+                () => entity.WorkflowTriggerType = box.Bag.WorkflowTriggerType.ConvertToEnum<WorkflowTriggerType>() );
 
-            box.IfValidProperty( nameof( box.Entity.WorkflowType ),
-                () => entity.WorkflowTypeId = box.Entity.WorkflowType.GetEntityId<WorkflowType>( rockContext ).Value );
+            box.IfValidProperty( nameof( box.Bag.WorkflowType ),
+                () => entity.WorkflowTypeId = box.Bag.WorkflowType.GetEntityId<WorkflowType>( RockContext ).Value );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="WorkflowTrigger"/> to be viewed or edited on the page.</returns>
-        private WorkflowTrigger GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override WorkflowTrigger GetInitialEntity()
         {
-            return GetInitialEntity<WorkflowTrigger, WorkflowTriggerService>( rockContext, PageParameterKey.WorkflowTriggerId );
+            return GetInitialEntity<WorkflowTrigger, WorkflowTriggerService>( RockContext, PageParameterKey.WorkflowTriggerId );
         }
 
         /// <summary>
@@ -247,40 +270,10 @@ namespace Rock.Blocks.Workflow
             };
         }
 
-        /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        // <inheritdoc/>
+        protected override bool TryGetEntityForEditAction( string idKey, out WorkflowTrigger entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( WorkflowTrigger entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out WorkflowTrigger entity, out BlockActionResult error )
-        {
-            var entityService = new WorkflowTriggerService( rockContext );
+            var entityService = new WorkflowTriggerService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -400,20 +393,18 @@ namespace Rock.Blocks.Workflow
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                var box = new DetailBlockBox<WorkflowTriggerBag, WorkflowTriggerDetailBox>
-                {
-                    Entity = GetEntityBag( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<WorkflowTriggerBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -422,75 +413,74 @@ namespace Rock.Blocks.Workflow
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( WorkflowTriggerDetailBox box )
+        public BlockActionResult Save( ValidPropertiesBox<WorkflowTriggerBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new WorkflowTriggerService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new WorkflowTriggerService( rockContext );
+                return actionError;
+            }
 
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateWorkflowTrigger( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            var triggerType = box.Bag.WorkflowTriggerType.ConvertToEnum<WorkflowTriggerType>();
+            var usePreviousValue = triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PostSave || triggerType == WorkflowTriggerType.ImmediatePostSave;
+            // If the trigger type is PreSave and the tbQualifierValue does not exist, use the previous and alt qualifier value
+            if ( usePreviousValue )
+            {
+                if ( !string.IsNullOrEmpty( box.Bag.EntityTypeQualifierValue ) )
                 {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateWorkflowTrigger( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                var triggerType = box.Entity.WorkflowTriggerType.ConvertToEnum<WorkflowTriggerType>();
-                var usePreviousValue = triggerType == WorkflowTriggerType.PreSave || triggerType == WorkflowTriggerType.PostSave || triggerType == WorkflowTriggerType.ImmediatePostSave;
-                // If the trigger type is PreSave and the tbQualifierValue does not exist, use the previous and alt qualifier value
-                if ( usePreviousValue )
-                {
-                    if ( !string.IsNullOrEmpty( box.Entity.EntityTypeQualifierValue ) )
-                    {
-                        // in this case, use the same value as the previous and current qualifier value
-                        entity.EntityTypeQualifierValue = box.Entity.EntityTypeQualifierValue;
-                        entity.EntityTypeQualifierValuePrevious = box.Entity.EntityTypeQualifierValue;
-                    }
-                    else
-                    {
-                        entity.EntityTypeQualifierValue = box.Entity.EntityTypeQualifierValueAlt;
-                        entity.EntityTypeQualifierValuePrevious = box.Entity.EntityTypeQualifierValuePrevious;
-                    }
+                    // in this case, use the same value as the previous and current qualifier value
+                    entity.EntityTypeQualifierValue = box.Bag.EntityTypeQualifierValue;
+                    entity.EntityTypeQualifierValuePrevious = box.Bag.EntityTypeQualifierValue;
                 }
                 else
                 {
-                    // use the regular qualifier and clear the previous value qualifier since it does not apply.
-                    entity.EntityTypeQualifierValue = box.Entity.EntityTypeQualifierValue;
-                    entity.EntityTypeQualifierValuePrevious = string.Empty;
+                    entity.EntityTypeQualifierValue = box.Bag.EntityTypeQualifierValueAlt;
+                    entity.EntityTypeQualifierValuePrevious = box.Bag.EntityTypeQualifierValuePrevious;
                 }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                } );
-
-                WorkflowTriggersCache.Remove();
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.WorkflowTriggerId] = entity.IdKey
-                    } ) );
-                }
-
-                // Ensure navigation properties will work now.
-                entity = entityService.Get( entity.Id );
-
-                return ActionOk( GetEntityBag( entity ) );
             }
+            else
+            {
+                // use the regular qualifier and clear the previous value qualifier since it does not apply.
+                entity.EntityTypeQualifierValue = box.Bag.EntityTypeQualifierValue;
+                entity.EntityTypeQualifierValuePrevious = string.Empty;
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+            } );
+
+            WorkflowTriggersCache.Remove();
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
+            }
+
+            // Ensure navigation properties will work now.
+            entity = entityService.Get( entity.Id );
+            var bag = GetEntityBagForView( entity );
+
+            return ActionOk( new ValidPropertiesBox<WorkflowTriggerBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -501,37 +491,22 @@ namespace Rock.Blocks.Workflow
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new WorkflowTriggerService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new WorkflowTriggerService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( WorkflowTriggerDetailBox box )
-        {
-            return ActionBadRequest( "Attributes are not supported by this block." );
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         /// <summary>

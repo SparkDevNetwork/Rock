@@ -28,6 +28,7 @@ namespace Rock.Model
     [RockDomain( "Reporting" )]
     [Table( "AnalyticsSourceAttendance" )]
     [DataContract]
+    [CodeGenerateRest( Enums.CodeGenerateRestEndpoint.ReadOnly, DisableEntitySecurity = true )]
     [HideFromReporting]
     [Rock.SystemGuid.EntityTypeGuid( "BCE52831-6FEF-4521-9E4A-AE5C29F20E2F")]
     public class AnalyticsSourceAttendance : AnalyticsBaseAttendance<AnalyticsSourceAttendance>

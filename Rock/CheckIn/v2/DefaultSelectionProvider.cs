@@ -93,6 +93,32 @@ namespace Rock.CheckIn.v2
 
             var selectedOpportunities = new List<OpportunitySelectionBag>();
 
+            // If there were any pre-selected opportunities from filters and
+            // they are still valid then add them to the opportunity list.
+            foreach ( var preSelected in person.PreSelectedOpportunities )
+            {
+                var groupOpportunity = person.Opportunities.Groups.FirstOrDefault( g => g.Id == preSelected.Group.Id );
+
+                if ( groupOpportunity == null )
+                {
+                    continue;
+                }
+
+                // Only one selection per schedule is allowed.
+                if ( selectedOpportunities.Any( o => o.Schedule.Id == preSelected.Schedule.Id ) )
+                {
+                    continue;
+                }
+
+                // Verify the selections are still valid for this group opportunity.
+                if ( !groupOpportunity.Locations.Any( l => l.LocationId == preSelected.Location.Id && l.ScheduleId == preSelected.Schedule.Id ) )
+                {
+                    continue;
+                }
+
+                selectedOpportunities.Add( preSelected );
+            }
+
             if ( !previousCheckIns.Any() )
             {
                 // Just try to pick anything valid.
@@ -109,7 +135,12 @@ namespace Rock.CheckIn.v2
                 // First try to find a valid exact match against a previous check-in.
                 if ( TryGetExactMatch( person, previousCheckIn, out var opportunities ) )
                 {
-                    selectedOpportunities.Add( opportunities );
+                    // If we matched a schedule that we already have a
+                    // selection for then skip it.
+                    if ( !selectedOpportunities.Any( o => o.Schedule.Id == opportunities.Schedule.Id ) )
+                    {
+                        selectedOpportunities.Add( opportunities );
+                    }
 
                     continue;
                 }
@@ -118,7 +149,12 @@ namespace Rock.CheckIn.v2
                 // available location and schedule.
                 if ( TryGetBestMatchingGroup( person, previousCheckIn, out opportunities ) )
                 {
-                    selectedOpportunities.Add( opportunities );
+                    // If we matched a schedule that we already have a
+                    // selection for then skip it.
+                    if ( !selectedOpportunities.Any( o => o.Schedule.Id == opportunities.Schedule.Id ) )
+                    {
+                        selectedOpportunities.Add( opportunities );
+                    }
 
                     continue;
                 }
@@ -126,7 +162,12 @@ namespace Rock.CheckIn.v2
                 // Finally, just try to match anything.
                 if ( TryGetAnyValidSelection( person, out opportunities ) )
                 {
-                    selectedOpportunities.Add( opportunities );
+                    // If we matched a schedule that we already have a
+                    // selection for then skip it.
+                    if ( !selectedOpportunities.Any( o => o.Schedule.Id == opportunities.Schedule.Id ) )
+                    {
+                        selectedOpportunities.Add( opportunities );
+                    }
 
                     continue;
                 }

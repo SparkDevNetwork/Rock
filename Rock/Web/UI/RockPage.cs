@@ -36,8 +36,11 @@ using Microsoft.Extensions.DependencyInjection;
 using Rock.Attribute;
 using Rock.Blocks;
 using Rock.Cms.Utm;
+using Rock.Configuration;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Observability;
@@ -85,6 +88,11 @@ namespace Rock.Web.UI
         /// </summary>
         private bool _pageNeedsObsidian = false;
 
+        /// <summary>
+        /// Will be <c>true</c> if the page has any Obsidian blocks to initialize.
+        /// </summary>
+        private bool _pageHasObsidianBlock = false;
+
         private readonly string _obsidianPageTimingControlId = "lObsidianPageTimings";
         private readonly List<DebugTimingViewModel> _debugTimingViewModels = new List<DebugTimingViewModel>();
         private Stopwatch _onLoadStopwatch = null;
@@ -98,11 +106,6 @@ namespace Rock.Web.UI
         /// The obsidian file watchers.
         /// </summary>
         private static readonly List<FileSystemWatcher> _obsidianFileWatchers = new List<FileSystemWatcher>();
-
-        /// <summary>
-        /// The service provider to use during requests.
-        /// </summary>
-        private static readonly Lazy<IServiceProvider> _lazyServiceProvider = new Lazy<IServiceProvider>( CreateServiceProvider );
 
         /// <summary>
         /// The service scopes that should be disposed.
@@ -840,6 +843,7 @@ namespace Rock.Web.UI
                 Activity.Current.AddTag( "rock.site.id", this.Site.Id );
                 Activity.Current.AddTag( "rock.page.id", this.PageId );
                 Activity.Current.AddTag( "rock.page.ispostback", this.IsPostBack );
+                Activity.Current.AddTag( "rock.page.issystem", _pageCache?.IsSystem ?? false );
             }
 
             var stopwatchInitEvents = Stopwatch.StartNew();
@@ -1047,7 +1051,7 @@ namespace Rock.Web.UI
                     // don't redirect if this is the change password page
                     if ( Site.ChangePasswordPageReference.PageId != this.PageId )
                     {
-                        Site.RedirectToChangePasswordPage( true, true );
+                        Site.RedirectToChangePasswordPage( true, true, user );
                     }
                 }
 
@@ -1091,10 +1095,10 @@ namespace Rock.Web.UI
                 }
 
                 // Add CSS class to body
-                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) && this.Master != null )
+                if ( !string.IsNullOrWhiteSpace( this.BodyCssClass ) )
                 {
                     // attempt to find the body tag
-                    var body = ( HtmlGenericControl ) this.Master.FindControl( "body" );
+                    var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
                     if ( body != null )
                     {
                         // determine if we need to append or add the class
@@ -1106,6 +1110,11 @@ namespace Rock.Web.UI
                         {
                             body.Attributes.Add( "class", this.BodyCssClass );
                         }
+                    }
+                    else
+                    {
+                        var bodyClasses = BodyCssClass.Split( new[] { ' ' }, StringSplitOptions.RemoveEmptyEntries ).ToJson();
+                        ClientScript.RegisterStartupScript( GetType(), "initialize-body-class", $"document.body.classList.add(...{bodyClasses});\n", true );
                     }
                 }
 
@@ -1188,6 +1197,11 @@ namespace Rock.Web.UI
                 else
                 {
                     /* At this point, we know the Person (or NULL person) is authorized to View the page */
+
+                    RecordSourceHelper.TrySetRecordSourceSessionCookie( ( cookieName, cookieValue ) =>
+                    {
+                        AddOrUpdateCookie( new HttpCookie( cookieName, cookieValue ) );
+                    } );
 
                     if ( Site.EnableVisitorTracking )
                     {
@@ -1423,6 +1437,7 @@ Rock.settings.initialize({{
                                         if ( blockEntity is IRockObsidianBlockType )
                                         {
                                             _pageNeedsObsidian = true;
+                                            _pageHasObsidianBlock = true;
                                         }
                                     }
 
@@ -1499,12 +1514,6 @@ Rock.settings.initialize({{
 
                         Page.Trace.Warn( "Initializing Obsidian" );
 
-                        var body = ( HtmlGenericControl ) this.Master?.FindControl( "body" );
-                        if ( body != null )
-                        {
-                            body.AddCssClass( "obsidian-loading" );
-                        }
-
                         if ( !ClientScript.IsStartupScriptRegistered( "rock-obsidian-init" ) )
                         {
                             var currentPersonJson = "null";
@@ -1548,6 +1557,7 @@ Obsidian.onReady(() => {{
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {sanitizedPageParameters.ToJson()},
+            sessionGuid: '{RequestContext.SessionGuid}',
             interactionGuid: '{RequestContext.RelatedInteractionGuid}',
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
@@ -1559,9 +1569,28 @@ Obsidian.onReady(() => {{
 Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
 ";
 
+                            if ( _pageHasObsidianBlock )
+                            {
+                                script = "document.body.classList.add(\"obsidian-loading\")\n" + script;
+                            }
+
                             ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-obsidian-init", script, true );
                         }
                     }
+
+                    var colorModeScript = @"
+(function initializeColorMode() {
+    let attributeName = ""theme""
+    var htmlElement = document.documentElement;
+
+    if ( localStorage.getItem(attributeName) != null ) {
+        const value = localStorage.getItem(attributeName);
+        htmlElement.setAttribute(attributeName, value);
+    }
+})();
+";
+                    ClientScript.RegisterStartupScript( this.Page.GetType(), "color-mode-init", colorModeScript, true );
+
 
                     /*
                      * 2020-06-17 - JH
@@ -1792,7 +1821,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
 
-                // Add reponse headers to request that the client tell us if they prefer dark mode
+                // Add response headers to request that the client tell us if they prefer dark mode
                 Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme" );
                 Response.Headers.Add( "Vary", "Sec-CH-Prefers-Color-Scheme" );
                 Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme" );
@@ -2322,7 +2351,12 @@ Obsidian.onReady(() => {{
             if ( impersonatedByUser != null )
             {
                 Authorization.SignOut();
-                UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
+                UserLoginService.UpdateLastLogin(
+                    new UpdateLastLoginArgs {
+                        UserName = impersonatedByUser.UserName,
+                        ShouldSkipWritingHistoryLog = true
+                    }
+                );
 
                 /*
                     10/23/2023 - JMH
@@ -2393,7 +2427,8 @@ Obsidian.onReady(() => {{
                         isImpersonated: true,
                         isTwoFactorAuthenticated: true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
-                    UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
+                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = "rckipid=" + impersonatedPersonKeyParam } );
+
 
                     // reload page as the impersonated user (we probably could remove the token from the URL, but some blocks might be looking for rckipid in the PageParameters, so just leave it)
                     Response.Redirect( Request.RawUrl, false );
@@ -2572,6 +2607,12 @@ Sys.Application.add_load(function () {
             }
         }
 
+        /// <inheritdoc/>
+        protected override void Render( HtmlTextWriter writer )
+        {
+            base.Render( writer );
+        }
+
         /// <summary>
         /// Process page view interactions if they are enabled for this website.
         /// </summary>
@@ -2592,7 +2633,7 @@ Sys.Application.add_load(function () {
             // Attempt to retrieve geolocation data.
             var geolocation = this.RequestContext?.ClientInformation?.Geolocation;
 
-            // If we have identified a logged-in user, record the page interaction immediately and return.
+            // If we have identified a logged-in user, record the page interaction immediately and return. (Does not include anonymous visitors)
             if ( CurrentPerson != null )
             {
                 var interactionInfo = new InteractionTransactionInfo
@@ -2676,6 +2717,12 @@ Sys.Application.add_load(function () {
             // If the user is logged in, they are identified by the supplied UserIdKey representing their current PersonAlias.
             // If the user is a visitor, the ROCK_VISITOR_KEY cookie is read from the client browser to obtain the
             // UserIdKey supplied to them. For a first visit, the cookie is set in this response.
+            // Additionally, this script now stores a list of interaction GUIDs in sessionStorage to prevent duplicate interactions.
+            // Each time a new interaction is recorded, the GUID is checked against the stored list in sessionStorage.
+            // If the GUID has already been recorded in the current session, the interaction will not be sent again, ensuring
+            // that only unique interactions are tracked during the session. This additional change was needed to prevent the
+            // scenario where a duplicate interaction would be sent whenever an individual used a browser's back arrow to navigate
+            // back to a page that had already sent an interaction. 
             string script = @"
 Sys.Application.add_load(function () {
     const getCookieValue = (name) => {
@@ -2683,19 +2730,29 @@ Sys.Application.add_load(function () {
 
         return !match ? '' : match.pop();
     };
-    var interactionArgs = <jsonData>;
-    if (!interactionArgs.<userIdProperty>) {
-        interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+
+    var interactionGuid = '<interactionGuid>';
+    var interactionGuids = JSON.parse(sessionStorage.getItem('interactionGuids')) || [];
+
+    if (!interactionGuids.includes(interactionGuid)) {
+        interactionGuids.push(interactionGuid);
+        sessionStorage.setItem('interactionGuids', JSON.stringify(interactionGuids));
+
+        var interactionArgs = <jsonData>;
+        if (!interactionArgs.<userIdProperty>) {
+            interactionArgs.<userIdProperty> = getCookieValue('<rockVisitorCookieName>');
+        }
+        $.ajax({
+            url: '/api/Interactions/RegisterPageInteraction',
+            type: 'POST',
+            data: interactionArgs
+            });
     }
-    $.ajax({
-        url: '/api/Interactions/RegisterPageInteraction',
-        type: 'POST',
-        data: interactionArgs
-        });
 });
 ";
 
             script = script.Replace( "<rockVisitorCookieName>", Rock.Personalization.RequestCookieKey.ROCK_VISITOR_KEY );
+            script = script.Replace( "<interactionGuid>", pageInteraction.Guid.ToString() );
             script = script.Replace( "<jsonData>", pageInteraction.ToJson() );
             script = script.Replace( "<userIdProperty>", nameof( pageInteraction.UserIdKey ) );
 
@@ -2736,30 +2793,12 @@ Sys.Application.add_load(function () {
         }
 
         /// <summary>
-        /// Creates the service provider that will provides services for all
-        /// requests during the lifetime of this application.
-        /// </summary>
-        /// <returns>A new service provider.</returns>
-        private static IServiceProvider CreateServiceProvider()
-        {
-            var serviceCollection = new ServiceCollection();
-            serviceCollection.AddSingleton<IRockRequestContextAccessor, RockRequestContextAccessor>();
-            serviceCollection.AddScoped<RockContext>();
-            serviceCollection.AddSingleton<IWebHostEnvironment>( provider => new Utility.WebHostEnvironment
-            {
-                WebRootPath = AppDomain.CurrentDomain.BaseDirectory
-            } );
-
-            return serviceCollection.BuildServiceProvider();
-        }
-
-        /// <summary>
         /// Creates the service scope and initializes any required values.
         /// </summary>
         /// <returns>An new service scope.</returns>
         private IServiceScope CreateServiceScope()
         {
-            var scope = _lazyServiceProvider.Value.CreateScope();
+            var scope = RockApp.Current.CreateScope();
 
             _pageServiceScopes.Add( scope );
 
@@ -3519,7 +3558,7 @@ Sys.Application.add_load(function () {
         /// Converts the legacy, "structured" context cookies to a simpler, JSON format.
         /// </summary>
         [Obsolete( "Remove this method after a few major versions, hopefully allowing enough time to convert all legacy context cookies." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         private void ConvertLegacyContextCookiesToJSON()
         {
             // Find any cookies whose names start with the legacy cookie name prefix.
@@ -4681,6 +4720,7 @@ Sys.Application.add_load(function () {
             {
                 var obsidianPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Obsidian" );
                 var pluginsPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/Plugins" );
+                var now = RockDateTime.Now;
 
                 // Find the last date any obsidian file was modified.
                 var lastWriteTime = Directory.EnumerateFiles( obsidianPath, "*.js", SearchOption.AllDirectories )
@@ -4698,10 +4738,15 @@ Sys.Application.add_load(function () {
                     } )
                     .Where( d => d.HasValue )
                     .Select( d => ( DateTime? ) RockDateTime.ConvertLocalDateTimeToRockDateTime( d.Value ) )
+                    // This is an attempt to fix random issues where people have the
+                    // JS file cached in the browser. A theory is that some JS file
+                    // has a future date time, so even after an upgrade the same
+                    // fingerprint value is used. Ignore any dates in the future.
+                    .Where( d => d < now )
                     .OrderByDescending( d => d )
                     .FirstOrDefault();
 
-                _obsidianFingerprint = ( lastWriteTime ?? RockDateTime.Now ).Ticks;
+                _obsidianFingerprint = ( lastWriteTime ?? now ).Ticks;
 
                 // Check if we are in debug mode and if so enable the watchers.
                 var cfg = ( CompilationSection ) ConfigurationManager.GetSection( "system.web/compilation" );
@@ -5044,9 +5089,18 @@ Sys.Application.add_load(function () {
         {
             RequestContext = new RockRequestContext( context.Request, new RockResponseContext( this ), CurrentUser );
 
-            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 internalAccessor.RockRequestContext = RequestContext;
+            }
+
+            if ( RequestContext.IsClientForbidden( _pageCache ) )
+            {
+                context.Response.StatusCode = ( int ) System.Net.HttpStatusCode.Forbidden;
+                context.Response.SuppressContent = true;
+                context.ApplicationInstance.CompleteRequest();
+
+                return null;
             }
 
             return AsyncPageBeginProcessRequest( context, cb, extraData );
@@ -5057,7 +5111,7 @@ Sys.Application.add_load(function () {
         {
             AsyncPageEndProcessRequest( result );
 
-            if ( _lazyServiceProvider.Value.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
+            if ( RockApp.Current.GetRequiredService<IRockRequestContextAccessor>() is RockRequestContextAccessor internalAccessor )
             {
                 if ( ReferenceEquals( internalAccessor.RockRequestContext, RequestContext ) )
                 {

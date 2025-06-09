@@ -1,0 +1,40 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode">
+
+        <BadgeList :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />
+
+        <template #settings>
+            <div class="row">
+                <EntityTypePicker formGroupClasses="col-md-4" label="Entity Type" v-model="entityType" enhanceForLongLists />
+                <TextBox formGroupClasses="col-md-4" label="Entity Key" v-model="entityKey" />
+                <BadgePicker formGroupClasses="col-md-4" label="Badge Type" v-model="badgeTypes" showBlankItem multiple />
+            </div>
+            <p>Additional props extend and are passed to the underlying <code>Rock Form Field</code>.</p>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import BadgeList from "@Obsidian/Controls/badgeList.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import BadgePicker from "@Obsidian/Controls/badgePicker.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useStore } from "@Obsidian/PageState";
+
+    const entityType = ref({ text: "Person", value: EntityType.Person });
+    const entityTypeGuid = computed(() => entityType?.value);
+
+    const badgeTypes = ref<ListItemBag[]>([]);
+    const badgeTypeGuids = computed(() => badgeTypes.value.map(b => b.value ?? ""));
+
+    const store = useStore();
+    const entityKey = ref(store.state.currentPerson?.idKey ?? "");
+    const importCode = getSfcControlImportPath("badgeList");
+    const exampleCode = `<BadgeList :entityTypeGuid="entityTypeGuid?.value" :entityKey="entityKey" :badgeTypeGuids="badgeTypeGuids" />`;
+</script>

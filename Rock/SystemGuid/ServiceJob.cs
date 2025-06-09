@@ -245,6 +245,11 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_166_ADD_COMMUNICATION_RECIPIENT_INDEX = "48070B65-FC20-401F-B25F-8F4D13BA5F36";
 
         /// <summary>
+        /// The Job to run Post v16.8 to update indexes.
+        /// </summary>
+        public const string DATA_MIGRATIONS_168_UPDATE_INDEXES = "E27CF068-B7DA-4AD0-ABC0-380AB68F1778";
+
+        /// <summary>
         /// The Job to run Post v17.0 Data Migrations to chop Shortened Link Block.
         /// </summary>
         public const string DATA_MIGRATIONS_170_CHOP_SHORTENED_LINKS_BLOCK = "8899363A-C52B-4D82-88C2-CA199D73E95C";
@@ -409,7 +414,7 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_170_REMOVE_DISC_BLOCK = "795AE7B0-8B61-4577-B50A-350907CA0C65";
 
         /// <summary>
-        /// The job for sending available learning activity notifications. <see cref="Rock.Jobs.SendLearningActivityNotifications"/>.
+        /// The job for sending available learning activity notifications. <see cref="Rock.Jobs.SendLearningNotifications"/>.
         /// </summary>
         public const string SEND_LEARNING_ACTIVITY_NOTIFICATIONS = "0075859b-8dc3-4e95-9075-89198886fcb4";
 
@@ -432,5 +437,76 @@ namespace Rock.SystemGuid
         /// The job for updating the IX_EntityTypeId_EntityId index on the History table.
         /// </summary>
         public const string POST_170_UPDATE_HISTORY_ENTITYTYPEID_INDEX = "48D7629C-1FB5-425A-AFAB-E8F220ABADB0";
+
+        /// <summary>
+        /// The job for swapping DefinedTypeDetail and DefinedValueList with Webforms Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_SWAP_WEBFORMS_BLOCKS = "AD8A38F7-1FCC-47CD-893F-9B4335DD7E08";
+
+        /// <summary>
+        /// The job for calculating peer networks for individuals.
+        /// </summary>
+        public const string CALCULATE_PEER_NETWORK = "D3172560-0E8C-4E69-A477-56ABC018FEEF";
+
+        /// <summary>
+        /// The Job to run Post v17.0 to add new and update existing indexes to support the Peer Network feature.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_ADD_AND_UPDATE_PEER_NETWORK_INDEXES = "195DDB5A-FF1C-438E-BCA4-37EBC3D0F558";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Update Person PrimaryPersonAliasGuid.
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_GUID = "11A4E70F-899F-4B1D-BB25-12768E487A24";
+
+        /// <summary>
+        /// The Job to run Post v17.0 Interaction Index Migration .
+        /// </summary>
+        public const string DATA_MIGRATIONS_170_INTERACTION_INDEX_POST_MIGRATION_JOB = "9984C806-FAEE-4005-973B-9FBE21948972";
+
+        /// <summary>
+        /// The job for performing synchronization tasks between Rock and the external chat system.
+        /// </summary>
+        public const string CHAT_SYNC_JOB = "80202290-66DF-4289-8938-4FA6B84E3EE2";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migrations to migrate login history from the History table to the HistoryLogin table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_MIGRATE_LOGIN_HISTORY = "D5E7B461-748F-4A01-BA3F-FA7BEF6AC0F0";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migrations to update an existing index on the CommunicationRecipient table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_UPDATE_COMMUNICATIONRECIPIENT_INDEX = "EB00BD84-D89C-44B4-8C0C-56322074C9C4";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migrations to add an index on the CommunicationRecipient table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_ADD_COMMUNICATIONRECIPIENT_INDEX = "9C04D469-FB52-438E-B725-D4211139A933";
+
+        /// <summary>
+        /// The job to run Post v17.1 Data Migration to upset the Attendance Occurrence
+        /// table with RootGroupTypeId values for existing data.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_POPULATE_ATTENDANCE_ROOT_GROUP_TYPE = "e6755275-02ca-4159-af16-1e4cdcfa22d0";
+
+        /// <summary>
+        /// The Job to run Post v17.1 Data Migrations to chop Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_171_CHOP_OBSIDIAN_BLOCKS = "C5AE8BF4-C83C-4695-9233-1B1D5D2801D7";
+
+        /// <summary>
+        /// The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_UPDATE_COMMUNICATIONRECIPIENT_INDEX = "FE519BCE-CCB8-42B7-A14C-1620859F23E8";
+
+        /// <summary>
+        /// The job to run Post v18.0 Data Migrations to delete the deprecated GroupLocationHistoricalSchedule table from the database.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_DELETE_GROUPLOCATIONHISTORICALSCHEDULE = "6A76B67B-9C25-4C02-8BC6-06B23EC8C7C3";
+
+        /// <summary>
+        /// The Job to run Post v18.0 Data Migrations to chop Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_CHOP_OBSIDIAN_BLOCKS = "6BFCE2DE-5B38-4B71-8737-423AF51A39B1";
     }
 }

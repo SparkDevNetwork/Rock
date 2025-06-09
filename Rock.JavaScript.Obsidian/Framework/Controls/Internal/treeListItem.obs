@@ -15,13 +15,15 @@
                           @treeitem-collapsed="onChildItemCollapsed"
                           :item="child"
                           v-bind="{
-                              modelValue,
-                              multiple,
-                              disableFolderSelection,
-                              autoExpand,
-                              showChildCount,
-                              initiallyExpanded
-                          }" />
+                            modelValue,
+                            multiple,
+                            disableFolderSelection,
+                            autoExpand,
+                            showChildCount,
+                            initiallyExpanded,
+                            enableDeselect,
+                            provider
+                        }" />
         </ul>
     </li>
 </template>
@@ -81,6 +83,14 @@
             type: Boolean,
             default: false
         },
+
+        /**
+         * If in single selection mode, whether to allow deselection of this item by clicking on it.
+         */
+        enableDeselect: {
+            type: Boolean,
+            default: false
+        }
     });
 
     const emit = defineEmits<{
@@ -221,7 +231,7 @@
     /**
      * Event handler for when this item is selected or deselected.
      */
-     function onSelect(): void {
+    function onSelect(): void {
         let canSelect = !props.item.isFolder || !props.disableFolderSelection;
 
         if (props.provider?.canSelectItem) {
@@ -240,8 +250,11 @@
                 emit("update:modelValue", [...props.modelValue.filter(v => v !== props.item.value)]);
             }
         }
-        else {
-            if (props.item.value) {
+        else if (props.item.value) {
+            if (props.enableDeselect && props.item.value === props.modelValue[0]) {
+                emit("update:modelValue", []);
+            }
+            else {
                 emit("update:modelValue", [props.item.value]);
             }
         }

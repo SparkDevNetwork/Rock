@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+/** The box containing all the necessary information for the Learning Class Enrollment block. */
 export type PublicLearningClassEnrollmentBlockBox = {
     /** Gets or sets the HTML to be rendered for the completion content. */
     completionHtml?: string | null;
@@ -31,14 +32,14 @@ export type PublicLearningClassEnrollmentBlockBox = {
     /** Gets or sets the HTML to be rendered for the enrollment error content. */
     enrollmentErrorHtml?: string | null;
 
-    /** Gets or sets the HTML to be rendered for the header content. */
-    headerHtml?: string | null;
-
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.
      */
     errorMessage?: string | null;
+
+    /** Gets or sets the HTML to be rendered for the header content. */
+    headerHtml?: string | null;
 
     /** Gets or sets the navigation urls. */
     navigationUrls?: Record<string, string> | null;

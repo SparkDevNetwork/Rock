@@ -54,10 +54,8 @@
                 :filter="pickExistingValueFilter"
                 visiblePriority="md">
             <template #format="{ row }">
-                <div class="text-lg">
-                    <div v-for="activity in row.activities">
-                        {{ activity }}
-                    </div>
+                <div v-for="activity in row.activities">
+                    {{ activity }}
                 </div>
             </template>
 
@@ -304,7 +302,7 @@
     }
 
     function getElapsed(date: string): string {
-        return RockDateTime.parseISO(date)?.localDateTime.humanizeElapsed() ?? "";
+        return RockDateTime.parseISO(date)?.localDateTime.toElapsedString() ?? "";
     }
 
     // #endregion

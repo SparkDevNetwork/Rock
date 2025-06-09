@@ -23,6 +23,8 @@ using System.Web.UI;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security.SecurityGrantRules;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -33,9 +35,10 @@ namespace Rock.Field.Types
     /// Field Type to select a single (or null) Connection Request
     /// Stored as ConnectionRequest.Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.CONNECTION_REQUEST )]
-    public class ConnectionRequestFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
+    public class ConnectionRequestFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType, ISecurityGrantFieldType
     {
         #region Formatting
 
@@ -212,6 +215,16 @@ namespace Rock.Field.Types
                 new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.NickName ) ),
                 new ReferencedProperty( EntityTypeCache.GetId<Person>().Value, nameof( Person.LastName ) ),
             };
+        }
+
+        #endregion
+
+        #region ISecurityGrantFieldType
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            grant.AddRule( new ConnectionRequestPickerSecurityGrantRule() );
         }
 
         #endregion

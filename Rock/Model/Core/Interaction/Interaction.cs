@@ -53,6 +53,7 @@ namespace Rock.Model
     [NotAudited]
     [Table( "Interaction" )]
     [DataContract]
+    [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.INTERACTION )]
     public partial class Interaction : Model<Interaction>
     {

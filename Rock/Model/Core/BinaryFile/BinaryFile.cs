@@ -32,6 +32,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "BinaryFile" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( "9BB1A349-5998-47C1-97D5-D6CC00275662" )]
     public partial class BinaryFile : Model<BinaryFile>
     {
@@ -64,6 +65,7 @@ namespace Rock.Model
         /// A <see cref="System.Int32"/> representing the <see cref="Rock.Model.BinaryFileType"/>.
         /// </value>
         [DataMember]
+        [EnableAttributeQualification]
         public int? BinaryFileTypeId { get; set; }
 
         /// <summary>
@@ -254,7 +256,7 @@ namespace Rock.Model
         #endregion
 
         /// <summary>
-        /// Returns a <see cref="System.String" /> containing the name of the file and  represents this instance.
+        /// Returns a <see cref="System.String" /> containing the name of the file and represents this instance.
         /// </summary>
         /// <returns>
         /// A <see cref="System.String" /> containing the name of the file and represents this instance.

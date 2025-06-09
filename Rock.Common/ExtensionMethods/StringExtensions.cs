@@ -1316,27 +1316,91 @@ namespace Rock
         }
 
         /// <summary>
-        /// Attempts to convert string to decimal with invariant culture. Returns null if unsuccessful.
+        /// Attempts to convert string to decimal percentage. Returns 0 if unsuccessful.
         /// </summary>
+        /// <remarks>
+        /// It's assumed that an integer string will be provided, with an optional "%" symbol.
+        /// </remarks>
         /// <param name="str">The string.</param>
-        /// <returns></returns>
-        public static decimal? AsDecimalInvariantCultureOrNull( this string str )
+        /// <param name="precision">The number of decimal places to return.</param>
+        /// <param name="minPercentage">The optional minimum percentage (e.g. 0). Will be used to calculate the decimal
+        /// percentage if the parsed integer percentage is less than this value.</param>
+        /// <param name="maxPercentage">The optional maximum percentage (e.g. 100). Will be used to calculate the decimal
+        /// percentage if the parsed integer percentage is greater than this value.</param>
+        /// <returns>The decimal equivalent of the provided integer string or 0.</returns>
+        public static decimal AsDecimalPercentage( this string str, int precision = 2, int? minPercentage = null, int? maxPercentage = null )
         {
-            if ( !string.IsNullOrWhiteSpace( str ) )
+            return str.AsDecimalPercentageOrNull( precision, minPercentage, maxPercentage ) ?? 0;
+        }
+
+        /// <summary>
+        /// Attempts to convert string to decimal percentage. Returns null if unsuccessful.
+        /// </summary>
+        /// <remarks>
+        /// It's assumed that an integer string will be provided, with an optional "%" symbol.
+        /// </remarks>
+        /// <param name="str">The string.</param>
+        /// <param name="precision">The number of decimal places to return.</param>
+        /// <param name="minPercentage">The optional minimum percentage (e.g. 0). Will be used to calculate the decimal
+        /// percentage if the parsed integer percentage is less than this value.</param>
+        /// <param name="maxPercentage">The optional maximum percentage (e.g. 100). Will be used to calculate the decimal
+        /// percentage if the parsed integer percentage is greater than this value.</param>
+        /// <returns>The decimal equivalent of the provided integer string or null.</returns>
+        public static decimal? AsDecimalPercentageOrNull( this string str, int precision = 2, int? minPercentage = null, int? maxPercentage = null )
+        {
+            if ( str.IsNotNullOrWhiteSpace() )
             {
-                // strip off non numeric and characters at the beginning of the line (currency symbols)
-                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
+                // strip off percentage symbol and any whitespace
+                str = str.Replace( "%", string.Empty ).Trim();
             }
 
-            decimal value;
-            if ( decimal.TryParse( str, NumberStyles.Number, CultureInfo.InvariantCulture, out value ) )
-            {
-                return value;
-            }
-            else
+            if ( !int.TryParse( str, out var percentage ) )
             {
                 return null;
             }
+
+            if ( minPercentage.HasValue && percentage < minPercentage )
+            {
+                percentage = minPercentage.Value;
+            }
+
+            if ( maxPercentage.HasValue && percentage > maxPercentage )
+            {
+                percentage = maxPercentage.Value;
+            }
+
+            return Math.Round( (decimal) percentage / 100, precision );
+        }
+
+        /// <summary>
+        /// Attempts to convert string to decimal with invariant culture. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string to convert.</param>
+        /// <returns></returns>
+        public static decimal? AsDecimalInvariantCultureOrNull( this string str )
+        {
+            return str.AsDecimalWithCultureOrNull( CultureInfo.InvariantCulture );
+        }
+
+        /// <summary>
+        /// Attempts to convert a string to a decimal using a specific CultureInfo. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string to convert.</param>
+        /// <param name="cultureInfo">The culture info to use for parsing.</param>
+        /// <returns>Nullable decimal value or null.</returns>
+        public static decimal? AsDecimalWithCultureOrNull( this string str, CultureInfo cultureInfo )
+        {
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
+            }
+
+            if ( decimal.TryParse( str, NumberStyles.Number, cultureInfo, out var value ) )
+            {
+                return value;
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -1364,6 +1428,30 @@ namespace Rock
 
             double value;
             if ( double.TryParse( str, out value ) )
+            {
+                return value;
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Attempts to convert a string to a decimal using a specific CultureInfo. Returns null if unsuccessful.
+        /// </summary>
+        /// <param name="str">The string to convert.</param>
+        /// <param name="cultureInfo">The culture info to use for parsing.</param>
+        /// <returns>Nullable double value or null.</returns>
+        public static double? AsDoubleWithCultureOrNull( this string str, CultureInfo cultureInfo )
+        {
+            if ( !string.IsNullOrWhiteSpace( str ) )
+            {
+                str = Regex.Replace( str, @"^[^0-9\.-]", string.Empty );
+            }
+
+            double value;
+            if ( double.TryParse( str, NumberStyles.Number, cultureInfo, out value ) )
             {
                 return value;
             }
@@ -1768,6 +1856,12 @@ namespace Rock
             }
 
             return new string( chars );
+        }
+
+        public static bool IsSingleSpecialCharacter( this string value )
+        {
+            string specialCharacters = "!@#$%^&*()_+[]{}|;:'\",.<>/?`~";
+            return !string.IsNullOrEmpty( value ) && value.Length == 1 && specialCharacters.Contains( value );
         }
 
         #endregion String Extensions

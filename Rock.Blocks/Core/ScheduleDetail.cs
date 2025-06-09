@@ -271,7 +271,7 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -290,7 +290,7 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: false );
 
             return bag;
         }
@@ -350,7 +350,7 @@ namespace Rock.Blocks.Core
                 {
                     entity.LoadAttributes( rockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: false );
                 } );
 
             return true;
@@ -388,6 +388,7 @@ namespace Rock.Blocks.Core
                 // Cancelling on Add, and we know the parentCategoryId, so we are probably in treeview mode, so navigate to the current page
                 var qryParams = new Dictionary<string, string>();
                 qryParams["CategoryId"] = parentCategoryId.ToString();
+                qryParams["ScheduleId"] = null;
                 return this.GetCurrentPageUrl( qryParams );
             }
             else

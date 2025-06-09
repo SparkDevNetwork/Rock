@@ -24,6 +24,8 @@ using System.Web.UI.WebControls;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security.SecurityGrantRules;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -33,9 +35,10 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field Type to select a single (or null) workflow filtered by a selected workflow type
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.WORKFLOW )]
-    public class WorkflowFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType
+    public class WorkflowFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType, ISecurityGrantFieldType
     {
         #region Configuration
 
@@ -249,6 +252,32 @@ namespace Rock.Field.Types
             {
                 new ReferencedProperty( EntityTypeCache.GetId<Model.Workflow>().Value, nameof( Model.Workflow.Name ) )
             };
+        }
+
+        #endregion
+
+        #region ISecurityGrantFieldType
+
+        /// <inheritdoc/>
+        public void AddRulesToSecurityGrant( SecurityGrant grant, Dictionary<string, string> privateConfigurationValues )
+        {
+            var workflowTypeId = privateConfigurationValues.GetValueOrDefault( WORKFLOW_TYPE_KEY, "" ).AsIntegerOrNull();
+
+            if ( workflowTypeId.HasValue )
+            {
+                var workflowType = WorkflowTypeCache.Get( workflowTypeId.Value );
+
+                if ( workflowType != null )
+                {
+                    grant.AddRule( new EntitySecurityGrantRule( workflowType.TypeId, workflowType.Id ) );
+                }
+            }
+            else
+            {
+                var workflowTypeEntityType = EntityTypeCache.Get<WorkflowType>();
+
+                grant.AddRule( new EntityTypeSecurityGrantRule( workflowTypeEntityType.Id ) );
+            }
         }
 
         #endregion

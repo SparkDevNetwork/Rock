@@ -1,0 +1,127 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <MobilePreview>
+        <div class="sms-preview">
+            <div class="sms-header">
+                <i class="fa fa-chevron-left fa-lg back-button"></i>
+                <div class="sms-header-from">
+                    <div>
+                        <i class="fas fa-user-circle-o fa-2x"></i>
+                    </div>
+                    <span class="text-xs">{{ smsFromNumberName }}</span>
+                </div>
+            </div>
+
+            <div class="sms-body">
+                <div class="text-xs text-muted text-center mb-2">Yesterday 9:41</div>
+
+                <div class="sms-message">
+                    <svg width="17" height="21" viewBox="0 0 17 21" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M16.3878 20.1846C11.1878 20.9846 6.05449 18.1212 4.38783 16.2879C6.1057 12.1914 -4.50009 2.24186 2.49991 2.24148C4.11852 2.24148 5.50098 -1.9986 11.3878 1.1846C11.409 2.47144 11.3878 6.92582 11.3878 7.6842C11.3878 18.1842 17.3878 19.5813 16.3878 20.1846Z" />
+                    </svg>
+
+                    <div class="sms-text">
+                        {{ smsMessage }}
+                    </div>
+
+                    <div v-if="smsAttachmentLinks?.length"
+                         class="sms-attachments">
+                        <img v-for="smsAttachmentLink in smsAttachmentLinks"
+                             :key="smsAttachmentLink.url"
+                             :src="smsAttachmentLink.url"
+                             :alt="smsAttachmentLink.fileName || undefined" />
+                    </div>
+                </div>
+
+                <div class="text-xs text-muted text-right mt-1">Read 10:02</div>
+            </div>
+        </div>
+    </MobilePreview>
+</template>
+
+<style scoped>
+.sms-preview {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+}
+
+.sms-header {
+    background-color: var(--color-interface-softer);
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    position: relative;
+}
+
+.back-button {
+    color: var(--color-interface-soft);
+    position: absolute;
+}
+
+.sms-header-from {
+    text-align: center;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+.sms-body {
+    flex: 1;
+    overflow-y: auto;
+    background-color: var(--color-interface-softest);
+    padding: var(--spacing-medium);
+}
+
+.sms-message {
+    position: relative;
+    border-radius: var(--rounded-xlarge);
+    background-color: var(--color-info-strong);
+    color: var(--color-info-soft);
+    padding: var(--spacing-small);
+    font-size: var(--font-size-small);
+    /* Set a minimum height twice the size of the font size to style empty messages. */
+    min-height: calc(var(--font-size-small) + var(--font-size-small));
+}
+
+.sms-message svg {
+    position: absolute;
+    right: -5px;
+    bottom: -1px;
+    fill: var(--color-info-strong);
+}
+
+.sms-attachments img {
+    width: 100%;
+    height: auto;
+    display: block;
+    margin-top: var(--spacing-xsmall);
+}
+
+.sms-text {
+    overflow-wrap: break-word;
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import MobilePreview from "./mobilePreview.partial.obs";
+    import { BinaryFileAttachment } from "./types.partial";
+
+    defineProps({
+        smsMessage: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        smsFromNumberName: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        smsAttachmentLinks: {
+            type: Object as PropType<BinaryFileAttachment[]>,
+            required: true
+        }
+    });
+</script>

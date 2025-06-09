@@ -54,8 +54,6 @@ namespace Rock.Blocks.Lms
         private static class PageParameterKey
         {
             public const string LearningProgramCompletionId = "LearningProgramCompletionId";
-            public const string AutoEdit = "autoEdit";
-            public const string ReturnUrl = "returnUrl";
         }
 
         private static class NavigationUrlKey
@@ -122,7 +120,7 @@ namespace Rock.Blocks.Lms
                 return;
             }
 
-            box.IsEditable = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
             entity.LoadAttributes( RockContext );
 
@@ -170,7 +168,7 @@ namespace Rock.Blocks.Lms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -185,7 +183,7 @@ namespace Rock.Blocks.Lms
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
@@ -212,7 +210,7 @@ namespace Rock.Blocks.Lms
                 {
                     entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
@@ -221,7 +219,6 @@ namespace Rock.Blocks.Lms
         /// <inheritdoc/>
         protected override LearningProgramCompletion GetInitialEntity()
         {
-            //return new LearningProgramCompletionService( RockContext ).GetInclude( PageParameterKey.LearningProgramCompletionId, a => a.PersonAlias.Person );
             return GetInitialEntity<LearningProgramCompletion, LearningProgramCompletionService>( RockContext, PageParameterKey.LearningProgramCompletionId );
         }
 
@@ -263,9 +260,9 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                error = ActionBadRequest( $"Not authorized to edit ${LearningProgramCompletion.FriendlyTypeName}." );
+                error = ActionBadRequest( $"Not authorized to edit {LearningProgramCompletion.FriendlyTypeName}." );
                 return false;
             }
 
@@ -331,12 +328,6 @@ namespace Rock.Blocks.Lms
             var isNew = entity.Id == 0;
 
             RockContext.SaveChanges();
-
-            var returnPageUrl = PageParameter( PageParameterKey.ReturnUrl ) ?? string.Empty;
-            if ( returnPageUrl.Length > 0 )
-            {
-                return ActionOk( returnPageUrl );
-            }
 
             if ( isNew )
             {

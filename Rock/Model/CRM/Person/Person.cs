@@ -20,6 +20,7 @@ using Rock.Enums.Crm;
 using Rock.Lava;
 using Rock.UniversalSearch;
 using Rock.Utility.Enums;
+
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -37,6 +38,7 @@ namespace Rock.Model
     [RockDomain( "CRM" )]
     [Table( "Person" )]
     [DataContract]
+    [CodeGenerateRest( ~Enums.CodeGenerateRestEndpoint.DeleteItem, DisableEntitySecurity = true )]
     [Analytics( true, true )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.PERSON )]
     public partial class Person : Model<Person>, IRockIndexable
@@ -102,7 +104,7 @@ namespace Rock.Model
         public int? RecordStatusReasonValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the Id of the Defined Value <see cref="Rock.Model.DefinedValue"/> representing the connection status of the Person.
+        /// Gets or sets the Id of the Connection Status <see cref="Rock.Model.DefinedValue"/> representing the connection status of the Person.
         /// </summary>
         /// <value>
         /// A <see cref="System.Int32"/> representing the connection status of the Person.
@@ -110,6 +112,16 @@ namespace Rock.Model
         [DataMember]
         [DefinedValue( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS )]
         public int? ConnectionStatusValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Id of the Record Source <see cref="Rock.Model.DefinedValue"/> representing the source of this entity
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source <see cref="Rock.Model.DefinedValue"/> representing the source of this entity.
+        /// </value>S
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
+        public int? RecordSourceValueId { get; set; }
 
         /// <summary>
         /// Gets or sets the Id of the Defined Value <see cref="Rock.Model.DefinedValue"/> representing the reason a record needs to be reviewed.
@@ -582,7 +594,7 @@ namespace Rock.Model
         public int? ContributionFinancialAccountId { get; set; }
 
         /// <summary>
-        /// Gets or sets the person's account protection profile, which is used by the duplication detection and merge processes.
+        /// Gets or sets the person's account protection profile, which determines the level of security applied to their account. Higher levels enforce stricter safeguards and limit automated changes.
         /// </summary>
         /// <value>
         /// The account protection profile.
@@ -723,6 +735,36 @@ namespace Rock.Model
 
         private int? _primaryAliasId;
 
+        /// <summary>
+        /// Gets the <see cref="Rock.Model.PersonAlias">primary alias</see> identifier.
+        /// </summary>
+        /// <value>
+        /// The primary alias identifier.
+        /// </value>
+        [DataMember]
+        public Guid? PrimaryAliasGuid
+        {
+            get => _primaryAliasGuid ?? PrimaryAlias?.Guid;
+            set => _primaryAliasGuid = value;
+        }
+
+        private Guid? _primaryAliasGuid;
+
+        /// <summary>
+        /// Gets or sets whether the person's profile is visible in chat. If <see langword="null"/> then the system
+        /// default will be used.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatProfilePublic { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether the person can receive direct messages from anybody in the external chat system.
+        /// Otherwise, only people that are members of a shared, non-public chat channel may initiate a new direct
+        /// message with this person. If <see langword="null"/> then the system default will be used.
+        /// </summary>
+        [DataMember]
+        public bool? IsChatOpenDirectMessageAllowed { get; set; }
+
         #endregion
 
         #region Constructors
@@ -849,6 +891,15 @@ namespace Rock.Model
         /// </value>
         [DataMember]
         public virtual DefinedValue RecordStatusReasonValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the record source.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValue"/> object representing the record source.
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue RecordSourceValue { get; set; }
 
         /// <summary>
         /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> representing the RecordType.
@@ -1026,6 +1077,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ConnectionStatusValue ).WithMany().HasForeignKey( p => p.ConnectionStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordStatusValue ).WithMany().HasForeignKey( p => p.RecordStatusValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordStatusReasonValue ).WithMany().HasForeignKey( p => p.RecordStatusReasonValueId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.RecordSourceValue ).WithMany().HasForeignKey( p => p.RecordSourceValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.RecordTypeValue ).WithMany().HasForeignKey( p => p.RecordTypeValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ReviewReasonValue ).WithMany().HasForeignKey( p => p.ReviewReasonValueId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.SuffixValue ).WithMany().HasForeignKey( p => p.SuffixValueId ).WillCascadeOnDelete( false );

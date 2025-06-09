@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -25,6 +26,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -37,7 +41,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on based on the phone type and messaging capability" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Phone Number" )]
-    [Rock.SystemGuid.EntityTypeGuid( "95CBCA37-47E7-477C-A5F6-77C6E6B99244")]
+    [Rock.SystemGuid.EntityTypeGuid( "95CBCA37-47E7-477C-A5F6-77C6E6B99244" )]
     public class HasPhoneFilter : DataFilterComponent
     {
         #region Properties
@@ -78,9 +82,69 @@ namespace Rock.Reporting.DataFilter.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasPhoneFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            var phoneTypeOptions = new List<ListItemBag>
+            {
+                new ListItemBag { Text = "Any Phone", Value = string.Empty }
+            };
+
+            var phoneTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_PHONE_TYPE.AsGuid() )
+                .DefinedValues
+                .OrderBy( pt => pt.Order )
+                .ThenBy( pt => pt.Value )
+                .Select( pt => new ListItemBag
+                {
+                    Text = pt.Value.EndsWith( "Phone" ) ? pt.Value : pt.Value + " Phone",
+                    Value = pt.Guid.ToString()
+                } )
+                .ToList();
+
+            phoneTypeOptions = phoneTypeOptions.Concat( phoneTypes ).ToList();
+            data.Add( "phoneTypeOptions", phoneTypeOptions.ToCamelCaseJson( false, true ) );
+
+
+            var selections = selection.Split( '|' );
+            if ( selections.Count() >= 3 )
+            {
+                data.Add( "hasPhoneType", selections[0] );
+                data.Add( "phoneType", selections[1] );
+                data.Add( "hasSMS", selections[2] );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var hasPhoneOfType = data.GetValueOrDefault( "hasPhoneType", "True" );
+            var phoneType = data.GetValueOrDefault( "phoneType", "" );
+            var hasSms = data.GetValueOrDefault( "hasSMS", "" );
+
+            return $"{hasPhoneOfType}|{phoneType}|{hasSms}";
+        }
+
+        #endregion
+
         #region Public Methods
 
-#if REVIEW_WEBFORMS
+#if WEBFORMS
+
         /// <summary>
         /// Create the controls for the phone number type list and the Has SMS selection
         /// </summary>
@@ -207,6 +271,7 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
         }
+
 #endif
 
         /// <summary>

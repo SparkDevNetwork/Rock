@@ -19,7 +19,9 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using System.Data.Entity.SqlServer;
 using System.Linq;
+
 using Rock.Data;
+using Rock.Security;
 using Rock.Web.Cache;
 
 #if REVIEW_NET5_0_OR_GREATER
@@ -157,7 +159,7 @@ namespace Rock.Model
                 matrixAttributeCache.Name,
                 typeof( Attribute ),
                 matrixAttributeCache.Id,
-                dbContext.GetCurrentPersonAlias()?.Id,
+                dbContext.GetCurrentPersonAliasId(),
                 dbContext.SourceOfChange );
         }
 
@@ -175,5 +177,12 @@ namespace Rock.Model
         }
 
         #endregion History
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => AttributeMatrix ?? base.ParentAuthority;
+
+        #endregion
     }
 }

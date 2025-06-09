@@ -36,6 +36,7 @@ namespace Rock.Field.Types
     /// <summary>
     /// Data View Field Type.  Stored as DataViews's Guid
     /// </summary>
+    [FieldTypeUsage( FieldTypeUsage.System )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.DATA_VIEW )]
     public class DataViewFieldType : FieldType, IEntityFieldType, IEntityReferenceFieldType

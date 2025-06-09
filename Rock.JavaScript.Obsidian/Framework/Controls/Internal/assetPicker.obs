@@ -34,20 +34,19 @@
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import AssetManager from "@Obsidian/Controls/fileAssetManager.obs";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { FileAsset } from "@Obsidian/ViewModels/Controls/fileAsset";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<FileAsset>
+            type: Object as PropType<FileAsset | undefined>
         },
 
         ...standardRockFormFieldProps
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: ListItemBag): void
+        (e: "update:modelValue", value: FileAsset | undefined): void
     }>();
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);

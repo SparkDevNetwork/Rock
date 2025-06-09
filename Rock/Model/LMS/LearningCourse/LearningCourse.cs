@@ -31,6 +31,7 @@ namespace Rock.Model
     [RockDomain( "LMS" )]
     [Table( "LearningCourse" )]
     [DataContract]
+    [CodeGenerateRest]
     [Rock.SystemGuid.EntityTypeGuid( SystemGuid.EntityType.LEARNING_COURSE )]
     public partial class LearningCourse : Model<LearningCourse>, IHasActiveFlag, IOrdered, ICategorized
     {
@@ -255,7 +256,14 @@ namespace Rock.Model
         /// </returns>
         public override string ToString()
         {
-            return $"{Name}: {CourseCode}";
+            if ( CourseCode.IsNotNullOrWhiteSpace() )
+            {
+                return $"{Name} ({CourseCode})";
+            }
+            else
+            {
+                return Name;
+            }
         }
 
         #endregion

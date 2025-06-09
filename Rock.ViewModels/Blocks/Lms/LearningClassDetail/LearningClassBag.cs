@@ -62,6 +62,11 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         public ListItemBag GradingSystem { get; set; }
 
         /// <summary>
+        /// Gets or sets the GroupCapacity (maximum allowed students override).
+        /// </summary>
+        public int? GroupCapacity { get; set; }
+
+        /// <summary>
         /// Gets or sets a flag indicating if this is an active group. This value is required.
         /// </summary>
         public bool IsActive { get; set; }
@@ -74,7 +79,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
         /// <summary>
         /// Gets or Sets the Location that is associated with the LearningClass.
         /// </summary>
-        public ListItemBag Location { get; set; }
+        public LearningClassLocationBag Location { get; set; }
 
         /// <summary>
         /// Gets or sets the Name of the Group. This property is required.
@@ -105,7 +110,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassDetail
     /// <summary>
     /// The facilitator details for the Learning Class Detail block.
     /// </summary>
-    public class LearningClassFacilitatorBag: EntityBagBase
+    public class LearningClassFacilitatorBag : EntityBagBase
     {
         /// <summary>
         /// Gets or sets the email for the facilitator.

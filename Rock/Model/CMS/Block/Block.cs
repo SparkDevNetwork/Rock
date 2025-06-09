@@ -41,6 +41,8 @@ namespace Rock.Model
     [RockDomain( "CMS" )]
     [Table( "Block" )]
     [DataContract]
+    [CodeGenerateRest]
+    [EnableAttributeQualification( nameof( Id ) )]
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.BLOCK )]
     public partial class Block : Model<Block>, IOrdered, ICacheable
     {
@@ -106,6 +108,7 @@ namespace Rock.Model
         /// </example>
         [Required]
         [DataMember( IsRequired = true )]
+        [EnableAttributeQualification]
         public int BlockTypeId { get; set; }
 
         /// <summary>

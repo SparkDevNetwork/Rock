@@ -68,6 +68,8 @@ export const DefinedType = {
      * The DefinedValue.Description will just be any description, such as 'Rock Solid Church SMS Number'.
      */
     CommunicationSmsFrom: "611BDE1F-7405-4D16-8626-CCFEDB0E62BE",
+    /** Guid for the Communication Topic. */
+    CommunicationTopic: "A798492C-F0A4-496E-9142-97D9336C3E99",
     /** Guid for Content Channel Audience Type */
     ContentChannelAudienceType: "799301A3-2026-4977-994E-45DC68502559",
     /** The content component template */
@@ -196,6 +198,8 @@ export const DefinedType = {
     ProjectType: "B7842AF3-6F04-495E-9A6C-F403D06C02F3",
     /** Protect My Ministry MVR jurisdiction codes */
     ProtectMyMinistryMvrJurisdictionCodes: "2F8821E8-05B9-4CD5-9FA4-303662AAC85D",
+    /** Guid for the types of Record Sources (such as external website, event registration, etc.) */
+    RecordSourceType: "B8F781C5-6690-4E5E-8BCE-75CC62DB0EBB",
     /** The REST allowed domains */
     RestApiAllowedDomains: "DF7C8DF7-49F9-4858-9E5D-20842AF65AD8",
     /**
@@ -203,6 +207,11 @@ export const DefinedType = {
      * of saved configuration settings for quickly starting up kiosks.
      */
     SavedCheckinConfigurations: "F986008C-99BB-4C48-8A6E-38C8A121D75B",
+    /**
+     * The "Saved Check-in Configurations" defined type that provides a list
+     * of saved configuration settings for quickly starting up kiosks.
+     */
+    SavedKioskTemplates: "F986008C-99BB-4C48-8A6E-38C8A121D75B",
     /** The schedule type */
     ScheduleType: "831648D4-2E2C-4940-8358-9B426AEDB460",
     /** The school grades defined type, which has values that determine which grade the person is based. The Value of the DefinedValue is the GradeOffset. */

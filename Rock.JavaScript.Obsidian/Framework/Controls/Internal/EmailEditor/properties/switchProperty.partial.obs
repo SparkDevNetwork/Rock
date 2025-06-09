@@ -1,0 +1,59 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Switch v-model="internalBooleanValue"
+            v-bind="$attrs"
+            :disableLabel="!label"
+            :label="label">
+        <template #besideLabel>
+            <ClearStyleButton v-if="!isNullish(valueProvider.value)"
+                              @click="onClearClicked" />
+        </template>
+    </Switch>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import ClearStyleButton from "../clearStyleButton.partial.obs";
+    import { ValueProvider } from "../types.partial";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        label: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        valueProvider: {
+            type: Object as PropType<ValueProvider<boolean | null | undefined>>,
+            required: true
+        }
+    });
+
+    // #region Computed Props
+
+    // Set the value from the element OR from the input CSS styles.
+    const internalBooleanValue = computed<boolean>({
+        get(): boolean {
+            return !!props.valueProvider.value;
+        },
+        set(newValue: boolean): void {
+            props.valueProvider.value = newValue;
+        }
+    });
+
+    // #endregion Computed Props
+
+    // #region Event Handlers
+
+    /**
+     * Event handler for the clear styles button being clicked.
+     *
+     * Deletes the property from the CSS style declarations.
+     */
+    function onClearClicked(): void {
+        props.valueProvider.value = null;
+    }
+
+    // #endregion
+</script>

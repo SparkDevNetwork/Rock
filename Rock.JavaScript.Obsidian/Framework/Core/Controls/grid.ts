@@ -20,7 +20,7 @@ import { NumberFilterMethod } from "@Obsidian/Enums/Core/Grid/numberFilterMethod
 import { DateFilterMethod } from "@Obsidian/Enums/Core/Grid/dateFilterMethod";
 import { PickExistingFilterMethod } from "@Obsidian/Enums/Core/Grid/pickExistingFilterMethod";
 import { TextFilterMethod } from "@Obsidian/Enums/Core/Grid/textFilterMethod";
-import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength, BooleanSearchBag } from "@Obsidian/Types/Controls/grid";
+import { ColumnFilter, ColumnDefinition, IGridState, StandardFilterProps, StandardCellProps, IGridCache, IGridRowCache, ColumnSort, SortValueFunction, FilterValueFunction, QuickFilterValueFunction, StandardColumnProps, StandardHeaderCellProps, EntitySetOptions, ExportValueFunction, StandardSkeletonCellProps, GridLength, BooleanSearchBag, FilterValuesFunction } from "@Obsidian/Types/Controls/grid";
 import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 import { extractText, getVNodeProp, getVNodeProps } from "@Obsidian/Utility/component";
 import { DayOfWeek, RockDateTime } from "@Obsidian/Utility/rockDateTime";
@@ -141,6 +141,11 @@ export const standardColumnProps: StandardColumnProps = {
         required: false
     },
 
+    filterValues: {
+        type: Object as PropType<FilterValuesFunction>,
+        required: false
+    },
+
     exportValue: {
         type: Function as PropType<ExportValueFunction>,
         required: false
@@ -194,6 +199,11 @@ export const standardColumnProps: StandardColumnProps = {
     width: {
         type: String as PropType<string>,
         required: false
+    },
+
+    wrapped: {
+        type: Boolean as PropType<boolean>,
+        default: false
     },
 
     disableSort: {
@@ -598,7 +608,7 @@ export function dateFilterMatches(needle: unknown, haystack: unknown): boolean {
 // #region Entity Sets
 
 /**
- * Gets the entity set bag that can be send to the server to create an entity
+ * Gets the entity set bag that can be sent to the server to create an entity
  * set representing the selected items in the grid.
  *
  * @param grid The grid state that will be used as the source data.
@@ -858,7 +868,16 @@ function getOrAddRowCacheValue<T>(row: Record<string, unknown>, column: ColumnDe
 function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
     const attributes = getVNodeProp<AttributeFieldDefinitionBag[]>(node, "attributes");
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
-    const skeletonComponent = getVNodeProp<Component>(node, "skeletonComponent");
+    const skeletonComponent = getVNodeProp<Component>(node, "skeletonComponent") ?? defaultCell;
+    const formatComponent = getVNodeProp<Component>(node, "formatComponent") ?? defaultCell;
+    const exportValue = getVNodeProp<ExportValueFunction>(node, "exportValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const sortValue = getVNodeProp<SortValueFunction>(node, "sortValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const quickFilterValue = getVNodeProp<QuickFilterValueFunction>(node, "quickFilterValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
+    const filterValue = getVNodeProp<FilterValueFunction>(node, "filterValue")
+        ?? ((r, c) => c.field ? String(r[c.field]) : undefined);
 
     if (!attributes) {
         return;
@@ -873,13 +892,13 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
             name: attribute.name,
             title: attribute.title ?? undefined,
             field: attribute.name,
-            sortValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            quickFilterValue: (r, c, g) => getOrAddRowCacheValue(r, c, "quickFilterValue", g, () => c.field ? String(r[c.field]) : undefined),
+            sortValue,
+            quickFilterValue: (r, c, g) => getOrAddRowCacheValue(r, c, "quickFilterValue", g, () => quickFilterValue(r, c, g)),
             filter,
-            filterValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            exportValue: (r, c) => c.field ? String(r[c.field]) : undefined,
-            formatComponent: defaultCell,
-            condensedComponent: defaultCell,
+            filterValue,
+            exportValue,
+            formatComponent: formatComponent,
+            condensedComponent: formatComponent,
             skeletonComponent,
             hideOnScreen: false,
             excludeFromExport: false,
@@ -888,6 +907,7 @@ function buildAttributeColumns(columns: ColumnDefinition[], node: VNode): void {
                 value: 10,
                 unitType: "%"
             },
+            wrapped: false,
             disableSort: false,
             props: {},
             slots: {},
@@ -982,6 +1002,7 @@ function insertCustomColumns(columns: ColumnDefinition[], customColumns: CustomC
                 value: 10,
                 unitType: "%"
             },
+            wrapped: false,
             disableSort: false,
             props: {},
             slots: {},
@@ -1022,6 +1043,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const skeletonComponent = skeletonTemplate ?? getVNodeProp<Component>(node, "skeletonComponent");
     const exportTemplate = node.children?.["export"] as Component | undefined;
     const filter = getVNodeProp<ColumnFilter>(node, "filter");
+    const filterValues = getVNodeProp<FilterValuesFunction>(node, "filterValues");
     const headerClass = getVNodeProp<string>(node, "headerClass");
     const itemClass = getVNodeProp<string>(node, "itemClass");
     const columnType = getVNodeProp<string>(node, "columnType");
@@ -1029,6 +1051,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
     const excludeFromExport = getVNodeProp<boolean>(node, "excludeFromExport") === true || getVNodeProp<string>(node, "excludeFromExport") === "";
     const visiblePriority = getVNodeProp<"xs" | "sm" | "md" | "lg" | "xl">(node, "visiblePriority") || "xs";
     const width = getVNodeProp<string>(node, "width");
+    const wrapped = getVNodeProp<boolean>(node, "wrapped") || false;
     const disableSort = getVNodeProp<boolean>(node, "disableSort") || false;
     const filterPrependComponent = node.children?.["filterPrepend"] as Component | undefined;
 
@@ -1176,6 +1199,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         sortValue,
         disableSort,
         filterValue,
+        filterValues,
         quickFilterValue,
         exportValue,
         hideOnScreen,
@@ -1185,6 +1209,7 @@ function buildColumn(name: string, node: VNode): ColumnDefinition {
         columnType,
         headerClass,
         itemClass,
+        wrapped,
         props: getVNodeProps(node),
         slots: node.children as Record<string, Component> ?? {},
         data: {}
@@ -1304,6 +1329,7 @@ export function getColumnStyles(column: ColumnDefinition): Record<string, string
 
     if (column.width.unitType === "px") {
         styles.flex = `0 0 ${column.width.value}px`;
+        styles.minWidth = `unset`;
     }
     else {
         styles.flex = `1 1 ${column.width.value}%`;
@@ -1976,7 +2002,7 @@ export class GridState implements IGridState {
             const quickFilterMatch = !quickFilterRawValue || columns.some((column): boolean => {
                 const value = column.quickFilterValue(row, column, this);
 
-                if (value === undefined) {
+                if (typeof value !== "string") {
                     return false;
                 }
 
@@ -1990,19 +2016,29 @@ export class GridState implements IGridState {
 
             // Check if the row matches the column specific filters.
             return columns.every(column => {
-                if (!column.filter) {
+                const filter = column.filter;
+
+                if (!filter) {
                     return true;
                 }
 
                 const columnFilterValue = this.columnFilters[column.name];
 
-                if (columnFilterValue === undefined) {
+                if (columnFilterValue === undefined || columnFilterValue === null) {
                     return true;
                 }
 
-                const value: unknown = column.filterValue(row, column, this);
+                if (column.filterValues) {
+                    const values = column.filterValues(row, column, this);
 
-                return column.filter.matches(columnFilterValue, value, column, this);
+                    return values.some(v =>
+                        filter.matches(columnFilterValue, v.value, column, this));
+                }
+                else {
+                    const value = column.filterValue(row, column, this);
+
+                    return filter.matches(columnFilterValue, value, column, this);
+                }
             });
         });
 

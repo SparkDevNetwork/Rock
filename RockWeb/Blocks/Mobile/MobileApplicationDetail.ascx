@@ -404,6 +404,9 @@
                         <div class="col-md-6">
                             <Rock:PagePicker ID="ppEditSmsConversationPage" runat="server" Label="SMS Conversation Page" Help="If you are using the SMS conversations, then set this to the page that contains the SMS Conversation block." />
                         </div>
+                        <div class="col-md-6">
+                          <Rock:PagePicker ID="ppEditChatPage" runat="server" Label="Chat Page" />
+                      </div>
                     </div>
 
                     <div class="row">
@@ -421,6 +424,12 @@
                             <Rock:CategoryPicker ID="cpEditPersonAttributeCategories" runat="server" Label="Person Attribute Categories" Help="All attributes in selected categories will be sent to the client and made available remotely." AllowMultiSelect="true" />
                         </div>
                     </div>
+                    <div class="row">
+                        <div class="col-md-12">
+                            <Rock:AttributeValuesContainer ID="avcAttributes" runat="server" />
+                        </div>
+                    </div>
+
 
                     <Rock:PanelWidget ID="pwEditAdvancedSettings" runat="server" Title="Advanced Settings">
                         <Rock:RockCheckBox ID="cbEnableNotificationsAutomatically" runat="server" Label="Enable Notifications Automatically" Help="When turned on the mobile application will automatically request push notifications permission from the user at launch." />

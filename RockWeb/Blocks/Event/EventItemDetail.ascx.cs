@@ -571,7 +571,7 @@ namespace RockWeb.Blocks.Event
             if ( definedType != null )
             {
                 ddlAudience.DataSource = definedType.DefinedValues
-                    .Where( v => !AudiencesState.Contains( v.Id ) )
+                    .Where( v => v.IsActive && !AudiencesState.Contains( v.Id ) )
                     .ToList();
                 ddlAudience.DataBind();
             }

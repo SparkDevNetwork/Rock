@@ -18,6 +18,7 @@ using System;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Model;
 
 namespace Rock.Web.Cache
@@ -118,6 +119,15 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool CanManageMembers { get; private set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether this instance can take attendance.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if this instance can take attendance; otherwise, <c>false</c>.
+        /// </value>
+        [DataMember]
+        public bool CanTakeAttendance { get; private set; }
+
         /// <inheritdoc cref="GroupTypeRole.IsExcludedFromPeerNetwork"/>
         [DataMember]
         public bool IsExcludedFromPeerNetwork { get; private set; }
@@ -125,6 +135,10 @@ namespace Rock.Web.Cache
         /// <inheritdoc cref="GroupTypeRole.IsCheckInAllowed"/>
         [DataMember]
         public bool IsCheckInAllowed { get; private set; }
+
+        /// <inheritdoc cref="GroupTypeRole.ChatRole"/>
+        [DataMember]
+        public ChatRole ChatRole { get; set; }
 
         #endregion
 
@@ -180,8 +194,10 @@ namespace Rock.Web.Cache
             CanView = role.CanView;
             CanEdit = role.CanEdit;
             CanManageMembers = role.CanManageMembers;
+            CanTakeAttendance = role.CanTakeAttendance;
             IsExcludedFromPeerNetwork = role.IsExcludedFromPeerNetwork;
             IsCheckInAllowed = role.IsCheckInAllowed;
+            ChatRole = role.ChatRole;
         }
 
         /// <summary>

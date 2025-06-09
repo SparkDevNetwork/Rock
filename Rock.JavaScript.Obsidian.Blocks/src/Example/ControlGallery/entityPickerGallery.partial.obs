@@ -21,11 +21,11 @@
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
-    import GalleryAndResult from "./galleryAndResult.partial.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import EntityPicker from "@Obsidian/Controls/entityPicker.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { getSfcControlImportPath } from "./utils.partial";
+    import { getSfcControlImportPath } from "./common/utils.partial";
 
     const value = ref("{\"value\":\"50b94dc8-1a39-4537-93cf-93a5717f06a9\",\"text\":\"Bus 1\"}");
     const entityType = ref({

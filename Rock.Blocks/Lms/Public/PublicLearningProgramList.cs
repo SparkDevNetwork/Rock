@@ -29,13 +29,11 @@ namespace Rock.Blocks.Lms
     /// <summary>
     /// Displays a list of public learning programs.
     /// </summary>
-
     [DisplayName( "Public Learning Program List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of public learning programs." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-
 
     [TextField( "Page Title",
         Description = "Provide a clear, welcoming title for the Learning Hub homepage. Example: 'Grow Together in Faith.'",
@@ -53,16 +51,16 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.PageDescription,
         DefaultValue = AttributeDefault.PageDescription )]
 
-    [FileField(
-        SystemGuid.BinaryFiletype.DEFAULT,
+    [ImageField(
         "Banner Image",
         Description = "Add a welcoming banner image to visually enhance the homepage. Ideal size: 1200x400 pixels; use high-quality images.",
         Key = AttributeKey.BannerImage,
+        IsRequired = false,
         DefaultValue = AttributeDefault.BannerImage )]
 
     [CodeEditorField( "Lava Template",
         Key = AttributeKey.LavaTemplate,
-        Description = "The lava template to use to render the page. Merge fields include: Programs, ShowCompletionStatus, BannerImageGuid, PageTitle, PageDescription, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
+        Description = "The lava template to use to render the page. Merge fields include: Programs (a list of ProgramInfos), ShowCompletionStatus, BannerImageGuid, PageTitle, PageDescription, CurrentPerson and other Common Merge Fields. <span class='tip tip-lava'></span>",
         EditorMode = CodeEditorMode.Lava,
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 400,
@@ -83,13 +81,13 @@ namespace Rock.Blocks.Lms
         Key = AttributeKey.ProgramCategories,
         Order = 3 )]
 
-    [CustomDropdownListField(
+    [BooleanField(
         "Show Completion Status",
         Key = AttributeKey.ShowCompletionStatus,
         Description = "Determines if the individual's completion status should be shown.",
-        ListSource = "Show,Hide",
+        ControlType = Field.Types.BooleanFieldType.BooleanControlType.Toggle,
         IsRequired = true,
-        DefaultValue = "Show",
+        DefaultBooleanValue = true,
         Order = 4 )]
 
     [BooleanField(
@@ -102,7 +100,7 @@ namespace Rock.Blocks.Lms
         Order = 5 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "59d82730-e4a7-4aaf-bb1e-bec4b7aa8624" )]
-    [Rock.SystemGuid.BlockTypeGuid( "2fc656da-7f5d-41b3-ad18-bfe692cfca57" )]
+    [Rock.SystemGuid.BlockTypeGuid( "DA1460D8-E895-4B23-8A8E-10EBBED3990F" )]
     public class PublicLearningProgramList : RockBlockType
     {
         #region Keys
@@ -171,14 +169,15 @@ namespace Rock.Blocks.Lms
             <p class=""text-muted""> The following types of classes are available. </p>
         </div>
     </div>
-    <div> //- Main Body - Container for course grid
+    <div> //- MAIN BODY - Container for course grid
+        
         <div class=""lms-grid""> //- Grid for Cards
 
             {% for program in Programs %}
             
             <div class=""card""> 
                 
-                //-1 IMAGE
+                //- 1 IMAGE
                 {% if program.ImageFileGuid %}
                 
                     <img src=""/GetImage.ashx?guid={{ program.ImageFileGuid }}"" class=""card-img-top card-img-h object-cover""
@@ -189,14 +188,14 @@ namespace Rock.Blocks.Lms
                         <i class=""fa fa-image fa-2x o-30""></i> </div>
                 {% endif %}
                 
-                //-2 TITLE
+                //- 2 TITLE
                 <div class=""card-body pb-0 pt-0"">
-                    <h4 class=""card-title mb-0"">{{ program.Entity.PublicName }}</h4>
+                    <h4 class=""card-title mb-0"">{{ program.PublicName }}</h4>
                 </div>
                 
-                //-3 BODY TEXT
+                //- 3 BODY TEXT
                 <div class=""card-body pt-0 pb-0"">
-                    <p class=""line-clamp-3"">{{ program.Entity.Summary }}</p>
+                    <p class=""line-clamp-3"">{{ program.Summary }}</p>
                 </div>
                 
                 //- 4 CATEGORY
@@ -215,7 +214,7 @@ namespace Rock.Blocks.Lms
                 
                 {% endif %}
                 
-                //-5 FOOTER
+                //- 5 FOOTER
                 <div class=""card-footer d-flex justify-content-between"">
                     <a href=""{{ program.CoursesLink }}"" class=""btn btn-default"">Learn More</a>
                     
@@ -226,7 +225,7 @@ namespace Rock.Blocks.Lms
                                 <h4 class=""m-0""><span class=""label label-success"">Completed</span></h4>
                             </div>
                             
-                            {% elseif program.CompletionStatus == 'Pending' %}
+                        {% elseif program.CompletionStatus == 'Pending' %}
                             <div class=""d-flex align-items-center"">
                                 <h4 class=""m-0""><span class=""label label-warning"">Enrolled</span></h4>
                             </div>
@@ -239,7 +238,6 @@ namespace Rock.Blocks.Lms
         </div>
     </div>
 </div>
-
 ";
         }
 
@@ -270,11 +268,10 @@ namespace Rock.Blocks.Lms
         /// <param name="rockContext">The rock context.</param>
         private void SetBoxInitialEntityState( PublicLearningProgramListBlockBox box )
         {
-            box.ProgramsHtml = GetInitialHtmlContent();
         }
 
         /// <summary>
-        /// Provide html to the block for it's initial rendering.
+        /// Provide HTML to the block for it's initial rendering.
         /// </summary>
         /// <returns>The HTML content to initially render.</returns>
         protected override string GetInitialHtmlContent()
@@ -285,23 +282,23 @@ namespace Rock.Blocks.Lms
 
             foreach ( var program in programs )
             {
-                program.CoursesLink = courseDetailUrlTemplate.Replace( "((Key))", program.Entity.IdKey );
+                program.CoursesLink = courseDetailUrlTemplate.Replace( "((Key))", program.IdKey );
             }
 
             var mergeFields = this.RequestContext.GetCommonMergeFields();
             mergeFields.Add( "Programs", programs );
             mergeFields.Add( "ShowCompletionStatus", ShowCompletionStatus() );
             mergeFields.Add( "BannerImageGuid", GetAttributeValue( AttributeKey.BannerImage ) );
-            mergeFields.Add( "PageDescription", GetAttributeValue( AttributeKey.PageDescription) );
+            mergeFields.Add( "PageDescription", GetAttributeValue( AttributeKey.PageDescription ) );
             mergeFields.Add( "PageTitle", GetAttributeValue( AttributeKey.PageTitle ) );
-            
+
             var template = GetAttributeValue( AttributeKey.LavaTemplate ) ?? string.Empty;
             return template.ResolveMergeFields( mergeFields );
         }
 
         private bool ShowCompletionStatus()
         {
-            return GetAttributeValue( AttributeKey.ShowCompletionStatus ) == "Show";
+            return GetAttributeValue( AttributeKey.ShowCompletionStatus ).AsBoolean();
         }
 
         private List<Rock.Model.LearningProgramService.PublicLearningProgramBag> GetPrograms()

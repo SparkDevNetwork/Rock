@@ -183,12 +183,12 @@ namespace Rock.Blocks.Engagement.Steps
         public BlockActionResult GetData( SlidingDateRangeBag dateRange, int maxLevels, Guid campus )
         {
             List<StepTypeCache> stepTypes = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ).AsInteger() ).StepTypes;
-            var nodeResults = new List<FlowNodeDiagramNodeBag>();
+            var nodeResults = new List<SankeyDiagramNodeBag>();
             int order = 0;
 
             foreach ( StepTypeCache step in stepTypes )
             {
-                nodeResults.Add( new FlowNodeDiagramNodeBag
+                nodeResults.Add( new SankeyDiagramNodeBag
                 {
                     Id = step.Id,
                     Order = ++order,
@@ -199,7 +199,7 @@ namespace Rock.Blocks.Engagement.Steps
 
             var parameters = GetParameters( maxLevels, dateRange, campus );
             var flowEdgeData = new DbService( new RockContext() ).GetDataTableFromSqlCommand( "spSteps_StepFlow", System.Data.CommandType.StoredProcedure, parameters );
-            var flowEdgeResults = new List<FlowNodeDiagramEdgeBag>();
+            var flowEdgeResults = new List<SankeyDiagramEdgeBag>();
 
             foreach ( DataRow flowEdgeRow in flowEdgeData.Rows )
             {
@@ -211,7 +211,7 @@ namespace Rock.Blocks.Engagement.Steps
                 var source = stepTypes.FirstOrDefault( stepType => stepType.Id == sourceId );
                 var target = stepTypes.FirstOrDefault( stepType => stepType.Id == targetId );
 
-                flowEdgeResults.Add( new FlowNodeDiagramEdgeBag
+                flowEdgeResults.Add( new SankeyDiagramEdgeBag
                 {
                     TargetId = targetId,
                     SourceId = sourceId,

@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -28,6 +27,7 @@ using Rock.Security;
 using Rock.Tasks;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Crm.SignalTypeDetail;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Crm
@@ -47,7 +47,7 @@ namespace Rock.Blocks.Crm
 
     [Rock.SystemGuid.EntityTypeGuid( "e7b94691-bb91-4995-b2a0-3c3724224250" )]
     [Rock.SystemGuid.BlockTypeGuid( "8b65ee51-4075-4fc0-b1a9-f56c7153aa77" )]
-    public class SignalTypeDetail : RockDetailBlockType
+    public class SignalTypeDetail : RockEntityDetailBlockType<SignalType, SignalTypeBag>
     {
         #region Keys
 
@@ -68,18 +68,14 @@ namespace Rock.Blocks.Crm
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<SignalTypeBag, SignalTypeDetailOptionsBag>();
+            var box = new DetailBlockBox<SignalTypeBag, SignalTypeDetailOptionsBag>();
 
-                SetBoxInitialEntityState( box, rockContext );
+            SetBoxInitialEntityState( box );
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions( box.IsEditable, rockContext );
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<SignalType>();
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions( box.IsEditable );
 
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -87,9 +83,8 @@ namespace Rock.Blocks.Crm
         /// or edit the entity.
         /// </summary>
         /// <param name="isEditable"><c>true</c> if the entity is editable; otherwise <c>false</c>.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <returns>The options that provide additional details to the block.</returns>
-        private SignalTypeDetailOptionsBag GetBoxOptions( bool isEditable, RockContext rockContext )
+        private SignalTypeDetailOptionsBag GetBoxOptions( bool isEditable )
         {
             var options = new SignalTypeDetailOptionsBag();
 
@@ -101,10 +96,9 @@ namespace Rock.Blocks.Crm
         /// valid after storing all the data from the client.
         /// </summary>
         /// <param name="signalType">The SignalType to be validated.</param>
-        /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the SignalType is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateSignalType( SignalType signalType, RockContext rockContext, out string errorMessage )
+        private bool ValidateSignalType( SignalType signalType, out string errorMessage )
         {
             errorMessage = null;
 
@@ -116,10 +110,9 @@ namespace Rock.Blocks.Crm
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<SignalTypeBag, SignalTypeDetailOptionsBag> box, RockContext rockContext )
+        private void SetBoxInitialEntityState( DetailBlockBox<SignalTypeBag, SignalTypeDetailOptionsBag> box )
         {
-            var entity = GetInitialEntity( rockContext );
+            var entity = GetInitialEntity();
 
             if ( entity == null )
             {
@@ -129,13 +122,12 @@ namespace Rock.Blocks.Crm
 
             box.IsEditable = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) || BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
                 // Existing entity was found, prepare for view mode by default.
                 box.Entity = GetEntityBagForView( entity );
-                box.SecurityGrantToken = GetSecurityGrantToken( entity );
             }
             else
             {
@@ -143,13 +135,14 @@ namespace Rock.Blocks.Crm
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( SignalType.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -176,12 +169,8 @@ namespace Rock.Blocks.Crm
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="SignalTypeBag"/> that represents the entity.</returns>
-        private SignalTypeBag GetEntityBagForView( SignalType entity )
+        /// <inheritdoc/>
+        protected override SignalTypeBag GetEntityBagForView( SignalType entity )
         {
             if ( entity == null )
             {
@@ -190,17 +179,13 @@ namespace Rock.Blocks.Crm
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicView( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="SignalTypeBag"/> that represents the entity.</returns>
-        private SignalTypeBag GetEntityBagForEdit( SignalType entity )
+        /// <inheritdoc/>
+        protected override SignalTypeBag GetEntityBagForEdit( SignalType entity )
         {
             if ( entity == null )
             {
@@ -209,60 +194,49 @@ namespace Rock.Blocks.Crm
 
             var bag = GetCommonEntityBag( entity );
 
-            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson );
+            bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
             return bag;
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( SignalType entity, DetailBlockBox<SignalTypeBag, SignalTypeDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( SignalType entity, ValidPropertiesBox<SignalTypeBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.Order ),
-                () => entity.Order = box.Entity.Order );
+            box.IfValidProperty( nameof( box.Bag.Order ),
+                () => entity.Order = box.Bag.Order );
 
-            box.IfValidProperty( nameof( box.Entity.SignalColor ),
-                () => entity.SignalColor = box.Entity.SignalColor );
+            box.IfValidProperty( nameof( box.Bag.SignalColor ),
+                () => entity.SignalColor = box.Bag.SignalColor );
 
-            box.IfValidProperty( nameof( box.Entity.SignalIconCssClass ),
-                () => entity.SignalIconCssClass = box.Entity.SignalIconCssClass );
+            box.IfValidProperty( nameof( box.Bag.SignalIconCssClass ),
+                () => entity.SignalIconCssClass = box.Bag.SignalIconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="SignalType"/> to be viewed or edited on the page.</returns>
-        private SignalType GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override SignalType GetInitialEntity()
         {
-            return GetInitialEntity<SignalType, SignalTypeService>( rockContext, PageParameterKey.SignalTypeId );
+            return GetInitialEntity<SignalType, SignalTypeService>( RockContext, PageParameterKey.SignalTypeId );
         }
 
         /// <summary>
@@ -278,46 +252,9 @@ namespace Rock.Blocks.Crm
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out SignalType entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( SignalType entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out SignalType entity, out BlockActionResult error )
-        {
-            var entityService = new SignalTypeService( rockContext );
+            var entityService = new SignalTypeService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -349,83 +286,6 @@ namespace Rock.Blocks.Crm
             return true;
         }
 
-        #endregion
-
-        #region Block Actions
-
-        /// <summary>
-        /// Gets the box that will contain all the information needed to begin
-        /// the edit operation.
-        /// </summary>
-        /// <param name="key">The identifier of the entity to be edited.</param>
-        /// <returns>A box that contains the entity and any other information required.</returns>
-        [BlockAction]
-        public BlockActionResult Edit( string key )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<SignalTypeBag, SignalTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
-            }
-        }
-
-        /// <summary>
-        /// Saves the entity contained in the box.
-        /// </summary>
-        /// <param name="box">The box that contains all the information required to save.</param>
-        /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
-        [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<SignalTypeBag, SignalTypeDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                var entityService = new SignalTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionForbidden();
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateSignalType( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                RecalculateSignals( rockContext, entity.Id );
-
-                return ActionOk( this.GetParentPageUrl() );
-            }
-        }
-
         /// <summary>
         /// Calculates the top-most signal and updates the person properties for Persons with this SignalType.
         /// </summary>
@@ -443,7 +303,7 @@ namespace Rock.Blocks.Crm
             // If less than 250 people with this signal type then just update them all now,
             // otherwise put something in the rock queue to take care of it.
             //
-            if ( people.Count < 250 ) 
+            if ( people.Count < 250 )
             {
                 new PersonService( rockContext ).Queryable()
                     .Where( p => people.Contains( p.Id ) )
@@ -463,6 +323,78 @@ namespace Rock.Blocks.Crm
             }
         }
 
+        #endregion
+
+        #region Block Actions
+
+        /// <summary>
+        /// Gets the box that will contain all the information needed to begin
+        /// the edit operation.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be edited.</param>
+        /// <returns>A box that contains the entity and any other information required.</returns>
+        [BlockAction]
+        public BlockActionResult Edit( string key )
+        {
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<SignalTypeBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
+        }
+
+        /// <summary>
+        /// Saves the entity contained in the box.
+        /// </summary>
+        /// <param name="box">The box that contains all the information required to save.</param>
+        /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
+        [BlockAction]
+        public BlockActionResult Save( ValidPropertiesBox<SignalTypeBag> box )
+        {
+            var entityService = new SignalTypeService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionForbidden();
+            }
+
+            // Update the entity instance from the information in the bag.  
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateSignalType( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            RecalculateSignals( RockContext, entity.Id );
+
+            return ActionOk( this.GetParentPageUrl() );
+        }
+
         /// <summary>
         /// Deletes the specified entity.
         /// </summary>
@@ -471,81 +403,24 @@ namespace Rock.Blocks.Crm
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new SignalTypeService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new SignalTypeService( rockContext );
-
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                RecalculateSignals( rockContext, entity.Id );
-
-                return ActionOk( this.GetParentPageUrl() );
+                return actionError;
             }
-        }
 
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<SignalTypeBag, SignalTypeDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
             {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
-
-                var refreshedBox = new DetailBlockBox<SignalTypeBag, SignalTypeDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
+                return ActionBadRequest( errorMessage );
             }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            RecalculateSignals( RockContext, entity.Id );
+
+            return ActionOk( this.GetParentPageUrl() );
         }
 
         #endregion

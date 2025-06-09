@@ -95,7 +95,7 @@
 <script setup lang="ts">
     import { PropType, computed, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
-    import { useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useInvokeBlockAction, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
@@ -109,10 +109,11 @@
     import { NoteWatchDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/NoteWatchDetail/noteWatchDetailOptionsBag";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<NoteWatchBag>,
+            type: Object as PropType<ValidPropertiesBox<NoteWatchBag>>,
             required: true
         },
 
@@ -128,24 +129,24 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: NoteWatchBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<NoteWatchBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const watcherPersonAlias = propertyRef(props.modelValue.watcherPersonAlias ?? {}, "WatcherPersonAliasId");
-    const watcherGroup = propertyRef(props.modelValue.watcherGroup ?? {}, "watcherGroupId");
-    const entityType = propertyRef(props.modelValue.entityType ?? {}, "EntityTypeId");
-    const isWatching = propertyRef(props.modelValue.isWatching, "IsWatching");
-    const allowOverride = propertyRef(props.modelValue.allowOverride, "AllowOverride");
-    const noteTypeValue = propertyRef(props.modelValue.noteType?.value ?? "", "NoteTypeId");
-    const entityId = propertyRef(props.modelValue.entityId, "EntityId");
-    const entityName = ref(props.modelValue.entityName ?? "");
-    const watchedEntity = ref(props.modelValue.watchedEntity ?? {});
-    const watchedNoteText = ref(props.modelValue.watchedNoteText ?? "");
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const watcherPersonAlias = propertyRef(props.modelValue?.bag?.watcherPersonAlias ?? {}, "WatcherPersonAliasId");
+    const watcherGroup = propertyRef(props.modelValue?.bag?.watcherGroup ?? {}, "watcherGroupId");
+    const entityType = propertyRef(props.modelValue?.bag?.entityType ?? {}, "EntityTypeId");
+    const isWatching = propertyRef(props.modelValue?.bag?.isWatching ?? false, "IsWatching");
+    const allowOverride = propertyRef(props.modelValue?.bag?.allowOverride ?? false, "AllowOverride");
+    const noteTypeValue = propertyRef(props.modelValue?.bag?.noteType?.value ?? "", "NoteTypeId");
+    const entityId = propertyRef(props.modelValue?.bag?.entityId, "EntityId");
+    const entityName = ref(props.modelValue?.bag?.entityName ?? "");
+    const watchedEntity = ref(props.modelValue?.bag?.watchedEntity ?? {});
+    const watchedNoteText = ref(props.modelValue?.bag?.watchedNoteText ?? "");
 
     const noteTypeOptions = ref(props.options.noteTypeOptions ?? []);
     const disableGroupPicker = ref(props.options.disableGroupPicker);
@@ -223,16 +224,16 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(watcherPersonAlias, props.modelValue.watcherPersonAlias ?? {});
-        updateRefValue(watcherGroup, props.modelValue.watcherGroup ?? {});
-        updateRefValue(entityType, props.modelValue.entityType ?? {});
-        updateRefValue(isWatching, props.modelValue.isWatching ?? {});
-        updateRefValue(allowOverride, props.modelValue.allowOverride ?? {});
-        updateRefValue(noteTypeValue, props.modelValue.noteType?.value ?? "");
-        updateRefValue(entityId, props.modelValue.entityId);
-        updateRefValue(watchedEntity, props.modelValue.watchedEntity ?? {});
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(watcherPersonAlias, props.modelValue?.bag?.watcherPersonAlias ?? {});
+        updateRefValue(watcherGroup, props.modelValue?.bag?.watcherGroup ?? {});
+        updateRefValue(entityType, props.modelValue?.bag?.entityType ?? {});
+        updateRefValue(isWatching, props.modelValue?.bag?.isWatching ?? false);
+        updateRefValue(allowOverride, props.modelValue?.bag?.allowOverride ?? false);
+        updateRefValue(noteTypeValue, props.modelValue?.bag?.noteType?.value ?? "");
+        updateRefValue(entityId, props.modelValue?.bag?.entityId);
+        updateRefValue(watchedEntity, props.modelValue?.bag?.watchedEntity ?? {});
     });
 
     watch(() => props.errorDetails, () => {
@@ -246,18 +247,19 @@
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, watchedEntity, ...propRefs], () => {
 
-        const newValue: NoteWatchBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            watcherPersonAlias: watcherPersonAlias.value,
-            watcherGroup: watcherGroup.value,
-            entityType: entityType.value,
-            isWatching: isWatching.value,
-            allowOverride: (!isWatching.value && allowOverride.value) ? false : allowOverride.value,
-            noteType: { value: noteTypeValue?.value },
-            entityId: entityId.value,
-            watchedEntity: watchedEntity.value,
+        const newValue: ValidPropertiesBox<NoteWatchBag> = {
+            bag: { ...props.modelValue.bag } as NoteWatchBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "watcherPersonAlias", watcherPersonAlias.value);
+        setPropertiesBoxValue(newValue, "watcherGroup", watcherGroup.value);
+        setPropertiesBoxValue(newValue, "entityType", entityType.value);
+        setPropertiesBoxValue(newValue, "isWatching", isWatching.value);
+        setPropertiesBoxValue(newValue, "allowOverride", (!isWatching.value && allowOverride.value) ? false : allowOverride.value);
+        setPropertiesBoxValue(newValue, "noteType", { value: noteTypeValue?.value });
+        setPropertiesBoxValue(newValue, "entityId", entityId.value);
+        setPropertiesBoxValue(newValue, "watchedEntity", watchedEntity.value);
 
         emit("update:modelValue", newValue);
     });

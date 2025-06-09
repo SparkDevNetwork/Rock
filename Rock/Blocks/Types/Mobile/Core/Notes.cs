@@ -407,7 +407,7 @@ namespace Rock.Blocks.Types.Mobile.Core
             }
 
             string photoUrl = "";
-            if( note.CreatedByPersonAlias?.Person?.PhotoUrl != null )
+            if ( note.CreatedByPersonAlias?.Person?.PhotoUrl != null )
             {
                 photoUrl = MobileHelper.BuildPublicApplicationRootUrl( note.CreatedByPersonAlias.Person.PhotoUrl );
             }
@@ -438,47 +438,44 @@ namespace Rock.Blocks.Types.Mobile.Core
         /// <returns>List&lt;Note&gt;.</returns>
         private List<Note> GetViewableNotes( Guid? parentNoteGuid, int startIndex, int count )
         {
-            using ( var rockContext = new RockContext() )
+            var noteService = new NoteService( RockContext );
+            var viewableNoteTypeIds = GetViewableNoteTypes().Select( t => t.Id ).ToList();
+
+            var entityType = EntityTypeCache.Get( ContextEntityType );
+            var entity = entityType != null ? RequestContext.GetContextEntity( entityType.GetEntityType() ) : null;
+            if ( entity == null )
             {
-                var noteService = new NoteService( rockContext );
-                var viewableNoteTypeIds = GetViewableNoteTypes().Select( t => t.Id ).ToList();
-
-                var entityType = EntityTypeCache.Get( ContextEntityType );
-                var entity = entityType != null ? RequestContext.GetContextEntity( entityType.GetEntityType() ) : null;
-                if ( entity == null )
-                {
-                    // Indicate to caller "not found" error.
-                    return null;
-                }
-
-                var currentPersonId = GetCurrentPerson()?.Id;
-                var notesQuery = noteService.Queryable()
-                    .AsNoTracking()
-                    .Include( a => a.CreatedByPersonAlias.Person )
-                    .Include( a => a.ParentNote )
-                    .Include( a => a.ChildNotes )
-                    .AreViewableBy( currentPersonId )
-                    .Where( a => viewableNoteTypeIds.Contains( a.NoteTypeId ) )
-                    .Where( a => a.EntityId == entity.Id );
-
-                if ( parentNoteGuid.HasValue )
-                {
-                    notesQuery = notesQuery.Where( a => a.ParentNote.Guid == parentNoteGuid.Value );
-                }
-                else
-                {
-                    notesQuery = notesQuery.Where( a => !a.ParentNoteId.HasValue );
-                }
-
-                return notesQuery
-                    .ToList()
-                    .OrderByDescending( a => a.IsAlert == true )
-                    .ThenByDescending( a => a.CreatedDateTime )
-                    .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-                    .Skip( startIndex )
-                    .Take( count )
-                    .ToList();
+                // Indicate to caller "not found" error.
+                return null;
             }
+
+            var currentPersonId = GetCurrentPerson()?.Id;
+            var notesQuery = noteService.Queryable()
+                .AsNoTracking()
+                .Include( a => a.CreatedByPersonAlias.Person )
+                .Include( a => a.ParentNote )
+                .Include( a => a.ChildNotes )
+                .AreViewableBy( currentPersonId )
+                .Where( a => viewableNoteTypeIds.Contains( a.NoteTypeId ) )
+                .Where( a => a.EntityId == entity.Id );
+
+            if ( parentNoteGuid.HasValue )
+            {
+                notesQuery = notesQuery.Where( a => a.ParentNote.Guid == parentNoteGuid.Value );
+            }
+            else
+            {
+                notesQuery = notesQuery.Where( a => !a.ParentNoteId.HasValue );
+            }
+
+            return notesQuery
+                .ToList()
+                .OrderByDescending( a => a.IsAlert == true )
+                .ThenByDescending( a => a.CreatedDateTime )
+                .Where( a => a.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+                .Skip( startIndex )
+                .Take( count )
+                .ToList();
         }
 
         /// <summary>

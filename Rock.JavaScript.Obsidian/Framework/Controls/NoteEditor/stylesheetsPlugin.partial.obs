@@ -39,26 +39,41 @@
     import { usePluginHelper } from "./utils.partial";
     import { Editor, EditorEvent, EventDispatcher, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { ConfigureEditorUtilities } from "./types.partial";
 
     const props = defineProps({
+        /**
+         * Determines whether scoping should occur.
+         *
+         * When set to `scoped=true`, `htmlCssReplacementSelector` and `bodyCssReplacementSelector` must be provided.
+         */
+        scoped: {
+            type: Boolean,
+            default: false as const
+        },
+
         /**
          * This CSS selector will replace instances of `html` in &lt;style&gt; tags at runtime so styles don't bleed outside the editor.
          *
          * This should be an ancestor of the `bodyCssReplacementSelector` element, which should be an ancestor of the editor element..
+         *
+         * **Required** when `scoped=true`.
          */
         htmlCssReplacementSelector: {
             type: String as PropType<string>,
-            required: true
+            default: "" as const
         },
 
         /**
          * This CSS selector will replace instances of `body` in &lt;style&gt; tags at runtime so styles don't bleed outside the editor.
          *
          * This should be an ancestor of the editor element.
+         *
+         * **Required** when `scoped=true`.
          */
         bodyCssReplacementSelector: {
             type: String as PropType<string>,
-            required: true
+            default: "" as const
         }
     });
 
@@ -70,7 +85,7 @@
 
     const { editorInstance, onConfigureEditorOptions } = usePluginHelper();
 
-    onConfigureEditorOptions((currentOptions: RawEditorOptions) => {
+    onConfigureEditorOptions((currentOptions: RawEditorOptions, { allowRootElement }: ConfigureEditorUtilities) => {
         // Syntax examples:
         // "+div[p|i]"              This would add <p> and <i> as valid child elements of <div> elements.
         // "-div[strong]"           This would remove <strong> from being a valid child element of <div> elements.
@@ -78,17 +93,7 @@
         // For more information, visit: https://www.tiny.cloud/docs/tinymce/latest/content-filtering/#valid_children
 
         // Allow style elements as "root" elements in the editor.
-        // The editor is hosted in a <div> element.
-        // Since the "root" would be direct children of that host <div>,
-        // the rule should allow <style> tags as children of <div> tags.
-        const styleChildren = "+div[style]";
-
-        if (!currentOptions.valid_children) {
-            currentOptions.valid_children = styleChildren;
-        }
-        else if (!currentOptions.valid_children.includes("+div[style]")) {
-            currentOptions.valid_children += `,${styleChildren}`;
-        }
+        allowRootElement(currentOptions, "style");
 
         return currentOptions;
     });
@@ -118,11 +123,15 @@
         // in that this will add run-time specificity to the style rule selectors so the styles
         // are only isolated to this HTML Editor control instance.
         beforeSetContentEventDispatcher.value = editor.on("BeforeSetContent", (e: EditorEvent<Events.BeforeSetContentEvent>) => {
-            e.content = scopeStyleSheets(e.content, `#${editor.id}`);
+            if (props.scoped) {
+                e.content = scopeStyleSheets(e.content, `#${editor.id}`);
+            }
         });
 
         getContentEventDispatcher.value = editor.on("GetContent", (e: EditorEvent<Events.GetContentEvent>) => {
-            e.content = unscopeStyleSheets(e.content, `#${editor.id}`);
+            if (props.scoped) {
+                e.content = unscopeStyleSheets(e.content, `#${editor.id}`);
+            }
         });
     }
 

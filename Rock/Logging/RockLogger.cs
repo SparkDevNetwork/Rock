@@ -51,7 +51,7 @@ namespace Rock.Logging
         /// The log.
         /// </value>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public static IRockLogger Log => _log.Value;
 #pragma warning disable CS0618 // Type or member is obsolete
         private static readonly Lazy<IRockLogger> _log = new Lazy<IRockLogger>( () => new LegacySerilogLogger() );
@@ -106,10 +106,25 @@ namespace Rock.Logging
         }
 
         /// <summary>
+        /// Configures a <see cref="IServiceCollection"/> to support the Rock
+        /// Logging system when using <see cref="ILogger{TCategoryName}"/>
+        /// in dependency injection.
+        /// </summary>
+        /// <param name="serviceCollection">The service collection to be configured.</param>
+        /// <returns>The service collection to allow chaining calls.</returns>
+        internal static IServiceCollection AddRockLogging( this IServiceCollection serviceCollection )
+        {
+            serviceCollection.AddSingleton( _ => LoggerFactory );
+            serviceCollection.AddSingleton( typeof( ILogger<> ), typeof( Logger<> ) );
+
+            return serviceCollection;
+        }
+
+        /// <summary>
         /// Gets the standard categories that have been defined in Rock.
         /// </summary>
         /// <returns>A list of category names.</returns>
-        [RockInternal( "1.17", true )]
+        [RockInternal( "17.0", true )]
         public static List<string> GetStandardCategories()
         {
             var typeCategories = Reflection.FindTypes( typeof( object ) )
@@ -133,10 +148,11 @@ namespace Rock.Logging
         /// Reloads the configuration defined in the database and reconfigures
         /// the loggers to match the new settings.
         /// </summary>
-        [RockInternal( "1.17", true )]
+        [RockInternal( "17.0", true )]
         public static void ReloadConfiguration()
         {
-            var configuration = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS ).FromJsonOrNull<RockLogSystemSettings>();
+            var configuration = Rock.Web.SystemSettings.GetValue( SystemSetting.ROCK_LOGGING_SETTINGS )
+                .FromJsonOrNull<RockLogSystemSettings>() ?? new RockLogSystemSettings();
 
             ReloadConfiguration( configuration, GetSerilogConfiguration() );
         }
@@ -151,8 +167,8 @@ namespace Rock.Logging
 
             if ( configuration == null )
             {
-                serilogConfiguration.NumberOfLogFiles = 20;
-                serilogConfiguration.MaxFileSize = 20;
+                serilogConfiguration.NumberOfLogFiles = 5;
+                serilogConfiguration.MaxFileSize = 5;
             }
             else
             {
@@ -211,6 +227,9 @@ namespace Rock.Logging
         /// <returns>A logger instance.</returns>
         internal static Serilog.Core.Logger CreateSerilogLogger( SerilogConfiguration configuration )
         {
+            // Don't allow a MaxFileSize of 0 since it could cause Serilog to use unlimited file size.
+            var fileSizeMB = configuration.MaxFileSize > 0 ? configuration.MaxFileSize : 1;
+
             return new LoggerConfiguration()
                  .MinimumLevel
                  .Verbose()
@@ -220,17 +239,17 @@ namespace Rock.Logging
                      rollingInterval: RollingInterval.Infinite,
                      buffered: true,
                      shared: false,
-                     flushToDiskInterval: TimeSpan.FromSeconds( 10 ),
+                     flushToDiskInterval: TimeSpan.FromSeconds( 2.5 ),
                      retainedFileCountLimit: configuration.NumberOfLogFiles,
                      rollOnFileSizeLimit: true,
-                     fileSizeLimitBytes: configuration.MaxFileSize * 1024 * 1024 )
+                     fileSizeLimitBytes: fileSizeMB * 1024 * 1024 )
                  .CreateLogger();
         }
 
         /// <summary>
         /// Recycles the serilog writer which frees up any old files.
         /// </summary>
-        [RockInternal( "1.17", true )]
+        [RockInternal( "17.0", true )]
         public static void RecycleSerilog()
         {
             SinkWrapper.SetLogger( CreateSerilogLogger( GetSerilogConfiguration() ) );

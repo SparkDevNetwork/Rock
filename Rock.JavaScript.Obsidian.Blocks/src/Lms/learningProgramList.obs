@@ -21,6 +21,7 @@
                 title="Program"
                 field="name"
                 :filter="textValueFilter"
+                :quickFilterValue="getProgramQuickFilterValue"
                 width="50%"
                 visiblePriority="xs">
             <template #format="{ row }">
@@ -36,6 +37,7 @@
         </Column>
         <Column name="category"
                 title="Category"
+                field="category"
                 :filter="pickExistingValueFilter"
                 width="20%"
                 visiblePriority="md">
@@ -47,9 +49,11 @@
         </Column>
         <Column name="configurationMode"
                 title="Configuration Mode"
+                field="configurationMode"
                 :filter="pickExistingValueFilter"
+                :quickFilterValue="getConfigurationModeQuickFilterValue"
                 width="20%"
-                visiblePriority="md">
+                visiblePriority="lg">
             <template #format="{ row }">
                 <div class="configuration-mode-container">
                     <span :class="getConfigurationModeLabelClass(row.configurationMode)">
@@ -63,20 +67,20 @@
                        field="isPublic"
                        :filter="booleanValueFilter"
                        width="5%"
-                       visiblePriority="lg" />
+                       visiblePriority="sm" />
 
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
                        :filter="booleanValueFilter"
                        width="5%"
-                       visiblePriority="lg" />
+                       visiblePriority="sm" />
 
         <template #skeleton>
             <div class="skeleton skeleton-text skeleton-rounded" />
         </template>
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" :disableConfirmation="true" />
     </Grid>
@@ -107,6 +111,14 @@
     // #endregion
 
     // #region Functions
+
+    function getProgramQuickFilterValue(row: Record<string, unknown>): string {
+        return `${row.name} ${row.summary}`;
+    }
+
+    function getConfigurationModeQuickFilterValue(row: Record<string, unknown>): string {
+        return getConfigurationModeText(row["configurationMode"] as ConfigurationMode);
+    }
 
     function getConfigurationModeLabelClass(configurationMode: ConfigurationMode): string {
         return `label label-${configurationMode === ConfigurationMode.AcademicCalendar ? "success" : "info"}`;
@@ -214,7 +226,7 @@
             key
         });
 
-        if (result.isSuccess && result.data) {
+        if (result.isSuccess) {
             return asBoolean(result.data);
         }
         else {

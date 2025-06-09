@@ -41,7 +41,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Displays a list of financial pledges." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage,
@@ -109,7 +109,7 @@ namespace Rock.Blocks.Finance
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
-            public const string ShowAccountColumn = "ShowAccountsColumn";
+            public const string ShowAccountColumn = "ShowAccountColumn";
             public const string ShowLastModifiedDateColumn = "ShowLastModifiedDateColumn";
             public const string ShowGroupColumn = "ShowGroupColumn";
             public const string LimitPledgesToCurrentPerson = "LimitPledgesToCurrentPerson";
@@ -126,6 +126,10 @@ namespace Rock.Blocks.Finance
         private static class PreferenceKey
         {
             public const string FilterActiveOnly = "filter-active-only";
+        }
+        private static class PageParameterKey
+        {
+            public const string Accounts = "Accounts";
         }
 
         #endregion Keys
@@ -196,7 +200,7 @@ namespace Rock.Blocks.Finance
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "PledgeId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, new Dictionary<string, string> { ["PledgeId"] = "((Key))", ["autoEdit"] = "true", ["returnUrl"] = this.GetCurrentPageUrl() } )
             };
         }
 
@@ -229,6 +233,26 @@ namespace Rock.Blocks.Finance
             if ( accountGuids.Any() )
             {
                 query = query.Where( p => accountGuids.Contains( p.Account.Guid ) );
+            }
+
+            var accountIds = new List<int>();
+            foreach ( var accountIdentifier in PageParameter( PageParameterKey.Accounts ).Split( ',' ) )
+            {
+                var accountId = accountIdentifier.AsIntegerOrNull();
+                if ( !accountId.HasValue )
+                {
+                    accountId = FinancialAccountCache.GetByIdKey( accountIdentifier )?.Id;
+                }
+
+                if ( accountId.HasValue )
+                {
+                    accountIds.Add( accountId.Value );
+                }
+            }
+
+            if ( accountIds.Any() )
+            {
+                query = query.Where( p => p.AccountId.HasValue && accountIds.Contains( p.AccountId.Value ) );
             }
 
             // Filter by active pledges only

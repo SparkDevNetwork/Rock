@@ -660,11 +660,28 @@ namespace RockWeb.Blocks.WorkFlow
         private void ShowDetail( int workflowId )
         {
             var rockContext = new RockContext();
+            var workflowService = new WorkflowService( rockContext );
 
-            Workflow = new WorkflowService( rockContext )
+            Workflow = workflowService
                     .Queryable( "WorkflowType, Activities")
                     .Where( w => w.Id == workflowId )
                     .FirstOrDefault();
+
+            if ( Workflow == null )
+            {
+                var workflowIdKey = PageParameter( "WorkflowId" );
+                if ( workflowIdKey.IsNotNullOrWhiteSpace() )
+                {
+                    var workflow = workflowService.Get( workflowIdKey );
+                    if ( workflow != null )
+                    {
+                        Workflow = workflowService
+                            .Queryable( "WorkflowType, Activities" )
+                            .Where( w => w.Id == workflow.Id )
+                            .FirstOrDefault();
+                    }
+                }
+            }
 
             if ( Workflow == null )
             {

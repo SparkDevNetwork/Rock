@@ -17,6 +17,7 @@
 
 using System;
 using Rock.Data;
+using Rock.Security;
 
 namespace Rock.Model
 {
@@ -65,6 +66,13 @@ namespace Rock.Model
 
             return groupHistoricalCurrent;
         }
+
+        #endregion
+
+        #region ISecured
+
+        /// <inheritdoc/>
+        public override ISecured ParentAuthority => Group ?? base.ParentAuthority;
 
         #endregion
     }

@@ -421,6 +421,126 @@ namespace Rock.UI {
                 isDragging = false;
                 dragNode = undefined;
             })
+
+            this.overideZoomBehavior(renderer);
+        }
+
+        /**
+         * Overrides Sigma's default zoom behavior by requiring the individual to hold the Ctrl button while scrolling
+         * in order to zoom, as well as providing a helpful overlay with these instructions.
+         * 
+         * @param renderer The Sigma instance.
+         */
+        private overideZoomBehavior(renderer: any): void {
+            // Create the overlay container.
+            const overlayElement = document.createElement("div");
+            Object.assign(overlayElement.style, {
+                zIndex: "1000",
+                position: "absolute",
+                top: "0",
+                left: "0",
+                width: "100%",
+                height: "100%",
+                display: "flex",
+                justifyContent: "center",
+                alignItems: "center",
+                backgroundColor: "rgba(0, 0, 0, 0.5)",
+                opacity: "0", // Initially hidden.
+                transition: "opacity 0.3s ease",
+                pointerEvents: "none" // Allows clicks to pass through
+            });
+
+            // Create the instructions element.
+            const instructionsElement = document.createElement("h2");
+            instructionsElement.textContent = "Use ctrl + scroll to zoom the map";
+            Object.assign(instructionsElement.style, {
+                padding: "10px 20px",
+                color: "#fff",
+                textAlign: "center"
+            });
+
+            // Append the instructions to the overlay.
+            overlayElement.appendChild(instructionsElement);
+
+            // Append the overlay to the parent element.
+            this.element.appendChild(overlayElement);
+
+            let overlayTimer: number | undefined;
+
+            renderer.getMouseCaptor().on("wheel", (event: any) => {
+                if (!event.original.ctrlKey) {
+                    // Prevent Sigma's default zoom behavior.
+                    event.sigmaDefaultPrevented = true;
+
+                    // Determine the scroll amount.
+                    const deltaY = event.original.deltaY;
+                    const deltaX = event.original.deltaX;
+
+                    // Find the nearest scrollable ancestor.
+                    const scrollParent = getNearestScrollableAncestor(event.original.target) ?? window;
+
+                    // Scroll the scrollable ancestor
+                    scrollParent.scrollBy({
+                        top: deltaY,
+                        left: deltaX,
+                        // Although we typcially use `smooth` scrolling elsehwere in Rock, using that option here
+                        // results in a sluggish scroll experience. Let's leave as `auto` for this instance unless
+                        // we find a compelling reason to switch. We could always attempt throttling this scroll
+                        // behavior if we find `smooth` is needed.
+                        behavior: 'auto'
+                    });
+
+                    // Show the instructions.
+                    if (overlayTimer) {
+                        clearTimeout(overlayTimer);
+                    }
+                    overlayElement.style.opacity = "1";
+
+                    // Hide the instructions after 2 seconds.
+                    overlayTimer = setTimeout(() => {
+                        overlayElement.style.opacity = "0";
+                        overlayTimer = undefined;
+                    }, 2000);
+                }
+                else {
+                    // When Ctrl is pressed along with scroll, allow Sigma to handle the zoom as usual.
+                    overlayElement.style.opacity = "0";
+                    overlayTimer = undefined;
+                }
+            });
+
+            /**
+             * Finds the nearest scrollable ancestor of a given element.
+             * @param {HTMLElement} element - The starting element.
+             * @returns {HTMLElement | Window} - The nearest scrollable ancestor or window if none found.
+             */
+            function getNearestScrollableAncestor(element: HTMLElement | null) {
+                while (element && element !== document.body) {
+                    if (isScrollable(element)) {
+                        return element;
+                    }
+
+                    element = element.parentElement;
+                }
+
+                return window;
+            }
+
+            /**
+             * Checks if an element is scrollable.
+             * @param {HTMLElement} element - The element to check.
+             * @returns {boolean} - True if the element is scrollable, false otherwise.
+             */
+            function isScrollable(element: HTMLElement) {
+                const style = getComputedStyle(element);
+                const overflowY = style.overflowY;
+                const overflowX = style.overflowX;
+
+                const isScrollableY = (overflowY === 'auto' || overflowY === 'scroll') && element.scrollHeight > element.clientHeight;
+                const isScrollableX = (overflowX === 'auto' || overflowX === 'scroll') && element.scrollWidth > element.clientWidth;
+
+                return isScrollableY || isScrollableX;
+            }
         }
 
         /**

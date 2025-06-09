@@ -31,6 +31,7 @@ namespace Rock.Field.Types
     /// Field Type used to display a dropdown list of System.Drawing.Color options
     /// </summary>
     [Serializable]
+    [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms | Utility.RockPlatform.Obsidian )]
     [IconSvg( @"<svg xmlns=""http://www.w3.org/2000/svg"" viewBox=""0 0 16 16""><path d=""M4.48,7.12A.87.87,0,0,0,3.6,8a.88.88,0,1,0,.88-.88Zm8-4.53A7.05,7.05,0,0,0,6.59,1.14,6.94,6.94,0,0,0,1.14,6.56,7,7,0,0,0,3,12.87,6.58,6.58,0,0,0,7.58,15l.72,0a2,2,0,0,0,1.53-1.13,2.3,2.3,0,0,0,0-2.09,1,1,0,0,1,.05-1,1,1,0,0,1,.87-.5h2A2.26,2.26,0,0,0,15,8,7,7,0,0,0,12.45,2.59Zm.29,6.28h-2a2.34,2.34,0,0,0-2,1.13,2.37,2.37,0,0,0-.09,2.32,1,1,0,0,1,0,.9.79.79,0,0,1-.56.43A5.05,5.05,0,0,1,3.94,12,5.71,5.71,0,0,1,2.43,6.85,5.57,5.57,0,0,1,6.84,2.47a5.73,5.73,0,0,1,4.77,1.18A5.65,5.65,0,0,1,13.69,8,.94.94,0,0,1,12.74,8.87ZM5.35,4.48a.87.87,0,1,0,.88.87A.85.85,0,0,0,5.35,4.48ZM8,3.62a.88.88,0,1,0,.87.87A.86.86,0,0,0,8,3.62Zm2.62.86a.87.87,0,1,0,.88.87A.85.85,0,0,0,10.6,4.48Z""/></svg>" )]
     [Rock.SystemGuid.FieldTypeGuid( Rock.SystemGuid.FieldType.COLOR_SELECTOR )]

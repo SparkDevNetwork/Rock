@@ -1,6 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :data="gridDataSource"
+    <Grid
+          :definition="gridDefinitionBag"
+          :data="gridDataSource"
           keyField="idKey"
           title="Content Pages"
           :entityTypeGuid="EntityType.LearningClassContentPage"
@@ -25,8 +27,6 @@
                     title="Start Date"
                     field="startDate"
                     :filter="dateValueFilter"
-                    filterValue="startDate"
-                    quickFilterValue="startDate"
                     visiblePriority="xs" />
 
         <DeleteColumn v-if="isDeleteEnabled" @click="(r) => $emit('deleteClick', r, gridData)" />
@@ -39,6 +39,7 @@
     import Grid, { DateColumn, TextColumn, textValueFilter, dateValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -49,12 +50,15 @@
     }>();
 
     const props = defineProps({
+        gridDefinitionBag: {
+            type: Object as PropType<GridDefinitionBag>,
+            required: true
+        },
         isAddEnabled: {
             type: Object as PropType<boolean>,
             required: true,
             default: false
         },
-
         isDeleteEnabled: {
             type: Object as PropType<boolean>,
             required: true,
@@ -95,7 +99,6 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
-
             return gridData;
         }
         else {

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays a list of person signals." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "db2e3ce3-94bd-4d12-8add-598bf938e8e1" )]
     [Rock.SystemGuid.BlockTypeGuid( "653052a0-ca1c-41b8-8340-4b13149c6e66" )]
@@ -210,6 +210,12 @@ namespace Rock.Blocks.Core
         {
             var personInView = this.RequestContext.GetContextEntity<Person>();
             return base.GetListQueryable( rockContext ).Where( s => s.PersonId == personInView.Id );
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<PersonSignal> GetOrderedListQueryable( IQueryable<PersonSignal> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( s => s.SignalType.Order ).ThenBy( s => s.SignalType.Name );
         }
 
         /// <inheritdoc/>

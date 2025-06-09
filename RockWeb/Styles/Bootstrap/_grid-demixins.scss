@@ -1,0 +1,131 @@
+//
+// Grid system
+// --------------------------------------------------
+
+
+// Container 
+.container {
+    padding-right: ceil((30 / 2));
+    padding-left: floor((30 / 2));
+    margin-right: auto;
+    margin-left: auto;
+    &:before,
+    &:after {
+      display: table;
+      content: " "; 
+    }
+    &:after {
+      clear: both;
+    }
+  
+    @media (min-width: $screen-sm-min) { // 768px
+      width: $container-sm; //750px
+    }
+    @media (min-width: $screen-md-min) { //992px
+      width: $container-md; //970px
+    }
+    @media (min-width: $screen-lg-min) { //1200px
+      width: $container-lg; //1170px
+    }
+  }
+  
+  
+  // Fluid container
+  .container-fluid {
+    padding-right: ceil((30 / 2));
+    padding-left: floor((30 / 2));
+    margin-right: auto;
+    margin-left: auto;
+    &:before,
+    &:after {
+      display: table;
+      content: " "; 
+    }
+    &:after {
+      clear: both;
+    }
+  }
+  
+  
+  // Row
+.row {
+    margin-right: floor((30 / -2));
+    margin-left: ceil((30 / -2));
+    &:before,
+    &:after {
+      display: table;
+      content: " "; 
+    }
+    &:after {
+      clear: both;
+    }
+}
+  
+.row-no-gutters {
+    margin-right: 0;
+    margin-left: 0;
+  
+    [class*="col-"] {
+      padding-right: 0;
+      padding-left: 0;
+    }
+}
+
+  
+  // Columns
+  .col-xs-1, .col-xs-2, .col-xs-3, .col-xs-4, .col-xs-5, .col-xs-6, .col-xs-7, .col-xs-8, .col-xs-9, .col-xs-10, .col-xs-11, .col-xs-12,
+  .col-auto, .col-sm-1, .col-sm-2, .col-sm-3, .col-sm-4, .col-sm-5, .col-sm-6, .col-sm-7, .col-sm-8, .col-sm-9, .col-sm-10, .col-sm-11, .col-sm-12, .col-sm,
+  .col-sm-auto, .col-md-1, .col-md-2, .col-md-3, .col-md-4, .col-md-5, .col-md-6, .col-md-7, .col-md-8, .col-md-9, .col-md-10, .col-md-11, .col-md-12, .col-md,
+  .col-md-auto, .col-lg-1, .col-lg-2, .col-lg-3, .col-lg-4, .col-lg-5, .col-lg-6, .col-lg-7, .col-lg-8, .col-lg-9, .col-lg-10, .col-lg-11, .col-lg-12, .col-lg,
+  .col-lg-auto {
+    position: relative;
+    min-height: 1px;
+    padding-right: (30 / 2);
+    padding-left: (30 / 2);
+  }
+  
+  
+// Extra small grid
+//
+// Columns, offsets, pushes, and pulls for extra small devices 
+  
+//  .make-grid(xs);
+// .col-xs-1 { float: left; width: 8.33333%; }
+// .col-xs-2 { float: left; width: 16.66667%; }
+// ... up to 
+// .col-xs-12 { float: left; width: 100%; }
+
+// .col-xs-offset-1 { margin-left: 8.33333%; }
+// .col-xs-offset-2 { margin-left: 16.66667%; }
+//  ... up to 
+// .col-xs-offset-12 { margin-left: 100%; }
+
+// ======================== DEPRECATED ========================
+// .col-xs-pull-0 { right: auto; }
+// .col-xs-pull-1 { right: 8.33333%; }
+// .col-xs-pull-2 { right: 16.66667%; }
+// ... up to 
+// .col-xs-pull-12 { right: 100%; }
+
+// .col-xs-push-0 { left: auto; }
+// .col-xs-push-1 { left: 8.33333%; }
+// .col-xs-push-2 { left: 16.66667%; }
+// ... up to 
+// .col-xs-push-12 { left: 100%; }
+//====================== END DEPRECATED ======================
+
+// Small grid
+//
+// Columns, offsets, pushes, and pulls for the small device range, from phones
+@media (min-width: $screen-sm-min) { 
+    // .make-grid(sm);
+}
+
+@media (min-width: $screen-md-min) {
+    // .make-grid(md);
+}
+
+@media (min-width: $screen-lg-min) {
+    // .make-grid(lg);
+}
+  

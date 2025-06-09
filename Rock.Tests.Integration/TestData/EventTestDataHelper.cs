@@ -15,22 +15,22 @@
 // </copyright>
 //
 using System;
-using System.Linq;
-using Rock.Data;
-using Rock.Model;
-using Rock.Tests.Integration.TestData;
-using Rock.Web.Cache;
-
 using System.Collections.Generic;
+using System.Linq;
 
 using Ical.Net;
+using Ical.Net.CalendarComponents;
 using Ical.Net.DataTypes;
 using Ical.Net.Serialization;
-using Ical.Net.CalendarComponents;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Rock.Tests.Shared;
 
-namespace Rock.Tests.Integration.Events
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Rock.Data;
+using Rock.Model;
+using Rock.Tests.Shared;
+using Rock.Web.Cache;
+
+namespace Rock.Tests.Integration.TestData
 {
     /// <summary>
     /// Provides actions to manage Event data.
@@ -666,9 +666,9 @@ namespace Rock.Tests.Integration.Events
             var effectiveDate = GetDefaultEffectiveDate();
 
             // Staff Meeting: Every other Wednesday @ 10:30am, starting on the first Wednesday after the effective date.
-            var firstWednesday2020 = RockDateTime.New( 2020, 1, 1 ).Value.GetNextWeekday( DayOfWeek.Wednesday );
+            var firstWednesdayOfEffectiveDate = RockDateTime.New( effectiveDate.Year, effectiveDate.Month, effectiveDate.Day ).Value.GetNextWeekday( DayOfWeek.Wednesday );
             SetStartDateForEvent( "Staff Meeting",
-                firstWednesday2020.AddHours( 10 ).AddMinutes( 30 ),
+                firstWednesdayOfEffectiveDate.AddHours( 10 ).AddMinutes( 30 ),
                 new TimeSpan( 1, 30, 0 ),
                 rockContext );
 
