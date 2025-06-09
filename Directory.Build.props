@@ -1,5 +1,28 @@
-<?xml version="1.0"?>
-<Project>
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)' != 'Core'">
+    <RockBuildTasksAssemblyFile>$(MSBuildThisFileDirectory)\libs\build-tasks\net472\Rock.Build.Tasks.dll</RockBuildTasksAssemblyFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(MSBuildRuntimeType)' == 'Core'">
+    <RockBuildTasksAssemblyFile Condition="'$(MSBuildRuntimeType)' == 'Core'">$(MSBuildThisFileDirectory)\libs\build-tasks\net6.0\Rock.Build.Tasks.dll</RockBuildTasksAssemblyFile>
+  </PropertyGroup>
+
+  <!-- CopyToRockWeb task and defaults -->
+  <UsingTask
+      TaskName="Rock.Build.Tasks.CopyToRockWeb"
+      AssemblyFile="$(RockBuildTasksAssemblyFile)" />
+
+  <PropertyGroup>
+    <!-- Exclude linux native binaries from Grpc.Core. -->
+    <ExcludeFromRockWebCopy>$(ExcludeFromRockWebCopy);libgrpc_csharp_ext.x64.so;libgrpc_csharp_ext.x64.dylib</ExcludeFromRockWebCopy>
+
+    <!-- Exclude SqlServerTypes native binaries since we keep these in a different place. -->
+    <ExcludeFromRockWebCopy>$(ExcludeFromRockWebCopy);SqlServerTypes\x64\msvcr100.dll;SqlServerTypes\x64\SqlServerSpatial110.dll;SqlServerTypes\x86\msvcr100.dll;SqlServerTypes\x86\SqlServerSpatial110.dll</ExcludeFromRockWebCopy>
+
+    <!-- This seems to come from OpenXmlPowerTools, but isn't used by Rock. -->
+    <ExcludeFromRockWebCopy>$(ExcludeFromRockWebCopy);System.Management.Automation.dll</ExcludeFromRockWebCopy>
+  </PropertyGroup>
+
   <PropertyGroup Label="Normalise stack trace file locations">
     <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=\</PathMap>
   </PropertyGroup>
