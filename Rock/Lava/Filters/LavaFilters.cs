@@ -3489,11 +3489,19 @@ namespace Rock.Lava
             {
                 case "Title":
                     {
+                        if (page != null)
+                        {
+                            return page.PageTitle;
+                        }
                         return pageCache.PageTitle;
                     }
 
                 case "BrowserTitle":
                     {
+                        if (page != null)
+                        {
+                            return page.BrowserTitle;
+                        }
                         return pageCache.BrowserTitle;
                     }
 
