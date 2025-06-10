@@ -55,7 +55,8 @@
     });
 
     const percentDidNotReceiveAny = computed<number>(() => {
-        return Math.round(didNotReceiveAny.value / (didNotReceiveAny.value + totalDidReceive.value) * 100);
+        const percent = Math.round(didNotReceiveAny.value / (didNotReceiveAny.value + totalDidReceive.value) * 100);
+        return Number.isNaN(percent) ? 0 : percent;
     });
 
     const data = computed<ChartData>(() => ({

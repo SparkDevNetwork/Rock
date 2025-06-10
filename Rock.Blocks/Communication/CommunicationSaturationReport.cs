@@ -512,17 +512,19 @@ namespace Rock.Blocks.Communication
 
                 var includedRatios = new List<int> { 1 };
 
-                if ( filterBag.Medium.Contains( "1" ) )
+                var email = Rock.Enums.Communication.CommunicationType.Email.ToString();
+
+                if ( filterBag.Medium.Contains( Rock.Enums.Communication.CommunicationType.Email.ConvertToInt().ToString() ) )
                 {
                     includedRatios.Add( blockCache.GetAttributeValue( AttributeKey.EmailBucketRatio ).AsInteger() );
                 }
 
-                if ( filterBag.Medium.Contains( "2" ) )
+                if ( filterBag.Medium.Contains( Rock.Enums.Communication.CommunicationType.SMS.ConvertToInt().ToString() ) )
                 {
                     includedRatios.Add( blockCache.GetAttributeValue( AttributeKey.SmsBucketRatio ).AsInteger() );
                 }
 
-                if ( filterBag.Medium.Contains( "3" ) )
+                if ( filterBag.Medium.Contains( Rock.Enums.Communication.CommunicationType.PushNotification.ConvertToInt().ToString() ) )
                 {
                     includedRatios.Add( blockCache.GetAttributeValue( AttributeKey.PushNotificationBucketRatio ).AsInteger() );
                 }
