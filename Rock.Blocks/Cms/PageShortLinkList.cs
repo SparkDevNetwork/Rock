@@ -29,6 +29,7 @@ using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkList;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Cms
@@ -64,6 +65,11 @@ namespace Rock.Blocks.Cms
             public const string DetailPage = "DetailPage";
         }
 
+        private static class PreferenceKey
+        {
+            public const string FilterCreatedBy = "filter-created-by";
+        }
+
         #endregion Keys
 
         #region Fields
@@ -72,6 +78,14 @@ namespace Rock.Blocks.Cms
         /// The Short Link attributes that are configured to show on the grid.
         /// </summary>
         private readonly Lazy<List<AttributeCache>> _gridAttributes = new Lazy<List<AttributeCache>>( BuildGridAttributes );
+
+        #endregion
+
+        #region Properties
+
+        protected ListItemBag FilterCreatedBy => GetBlockPersonPreferences()
+            .GetValue( PreferenceKey.FilterCreatedBy )
+            .FromJsonOrNull<ListItemBag>();
 
         #endregion
 
@@ -149,8 +163,9 @@ namespace Rock.Blocks.Cms
 
             var pageShortLinkService = new PageShortLinkService( RockContext );
 
-            var queryable = pageShortLinkService.Queryable()
-                .GroupJoin(
+            var pageShortLinkQueryable = pageShortLinkService.Queryable();
+
+            var queryable = FilterByPerson( pageShortLinkQueryable ).GroupJoin(
                     interactionCounts,
                     shortLink => shortLink.Id,
                     ic => ic.ShortLinkId,
@@ -163,7 +178,9 @@ namespace Rock.Blocks.Cms
                 {
                     PageShortLink = x.PageShortLink,
                     ClickCount = x.ClickCount
-                } );
+                } )
+                .OrderByDescending( x => x.PageShortLink.IsPinned )
+                .ThenByDescending( x => x.ClickCount );
 
             return queryable;
         }
@@ -207,7 +224,9 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "url", a => a.PageShortLink.Url )
                 .AddTextField( "site", a => a.PageShortLink.Site?.Name )
                 .AddTextField( "token", a => a.PageShortLink.Token )
+                .AddTextField( "category", a => a.PageShortLink.Category?.Name )
                 .AddField( "clickCount", a => a.ClickCount )
+                .AddField( "isPinned", a => a.PageShortLink.IsPinned )
                 .AddTextField( "shortLink", a => a.PageShortLink.ShortLinkUrl )
                 .AddAttributeFieldsFrom( a => a.PageShortLink, _gridAttributes.Value );
         }
@@ -229,6 +248,25 @@ namespace Rock.Blocks.Cms
             }
 
             return new List<AttributeCache>();
+        }
+
+        /// <summary>
+        /// Filters the queryable by the selected Person filter.
+        /// </summary>
+        /// <param name="queryable">The <see cref="Rock.Model.PageShortLink"/> queryable</param>
+        /// <returns></returns>
+        private IQueryable<Model.PageShortLink> FilterByPerson( IQueryable<Model.PageShortLink> queryable )
+        {
+            var createdBy = FilterCreatedBy?.Value.AsGuidOrNull();
+            if ( createdBy.HasValue )
+            {
+                queryable = queryable
+                    .Where( c =>
+                        c.CreatedByPersonAlias.Guid != null &&
+                        c.CreatedByPersonAlias.Guid == createdBy.Value );
+            }
+         
+            return queryable;
         }
 
         #endregion

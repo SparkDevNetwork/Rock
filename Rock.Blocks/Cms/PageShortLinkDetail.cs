@@ -121,21 +121,46 @@ namespace Rock.Blocks.Cms
         /// <returns>The options that provide additional details to the block.</returns>
         private PageShortLinkDetailOptionsBag GetBoxOptions( bool isEditable )
         {
-            var options = new PageShortLinkDetailOptionsBag
+            var siteOptions = SiteCache
+                .All()
+                .Where( site => site.EnabledForShortening )
+                .OrderBy( site => site.Name )
+                .Select( site => new ListItemBag
+                {
+                    Value = site.Guid.ToString(),
+                    Text = site.Name
+                } )
+                .ToList();
+
+            var defaultDomainUrls = new List<ListItemBag>();
+
+            foreach ( var siteOption in siteOptions )
             {
-                SiteOptions = Web.Cache.SiteCache
-                    .All()
-                    .Where( site => site.EnabledForShortening && site.SiteType == SiteType.Web )
-                    .OrderBy( site => site.Name )
-                    .Select( site => new ListItemBag
+                var siteGuid = siteOption.Value.AsGuidOrNull();
+
+                if ( siteGuid.HasValue )
+                {
+                    var site = SiteCache.Get( siteGuid.Value );
+                    if ( site == null )
+                    {
+                        continue;
+                    }
+
+                    var defaultUrl = new SiteService( RockContext ).GetDefaultDomainUri( site.Id );
+
+                    defaultDomainUrls.Add( new ListItemBag
                     {
                         Value = site.Guid.ToString(),
-                        Text = site.Name
-                    } )
-                   .ToList(),
-            };
+                        Text = defaultUrl.ToString()
+                    } );
+                }
+            }
 
-            return options;
+            return new PageShortLinkDetailOptionsBag
+            {
+                SiteOptions = siteOptions,
+                DefaultDomainUrls = defaultDomainUrls
+            };
         }
 
         /// <summary>
@@ -267,6 +292,8 @@ namespace Rock.Blocks.Cms
                 Site = entity.Site.ToListItemBag(),
                 Token = entity.Token,
                 Url = entity.Url,
+                Category = entity.Category.ToListItemBag(),
+                IsPinned = entity.IsPinned,
                 ScheduledRedirects = entity.GetScheduleData()
                     .Schedules
                     ?.Select( ConvertToScheduledRedirectBag )
@@ -305,6 +332,12 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
+            // If we are creating a new Short Link than set IsPinned to True by default.
+            if ( entity.Id == 0 )
+            {
+                bag.IsPinned = true;
+            }
+
             var utmSettings = entity.GetAdditionalSettings<UtmSettings>();
 
             bag.UtmSettings = new UtmSettingsBag
@@ -337,6 +370,12 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Bag.Url ),
                 () => entity.Url = box.Bag.Url );
+
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
+
+            box.IfValidProperty( nameof( box.Bag.IsPinned ),
+                () => entity.IsPinned = box.Bag.IsPinned );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
