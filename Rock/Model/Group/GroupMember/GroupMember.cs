@@ -72,7 +72,9 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
+#if REVIEW_WEBFORMS
         [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 0 )]
+#endif
         public int GroupId { get; set; }
 
         /// <summary>
@@ -105,7 +107,9 @@ namespace Rock.Model
         [Required]
         [DataMember( IsRequired = true )]
         [EnableAttributeQualification]
+#if REVIEW_WEBFORMS
         [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 1 )]
+#endif
         public int GroupRoleId { get; set; }
 
         /// <summary>
@@ -126,7 +130,9 @@ namespace Rock.Model
         /// </value>
         [Required]
         [DataMember( IsRequired = true )]
+#if REVIEW_WEBFORMS
         [Index( "IX_GroupMemberGroupIdGroupRoleIdGroupMemberStatus", IsUnique = false, Order = 2 )]
+#endif
         public GroupMemberStatus GroupMemberStatus { get; set; } = GroupMemberStatus.Active;
 
         /// <summary>

@@ -204,7 +204,9 @@ namespace Rock.Model
         /// </summary>
         public LavaApplicationConfiguration()
         {
+#if REVIEW_WEBFORMS
             this.HasEntitySetName( "LavaApplications" );
+#endif
         }
     }
 

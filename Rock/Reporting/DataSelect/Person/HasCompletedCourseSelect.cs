@@ -67,6 +67,7 @@ namespace Rock.Reporting.DataSelect.Group
             return "Has Completed Course";
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the child controls.
         /// </summary>
@@ -220,6 +221,7 @@ namespace Rock.Reporting.DataSelect.Group
                 item.Selected = isSelected;
             }
         }
+#endif
 
         /// <inheritdoc/>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )

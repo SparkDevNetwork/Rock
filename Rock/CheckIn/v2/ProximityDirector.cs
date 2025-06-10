@@ -101,7 +101,11 @@ namespace Rock.CheckIn.v2
 
                     Activity.Current?.AddEvent( new ActivityEvent( "Add Attendance" ) );
                     // Create it as a proxy so that navigation properties will work.
+#if REVIEW_WEBFORMS
                     attendance = _rockContext.Set<Attendance>().Create();
+#else
+                    attendance = _rockContext.Set<Attendance>().CreateProxy();
+#endif
                     attendance.Occurrence = occurrence;
                     attendance.OccurrenceId = occurrence.Id;
                     attendance.PersonAliasId = person.PrimaryAliasId;

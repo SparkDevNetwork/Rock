@@ -405,6 +405,7 @@ console.log(websiteNames);
         }
 
 #endif
+#if REVIEW_WEBFORMS
         private List<ListItem> GetInteractionChannelListItems()
         {
             var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
@@ -418,6 +419,7 @@ console.log(websiteNames);
 
             return channels.OrderBy( m => m.Text ).ToList();
         }
+#endif
 
         /// <summary>
         /// Creates a Linq Expression that can be applied to an IQueryable to filter the result set.

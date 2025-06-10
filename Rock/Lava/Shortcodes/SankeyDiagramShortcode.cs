@@ -274,10 +274,14 @@ Rock.Lava.Shortcode.SankeyDiagram.init(
 
             // If we have a RockPage related to the current request then
             // register all the JS links we need.
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current?.Handler is RockPage page )
             {
                 page.AddScriptLink( "~/Scripts/sankey-diagram-shortcode.js", true );
             }
+#else
+            throw new NotImplementedException();
+#endif
 
             result.Write( residualBlockContent.Trim() );
         }

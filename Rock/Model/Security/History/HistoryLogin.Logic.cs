@@ -165,6 +165,7 @@ namespace Rock.Model
             try
             {
                 // Attempt to supplement the record with missing request info.
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current?.Request != null || RockRequestContextAccessor.Current != null )
                 {
                     if ( this.ClientIpAddress.IsNullOrWhiteSpace() )
@@ -228,6 +229,7 @@ namespace Rock.Model
                         this.DestinationUrl = cleanUrl;
                     }
                 }
+#endif
 
                 // Look up additional data and save the new record in a background task after waiting 1 second, in an
                 // attempt to allow all related post save actions to complete. While this might not be necessary, this

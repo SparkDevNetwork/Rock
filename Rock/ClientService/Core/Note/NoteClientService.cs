@@ -254,7 +254,11 @@ namespace Rock.ClientService.Core.Note
                     return null;
                 }
 
+#if REVIEW_WEBFORMS
                 noteEntity = RockContext.Set<Model.Note>().Create();
+#else
+                noteEntity = RockContext.Set<Model.Note>().CreateProxy();
+#endif
                 noteEntity.EntityId = contextEntity.Id;
                 noteEntity.ParentNoteId = IdHasher.Instance.GetId( note.Bag.ParentNoteIdKey );
 
@@ -381,7 +385,11 @@ namespace Rock.ClientService.Core.Note
             var entityTypeId = entity.TypeId;
 
             var noteService = new NoteService( RockContext );
+#if REVIEW_WEBFORMS
             var noteQry = noteService.Queryable()
+#else
+            IQueryable<Model.Note> noteQry = noteService.Queryable()
+#endif
                 .Include( n => n.CreatedByPersonAlias.Person )
                 .Include( n => n.EditedByPersonAlias.Person );
 

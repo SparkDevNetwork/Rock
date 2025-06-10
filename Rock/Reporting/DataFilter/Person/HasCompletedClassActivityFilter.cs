@@ -22,9 +22,11 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Linq.Expressions;
+#if REVIEW_WEBFORMS
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using System.Web.UI.WebControls.Expressions;
+#endif
 
 using Rock.Data;
 using Rock.Model;

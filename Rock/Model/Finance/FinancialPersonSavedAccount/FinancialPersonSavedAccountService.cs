@@ -283,6 +283,7 @@ namespace Rock.Model
         /// <returns>A <see cref="FinancialPersonSavedAccount"/> object or null if an error occurs.</returns>
         internal FinancialPersonSavedAccount CreateCreditCardAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, out string errorMessage )
         {
+#if REVIEW_WEBFORMS
             if ( !( gateway.GetGatewayComponent() is IHostedGatewayComponent gatewayComponent ) )
             {
                 errorMessage = "The gateway does not support saving accounts.";
@@ -357,6 +358,9 @@ namespace Rock.Model
             Context.SaveChanges();
 
             return savedAccount;
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <summary>
@@ -370,6 +374,7 @@ namespace Rock.Model
         /// <returns>A <see cref="FinancialPersonSavedAccount"/> object or null if an error occurs.</returns>
         internal FinancialPersonSavedAccount CreateAchAccountFromToken( FinancialGateway gateway, SavedAccountTokenBag options, Person person, int? authorizationTransactionTypeId, out string errorMessage )
         {
+#if REVIEW_WEBFORMS
             if ( !( gateway.GetGatewayComponent() is IHostedGatewayComponent hostedGatewayComponent ) )
             {
                 errorMessage = "The gateway does not support saving accounts.";
@@ -435,6 +440,9 @@ namespace Rock.Model
             Context.SaveChanges();
 
             return savedAccount;
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         #endregion

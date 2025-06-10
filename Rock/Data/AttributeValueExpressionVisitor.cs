@@ -31,11 +31,13 @@ namespace Rock.Data
     {
         #region Fields
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// A reference to the SQL Server Checksum() function call that will
         /// be inserted into comparisons.
         /// </summary>
         private static readonly MethodInfo _checksumMethod = typeof( SqlFunctions ).GetMethod( nameof( SqlFunctions.Checksum ), new Type[] { typeof( string ) } );
+#endif
 
         #endregion
 
@@ -50,6 +52,7 @@ namespace Rock.Data
 
             if ( IsAttributeValueMember( node.Left ) )
             {
+#if REVIEW_WEBFORMS
                 // This should never be the case, but this covers any strange things.
                 if ( !( node.Left is MemberExpression attributeValueExpression ) || attributeValueExpression.Expression == null )
                 {
@@ -64,10 +67,14 @@ namespace Rock.Data
                 // Return a new expression that says the original check and the
                 // ValueChecksum check must match.
                 return Expression.AndAlso( node, checksumExpression );
+#else
+                throw new NotImplementedException();
+#endif
             }
 
             if ( IsAttributeValueMember( node.Right ) )
             {
+#if REVIEW_WEBFORMS
                 // This should never be the case, but this covers any strange things.
                 if ( !( node.Right is MemberExpression attributeValueExpression ) || attributeValueExpression.Expression == null )
                 {
@@ -82,6 +89,9 @@ namespace Rock.Data
                 // Return a new expression that says the original check and the
                 // ValueChecksum check must match.
                 return Expression.AndAlso( node, checksumExpression );
+#else
+                throw new NotImplementedException();
+#endif
             }
 
             return base.VisitBinary( node );

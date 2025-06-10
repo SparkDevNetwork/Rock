@@ -712,11 +712,15 @@ Date Range: {SlidingDateRangePicker.FormatDelimitedValues( selectionConfig.Slidi
                     // if converting from a previous version of the selection
                     DateTime? startDate = selectionValues[2].AsDateTime();
                     DateTime? endDate = selectionValues[3].AsDateTime();
+#if REVIEW_WEBFORMS
                     var slidingDateRangePicker = new SlidingDateRangePicker();
                     slidingDateRangePicker.SlidingDateRangeMode = SlidingDateRangePicker.SlidingDateRangeType.DateRange;
                     slidingDateRangePicker.DateRangeModeStart = startDate;
                     slidingDateRangePicker.DateRangeModeEnd = endDate;
                     selectionConfig.SlidingDateRangePickerDelimitedValues = slidingDateRangePicker.DelimitedValues;
+#else
+                    SlidingDateRangePicker.GetDelimitedValues( SlidingDateRangePicker.SlidingDateRangeType.DateRange, dateRangeModeStart: startDate, dateRangeModeEnd: endDate );
+#endif
                 }
 
                 var accountIdList = new List<int>();

@@ -22,7 +22,9 @@ using System.Linq;
 using System.Runtime.ExceptionServices;
 using System.Text.RegularExpressions;
 
+#if REVIEW_WEBFORMS
 using DocumentFormat.OpenXml.Wordprocessing;
+#endif
 
 namespace Rock.Lava.Blocks
 {

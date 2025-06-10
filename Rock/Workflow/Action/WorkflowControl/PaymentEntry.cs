@@ -799,7 +799,11 @@ namespace Rock.Workflow.Action
             var transactionDetail = transaction.TransactionDetails.FirstOrDefault();
             if ( transactionDetail == null )
             {
+#if REVIEW_WEBFORMS
                 transactionDetail = rockContext.Set<FinancialTransactionDetail>().Create();
+#else
+                transactionDetail = rockContext.Set<FinancialTransactionDetail>().CreateProxy();
+#endif
                 transaction.TransactionDetails.Add( transactionDetail );
             }
 

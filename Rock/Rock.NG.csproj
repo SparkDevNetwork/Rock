@@ -159,6 +159,12 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs" Link="Properties\AssemblySharedInfo.cs" />
     <Compile Include="Badge\BadgeComponent.cs" />
     <Compile Include="Badge\BadgeContainer.cs" />
+    <Compile Include="Field\Types\DeviceFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemEnumPickerFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemPickerFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemSearchPickerFieldType.cs" />
+    <Compile Include="Field\Types\UniversalItemTreePickerFieldType.cs" />
     <Compile Include="Jobs\CalculateGroupRequirements.cs" />
     <Compile Include="Jobs\NoRetryAggregateException.cs" />
     <Compile Include="Jobs\NoRetryException.cs" />
@@ -167,7 +173,6 @@
     <Compile Include="Jobs\RockJobWarningException.cs" />
     <Compile Include="Jobs\RockTriggerListener.cs" />
     <Compile Include="Jobs\RunNowRockJobListener.cs" />
-    <Compile Include="Lava\RockLiquid\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
     <Compile Include="Model\Reporting\Report\Report.WebForms.cs" />
     <Compile Include="Transactions\AddInteractionEntityTransaction.cs" />
@@ -183,8 +188,10 @@
     <Compile Include="Transactions\ITransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowsTransaction.cs" />
     <Compile Include="Transactions\LaunchWorkflowTransaction.cs" />
+    <Compile Include="Transactions\RequeueChatToRockSyncCommandTransaction.cs" />
     <Compile Include="Transactions\RockQueue.cs" />
     <Compile Include="Transactions\SaveCommunicationTransaction.cs" />
+    <Compile Include="Transactions\SaveHistoryTransaction.cs" />
     <Compile Include="Transactions\SaveMetaphoneTransaction.cs" />
     <Compile Include="Transactions\SendAchievementCompletedRealTimeNotificationsTransaction.cs" />
     <Compile Include="Transactions\SendAttendanceOccurrenceRealTimeNotificationsTransaction.cs" />
@@ -244,7 +251,7 @@
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="2.0.4" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
     <PackageReference Include="PreMailer.Net" Version="2.2.0" />
-    <PackageReference Include="PuppeteerSharp" Version="6.2.0" />
+    <PackageReference Include="PuppeteerSharp" Version="18.1.0" />
     <PackageReference Include="QRCoder" Version="1.6.0" />
     <PackageReference Include="Quartz" Version="3.6.0" />
     <PackageReference Include="RestSharp" Version="106.11.7" />
@@ -277,6 +284,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <Folder Include="Lava\RockLiquid\" />
     <Folder Include="Storage\Common\" />
   </ItemGroup>
 
@@ -286,6 +294,9 @@
     </Reference>
     <Reference Include="Rock.Common.Tv">
       <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>
+    </Reference>
+    <Reference Include="stream-chat-net">
+      <HintPath>..\libs\StreamChat\stream-chat-net.dll</HintPath>
     </Reference>
   </ItemGroup>
 

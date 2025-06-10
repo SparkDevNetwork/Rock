@@ -176,7 +176,6 @@ namespace Rock.Reporting
             return null;
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the component data that will be provided to the Obsidian component
         /// when it is initialized. This should include representations of the current

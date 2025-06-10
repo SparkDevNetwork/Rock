@@ -50,7 +50,9 @@ namespace Rock.Model
         /// user interface and logs. It should be short, but descriptive.
         /// </summary>
         [Required]
+#if REVIEW_WEBFORMS
         [Index( IsUnique = true )]
+#endif
         [MaxLength( 50 )]
         [DataMember( IsRequired = true )]
         public string Name { get; set; }

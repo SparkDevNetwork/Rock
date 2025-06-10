@@ -134,11 +134,13 @@ namespace Rock.Lava.Blocks
 
             if ( currentPerson == null )
             {
+#if REVIEW_WEBFORMS
                 var httpContext = HttpContext.Current;
                 if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
+#endif
             }
 
             return currentPerson;
@@ -153,6 +155,7 @@ namespace Rock.Lava.Blocks
         /// <returns>The output from the application endpoint.</returns>
         private string MergeRequest( LavaEndpointCache lavaEndpoint, LavaApplicationCache lavaApplication, Person currentPerson )
         {
+#if REVIEW_WEBFORMS
             var mergeFields = LavaApplicationRequestHelpers.RequestToDictionary( HttpContext.Current.Request, currentPerson );
             mergeFields.Add( "ConfigurationRigging", lavaApplication.ConfigurationRigging );
 
@@ -167,6 +170,9 @@ namespace Rock.Lava.Blocks
             {
                 return string.Empty;
             }
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         #endregion

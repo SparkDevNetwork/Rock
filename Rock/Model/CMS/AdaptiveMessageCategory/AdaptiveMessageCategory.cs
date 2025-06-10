@@ -41,7 +41,9 @@ namespace Rock.Model
         /// The adaptive message identifier.
         /// </value>
         [DataMember]
+#if REVIEW_WEBFORMS
         [Index( "IX_AdaptiveMessageCategory", 0 )]
+#endif
         public int AdaptiveMessageId { get; set; }
 
         /// <summary>
@@ -51,7 +53,9 @@ namespace Rock.Model
         /// The category identifier.
         /// </value>
         [DataMember]
+#if REVIEW_WEBFORMS
         [Index( "IX_AdaptiveMessageCategory", 1 )]
+#endif
         public int CategoryId { get; set; }
 
         /// <summary>

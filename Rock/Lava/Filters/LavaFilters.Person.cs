@@ -19,7 +19,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Collections.Specialized;
 using System.Data.Entity;
+#if REVIEW_NET5_0_OR_GREATER
+using DbGeography = NetTopologySuite.Geometries.Geometry;
+#else
 using System.Data.Entity.Spatial;
+#endif
 using System.Drawing;
 using System.Drawing.Imaging;
 using System.Dynamic;
@@ -1195,7 +1199,11 @@ namespace Rock.Lava
             double longitude = double.Parse( parts[1].Trim() );
 
             string wellKnownText = $"POINT({longitude} {latitude})";
+#if REVIEW_WEBFORMS
             return DbGeography.PointFromText( wellKnownText, 4326 );
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <summary>

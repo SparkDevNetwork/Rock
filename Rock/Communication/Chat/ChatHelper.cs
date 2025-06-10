@@ -370,8 +370,12 @@ namespace Rock.Communication.Chat
         /// <returns>The Rock mobile push service account JSON string.</returns>
         internal static string GetRockMobilePushServiceAccountJson()
         {
+#if WEBFORMS_REVIEW
             return TransportContainer.GetComponent( typeof( Transport.RockMobilePush ).FullName )
                 ?.GetAttributeValue( "ServiceAccountJson" );
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <summary>

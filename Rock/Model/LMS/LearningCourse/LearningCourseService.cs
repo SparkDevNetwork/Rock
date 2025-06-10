@@ -441,7 +441,7 @@ namespace Rock.Model
                     }
 
 #if REVIEW_NET5_0_OR_GREATER
-                    course.LearningCourseRequirements.ToList().ForEach( cr =>
+                    course.CourseRequirements.ToList().ForEach( cr =>
 #else
                     course.LearningCourseRequirements.ForEach( cr =>
 #endif

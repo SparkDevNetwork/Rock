@@ -175,6 +175,7 @@ namespace Rock.Model
         public SegmentConfiguration()
         {
             this.HasOptional( a => a.FilterDataView ).WithMany().HasForeignKey( a => a.FilterDataViewId ).WillCascadeOnDelete( false );
+#if REVIEW_WEBFORMS
             this.HasMany( a => a.Categories )
                 .WithMany()
                 .Map( a =>
@@ -183,6 +184,7 @@ namespace Rock.Model
                     a.MapRightKey( "CategoryId" );
                     a.ToTable( "PersonalizationSegmentCategory" );
                 } );
+#endif
         }
     }
 

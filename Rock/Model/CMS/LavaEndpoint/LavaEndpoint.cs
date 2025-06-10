@@ -323,7 +323,9 @@ namespace Rock.Model
         /// </summary>
         public LavaEndpointConfiguration()
         {
+#if REVIEW_WEBFORMS
             this.HasEntitySetName( "LavaEndpoints" );
+#endif
             this.HasRequired( a => a.LavaApplication ).WithMany( a => a.LavaEndpoints ).HasForeignKey( a => a.LavaApplicationId ).WillCascadeOnDelete( true );
         }
     }

@@ -707,7 +707,6 @@ function() {
                 item.Selected = settings.StepCampusGuids.Contains( item.Value.AsGuid() );
             }
         }
-#endif
 
 #endif
 

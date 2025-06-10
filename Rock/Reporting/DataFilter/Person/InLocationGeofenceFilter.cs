@@ -146,8 +146,12 @@ namespace Rock.Reporting.DataFilter.Person
 
                     if ( geoString.IsNotNullOrWhiteSpace() && geoString.StartsWith( "POLYGON" ) )
                     {
+#if REVIEW_WEBFORMS
                         var location = locationService.GetByGeoFence( DbGeography.PolygonFromText( geoString, DbGeography.DefaultCoordinateSystemId ) );
                         locationGuid = location.Guid;
+#else
+                        throw new NotImplementedException();
+#endif
                     }
                 }
             }

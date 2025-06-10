@@ -191,6 +191,7 @@ namespace Rock.Reporting.DataFilter.Group
                     var geoString = locationRaw.FromJsonOrNull<string>();
                     var locationService = new LocationService( rockContext );
 
+#if REVIEW_WEBFORMS
                     if ( geoString.StartsWith( "POLYGON" ) )
                     {
                         // GeoFence
@@ -203,6 +204,9 @@ namespace Rock.Reporting.DataFilter.Group
                         var location = locationService.GetByGeoPoint( DbGeography.FromText( geoString, DbGeography.DefaultCoordinateSystemId ) );
                         locationGuid = location.Guid.ToString();
                     }
+#else
+                    throw new NotImplementedException();
+#endif
                 }
             }
 

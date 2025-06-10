@@ -110,7 +110,11 @@ namespace Rock.Core.EntitySearch
 
                         foreach ( var path in paths )
                         {
+#if REVIEW_WEBFORMS
                             queryable = queryable.Include( path.Trim() );
+#else
+                            throw new NotImplementedException();
+#endif
                         }
                     }
 

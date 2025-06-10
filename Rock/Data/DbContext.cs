@@ -561,6 +561,7 @@ namespace Rock.Data
         /// <returns>The Id of the current person's primary alias.</returns>
         internal int? GetCurrentPersonAliasId()
         {
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
             {
                 var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
@@ -569,6 +570,7 @@ namespace Rock.Data
                     return currentPerson.PrimaryAliasId;
                 }
             }
+#endif
 
             if ( Net.RockRequestContextAccessor.Current != null )
             {

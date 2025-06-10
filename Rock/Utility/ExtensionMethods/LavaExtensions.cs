@@ -636,7 +636,11 @@ namespace Rock
                 }
                 else
                 {
+#if REVIEW_WEBFORMS
                     ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+#else
+                    ExceptionLogService.LogException( ex );
+#endif
                     return "Error resolving Lava merge fields: " + ex.Message;
                 }
             }

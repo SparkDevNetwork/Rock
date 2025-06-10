@@ -136,8 +136,6 @@ function() {{
             return result;
         }
 
-#if REVIEW_WEBFORMS
-        /// <summary>
         /// <summary>
         /// Gets the expression.
         /// </summary>

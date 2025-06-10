@@ -12,6 +12,9 @@ using System.Runtime.InteropServices;
 // COM, set the ComVisible attribute to true on that type.
 [assembly: ComVisible(false)]
 [assembly: InternalsVisibleTo( "Rock" )]
+#if NET5_0_OR_GREATER
+[assembly: InternalsVisibleTo( "Rock.NG" )]
+#endif
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
 [assembly: Guid( "4F17FAFD-6003-4451-A0CD-5B21FA65B78D" )]

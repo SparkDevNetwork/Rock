@@ -27,6 +27,7 @@ namespace Rock.Cms
 {
     internal static class LavaApplicationRequestHelpers
     {
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Convert the request into a generic JSON object that can provide information
         /// to the lava application.
@@ -81,5 +82,6 @@ namespace Rock.Cms
 
             return dictionary;
         }
+#endif
     }
 }

@@ -281,6 +281,7 @@ namespace Rock.Data
                         continue;
                     }
 
+#if REVIEW_WEBFORMS
                     // First configure the real entity so that the EntityAttributeValues
                     // navigation property works.
 
@@ -334,6 +335,10 @@ namespace Rock.Data
                     // .ToTable( "name" )
                     var toTableMethod = entityTypeConfiguration.GetType().GetMethod( "ToTable", new[] { typeof( string ) } );
                     toTableMethod.Invoke( entityTypeConfiguration, new object[] { $"AttributeValue_{entityTableName}" } );
+#else
+                    //modelBuilder.Entity<Campus>().HasMany( a => a.CampusAttributeValues ).WithOne().HasForeignKey( a => a.EntityId ).WillCascadeOnDelete( false );
+                    throw new NotImplementedException();
+#endif
                 }
                 catch ( Exception ex )
                 {

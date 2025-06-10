@@ -253,7 +253,6 @@ function ()
             return selectExpression;
         }
 
-#if REVIEW_WEBFORMS
         private const string _CtlDataView = "dvpDataView";
 
 #if WEBFORMS

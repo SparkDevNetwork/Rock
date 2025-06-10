@@ -204,7 +204,11 @@ namespace Rock.Lava.Blocks
                                 }
                             )
                             .Where( joined => !joined.SaturationDays.HasValue ||
+#if REVIEW_WEBFORMS
                                             joined.InteractionDateTime >= DbFunctions.AddDays( currentDate, -joined.SaturationDays.Value ) )
+#else
+                                            joined.InteractionDateTime >= currentDate.AddDays( -joined.SaturationDays.Value ) )
+#endif
                             .GroupBy( joined => joined.AdaptationId )
                             .Select( g => new { AdaptationId = g.Key, InteractionCount = g.Count() } )
                             .ToDictionary( g => g.AdaptationId, g => g.InteractionCount );
@@ -220,8 +224,12 @@ namespace Rock.Lava.Blocks
                 // Only retrieve segments if at least one adaptation has SegmentIds.
                 if ( requiresSegments )
                 {
+#if REVIEW_WEBFORMS
                     personSegmentIdList = LavaPersonalizationHelper.GetPersonalizationSegmentIdListForPersonFromContextCookie(
                         context, System.Web.HttpContext.Current, person );
+#else
+                    throw new NotImplementedException();
+#endif
                 }
 
                 var adaptationQry = adaptiveMessages

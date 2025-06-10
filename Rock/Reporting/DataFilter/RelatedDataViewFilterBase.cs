@@ -234,7 +234,6 @@ namespace Rock.Reporting.DataFilter
             return $"{GetRelatedEntityName()} Data View";
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the picker control's label text based on the related entity.
         /// </summary>
@@ -252,7 +251,6 @@ namespace Rock.Reporting.DataFilter
         {
             return string.Format( "A Data View that provides the set of {0} with which the {1} may be connected.", GetRelatedEntityName().Pluralize(), GetTargetEntityName() );
         }
-#endif
 
         /// <summary>
         ///     Formats the selection on the client-side.  When the filter is collapsed by the user, the Filterfield control
@@ -314,7 +312,6 @@ function() {
             return result;
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// The control data view
         /// </summary>

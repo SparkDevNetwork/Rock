@@ -390,7 +390,6 @@ namespace Rock.Reporting.DataFilter.Person
             return result;
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets a list of group type roles that should be available for
         /// selection in the filter settings UI.
@@ -829,7 +828,6 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
         }
-#endif
 
 #endif
 

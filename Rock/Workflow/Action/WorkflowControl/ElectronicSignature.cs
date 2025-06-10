@@ -346,7 +346,11 @@ namespace Rock.Workflow.Action
             var assignedToPersonAliasId = GetAssignedToPersonAliasId( rockContext, action );
 
             // Create the document.
+#if REVIEW_WEBFORMS
             var document = rockContext.Set<SignatureDocument>().Create();
+#else
+            var document = rockContext.Set<SignatureDocument>().CreateProxy();
+#endif
             document.SignatureDocumentTemplateId = template.Id;
             document.Status = SignatureDocumentStatus.Signed;
             document.Name = signatureDocumentName;

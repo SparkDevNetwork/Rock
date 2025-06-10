@@ -779,7 +779,11 @@ namespace Rock.Model
 
             if ( !Uri.IsWellFormedUriString( photoUrl, UriKind.Absolute ) )
             {
+#if REVIEW_WEBFORMS
                 photoUrl = VirtualPathUtility.ToAbsolute( photoUrl );
+#else
+                throw new NotImplementedException();
+#endif
             }
 
             messageBag.PhotoUrl = publicUrl.IsNotNullOrWhiteSpace() ? publicUrl + photoUrl : photoUrl;

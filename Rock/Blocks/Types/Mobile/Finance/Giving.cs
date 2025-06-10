@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using Rock.Attribute;
 using Rock.Model;
 using System.Linq;
@@ -447,7 +448,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         /// </summary>
         protected Guid? SavedAccountListPageGuid => GetAttributeValue( AttributeKey.SavedAccountListPage ).AsGuidOrNull();
 
-        #endregion
+#endregion
 
         #region Methods
 
@@ -1691,3 +1692,4 @@ namespace Rock.Blocks.Types.Mobile.Finance
         #endregion
     }
 }
+#endif

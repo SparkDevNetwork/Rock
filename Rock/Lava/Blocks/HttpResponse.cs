@@ -67,6 +67,7 @@ namespace Rock.Lava.Blocks
             // Process the status code
             var statusCode = settings["status"].AsIntegerOrNull() ?? 200;
 
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current != null )
             {
                 HttpContext.Current.Response.StatusCode = statusCode;
@@ -100,6 +101,9 @@ namespace Rock.Lava.Blocks
                     }
                 }
             }
+#else
+            throw new NotImplementedException();
+#endif
 
             // Abort the current rendering operation if the status code is not 2xx.
             if ( statusCode < 200 || statusCode > 299 )

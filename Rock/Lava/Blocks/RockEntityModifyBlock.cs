@@ -107,7 +107,9 @@ namespace Rock.Lava.Blocks
 
             // Enable change-tracking for this data context as entity commands would have disabled this. There is
             // consideration of changing the entity commands to not do this in the future.
+#if REVIEW_WEBFORMS
             rockContext.Configuration.AutoDetectChangesEnabled = true;
+#endif
 
             // First ensure that entity commands are allowed in the context
             if ( !this.IsAuthorized( context, RequiredPermissionKey ) )
@@ -165,8 +167,12 @@ namespace Rock.Lava.Blocks
                 {
                     var validationResult = $@"{{""showValidationSummary"":""{Base64Encode( _result.ValidationErrors.ToJson() )}""}}";
 
+#if REVIEW_WEBFORMS
                     HttpContext.Current?.Response.Headers.Add( "HX-Trigger", validationResult );
                     HttpContext.Current?.Response.Headers.Add( "HX-Reswap", "none" );
+#else
+                    throw new NotImplementedException();
+#endif
                     throw new LavaInterruptException();
                 }
             }
@@ -498,11 +504,13 @@ namespace Rock.Lava.Blocks
 
             if ( currentPerson == null )
             {
+#if REVIEW_WEBFORMS
                 var httpContext = HttpContext.Current;
                 if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
                 {
                     currentPerson = httpContext.Items["CurrentPerson"] as Person;
                 }
+#endif
             }
 
             return currentPerson;
@@ -706,6 +714,7 @@ namespace Rock.Lava.Blocks
 
                 foreach ( var dynamicParm in dynamicParmList )
                 {
+#if REVIEW_WEBFORMS
                     if ( HttpContext.Current?.Request[dynamicParm] != null )
                     {
                         var dynamicParmValue = HttpContext.Current.Request[dynamicParm].ToString();
@@ -725,6 +734,9 @@ namespace Rock.Lava.Blocks
                                 }
                         }
                     }
+#else
+                    throw new NotImplementedException();
+#endif
                 }
             }
 
