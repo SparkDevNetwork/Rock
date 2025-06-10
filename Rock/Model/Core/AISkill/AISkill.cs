@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -32,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AISkill" )]
     [DataContract]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.
     [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "d953ab34-4ab6-47c6-857b-53044a99ed75" )]
     public partial class AISkill : Model<AISkill>, IHasAdditionalSettings

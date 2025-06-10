@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.Core.AI.Agent;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -32,6 +33,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AISkillFunction" )]
     [DataContract]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.
     [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "357d2625-fdca-41f8-ab8d-1cf2ce0abeed" )]
     public partial class AISkillFunction : Model<AISkillFunction>, IHasAdditionalSettings

@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Utility;
 
 namespace Rock.Model
 {
@@ -33,6 +34,7 @@ namespace Rock.Model
     [RockDomain( "Core" )]
     [Table( "AIAgent" )]
     [DataContract]
+    [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.
     [CodeGenerateRest( DisableEntitySecurity = true )]
     [Rock.SystemGuid.EntityTypeGuid( "ee3fe609-5c7c-492e-b0e9-5461045fc825" )]
     public partial class AIAgent : Model<AIAgent>, IHasAdditionalSettings

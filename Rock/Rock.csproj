@@ -861,6 +861,9 @@
     <Compile Include="Model\CMS\LavaEndpoint\LavaEndpoint.Logic.cs" />
     <Compile Include="Model\CMS\LavaEndpoint\LavaEndpointService.cs" />
     <Compile Include="Model\CodeGenerated\AIAgentService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AIAgentSessionAnchorService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AIAgentSessionHistoryService.CodeGenerated.cs" />
+    <Compile Include="Model\CodeGenerated\AIAgentSessionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AIAgentSkillService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AISkillFunctionService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\AISkillService.CodeGenerated.cs" />
@@ -869,6 +872,15 @@
     <Compile Include="Model\CodeGenerated\LavaApplicationService.CodeGenerated.cs" />
     <Compile Include="Model\CodeGenerated\LavaEndpointService.CodeGenerated.cs" />
     <Compile Include="Jobs\RunLava.cs" />
+    <Compile Include="Model\Core\AIAgentSessionAnchor\AIAgentSessionAnchor.cs" />
+    <Compile Include="Model\Core\AIAgentSessionAnchor\AIAgentSessionAnchor.SaveHook.cs" />
+    <Compile Include="Model\Core\AIAgentSessionAnchor\AIAgentSessionAnchorService.cs" />
+    <Compile Include="Model\Core\AIAgentSessionHistory\AIAgentSessionHistory.cs" />
+    <Compile Include="Model\Core\AIAgentSessionHistory\AIAgentSessionHistory.SaveHook.cs" />
+    <Compile Include="Model\Core\AIAgentSessionHistory\AIAgentSessionHistoryService.cs" />
+    <Compile Include="Model\Core\AIAgentSession\AIAgentSession.cs" />
+    <Compile Include="Model\Core\AIAgentSession\AIAgentSession.SaveHook.cs" />
+    <Compile Include="Model\Core\AIAgentSession\AIAgentSessionService.cs" />
     <Compile Include="Model\Core\AIAgentSkill\AIAgentSkill.cs" />
     <Compile Include="Model\Core\AIAgentSkill\AIAgentSkill.SaveHook.cs" />
     <Compile Include="Model\Core\AIAgent\AIAgent.cs" />

@@ -2080,5 +2080,20 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.AISkillFunction"/> 
         /// </summary>
         public const string AI_SKILL_FUNCTION = "357D2625-FDCA-41F8-AB8D-1CF2CE0ABEED";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AIAgentSession"/> 
+        /// </summary>
+        public const string AI_AGENT_SESSION = "2415941A-8A3F-49FE-8039-DB27096B0EDF";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AIAgentSessionAnchor"/> 
+        /// </summary>
+        public const string AI_AGENT_SESSION_ANCHOR = "3ED1476A-B7FC-40E2-BBAB-AF084C82D7F1";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AIAgentSessionHistory"/> 
+        /// </summary>
+        public const string AI_AGENT_SESSION_HISTORY = "6AD212BE-F8D0-4C58-AB0E-D723ED5E2155";
     }
 }

@@ -52,9 +52,21 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<AIAgentSessionAnchor>( Context ).Queryable().Any( a => a.EntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AIAgentSessionAnchor.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<AIProvider>( Context ).Queryable().Any( a => a.ProviderComponentEntityTypeId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AIProvider.FriendlyTypeName );
+                return false;
+            }
+
+            if ( new Service<AISkill>( Context ).Queryable().Any( a => a.CodeEntityTypeId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", EntityType.FriendlyTypeName, AISkill.FriendlyTypeName );
                 return false;
             }
 
