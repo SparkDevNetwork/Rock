@@ -15,13 +15,22 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
+                    width="30%"
                     visiblePriority="xs" />
 
         <TextColumn name="description"
                     title="Description"
                     field="description"
                     :filter="textValueFilter"
-                    visiblePriority="xs" />
+                    width="70%"
+                    visiblePriority="md" />
+
+        <LabelColumn name="role"
+                     title="Role"
+                     field="role"
+                     :filter="pickExistingValueFilter"
+                     width="160px"
+                     visiblePriority="sm" />
 
         <SecurityColumn />
 
@@ -32,7 +41,7 @@
 <script setup lang="ts">
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn } from "@Obsidian/Controls/grid";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, SecurityColumn, SelectColumn, pickExistingValueFilter, LabelColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AIAgentListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentList/aiAgentListOptionsBag";

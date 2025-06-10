@@ -15,18 +15,20 @@
 // </copyright>
 //
 
-using System.Threading.Tasks;
-
-using Microsoft.SemanticKernel;
+using Rock.Enums.Core.AI.Agent;
 
 namespace Rock.AI.Agent
 {
-    public interface IChatAgent
+    /// <summary>
+    /// Additional settings for <see cref="Model.AIAgent"/> that do not need to
+    /// be directly queried from the database.
+    /// </summary>
+    internal class AgentSettings
     {
-        AgentRequestContext Context { get; }
-
-        Task<ChatMessageContent> GetChatMessageContentAsync();
-
-        UsageMetric GetMetricUsageFromResult( ChatMessageContent result );
+        /// <summary>
+        /// The role that the agent will use when determining which language
+        /// model to use.
+        /// </summary>
+        public ModelServiceRole Role { get; set; }
     }
 }

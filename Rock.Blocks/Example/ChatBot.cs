@@ -69,7 +69,7 @@ namespace Rock.Blocks.Example
 
             agent.Context.ChatHistory.AddUserMessage( message );
 
-            var result = await agent.GetChatMessageContentAsync( ModelServiceRole.Default );
+            var result = await agent.GetChatMessageContentAsync();
 
             return ActionOk( result.Content );
         }

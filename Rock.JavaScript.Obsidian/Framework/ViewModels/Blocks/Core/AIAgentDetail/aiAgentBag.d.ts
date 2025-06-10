@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { ModelServiceRole } from "@Obsidian/Enums/Core/AI/Agent/modelServiceRole";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -57,6 +58,9 @@ export type AIAgentBag = {
      * special instructions it should follow when interacting with people.
      */
     persona?: string | null;
+
+    /** The role that this agent uses when determining which AI model to use. */
+    role: ModelServiceRole;
 
     /**
      * A collection containing the Rock.Model.AIAgentSkill entities

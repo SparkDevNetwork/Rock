@@ -25,6 +25,7 @@
     import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentBag";
     import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentDetailOptionsBag";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { ModelServiceRoleDescription } from "@Obsidian/Enums/Core/AI/Agent/modelServiceRole";
 
     const props = defineProps({
         modelValue: {
@@ -86,6 +87,8 @@
         if (!props.modelValue) {
             return valueBuilder.build();
         }
+
+        valueBuilder.addTextValue("Role", ModelServiceRoleDescription[props.modelValue.role]);
 
         return valueBuilder.build();
     });

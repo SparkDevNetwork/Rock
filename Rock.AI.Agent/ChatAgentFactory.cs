@@ -99,7 +99,10 @@ namespace Rock.AI.Agent
 
             _kernelBuilder = kernelBuilder;
 
-            _agentConfiguration = new AgentConfiguration( provider, string.Empty, GetSkillConfigurations( agentId, rockContext ) );
+            var agent = AIAgentCache.Get( agentId, rockContext );
+            var settings = agent.GetAdditionalSettings<AgentSettings>();
+
+            _agentConfiguration = new AgentConfiguration( provider, string.Empty, settings.Role, GetSkillConfigurations( agentId, rockContext ) );
             _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
             sw.Stop();
 
@@ -126,7 +129,7 @@ namespace Rock.AI.Agent
 
             _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
 
-            return new ChatAgent( kernel, _agentConfiguration.Provider );
+            return new ChatAgent( kernel, _agentConfiguration.Role, _agentConfiguration.Provider );
         }
 
         /// <summary>

@@ -704,6 +704,7 @@
     <Compile Include="AI\Agent\AgentProviderComponent.cs" />
     <Compile Include="AI\Agent\AgentProviderContainer.cs" />
     <Compile Include="AI\Agent\AgentRequestContext.cs" />
+    <Compile Include="AI\Agent\AgentSettings.cs" />
     <Compile Include="AI\Agent\ContextAnchor.cs" />
     <Compile Include="AI\Agent\IAgentProvider.cs" />
     <Compile Include="AI\Agent\IChatAgent.cs" />

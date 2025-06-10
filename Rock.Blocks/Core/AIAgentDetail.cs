@@ -20,6 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Rock.AI.Agent;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -41,7 +42,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Displays the details of a particular ai agent." )]
     [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -168,6 +169,8 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
+            var settings = entity.GetAdditionalSettings<AgentSettings>();
+
             return new AIAgentBag
             {
                 IdKey = entity.IdKey,
@@ -177,7 +180,8 @@ namespace Rock.Blocks.Core
                 AvatarBinaryFile = entity.AvatarBinaryFile.ToListItemBag(),
                 Description = entity.Description,
                 Name = entity.Name,
-                Persona = entity.Persona
+                Persona = entity.Persona,
+                Role = settings.Role
             };
         }
 
@@ -215,6 +219,8 @@ namespace Rock.Blocks.Core
                 return false;
             }
 
+            var settings = entity.GetAdditionalSettings<AgentSettings>();
+
             box.IfValidProperty( nameof( box.Bag.AvatarBinaryFile ),
                 () => entity.AvatarBinaryFileId = box.Bag.AvatarBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
 
@@ -226,6 +232,11 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Bag.Persona ),
                 () => entity.Persona = box.Bag.Persona );
+
+            box.IfValidProperty( nameof( box.Bag.Role ),
+                () => settings.Role = box.Bag.Role );
+
+            entity.SetAdditionalSettings( settings );
 
             return true;
         }

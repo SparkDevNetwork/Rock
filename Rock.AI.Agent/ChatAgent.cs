@@ -29,13 +29,16 @@ namespace Rock.AI.Agent
     {
         private readonly IAgentProvider _agentProvider;
 
+        private readonly ModelServiceRole _role;
+
         private readonly Kernel _kernel;
 
         public AgentRequestContext Context { get; }
 
-        public ChatAgent( Kernel kernel, IAgentProvider agentProvider )
+        public ChatAgent( Kernel kernel, ModelServiceRole role, IAgentProvider agentProvider )
         {
             _kernel = kernel;
+            _role = role;
             _agentProvider = agentProvider;
 
             Context = kernel.Services.GetRequiredService<AgentRequestContext>();
@@ -48,9 +51,9 @@ namespace Rock.AI.Agent
             //var result = this.GetChatMessageContentAsync( ModelServiceRole.Code ).Result;
         }
 
-        public Task<ChatMessageContent> GetChatMessageContentAsync( ModelServiceRole role )
+        public Task<ChatMessageContent> GetChatMessageContentAsync()
         {
-            var chat = _kernel.GetRequiredService<IChatCompletionService>( role.ToString() );
+            var chat = _kernel.GetRequiredService<IChatCompletionService>( _role.ToString() );
 
             return chat.GetChatMessageContentAsync(
                 Context.ChatHistory,

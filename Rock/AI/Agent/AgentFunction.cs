@@ -63,6 +63,10 @@ namespace Rock.AI.Agent
         /// <summary>
         /// The role helps the agent determine what AI model to use.
         /// </summary>
+        /// <remarks>
+        /// This is only valid when <see cref="FunctionType"/> is set to
+        /// <see cref="FunctionType.AIPrompt"/>.
+        /// </remarks>
         public ModelServiceRole Role { get; set; }
 
         /// <summary>
@@ -88,6 +92,10 @@ namespace Rock.AI.Agent
         /// }
         /// </code>
         /// </summary>
+        /// <remarks>
+        /// This is only valid when <see cref="FunctionType"/> is set to
+        /// <see cref="FunctionType.AIPrompt"/>.
+        /// </remarks>
         public string InputSchema { get; set; } = @"";
 
         /// <summary>
@@ -101,8 +109,12 @@ namespace Rock.AI.Agent
         /// Lower values (e.g., 0.2) make output more focused and deterministic.
         /// Higher values (e.g., 0.8) increase randomness and creativity.
         /// Use lower temperatures for fact-based tasks, and higher for brainstorming or open-ended prompts.
-        /// Default is 0.7.
+        /// Default is 0.7. 
         /// </summary>
+        /// <remarks>
+        /// This is only valid when <see cref="FunctionType"/> is set to
+        /// <see cref="FunctionType.AIPrompt"/>.
+        /// </remarks>
         public double? Temperature { get; set; } = 0.7;
 
         /// <summary>
@@ -111,6 +123,10 @@ namespace Rock.AI.Agent
         /// Lower values speed up responses and reduce cost, while higher values allow more detailed output.
         /// Use 10–50 tokens for short answers, 100–300 for summaries, and 700+ for creative writing.
         /// </summary>
+        /// <remarks>
+        /// This is only valid when <see cref="FunctionType"/> is set to
+        /// <see cref="FunctionType.AIPrompt"/>.
+        /// </remarks>
         public int? MaxTokens { get; set; }
 
         /// <summary>

@@ -17,20 +17,25 @@
 
 using System.Collections.Generic;
 
+using Rock.Enums.Core.AI.Agent;
+
 namespace Rock.AI.Agent
 {
     internal class AgentConfiguration
     {
         public IAgentProvider Provider { get; }
 
+        public ModelServiceRole Role { get; }
+
         public string CoreSystemPrompt { get; }
 
         public IReadOnlyCollection<SkillConfiguration> Skills { get; }
 
-        public AgentConfiguration( IAgentProvider provider, string coreSystemPrompt, IReadOnlyList<SkillConfiguration> skills )
+        public AgentConfiguration( IAgentProvider provider, string coreSystemPrompt, ModelServiceRole role, IReadOnlyList<SkillConfiguration> skills )
         {
             Provider = provider;
             CoreSystemPrompt = coreSystemPrompt ?? string.Empty;
+            Role = role;
             Skills = skills ?? new List<SkillConfiguration>();
         }
     }

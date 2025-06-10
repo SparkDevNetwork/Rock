@@ -18,8 +18,20 @@
                  label="Persona"
                  textMode="multiline" />
 
-        <ImageUploader v-model="avatarBinaryFile"
-                       label="Avatar" />
+        <div class="row">
+            <div class="col-md-6">
+                <ImageUploader v-model="avatarBinaryFile"
+                               label="Avatar" />
+            </div>
+
+            <div class="col-md-6">
+                <DropDownList v-model="role"
+                              label="Role"
+                              :items="roleItems"
+                              :showBlankItem="false"
+                              rules="required" />
+            </div>
+        </div>
 
         <CheckBoxList v-model="skills"
                       label="Skills"
@@ -29,6 +41,7 @@
 
 <script setup lang="ts">
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { PropType, ref, watch } from "vue";
@@ -37,6 +50,9 @@
     import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentBag";
     import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { ModelServiceRole, ModelServiceRoleDescription } from "@Obsidian/Enums/Core/AI/Agent/modelServiceRole";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
         modelValue: {
@@ -60,11 +76,14 @@
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
     const persona = propertyRef(props.modelValue.bag?.persona ?? "", "Persona");
     const avatarBinaryFile = ref(props.modelValue.bag?.avatarBinaryFile ?? null);
+    const role = ref((props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
     const skills = ref(props.modelValue.bag?.skills?.map(s => s.value!) ?? []);
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, name, persona];
+
+    const roleItems = enumToListItemBag(ModelServiceRoleDescription);
 
     // #endregion
 
@@ -86,12 +105,13 @@
         updateRefValue(name, props.modelValue.bag?.name ?? "");
         updateRefValue(persona, props.modelValue.bag?.persona ?? "");
         updateRefValue(avatarBinaryFile, props.modelValue.bag?.avatarBinaryFile ?? null);
+        updateRefValue(role, (props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
         updateRefValue(skills, props.modelValue.bag?.skills?.map(s => s.value!) ?? []);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([...propRefs, avatarBinaryFile, skills], () => {
+    watch([...propRefs, avatarBinaryFile, role, skills], () => {
         const newValue: ValidPropertiesBox<AIAgentBag> = {
             bag: { ...props.modelValue.bag } as AIAgentBag
         };
@@ -100,6 +120,7 @@
         setPropertiesBoxValue(newValue, "name", name.value);
         setPropertiesBoxValue(newValue, "persona", persona.value);
         setPropertiesBoxValue(newValue, "avatarBinaryFile", avatarBinaryFile.value);
+        setPropertiesBoxValue(newValue, "role", toNumber(role.value) as ModelServiceRole);
         setPropertiesBoxValue(newValue, "skills", skills.value.map(s => ({ value: s })));
 
         emit("update:modelValue", newValue);

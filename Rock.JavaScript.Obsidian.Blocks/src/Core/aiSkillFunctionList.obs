@@ -73,7 +73,8 @@
                  rules="required"
                  textMode="multiline" />
 
-        <div class="row">
+        <div v-if="editFunctionType === FunctionType.AIPrompt.toString()"
+             class="row">
             <div class="col-md-4">
                 <NumberBox v-model="editFunctionTemperature"
                            label="Temperature"
@@ -89,7 +90,7 @@
                            :minimumValue="1" />
             </div>
 
-            <div v-if="editFunctionType === FunctionType.AIPrompt.toString()" class="col-md-4">
+            <div class="col-md-4">
                 <CheckBox v-model="editFunctionPreRenderLava"
                           label="Pre-render Lava"
                           help="Turning this on will render Lava over the prompt before it is processed by the language model." />
@@ -102,7 +103,8 @@
                     :mode="editFunctionPromptMode"
                     rules="required" />
 
-        <CodeEditor v-model="editFunctionPromptParametersSchema"
+        <CodeEditor v-if="editFunctionType === FunctionType.AIPrompt.toString()"
+                    v-model="editFunctionPromptParametersSchema"
                     label="Parameters Schema"
                     editor="monaco"
                     mode="json" />

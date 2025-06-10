@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 
+using Rock.AI.Agent;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -130,6 +131,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
+                .AddTextField( "role", a => a.GetAdditionalSettings<AgentSettings>().Role.ToString() )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 

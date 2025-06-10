@@ -17,6 +17,7 @@
 
 using System.Collections.Generic;
 
+using Rock.Enums.Core.AI.Agent;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Core.AIAgentDetail
@@ -56,5 +57,10 @@ namespace Rock.ViewModels.Blocks.Core.AIAgentDetail
         /// special instructions it should follow when interacting with people.
         /// </summary>
         public string Persona { get; set; }
+
+        /// <summary>
+        /// The role that this agent uses when determining which AI model to use.
+        /// </summary>
+        public ModelServiceRole Role { get; set; }
     }
 }
