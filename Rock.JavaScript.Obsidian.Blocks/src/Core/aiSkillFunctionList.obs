@@ -71,7 +71,8 @@
         <TextBox v-model="editFunctionUsageHint"
                  label="Usage Hint"
                  rules="required"
-                 textMode="multiline" />
+                 textMode="multiline"
+                 :rows="6" />
 
         <div v-if="editFunctionType === FunctionType.AIPrompt.toString()"
              class="row">

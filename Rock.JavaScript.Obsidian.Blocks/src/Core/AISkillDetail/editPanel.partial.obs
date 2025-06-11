@@ -16,7 +16,8 @@
 
         <TextBox v-model="usageHint"
                  label="Usage Hint"
-                 textMode="multiline" />
+                 textMode="multiline"
+                 :rows="6" />
     </fieldset>
 </template>
 
