@@ -428,7 +428,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([...propRefs], () => {
+    watch([...propRefs, itemAttributes, channelAttributes], () => {
         const newValue: ContentChannelTypeBag = {
             ...props.modelValue,
             name: name.value,
@@ -438,6 +438,8 @@
             disableContentField: disableContentField.value,
             disableStatus: disableStatus.value,
             showInChannelList: showInChannelList.value,
+            itemAttributes: itemAttributes.value,
+            channelAttributes: channelAttributes.value
         };
 
         emit("update:modelValue", newValue);
