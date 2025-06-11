@@ -7161,7 +7161,7 @@ namespace Rock.Rest.v2
             }
 
             var searchedFields = GetMergeFields( options.AdditionalFields, GetPerson() )
-                .Where( mf => mf.Text.Contains( options.SearchTerm ) )
+                .Where( mf => mf.Text.IndexOf( options.SearchTerm, StringComparison.OrdinalIgnoreCase ) >= 0 )
                 .ToList();
 
             return Ok( searchedFields );
@@ -7801,12 +7801,7 @@ namespace Rock.Rest.v2
                 propertyType = propertyType.GetGenericArguments()[0];
             }
 
-            List<PropertyInfo> childProperties = new List<PropertyInfo>();
-
-            if ( EntityTypeCache.Get( propertyType.FullName, false ) != null )
-            {
-                childProperties = Rock.Lava.LavaHelper.GetLavaProperties( propertyType ).Where( p => !parentTypes.Contains( p.PropertyType ) ).ToList();
-            }
+            List<PropertyInfo> childProperties = Rock.Lava.LavaHelper.GetLavaProperties( propertyType ).Where( p => !parentTypes.Contains( p.PropertyType ) ).ToList();
 
             if ( childProperties.Count > 0 && !parentTypes.Contains( propertyType ) )
             {
