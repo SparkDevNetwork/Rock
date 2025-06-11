@@ -29,6 +29,12 @@ namespace Rock.Model
             /// <inheritdoc/>
             protected override void PreSave()
             {
+                if ( PreSaveState == EntityContextState.Added && Entity.StartDateTime == default )
+                {
+                    // Set the StartDateTime to now if it hasn't been set yet.
+                    Entity.StartDateTime = RockDateTime.Now;
+                }
+
                 if ( PreSaveState == EntityContextState.Added && Entity.LastMessageDateTime == default )
                 {
                     // Set the LastMessageDateTime to now if it hasn't been set yet.

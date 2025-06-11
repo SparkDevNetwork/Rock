@@ -46,6 +46,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Core\AI\Agent\AuthorRole.cs" />
     <Compile Include="Core\AI\Agent\FunctionType.cs" />
     <Compile Include="Core\AI\Agent\ModelServiceRole.cs" />
     <Compile Include="Core\AI\Agent\ResponseType.cs" />

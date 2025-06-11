@@ -57,6 +57,15 @@ namespace Rock.Model
         public int PersonAliasId { get; set; }
 
         /// <summary>
+        /// An optional name for the session. This can be used to help identify
+        /// this session later. If no name is specified then the date should be
+        /// used as a way to identify the session in the UI.
+        /// </summary>
+        [MaxLength( 100 )]
+        [DataMember]
+        public string Name { get; set; }
+
+        /// <summary>
         /// An optional identifier for the type of entity that this session
         /// is related to.
         /// </summary>
@@ -69,6 +78,13 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public int? RelatedEntityId { get; set; }
+
+        /// <summary>
+        /// The date and time the session was started. This will be set
+        /// automatically when the session is created.
+        /// </summary>
+        [DataMember]
+        public DateTime StartDateTime { get; set; }
 
         /// <summary>
         /// The date and time the session was last used. This should be updated

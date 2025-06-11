@@ -21,6 +21,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.Core.AI.Agent;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -51,7 +52,7 @@ namespace Rock.Model
         /// from the agent, or some other message type.
         /// </summary>
         [DataMember]
-        public int MessageRole { get; set; }
+        public AuthorRole MessageRole { get; set; }
 
         /// <summary>
         /// The date and time the message was posted.
@@ -83,18 +84,21 @@ namespace Rock.Model
         public bool IsSummary { get; set; }
 
         /// <summary>
-        /// The number of input tokens used for the message. This may be <c>0</c>
-        /// if the token count could not be determined.
+        /// The number of tokens used for the message. This may be an estimate
+        /// depending on the type of message. This may be <c>0</c> if the token
+        /// count could not be determined.
         /// </summary>
         [DataMember]
-        public int InputTokenCount { get; set; }
+        public int TokenCount { get; set; }
 
         /// <summary>
-        /// The number of output tokens used for the message. This may be <c>0</c>
+        /// The number of tokens that were consumed by the entire request sent
+        /// to the language model. This is only relevant for messages that were
+        /// returned by the language model, not user messages. This may be <c>0</c>
         /// if the token count could not be determined.
         /// </summary>
         [DataMember]
-        public int OutputTokenCount { get; set; }
+        public int ConsumedTokenCount { get; set; }
 
         /// <inheritdoc/>
         [DataMember]

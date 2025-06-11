@@ -109,15 +109,15 @@ namespace Rock.Model
             target.Id = source.Id;
             target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AIAgentSessionId = source.AIAgentSessionId;
+            target.ConsumedTokenCount = source.ConsumedTokenCount;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.InputTokenCount = source.InputTokenCount;
             target.IsCurrentlyInContext = source.IsCurrentlyInContext;
             target.IsSummary = source.IsSummary;
             target.Message = source.Message;
             target.MessageDateTime = source.MessageDateTime;
             target.MessageRole = source.MessageRole;
-            target.OutputTokenCount = source.OutputTokenCount;
+            target.TokenCount = source.TokenCount;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 

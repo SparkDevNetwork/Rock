@@ -348,6 +348,7 @@ namespace Rock.WebStartup
             sc.AddSingleton<Core.Automation.AutomationEventContainer>();
 
             sc.AddScoped<RockContext>();
+            sc.AddSingleton<IRockContextFactory, RockContextFactory>();
 
             // If we are running under Visual Studio then turn on scope validation
             // to help catch misconfigurations.

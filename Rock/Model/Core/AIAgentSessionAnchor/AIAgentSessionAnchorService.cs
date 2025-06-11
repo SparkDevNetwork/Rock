@@ -14,9 +14,78 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.AI.Agent;
+using Rock.Data;
+using Rock.Web.Cache;
+
 namespace Rock.Model
 {
     public partial class AIAgentSessionAnchorService
     {
+        internal static void UpdateEntityPayload( AIAgentSessionAnchor anchor, RockContext rockContext )
+        {
+            if ( anchor.EntityTypeId.HasValue && anchor.EntityId.HasValue )
+            {
+                ContextAnchor context = null;
+
+                if ( anchor.EntityTypeId.Value == EntityTypeCache.Get<Person>( true, rockContext ).Id )
+                {
+                    var person = new PersonService( rockContext ).Get( anchor.EntityId.Value );
+
+                    if ( person != null )
+                    {
+                        context = new NamedContextAnchor
+                        {
+                            Name = person.FullName
+                        };
+                    }
+                }
+                else if ( anchor.EntityTypeId.Value == EntityTypeCache.Get<Group>( true, rockContext ).Id )
+                {
+                    var group = new GroupService( rockContext ).Get( anchor.EntityId.Value );
+
+                    if ( group != null )
+                    {
+                        context = new GroupContextAnchor
+                        {
+                            Name = group.Name,
+                            GroupTypeId = group.GroupTypeId,
+                            GroupTypeName = GroupTypeCache.Get( group.GroupTypeId, rockContext )?.Name
+                        };
+                    }
+                }
+
+                if ( context != null )
+                {
+                    context.EntityTypeId = anchor.EntityTypeId.Value;
+                    context.EntityTypeName = EntityTypeCache.Get( anchor.EntityTypeId.Value, rockContext )?.Name;
+                    context.EntityId = anchor.EntityId.Value;
+
+                    anchor.PayloadJson = context.ToJson();
+                }
+                else
+                {
+                    anchor.PayloadJson = string.Empty;
+                }
+            }
+            else
+            {
+                anchor.PayloadJson = string.Empty;
+            }
+
+            anchor.PayloadLastRefreshedDateTime = RockDateTime.Now;
+        }
+
+        private class NamedContextAnchor : ContextAnchor
+        {
+            public string Name { get; set; }
+        }
+
+        private class GroupContextAnchor : NamedContextAnchor
+        {
+            public int GroupTypeId { get; set; }
+
+            public string GroupTypeName { get; set; }
+        }
     }
 }

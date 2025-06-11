@@ -48,6 +48,8 @@ namespace Rock.AI.Agent
 
         private readonly ILoggerFactory _loggerFactory;
 
+        private readonly IRockContextFactory _rockContextFactory;
+
         private readonly ILogger _logger;
 
         private static readonly PropertyInfo _parameterDescriptionProperty;
@@ -78,12 +80,13 @@ namespace Rock.AI.Agent
             }
         }
 
-        public ChatAgentFactory( int agentId, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory )
+        public ChatAgentFactory( int agentId, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             _agentId = agentId;
             _requestContextAccessor = requestContextAccessor;
             _loggerFactory = loggerFactory;
+            _rockContextFactory = rockContextFactory;
 
             var provider = AgentProviderContainer.GetActiveComponent();
 
@@ -102,7 +105,7 @@ namespace Rock.AI.Agent
             var agent = AIAgentCache.Get( agentId, rockContext );
             var settings = agent.GetAdditionalSettings<AgentSettings>();
 
-            _agentConfiguration = new AgentConfiguration( provider, string.Empty, settings.Role, GetSkillConfigurations( agentId, rockContext ) );
+            _agentConfiguration = new AgentConfiguration( agentId, provider, string.Empty, settings.Role, GetSkillConfigurations( agentId, rockContext ) );
             _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
             sw.Stop();
 
@@ -129,7 +132,7 @@ namespace Rock.AI.Agent
 
             _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
 
-            return new ChatAgent( kernel, _agentConfiguration.Role, _agentConfiguration.Provider );
+            return new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, serviceProvider.GetRequiredService<IRockRequestContextAccessor>() );
         }
 
         /// <summary>

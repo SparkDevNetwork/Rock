@@ -47,7 +47,7 @@ namespace Rock.AI.Agent
             //    () => new ConcurrentDictionary<int, ChatAgentFactory>() );
 
             //var factory = factories.GetOrAdd( agentId, ( id, ctx ) => new ChatAgentFactory( id, ctx, _serviceProvider.GetService<ILoggerFactory>() ), _rockContext );
-            var factory = new ChatAgentFactory( agentId, _rockContext, _serviceProvider.GetRequiredService<IRockRequestContextAccessor>(), _serviceProvider.GetRequiredService<ILoggerFactory>() );
+            var factory = new ChatAgentFactory( agentId, _rockContext, _serviceProvider.GetRequiredService<IRockRequestContextAccessor>(), _serviceProvider.GetRequiredService<ILoggerFactory>(), _serviceProvider.GetRequiredService<IRockContextFactory>()  );
 
             return factory.Build( _serviceProvider );
         }

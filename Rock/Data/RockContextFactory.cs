@@ -15,28 +15,18 @@
 // </copyright>
 //
 
-using System.Threading.Tasks;
-
-using Microsoft.SemanticKernel;
-
-using Rock.Enums.Core.AI.Agent;
-
-namespace Rock.AI.Agent
+namespace Rock.Data
 {
-    public interface IChatAgent
+    /// <summary>
+    /// Default implementation of <see cref="IRockContextFactory" /> that creates
+    /// a new RockContext instance
+    /// </summary>
+    internal class RockContextFactory : IRockContextFactory
     {
-        AgentRequestContext Context { get; }
-
-        int? SessionId { get; }
-
-        void StartNewSession( int? entityTypeId, int? entityId );
-
-        void LoadSession( int sessionId );
-
-        void AddMessage( AuthorRole role, string message );
-
-        Task<ChatMessageContent> GetChatMessageContentAsync();
-
-        UsageMetric GetMetricUsageFromResult( ChatMessageContent result );
+        /// <inheritdoc/>
+        public RockContext CreateRockContext()
+        {
+            return new RockContext();
+        }
     }
 }

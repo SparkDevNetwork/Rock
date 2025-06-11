@@ -41,6 +41,12 @@ export const EntityType = {
     AdaptiveMessageCategory: "D47BDA25-03A3-46EE-A0A6-F8B220E39E4A",
     /** The EntityType Guid for Rock.Model.AIAgent  */
     AiAgent: "EE3FE609-5C7C-492E-B0E9-5461045FC825",
+    /** The EntityType Guid for Rock.Model.AIAgentSession  */
+    AiAgentSession: "2415941A-8A3F-49FE-8039-DB27096B0EDF",
+    /** The EntityType Guid for Rock.Model.AIAgentSessionAnchor  */
+    AiAgentSessionAnchor: "3ED1476A-B7FC-40E2-BBAB-AF084C82D7F1",
+    /** The EntityType Guid for Rock.Model.AIAgentSessionHistory  */
+    AiAgentSessionHistory: "6AD212BE-F8D0-4C58-AB0E-D723ED5E2155",
     /** The EntityType Guid for Rock.Model.AIAgentSkill  */
     AiAgentSkill: "36DEDA2F-75BD-4BEE-AC36-46D20DCD1331",
     /** The EntityType Guid for Rock.Model.AIProvider  */

@@ -1,75 +1,278 @@
 <template>
-    <div class="well">
-        <div v-for="(message, index) in messages" :key="index" class="message">
-            <span class="message-text">{{ message }}</span>
-        </div>
-    </div>
+    <div class="chat-container" ref="chatContainer">
+        <div class="sessions-container">
+            <div v-for="session in sessions"
+                 :key="session.id"
+                 class="session"
+                 :class="{ 'active': session.id === sessionId }"
+                 @click="onSelectSession(session.id)">
+                <strong>{{ session.name || "Unnamed Session" }}</strong><br>
+                {{ RockDateTime.parseISO(session.lastMessageDateTime!)?.localDateTime.toASPString("g") }}
+            </div>
 
-    <div>
-        <RockForm @submit="onSubmit">
-            <TextBox v-model="message"
-                     label="Message"
-                     placeholder="Type your message here..."
-                     rules="required" />
-            <RockButton type="submit" btnType="primary" text="Send" :disabled="isSending">Send</RockButton>
-        </RockForm>
+            <RockButton btnType="primary"
+                        autoDisable
+                        @click="onNewSession">
+                New Session
+            </RockButton>
+        </div>
+
+        <div class="conversation-container">
+            <div class="well messages-container" ref="messagesContainer">
+                <div v-for="(message, index) in messages" :key="index" class="message" :class="getMessageClass(message)">
+                    <span class="message-text">{{ message.message }}</span>
+                </div>
+            </div>
+
+            <div>
+                <TextBox v-model="message"
+                         placeholder="Type your message here..."
+                         @keyup.enter="onSubmit">
+                    <template #inputGroupAppend>
+                        <span class="input-group-btn">
+                            <button class="btn btn-primary"
+                                    :disabled="isSendDisabled"
+                                    @click.prevent="onSubmit">Send</button>
+                        </span>
+                    </template>
+                </TextBox>
+            </div>
+        </div>
     </div>
 </template>
 
 <style scoped>
+.chat-container {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-small);
+}
+
+.sessions-container {
+    justify-content: flex-end;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.session {
+    background-color: var(--color-info-soft);
+    color: var(--color-info-strong);
+    padding: var(--spacing-small);
+    border-radius: var(--rounded-small);
+    cursor: pointer;
+}
+
+.session.active {
+    border: 2px solid var(--color-info-strong);
+    cursor: initial;
+}
+
+.conversation-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+}
+
+.messages-container {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow-y: auto;
+    gap: var(--spacing-small);
+}
+
 .message {
-    margin-bottom: var(--spacing-small);
+    padding: var(--spacing-tiny) var(--spacing-small);
+    border-radius: var(--rounded-medium);
+    max-width: 75%;
+}
+
+.message-user {
+    background-color: #4298e5;
+    color: white;
+    margin-left: auto;
+}
+
+.message-assistant {
+    background-color: #dfdfdf;
+    color: #333;
+    margin-right: auto;
 }
 </style>
 
 <script setup lang="ts">
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import { ref } from "vue";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 
-    type ChatMessage = {
-        content: string;
-        isUserMessage: boolean;
+    const enum AuthorRole {
+        User = 0,
+
+        Assistant = 1
+    }
+
+    type ChatBotConfigurationBag = {
+        error?: string | null;
+
+        sessionId?: number | null;
+
+        sessions?: ChatSessionBag[] | null;
+
+        messages?: ChatMessageBag[] | null;
     };
 
+    type ChatSessionBag = {
+        id: number;
+
+        name?: string | null;
+
+        lastMessageDateTime?: string | null;
+    };
+
+    type ChatMessageBag = {
+        role: AuthorRole;
+
+        message?: string | null;
+
+        tokenCount: number;
+
+        consumedTokenCount: number;
+    };
+
+    const config = useConfigurationValues<ChatBotConfigurationBag>();
     const invokeBlockAction = useInvokeBlockAction();
 
-    const messages = ref<string[]>([]);
+    const chatContainer = ref<HTMLDivElement>();
+    const messagesContainer = ref<HTMLDivElement>();
+
     const message = ref("");
     const isSending = ref(false);
-    const history: ChatMessage[] = [];
+    const messages = reactive(config.messages ?? []);
+    const sessions = reactive(config.sessions ?? []);
+    const sessionId = ref(config.sessionId ?? 0);
+
+    const isSendDisabled = computed((): boolean => {
+        return isSending.value || !message.value;
+    });
+
+    function updateContainerHeight(): void {
+        if (!chatContainer.value) {
+            return;
+        }
+
+        const top = chatContainer.value.getBoundingClientRect().y;
+        chatContainer.value.style.height = `${window.innerHeight - top - 75}px`;
+    }
+
+    function getMessageClass(message: ChatMessageBag): string {
+        return message.role === AuthorRole.User ? "message-user" : "message-assistant";
+    }
+
+    function updateSessionDate(): void {
+        const session = sessions.find(s => s.id === sessionId.value);
+
+        if (session) {
+            session.lastMessageDateTime = RockDateTime.now().toISOString();
+        }
+
+        updateSessionOrder();
+    }
+
+    function updateSessionOrder(): void {
+        sessions.sort((a, b) => {
+            const da = RockDateTime.parseISO(a.lastMessageDateTime ?? "");
+            const db = RockDateTime.parseISO(b.lastMessageDateTime ?? "");
+
+            if (!da) {
+                return 1;
+            }
+
+            if (!db) {
+                return -1;
+            }
+
+            return da.toMilliseconds() - db.toMilliseconds();
+        });
+    }
 
     async function onSubmit(): Promise<void> {
+        if (!message.value) {
+            return;
+        }
+
         var msg = message.value;
 
         message.value = "";
-        messages.value = [...messages.value, `>>> ${msg}`];
+
+        messages.push({
+            role: AuthorRole.User,
+            message: msg,
+            tokenCount: 0,
+            consumedTokenCount: 0
+        });
+        nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
 
         isSending.value = true;
         try {
-            const response = await invokeBlockAction<string>("SendMessage", { message: msg, history: history });
+            const response = await invokeBlockAction<ChatMessageBag>("SendMessage", { message: msg, sessionId: sessionId.value });
 
             if (response.isSuccess && response.data) {
-                messages.value = [...messages.value, `<<< ${response.data}`];
-
-                history.push({
-                    content: msg,
-                    isUserMessage: true
-                });
-
-                history.push({
-                    content: response.data,
-                    isUserMessage: false
-                });
+                messages.push(response.data);
+                updateSessionDate();
+                nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
             }
             else {
-                messages.value = [...messages.value, `<<< Error: ${response.errorMessage || "Unknown error"}`];
+                await alert(response.errorMessage ?? "Unknown error while trying to send message.");
+                messages.pop(); // Remove the user's message if sending failed.
             }
         }
         finally {
             isSending.value = false;
         }
     }
+
+    async function onSelectSession(id: number): Promise<void> {
+        if (sessionId.value === id) {
+            return;
+        }
+
+        const result = await invokeBlockAction<ChatMessageBag[]>("LoadSession", { sessionId: id });
+
+        if (result.isSuccess && result.data) {
+            sessionId.value = id;
+            messages.splice(0, messages.length, ...result.data);
+            updateSessionOrder();
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to load session messages.");
+        }
+    }
+
+    async function onNewSession(): Promise<void> {
+        const result = await invokeBlockAction<ChatSessionBag>("StartNewSession");
+
+        if (result.isSuccess && result.data) {
+            sessionId.value = result.data.id;
+            messages.splice(0, messages.length);
+            sessions.push(result.data);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to start new session.");
+        }
+    }
+
+    onMounted(() => {
+        updateContainerHeight();
+        messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight);
+
+        window.addEventListener("resize", updateContainerHeight);
+    });
+
+    onBeforeUnmount(() => {
+        window.removeEventListener("resize", updateContainerHeight);
+    });
 </script>

@@ -23,18 +23,21 @@ namespace Rock.AI.Agent
 {
     internal class AgentConfiguration
     {
+        public int AgentId { get; }
+
         public IAgentProvider Provider { get; }
 
         public ModelServiceRole Role { get; }
 
-        public string CoreSystemPrompt { get; }
+        public string Persona { get; }
 
         public IReadOnlyCollection<SkillConfiguration> Skills { get; }
 
-        public AgentConfiguration( IAgentProvider provider, string coreSystemPrompt, ModelServiceRole role, IReadOnlyList<SkillConfiguration> skills )
+        public AgentConfiguration( int agentId, IAgentProvider provider, string persona, ModelServiceRole role, IReadOnlyList<SkillConfiguration> skills )
         {
+            AgentId = agentId;
             Provider = provider;
-            CoreSystemPrompt = coreSystemPrompt ?? string.Empty;
+            Persona = persona ?? string.Empty;
             Role = role;
             Skills = skills ?? new List<SkillConfiguration>();
         }

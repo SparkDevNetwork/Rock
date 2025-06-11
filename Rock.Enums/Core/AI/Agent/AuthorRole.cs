@@ -15,28 +15,23 @@
 // </copyright>
 //
 
-using System.Threading.Tasks;
-
-using Microsoft.SemanticKernel;
-
-using Rock.Enums.Core.AI.Agent;
-
-namespace Rock.AI.Agent
+namespace Rock.Enums.Core.AI.Agent
 {
-    public interface IChatAgent
+    /// <summary>
+    /// The role of the author in the AI agent's chat history. Each message in
+    /// the chat history is associated with an author role to indicate where
+    /// it came from.
+    /// </summary>
+    public enum AuthorRole
     {
-        AgentRequestContext Context { get; }
+        /// <summary>
+        /// The message is from the individual interacting with the agent.
+        /// </summary>
+        User = 0,
 
-        int? SessionId { get; }
-
-        void StartNewSession( int? entityTypeId, int? entityId );
-
-        void LoadSession( int sessionId );
-
-        void AddMessage( AuthorRole role, string message );
-
-        Task<ChatMessageContent> GetChatMessageContentAsync();
-
-        UsageMetric GetMetricUsageFromResult( ChatMessageContent result );
+        /// <summary>
+        /// The message is a response from the assistant (the AI agent).
+        /// </summary>
+        Assistant = 1
     }
 }

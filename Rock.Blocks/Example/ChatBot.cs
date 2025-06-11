@@ -1,10 +1,13 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Threading.Tasks;
 
 using Rock.AI.Agent;
 using Rock.Attribute;
 using Rock.Enums.Core.AI.Agent;
+using Rock.Model;
 using Rock.Web.Cache.Entities;
 
 namespace Rock.Blocks.Example
@@ -42,8 +45,78 @@ namespace Rock.Blocks.Example
             _agentBuilder = agentBuilder;
         }
 
+        public override object GetObsidianBlockInitialization()
+        {
+            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
+            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+
+            if ( agentCache == null )
+            {
+                return new Dictionary<string, object>
+                {
+                    ["error"] = "No agent has been configured."
+                };
+            }
+
+            // Find the recent sessions.
+            var sessions = new AIAgentSessionService( RockContext )
+                .Queryable()
+                .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                    && !s.RelatedEntityTypeId.HasValue
+                    && !s.RelatedEntityId.HasValue )
+                .OrderBy( s => s.LastMessageDateTime )
+                .Take( 10 )
+                .Select( s => new
+                {
+                    s.Id,
+                    s.LastMessageDateTime
+                } )
+                .ToList()
+                .Select( s => new ChatSessionBag
+                {
+                    Id = s.Id,
+                    LastMessageDateTime = s.LastMessageDateTime.ToRockDateTimeOffset(),
+                    Name = $"#{s.Id}"
+                } )
+                .ToList();
+
+            var sessionId = sessions.LastOrDefault()?.Id;
+
+            // If no session was found, create a new session.
+            if ( !sessionId.HasValue )
+            {
+                var agent = _agentBuilder.Build( agentCache.Id );
+
+                agent.StartNewSession( null, null );
+
+                sessionId = agent.SessionId.Value;
+            }
+
+            // Find recent chat history.
+            var messages = new AIAgentSessionHistoryService( RockContext )
+                .Queryable()
+                .Where( s => s.AIAgentSessionId == sessionId.Value
+                    && s.IsCurrentlyInContext )
+                .OrderBy( s => s.MessageDateTime )
+                .Select( s => new ChatMessageBag
+                {
+                    Role = s.MessageRole,
+                    Message = s.Message,
+                    TokenCount = s.TokenCount,
+                    ConsumedTokenCount = s.ConsumedTokenCount
+                } )
+                .ToList();
+
+            return new Dictionary<string, object>
+            {
+                ["sessionId"] = sessionId.Value,
+                ["sessions"] = sessions,
+                ["messages"] = messages
+            };
+        }
+
         [BlockAction]
-        async public Task<BlockActionResult> SendMessage( string message, List<ChatMessage> history )
+        async public Task<BlockActionResult> SendMessage( string message, int sessionId )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
@@ -55,30 +128,84 @@ namespace Rock.Blocks.Example
 
             var agent = _agentBuilder.Build( agentCache.Id );
 
-            foreach ( var historyItem in history )
-            {
-                if ( historyItem.IsUserMessage )
-                {
-                    agent.Context.ChatHistory.AddUserMessage( historyItem.Content );
-                }
-                else
-                {
-                    agent.Context.ChatHistory.AddAssistantMessage( historyItem.Content );
-                }
-            }
-
-            agent.Context.ChatHistory.AddUserMessage( message );
+            agent.LoadSession( sessionId );
+            agent.AddMessage( AuthorRole.User, message );
 
             var result = await agent.GetChatMessageContentAsync();
+            var usage = agent.GetMetricUsageFromResult( result );
 
-            return ActionOk( result.Content );
+            return ActionOk( new ChatMessageBag
+            {
+                Role = AuthorRole.Assistant,
+                Message = result.Content,
+                TokenCount = usage.OutputTokenCount,
+                ConsumedTokenCount = usage.TotalTokenCount
+            } );
         }
 
-        public class ChatMessage
+        [BlockAction]
+        public BlockActionResult StartNewSession()
         {
-            public string Content { get; set; }
+            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
+            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
 
-            public bool IsUserMessage { get; set; }
+            if ( agentCache == null )
+            {
+                return ActionBadRequest( "No agent has been configured." );
+            }
+
+            var agent = _agentBuilder.Build( agentCache.Id );
+
+            // Start a new session.
+            agent.StartNewSession( null, null );
+
+            return ActionOk( new ChatSessionBag
+            {
+                Id = agent.SessionId.Value,
+                LastMessageDateTime = RockDateTime.Now.ToRockDateTimeOffset(),
+                Name = $"#{agent.SessionId}"
+            } );
+        }
+
+        [BlockAction]
+        public BlockActionResult LoadSession( int sessionId )
+        {
+            var messages = new AIAgentSessionHistoryService( RockContext )
+                .Queryable()
+                .Where( s => s.AIAgentSessionId == sessionId
+                    && s.IsCurrentlyInContext
+                    && s.AIAgentSession.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
+                .OrderBy( s => s.MessageDateTime )
+                .Select( s => new ChatMessageBag
+                {
+                    Role = s.MessageRole,
+                    Message = s.Message,
+                    TokenCount = s.TokenCount,
+                    ConsumedTokenCount = s.ConsumedTokenCount
+                } )
+                .ToList();
+
+            return ActionOk( messages );
+        }
+
+        private class ChatSessionBag
+        {
+            public int Id { get; set; }
+
+            public DateTimeOffset LastMessageDateTime { get; set; }
+
+            public string Name { get; set; }
+        }
+
+        private class ChatMessageBag
+        {
+            public AuthorRole Role { get; set; }
+
+            public string Message { get; set; }
+
+            public int TokenCount { get; set; }
+
+            public int ConsumedTokenCount { get; set; }
         }
     }
 }

@@ -112,9 +112,11 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.LastMessageDateTime = source.LastMessageDateTime;
+            target.Name = source.Name;
             target.PersonAliasId = source.PersonAliasId;
             target.RelatedEntityId = source.RelatedEntityId;
             target.RelatedEntityTypeId = source.RelatedEntityTypeId;
+            target.StartDateTime = source.StartDateTime;
             target.Guid = source.Guid;
             target.ForeignId = source.ForeignId;
 
