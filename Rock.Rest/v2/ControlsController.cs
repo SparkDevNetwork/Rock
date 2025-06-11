@@ -6301,6 +6301,54 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Icon Picker
+
+        /// <summary>
+        /// Gets the icon libraries (defined values) that match the options sent in the request body.
+        /// </summary>
+        /// <param name="options">The options that describe which icon libraries to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of icon libraries.</returns>
+        [HttpPost]
+        [Route( "IconPickerGetIconLibraries" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ListItemBag ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "2ED04DE5-EBE2-48E1-AED0-ACE8EEB9C84D" )]
+        public IActionResult IconPickerGetIconLibraries( IconPickerGetIconLibrariesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.ICON_LIBRARIES );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || ( !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( definedType, Security.Authorization.VIEW ) == false ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v =>
+                        (
+                            v.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson )
+                            || grant?.IsAccessGranted( v, Security.Authorization.VIEW ) == true
+                        )
+                        && v.IsActive )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Description,
+                        Text = v.Value
+                    } )
+                    .ToList();
+
+                return Ok( definedValues );
+            }
+        }
+
+        #endregion
+
         #region Interaction Channel Interaction Component Picker
 
         /// <summary>

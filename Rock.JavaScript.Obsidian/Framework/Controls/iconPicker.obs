@@ -1,0 +1,357 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <ContentDropDownPicker v-bind="formFieldProps"
+                           :modelValue="icon"
+                           :showClear="false"
+                           v-model:showPopup="showPopup"
+                           disableAutoCloseOnPrimaryAction
+                           :pickerContentBoxHeight="useCustom ? '0' : '320px'"
+                           pickerContentBoxWidth="300px"
+                           iconCssClass=""
+                           hideMainActionButtons
+                           pickerClass="icon-picker-w-fit-content">
+
+        <template #innerLabel>
+            <span v-if="useCustom" class="selected-icon"><i :class="customIcon"></i></span>
+            <span v-else-if="icon?.IconSvg" class="selected-icon" v-html="icon?.IconSvg"></span>
+            <span v-else class="selected-icon"><svg height=16 width=16 viewbox="0 0 16 16"><!-- Empty Icon --></svg></span>
+        </template>
+
+        <template #pickerContentHeader>
+            <div class="width-full">
+                <Loading :isLoading="loadingState.libraries.isLoading.value">
+                    <ButtonDropDownList v-model="library" :items="libraryOptions" selectionStyle="title" disableLabel />
+                </Loading>
+
+                <div v-if="useCustom" class="custom-box-wrapper">
+                    <TextBox v-model="customIcon" label="Icon CSS Class" formGroupClasses="m-0" />
+                </div>
+
+                <div v-else class="search-box-wrapper">
+                    <TextBox v-model="searchValue" size="small" placeholder="Search" />
+                </div>
+            </div>
+        </template>
+
+        <Loading v-if="!useCustom" :isLoading="loadingState.icons.isLoading.value">
+
+            <div class="d-flex gap-2 align-items-start flex-wrap">
+                <button v-for="iconOption in iconOptions" :key="iconOption.StyleClass ?? ''"
+                        class="btn btn-default icon-picker-select-btn"
+                        :class="icon === iconOption ? 'active' : ''"
+                        @click.prevent="selectIcon(iconOption)"
+                        :title="iconOption.Title ?? ''"
+                        v-html="iconOption.IconSvg ?? ''">
+                </button>
+            </div>
+        </Loading>
+
+        <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">
+            <slot name="prepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #inputGroupPrepend="{ isInputGroupSupported }" v-if="$slots.inputGroupPrepend">
+            <slot name="inputGroupPrepend" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+        <template #append="{ isInputGroupSupported }" v-if="$slots.append">
+            <slot name="append" :isInputGroupSupported="isInputGroupSupported" />
+        </template>
+    </ContentDropDownPicker>
+</template>
+
+<style scoped>
+:global(.icon-picker-w-fit-content) {
+    width: fit-content !important;
+}
+
+.icon-picker-select-btn {
+    width: 40px;
+    height: 40px;
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+}
+
+.selected-icon {
+    line-height: 0 !important;
+}
+
+.icon-picker-select-btn > :deep(svg),
+.selected-icon :deep(svg),
+.selected-icon i {
+    height: 16px;
+    width: 16px;
+    margin: 4px auto;
+    flex: 0 1 auto;
+}
+
+.selected-icon i {
+    display: inline-block;
+}
+
+.custom-box-wrapper {
+    margin-top: -12px;
+}
+
+.search-box-wrapper {
+    margin-top: -4px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, type PropType, ref, watch } from "vue";
+    import { standardRockFormFieldProps, useStandardRockFormFieldProps } from "@Obsidian/Utility/component";
+    import ContentDropDownPicker from "./contentDropDownPicker.obs";
+    import Loading from "./loading.obs";
+    import TextBox from "./textBox.obs";
+    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import { type ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { type IconPickerGetIconLibrariesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/iconPickerGetIconLibrariesOptionsBag";
+    import { type IconBag, type IconLibraryBag } from "@Obsidian/ViewModels/Controls/iconLibraryBag.d";
+    import { containsRequiredRule } from "@Obsidian/ValidationRules";
+
+    const props = defineProps({
+        ...standardRockFormFieldProps,
+
+        modelValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string | null): void
+    }>();
+
+    type Timeout = ReturnType<typeof setTimeout>;
+
+    // #region Primary Data
+
+    const library = ref("");
+    const icon = ref<IconBag>();
+
+    const libraryPrefixes = ref<Record<string, string>>({});
+    const libraries = ref<ListItemBag[]>([]);
+    const icons = ref<Record<string, IconBag[]>>({});
+
+    const searchValue = ref("");
+
+    const libraryOptions = computed((): ListItemBag[] => {
+        // Clone the libraries and add the "custom" option
+        return libraries.value.concat([{
+            value: "custom",
+            text: "Custom"
+        }]);
+    });
+
+    const iconsForSelectedLibrary = computed(() => {
+        return icons.value[library.value] ?? [];
+    });
+
+    const libraryPrefix = computed(() => {
+        return libraryPrefixes.value[library.value] ?? "";
+    });
+
+    const iconOptions = computed((): IconBag[] => {
+        // If the search value is empty, return all icons.
+        if (searchValue.value !== "") {
+            return iconsForSelectedLibrary.value.filter(icon => {
+                const searchableText = ((icon.SearchTerms?.join(" ") ?? "") + " " + icon.StyleClass + " " + icon.Title).toLowerCase();
+                icon.Title === "arrow-left-to-arc" && console.log("searchableText", searchableText, searchValue.value);
+                return searchableText.includes(searchValue.value.toLowerCase());
+            });
+        }
+
+        if (isRequired.value) {
+            return iconsForSelectedLibrary.value;
+        }
+
+        // Otherwise, filter the icons based on the search value.
+        return ([{
+            StyleClass: "",
+            IconSvg: "<svg height=16 width=16 viewbox=\"0 0 16 16\"></svg>",
+            Title: "None",
+        }] as IconBag[]).concat(iconsForSelectedLibrary.value);
+    });
+
+    const useCustom = computed((): boolean => {
+        return library.value === "custom";
+    });
+
+    const customIcon = ref("");
+
+    function selectIcon(value: IconBag): void {
+        icon.value = value;
+
+        customIcon.value = "";
+        searchValue.value = "";
+        showPopup.value = false;
+    }
+
+    const internalModelValue = computed(() => {
+        if (useCustom.value) {
+            return customIcon.value?.trim() ?? "";
+        }
+        else if (icon.value?.StyleClass) {
+            return ((libraryPrefix.value ?? "") + " " + icon.value.StyleClass).trim();
+        }
+        return "";
+    });
+
+    watch(internalModelValue, (newValue) => {
+        // Emit the new value to the parent control.
+        emit("update:modelValue", newValue);
+    });
+
+    watch(() => props.modelValue, (newValue) => {
+        if (newValue === internalModelValue.value) {
+            return;
+        }
+
+        // If the model value changes, update the internal values.
+        if (newValue) {
+            if (libraries.value.length === 0) {
+                library.value = "custom";
+                icon.value = undefined;
+                customIcon.value = newValue.trim();
+                return;
+            }
+
+            const libraryPrefixes = libraries.value.map(l => l.value).filter(l => !!l) as string[];
+
+            // Find the library that matches the prefix.
+            const matchingLibrary = libraryPrefixes.find(prefix => newValue.startsWith(prefix));
+            if (matchingLibrary) {
+                library.value = matchingLibrary;
+                customIcon.value = newValue.replace(matchingLibrary, "").trim();
+                icon.value = iconsForSelectedLibrary.value.find(i => i.StyleClass === customIcon.value) ?? undefined;
+            }
+            else {
+                // We can always fall back to a custom icon.
+                library.value = "custom";
+                icon.value = undefined;
+                customIcon.value = newValue.trim();
+            }
+        }
+        else {
+            clearValue();
+        }
+    }, { immediate: true });
+
+
+    watch(library, () => {
+        icon.value = undefined;
+        if (iconsForSelectedLibrary.value.length == 0) {
+            getIcons();
+        }
+    });
+
+    function clearValue(): void {
+        icon.value = undefined;
+        library.value = libraries.value[0]?.value ?? "";
+        customIcon.value = "";
+    }
+
+    // #endregion
+
+    // #region Field Control State
+
+    const showPopup = ref(false);
+    const isRequired = computed((): boolean => {
+        return containsRequiredRule(props.rules);
+    });
+    const formFieldProps = useStandardRockFormFieldProps(props);
+
+    // #endregion
+
+    // #region Data Loading
+
+    const securityGrantToken = useSecurityGrantToken();
+    const http = useHttp();
+
+    let loadingState = {
+        "libraries": {
+            isLoading: ref(false),
+            timeout: null as Timeout | null
+        },
+        "icons": {
+            isLoading: ref(false),
+            timeout: null as Timeout | null
+        }
+    };
+
+    /**
+     * Sets the loading state for the given flag, with a delay to prevent flickering.
+     */
+    function setLoading(val: boolean, loader: keyof typeof loadingState): void {
+        if (val) {
+            loadingState[loader].timeout = setTimeout(() => loadingState[loader].isLoading.value = val, 100);
+        }
+        else {
+            clearTimeout(loadingState[loader].timeout ?? 0);
+            loadingState[loader].isLoading.value = val;
+        }
+    }
+
+    /**
+     * Gets the icon libraries from the defined types
+     */
+    async function getIconLibraries(): Promise<void> {
+        setLoading(true, "libraries");
+
+        try {
+            const options: IconPickerGetIconLibrariesOptionsBag = {
+                securityGrantToken: securityGrantToken.value
+            };
+            const response = await http.post<ListItemBag[]>("/api/v2/Controls/IconPickerGetIconLibraries", undefined, options);
+
+            if (response.isSuccess && response.data) {
+                libraries.value = response.data;
+
+                if (library.value === "") {
+                    library.value = libraries.value[0]?.value ?? "";
+                }
+            }
+            else {
+                console.error("Error fetching items from server", response.errorMessage);
+                libraries.value = [];
+            }
+            setLoading(false, "libraries");
+        }
+        catch (e) {
+            setLoading(false, "libraries");
+            libraries.value = [];
+        }
+    }
+
+    /**
+     * Gets the icon definitions for the selected library.
+     */
+    async function getIcons(): Promise<void> {
+        setLoading(true, "icons");
+        try {
+            const response = await http.get<IconLibraryBag>(library.value, undefined);
+
+            if (response.isSuccess && response.data) {
+                icons.value[library.value] = response.data.Icons ?? [];
+                libraryPrefixes.value[library.value] = response.data.StyleClassPrefix ?? "";
+            }
+            else {
+                console.error("Error fetching items from server", response.errorMessage);
+                icons.value[library.value] = [];
+            }
+            setLoading(false, "icons");
+        }
+        catch (e) {
+            setLoading(false, "icons");
+            icons.value[library.value] = [];
+        }
+    }
+
+    getIconLibraries();
+
+    // #endregion
+
+</script>

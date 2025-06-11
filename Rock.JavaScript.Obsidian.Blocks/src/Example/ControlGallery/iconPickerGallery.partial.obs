@@ -1,0 +1,56 @@
+<template>
+    <GalleryAndResult :value="value" :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <IconPicker v-model="value" label="Icon" :rules="required ? 'required' : undefined" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-3">
+                    <CheckBox v-model="required" label="Required" />
+                </div>
+            </div>
+        </template>
+
+
+        <template #props>
+            <h5>TextBox Props</h5>
+            <table class="table table-striped mb-4">
+                <thead>
+                    <tr>
+                        <th>Prop</th>
+                        <th>Type</th>
+                        <th>Default</th>
+                        <th>Description</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><code>modelValue</code></td>
+                        <td>String</td>
+                        <td>""</td>
+                        <td>The <code>v-model</code> for providing/receiving the input value, which is the CSS class to use for displaying the icon.</td>
+                    </tr>
+                </tbody>
+            </table>
+            <RockFormFieldPropsTable />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import RockFormFieldPropsTable from "./rockFormFieldPropsTable.partial.obs";
+    import IconPicker from "@Obsidian/Controls/iconPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+
+    const value = ref("fa fa-bible");
+    const required = ref(false);
+
+    const importCode = getSfcControlImportPath("iconPicker");
+    const exampleCode = computed(() => {
+        const requiredProp = required.value ? ` rules="required"` : "";
+        return `<IconPicker v-model="value"${requiredProp} />`;
+    });
+</script>
