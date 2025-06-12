@@ -42,4 +42,10 @@
     <Reference Include="System.Web" />
   </ItemGroup>
 
+  <ItemGroup>
+    <EmbeddedResource Include="..\Documentation\sampledata_1_14_1.xml">
+      <Link>TestFramework\sampledata_1_14_1.xml</Link>
+    </EmbeddedResource>
+  </ItemGroup>
+
 </Project>
