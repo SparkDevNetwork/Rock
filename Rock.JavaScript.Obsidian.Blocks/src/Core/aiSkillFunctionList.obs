@@ -163,7 +163,6 @@
 
     // They are not allowed to set a function type to C# code.
     editFunctionTypeItems.splice(editFunctionTypeItems.findIndex(i => i.value === FunctionType.ExecuteCode.toString()), 1);
-    console.log("editFunctionTypeItems", editFunctionTypeItems);
 
     // #endregion
 

@@ -19,7 +19,11 @@
 
         <div class="conversation-container">
             <div class="well messages-container" ref="messagesContainer">
-                <div v-for="(message, index) in messages" :key="index" class="message" :class="getMessageClass(message)">
+                <div v-for="(message, index) in messages"
+                     :key="index"
+                     class="message"
+                     :class="getMessageClass(message)"
+                     :title="getTokenCounts(message)">
                     <span class="message-text">{{ message.message }}</span>
                 </div>
             </div>
@@ -170,6 +174,10 @@
 
     function getMessageClass(message: ChatMessageBag): string {
         return message.role === AuthorRole.User ? "message-user" : "message-assistant";
+    }
+
+    function getTokenCounts(message: ChatMessageBag): string {
+        return `Input tokens: ${message.consumedTokenCount - message.tokenCount}; Output token: ${message.tokenCount}`;
     }
 
     function updateSessionDate(): void {
