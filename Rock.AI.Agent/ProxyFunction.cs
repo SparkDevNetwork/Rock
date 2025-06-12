@@ -17,24 +17,28 @@
 
 using System.Collections.Generic;
 
+using Rock.Net;
+
 namespace Rock.AI.Agent
 {
     internal class ProxyFunction
     {
-        private readonly AgentRequestContext _requestContext;
+        private readonly AgentRequestContext _agentRequestContext;
 
-        public ProxyFunction( AgentRequestContext requestContext )
+        private readonly RockRequestContext _rockRequestContext;
+
+        public ProxyFunction( AgentRequestContext requestContext, RockRequestContext rockRequestContext )
         {
-            _requestContext = requestContext;
+            _agentRequestContext = requestContext;
+            _rockRequestContext = rockRequestContext;
         }
 
-        public string RunLavaFromJson( string promptAsJson, string template ) // template would be some kind of key or id in the future.
+        public string Run( AgentFunction function, string promptAsJson )
         {
             var promptAsDictionary = promptAsJson.FromJsonOrNull<Dictionary<string, object>>();
-            var mergeFields = new Dictionary<string, object>
-            {
-                ["AgentContext"] = _requestContext
-            };
+            var mergeFields = _rockRequestContext.GetCommonMergeFields();
+
+            mergeFields["AgentContext"] = _agentRequestContext;
 
             if ( promptAsDictionary != null )
             {
@@ -67,7 +71,10 @@ namespace Rock.AI.Agent
                 }
             }
 
-            return template.ResolveMergeFields( mergeFields );
+            // Because only administrators (or those granted access by an
+            // administrator) can create or edit functions, we can safely
+            // just enable all lava commands.
+            return function.Prompt.ResolveMergeFields( mergeFields, "All" );
         }
     }
 }

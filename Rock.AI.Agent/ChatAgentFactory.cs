@@ -276,8 +276,8 @@ namespace Rock.AI.Agent
                         ( Func<Kernel, string, string> ) ( ( Kernel kernel, string promptAsJson ) =>
                         {
                             // Create a LavaSkill instance that will be used to run the function.
-                            var proxySkill = new ProxyFunction( kernel.Services.GetRequiredService<AgentRequestContext>() );
-                            return proxySkill.RunLavaFromJson( promptAsJson, function.Prompt );
+                            var proxySkill = new ProxyFunction( kernel.Services.GetRequiredService<AgentRequestContext>(), requestContext );
+                            return proxySkill.Run( function, promptAsJson );
                         } ),
                         functionName: function.Key,
                         description: function.UsageHint,
