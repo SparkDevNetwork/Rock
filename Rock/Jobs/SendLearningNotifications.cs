@@ -462,7 +462,8 @@ namespace Rock.Jobs
                 {
                     Person = student.Person,
                     ProgramSystemCommunicationId = program.SystemCommunicationId,
-                    Courses = new List<ActivitiesByCourseInfo>()
+                    Courses = new List<ActivitiesByCourseInfo>(),
+                    CommunicationPreference = student.CommunicationPreference
                 };
 
                 studentLookup.Add( student.PersonId, studentProgram );
@@ -635,7 +636,7 @@ namespace Rock.Jobs
                 mergeFields.AddOrReplace( "ActivityCount", personProgramActivitiesByCourse.Courses.Sum( c => c.ActivityCount ) );
                 mergeFields.AddOrReplace( "Courses", personProgramActivitiesByCourse.Courses );
 
-                var communicationId = SendCommunication( personProgramActivitiesByCourse.Person, systemCommunication, mergeFields );
+                var communicationId = SendCommunication( personProgramActivitiesByCourse.Person, personProgramActivitiesByCourse.CommunicationPreference, systemCommunication, mergeFields );
 
                 if ( communicationId.HasValue )
                 {
@@ -660,10 +661,30 @@ namespace Rock.Jobs
         /// <param name="systemCommunication">The <see cref="SystemCommunication"/> that provides the content.</param>
         /// <param name="mergeFields">The merge fields used to prepare the content.</param>
         /// <returns>The identifier of the <see cref="Communication"/> that was sent.</returns>
-        private int? SendCommunication( Person person, SystemCommunication systemCommunication, Dictionary<string, object> mergeFields )
+        private int? SendCommunication( Person person, CommunicationType communicationPreference, SystemCommunication systemCommunication, Dictionary<string, object> mergeFields )
         {
             var logger = RockLogger.LoggerFactory.CreateLogger<CommunicationHelper>();
-            var createMessageResults = CommunicationHelper.CreateEmailMessage( person, mergeFields, systemCommunication, logger );
+
+            CommunicationType preferredCommunication;
+            if ( communicationPreference == CommunicationType.Email || communicationPreference == CommunicationType.SMS )
+            {
+                preferredCommunication = communicationPreference;
+            }
+            else
+            {
+                preferredCommunication = person.CommunicationPreference;
+            }
+
+            CreateMessageResult createMessageResults;
+
+            if ( communicationPreference == CommunicationType.SMS )
+            {
+                createMessageResults = CommunicationHelper.CreateSmsMessage( person, mergeFields, systemCommunication, logger );
+            }
+            else
+            {
+                createMessageResults = CommunicationHelper.CreateEmailMessage( person, mergeFields, systemCommunication, logger );
+            }
 
             if ( createMessageResults.Message == null )
             {
@@ -671,20 +692,36 @@ namespace Rock.Jobs
                 return null;
             }
 
-            if ( !( createMessageResults.Message is RockEmailMessage message ) )
+            if ( createMessageResults.Message is RockEmailMessage )
+            {
+                var message = ( RockEmailMessage ) createMessageResults.Message;
+                message.CreateCommunicationRecordImmediately = true;
+
+                if ( !message.Send( out var errorMessages ) )
+                {
+                    _errors.AddRange( errorMessages );
+                    return null;
+                }
+
+                return message.LastCommunicationId;
+            }
+            else if ( createMessageResults.Message is RockSMSMessage )
+            {
+                var message = ( RockSMSMessage ) createMessageResults.Message;
+                message.CreateCommunicationRecordImmediately = true;
+
+                if ( !message.Send( out var errorMessages ) )
+                {
+                    _errors.AddRange( errorMessages );
+                    return null;
+                }
+
+                return message.LastCommunicationId;
+            }
+            else
             {
                 return null;
             }
-
-            message.CreateCommunicationRecordImmediately = true;
-
-            if ( !message.Send( out var errorMessages ) )
-            {
-                _errors.AddRange( errorMessages );
-                return null;
-            }
-
-            return message.LastCommunicationId;
         }
 
         /// <summary>
@@ -729,6 +766,8 @@ namespace Rock.Jobs
             /// A list of courses with available activities for this <see cref="Person"/>.
             /// </summary>
             public List<ActivitiesByCourseInfo> Courses { get; set; }
+
+            public CommunicationType CommunicationPreference { get; set; }
         }
 
         /// <summary>

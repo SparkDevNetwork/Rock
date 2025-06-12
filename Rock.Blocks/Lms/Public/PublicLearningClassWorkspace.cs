@@ -37,6 +37,7 @@ using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
 using Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
+using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
 
 namespace Rock.Blocks.Lms
 {
@@ -459,16 +460,26 @@ namespace Rock.Blocks.Lms
             {
                 p.LearningGradingSystemScale,
                 p.LearningCompletionDateTime,
-                SemesterEndDate = p.LearningClass.LearningSemester.EndDate
+                SemesterEndDate = p.LearningClass.LearningSemester.EndDate,
+                p.CommunicationPreference
             } );
 
             box.ClassCompletionDate = participantData?.LearningCompletionDateTime;
 
-            // Allow historical access if the course allows it and the class is not over.
-            var canShowHistoricalAccess = course.AllowHistoricalAccess
-                && participantData != null
-                && ( !participantData.SemesterEndDate.HasValue
-                || participantData.SemesterEndDate.Value.IsFuture() );
+            if ( participantData != null && ( participantData.CommunicationPreference == CommunicationType.Email || participantData.CommunicationPreference == CommunicationType.SMS ) )
+            {
+                box.CommunicationPreference = ( Rock.Enums.Communication.CommunicationType ) participantData.CommunicationPreference;
+            }
+            else
+            {
+                box.CommunicationPreference = ( Rock.Enums.Communication.CommunicationType ) currentPerson.CommunicationPreference;
+            }
+
+                // Allow historical access if the course allows it and the class is not over.
+                var canShowHistoricalAccess = course.AllowHistoricalAccess
+                    && participantData != null
+                    && ( !participantData.SemesterEndDate.HasValue
+                    || participantData.SemesterEndDate.Value.IsFuture() );
 
             var hasCompletedClass = participantData != null && participantData.LearningCompletionDateTime.HasValue;
             if ( !canShowHistoricalAccess && hasCompletedClass && !participantData.LearningCompletionDateTime.Value.IsToday() )
@@ -724,6 +735,29 @@ namespace Rock.Blocks.Lms
                 RequestContext );
 
             return ActionOk( activityCompletionBag );
+        }
+
+        [BlockAction]
+        public BlockActionResult UpdateCommunicationPreference( CommunicationType communicationType, string learningClassIdKey )
+        {
+            var currentPerson = GetCurrentPerson();
+            var learningClassService = new LearningClassService( RockContext );
+            var learningClass = learningClassService.Get( learningClassIdKey );
+
+            if ( learningClass == null )
+            {
+                return ActionBadRequest( "Could not find the specified Class" );
+            }
+
+            var learningParticipants = learningClass.LearningParticipants.Where( l => l.PersonId == currentPerson.Id ).ToList();
+
+            foreach ( var participant in learningParticipants )
+            {
+                participant.CommunicationPreference = communicationType;
+            }
+
+            RockContext.SaveChanges();
+            return ActionOk();
         }
 
         #endregion

@@ -196,6 +196,7 @@ namespace Rock.Model
             // Get the distinct Semesters for the course and project them into
             // a new PublicLearningSemesterBag ordered by semester start date.
             course.Semesters = classes
+                .Where( c => c.LearningSemesterId.HasValue )
                 .Select( c => c.LearningSemester )
                 .DistinctBy( s => s.Id )
                 .ToList()
