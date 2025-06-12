@@ -110,6 +110,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 
@@ -177,7 +178,11 @@
     }
 
     function getTokenCounts(message: ChatMessageBag): string {
-        return `Input tokens: ${message.consumedTokenCount - message.tokenCount}; Output token: ${message.tokenCount}`;
+        if (message.role === AuthorRole.User) {
+            return `Tokens: ${asFormattedString(message.tokenCount)}`;
+        }
+
+        return `Input tokens: ${asFormattedString(message.consumedTokenCount - message.tokenCount)}; Output token: ${asFormattedString(message.tokenCount)}`;
     }
 
     function updateSessionDate(): void {
