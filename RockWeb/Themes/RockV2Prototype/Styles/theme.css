@@ -72,6 +72,15 @@ body.navbar-side-open {
 .main-content {
   padding: var(--spacing-medium) var(--spacing-medium) var(--spacing-xsmall) var(--spacing-medium);
 }
+.main-content #page-content {
+  min-height: 600px;
+}
+@media (min-width: 992px) {
+  .main-content {
+    padding: 0;
+    margin: var(--spacing-medium) var(--spacing-medium) 0;
+  }
+}
 
 .main-footer:has(.html-content) {
   background-color: var(--color-interface-softest);
@@ -414,7 +423,6 @@ body.navbar-side-open {
 .nav-pills > li > a {
   color: var(--color-interface-strong);
   background-color: var(--color-interface-softer);
-  border: 1px solid var(--color-interface-soft);
 }
 
 .navbar-static-side {

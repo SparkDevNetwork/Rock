@@ -3789,6 +3789,14 @@ input[type=button].btn-block {
   font-size: 4em;
 }
 
+.panel-body .activeusers .recent i {
+  color: var(--color-success-strong);
+}
+
+.panel-body .activeusers .not-recent i {
+  color: var(--color-warning-strong);
+}
+
 .badge-lastvisitonsite .badge-content {
   position: relative;
   font-size: 40px;
@@ -7561,7 +7569,7 @@ input[type=text].chosen-focus-input {
 
 .jcrop-holder img, img.jcrop-preview {
   max-width: none;
-}
+} 
 .breadcrumb {
   padding: var(--spacing-xsmall) var(--spacing-medium);
   list-style: none;
@@ -15154,7 +15162,7 @@ textarea:focus,
 }
 
 /*
-    DOCUMENTATION:
+    DOCUMENTATION: 
 
     This is copy from ion.rangeSlider.Rock.css.
     Located: `RockWeb\Scripts\ion.rangeSlider\css\ion.rangeSlider.Rock.css`.
@@ -15165,7 +15173,7 @@ textarea:focus,
 /*
     MODIFICATION MADE:
 
-    We wrap all the style under .form-group { } to win in specificity
+    We wrap all the style under .form-group { } to win in specificity 
     over the ion.rangeSlider.Rock.css stylesheet added by the controls.
 */
 .form-group .irs {
@@ -15382,10 +15390,10 @@ textarea:focus,
   background: var(--color-interface-soft);
 }
 
-/**
+/** 
 *   NOTE:
 *
-*   The `--initial-block-height` value is dynamically
+*   The `--initial-block-height` value is dynamically 
 *   set by a RockBlockType.cs file.
 **/
 .block-content > .obsidian-block-has-placeholder {
@@ -17139,6 +17147,12 @@ iframe.file-browser {
   right: 13px;
 }
 
+.main-content:has(.profile-content) {
+  max-width: 100%;
+  padding: 0 !important;
+  margin: 0 !important;
+}
+
 .profile-nav {
   display: flex;
   flex-wrap: wrap;
@@ -17151,7 +17165,7 @@ iframe.file-browser {
 @media (min-width: 768px) {
   .profile-nav {
     flex-wrap: nowrap;
-    border: 1px solid var(--color-interface-soft);
+    border-bottom: 1px solid var(--color-interface-soft);
     justify-content: space-between;
   }
 }
