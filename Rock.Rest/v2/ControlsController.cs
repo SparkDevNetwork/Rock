@@ -483,7 +483,8 @@ namespace Rock.Rest.v2
             var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
             var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? defaultCountryCode : options.CountryCode;
 
-            var orgStateCode = globalAttributesCache.OrganizationState;
+            var enableDefaultAddressStateSelection = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION ).AsBoolean();
+            var orgStateCode = enableDefaultAddressStateSelection ? globalAttributesCache.OrganizationState : string.Empty;
             var defaultStateCode = countryCode == orgCountryCode ? orgStateCode : string.Empty;
 
             // Generate List of Countries
