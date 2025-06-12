@@ -21,7 +21,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj" />
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />

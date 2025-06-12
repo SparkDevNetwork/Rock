@@ -23,7 +23,6 @@ namespace Rock.Model
         /// <summary>
         /// Special class for adding a button field to liquid properties
         /// </summary>
-        [DotLiquid.LiquidType( "Name", "Html", "EmailHtml" )]
         [LavaType( "Name", "Html", "EmailHtml" )]        
         public class LiquidButton
         {

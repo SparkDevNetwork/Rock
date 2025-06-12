@@ -73,7 +73,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj" />
     <ProjectReference Include="..\Rock.AI.OpenAI\Rock.AI.OpenAI.csproj" />
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />

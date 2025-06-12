@@ -32,7 +32,7 @@ namespace Rock.UniversalSearch.IndexModels
     /// Base Index Model
     /// </summary>
     /// <seealso cref="System.Dynamic.DynamicObject" />
-    public class IndexModelBase : DynamicObject, ILavaDataDictionary, Lava.ILiquidizable
+    public class IndexModelBase : DynamicObject, ILavaDataDictionary
     {
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
@@ -540,6 +540,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object this[object key]
         {
             get
@@ -581,6 +583,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// Returns liquid for the object
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return this;
@@ -591,6 +595,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public bool ContainsKey( object key )
         {
             return this.GetDynamicMemberNames().Contains( key.ToString() );

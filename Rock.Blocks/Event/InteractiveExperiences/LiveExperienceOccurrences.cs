@@ -290,7 +290,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             }
         }
 
-        private class LavaDataDictionaryExtension : ILavaDataDictionary, DotLiquid.ILiquidizable, DotLiquid.IIndexable
+        private class LavaDataDictionaryExtension : ILavaDataDictionary
         {
             private readonly ILavaDataDictionary _baseObject;
             private readonly Dictionary<string, PropertyInfo> _additionalKeys;
@@ -347,26 +347,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             string ILavaDataDictionary.ToString()
             {
                 return ToString();
-            }
-
-            #endregion
-
-            #region ILiquidizable
-
-            object DotLiquid.ILiquidizable.ToLiquid()
-            {
-                return this;
-            }
-
-            #endregion
-
-            #region IIndexable
-
-            object DotLiquid.IIndexable.this[object key] => GetValue( key.ToString() );
-
-            bool DotLiquid.IIndexable.ContainsKey( object key )
-            {
-                return GetAllAvailableKeys().Contains( key );
             }
 
             #endregion

@@ -23,7 +23,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj" />
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
     <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
