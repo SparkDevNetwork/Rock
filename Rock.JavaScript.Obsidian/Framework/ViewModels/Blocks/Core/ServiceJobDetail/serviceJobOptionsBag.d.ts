@@ -4,6 +4,7 @@
 //     Changes to this file will be lost when the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
+
 // <copyright>
 // Copyright by the Spark Development Network
 //
@@ -22,12 +23,20 @@
 //
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-import { ServiceJobOptionsBag } from "./serviceJobOptionsBag";
 
-export type ServiceJobDetailOptionsBag = {
-    /** Gets or sets the job type options. */
-    jobTypeOptions?: ServiceJobOptionsBag[] | null;
+export type ServiceJobOptionsBag = {
+    /**
+     * The job types.
+     */
+    jobType: ListItemBag;
 
-    /** Gets or sets the notification status options. */
-    notificationStatusOptions?: ListItemBag[] | null;
+    /**
+     * The default name used for the job type.
+     */
+    defaultName: string;
+
+    /**
+     * The default description provided for the job type.
+     */
+    defaultDescription: string;
 };

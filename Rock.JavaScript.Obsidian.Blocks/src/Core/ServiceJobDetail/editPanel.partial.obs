@@ -30,17 +30,17 @@
                 <DropDownList label="Notification Status"
                               v-model="notificationStatus"
                               :items="notificationStatusOptions"
-                              :disabled="!isEditable"/>
+                              :disabled="!isEditable" />
                 <TextBox v-model="notificationEmails"
                          label="Notification Emails"
                          :disabled="!isEditable"
                          help="Additional email addresses that the notification email should be sent to for this job. Emails are sent using the 'Job Notification' system email template. If there are recipients defined in the template, it will send a job notification to those, too. <span class='tip tip-lava'></span>" />
                 <DropDownList label="Job Type"
                               v-model="jobTypeClass"
-                              :items="jobTypeOptions"
+                              :items="jobTypeItems"
                               :enhanceForLongLists="true"
                               rules="required"
-                              :disabled="!isEditable || isSystem"/>
+                              :disabled="!isEditable || isSystem" />
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" :isEditMode="isEditable" :numberOfColumns="1" />
             </div>
             <div class="col-md-6">
@@ -48,9 +48,10 @@
                          v-model="cronExpression"
                          rules="required"
                          :disabled="!isEditable || isSystem"
-                         @update:modelValue="getCronDescription"
+                         @change="getCronDescription"
+                         @keyup.enter="getCronDescription"
                          help="Add a valid cron expression. Need help? Try <a href='http://www.cronmaker.com' target='_blank'>CronMaker</a>.<br>Examples:<br>Daily at 2:15am: <em>0 15 2 1/1 * ? *</em><br>Every Monday and Friday at 4:30pm: <em>0 30 16 ? * MON,FRI *</em>" />
-                <div v-if="idkey" class="form-group static-control">
+                <div v-if="cronDescription" class="form-group static-control">
                     <label class="control-label">Cron Description</label>
                     <div class="control-wrapper">
                         <div class="form-control-static">
@@ -120,7 +121,7 @@
     const historyCount = propertyRef(props.modelValue.historyCount, "HistoryCount");
     const notificationEmails = propertyRef(props.modelValue.notificationEmails ?? "", "NotificationEmails");
     const lastStatusMessage = ref(props.modelValue.lastStatusMessage);
-    const cronDescription = ref(props.modelValue.cronDescription);
+    const cronDescription = ref(props.modelValue.cronDescription ?? "");
     const invokeBlockAction = useInvokeBlockAction();
     const jobTypeOptions = props.options.jobTypeOptions ?? [];
     const notificationStatusOptions = props.options.notificationStatusOptions ?? [];
@@ -135,27 +136,53 @@
 
     // #region Computed Values
 
+    // Transform jobTypeOptions into ListItemBag[] for the DropDownList
+    const jobTypeItems = jobTypeOptions.map(option => option.jobType) || [];
+
     // #endregion
 
     // #region Functions
 
-    async function getCronDescription(cronExpression: string): Promise<void> {
-        let response = await invokeBlockAction<{ cronDescription: string }>("GetCronDescription", {
-            cronExpression: cronExpression
-        });
-        if (response.isSuccess && response.data) {
-            cronDescription.value = response.data.cronDescription;
+    async function getCronDescription(): Promise<void> {
+        if (cronExpression.value) {
+            let response = await invokeBlockAction<{ cronDescription: string }>("GetCronDescription", {
+                cronExpression: cronExpression.value
+            });
+            if (response.isSuccess && response.data) {
+                cronDescription.value = response.data.cronDescription;
+            }
+            else {
+                cronDescription.value = "Invalid Cron Expression";
+            }
         }
         else {
             cronDescription.value = "";
         }
     }
 
+
     // #endregion
 
     // #region Event Handlers
 
     // #endregion
+
+    // Watch for changes to the job type class and update the name and description.
+    watch(jobTypeClass, (newValue) => {
+        if (!props.modelValue.idKey) {
+            const selectedOption = props.options.jobTypeOptions?.find(option => option.jobType.value === newValue);
+            if (selectedOption) {
+                // Only update name if it is empty
+                if (!name.value) {
+                    name.value = selectedOption.defaultName;
+                }
+                // Only update description if it is empty
+                if (!description.value) {
+                    description.value = selectedOption.defaultDescription;
+                }
+            }
+        }
+    });
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {

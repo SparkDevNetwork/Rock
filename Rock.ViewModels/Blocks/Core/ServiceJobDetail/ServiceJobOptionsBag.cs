@@ -16,29 +16,37 @@
 //
 
 using Rock.ViewModels.Utility;
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.ServiceJobDetail
 {
     /// <summary>
-    ///
+    /// A container class for job type options that includes basic details about a job type
     /// </summary>
-    public class ServiceJobDetailOptionsBag
+    /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
+    public class ServiceJobOptionsBag : EntityBagBase
     {
         /// <summary>
-        /// Gets or sets the job type options.
+        /// Gets or sets the list of available job type options.
         /// </summary>
         /// <value>
-        /// The job type options.
+        /// A <see cref="ListItemBag"/> containing the job type options that can be selected.
         /// </value>
-        public List<ServiceJobOptionsBag> JobTypeOptions { get; set; }
+        public ListItemBag JobType { get; set; }
 
         /// <summary>
-        /// Gets or sets the notification status options.
+        /// Gets or sets the default name for the job type.
         /// </summary>
         /// <value>
-        /// The notification status options.
+        /// The default name.
         /// </value>
-        public List<ListItemBag> NotificationStatusOptions { get; set; }
+        public string DefaultName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default description for the job type.
+        /// </summary>
+        /// <value>
+        /// The default description.
+        /// </value>
+        public string DefaultDescription { get; set; }
     }
 }
