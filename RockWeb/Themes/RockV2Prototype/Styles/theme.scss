@@ -394,6 +394,7 @@ $navbar-element-height: 40px;
         align-items: center;
         padding: 0 0;
         color: var(--color-interface-strong);
+        gap: 0;
 
         @media (max-width: ($screen-medium - 1)) {
           padding: 0 8px;
