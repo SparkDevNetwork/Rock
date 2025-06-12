@@ -917,6 +917,16 @@ a.rock-bookmark {
 .panel-body .actions:last-of-type > * {
   margin: 4px 8px 4px 0;
 }
+.panel-body .actions:last-of-type .footer-actions,
+.panel-body .actions:last-of-type .footer-secondary-actions {
+  margin: 0;
+}
+.panel-body .actions:last-of-type .footer-actions > * {
+  margin: 4px 8px 4px 0;
+}
+.panel-body .actions:last-of-type .footer-secondary-actions > * {
+  margin: 0 0 0 4px;
+}
 
 .panel-analytics .panel-body > .row > * {
   padding-right: 18px;

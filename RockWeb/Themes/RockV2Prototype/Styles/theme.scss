@@ -1054,6 +1054,19 @@ a.rock-bookmark {
   > * {
     margin: 4px 8px 4px 0;
   }
+
+  .footer-actions,
+  .footer-secondary-actions {
+    margin: 0;
+  }
+
+  .footer-actions > * {
+    margin: 4px 8px 4px 0;
+  }
+
+  .footer-secondary-actions > * {
+    margin: 0 0 0 4px;
+  }
 }
 
 .panel-analytics {
