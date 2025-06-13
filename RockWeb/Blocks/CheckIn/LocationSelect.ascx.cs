@@ -19,7 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
-using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
 using Rock;
@@ -29,15 +28,15 @@ using Rock.Model;
 
 namespace RockWeb.Blocks.CheckIn
 {
-    [DisplayName("Location Select")]
-    [Category("Check-in")]
-    [Description("Displays a list of locations a person is able to check into.")]
+    [DisplayName( "Location Select" )]
+    [Category( "Check-in" )]
+    [Description( "Displays a list of locations a person is able to check into." )]
 
     [TextField( "Caption",
         Key = AttributeKey.Caption,
         IsRequired = false,
         DefaultValue = "Select Location",
-        Category =  "Text",
+        Category = "Text",
         Order = 8 )]
 
     [TextField( "No Option Message",
@@ -78,7 +77,7 @@ namespace RockWeb.Blocks.CheckIn
             public const string MultiPersonFirstPage = CheckInBlockMultiPerson.AttributeKey.MultiPersonFirstPage;
             public const string MultiPersonDonePage = CheckInBlockMultiPerson.AttributeKey.MultiPersonDonePage;
         }
-        
+
         /// <summary>
         /// Determines if the block requires that a selection be made. This is used to determine if user should
         /// be redirected to this block or not.
@@ -198,7 +197,7 @@ namespace RockWeb.Blocks.CheckIn
                     }
 
                     var group = groupTypes.SelectMany( t => t.SelectedGroups( schedule ) ).FirstOrDefault();
-                    if ( group == null)
+                    if ( group == null )
                     {
                         GoBack();
                     }
@@ -236,13 +235,16 @@ namespace RockWeb.Blocks.CheckIn
                             int sortBy = GetAttributeValue( AttributeKey.SortBy ).AsInteger();
                             switch ( sortBy )
                             {
-                                case 0: locations = availLocations.OrderBy( l => l.Location.Name ).ToList();
+                                case 0:
+                                    locations = availLocations.OrderBy( l => l.Location.Name ).ToList();
                                     break;
 
-                                case 1: locations = availLocations.OrderBy( l => l.Order ).ToList();
+                                case 1:
+                                    locations = availLocations.OrderBy( l => l.Order ).ToList();
                                     break;
 
-                                default: locations = availLocations.OrderBy( l => l.Location.Name ).ToList();
+                                default:
+                                    locations = availLocations.OrderBy( l => l.Location.Name ).ToList();
                                     break;
                             }
 
@@ -261,7 +263,7 @@ namespace RockWeb.Blocks.CheckIn
                         {
                             pnlNoOptions.Visible = true;
                             rSelection.Visible = false;
-                            lNoOptions.Text = string.Format( GetAttributeValue( AttributeKey.NoOptionMessage ), 
+                            lNoOptions.Text = string.Format( GetAttributeValue( AttributeKey.NoOptionMessage ),
                                 person.Person.NickName,
                                 person.CurrentSchedule != null ? person.CurrentSchedule.ToString() : "this time" );
                         }
@@ -313,7 +315,7 @@ namespace RockWeb.Blocks.CheckIn
             var locationSelectHeaderLavaTemplate = CurrentCheckInState.CheckInType.LocationSelectHeaderLavaTemplate ?? string.Empty;
             return locationSelectHeaderLavaTemplate.ResolveMergeFields( mergeFields );
         }
-        
+
         /// <summary>
         /// Handles the ItemCommand event of the rSelection control.
         /// </summary>
@@ -402,7 +404,7 @@ namespace RockWeb.Blocks.CheckIn
         protected string FormatCount( int locationId )
         {
             if ( CurrentCheckInType != null && CurrentCheckInType.DisplayLocationCount )
-            { 
+            {
                 return string.Format( " <span class='checkin-sub-title'> Count: {0}</span>", KioskLocationAttendance.Get( locationId ).CurrentCount );
             }
 
@@ -469,19 +471,22 @@ namespace RockWeb.Blocks.CheckIn
 
                     if ( CurrentCheckInState.CheckInType.UseSameOptions && nextPerson != null && person.Person.Id == nextPerson.Person.Id )
                     {
-                        var nextSchedule = person.CurrentSchedule;
-                        if ( nextSchedule != null && nextSchedule.Schedule.Id != schedule.Schedule.Id )
+                        foreach ( var nextSchedule in person.SelectedSchedules.Where( s => !s.Processed ) )
                         {
-                            foreach( var groupType in person.GetAvailableGroupTypes( nextSchedule ).Where( t => t.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) )
+                            //var nextSchedule = person.CurrentSchedule;
+                            if ( nextSchedule != null && nextSchedule.Schedule.Id != schedule.Schedule.Id )
                             {
-                                groupType.SelectedForSchedule.Add( nextSchedule.Schedule.Id );
-                                foreach ( var group in groupType.GetAvailableGroups( nextSchedule ).Where( g => g.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) )
+                                foreach ( var groupType in person.GetAvailableGroupTypes( nextSchedule ).Where( t => t.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) )
                                 {
-                                    group.SelectedForSchedule.Add( nextSchedule.Schedule.Id );
-                                    foreach ( var location in group.GetAvailableLocations( nextSchedule ).Where( l => l.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) )
+                                    groupType.SelectedForSchedule.Add( nextSchedule.Schedule.Id );
+                                    foreach ( var group in groupType.GetAvailableGroups( nextSchedule ).Where( g => g.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) )
                                     {
-                                        location.SelectedForSchedule.Add( nextSchedule.Schedule.Id );
-                                        nextSchedule.Processed = true;
+                                        group.SelectedForSchedule.Add( nextSchedule.Schedule.Id );
+                                        foreach ( var location in group.GetAvailableLocations( nextSchedule ).Where( l => l.SelectedForSchedule.Contains( schedule.Schedule.Id ) ) )
+                                        {
+                                            location.SelectedForSchedule.Add( nextSchedule.Schedule.Id );
+                                            nextSchedule.Processed = true;
+                                        }
                                     }
                                 }
                             }
