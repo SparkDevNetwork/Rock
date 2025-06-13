@@ -22,7 +22,6 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Data;
 using Rock.Net;
-using Rock.Web.Cache;
 
 namespace Rock.AI.Agent
 {
@@ -30,31 +29,21 @@ namespace Rock.AI.Agent
     {
         private readonly IServiceProvider _serviceProvider;
 
-        private readonly RockContext _rockContext;
-
-        public ChatAgentBuilder( IServiceProvider serviceProvider, RockContext rockContext )
+        public ChatAgentBuilder( IServiceProvider serviceProvider )
         {
             _serviceProvider = serviceProvider;
-            _rockContext = rockContext;
         }
 
         public IChatAgent Build( int agentId )
         {
-            // Disabled cache for now since we need to be able to respond to
-            // configuration changes on the provider.
+            var rockContext = _serviceProvider.GetRequiredService<RockContext>();
+            var requestContextAccessor = _serviceProvider.GetRequiredService<IRockRequestContextAccessor>();
+            var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
+            var rockContextFactory = _serviceProvider.GetRequiredService<IRockContextFactory>();
 
-            //var factories = ( ConcurrentDictionary<int, ChatAgentFactory> ) RockCache.GetOrAddExisting( "Rock.AI.Agent.ChatAgentBuilder.Factories",
-            //    () => new ConcurrentDictionary<int, ChatAgentFactory>() );
+            var factory = new ChatAgentFactory( agentId, _serviceProvider, rockContext, requestContextAccessor, loggerFactory, rockContextFactory  );
 
-            //var factory = factories.GetOrAdd( agentId, ( id, ctx ) => new ChatAgentFactory( id, ctx, _serviceProvider.GetService<ILoggerFactory>() ), _rockContext );
-            var factory = new ChatAgentFactory( agentId, _rockContext, _serviceProvider.GetRequiredService<IRockRequestContextAccessor>(), _serviceProvider.GetRequiredService<ILoggerFactory>(), _serviceProvider.GetRequiredService<IRockContextFactory>()  );
-
-            return factory.Build( _serviceProvider );
+            return factory.Build();
         }
-
-        //internal void FlushCache()
-        //{
-        //    RockCache.Remove( "Rock.AI.Agent.ChatAgentBuilder.Factories" );
-        //}
     }
 }

@@ -58,6 +58,7 @@ namespace Rock.AI.Agent
             _requestContext = rockRequestContextAccessor.RockRequestContext;
 
             Context = kernel.Services.GetRequiredService<AgentRequestContext>();
+            Context.AgentId = _agentConfiguration.AgentId;
         }
 
         public void StartNewSession( int? entityTypeId, int? entityId )
@@ -228,6 +229,15 @@ namespace Rock.AI.Agent
 
             return result;
         }
+
+        //async internal Task<ChatMessageContent> GetChatMessageContentAsync( ChatHistory chatHistory, PromptExecutionSettings executionSettings )
+        //{
+        //    var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
+
+        //    var result = await chat.GetChatMessageContentAsync( chatHistory, executionSettings, _kernel );
+
+        //    return result;
+        //}
 
         public UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
         {

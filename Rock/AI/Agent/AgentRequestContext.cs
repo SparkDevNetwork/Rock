@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+using System.Linq;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -24,88 +25,34 @@ namespace Rock.AI.Agent
 {
     public class AgentRequestContext
     {
-        //private bool _chatHistoryDirty = true;
-        //private ChatHistory _chatHistory = new ChatHistory();
-
-        public int? AgentId { get; set; } = null;
+        public int? AgentId { get; internal set; } = null;
 
         internal ChatHistory InternalChatHistory { get; set; } = new ChatHistory();
 
         public IReadOnlyList<ChatMessageContent> ChatHistory => InternalChatHistory;
 
-        public List<ContextAnchor> ContextAnchors { get; set; } = new List<ContextAnchor>();
+        public List<ContextAnchor> ContextAnchors { get; private set; } = new List<ContextAnchor>();
 
-        //public void AddOrUpdateContextAnchor( int entityTypeId, int entityId, string entityName, string entityMetadata = null )
-        //{
-        //    // Check if the anchor of that type already exists
-        //    var existingAnchor = ContextAnchors.FirstOrDefault( a => a.EntityTypeId == entityTypeId );
-        //    if ( existingAnchor != null )
-        //    {
-        //        // Update the existing anchor
-        //        existingAnchor.EntityId = entityId;
-        //        existingAnchor.EntityName = entityName;
-        //        existingAnchor.EntityMetaData = entityMetadata;
-        //    }
-        //    else
-        //    {
-        //        // Add the new anchor
-        //        ContextAnchors.Add( new ContextAnchor()
-        //        {
-        //            EntityId = entityId,
-        //            EntityTypeId = entityTypeId,
-        //            EntityName = entityName,
-        //            EntityMetaData = entityMetadata
-        //        } );
-        //    }
+        internal void CopyFrom( AgentRequestContext other )
+        {
+            AgentId = other.AgentId;
+            InternalChatHistory = new ChatHistory( other.InternalChatHistory );
+            ContextAnchors = new List<ContextAnchor>( other.ContextAnchors );
 
-        //    _chatHistoryDirty = true;
-        //}
+            // If the last chat message is a tool call, then we are copying
+            // history for a currently executing function call. So we need to
+            // remove that message otherwise there will be an error when
+            // executing the new request.
+            if ( InternalChatHistory.Count > 0 )
+            {
+                var lastMessage = InternalChatHistory[InternalChatHistory.Count - 1];
 
-        //public void RemoveContextAnchor( int entityTypeId )
-        //{
-        //    // Remove the anchor of that type
-        //    ContextAnchors.RemoveAll( a => a.EntityTypeId == entityTypeId );
-
-        //    _chatHistoryDirty = true;
-        //}
-
-        ///// <summary>
-        ///// We will rebuild the chat history each time a context anchor is added or removed.
-        ///// </summary>
-        //private void RebuildChatHistory()
-        //{
-        //    // We need to rebuild this each time its accessed so that we have the latest anchors
-        //    // TODO: worried if this is a performance issue
-        //    var chatHistory = new ChatHistory();
-
-        //    // Add our global core system message. Here we can provide some basic instructions to the agent.
-        //    chatHistory.AddSystemMessage( _coreSystemPrompt );
-
-        //    // Add the agent persona prompt
-        //    // TODO: this should be read from the AgentCache in the future
-        //    chatHistory.AddSystemMessage( "Persona|You are a chatbot named Chip for Rock Solid Church aka RSC. Please assist with helping people. Be friendly but concise." );
-
-        //    // Add current person context TODO: make this dynamic
-        //    chatHistory.AddSystemMessage( $"CurrentPerson|The current person is Ted Decker (id: 23423) he is the Discipleship Pastor." );
-
-        //    // Add the context anchors
-        //    foreach ( var anchor in ContextAnchors )
-        //    {
-        //        chatHistory.AddSystemMessage( $"ContextAnchor|{JsonSerializer.Serialize( anchor )})" );
-        //    }
-
-        //    // Add the existing assistant and user messages
-        //    foreach ( var message in _chatHistory.Where( h =>
-        //        ( h.Role == AuthorRole.Assistant || h.Role == AuthorRole.User )
-        //        && h.Content != null ) )
-        //    {
-        //        chatHistory.AddMessage( message.Role, message.Content );
-        //    }
-
-        //    _chatHistory = chatHistory;
-        //    _chatHistoryDirty = false;
-        //}
-
+                if ( lastMessage.Items.Any( it => it is FunctionCallContent ) )
+                {
+                    InternalChatHistory.RemoveAt( InternalChatHistory.Count - 1 );
+                }
+            }
+        }
 
         // TODO: This should move to a configuration object.
         internal static string _coreSystemPrompt = @"CoreSystem|

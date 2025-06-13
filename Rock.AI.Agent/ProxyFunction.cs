@@ -33,9 +33,9 @@ namespace Rock.AI.Agent
             _rockRequestContext = rockRequestContext;
         }
 
-        public string Run( AgentFunction function, string promptAsJson )
+        public string ExecuteLava( AgentFunction function, string promptAsJson )
         {
-            var promptAsDictionary = promptAsJson.FromJsonOrNull<Dictionary<string, object>>();
+            var promptAsDictionary = promptAsJson?.FromJsonOrNull<Dictionary<string, object>>();
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
 
             mergeFields["AgentContext"] = _agentRequestContext;

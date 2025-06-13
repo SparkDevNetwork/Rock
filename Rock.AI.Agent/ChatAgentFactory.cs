@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -39,6 +40,8 @@ namespace Rock.AI.Agent
     class ChatAgentFactory
     {
         private readonly int _agentId;
+
+        private readonly IServiceProvider _serviceProvider;
 
         private readonly AgentConfiguration _agentConfiguration;
 
@@ -80,19 +83,21 @@ namespace Rock.AI.Agent
             }
         }
 
-        public ChatAgentFactory( int agentId, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
+        public ChatAgentFactory( int agentId, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
             _agentId = agentId;
+            _serviceProvider = serviceProvider; ;
             _requestContextAccessor = requestContextAccessor;
             _loggerFactory = loggerFactory;
+            _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
             _rockContextFactory = rockContextFactory;
 
             var provider = AgentProviderContainer.GetActiveComponent();
 
             // Register the ModelServiceRoles
             var kernelBuilder = Kernel.CreateBuilder();
-            kernelBuilder.Services.AddSingleton<AgentRequestContext>();
+            kernelBuilder.Services.AddScoped<AgentRequestContext>();
             kernelBuilder.Services.AddRockLogging();
 
             foreach ( ModelServiceRole role in Enum.GetValues( typeof( ModelServiceRole ) ) )
@@ -106,20 +111,13 @@ namespace Rock.AI.Agent
             var settings = agent.GetAdditionalSettings<AgentSettings>();
 
             _agentConfiguration = new AgentConfiguration( agentId, provider, string.Empty, settings.Role, GetSkillConfigurations( agentId, rockContext ) );
-            _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
             sw.Stop();
 
             _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
         }
 
-        public IChatAgent Build( IServiceProvider serviceProvider )
+        public IChatAgent Build()
         {
-            //for ( int i = 0; i < 10_000; i++ )
-            //{
-            //    var kernel2 = _kernelBuilder.Build();
-            //    LoadPluginsForAgent( kernel2, serviceProvider );
-            //}
-
             var sw = System.Diagnostics.Stopwatch.StartNew();
             var kernel = _kernelBuilder.Build();
             sw.Stop();
@@ -127,12 +125,12 @@ namespace Rock.AI.Agent
             _logger.LogInformation( "Kernel built in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
 
             sw.Restart();
-            LoadPluginsForAgent( kernel, serviceProvider );
+            LoadPluginsForAgent( kernel, _serviceProvider );
             sw.Stop();
 
             _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
 
-            return new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, serviceProvider.GetRequiredService<IRockRequestContextAccessor>() );
+            return new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor );
         }
 
         /// <summary>
@@ -259,6 +257,17 @@ namespace Rock.AI.Agent
                     );
 
                     pluginFunctions[function.Key] = semanticFunction;
+                    //var proxyFunction = KernelFunctionFactory.CreateFromMethod(
+                    //    ( Func<Kernel, string, Task<string>> ) ( async ( Kernel kernel, string input ) =>
+                    //    {
+                    //        return await ExecutePrompt( function, kernel, input );
+                    //    } ),
+                    //    functionName: function.Key,
+                    //    description: function.UsageHint,
+                    //    loggerFactory: _loggerFactory
+                    //);
+
+                    //pluginFunctions[function.Key] = proxyFunction;
                 }
 
                 else if ( function.FunctionType == FunctionType.ExecuteLava )
@@ -277,7 +286,7 @@ namespace Rock.AI.Agent
                         {
                             // Create a LavaSkill instance that will be used to run the function.
                             var proxySkill = new ProxyFunction( kernel.Services.GetRequiredService<AgentRequestContext>(), requestContext );
-                            return proxySkill.Run( function, promptAsJson );
+                            return proxySkill.ExecuteLava( function, promptAsJson );
                         } ),
                         functionName: function.Key,
                         description: function.UsageHint,
@@ -322,139 +331,34 @@ namespace Rock.AI.Agent
             return agent.GetSkillConfigurations( rockContext );
         }
 
-        private static List<SkillConfiguration> _mockSkills = GetMockAiSkills();
+        //private async Task<string> ExecutePrompt( AgentFunction function, Kernel kernel, string input )
+        //{
+        //    var originalContext = kernel.Services.GetRequiredService<AgentRequestContext>();
 
-        private static List<SkillConfiguration> GetMockAiSkills()
-        {
-            return new List<SkillConfiguration>
-            {
-                new SkillConfiguration( typeof( Skills.GroupManagerSkill ) ),
+        //    using ( var scope = kernel.Services.CreateScope() )
+        //    {
+        //        var scopedKernel = new Kernel( scope.ServiceProvider, kernel.Plugins );
+        //        var agent = new ChatAgent( scopedKernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor );
+        //        var prompt = function.Prompt;
 
-                new SkillConfiguration(
-                    "Knowledge Base",
-                    "Use only for internal organizational data, such as staff directories, event details, or ministry-specific content. The knowledge here is limited to the content from the organization.",
-                    new List<AgentFunction>
-                    {
-                        new AgentFunction
-                        {
-                            Name = "Organization Search",
-                            Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AIPrompt,
-                            UsageHint = "Performs and AI search of information specific to the organization and it's ministry.",
-                            Prompt = "System Prompt:\n{{$system}}\n\nThe organizations phone number is (623) 867-5209"
-                        }
-                    }
-                ),
+        //        agent.Context.CopyFrom( originalContext );
 
-                new SkillConfiguration(
-                    "Individual Updates",
-                    "Used for updating information about a person.",
-                    new List<AgentFunction>
-                    {
-                        new AgentFunction
-                        {
-                            Name = "GetNoteTypes",
-                            Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AIPrompt,
-                            EnableLavaPreRendering = true,
-                            UsageHint = "Used to get a list of valid note types.",
-                            Prompt = "{ \"NoteTypes\": [{ \"Id\": 1222, \"Name\": \"General Note\"}, {\"Id\": 1322, \"Name\": \"Pastoral Note\"}]}."
-                        },
-                        new AgentFunction
-                        {
-                            Name = "AddNote",
-                            Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.ExecuteLava,
-                            UsageHint = "Used to add a note to a person.",
-                            Prompt = @"If no note type was provided, call the function GetValidNoteTypes to retrieve the correct list before continuing. Otherwise provide a message that the note was created..",
-                            InputSchema = @"{
-                                      ""type"": ""object"",
-                                      ""properties"": {
-                                        ""NoteTypeId"": { ""type"": ""integer"" },
-                                        ""Content"": { ""type"": ""string"" }
-                                      },
-                                      ""required"": [""NoteTypeId"", ""Content""]
-                                    }"
-                        },
-                    }
-                ),
+        //        if ( function.EnableLavaPreRendering )
+        //        {
+        //            var mergeFields = _requestContextAccessor.RockRequestContext.GetCommonMergeFields();
 
-                new SkillConfiguration(
-                    "Ministry Tasks",
-                    "Used for completing various ministry tasks like scheduling a baptism, wedding or funeral.",
-                    new List<AgentFunction>
-                    {
-                        new AgentFunction
-                        {
-                            Name = "Schedule Baptism",
-                            Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AIPrompt,
-                            UsageHint = "Used to schedule a baptism for a person.",
-                            Prompt = "Input:\n{{$input}}\n\nBaptism has been scheduled."
-                        },
-                        new AgentFunction
-                        {
-                            Name = "Schedule Wedding",
-                            Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AIPrompt,
-                            UsageHint = "Used to schedule a wedding for a person based on the date provided.",
-                            Prompt = "Input:\n{{$input}}\n\nIf their name is Jon say An issue came up while scheduling, please call the office otherwise say it has been completed."
-                        },
-                        new AgentFunction
-                        {
-                            Name = "ComposeEmailFromIntent",
-                            Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.AIPrompt,
-                            Prompt = @"You are an assistant that helps draft emails.
+        //            mergeFields["AgentContext"] = agent.Context;
+        //            mergeFields["Input"] = input;
 
-                                    Based on the user intent of the request, create a professional but warm message.
-                                    Include both a subject line and the body.
+        //            prompt = prompt.ResolveMergeFields( mergeFields );
+        //        }
 
-                                    First, analyze the user's request and generate an appropriate subject and body.
+        //        agent.AddMessage( AuthorRole.User, prompt );
 
-                                    Unless otherwise stated assume that the email is from the current person.
+        //        var response = await agent.GetChatMessageContentAsync();
 
-                                    Present the draft email to the user, and ask:
-                                    ""Would you like me to send this?""
-
-                                    DO NOT send the email yet. Wait for user approval.
-                                    "
-                        },
-                        new AgentFunction
-                        {
-                            Name = "AddPrayer",
-                            Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.ExecuteLava,
-                            UsageHint = "Is used to add a new prayer request to the system. We will need the following items passed to us: RequestText, Topic.",
-                            Prompt = "say that they're prayer request is added and say something spiritual."
-                        },
-                        new AgentFunction
-                        {
-                            Name = "SendEmail",
-                            Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.ExecuteLava,
-                            UsageHint = "Used to send a new email. Use only after the user has approved the draft. We will need the following items passed to us: PersonId, Message, Subject.",
-                            Prompt = "say that the email has been sent."
-                        },
-                        new AgentFunction
-                        {
-                            Name = "EventRegistration",
-                            Role = ModelServiceRole.Default,
-                            FunctionType = FunctionType.ExecuteLava,
-                            UsageHint = "Used to register a person for an event. We will need: EventId.",
-                            Prompt = "respond that they are registered and we'll see them on Monday July 4th.",
-                            InputSchema = @"{
-                                    ""type"": ""object"",
-                                    ""properties"": {
-                                    ""EventId"": { ""type"": ""integer"" },
-                                    ""PersonId"": { ""type"": ""integer"" }
-                                    },
-                                    ""required"": [""EventId"", ""PersonId""]
-                                }"
-                        }
-                    }
-                ),
-            };
-        }
+        //        return response.Content;
+        //    }
+        //}
     }
 }
