@@ -104,7 +104,7 @@
                     :mode="editFunctionPromptMode"
                     rules="required" />
 
-        <CodeEditor v-if="editFunctionType === FunctionType.AIPrompt.toString()"
+        <CodeEditor v-if="editFunctionType === FunctionType.ExecuteLava.toString()"
                     v-model="editFunctionPromptParametersSchema"
                     label="Parameters Schema"
                     editor="monaco"
