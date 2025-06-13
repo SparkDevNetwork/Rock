@@ -17,13 +17,10 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations.Schema;
-using System.Globalization;
 using System.Linq;
 using System.Reflection;
 
 using EntityFramework.Utilities;
-
-using OfficeOpenXml.FormulaParsing.Excel.Functions.DateTime;
 
 using Rock.Data;
 
@@ -272,7 +269,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 if ( givingMonthUseSundayDate )
                 {
                     var givingMonthSundayDate = generateDate.SundayDate();
-                    int sundayFiscalYear = GetFiscalYear( fiscalStartMonth, givingMonthSundayDate );
+                    int sundayFiscalYear = GetFiscalYear( givingMonthSundayDate, fiscalWeekNumber, fiscalStartMonth, RockDateTime.FirstDayOfWeek, 4 );
 
                     if ( sundayFiscalYear != fiscalYear )
                     {
@@ -412,31 +409,6 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 }
             }
             return fiscalYear;
-
-            //CalendarWeekRule rule;
-
-            //switch ( minimumDaysRequiredInFirstWeek )
-            //{
-            //    case 1:
-            //        rule = System.Globalization.CalendarWeekRule.FirstDay;
-            //        break;
-            //    case 7:
-            //        rule = System.Globalization.CalendarWeekRule.FirstFullWeek;
-            //        break;
-            //    default:
-            //        rule = System.Globalization.CalendarWeekRule.FirstFourDayWeek;
-            //        break;
-            //}
-
-            //int dateWeekOfYear = date.GetWeekOfYear( rule, firstDayOfWeek );
-            //if ( dateWeekOfYear >= fiscalWeekNumber )
-            //{
-            //    return date.Year + 1;
-            //}
-            //else
-            //{
-            //    return date.Year;
-            //}
         }
 
         /// <summary>
@@ -446,10 +418,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
         /// <param name="date">The date for which to determine the fiscal quarter.</param>
         /// <param name="fiscalYearStartMonth">The starting month of the fiscal year (1 = January, 12 = December).</param>
         /// <param name="firstDayOfWeek">The first day of the week used to determine the start of a week.</param>
-        /// <param name="minimumDaysRequiredInFirstWeek">
-        /// The minimum number of days required in the first week of the fiscal year.
-        /// Defaults to 4, following ISO 8601-like rules.
-        /// </param>
+        /// <param name="minimumDaysRequiredInFirstWeek">The minimum number of days required in the first week of the fiscal year. Defaults to 4, following ISO 8601-like rules.</param>
         /// <returns>
         /// An integer from 1 to 4 indicating the fiscal quarter the date falls into. Returns 4 if the date falls into
         /// the week prior to the fiscal year start despite being in the fiscal start month.
