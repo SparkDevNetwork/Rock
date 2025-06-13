@@ -1,13 +1,15 @@
 <template>
     <div class="chat-container" ref="chatContainer">
-        <div class="sessions-container">
-            <div v-for="session in sessions"
-                 :key="session.id"
-                 class="session"
-                 :class="{ 'active': session.id === sessionId }"
-                 @click="onSelectSession(session.id)">
-                <strong>{{ session.name || "Unnamed Session" }}</strong><br>
-                {{ RockDateTime.parseISO(session.lastMessageDateTime!)?.localDateTime.toASPString("g") }}
+        <div class="sessions-column">
+            <div class="sessions-container" ref="sessionsContainer">
+                <div v-for="session in sessions"
+                     :key="session.id"
+                     class="session"
+                     :class="{ 'active': session.id === sessionId }"
+                     @click="onSelectSession(session.id)">
+                    <strong>{{ session.name || "Unnamed Session" }}</strong><br>
+                    {{ RockDateTime.parseISO(session.lastMessageDateTime!)?.localDateTime.toASPString("g") }}
+                </div>
             </div>
 
             <RockButton btnType="primary"
@@ -52,11 +54,22 @@
     gap: var(--spacing-small);
 }
 
-.sessions-container {
-    justify-content: flex-end;
+.sessions-column {
     display: flex;
     flex-direction: column;
     gap: var(--spacing-small);
+}
+
+.sessions-container {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.sessions-container :first-child {
+    margin-top: auto;
 }
 
 .session {
@@ -65,6 +78,7 @@
     padding: var(--spacing-small);
     border-radius: var(--rounded-small);
     cursor: pointer;
+    min-width: 200px;
 }
 
 .session.active {
@@ -152,6 +166,7 @@
     const invokeBlockAction = useInvokeBlockAction();
 
     const chatContainer = ref<HTMLDivElement>();
+    const sessionsContainer = ref<HTMLDivElement>();
     const messagesContainer = ref<HTMLDivElement>();
 
     const message = ref("");
@@ -272,6 +287,7 @@
             sessionId.value = result.data.id;
             messages.splice(0, messages.length);
             sessions.push(result.data);
+            nextTick(() => sessionsContainer.value?.scrollTo(0, sessionsContainer.value.scrollHeight));
         }
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to start new session.");
@@ -281,6 +297,7 @@
     onMounted(() => {
         updateContainerHeight();
         messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight);
+        sessionsContainer.value?.scrollTo(0, sessionsContainer.value.scrollHeight);
 
         window.addEventListener("resize", updateContainerHeight);
     });
