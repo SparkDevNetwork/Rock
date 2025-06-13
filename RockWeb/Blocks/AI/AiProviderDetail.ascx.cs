@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Web.UI.WebControls;
+using AngleSharp.Dom;
 using Rock;
 using Rock.AI.Provider;
 using Rock.Constants;
@@ -27,6 +28,7 @@ using Rock.Security;
 using Rock.SystemGuid;
 using Rock.Web;
 using Rock.Web.Cache;
+using Rock.Web.Cache.Entities;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
@@ -171,18 +173,34 @@ namespace RockWeb.Blocks.AI
         /// <param name=providerId>The provider identifier.</param>
         public void ShowDetail( int providerId )
         {
+            var rockContext = new RockContext();
+
             AIProvider provider = null;
 
             bool editAllowed = IsUserAuthorized( Authorization.EDIT );
-            
 
             if ( providerId != 0 )
             {
-                var rockContext = new RockContext();
                 var providerService = new AIProviderService( rockContext );
                 provider = providerService.Get( providerId );
                 editAllowed = editAllowed || provider.IsAuthorized( Authorization.EDIT, CurrentPerson );
                 pdAuditDetails.SetEntity( provider, ResolveRockUrl( "~" ) );
+            }
+
+            if ( provider == null )
+            {
+                var paramProviderId = PageParameter( PageParameterKey.EntityId ).AsIntegerOrNull();
+
+                if ( !paramProviderId.HasValue )
+                {
+                    var providerIdKey = PageParameter( PageParameterKey.EntityId );
+                    paramProviderId = Rock.Utility.IdHasher.Instance.GetId( providerIdKey );
+                }
+
+                if ( paramProviderId.HasValue && paramProviderId.Value > 0 )
+                {
+                    provider = new AIProviderService( rockContext ).Get( paramProviderId.Value );
+                }
             }
 
             if ( provider == null )
