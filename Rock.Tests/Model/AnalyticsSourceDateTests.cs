@@ -113,11 +113,10 @@ namespace Rock.Tests.Model
             FWK     Mo Tu We Th Fr Sa Su
             ----------------------------
             52 Jan                 01 02 
-            01      03 04 05 06 07 08 09 
+            01      03 04 05 06 07 08 09 <-- start FY2022
             02      10 11 12 13 14 15 16 
             03      17 18 19 20 21 22 23 
             04      24 25 26 27 28 29 30 
-
          */
         [DataTestMethod]
         // Fiscal Start == Jan 
@@ -200,6 +199,34 @@ namespace Rock.Tests.Model
         /// <param name="date">The input date string</param>
         /// <param name="expectedFiscalYear">The expected fiscal year result for the input date</param>
         [DataTestMethod]
+        /*
+            ------- FY 2022-2023 -------
+            FWK     Mo Tu We Th Fr Sa Su
+            ----------------------------
+                         2022
+            53 Mar  27 28 29 30 31
+            53 Apr                 01 02 
+            01      03 04 05 06 07 08 09 <-- start FY2023
+            02      10 11 12 13 14 15 16 
+            03      17 18 19 20 21 22 23 
+            04      24 25 26 27 28 29 30 
+            ...
+            35 Dec              01 02 03 
+            36      04 05 06 07 08 09 10 
+            37      11 12 13 14 15 16 17 
+            38      18 19 20 21 22 23 24 
+            39      25 26 27 28 29 30 31
+
+                         2023
+            40 Jan  01 02 03 04 05 06 07
+            41      08 09 10 11 12 13 14 
+            42      15 16 17 18 19 20 21 
+            43      22 23 24 25 26 27 28 
+            ...
+            52 Mar  26 27 28 29 30 31
+            52 Apr                    01 
+            01      02 03 04 05 06 07 08 <-- start FY2024
+         */
         [DataRow( "Saturday, April 1, 2023", 2023 )] // Because of the 4 day week rule, the 3rd is the first week in FY2024
         [DataRow( "Sunday, April 2, 2023", 2023 )]
         [DataRow( "Monday, April 3, 2023", 2024 )]
