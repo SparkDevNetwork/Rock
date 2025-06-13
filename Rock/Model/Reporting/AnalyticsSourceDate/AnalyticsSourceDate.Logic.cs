@@ -228,8 +228,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 analyticsSourceDate.CalendarYear = generateDate.Year;
 
                 /* Fiscal Calendar Stuff */
-                int fiscalWeekNumber = GetFiscalWeek( generateDate, 4, RockDateTime.FirstDayOfWeek, 4 );
-                //int fiscalYear = GetFiscalYear( fiscalStartMonth, generateDate );
+                int fiscalWeekNumber = GetFiscalWeek( generateDate, fiscalStartMonth, RockDateTime.FirstDayOfWeek, 4 );
                 int fiscalYear = GetFiscalYear( generateDate, fiscalWeekNumber, fiscalStartMonth, RockDateTime.FirstDayOfWeek, 4 );
                 var fiscalYearStart = GetFirstDayOfFiscalYear( generateDate, fiscalStartMonth );
 

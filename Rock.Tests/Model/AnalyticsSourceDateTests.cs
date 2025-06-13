@@ -74,20 +74,14 @@ namespace Rock.Tests.Model
         }
 
         [DataTestMethod]
-        [DataRow( "Sun, Dec 25, 2022", 1, 52 )]
-        [DataRow( "Mon, Dec 26, 2022", 1, 52 )]
-        [DataRow( "Tue, Dec 27, 2022", 1, 52 )]
-        [DataRow( "Wed, Dec 28, 2022", 1, 52 )]
-        [DataRow( "Thu, Dec 29, 2022", 1, 39 )]
-        [DataRow( "Fri, Dec 30, 2022", 1, 39 )]
-        [DataRow( "Sat, Dec 31, 2022", 1, 39 )]
-        [DataRow( "Sun, Jan 1, 2023", 1, 39 )]
-        [DataRow( "Mon, Jan 2, 2023", 1, 40 )]
-        //...
-        [DataRow( "Saturday, April 1, 2023", 52 )]
-        [DataRow( "Sunday, April 2, 2023", 52 )]
-        [DataRow( "Monday, April 3, 2023", 1 )]
-        public void Date_WithVariousFiscalMonthStart_HasValidFiscalMonth_UsingStartingDayOfWeekMonday( string date, int fiscalMonthStart, int expectedFiscalMonthNumber )
+        [DataRow( "Thu, Oct 1, 2020", 10, 1 )]
+        [DataRow( "Sat, Dec 31, 2022", 1, 12 )]
+        [DataRow( "Sun, Jan 1, 2023", 1, 1 )]
+        [DataRow( "Mon, Jan 2, 2023", 1, 1 )]
+        [DataRow( "Sat, April 1, 2023", 1, 4 )]
+        [DataRow( "Sun, April 2, 2023", 1, 4 )]
+        [DataRow( "Mon, April 3, 2023", 1, 4 )]
+        public void Date_WithVariousFiscalMonthStart_HasValidFiscalMonth( string date, int fiscalMonthStart, int expectedFiscalMonthNumber )
         {
             var dateTime = DateTime.Parse( date );
             int fiscalMonthNumber = AnalyticsSourceDate.GetFiscalMonthNumber( dateTime, fiscalMonthStart );
