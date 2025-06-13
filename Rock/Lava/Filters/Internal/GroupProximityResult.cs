@@ -17,6 +17,9 @@
 
 using System.Collections.Generic;
 
+using Rock.Address.Classes;
+using Rock.Enums.Location;
+
 namespace Rock.Lava.Filters.Internal
 {
     /// <summary>
@@ -40,13 +43,34 @@ namespace Rock.Lava.Filters.Internal
         public double? StraightLineDistance { get; set; }
 
         /// <summary>
-        /// Distance in miles via roads
+        /// Distance in miles via the given travel mode
         /// </summary>
-        public double? DrivingDistance { get; set; }
+        public double? TravelDistance { get; set; }
 
         /// <summary>
-        /// Drive time in minutes
+        /// Travel time in minutes
         /// </summary>
-        public int? DriveTime { get; set; }
+        public int? TravelTime { get; set; }
+
+        /// <summary>
+        /// The specified travel mode
+        /// </summary>
+        public TravelMode? TravelMode { get; set; }
+
+        /// <summary>
+        /// The lat/long of the location
+        /// </summary>
+        public GeographyPoint LocationPoint {
+            get
+            {
+                if ( _locationPoint == null && Location != null && Location.Latitude != null && Location.Longitude != null )
+                {
+                    _locationPoint = new GeographyPoint { Latitude = Location.Latitude.Value, Longitude = Location.Latitude.Value };
+                }
+
+                return _locationPoint;
+            }
+        }
+        private GeographyPoint _locationPoint;
     }
 }

@@ -11,9 +11,8 @@ namespace Rock.Enums.Location
     /// </summary>
     public enum TravelMode
     {
-        Driving,
-        Walking,
-        Bicycling,
-        Transit
+        Drive,
+        Walk,
+        Bicycle
     }
 }

@@ -20,19 +20,19 @@ namespace Rock.Address.Classes
     /// <summary>
     /// Represents the result of a driving distance calculation between an origin and a destination.
     /// </summary>
-    public class DrivingDistanceResult
+    public class DistanceResult
     {
         /// <summary>
         /// The destination point.
         /// </summary>
-        public string Destination { get; set; }
+        public GeographyPoint DestinationPoint { get; set; }
         /// <summary>
         /// The driving distance in miles.
         /// </summary>
-        public double DrivingDistanceMiles { get; set; }
+        public double DistanceMiles { get; set; }
         /// <summary>
         /// The driving duration in minutes.
         /// </summary>
-        public int DriveTimeMinutes { get; set; }
+        public int TimeMinutes { get; set; }
     }
 }

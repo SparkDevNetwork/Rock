@@ -696,8 +696,11 @@
     <Compile Include="Achievement\Component\StreakAchievement.cs" />
     <Compile Include="Achievement\StreakSourcedAchievementComponent.cs" />
     <Compile Include="Address\Bing.cs" />
-    <Compile Include="Address\Classes\DrivingDistanceResult.cs" />
-    <Compile Include="Address\LocationExtensions\GoogleLocationExtension.cs" />
+    <Compile Include="Address\Classes\DistanceResult.cs" />
+    <Compile Include="Address\Classes\GeographyPoint.cs" />
+    <Compile Include="Address\LocationExtensions\GoogleMaps\Classes\RouteMatrixElement.cs" />
+    <Compile Include="Address\LocationExtensions\GoogleMaps\Classes\RouteMatrixRequest.cs" />
+    <Compile Include="Address\LocationExtensions\GoogleMaps\GoogleMapsLocationExtension.cs" />
     <Compile Include="Address\LocationHelpers.cs" />
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationComponent.cs" />

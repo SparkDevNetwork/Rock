@@ -30,9 +30,13 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+
+using DocumentFormat.OpenXml.Wordprocessing;
+
 using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
@@ -40,10 +44,12 @@ using ImageResizer;
 
 using Rock;
 using Rock.Address;
+using Rock.Address.Classes;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Enums.Core;
+using Rock.Enums.Location;
 using Rock.Lava.Filters.Internal;
 using Rock.Logging;
 using Rock.Model;
@@ -1119,10 +1125,11 @@ namespace Rock.Lava
         /// <param name="input"></param>
         /// <param name="groupTypeId"></param>
         /// <param name="maxResults"></param>
+        /// <param name="travelMode"></param>
         /// <param name="returnOnlyClosestLocationPerGroup"></param>
         /// <param name="maxDistance"></param>
         /// <returns></returns>
-        public static object NearestGroups( ILavaRenderContext context, object input, string groupTypeId, string maxResults, string returnDrivingDistance, string returnOnlyClosestLocationPerGroup, string maxDistance )
+        public static object NearestGroups( ILavaRenderContext context, object input, string groupTypeId, string maxResults, string travelMode, string returnOnlyClosestLocationPerGroup, string maxDistance )
         {
             // Get Rock Context
             var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
@@ -1142,13 +1149,13 @@ namespace Rock.Lava
                 point = ParseToDbGeography( input.ToString() );
             }
 
-            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
-            int numericalMaxResults = maxResults.AsIntegerOrNull() ?? 10;
-            int? numericalMaxDistance = maxDistance.AsIntegerOrNull();
-            bool boolReturnOnlyClosestLocationPerGroup = returnOnlyClosestLocationPerGroup.AsBooleanOrNull() ?? true;
-            bool boolReturnDrivingDistance = returnDrivingDistance.AsBooleanOrNull() ?? true;
+            var numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+            var numericalMaxResults = maxResults.AsIntegerOrNull() ?? 10;
+            var numericalMaxDistance = maxDistance.AsIntegerOrNull();
+            var boolReturnOnlyClosestLocationPerGroup = returnOnlyClosestLocationPerGroup.AsBooleanOrNull() ?? true;
+            var selectedTravelMode = travelMode.ConvertToEnumOrNull<TravelMode>();
 
-            if ( point == null || numericalGroupTypeId == null  )
+            if ( point == null || point.Longitude == null || point.Latitude == null || numericalGroupTypeId == null  )
             {
                 return null;
             }
@@ -1158,21 +1165,38 @@ namespace Rock.Lava
                 .GetNearestGroups( point, numericalGroupTypeId.Value, numericalMaxResults, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
                 .Select( g => new GroupProximityResult
                 {
-                    StraightLineDistance = g.Location.GeoPoint.Distance( point ),
+                    StraightLineDistance = g.Location.GeoPoint.Distance( point ) / 1609.34, // meters to miles
                     Group =  g.Group,
                     Location = g.Location
                 } ).ToList();
 
 
-            if ( !boolReturnDrivingDistance )
+            if ( selectedTravelMode is null )
             {
                 return results;
             }
 
             // Get driving distances from location extensions
-            var drivingDistances = LocationHelpers.GetDrivingMatrixAsync( point.ToString(), results.Select( r => r.Location.Latitude + "," + r.Location.Longitude ).ToList() );
+            var origin = new GeographyPoint { Latitude = point.Latitude.Value, Longitude = point.Longitude.Value };
+            var destinations = results
+                .Where( r => r.Location?.Latitude != null && r.Location?.Longitude != null )
+                .Select( r => new GeographyPoint { Latitude = r.Location.Latitude.Value, Longitude = r.Location.Longitude.Value } )
+                .ToList();
 
-            // TODO merge results
+            var travelDistances = Task.Run( () => LocationHelpers.GetDrivingMatrixAsync( origin, destinations, selectedTravelMode.Value ) ).Result;
+
+            // Merge travel distances into group results
+            foreach( var travelDistance in travelDistances )
+            {
+                // Find matching group result
+                var matches = results.Where( r => r.LocationPoint == travelDistance.DestinationPoint ).ToList();
+
+                foreach( var match in matches )
+                {
+                    match.TravelDistance = travelDistance.DistanceMiles;
+                    match.TravelTime = travelDistance.TimeMinutes;
+                }
+            }
 
             return results;
         }

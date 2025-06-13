@@ -19,7 +19,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 
 using Rock.Address.Classes;
-using Rock.Address.LocationExtensions;
+using Rock.Address.LocationExtensions.GoogleMaps;
 using Rock.Enums.Location;
 
 namespace Rock.Address
@@ -36,11 +36,11 @@ namespace Rock.Address
         /// <param name="destinations">A list of up to 25 destination points. Each can be an address, lat/lng, ZIP code, or place ID.</param>
         /// <param name="mode">The travel mode to use for the calculation</param>
         /// <returns>A list of driving distances and durations for each destination.</returns>
-        public static async Task<List<DrivingDistanceResult>> GetDrivingMatrixAsync( string origin, List<string> destinations, TravelMode mode = TravelMode.Driving )
+        public static async Task<List<DistanceResult>> GetDrivingMatrixAsync( GeographyPoint origin, List<GeographyPoint> destinations, TravelMode mode = TravelMode.Driving )
         {
             // For now we'll only support Google for driving matrix calculations. This static method though abstracts the implementation details,
             // so that in the future if we want to support other providers, we can do so without changing the method signature.
-            var googleLocationExtension = new GoogleLocationExtension();
+            var googleLocationExtension = new GoogleMapsLocationExtension();
 
             return await googleLocationExtension.GetDrivingMatrixAsync( origin, destinations, mode );
         }
