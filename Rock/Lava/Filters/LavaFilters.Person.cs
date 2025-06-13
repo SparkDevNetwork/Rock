@@ -39,10 +39,12 @@ using Ical.Net;
 using ImageResizer;
 
 using Rock;
+using Rock.Address;
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Enums.Core;
+using Rock.Lava.Filters.Internal;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
@@ -53,6 +55,8 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using UAParser;
+
+using Location = Rock.Model.Location;
 
 namespace Rock.Lava
 {
@@ -1118,7 +1122,7 @@ namespace Rock.Lava
         /// <param name="returnOnlyClosestLocationPerGroup"></param>
         /// <param name="maxDistance"></param>
         /// <returns></returns>
-        public static object NearestGroups( ILavaRenderContext context, object input, string groupTypeId, string maxResults, string returnOnlyClosestLocationPerGroup, string maxDistance )
+        public static object NearestGroups( ILavaRenderContext context, object input, string groupTypeId, string maxResults, string returnDrivingDistance, string returnOnlyClosestLocationPerGroup, string maxDistance )
         {
             // Get Rock Context
             var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
@@ -1142,23 +1146,35 @@ namespace Rock.Lava
             int numericalMaxResults = maxResults.AsIntegerOrNull() ?? 10;
             int? numericalMaxDistance = maxDistance.AsIntegerOrNull();
             bool boolReturnOnlyClosestLocationPerGroup = returnOnlyClosestLocationPerGroup.AsBooleanOrNull() ?? true;
+            bool boolReturnDrivingDistance = returnDrivingDistance.AsBooleanOrNull() ?? true;
 
             if ( point == null || numericalGroupTypeId == null  )
             {
                 return null;
             }
 
-
             // Get results and shape for return
-            return new GroupService( rockContext )
+            var results = new GroupService( rockContext )
                 .GetNearestGroups( point, numericalGroupTypeId.Value, numericalMaxResults, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
-                .Select( g => new 
+                .Select( g => new GroupProximityResult
                 {
-                    Distance = g.Location.GeoPoint.Distance( point ),
+                    StraightLineDistance = g.Location.GeoPoint.Distance( point ),
                     Group =  g.Group,
                     Location = g.Location
                 } ).ToList();
-  
+
+
+            if ( !boolReturnDrivingDistance )
+            {
+                return results;
+            }
+
+            // Get driving distances from location extensions
+            var drivingDistances = LocationHelpers.GetDrivingMatrixAsync( point.ToString(), results.Select( r => r.Location.Latitude + "," + r.Location.Longitude ).ToList() );
+
+            // TODO merge results
+
+            return results;
         }
 
         /// <summary>

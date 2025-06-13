@@ -696,6 +696,9 @@
     <Compile Include="Achievement\Component\StreakAchievement.cs" />
     <Compile Include="Achievement\StreakSourcedAchievementComponent.cs" />
     <Compile Include="Address\Bing.cs" />
+    <Compile Include="Address\Classes\DrivingDistanceResult.cs" />
+    <Compile Include="Address\LocationExtensions\GoogleLocationExtension.cs" />
+    <Compile Include="Address\LocationHelpers.cs" />
     <Compile Include="Address\SmartyStreets.cs" />
     <Compile Include="Address\VerificationComponent.cs" />
     <Compile Include="Address\VerificationContainer.cs" />
@@ -853,6 +856,7 @@
     <Compile Include="Lava\Blocks\RenderLavaEndpoint.cs" />
     <Compile Include="Lava\Blocks\RockEntityDeleteBlock.cs" />
     <Compile Include="Lava\Blocks\RockEntityModifyBlock.cs" />
+    <Compile Include="Lava\Filters\Internal\GroupProximityResult.cs" />
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.Logic.cs" />

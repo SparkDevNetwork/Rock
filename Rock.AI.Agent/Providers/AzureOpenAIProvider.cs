@@ -107,7 +107,8 @@ namespace Rock.AI.Agent.Providers
         {
             return new OpenAIPromptExecutionSettings()
             {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                ToolCallBehavior = ToolCallBehavior.AutoInvokeKernelFunctions
+                //FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
             };
         }
     }

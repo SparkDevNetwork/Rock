@@ -236,6 +236,7 @@
     <Compile Include="Lms\LearningCompletionStatus.cs" />
     <Compile Include="Lms\PresentedFor.cs" />
     <Compile Include="Lms\RequirementType.cs" />
+    <Compile Include="Location\TravelMode.cs" />
     <Compile Include="Mobile\LocationPermissionStatus.cs" />
     <Compile Include="Mobile\MobileNavigationActionType.cs" />
     <Compile Include="Net\CookieSameSiteMode.cs" />
@@ -263,5 +264,6 @@
     <Compile Include="Workflow\WorkflowTriggerType.cs" />
     <Compile Include="Workflow\WorkflowTriggerValueChangeType.cs" />
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
 </Project>
