@@ -230,7 +230,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
                 int fiscalMonthNumber = new DateTime( generateDate.Year, generateDate.Month, 1 ).AddMonths( 1 - fiscalStartMonth ).Month;
                 int fiscalQuarter = ( fiscalMonthNumber + 2 ) / 3;
 
-                analyticsSourceDate.FiscalWeek = GetFiscalWeek( generateDate, 4, RockDateTime.FirstDayOfWeek, 4 );
+                analyticsSourceDate.FiscalWeek = GetFiscalWeek( generateDate, fiscalStartMonth, RockDateTime.FirstDayOfWeek, 4 );
                 analyticsSourceDate.FiscalWeekNumberInYear = generateDate.GetWeekOfYear( System.Globalization.CalendarWeekRule.FirstFourDayWeek, RockDateTime.FirstDayOfWeek );
                 analyticsSourceDate.FiscalMonth = generateDate.ToString( "MMMM" );
                 analyticsSourceDate.FiscalMonthAbbreviated = generateDate.ToString( "MMM" );
