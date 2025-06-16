@@ -29,7 +29,10 @@ using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Providers
 {
-    [Description( "Provider to use Azure Open AI for use in Rock." )]
+    /// <summary>
+    /// Provider to use Azure Open AI for use in Rock chat agents.
+    /// </summary>
+    [Description( "Provider to use Azure Open AI for use in Rock chat agents." )]
     [Export( typeof( AgentProviderComponent ) )]
     [ExportMetadata( "ComponentName", "Azure Open AI" )]
     [EntityTypeGuid( "8a9518d6-7ae6-470a-8bdf-15965e95a80b" )]
@@ -54,26 +57,17 @@ namespace Rock.AI.Agent.Providers
             { ModelServiceRole.Research, "gpt-4o-mini" }
         };
 
-        public override PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( ModelServiceRole role, double? temperature = null, int? maxTokens = null )
-        {
-            return new OpenAIPromptExecutionSettings
-            {
-                ServiceId = role.ToString(),
-                ModelId = _modelToRoleMap[role],
-                Temperature = temperature,
-                MaxTokens = maxTokens
-            };
-        }
-
+        /// <inheritdoc/>
         public override void AddChatCompletion( ModelServiceRole role, IServiceCollection serviceCollection )
         {
             serviceCollection.AddAzureOpenAIChatCompletion(
-                serviceId: role.ToString(),
+                serviceId: GetServiceKeyForRole( role ),
                 deploymentName: _modelToRoleMap[role],
                 endpoint: GetAttributeValue( "Endpoint" ),
                 apiKey: GetAttributeValue( "ApiKey" ) );
         }
 
+        /// <inheritdoc/>
         public override UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
         {
             var resultMetadata = result?.Metadata;
@@ -96,6 +90,19 @@ namespace Rock.AI.Agent.Providers
             };
         }
 
+        /// <inheritdoc/>
+        public override PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( AgentFunction function )
+        {
+            return new OpenAIPromptExecutionSettings
+            {
+                ServiceId = GetServiceKeyForRole( function.Role ),
+                ModelId = _modelToRoleMap[function.Role],
+                Temperature = function.Temperature,
+                MaxTokens = function.MaxTokens
+            };
+        }
+
+        /// <inheritdoc/>
         public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings()
         {
             return new OpenAIPromptExecutionSettings()

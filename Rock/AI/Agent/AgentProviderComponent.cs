@@ -15,8 +15,6 @@
 // </copyright>
 //
 
-using System;
-
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
@@ -28,37 +26,48 @@ namespace Rock.AI.Agent
     /// <summary>  
     /// This is the base provider for those that are OpenAI compatible (OpenAI and AzureOpenAI)  
     /// </summary>  
-    internal abstract class AgentProviderComponent : Component, IAgentProvider
+    internal abstract class AgentProviderComponent : Component
     {
         /// <summary>
-        /// Registers a chat completion service with the kernel builder. This will be implemented in the derived classes.
+        /// Registers a chat completion service with service collection. This
+        /// is used during the initialization of the chat agent and should not
+        /// normally be called by plugins. This should register a keyed service
+        /// of <see cref="Microsoft.SemanticKernel.ChatCompletion.IChatCompletionService"/>.
         /// </summary>
-        /// <param name="role"></param>
-        /// <param name="serviceCollection"></param>
-        /// <exception cref="NotImplementedException"></exception>
+        /// <param name="role">The role to be registered. This can be used to identify which model should be used.</param>
+        /// <param name="serviceCollection">The service collection to register the chat completion service.</param>
         public abstract void AddChatCompletion( ModelServiceRole role, IServiceCollection serviceCollection );
 
         /// <summary>
         /// Gets the usage metric from the result metadata.
         /// </summary>
-        /// <param name="resultMetadata"></param>
-        /// <returns></returns>
+        /// <param name="result">The result from the chat message.</param>
+        /// <returns>An object that represents the token usage metrics from the chat message.</returns>
         public abstract UsageMetric GetMetricUsageFromResult( ChatMessageContent result );
 
         /// <summary>
-        /// Gets the prompt execution settings for a specific role for use with a function call.
+        /// Gets the prompt execution settings for a specific role for use with
+        /// a function call.
         /// </summary>
-        /// <param name="role"></param>
-        /// <param name="temperature"></param>
-        /// <param name="maxTokens"></param>
-        /// <returns></returns>
-        /// <exception cref="NotImplementedException"></exception>
-        public abstract PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( ModelServiceRole role, double? temperature = null, int? maxTokens = null );
+        /// <param name="function">The agent function to be executed.</param>
+        /// <returns>The execution settings that should be used for the function.</returns>
+        public abstract PromptExecutionSettings GetFunctionPromptExecutionSettingsForRole( AgentFunction function );
 
         /// <summary>
         /// Gets the prompt execution settings for a chat completion.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>The execution settings for a general purpose chat request.</returns>
         public abstract PromptExecutionSettings GetChatCompletionPromptExecutionSettings();
+
+        /// <summary>
+        /// Gets the dependency injection service key to use for the specified
+        /// model role.
+        /// </summary>
+        /// <param name="role">The model role.</param>
+        /// <returns>A string that represents the service key.</returns>
+        protected string GetServiceKeyForRole( ModelServiceRole role )
+        {
+            return role.ToString();
+        }
     }
 }

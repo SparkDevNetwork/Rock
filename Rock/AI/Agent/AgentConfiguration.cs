@@ -25,7 +25,7 @@ namespace Rock.AI.Agent
     {
         public int AgentId { get; }
 
-        public IAgentProvider Provider { get; }
+        public AgentProviderComponent Provider { get; }
 
         public ModelServiceRole Role { get; }
 
@@ -33,7 +33,7 @@ namespace Rock.AI.Agent
 
         public IReadOnlyCollection<SkillConfiguration> Skills { get; }
 
-        public AgentConfiguration( int agentId, IAgentProvider provider, string persona, ModelServiceRole role, IReadOnlyList<SkillConfiguration> skills )
+        public AgentConfiguration( int agentId, AgentProviderComponent provider, string persona, ModelServiceRole role, IReadOnlyList<SkillConfiguration> skills )
         {
             AgentId = agentId;
             Provider = provider;

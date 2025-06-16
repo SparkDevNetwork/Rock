@@ -252,7 +252,7 @@ namespace Rock.AI.Agent
                         promptTemplate: prompt,
                         functionName: function.Key,
                         description: function.UsageHint,
-                        executionSettings: function.GetExecutionSettings( _agentConfiguration.Provider ),
+                        executionSettings: _agentConfiguration.Provider.GetFunctionPromptExecutionSettingsForRole( function ),
                         loggerFactory: _loggerFactory
                     );
 

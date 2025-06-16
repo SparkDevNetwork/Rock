@@ -17,8 +17,6 @@
 
 using System;
 
-using Microsoft.SemanticKernel;
-
 using Rock.Enums.Core.AI.Agent;
 
 namespace Rock.AI.Agent
@@ -128,14 +126,5 @@ namespace Rock.AI.Agent
         /// <see cref="FunctionType.AIPrompt"/>.
         /// </remarks>
         public int? MaxTokens { get; set; }
-
-        /// <summary>
-        /// Gets the prompt execution settings for this function.
-        /// </summary>
-        /// <param name="agentProvider">The provider that will be executing this function.</param>
-        public PromptExecutionSettings GetExecutionSettings( IAgentProvider agentProvider )
-        {
-            return agentProvider.GetFunctionPromptExecutionSettingsForRole( Role, Temperature, MaxTokens );
-        }
     }
 }
