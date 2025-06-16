@@ -83,9 +83,9 @@ namespace Rock.AI.Agent
 
                 rockContext.SaveChanges();
 
-                var chatHistory = CreateCommonHistory();
+                Context.Clear();
+                AddSystemMessages();
 
-                Context.InternalChatHistory = chatHistory;
                 SessionId = session.Id;
             }
         }
@@ -112,43 +112,39 @@ namespace Rock.AI.Agent
                     .Select( a => new
                     {
                         a.EntityTypeId,
-                        a.EntityId,
                         a.PayloadJson
                     } )
                     .ToList();
 
-                var chatHistory = CreateCommonHistory();
+                Context.Clear();
+                AddSystemMessages();
 
-                var anchorEntities = new List<(int EntityTypeId, int EntityId)>();
+                var anchorEntities = new List<int>( anchors.Count );
                 foreach ( var anchor in anchors )
                 {
                     // Skip duplicates.
-                    if ( anchor.EntityTypeId.HasValue && anchor.EntityId.HasValue )
+                    if ( anchorEntities.Contains( anchor.EntityTypeId ) )
                     {
-                        if ( anchorEntities.Contains( (anchor.EntityTypeId.Value, anchor.EntityId.Value) ) )
-                        {
-                            continue;
-                        }
-
-                        anchorEntities.Add( (anchor.EntityTypeId.Value, anchor.EntityId.Value) );
+                        continue;
                     }
 
-                    chatHistory.AddSystemMessage( $"ContextAnchor|{anchor.PayloadJson}" );
+                    anchorEntities.Add( anchor.EntityTypeId );
+
+                    Context.AddAnchor( anchor.EntityTypeId, anchor.PayloadJson );
                 }
 
                 foreach ( var message in messages )
                 {
                     if ( message.MessageRole == AuthorRole.User )
                     {
-                        chatHistory.AddUserMessage( message.Message );
+                        Context.AddUserMessage( message.Message );
                     }
                     else if ( message.MessageRole == AuthorRole.Assistant )
                     {
-                        chatHistory.AddAssistantMessage( message.Message );
+                        Context.AddAssistantMessage( message.Message );
                     }
                 }
 
-                Context.InternalChatHistory = chatHistory;
                 SessionId = sessionId;
             }
         }
@@ -192,34 +188,91 @@ namespace Rock.AI.Agent
                 }
             }
 
-            var chatRole = role == AuthorRole.User
-                ? Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User
-                : Microsoft.SemanticKernel.ChatCompletion.AuthorRole.Assistant;
-
-            Context.InternalChatHistory.AddMessage( chatRole, message );
+            if ( role == AuthorRole.User )
+            {
+                Context.AddUserMessage( message );
+            }
+            else
+            {
+                Context.AddAssistantMessage( message );
+            }
         }
 
-        private ChatHistory CreateCommonHistory()
+        public ContextAnchor AddAnchor( IEntity entity )
         {
-            var chatHistory = new ChatHistory();
+            var entityTypeId = entity.TypeId;
 
-            chatHistory.AddSystemMessage( AgentRequestContext._coreSystemPrompt );
-            chatHistory.AddSystemMessage( $"Persona|{_agentConfiguration.Persona}" );
+            var anchor = new AIAgentSessionAnchor
+            {
+                EntityTypeId = entityTypeId,
+                EntityId = entity.Id,
+                IsActive = true
+            };
+
+            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            {
+                AIAgentSessionAnchorService.UpdateFromEntity( anchor, rockContext );
+
+                if ( SessionId.HasValue )
+                {
+                    InactivateEntityAnchor( entityTypeId );
+
+                    var anchorService = new AIAgentSessionAnchorService( rockContext );
+
+                    anchor.AIAgentSessionId = SessionId.Value;
+                    anchorService.Add( anchor );
+
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return anchor.PayloadJson.FromJsonOrNull<ContextAnchor>();
+        }
+
+        public void RemoveAnchor( int entityTypeId )
+        {
+            Context.RemoveAnchor( entityTypeId );
+
+            if ( SessionId.HasValue )
+            {
+                InactivateEntityAnchor( entityTypeId );
+            }
+        }
+
+        private void InactivateEntityAnchor( int entityTypeId )
+        {
+            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            {
+                var anchorService = new AIAgentSessionAnchorService( rockContext );
+                var anchorsToInactivate = anchorService.Queryable()
+                    .Where( a => a.AIAgentSessionId == SessionId.Value
+                        && a.EntityTypeId == entityTypeId
+                        && a.IsActive )
+                    .ToList();
+
+                anchorsToInactivate.ForEach( a => a.IsActive = false );
+
+                rockContext.SaveChanges();
+            }
+        }
+
+        private void AddSystemMessages()
+        {
+            Context.AddSystemMessage( AgentRequestContext._coreSystemPrompt );
+            Context.AddSystemMessage( $"Persona|{_agentConfiguration.Persona}" );
 
             if ( _requestContext?.CurrentPerson != null )
             {
-                chatHistory.AddSystemMessage( $"CurrentPerson|The current person is {_requestContext.CurrentPerson.FullName} (id: {_requestContext.CurrentPerson.Id}) he is the Discipleship Pastor." );
+                Context.AddSystemMessage( $"CurrentPerson|The current person is {_requestContext.CurrentPerson.FullName} (id: {_requestContext.CurrentPerson.Id}) he is the Discipleship Pastor." );
             }
-
-            return chatHistory;
         }
 
         async public Task<ChatMessageContent> GetChatMessageContentAsync()
         {
             var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
 
-            var result = await chat.GetChatMessageContentAsync(
-                Context.InternalChatHistory,
+            var result = await chat.GetChatMessageContentAsync( 
+                Context.GetChatHistory(),
                 executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
                 kernel: _kernel );
 

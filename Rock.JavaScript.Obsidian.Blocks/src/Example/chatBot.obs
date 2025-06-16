@@ -12,7 +12,7 @@
                 </div>
             </div>
 
-            <RockButton btnType="primary"
+            <RockButton btnType="info"
                         autoDisable
                         @click="onNewSession">
                 New Session
@@ -27,6 +27,16 @@
                      :class="getMessageClass(message)"
                      :title="getTokenCounts(message)">
                     <span class="message-text">{{ message.message }}</span>
+                </div>
+            </div>
+
+            <div v-if="sortedAnchors.length > 0" class="anchors-container">
+                <div v-for="anchor in sortedAnchors"
+                     :key="anchor.id"
+                     class="anchor">
+                    <span class="anchor-type">{{ anchor.entityTypeName }}</span>
+                    <span class="anchor-text">{{ anchor.name }}</span>
+                    <span class="anchor-clear" @click="onDeleteAnchor(anchor.entityTypeId)"><i class="ti ti-x"></i></span>
                 </div>
             </div>
 
@@ -90,6 +100,7 @@
     display: flex;
     flex-direction: column;
     flex-grow: 1;
+    gap: var(--spacing-small);
 }
 
 .messages-container {
@@ -98,6 +109,11 @@
     flex-grow: 1;
     overflow-y: auto;
     gap: var(--spacing-small);
+    margin-bottom: 0;
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
 }
 
 .message {
@@ -116,6 +132,39 @@
     background-color: #dfdfdf;
     color: #333;
     margin-right: auto;
+}
+
+.anchors-container {
+    display: flex;
+    gap: var(--spacing-xsmall);
+}
+
+.anchor {
+    border: 1px solid var(--color-success-strong);
+    background-color: var(--color-success-soft);
+    color: var(--color-success-strong);
+    font-size: var(--font-size-small);
+    display: flex;
+    border-radius: 12px;
+    height: 24px;
+    line-height: 1em;
+    align-items: center;
+    padding: 0 8px 0 12px;
+    gap: 8px;
+}
+
+.anchor-type {
+    font-weight: var(--font-weight-semibold);
+}
+
+.anchor-type::after {
+    content: ":";
+}
+
+.anchor-clear {
+    font-size: calc(0.77 * var(--font-size-xsmall));
+    padding-top: 2px;
+    cursor: pointer;
 }
 </style>
 
@@ -142,6 +191,8 @@
         sessions?: ChatSessionBag[] | null;
 
         messages?: ChatMessageBag[] | null;
+
+        anchors?: ChatAnchorBag[] | null;
     };
 
     type ChatSessionBag = {
@@ -162,6 +213,16 @@
         consumedTokenCount: number;
     };
 
+    type ChatAnchorBag = {
+        id: number;
+
+        entityTypeId: number;
+
+        entityTypeName?: string | null;
+
+        name?: string | null;
+    };
+
     const config = useConfigurationValues<ChatBotConfigurationBag>();
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -173,10 +234,15 @@
     const isSending = ref(false);
     const messages = reactive(config.messages ?? []);
     const sessions = reactive(config.sessions ?? []);
+    const anchors = reactive(config.anchors ?? []);
     const sessionId = ref(config.sessionId ?? 0);
 
     const isSendDisabled = computed((): boolean => {
         return isSending.value || !message.value;
+    });
+
+    const sortedAnchors = computed((): ChatAnchorBag[] => {
+        return anchors.sort((a, b) => a.entityTypeName?.localeCompare(b.entityTypeName ?? "") || 0);
     });
 
     function updateContainerHeight(): void {
@@ -236,6 +302,10 @@
 
         message.value = "";
 
+        if (msg.startsWith("#")) {
+            return onSpecialCommand(msg);
+        }
+
         messages.push({
             role: AuthorRole.User,
             message: msg,
@@ -263,16 +333,56 @@
         }
     }
 
+    async function onSpecialCommand(command: string): Promise<void> {
+        if (command.startsWith("#anchor ")) {
+            const parts = command.split(" ");
+            if (parts.length !== 3) {
+                await alert("Invalid anchor command. Usage: #anchor <EntityTypeName> <EntityId>");
+                return;
+            }
+
+            const entityTypeName = parts[1];
+            const entityId = parseInt(parts[2]);
+
+            const result = await invokeBlockAction<ChatAnchorBag[]>("CreateAnchor", { sessionId: sessionId.value, entityTypeName, entityId });
+
+            if (result.isSuccess && result.data) {
+                anchors.splice(0, anchors.length, ...result.data);
+            }
+            else {
+                await alert(result.errorMessage || "Unknown error while trying to add anchor.");
+            }
+            return;
+        }
+
+        await alert(`Unknown command: ${command}`);
+    }
+
+    async function onDeleteAnchor(entityTypeId: number): Promise<void> {
+        const result = await invokeBlockAction("DeleteAnchor", { sessionId: sessionId.value, entityTypeId });
+
+        if (result.isSuccess) {
+            const index = anchors.findIndex(a => a.entityTypeId === entityTypeId);
+            if (index !== -1) {
+                anchors.splice(index, 1);
+            }
+        }
+        else {
+            await alert(result.errorMessage || "Unknown error while trying to delete anchor.");
+        }
+    }
+
     async function onSelectSession(id: number): Promise<void> {
         if (sessionId.value === id) {
             return;
         }
 
-        const result = await invokeBlockAction<ChatMessageBag[]>("LoadSession", { sessionId: id });
+        const result = await invokeBlockAction<{ messages: ChatMessageBag[], anchors: ChatAnchorBag[] }>("LoadSession", { sessionId: id });
 
         if (result.isSuccess && result.data) {
             sessionId.value = id;
-            messages.splice(0, messages.length, ...result.data);
+            messages.splice(0, messages.length, ...result.data.messages);
+            anchors.splice(0, anchors.length, ...result.data.anchors);
             updateSessionOrder();
         }
         else {
@@ -286,6 +396,7 @@
         if (result.isSuccess && result.data) {
             sessionId.value = result.data.id;
             messages.splice(0, messages.length);
+            anchors.splice(0, anchors.length);
             sessions.push(result.data);
             nextTick(() => sessionsContainer.value?.scrollTo(0, sessionsContainer.value.scrollHeight));
         }

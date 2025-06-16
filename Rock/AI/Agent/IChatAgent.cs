@@ -19,6 +19,7 @@ using System.Threading.Tasks;
 
 using Microsoft.SemanticKernel;
 
+using Rock.Data;
 using Rock.Enums.Core.AI.Agent;
 
 namespace Rock.AI.Agent
@@ -34,6 +35,10 @@ namespace Rock.AI.Agent
         void LoadSession( int sessionId );
 
         void AddMessage( AuthorRole role, string message );
+
+        ContextAnchor AddAnchor( IEntity entity );
+
+        void RemoveAnchor( int entityTypeId );
 
         Task<ChatMessageContent> GetChatMessageContentAsync();
 

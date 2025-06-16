@@ -22,66 +22,61 @@ namespace Rock.Model
 {
     public partial class AIAgentSessionAnchorService
     {
-        internal static void UpdateEntityPayload( AIAgentSessionAnchor anchor, RockContext rockContext )
+        internal static void UpdateFromEntity( AIAgentSessionAnchor anchor, RockContext rockContext )
         {
-            if ( anchor.EntityTypeId.HasValue && anchor.EntityId.HasValue )
+            ContextAnchor context = null;
+
+            if ( anchor.EntityTypeId == EntityTypeCache.Get<Person>( true, rockContext ).Id )
             {
-                ContextAnchor context = null;
+                var person = new PersonService( rockContext ).Get( anchor.EntityId );
 
-                if ( anchor.EntityTypeId.Value == EntityTypeCache.Get<Person>( true, rockContext ).Id )
+                if ( person != null )
                 {
-                    var person = new PersonService( rockContext ).Get( anchor.EntityId.Value );
-
-                    if ( person != null )
+                    context = new ContextAnchor
                     {
-                        context = new NamedContextAnchor
-                        {
-                            Name = person.FullName
-                        };
-                    }
+                        Name = person.FullName
+                    };
                 }
-                else if ( anchor.EntityTypeId.Value == EntityTypeCache.Get<Group>( true, rockContext ).Id )
-                {
-                    var group = new GroupService( rockContext ).Get( anchor.EntityId.Value );
+            }
+            else if ( anchor.EntityTypeId == EntityTypeCache.Get<Group>( true, rockContext ).Id )
+            {
+                var group = new GroupService( rockContext ).Get( anchor.EntityId );
 
-                    if ( group != null )
+                if ( group != null )
+                {
+                    context = new GroupContextAnchor
                     {
-                        context = new GroupContextAnchor
-                        {
-                            Name = group.Name,
-                            GroupTypeId = group.GroupTypeId,
-                            GroupTypeName = GroupTypeCache.Get( group.GroupTypeId, rockContext )?.Name
-                        };
-                    }
+                        Name = group.Name,
+                        GroupTypeId = group.GroupTypeId,
+                        GroupTypeName = GroupTypeCache.Get( group.GroupTypeId, rockContext )?.Name
+                    };
                 }
+            }
 
-                if ( context != null )
-                {
-                    context.EntityTypeId = anchor.EntityTypeId.Value;
-                    context.EntityTypeName = EntityTypeCache.Get( anchor.EntityTypeId.Value, rockContext )?.Name;
-                    context.EntityId = anchor.EntityId.Value;
+            if ( context != null )
+            {
+                context.EntityTypeId = anchor.EntityTypeId;
+                context.EntityTypeName = EntityTypeCache.Get( anchor.EntityTypeId, rockContext )?.Name;
+                context.EntityId = anchor.EntityId;
 
-                    anchor.PayloadJson = context.ToJson();
-                }
-                else
-                {
-                    anchor.PayloadJson = string.Empty;
-                }
+                anchor.Name = context.Name.Truncate( 100, false );
+                anchor.PayloadJson = context.ToJson();
             }
             else
             {
+                anchor.Name = string.Empty;
                 anchor.PayloadJson = string.Empty;
             }
 
-            anchor.PayloadLastRefreshedDateTime = RockDateTime.Now;
+            if ( anchor.Name.IsNullOrWhiteSpace() )
+            {
+                anchor.Name = $"EntityTypeId={anchor.EntityTypeId}, EntityId={anchor.EntityId}";
+            }
+
+            anchor.LastRefreshedDateTime = RockDateTime.Now;
         }
 
-        private class NamedContextAnchor : ContextAnchor
-        {
-            public string Name { get; set; }
-        }
-
-        private class GroupContextAnchor : NamedContextAnchor
+        private class GroupContextAnchor : ContextAnchor
         {
             public int GroupTypeId { get; set; }
 

@@ -25,34 +25,97 @@ namespace Rock.AI.Agent
 {
     public class AgentRequestContext
     {
+        private List<ChatMessageContent> _systemMessages;
+
+        private Dictionary<int, string> _contextAnchors;
+
+        private List<ChatMessageContent> _chatMessages;
+
+        private ChatHistory _chatHistory = null;
+
         public int? AgentId { get; internal set; } = null;
 
-        internal ChatHistory InternalChatHistory { get; set; } = new ChatHistory();
+        //public IReadOnlyList<ChatMessageContent> ChatHistory => InternalChatHistory;
 
-        public IReadOnlyList<ChatMessageContent> ChatHistory => InternalChatHistory;
+        //public List<ContextAnchor> ContextAnchors { get; private set; } = new List<ContextAnchor>();
 
-        public List<ContextAnchor> ContextAnchors { get; private set; } = new List<ContextAnchor>();
-
-        internal void CopyFrom( AgentRequestContext other )
+        internal void Clear()
         {
-            AgentId = other.AgentId;
-            InternalChatHistory = new ChatHistory( other.InternalChatHistory );
-            ContextAnchors = new List<ContextAnchor>( other.ContextAnchors );
-
-            // If the last chat message is a tool call, then we are copying
-            // history for a currently executing function call. So we need to
-            // remove that message otherwise there will be an error when
-            // executing the new request.
-            if ( InternalChatHistory.Count > 0 )
-            {
-                var lastMessage = InternalChatHistory[InternalChatHistory.Count - 1];
-
-                if ( lastMessage.Items.Any( it => it is FunctionCallContent ) )
-                {
-                    InternalChatHistory.RemoveAt( InternalChatHistory.Count - 1 );
-                }
-            }
+            _systemMessages = new List<ChatMessageContent>();
+            _contextAnchors = new Dictionary<int, string>();
+            _chatMessages = new List<ChatMessageContent>();
+            _chatHistory = null;
         }
+
+        internal void AddSystemMessage( string message )
+        {
+            _systemMessages.Add( new ChatMessageContent( AuthorRole.System, message ) );
+            _chatHistory = null;
+        }
+
+        internal void AddUserMessage( string message )
+        {
+            _chatMessages.Add( new ChatMessageContent( AuthorRole.User, message ) );
+            _chatHistory = null;
+        }
+
+        internal void AddAssistantMessage( string message )
+        {
+            _chatMessages.Add( new ChatMessageContent( AuthorRole.Assistant, message ) );
+            _chatHistory = null;
+        }
+
+        internal void AddAnchor( int entityTypeId, string payload )
+        {
+            _contextAnchors[entityTypeId] = payload;
+            _chatHistory = null;
+        }
+
+        internal void RemoveAnchor( int entityTypeId )
+        {
+            _contextAnchors.Remove( entityTypeId );
+            _chatHistory = null;
+        }
+
+        internal ChatHistory GetChatHistory()
+        {
+            if ( _chatHistory == null )
+            {
+                var chatHistory = new ChatHistory( _systemMessages );
+
+                foreach ( var anchor in _contextAnchors )
+                {
+                    chatHistory.AddSystemMessage( $"ContextAnchor|{anchor.Value}" );
+                }
+
+                chatHistory.AddRange( _chatMessages );
+
+                _chatHistory = chatHistory;
+            }
+
+            return _chatHistory;
+        }
+
+        //internal void CopyFrom( AgentRequestContext other )
+        //{
+        //    AgentId = other.AgentId;
+        //    InternalChatHistory = new ChatHistory( other.InternalChatHistory );
+        //    ContextAnchors = new List<ContextAnchor>( other.ContextAnchors );
+
+        //    // If the last chat message is a tool call, then we are copying
+        //    // history for a currently executing function call. So we need to
+        //    // remove that message otherwise there will be an error when
+        //    // executing the new request.
+        //    if ( InternalChatHistory.Count > 0 )
+        //    {
+        //        var lastMessage = InternalChatHistory[InternalChatHistory.Count - 1];
+
+        //        if ( lastMessage.Items.Any( it => it is FunctionCallContent ) )
+        //        {
+        //            InternalChatHistory.RemoveAt( InternalChatHistory.Count - 1 );
+        //        }
+        //    }
+        //}
 
         // TODO: This should move to a configuration object.
         internal static string _coreSystemPrompt = @"CoreSystem|

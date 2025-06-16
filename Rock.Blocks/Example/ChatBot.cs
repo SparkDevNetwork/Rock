@@ -8,6 +8,7 @@ using Rock.AI.Agent;
 using Rock.Attribute;
 using Rock.Enums.Core.AI.Agent;
 using Rock.Model;
+using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
 namespace Rock.Blocks.Example
@@ -59,7 +60,36 @@ namespace Rock.Blocks.Example
             }
 
             // Find the recent sessions.
-            var sessions = new AIAgentSessionService( RockContext )
+            var sessions = GetRecentSessions();
+
+            var sessionId = sessions.LastOrDefault()?.Id;
+
+            // If no session was found, create a new session.
+            if ( !sessionId.HasValue )
+            {
+                var agent = _agentBuilder.Build( agentCache.Id );
+
+                agent.StartNewSession( null, null );
+
+                sessions = GetRecentSessions();
+                sessionId = sessions.Last().Id;
+            }
+
+            var messages = GetSessionMessages( sessionId.Value );
+            var anchors = GetSessionAnchors( sessionId.Value );
+
+            return new Dictionary<string, object>
+            {
+                ["sessionId"] = sessionId.Value,
+                ["sessions"] = sessions,
+                ["messages"] = messages,
+                ["anchors"] = anchors,
+            };
+        }
+
+        private List<ChatSessionBag> GetRecentSessions()
+        {
+            return new AIAgentSessionService( RockContext )
                 .Queryable()
                 .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
                     && !s.RelatedEntityTypeId.HasValue
@@ -79,40 +109,47 @@ namespace Rock.Blocks.Example
                     Name = $"#{s.Id}"
                 } )
                 .ToList();
+        }
 
-            var sessionId = sessions.LastOrDefault()?.Id;
-
-            // If no session was found, create a new session.
-            if ( !sessionId.HasValue )
-            {
-                var agent = _agentBuilder.Build( agentCache.Id );
-
-                agent.StartNewSession( null, null );
-
-                sessionId = agent.SessionId.Value;
-            }
-
-            // Find recent chat history.
-            var messages = new AIAgentSessionHistoryService( RockContext )
+        private List<ChatMessageBag> GetSessionMessages( int sessionId )
+        {
+            return new AIAgentSessionHistoryService( RockContext )
                 .Queryable()
-                .Where( s => s.AIAgentSessionId == sessionId.Value
-                    && s.IsCurrentlyInContext )
-                .OrderBy( s => s.MessageDateTime )
-                .Select( s => new ChatMessageBag
+                .Where( h => h.AIAgentSessionId == sessionId
+                    && h.IsCurrentlyInContext
+                    && !h.IsSummary )
+                .OrderBy( h => h.MessageDateTime )
+                .Select( h => new ChatMessageBag
                 {
-                    Role = s.MessageRole,
-                    Message = s.Message,
-                    TokenCount = s.TokenCount,
-                    ConsumedTokenCount = s.ConsumedTokenCount
+                    Role = h.MessageRole,
+                    Message = h.Message,
+                    TokenCount = h.TokenCount,
+                    ConsumedTokenCount = h.ConsumedTokenCount
                 } )
                 .ToList();
+        }
 
-            return new Dictionary<string, object>
-            {
-                ["sessionId"] = sessionId.Value,
-                ["sessions"] = sessions,
-                ["messages"] = messages
-            };
+        private List<ChatAnchorBag> GetSessionAnchors( int sessionId )
+        {
+            return new AIAgentSessionAnchorService( RockContext )
+                .Queryable()
+                .Where( s => s.AIAgentSessionId == sessionId
+                    && s.IsActive )
+                .Select( s => new
+                {
+                    s.Id,
+                    s.EntityTypeId,
+                    s.Name
+                } )
+                .ToList()
+                .Select( s => new ChatAnchorBag
+                {
+                    Id = s.Id,
+                    EntityTypeId = s.EntityTypeId,
+                    EntityTypeName = EntityTypeCache.Get( s.EntityTypeId, RockContext )?.FriendlyName ?? string.Empty,
+                    Name = s.Name
+                } )
+                .ToList();
         }
 
         [BlockAction]
@@ -170,22 +207,78 @@ namespace Rock.Blocks.Example
         [BlockAction]
         public BlockActionResult LoadSession( int sessionId )
         {
-            var messages = new AIAgentSessionHistoryService( RockContext )
+            var foundSessionId = new AIAgentSessionService( RockContext )
                 .Queryable()
-                .Where( s => s.AIAgentSessionId == sessionId
-                    && s.IsCurrentlyInContext
-                    && s.AIAgentSession.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
-                .OrderBy( s => s.MessageDateTime )
-                .Select( s => new ChatMessageBag
-                {
-                    Role = s.MessageRole,
-                    Message = s.Message,
-                    TokenCount = s.TokenCount,
-                    ConsumedTokenCount = s.ConsumedTokenCount
-                } )
-                .ToList();
+                .Where( s => s.Id == sessionId
+                    && s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
+                .Select( s => s.Id )
+                .FirstOrDefault();
 
-            return ActionOk( messages );
+            if ( foundSessionId == 0 )
+            {
+                return ActionBadRequest( "Invalid session." );
+            }
+
+            var messages = GetSessionMessages( sessionId );
+            var anchors = GetSessionAnchors( sessionId );
+
+            return ActionOk( new Dictionary<string, object>
+            {
+                ["messages"] = messages,
+                ["anchors"] = anchors
+            } );
+        }
+
+        [BlockAction]
+        public BlockActionResult CreateAnchor( int sessionId, string entityTypeName, int entityId )
+        {
+            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
+            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+
+            if ( agentCache == null )
+            {
+                return ActionBadRequest( "No agent has been configured." );
+            }
+
+            var entityTypeCache = EntityTypeCache.Get( "Rock.Model." + entityTypeName, false, RockContext );
+
+            if ( entityTypeCache == null )
+            {
+                return ActionBadRequest( "Unknown entity type." );
+            }
+
+            var entity = Reflection.GetIEntityForEntityType( entityTypeCache.Id, entityId, RockContext );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( "Entity not found." );
+            }
+
+            var agent = _agentBuilder.Build( agentCache.Id );
+
+            agent.LoadSession( sessionId );
+            agent.AddAnchor( entity );
+
+            return ActionOk( GetSessionAnchors( sessionId ) );
+        }
+
+        [BlockAction]
+        public BlockActionResult DeleteAnchor( int sessionId, int entityTypeId )
+        {
+            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
+            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+
+            if ( agentCache == null )
+            {
+                return ActionBadRequest( "No agent has been configured." );
+            }
+
+            var agent = _agentBuilder.Build( agentCache.Id );
+
+            agent.LoadSession( sessionId );
+            agent.RemoveAnchor( entityTypeId );
+
+            return ActionOk();
         }
 
         private class ChatSessionBag
@@ -206,6 +299,17 @@ namespace Rock.Blocks.Example
             public int TokenCount { get; set; }
 
             public int ConsumedTokenCount { get; set; }
+        }
+
+        private class ChatAnchorBag
+        {
+            public int Id { get; set; }
+
+            public int EntityTypeId { get; set; }
+
+            public string EntityTypeName { get; set; }
+
+            public string Name { get; set; }
         }
     }
 }

@@ -67,13 +67,23 @@ namespace Rock.Model
         /// referring to.
         /// </summary>
         [DataMember]
-        public int? EntityTypeId { get; set; }
+        public int EntityTypeId { get; set; }
 
         /// <summary>
         /// The identifier of the entity that this anchor is associated with.
         /// </summary>
         [DataMember]
-        public int? EntityId { get; set; }
+        public int EntityId { get; set; }
+
+        /// <summary>
+        /// The name of the entity that this anchor is associated with. This
+        /// is used to help identify the anchor in the UI. It may not always
+        /// be in sync with the actual entity.
+        /// </summary>
+        [MaxLength( 100 )]
+        [DataMember]
+        [Previewable]
+        public string Name { get; set; }
 
         /// <summary>
         /// Indicates whether the anchor is currently active. An anchor that is
@@ -88,7 +98,7 @@ namespace Rock.Model
         /// required since the referenced entity might have changed.
         /// </summary>
         [DataMember]
-        public DateTime PayloadLastRefreshedDateTime { get; set; }
+        public DateTime LastRefreshedDateTime { get; set; }
 
         /// <summary>
         /// The JSON payload that contains the context for the anchor. This
@@ -116,6 +126,16 @@ namespace Rock.Model
         public virtual EntityType EntityType { get; set; }
 
         #endregion
+
+        #region Public Methods
+
+        /// <inheritdoc/>
+        public override string ToString()
+        {
+            return Name;
+        }
+
+        #endregion
     }
 
     #region Entity Configuration
@@ -133,7 +153,7 @@ namespace Rock.Model
             this.HasRequired( a => a.AIAgentSession ).WithMany( b => b.AIAgentSessionAnchors ).HasForeignKey( a => a.AIAgentSessionId ).WillCascadeOnDelete( true );
 
             // Do not cascade as that will be handled via AIAgentSession.
-            this.HasOptional( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
+            this.HasRequired( a => a.EntityType ).WithMany().HasForeignKey( a => a.EntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 

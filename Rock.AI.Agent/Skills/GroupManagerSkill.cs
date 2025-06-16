@@ -62,7 +62,7 @@ This function may be called 2–3 times per user request and is responsible for 
             [Description( "The operation to preform (Add|Update|Delete)." )] GroupMemberOperation operation,
             [Description( "The role ID. Pass null if the correct value is not yet known. Do not guess." )] int? groupMemberRoleId = null )
         {
-            var test = _requestContext.ChatHistory.FirstOrDefault().Content;
+            var test = _requestContext.GetChatHistory().FirstOrDefault().Content;
             var currentPerson = RockRequestContextAccessor.Current.CurrentPerson;
 
             // Get the person and group to add them to

@@ -72,6 +72,10 @@
     <Compile Include="Migrations\202506102152281_TempAddAgentSessionTables.Designer.cs">
       <DependentUpon>202506102152281_TempAddAgentSessionTables.cs</DependentUpon>
     </Compile>
+    <Compile Include="Migrations\202506161533187_TempFixAgentAnchorEntityType.cs" />
+    <Compile Include="Migrations\202506161533187_TempFixAgentAnchorEntityType.Designer.cs">
+      <DependentUpon>202506161533187_TempFixAgentAnchorEntityType.cs</DependentUpon>
+    </Compile>
     <Compile Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.cs" />
     <Compile Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.Designer.cs">
       <DependentUpon>202504071505457_AddBluetoothBeaconIdentifiers.cs</DependentUpon>
@@ -2668,6 +2672,9 @@
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\202506102152281_TempAddAgentSessionTables.resx">
       <DependentUpon>202506102152281_TempAddAgentSessionTables.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Migrations\202506161533187_TempFixAgentAnchorEntityType.resx">
+      <DependentUpon>202506161533187_TempFixAgentAnchorEntityType.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Migrations\Version 17.0\Version 17.1\202504071505457_AddBluetoothBeaconIdentifiers.resx">
       <DependentUpon>202504071505457_AddBluetoothBeaconIdentifiers.cs</DependentUpon>

@@ -17,12 +17,14 @@
 
 namespace Rock.AI.Agent
 {
-    public abstract class ContextAnchor
+    public class ContextAnchor
     {
         public int EntityTypeId { get; set; }
 
+        public string EntityTypeName { get; set; }
+
         public int EntityId { get; set; }
 
-        public string EntityTypeName { get; set; }
+        public string Name { get; set; }
     }
 }
