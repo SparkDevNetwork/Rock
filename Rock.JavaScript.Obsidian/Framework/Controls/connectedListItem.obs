@@ -2,9 +2,9 @@
 <template>
     <div class="connected-list-item"
          :class="{
-             'is-hovering': isHovering,
-             'clickable': !!props.onClick
-         }"
+            'is-hovering': isHovering,
+            'clickable': !!props.onClick
+        }"
          @mouseenter="isHovering = true"
          @mouseleave="isHovering = false"
          @click="onMainClick">
@@ -16,7 +16,7 @@
 
         <div class="connected-list-item-icon-title-and-desc">
             <div v-if="iconCssClass" class="connected-list-item-icon">
-                <HighlightLabel :labelType="iconLabelType" :iconCssClass="`${iconCssClass}`" :customClass="`${iconLabelCustomClass}`" />
+                <HighlightLabel :labelType="internalIconLabelType" :iconCssClass="`${iconCssClass}`" :customClass="internalIconLabelCustomClass" />
             </div>
 
             <div v-if="title || description || $slots.description" class="connected-list-item-title-and-desc">
@@ -145,12 +145,15 @@
 </style>
 
 <script setup lang="ts">
-    import { PropType, ref } from "vue";
+    import { computed, PropType, ref } from "vue";
     import Badge from "./badge.obs";
     import DropDownMenu from "./dropDownMenu.obs";
     import HighlightLabel from "./highlightLabel.obs";
     import RockButton from "./rockButton.obs";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+
+    const highlightLabelTypes = ["default", "primary", "success", "info", "warning", "danger", "type", "campus", "custom"] as const;
+    type HighlightLabelType = (typeof highlightLabelTypes)[number];
 
     const props = defineProps({
         aside: {
@@ -174,13 +177,8 @@
         },
 
         iconLabelType: {
-            type: String as PropType<"default" | "primary" | "success" | "info" | "warning" | "danger" | "custom">,
+            type: String as PropType<Omit<HighlightLabelType, "custom"> | string>,
             default: "info"
-        },
-
-        iconLabelCustomClass: {
-            type: String as PropType<string | null | undefined>,
-            required: false
         },
 
         description: {
@@ -219,6 +217,34 @@
 
     // #endregion Values
 
+    // #region Computed Values
+
+    const internalIconLabelType = computed<HighlightLabelType>(() => {
+        const currentValue = props.iconLabelType;
+
+        if (!currentValue) {
+            // Return "info" by default if empty.
+            return "info";
+        }
+        else if (isHighlightLabelType(currentValue)) {
+            return currentValue;
+        }
+        else {
+            return "custom";
+        }
+    });
+
+    const internalIconLabelCustomClass = computed<string | undefined>(() => {
+        if (isHighlightLabelType(props.iconLabelType) && props.iconLabelType !== "custom") {
+            return undefined;
+        }
+        else {
+            return props.iconLabelType as string ?? undefined;
+        }
+    });
+
+    // #endregion Computed Values
+
     // #region Event Handlers
 
     /**
@@ -232,5 +258,14 @@
         }
     }
 
-    // #endregion
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function isHighlightLabelType(value: unknown): value is HighlightLabelType {
+        return typeof value === "string"
+            && highlightLabelTypes.map(t => t as string).includes(value);
+    }
+
+    // #endregion Functions
 </script>
