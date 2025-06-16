@@ -165,7 +165,7 @@ namespace Rock.AI.Agent
                     continue;
                 }
 
-                var skill = ( IAgentSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
+                var skill = ( AgentSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
                 var skillDescription = type.GetCustomAttribute<DescriptionAttribute>( inherit: true )?.Description;
                 var methods = type.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static );
                 var pluginFunctions = new List<KernelFunction>();
@@ -224,7 +224,7 @@ namespace Rock.AI.Agent
             }
         }
 
-        private ICollection<KernelFunction> GetVirtualSkillFunctions( List<AgentFunction> functions )
+        private ICollection<KernelFunction> GetVirtualSkillFunctions( IReadOnlyCollection<AgentFunction> functions )
         {
             var pluginFunctions = new Dictionary<string, KernelFunction>();
 

@@ -31,7 +31,7 @@ namespace Rock.Model
     {
         /// <summary>
         /// Registers all AI skills defined in the system by scanning for types
-        /// that implement <see cref="IAgentSkill"/>. New skills are added to
+        /// that implement <see cref="AgentSkill"/>. New skills are added to
         /// the database. Existing skills are updated if necessary. Skills that
         /// no longer exist are not currently deleted from the database.
         /// </summary>
@@ -44,7 +44,7 @@ namespace Rock.Model
                     // Load all skills at once for performance.
                     var existingSkills = new AISkillService( rockContext ).Queryable().ToList();
 
-                    var skillTypes = Reflection.FindTypes( typeof( IAgentSkill ) )
+                    var skillTypes = Reflection.FindTypes( typeof( AgentSkill ) )
                         .Select( t => t.Value )
                         .Where( t => t.IsClass
                             && !t.IsAbstract

@@ -6,13 +6,11 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 using Rock.Data;
-using Rock.Enums.Core.AI.Agent;
 using Rock.Field.Types;
 using Rock.Model;
 using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
-using Rock.Workflow.Action;
 
 using Group = Rock.Model.Group;
 using Person = Rock.Model.Person;
@@ -21,7 +19,7 @@ namespace Rock.AI.Agent.Skills
 {
     [Description( "Used for managing groups, such as adding or removing members, and getting group information." )]
     [AgentSkillGuid( "489e96d7-c66c-4683-b76b-92fbfda372f4" )]
-    internal class GroupManagerSkill : IAgentSkill
+    internal class GroupManagerSkill : AgentSkill
     {
         private AgentRequestContext _requestContext;
         private RockContext _rockContext;
@@ -420,11 +418,6 @@ Example:
             _rockContext.SaveChanges();
 
             return $"{person.NickName} has been removed from the group {group.Name}";
-        }
-
-        public List<AgentFunction> GetSemanticFunctions()
-        {
-            return new List<AgentFunction>();
         }
 
         #endregion

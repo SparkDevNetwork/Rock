@@ -708,7 +708,7 @@
     <Compile Include="AI\Agent\ContextAnchor.cs" />
     <Compile Include="AI\Agent\IChatAgent.cs" />
     <Compile Include="AI\Agent\IChatAgentBuilder.cs" />
-    <Compile Include="AI\Agent\IAgentSkill.cs" />
+    <Compile Include="AI\Agent\AgentSkill.cs" />
     <Compile Include="AI\Agent\PromptInformationSettings.cs" />
     <Compile Include="AI\Agent\SkillConfiguration.cs" />
     <Compile Include="AI\Agent\UsageMetric.cs" />
