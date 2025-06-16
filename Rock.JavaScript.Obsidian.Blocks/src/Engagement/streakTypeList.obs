@@ -45,8 +45,6 @@
                       title="Enrollments"
                       field="enrollmentCount"
                       :filter="numberValueFilter"
-                      headerClass="title-right"
-                      itemClass="justify-content-end text-right"
                       visiblePriority="md" />
 
         <SecurityColumn :itemTitle="'name'" />

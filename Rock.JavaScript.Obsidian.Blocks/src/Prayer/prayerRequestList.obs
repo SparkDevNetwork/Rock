@@ -45,25 +45,13 @@
                       title="Prayer Count"
                       field="prayerCount"
                       :filter="numberValueFilter"
-                      visiblePriority="sm">
-            <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ row.prayerCount }}
-                </div>
-            </template>
-        </NumberColumn>
+                      visiblePriority="sm" />
 
         <NumberColumn name="flagCount"
                       title="Flag Count"
                       field="flagCount"
                       :filter="numberValueFilter"
-                      visiblePriority="sm">
-            <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ row.flagCount }}
-                </div>
-            </template>
-        </NumberColumn>
+                      visiblePriority="sm" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -89,7 +77,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, dateValueFilter, numberValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, NumberColumn, TextColumn, textValueFilter, DeleteColumn, SelectColumn, DateColumn, dateValueFilter, numberValueFilter, booleanValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import Toggle from "@Obsidian/Controls/toggle.obs";
