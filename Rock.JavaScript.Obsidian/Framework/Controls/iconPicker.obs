@@ -12,9 +12,9 @@
                            pickerClass="icon-picker-w-fit-content">
 
         <template #innerLabel>
-            <span v-if="useCustom" class="selected-icon"><i :class="customIcon"></i></span>
-            <span v-else-if="icon?.IconSvg" class="selected-icon" v-html="icon?.IconSvg"></span>
-            <span v-else class="selected-icon"><svg height=16 width=16 viewbox="0 0 16 16"><!-- Empty Icon --></svg></span>
+            <span v-if="useCustom" class="selected-icon custom-icon"><i :class="customIcon"></i></span>
+            <span v-else-if="icon?.IconSvg" class="selected-icon svg-icon" v-html="icon?.IconSvg"></span>
+            <span v-else class="selected-icon svg-icon"><svg height=16 width=16 viewbox="0 0 16 16"><!-- Empty Icon --></svg></span>
         </template>
 
         <template #pickerContentHeader>
@@ -72,7 +72,15 @@
     justify-content: center;
 }
 
-.selected-icon {
+.selected-icon.custom-icon {
+    line-height: 1 !important;
+}
+
+.selected-icon.custom-icon > i {
+    font-size: 16px;
+}
+
+.selected-icon.svg-icon {
     line-height: 0 !important;
 }
 
