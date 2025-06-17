@@ -14,29 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System.Collections.Generic;
-
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
+namespace Rock.Migrations
 {
+    using System;
+    using System.Data.Entity.Migrations;
+    
     /// <summary>
-    /// 
+    ///
     /// </summary>
-    public class PageShortLinkDetailOptionsBag
+    public partial class AddIsPinnedShortLinkProperty : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// Gets or sets the site options.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        /// <value>
-        /// The site options.
-        /// </value>
-        public List<ListItemBag> SiteOptions { get; set; }
-
+        public override void Up()
+        {
+            AddColumn("dbo.PageShortLink", "IsPinned", c => c.Boolean(nullable: false));
+        }
+        
         /// <summary>
-        /// Get the Default Domain URLs of the sites to be passed to the front end.
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        public List<ListItemBag> DefaultDomainUrls { get; set; }
+        public override void Down()
+        {
+            DropColumn("dbo.PageShortLink", "IsPinned");
+        }
     }
 }
