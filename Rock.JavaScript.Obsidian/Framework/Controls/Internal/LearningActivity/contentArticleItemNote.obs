@@ -39,6 +39,7 @@
     import { PropType, computed, ref, toValue, watch } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { ComponentScreen } from "./learningActivity";
     import { ContentArticleItem } from "./contentArticleLearningActivity.partial";
 

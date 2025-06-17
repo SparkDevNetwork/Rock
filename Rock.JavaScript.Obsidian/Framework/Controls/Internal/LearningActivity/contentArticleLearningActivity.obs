@@ -7,12 +7,12 @@
 
         <StructuredContentEditor label="Header" v-model="header" :disabled="disabled" />
 
-        <div class="d-flex justify-content-between">
-            <SectionHeader title="Content Blocks" description="" :isSeparatorHidden="true" />
+        <div class="content-blocks-header">
+            <h4 class="m-0">Content Blocks</h4>
 
             <RockButton :btnType="BtnType.Default"
                         :btnSize="BtnSize.ExtraSmall"
-                        class="d-flex align-items-center gap-1"
+                        class="add-content-button"
                         @click="addContentArticleItem(0)">
                 <i class="fa fa-plus" aria-hidden="true"></i> Add Item
             </RockButton>
@@ -31,18 +31,22 @@
                     <DropDownList :modelValue="item.type?.toString() ?? ''" @update:modelValue="onItemTypeChanged(item, $event)" :disabled="disabled" :items="itemTypes" label="Type" :show-blank-item="false" />
                 </div>
                 <div class="assessment-item assessment-item-configuration-section">
-                    <ContentArticleItemText v-if="item.type === ContentArticleItem.Text" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
-                    <AssessmentItemSection v-if="item.type === ContentArticleItem.Section" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
-                    <ContentArticleItemVideo v-if="item.type === ContentArticleItem.Video" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
-                    <ContentArticleItemNote v-if="item.type === ContentArticleItem.Note" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                    <ContentArticleItemText v-if="item.type === ContentArticleItemType.Text" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                    <AssessmentItemSection v-if="item.type === ContentArticleItemType.Section" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                    <ContentArticleItemVideo v-if="item.type === ContentArticleItemType.Video" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                    <ContentArticleItemNote v-if="item.type === ContentArticleItemType.Note" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
                 </div>
             </div>
         </div>
 
-        <!-- <StructuredContentEditor v-model="content"
-                                 label="Content"
-                                 :disabled="disabled"
-                                 help="Text the individual will acknowledge or provide consent for. <span class='tip tip-lava'></span>" /> -->
+        <div v-if="items.length > 0" class="configuration-footer-buttons">
+            <RockButton :btnType="BtnType.Default"
+                        :btnSize="BtnSize.ExtraSmall"
+                        class="add-content-button"
+                        @click="addContentArticleItem(0)">
+                <i class="fa fa-plus" aria-hidden="true"></i> Add Item
+            </RockButton>
+        </div>
     </Panel>
 
     <Panel v-if="screenToShow === ComponentScreen.Summary"
@@ -59,60 +63,80 @@
     </Panel>
 
     <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
-        <!-- <div class="acknowledgment-container">
-            <div v-if="content" v-html="content"></div>
+        <fieldset v-if="isStudentAssignedAndIncomplete || isStudentAssignedAndCompleted">
+            <div v-if="header" v-html="header"></div>
 
-            <div class="is-required-section" v-if="isConfirmationRequired">
-                <CheckBox v-model="isConfirmed" label="" :disabled="completionBag.isStudentCompleted" :text="confirmationText" />
+            <div class="assessment-item-container assessment-items-section">
+                <div class="assessment-item" v-for="(item, index) in completedItems">
+                    <template v-if="item.type === ContentArticleItemType.Text">
+                        <ContentArticleItemText v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    </template>
+
+                    <template v-if="item.type === ContentArticleItemType.Section">
+                        <AssessmentItemSection v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    </template>
+
+                    <template v-if="item.type === ContentArticleItemType.Video">
+                        <ContentArticleItemVideo v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
+                    </template>
+
+                    <template v-if="item.type === ContentArticleItemType.Note">
+                        <ContentArticleItemNote v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
+                    </template>
+                </div>
             </div>
-        </div>
 
-        <div v-if="showStudentComment" class="optional-comments-container">
-            <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
-        </div>
+            <div v-if="showStudentComment" class="optional-comments-container">
+                <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
+            </div>
 
-        <div class="footer-button-section">
-            <RockButton :btnType="BtnType.Primary" :disabled="(isConfirmationRequired && !isConfirmed || completeClicked)" @click="onCompletedAndClosed" :autoDisable="true">
-                {{ completeButtonText }}
-            </RockButton>
-        </div> -->
+            <div class="footer-content-section mt-3">
+                <RockButton :btnType="BtnType.Primary"
+                            @click="onCompletedAndClosed"
+                            :autoDisable="true"
+                            :disabled="areEmptyRequiredNotes || completeClicked">
+                    Complete
+                </RockButton>
+            </div>
+        </fieldset>
     </div>
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, watch, } from "vue";
+    import { ContentArticleItem, ContentArticleItemType } from "./contentArticleLearningActivity.partial";
+    import { computed, ref, watch, toValue } from "vue";
     import { debounce } from "@Obsidian/Utility/util";
     import Panel from "@Obsidian/Controls/panel.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import ContentArticleItemText from "./contentArticleItemText.obs";
     import AssessmentItemSection from "./assessmentItemSection.obs";
     import ContentArticleItemVideo from "./contentArticleItemVideo.obs";
     import ContentArticleItemNote from "./contentArticleItemNote.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
     import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
     import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { asBoolean, asBooleanOrNull, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
-    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { ContentArticleItem, ContentArticleItemType } from "./contentArticleLearningActivity.partial";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { isNullOrWhiteSpace, safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
 
     const enum SettingKey {
         Header = "header",
-        Content = "content",
+        Items = "items",
     }
 
     const enum CompletionKey {
+        CompletedItems = "completedItems",
         PointsPossibleAtCompletion = "pointsPossibleAtCompletion",
-        IsConfirmed = "isConfirmed",
     }
 
     // Get the required props and emits for learning activity components.
@@ -136,6 +160,7 @@
         assignee,
         containerClasses,
         defaultAssigneeDescription,
+        assignTo,
         isCompleted,
         panelTitle,
     } = useLearningComponent(
@@ -146,8 +171,8 @@
 
     const header = ref("");
     const items = ref<(ContentArticleItem)[]>([]);
+    const completedItems = ref<(ContentArticleItem)[]>([]);
     const content = ref("");
-    const isConfirmed = ref(false);
     const pointsPossibleAtCompletion = ref<number>();
 
     // Add drag reorder functionality, updating the order on successful drop.
@@ -181,7 +206,18 @@
         RockDateTime.parseISO(completedDate.value)?.localDateTime.toElapsedString() ?? ""
     );
 
-    const completeButtonText = computed(() => isCompleted.value === true ? "Continue" : "Complete");
+    /** Checks if there are any required notes that are empty. */
+    const areEmptyRequiredNotes = computed(() =>
+        (completedItems.value ?? []).some(i => i.type === ContentArticleItemType.Note && i.isRequired && isNullOrWhiteSpace(i.note))
+    );
+
+    const isStudentAssignedAndCompleted = computed(() =>
+        assignTo.value === AssignTo.Student && toValue(completionBag)?.isStudentCompleted === true
+    );
+
+    const isStudentAssignedAndIncomplete = computed(() =>
+        assignTo.value === AssignTo.Student && toValue(completionBag)?.isStudentCompleted !== true
+    );
 
     /** Contains the custom style values to apply to the icon. */
     const reorderIconStyle = computed((): Record<string, string> => {
@@ -205,25 +241,39 @@
         const lastIndex = items.value?.length ?? 0;
         const order = toIndex < 0 ? 0 : toIndex > lastIndex ? lastIndex : 0;
 
-        console.log("Section:  ", ContentArticleItemType.Section);
         items.value.push({
-            type: ContentArticleItemType.Section,
+            type: ContentArticleItemType.Text,
             order: order,
             uniqueId: newGuid()
         });
     }
 
+    /**
+     * Gets a list of completion items for the individual.
+     * For complete activities this will take the configuration values from the
+     * completed activity; otherwise from the activity's configuration.
+     */
+    function getItemsForStudentCompletion(): ContentArticleItem[] {
+        return toValue((toValue(items.value) ?? [])
+            .map(i => {
+                const completedItem = toValue(completedItems.value?.find(c => c.uniqueId === i.uniqueId));
+                i.note = completedItem?.note ?? "";
+
+                return i;
+            }));
+    }
+
     function updateLocalValues(): void {
         if (props.screenToShow === ComponentScreen.Configuration) {
             header.value = props.activityBag.componentSettings?.[SettingKey.Header] ?? "";
-            content.value = props.activityBag.componentSettings?.[SettingKey.Content] ?? "";
+            updateRefValue(items, safeParseJson<ContentArticleItem[]>(props.activityBag.componentSettings?.[SettingKey.Items]) ?? []);
         }
         else {
             header.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Header] ?? "";
-            content.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Content] ?? "";
+            updateRefValue(items, safeParseJson<ContentArticleItem[]>(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Items]) ?? []);
 
+            updateRefValue(completedItems, safeParseJson<ContentArticleItem[]>(props.completionBag?.completionValues?.[CompletionKey.CompletedItems]) ?? []);
             pointsPossibleAtCompletion.value = toNumberOrNull(props.completionBag?.completionValues?.[CompletionKey.PointsPossibleAtCompletion]) ?? props.activityBag.points;
-            isConfirmed.value = asBoolean(props.completionBag?.completionValues?.[CompletionKey.IsConfirmed]);
 
             studentComment.value = props.completionBag?.studentComment ?? "";
         }
@@ -235,6 +285,14 @@
         }
     }
 
+
+    function onCompletedAndClosed(): void {
+        emits("completed", true);
+        completeClicked.value = true;
+
+        emits("closed");
+    }
+
     /** Watch for modified component settings. */
     const debouncedActivityBagEmits = debounce(() => {
         const newValues = {
@@ -242,11 +300,11 @@
         };
 
         newValues[SettingKey.Header] = header.value;
-        newValues[SettingKey.Content] = content.value;
+        newValues[SettingKey.Items] = JSON.stringify(items.value);
 
         emits("activitySettingsChanged", newValues);
     });
-    watch([content, header], () => {
+    watch([content, header, items], () => {
         debouncedActivityBagEmits();
     }, { deep: true });
 
@@ -254,20 +312,27 @@
         emits("commentChanged", studentComment.value);
     });
 
-    watch([isConfirmed, pointsPossibleAtCompletion], () => {
+    watch([completedItems, pointsPossibleAtCompletion], () => {
         const newValues = {
             ...props.completionBag?.completionValues
         };
 
+        newValues[CompletionKey.CompletedItems] = JSON.stringify(completedItems.value);
         newValues[CompletionKey.PointsPossibleAtCompletion] = pointsPossibleAtCompletion.value?.toString() ?? "";
-        newValues[CompletionKey.IsConfirmed] = asTrueOrFalseString(isConfirmed.value);
 
         emits("completionValuesChanged", newValues);
-    });
+    }, { deep: true });
 
     watch(() => [props.activityBag, props.completionBag], () => {
         updateLocalValues();
     });
 
     updateLocalValues();
+
+    // If the individual hasn't completed the content article ensure we are using
+    // the latest configuration; otherwise use the content article that was saved
+    // at the time of completion (In case the facilitator has since updated the content article).
+    if (isStudentAssignedAndCompleted.value !== true) {
+        completedItems.value = getItemsForStudentCompletion();
+    }
 </script>

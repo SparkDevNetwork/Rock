@@ -34,39 +34,19 @@ export type ContentArticleItem = {
 
     order: number;
 
-    // pointsEarned?: number | null;
+    text?: string | null;
 
-    // response?: string | null;
+    title?: string | null;
 
-    // answers?: string[] | null;
+    summary?: string | null;
 
-    // correctAnswer?: string | null;
+    video?: ListItemBag | null;
 
-    // helpText?: string | null;
+    label?: string | null;
 
-    // question?: string | null;
+    inputRows?: number | null;
 
-    // answerBoxRows?: number | null;
+    isRequired?: boolean | null;
 
-    // maxCharacterCount?: number | null;
-
-    // pointsPossible?: number | null;
-
-    // questionWeight?: number | null;
-
-    text?: string | null; // Text
-
-    title?: string | null; // section
-
-    summary?: string | null; // section
-
-    video?: ListItemBag | null; // video
-
-    label?: string | null; // Note
-
-    inputRows?: number | null; // Note
-
-    isRequired?: boolean | null // Note
-
-    note?: string | null // Note
+    note?: string | null;
 };

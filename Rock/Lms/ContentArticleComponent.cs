@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -24,6 +25,7 @@ using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Utility;
 
 namespace Rock.Lms
 {
@@ -44,12 +46,12 @@ namespace Rock.Lms
         {
             public const string Header = "header";
 
-            public const string Content = "content";
+            public const string Items = "items";
         }
 
         private class CompletionKey
         {
-            public const string IsConfirmed = "isConfirmed";
+            public const string CompletedItems = "completedItems";
 
             public const string PointsPossibleAtCompletion = "pointsPossibleAtCompletion";
         }
@@ -77,29 +79,75 @@ namespace Rock.Lms
             }
             else
             {
-                var content = componentData.GetValueOrNull( SettingKey.Content );
+                var content = componentData.GetValueOrNull( SettingKey.Header );
 
                 var headerHtml = content.IsNotNullOrWhiteSpace()
                     ? new StructuredContentHelper( content ).Render()
                     : string.Empty;
 
-                var contentHtml = content.IsNotNullOrWhiteSpace()
-                    ? new StructuredContentHelper( content ).Render()
-                    : string.Empty;
-
-                if ( contentHtml.IsNotNullOrWhiteSpace() )
+                if ( headerHtml.IsNotNullOrWhiteSpace() )
                 {
                     var mergeFields = requestContext.GetCommonMergeFields();
 
-                    contentHtml = contentHtml.ResolveMergeFields( mergeFields );
+                    headerHtml = headerHtml.ResolveMergeFields( mergeFields );
+                }
+
+                var items = componentData.GetValueOrNull( SettingKey.Items ).FromJsonOrNull<List<ContentArticleItem>>()
+                    ?? new List<ContentArticleItem>();
+
+                foreach ( var item in items )
+                {
+                    if ( item.Type == ContentArticleItemType.Text && item.Text.IsNotNullOrWhiteSpace() )
+                    {
+                        item.Text = new StructuredContentHelper( item.Text ).Render();
+                    }
                 }
 
                 return new Dictionary<string, string>
                 {
                     [SettingKey.Header] = headerHtml,
-                    [SettingKey.Content] = contentHtml,
+                    [SettingKey.Items] = items.ToCamelCaseJson( false, false ),
                 };
             }
         }
+
+        #region Support Classes
+
+        private enum ContentArticleItemType
+        {
+            Text = 0,
+            Section = 1,
+            Video = 2,
+            Note = 3
+        }
+
+        private class ContentArticleItem
+        {
+            public ContentArticleItemType Type { get; set; }
+
+            public Guid UniqueId { get; set; }
+
+            public bool? HasBeenGraded { get; set; }
+
+            public int Order { get; set; }
+
+            public string Text { get; set; }
+
+            public string Title { get; set; }
+
+            public string Summary { get; set; }
+
+            public ListItemBag Video { get; set; }
+
+            public string Label { get; set; }
+
+            public int? InputRows { get; set; }
+
+            public bool? IsRequired { get; set; }
+
+            public string Note { get; set; }
+        }
+
+        #endregion
     }
 }
