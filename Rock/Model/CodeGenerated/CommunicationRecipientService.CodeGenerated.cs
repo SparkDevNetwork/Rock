@@ -131,8 +131,8 @@ namespace Rock.Model
         {
             target.Id = source.Id;
             target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
-            target.CausedUnsubscribe = source.CausedUnsubscribe;
             target.CommunicationId = source.CommunicationId;
+            target.DeliveredDateTime = source.DeliveredDateTime;
             target.FirstSendAttemptDateTime = source.FirstSendAttemptDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
@@ -144,6 +144,7 @@ namespace Rock.Model
             target.ResponseCode = source.ResponseCode;
             target.SendDateTime = source.SendDateTime;
             target.SentMessage = source.SentMessage;
+            target.SpamComplaintDateTime = source.SpamComplaintDateTime;
             target.Status = source.Status;
             target.StatusNote = source.StatusNote;
             target.TransportEntityTypeName = source.TransportEntityTypeName;

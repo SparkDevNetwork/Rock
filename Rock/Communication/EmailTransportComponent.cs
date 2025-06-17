@@ -372,6 +372,15 @@ namespace Rock.Communication
                             recipient.StatusNote = result.StatusNote;
                             recipient.TransportEntityTypeName = this.GetType().FullName;
 
+                            // Update send and delivered datetimes.
+                            if ( result.Status == CommunicationRecipientStatus.Delivered )
+                            {
+                                var now = RockDateTime.Now;
+
+                                recipient.SendDateTime = now;
+                                recipient.DeliveredDateTime = now;
+                            }
+
                             // Log it
                             try
                             {
@@ -1175,6 +1184,13 @@ namespace Rock.Communication
                     if ( result.Status == CommunicationRecipientStatus.Failed )
                     {
                         recipient.StatusNote = result.StatusNote;
+                    }
+                    else
+                    {
+                        var now = RockDateTime.Now;
+
+                        recipient.SendDateTime = now;
+                        recipient.DeliveredDateTime = now;
                     }
 
                     recipient.TransportEntityTypeName = this.GetType().FullName;
