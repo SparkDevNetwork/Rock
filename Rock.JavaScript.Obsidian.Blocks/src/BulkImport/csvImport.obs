@@ -90,9 +90,7 @@
 
                 <div class="rock-header">
                     <h3 class="title">Comma Separated File Import</h3>
-                    <span class="description">The first step is to upload your comma delimited file. We'll then allow you to map the columns to fields in Rock. The first
-                        row of your file must contain headers for each column.
-                    </span>
+                    <span class="description">The first step is to upload your comma delimited file. We'll then allow you to map the columns to fields in Rock. The first row of your file must contain headers for each column.</span>
                     <hr class="section-header-hr">
                 </div>
 
@@ -101,44 +99,45 @@
                 <RadioButtonList v-if="sourceDescriptionType == 'previous'"
                                  v-model="sourceDescriptionSelectedOption"
                                  :items="sourceDescriptionOptions"
-                                 ID="rblpreviousSourceDescription"
+                                 id="rblpreviousSourceDescription"
                                  label="Previous Source Descriptions"
                                  horizontal
                                  rules="required"
                                  help="If you are importing data from a source that has already been run once, select the matching description below. Otherwise, if this is a different source than those shown, choose to add a new source description." />
 
-                <asp:LinkButton v-if="sourceDescriptionType == 'previous'"
-                                runat="server"
-                                CssClass="mb-4"
-                                Text="<small>Add Additional Source Description</small>"
-                                OnClick="lbAddSourceDescription_Click"
-                                CausesValidation="false" />
+                <RockButton v-if="sourceDescriptionType == 'previous'"
+                            type="button"
+                            :btnType="BtnType.Link"
+                            class="mb-4"
+                            @click="lbAddSourceDescription_Click">
+                    <small>Add Additional Source Description</small>
+                </RockButton>
 
-                <Rock:RockTextBox v-if="sourceDescriptionType == 'new'"
-                                  ID="tbpreviousSourceDescription"
-                                  runat="server"
-                                  Label="Source Description"
-                                  Help="Describe where this data came from. We'll store what you type as a setting so if you import data from this system again we'll be able to match people you've already imported. (e.g.: 'former-chms', 'mailchimp', etc.)"
-                                  Visible="false" />
+                <TextBox v-if="sourceDescriptionType == 'new'"
+                         ID="tbpreviousSourceDescription"
 
-                <asp:LinkButton v-if="sourceDescriptionType == 'new'"
-                                ID="lbChooseSourceDescription"
-                                runat="server"
-                                CssClass="mb-4"
-                                Text="<small>Choose Previous Source Description</small>"
-                                OnClick="lbChooseSourceDescription_Click"
-                                Visible="false"
-                                CausesValidation="false" />
+                         Label="Source Description"
+                         Help="Describe where this data came from. We'll store what you type as a setting so if you import data from this system again we'll be able to match people you've already imported. (e.g.: 'former-chms', 'mailchimp', etc.)"
+                         Visible="false" />
+
+                <RockButton v-if="sourceDescriptionType == 'new'"
+                            ID="lbChooseSourceDescription"
+
+                            CssClass="mb-4"
+                            Text="<small>Choose Previous Source Description</small>"
+                            OnClick="lbChooseSourceDescription_Click"
+                            Visible="false"
+                            CausesValidation="false" />
 
                 <Rock:NotificationBox ID="nbErrorsInFile"
-                                      runat="server"
+
                                       CssClass="mt-4"
                                       NotificationBoxType="Danger"
                                       Visible="false" />
 
                 <Rock:FileUploader
                                    ID="fupCSVFile"
-                                   runat="server"
+
                                    FormGroupCssClass="mt-4"
                                    OnFileUploaded="fupCSVFile_FileUploaded"
                                    OnFileRemoved="fupCSVFile_FileRemoved"
@@ -146,17 +145,17 @@
                                    IsBinaryFile="false"
                                    Label="CSV File" />
 
-                <asp:HiddenField ID="hfCSVFileName" runat="server" />
+                <asp:HiddenField ID="hfCSVFileName" />
 
                 <Rock:RockCheckBox
                                    ID="cbAllowUpdatingExisting"
-                                   runat="server"
+
                                    FormGroupCssClass="mt-4"
                                    Label="Allow Updating Existing Matched Records"
                                    Checked="true"
                                    Help="When enabled, records in the database that match the imported data (first name, last name, and email) will be updated. Otherwise, only new records will be added." />
 
-                <Rock:BootstrapButton ID="btnStart" runat="server" CssClass="btn btn-primary mt-3" Text="Start" OnClick="btnStart_Click" />
+                <Rock:BootstrapButton ID="btnStart" CssClass="btn btn-primary mt-3" Text="Start" OnClick="btnStart_Click" /> -->
             </div>
 
             <!-- The description text on the right side of the step -->
@@ -182,7 +181,7 @@
                         <li>Middle Name - The individual's middle name.</li>
                         <li>Suffix - The person's suffix.
                             <br />
-                            <asp:Label ID="lsuffixlist" runat="server" />
+                            <asp:Label ID="lsuffixlist" />
                         </li>
                         <li>Home Phone - The individual's home phone number.
                             <br />
@@ -196,21 +195,21 @@
                         <li>Email - The individual's email address.</li>
                         <li>Email Preference - The permissions you have been granted to email the individual.
                             <br />
-                            <asp:Label ID="lemailPreferenceList" runat="server" />
+                            <asp:Label ID="lemailPreferenceList" />
                         </li>
                         <li>Gender - The gender of the individual.
                             <br />
-                            <asp:Label ID="lgenderList" runat="server" />
+                            <asp:Label ID="lgenderList" />
                         </li>
                         <li>Marital Status - The marital status of the individual.
                             <br />
-                            <asp:Label ID="lmaritalStatusList" runat="server" />
+                            <asp:Label ID="lmaritalStatusList" />
                         </li>
                         <li>Birthdate - The individual's birthdate. </li>
                         <li>Anniversary Date - The marriage anniversary date of the individual.</li>
                         <li>Record Status - Whether the person is active or not.
                             <br />
-                            <asp:Label ID="lrecordStatusList" runat="server" />
+                            <asp:Label ID="lrecordStatusList" />
                         </li>
                         <li>Inactive Reason - The reason why the person is inactive.</li>
                         <li>Is Deceased - Determines whether the person is deceased.
@@ -219,11 +218,11 @@
                         </li>
                         <li>Connection Status - The connection type the individual has to your organization. This must match the connection statuses you have in Rock.
                             <br />
-                            <asp:Label ID="lconnectionStatusList" runat="server" />
+                            <asp:Label ID="lconnectionStatusList" />
                         </li>
                         <li>Grade - The grade of the individual.
                             <br />
-                            <asp:Label ID="lgrade" runat="server" />
+                            <asp:Label ID="lgrade" />
                         </li>
                         <li>Home Address Street 1 - The first line of their home street address.</li>
                         <li>Home Address Street 2 - The second line of their home street address.</li>
@@ -266,7 +265,7 @@
             </div>
 
             <!-- Pad some extra space to the right of the panel after the description text --->
-            <div class="col-md-6" />
+            <div class="col-md-6"></div>
         </div>
 
         <!-- The second step which helps map the CSV fields to the database schema --->
@@ -274,25 +273,25 @@
             <h2>Field Mapping</h2>
             <p>We've uploaded your file to the server. Below is a listing of the fields you uploaded. You'll need to map these fields to those in Rock.</p>
             <Rock:NotificationBox ID="nbImportMappingWarning"
-                                  runat="server"
+
                                   NotificationBoxType="Warning"
                                   Text="Please take your time on this screen and map the fields you want carefully.  There is no way to undo the import once you've finished." />
             <hr>
 
-            <Rock:TermDescription ID="tdRecordCount" runat="server" Term="Record Count" />
+            <Rock:TermDescription ID="tdRecordCount" Term="Record Count" />
 
             <Rock:NotificationBox ID="nbRequiredFieldsNotPresentWarning"
-                                  runat="server"
+
                                   NotificationBoxType="Validation"
                                   Visible="false" />
-            <asp:Repeater ID="rptCSVHeaders" runat="server"
+            <asp:Repeater ID="rptCSVHeaders"
                           OnItemDataBound="rptCSVHeaders_ItemDataBound">
                 <ItemTemplate>
                     <div class="row">
                         <div class="col-md-4">
                             <Rock:RockDropDownList
                                                    ID="ddlCSVHeader"
-                                                   runat="server"
+
                                                    Label='<%# Container.DataItem %>'
                                                    AutoPostBack="True"
                                                    OnSelectedIndexChanged="ddlCSVHeader_SelectedIndexChanged"
@@ -304,7 +303,7 @@
 
             <div class="footer-actions">
                 <Rock:BootstrapButton ID="btnImport"
-                                      runat="server"
+
                                       CssClass="btn btn-primary"
                                       Text="Import"
                                       OnClick="btnImport_Click" />
@@ -321,20 +320,20 @@
                       class="js-notification-text alert alert-danger mb-5" hidden></span>
             </div>
 
-            <asp:Panel ID="pnlImportPreaprationProgress" runat="server" CssClass="mb-5">
+            <asp:Panel ID="pnlImportPreaprationProgress" CssClass="mb-5">
                 <h4>Step 1: Import Preparation</h4>
                 <div>First, we'll arrange your data into a format we need to import. </div>
 
                 <div class="progress-bar js-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemax="0">0%</div>
             </asp:Panel>
 
-            <asp:Panel ID="pnlImportDataProgress" runat="server" CssClass="mb-5">
+            <asp:Panel ID="pnlImportDataProgress" CssClass="mb-5">
 
                 <h4>Step 2: Import Data</h4>
                 Then, we'll import the data into the database.
 
                 <div id="import-data-message-container" class="alert alert-info" hidden>
-                    <asp:Label ID="lImportDataMessage" CssClass="js-progressMessage" runat="server" />
+                    <asp:Label ID="lImportDataMessage" CssClass="js-progressMessage" />
                 </div>
 
                 <div class="progress-bar js-progress-bar" role="progressbar" style="width: 0%" aria-valuenow="0" aria-valuemax="0">0%</div>
@@ -342,18 +341,18 @@
             </asp:Panel>
             <div id="import-csv-success" hidden>
                 <Rock:NotificationBox ID="nbImportSuccess"
-                                      runat="server"
+
                                       NotificationBoxType="Success"
                                       Heading="Success!"
                                       Text="Your data has been imported into Rock." />
             </div>
             <div id="import-csv-error" hidden>
                 <Rock:NotificationBox ID="nbImportError"
-                                      runat="server"
+
                                       NotificationBoxType="Warning"
                                       Text="There were a few failures while importing. Some records could be imported only partially or could not be imported at all. Click the button to download a new csv file that has all the records that has failures. The csv includes a new 'CSV Import Errors' column that details out the errors. You may correct those records and retry importing. There is another column 'CSV Import Success'. If a record could not be imported to Rock at all, it would be marked as FALSE under the 'CSV Import Success' column" />
                 <asp:LinkButton ID="btnDownloadErrorCSV"
-                                runat="server"
+
                                 CssClass="btn btn-primary"
                                 Text="Download CSV File With the Errors"
                                 OnClick="btnDownloadErrorCSV_Click"
@@ -365,7 +364,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+    import { computed, ref } from "vue";
     import Panel from "@Obsidian/Controls/panel.obs";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
@@ -411,8 +410,8 @@
 
     // #region Upload Step
 
-    const dataTypeOptions: ListItemBag[] = [{ value="people", text="People" }];
-    const dataType = "people";
+    const dataTypeOptions: ListItemBag[] = [{ value: "people", text: "People" }];
+    const dataType = ref("people");
 
     const sourceDescriptionOptions: ListItemBag[] = config.previousSourceDescriptions;
     const sourceDescriptionSelectedOption = ref("");
