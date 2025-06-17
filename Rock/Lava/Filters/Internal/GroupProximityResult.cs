@@ -43,7 +43,7 @@ namespace Rock.Lava.Filters.Internal
         public double? StraightLineDistance { get; set; }
 
         /// <summary>
-        /// Distance in miles via the given travel mode
+        /// Distance in meters via the given travel mode
         /// </summary>
         public double? TravelDistance { get; set; }
 
@@ -65,7 +65,7 @@ namespace Rock.Lava.Filters.Internal
             {
                 if ( _locationPoint == null && Location != null && Location.Latitude != null && Location.Longitude != null )
                 {
-                    _locationPoint = new GeographyPoint { Latitude = Location.Latitude.Value, Longitude = Location.Latitude.Value };
+                    _locationPoint = new GeographyPoint { Latitude = Location.Latitude.Value, Longitude = Location.Longitude.Value };
                 }
 
                 return _locationPoint;

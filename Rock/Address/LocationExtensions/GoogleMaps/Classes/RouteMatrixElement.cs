@@ -26,12 +26,6 @@ namespace Rock.Address.LocationExtensions.GoogleMaps.Classes
         public int DestinationIndex { get; set; }
 
         /// <summary>
-        /// The status of the element, indicating whether the distance and duration could be calculated successfully.
-        /// </summary>
-        [JsonProperty( "status" )]
-        public string Status { get; set; }
-
-        /// <summary>
         /// The distance in meters between the origin and destination.
         /// </summary>
         [JsonProperty( "distanceMeters" )]

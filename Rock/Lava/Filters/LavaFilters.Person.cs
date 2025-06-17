@@ -1138,15 +1138,22 @@ namespace Rock.Lava
             var person = GetPerson( input, context );
 
             // Get the point from the person's home location, or if the input is an actual point in the format of '33.663092,-112.202615'
-            DbGeography point = null;
+            GeographyPoint point = null;
             if ( person != null )
             {
                 var personService = new PersonService( rockContext );
-                point = personService.GetGeopoints( person.Id ).FirstOrDefault();
+
+                var personLocation = personService.GetGeopoints( person.Id ).FirstOrDefault();
+
+                if (personLocation == null )
+                {
+                    return null;
+                }
+                point = new GeographyPoint( personLocation );
             }
             else
             {
-                point = ParseToDbGeography( input.ToString() );
+                point = ParseToGeographyPoint( input.ToString() );
             }
 
             var numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
@@ -1155,17 +1162,12 @@ namespace Rock.Lava
             var boolReturnOnlyClosestLocationPerGroup = returnOnlyClosestLocationPerGroup.AsBooleanOrNull() ?? true;
             var selectedTravelMode = travelMode.ConvertToEnumOrNull<TravelMode>();
 
-            if ( point == null || point.Longitude == null || point.Latitude == null || numericalGroupTypeId == null  )
-            {
-                return null;
-            }
-
             // Get results and shape for return
             var results = new GroupService( rockContext )
                 .GetNearestGroups( point, numericalGroupTypeId.Value, numericalMaxResults, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
                 .Select( g => new GroupProximityResult
                 {
-                    StraightLineDistance = g.Location.GeoPoint.Distance( point ) / 1609.34, // meters to miles
+                    StraightLineDistance = g.Location.GeoPoint.Distance( point.ToDbGeography() ), 
                     Group =  g.Group,
                     Location = g.Location
                 } ).ToList();
@@ -1177,13 +1179,12 @@ namespace Rock.Lava
             }
 
             // Get driving distances from location extensions
-            var origin = new GeographyPoint { Latitude = point.Latitude.Value, Longitude = point.Longitude.Value };
             var destinations = results
                 .Where( r => r.Location?.Latitude != null && r.Location?.Longitude != null )
                 .Select( r => new GeographyPoint { Latitude = r.Location.Latitude.Value, Longitude = r.Location.Longitude.Value } )
                 .ToList();
 
-            var travelDistances = Task.Run( () => LocationHelpers.GetDrivingMatrixAsync( origin, destinations, selectedTravelMode.Value ) ).Result;
+            var travelDistances = Task.Run( () => LocationHelpers.GetDrivingMatrixAsync( point, destinations, selectedTravelMode.Value ) ).Result;
 
             // Merge travel distances into group results
             foreach( var travelDistance in travelDistances )
@@ -1193,8 +1194,9 @@ namespace Rock.Lava
 
                 foreach( var match in matches )
                 {
-                    match.TravelDistance = travelDistance.DistanceMiles;
-                    match.TravelTime = travelDistance.TimeMinutes;
+                    match.TravelDistance = travelDistance.DistanceInMeters;
+                    match.TravelTime = travelDistance.TravelTimeInMinutes;
+                    match.TravelMode = selectedTravelMode;
                 }
             }
 
@@ -1202,12 +1204,12 @@ namespace Rock.Lava
         }
 
         /// <summary>
-        /// Private helper method to convert a string of '33.663092,-112.202615' to a DbGeography. Did not make this
-        /// an extension method to prevent expanding dependency on EntityFramework.dll.
+        /// Parses a string in the format of 'latitude,longitude' into a GeographyPoint.
         /// </summary>
         /// <param name="input"></param>
         /// <returns></returns>
-        private static DbGeography ParseToDbGeography( string input )
+        /// <exception cref="ArgumentException"></exception>
+        private static GeographyPoint ParseToGeographyPoint( string input )
         {
             var parts = input.Split( ',' );
             if ( parts.Length != 2 )
@@ -1216,8 +1218,7 @@ namespace Rock.Lava
             double latitude = double.Parse( parts[0].Trim() );
             double longitude = double.Parse( parts[1].Trim() );
 
-            string wellKnownText = $"POINT({longitude} {latitude})";
-            return DbGeography.PointFromText( wellKnownText, 4326 );
+            return new GeographyPoint {  Latitude = latitude, Longitude = longitude};
         }
 
         /// <summary>

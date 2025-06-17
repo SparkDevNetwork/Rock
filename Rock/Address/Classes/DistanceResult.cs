@@ -29,10 +29,10 @@ namespace Rock.Address.Classes
         /// <summary>
         /// The driving distance in miles.
         /// </summary>
-        public double DistanceMiles { get; set; }
+        public double DistanceInMeters { get; set; }
         /// <summary>
         /// The driving duration in minutes.
         /// </summary>
-        public int TimeMinutes { get; set; }
+        public int TravelTimeInMinutes { get; set; }
     }
 }

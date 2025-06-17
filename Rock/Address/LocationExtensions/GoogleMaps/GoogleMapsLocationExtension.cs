@@ -24,12 +24,16 @@ using System.Text.Json;
 using System.Threading.Tasks;
 using System.Web;
 
+using Nest;
+
 using Newtonsoft.Json;
 
 using Rock.Address.Classes;
 using Rock.Address.LocationExtensions.GoogleMaps.Classes;
 using Rock.Enums.Location;
 using Rock.Web.Cache;
+
+using Twilio.Types;
 
 namespace Rock.Address.LocationExtensions.GoogleMaps
 {
@@ -38,6 +42,78 @@ namespace Rock.Address.LocationExtensions.GoogleMaps
     /// </summary>
     public class GoogleMapsLocationExtension
     {
+        private string _apiKey;
+
+        #region Constructors
+        public GoogleMapsLocationExtension()
+        {
+            _apiKey = GlobalAttributesCache.Get().GetValue( "GoogleApiKey" );
+
+            if ( _apiKey.IsNullOrWhiteSpace() )
+            {
+                throw new Exception( $"Google Maps API key required." );
+            }
+        }
+
+        public GoogleMapsLocationExtension( string apiKey )
+        {
+            _apiKey = apiKey;
+        }
+        #endregion
+
+        /// <summary>
+        /// Asynchronously geocodes the specified input string to a GeographyPoint using the Google Maps Geocoding API.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public async Task<GeographyPoint> Geocode( string input )
+        {
+            if ( string.IsNullOrWhiteSpace( input ) )
+            {
+                return null;
+            }
+
+            using ( var httpClient = new HttpClient() )
+            {
+                string requestUri = $"https://maps.googleapis.com/maps/api/geocode/json?address={Uri.EscapeDataString( input )}&key={_apiKey}";
+
+                try
+                {
+                    var response = await httpClient.GetAsync( requestUri );
+
+                    if ( !response.IsSuccessStatusCode )
+                    {
+                        return null;
+                    }
+                        
+                    // Parse the results
+                    var json = await response.Content.ReadAsStringAsync();
+                    using ( var doc = JsonDocument.Parse( json ) )
+                    {
+                        var root = doc.RootElement;
+                        var status = root.GetProperty( "status" ).GetString();
+
+                        if ( status != "OK" )
+                            return null;
+
+                        var location = root
+                            .GetProperty( "results" )[0]
+                            .GetProperty( "geometry" )
+                            .GetProperty( "location" );
+
+                        double lat = location.GetProperty( "lat" ).GetDouble();
+                        double lng = location.GetProperty( "lng" ).GetDouble();
+
+                        return new GeographyPoint( lat, lng );
+                    }
+                }
+                catch
+                {
+                    return null;
+                }
+            }
+        }
+
         /// <summary>
         /// Asynchronously retrieves a driving matrix for the specified origin and list of destinations.
         /// </summary>
@@ -49,11 +125,7 @@ namespace Rock.Address.LocationExtensions.GoogleMaps
         {
             using ( var httpClient = new HttpClient() )
             {
-
-                var apiKey = GlobalAttributesCache.Get().GetValue( "GoogleApiKey" );
-
-                var url = $"https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix?key={apiKey}";
-
+                // Create message body
                 var body = new
                 {
                     origins = new[]
@@ -91,41 +163,37 @@ namespace Rock.Address.LocationExtensions.GoogleMaps
                 };
 
                 var requestJson = JsonConvert.SerializeObject( body );
+
+                var url = $"https://routes.googleapis.com/distanceMatrix/v2:computeRouteMatrix?key={_apiKey}";
                 var request = new HttpRequestMessage( HttpMethod.Post, url )
                 {
                     Content = new StringContent( requestJson, Encoding.UTF8, "application/json" )
                 };
 
+                request.Headers.Add( "X-Goog-FieldMask", "*" );
+
                 var response = await httpClient.SendAsync( request );
-                response.EnsureSuccessStatusCode();
 
-                var ndjson = await response.Content.ReadAsStringAsync();
-
-                // Parse NDJSON
-                var routeElements = new List<RouteMatrixElement>();
-
-                var lines = ndjson.Split( new[] { '\n' }, StringSplitOptions.RemoveEmptyEntries );
-
-                foreach ( var line in lines )
+                // Ensure API call was a success
+                if ( response.StatusCode != System.Net.HttpStatusCode.OK )
                 {
-                    var element = JsonConvert.DeserializeObject<RouteMatrixElement>( line );
-                    if ( element?.Status == "OK" )
-                    {
-                        routeElements.Add( element );
-                    }
+                    throw new Exception( $"Google Maps API Route API request failed with status code {response.StatusCode}. Check that API key is correct and has access to Route API." );
                 }
 
-                var results = routeElements
+                var json = await response.Content.ReadAsStringAsync();
+                var results = JsonConvert.DeserializeObject<List<RouteMatrixElement>>( json );
+
+                var routeElements = new List<RouteMatrixElement>();
+
+                return results
                     .Where( e => e.DestinationIndex < destinations.Count )
                     .Select( e => new DistanceResult
-                    {
-                        DestinationPoint = destinations[e.DestinationIndex],
-                        DistanceMiles = e.DistanceMiles,
-                        TimeMinutes = (e.DurationTimeSpan ?? TimeSpan.Zero).Minutes
-                    } )
-                    .ToList();
-
-                return results;
+                        {
+                            DestinationPoint = destinations[e.DestinationIndex],
+                            DistanceInMeters = e.DistanceMeters,
+                            TravelTimeInMinutes = ( e.DurationTimeSpan ?? TimeSpan.Zero ).Minutes                            
+                        } )
+                .ToList();
             }
 
         }

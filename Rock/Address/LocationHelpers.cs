@@ -30,13 +30,27 @@ namespace Rock.Address
     public static class LocationHelpers
     {
         /// <summary>
+        /// Asynchronously geocodes the specified input string to retrieve latitude and longitude coordinates.
+        /// </summary>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static async Task<GeographyPoint> Geocode( string input )
+        {
+            // For now we'll only support Google for geocoding calculations. This static method though abstracts the implementation details,
+            // so that in the future if we want to support other providers, we can do so without changing the method signature.
+            var googleLocationExtension = new GoogleMapsLocationExtension();
+
+            return await googleLocationExtension.Geocode( input );
+        }
+
+        /// <summary>
         /// Asynchronously retrieves a driving matrix for the specified origin and list of destinations.
         /// </summary>
         /// <param name="origin">The starting point. Can be a full address, lat/lng, ZIP code, or place ID.</param>
         /// <param name="destinations">A list of up to 25 destination points. Each can be an address, lat/lng, ZIP code, or place ID.</param>
         /// <param name="mode">The travel mode to use for the calculation</param>
         /// <returns>A list of driving distances and durations for each destination.</returns>
-        public static async Task<List<DistanceResult>> GetDrivingMatrixAsync( GeographyPoint origin, List<GeographyPoint> destinations, TravelMode mode = TravelMode.Driving )
+        public static async Task<List<DistanceResult>> GetDrivingMatrixAsync( GeographyPoint origin, List<GeographyPoint> destinations, TravelMode mode = TravelMode.Drive )
         {
             // For now we'll only support Google for driving matrix calculations. This static method though abstracts the implementation details,
             // so that in the future if we want to support other providers, we can do so without changing the method signature.
