@@ -26,5 +26,4 @@ namespace Rock.Extension
     internal class LightComponent
     {
     }
-
 }

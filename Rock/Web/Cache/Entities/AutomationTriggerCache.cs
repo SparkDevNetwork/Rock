@@ -140,15 +140,9 @@ namespace Rock.Web.Cache
         /// Creates all the monitors for the triggers that are currently active.
         /// This is intended to be used during Rock startup.
         /// </summary>
-        internal static void CreateAllMonitors()
+        /// <param name="container">The container for all the automation trigger components.</param>
+        internal static void CreateAllMonitors( AutomationTriggerContainer container )
         {
-            var container = RockApp.Current.GetService<AutomationTriggerContainer>();
-
-            if ( container == null )
-            {
-                return;
-            }
-
             using ( var rockContext = new RockContext() )
             {
                 // Don't use cache since we might get executed before the cache

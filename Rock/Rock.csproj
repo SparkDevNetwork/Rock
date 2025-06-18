@@ -836,6 +836,7 @@
     <Compile Include="Data\IDbContextFactory.cs" />
     <Compile Include="Data\RockContextFactory.cs" />
     <Compile Include="Extension\LightComponent.cs" />
+    <Compile Include="Extension\LightComponentLoader.cs" />
     <Compile Include="Extension\LightContainer.cs" />
     <Compile Include="Field\Types\DeviceFieldType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />

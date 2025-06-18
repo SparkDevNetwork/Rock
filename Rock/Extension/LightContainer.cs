@@ -17,13 +17,11 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Reflection;
 
 using Microsoft.Extensions.DependencyInjection;
 
 using Rock.Data;
 using Rock.Model;
-using Rock.SystemGuid;
 using Rock.Web.Cache;
 
 namespace Rock.Extension
@@ -45,16 +43,17 @@ namespace Rock.Extension
         #region Fields
 
         /// <summary>
-        /// The dictionary of component types that have been detected in the
-        /// loaded assemblies. This will only include types that are available
-        /// to this running instance.
-        /// </summary>
-        private readonly Lazy<IReadOnlyDictionary<Guid, Type>> _typesByGuid = new Lazy<IReadOnlyDictionary<Guid, Type>>( LoadTypes );
-
-        /// <summary>
         /// The service provider that will be used when constructing components.
         /// </summary>
         private readonly IServiceProvider _serviceProvider;
+
+        private readonly LightComponentLoader<TComponent> _componentLoader;
+
+        /// <summary>
+        /// The factory to create new <see cref="RockContext"/> instances when
+        /// we need them.
+        /// </summary>
+        private readonly IRockContextFactory _rockContextFactory;
 
         #endregion
 
@@ -67,47 +66,13 @@ namespace Rock.Extension
         public LightContainer( IServiceProvider serviceProvider )
         {
             _serviceProvider = serviceProvider;
+            _rockContextFactory = serviceProvider.GetRequiredService<IRockContextFactory>();
+            _componentLoader = serviceProvider.GetRequiredService<LightComponentLoader<TComponent>>();
         }
 
         #endregion
 
         #region Methods
-
-        /// <summary>
-        /// Load the types using reflection. This is called lazily so that
-        /// we don't waste CPU cycles at startup until we actually need them.
-        /// The components must be decorated with an <see cref="EntityTypeGuidAttribute"/>
-        /// in order to be included in the list.
-        /// </summary>
-        /// <returns>A dictionary of component types with the key being the component unique identifier.</returns>
-        private static IReadOnlyDictionary<Guid, Type> LoadTypes()
-        {
-            try
-            {
-                var sortedTypes = Reflection.FindTypes( typeof( TComponent ) );
-                var typesByGuid = new Dictionary<Guid, Type>();
-
-                foreach ( var type in sortedTypes.Values )
-                {
-                    var entityTypeGuidAttribute = type.GetCustomAttribute<EntityTypeGuidAttribute>();
-
-                    if ( entityTypeGuidAttribute == null )
-                    {
-                        continue;
-                    }
-
-                    typesByGuid.TryAdd( entityTypeGuidAttribute.Guid, type );
-                }
-
-                return typesByGuid;
-            }
-            catch ( Exception ex )
-            {
-                System.Diagnostics.Debug.WriteLine( $"Error loading entity container types: {ex.Message}" );
-
-                return new Dictionary<Guid, Type>();
-            }
-        }
 
         /// <summary>
         /// Creates an instance of the component with the matching Entity Type
@@ -117,7 +82,7 @@ namespace Rock.Extension
         /// <returns>A component instance of <typeparamref name="TComponent"/> or <c>null</c>.</returns>
         public TComponent CreateInstance( Guid entityTypeGuid )
         {
-            if ( !_typesByGuid.Value.TryGetValue( entityTypeGuid, out var type ) )
+            if ( !_componentLoader.TypesByGuid.TryGetValue( entityTypeGuid, out var type ) )
             {
                 return default;
             }
@@ -133,15 +98,15 @@ namespace Rock.Extension
         /// </para>
         /// <para>
         /// If you need to ensure that all components are returned, call the
-        /// <see cref="RegisterComponents(RockContext)"/> method first to
+        /// <see cref="RegisterComponents()"/> method first to
         /// register all components in the <see cref="Model.EntityType"/> table.
         /// </para>
         /// </summary>
-        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="rockContext">The context to use when reading data from the database.</param>
         /// <returns>An enumeration of <see cref="EntityTypeCache"/> objects that represent the registered components.</returns>
         public IEnumerable<EntityTypeCache> GetComponentTypes( RockContext rockContext )
         {
-            foreach ( var kvp in _typesByGuid.Value )
+            foreach ( var kvp in _componentLoader.TypesByGuid )
             {
                 var entityType = EntityTypeCache.Get( kvp.Key, rockContext );
 
@@ -170,39 +135,51 @@ namespace Rock.Extension
         /// not be registered.
         /// </para>
         /// </summary>
-        /// <param name="rockContext">The context to use when accessing the database.</param>
-        public void RegisterComponents( RockContext rockContext )
+        public void RegisterComponents()
         {
-            var entityTypeService = new EntityTypeService( rockContext );
-            var entityTypeGuids = _typesByGuid.Value.Keys.ToList();
-
-            var entityTypes = entityTypeService.Queryable()
-                .Where( et => entityTypeGuids.Contains( et.Guid ) )
-                .ToList();
-
-            foreach ( var kvp in _typesByGuid.Value )
+            using ( var rockContext = _rockContextFactory.CreateRockContext() )
             {
-                var entityType = entityTypes.FirstOrDefault( et => et.Guid == kvp.Key );
+                var entityTypeService = new EntityTypeService( rockContext );
+                var entityTypeGuids = _componentLoader.TypesByGuid.Keys.ToList();
 
-                if ( entityType == null )
+                var entityTypes = entityTypeService.Queryable()
+                    .ToList();
+
+                foreach ( var kvp in _componentLoader.TypesByGuid )
                 {
-                    entityType = new Model.EntityType();
-                    entityTypeService.Add( entityType );
+                    var entityType = entityTypes.FirstOrDefault( et => et.Guid == kvp.Key );
+
+                    if ( entityType == null )
+                    {
+                        // If the entity type was not found by guid, try to find
+                        // it by class name. But don't match one that is associated
+                        // with another guid we already know. This is designed to
+                        // catch cases where the class was registered without a well
+                        // known guid, and now has one.
+                        entityType = entityTypes.FirstOrDefault( et => et.Name == kvp.Value.FullName
+                            && !entityTypeGuids.Contains( et.Guid ) );
+                    }
+
+                    // If still not found, create a new one.
+                    if ( entityType == null )
+                    {
+                        entityType = new Model.EntityType();
+                        entityTypeService.Add( entityType );
+                    }
+
+                    entityType.Name = kvp.Value.FullName;
+                    entityType.FriendlyName = Reflection.GetDisplayName( kvp.Value )
+                        ?? kvp.Value.Name.SplitCase();
+                    entityType.AssemblyName = kvp.Value.AssemblyQualifiedName;
+                    entityType.IsEntity = false;
+                    entityType.IsSecured = typeof( Security.ISecured ).IsAssignableFrom( kvp.Value );
+                    entityType.Guid = kvp.Key;
                 }
 
-                entityType.Name = kvp.Value.FullName;
-                entityType.FriendlyName = Reflection.GetDisplayName( kvp.Value )
-                    ?? kvp.Value.Name.SplitCase();
-                entityType.AssemblyName = kvp.Value.AssemblyQualifiedName;
-                entityType.IsEntity = false;
-                entityType.IsSecured = typeof( Security.ISecured ).IsAssignableFrom( kvp.Value );
-                entityType.Guid = kvp.Key;
+                rockContext.SaveChanges();
             }
-
-            rockContext.SaveChanges();
         }
 
         #endregion
     }
-
 }

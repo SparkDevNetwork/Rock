@@ -103,8 +103,8 @@ namespace Rock.Blocks.Core
         {
             var box = new DetailBlockBox<AutomationTriggerBag, AutomationTriggerDetailOptionsBag>();
 
-            _triggerContainer.RegisterComponents( RockContext );
-            _eventContainer.RegisterComponents( RockContext );
+            _triggerContainer.RegisterComponents();
+            _eventContainer.RegisterComponents();
 
             SetBoxInitialEntityState( box );
 

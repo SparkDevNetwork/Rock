@@ -300,8 +300,11 @@ namespace Rock.WebStartup
 
             // Start the Automation system.
             LogStartupMessage( "Starting the Automation System" );
-            AutomationTriggerCache.CreateAllMonitors();
-            AutomationEventCache.CreateAllExecutors();
+            using ( var scope = RockApp.Current.CreateScope() )
+            {
+                AutomationTriggerCache.CreateAllMonitors( scope.ServiceProvider.GetRequiredService<Core.Automation.AutomationTriggerContainer>() );
+                AutomationEventCache.CreateAllExecutors( scope.ServiceProvider.GetRequiredService<Core.Automation.AutomationEventContainer>() );
+            }
             ShowDebugTimingMessage( "Automation System" );
 
             bool anyThemesUpdated = UpdateThemes();
@@ -344,8 +347,10 @@ namespace Rock.WebStartup
             sc.AddChatAgent();
 
             // Register Light Containers.
-            sc.AddSingleton<Core.Automation.AutomationTriggerContainer>();
-            sc.AddSingleton<Core.Automation.AutomationEventContainer>();
+            sc.AddSingleton( typeof( Extension.LightComponentLoader<> ), typeof( Extension.LightComponentLoader<> ) );
+            sc.AddScoped<Core.Automation.AutomationTriggerContainer>();
+            sc.AddScoped<Core.Automation.AutomationEventContainer>();
+            sc.AddScoped<AI.Agent.AgentSkillContainer>();
 
             sc.AddScoped<RockContext>();
             sc.AddSingleton<IRockContextFactory, RockContextFactory>();

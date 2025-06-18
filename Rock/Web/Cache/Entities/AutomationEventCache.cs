@@ -113,15 +113,9 @@ namespace Rock.Web.Cache
         /// Creates all the executors for the various triggers that are currently active.
         /// This is intended to be used during Rock startup.
         /// </summary>
-        internal static void CreateAllExecutors()
+        /// <param name="container">The container for all the automation event components.</param>
+        internal static void CreateAllExecutors( AutomationEventContainer container )
         {
-            var container = RockApp.Current.GetService<AutomationEventContainer>();
-
-            if ( container == null )
-            {
-                return;
-            }
-
             using ( var rockContext = new RockContext() )
             {
                 // Don't use cache since we might get executed before the cache
