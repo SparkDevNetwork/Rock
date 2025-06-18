@@ -253,8 +253,7 @@ namespace Rock.Model
                 {
                     PersonAliasId = personAliasId.Value,
                     Status = recipientStatus,
-                    SendDateTime = sendDateTime,
-                    DeliveredDateTime = recipientStatus == CommunicationRecipientStatus.Delivered ? sendDateTime : null
+                    SendDateTime = sendDateTime
                 };
                 communication.Recipients.Add( communicationRecipient );
             }
