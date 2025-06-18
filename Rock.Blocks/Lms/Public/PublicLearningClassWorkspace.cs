@@ -37,7 +37,6 @@ using Rock.ViewModels.Blocks.Lms.LearningClassDetail;
 using Rock.ViewModels.Blocks.Lms.PublicLearningClassWorkspace;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
-using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
 
 namespace Rock.Blocks.Lms
 {
