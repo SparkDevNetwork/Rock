@@ -6755,43 +6755,51 @@ namespace Rock.Rest.v2
                 ListItemBag mediaFolderItem = null;
                 ListItemBag mediaElementItem = null;
 
-                // If a media element is specified, get everything based on that
+                // Always fetch the list of media accounts
+                accounts = GetMediaAccounts( rockContext );
+
                 if ( options.MediaElementGuid.HasValue )
                 {
                     mediaElement = GetMediaElementByGuid( ( Guid ) options.MediaElementGuid, rockContext );
-                    mediaFolder = mediaElement.MediaFolder;
-                    mediaAccount = mediaFolder.MediaAccount;
+                    if ( mediaElement != null )
+                    {
+                        mediaFolder = mediaElement.MediaFolder;
+                        mediaAccount = mediaFolder.MediaAccount;
 
-                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
-                    mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
-                    mediaElementItem = new ListItemBag { Text = mediaElement.Name, Value = mediaElement.Guid.ToString() };
+                        mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+                        mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
+                        mediaElementItem = new ListItemBag { Text = mediaElement.Name, Value = mediaElement.Guid.ToString() };
 
-                    accounts = GetMediaAccounts( rockContext );
-                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
-                    elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                        folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                        elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                    }
                 }
                 // Otherwise, if a media folder is specified, get everything based on that, not getting a media element
                 else if ( options.MediaFolderGuid.HasValue )
                 {
                     mediaFolder = GetMediaFolderByGuid( ( Guid ) options.MediaFolderGuid, rockContext );
-                    mediaAccount = mediaFolder.MediaAccount;
+                    if ( mediaFolder != null )
+                    {
+                        mediaAccount = mediaFolder.MediaAccount;
 
-                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
-                    mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
+                        mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+                        mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
 
-                    accounts = GetMediaAccounts( rockContext );
-                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
-                    elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                        accounts = GetMediaAccounts( rockContext );
+                        folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                        elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                    }
                 }
-                // Otherwise, if a media account is specified, get the account and the lists of accounts and folders
                 else if ( options.MediaAccountGuid.HasValue )
                 {
                     mediaAccount = GetMediaAccountByGuid( ( Guid ) options.MediaAccountGuid, rockContext );
+                    if ( mediaAccount != null )
+                    {
+                        mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
 
-                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
-
-                    accounts = GetMediaAccounts( rockContext );
-                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                        accounts = GetMediaAccounts( rockContext );
+                        folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                    }
                 }
 
                 // Some things might be null, but we pass back everything we have
@@ -6800,7 +6808,6 @@ namespace Rock.Rest.v2
                     MediaAccount = mediaAccountItem,
                     MediaFolder = mediaFolderItem,
                     MediaElement = mediaElementItem,
-
                     MediaAccounts = accounts,
                     MediaFolders = folders,
                     MediaElements = elements
@@ -6820,7 +6827,7 @@ namespace Rock.Rest.v2
             var mediaAccountService = new Rock.Model.MediaAccountService( rockContext );
             var mediaAccount = mediaAccountService.Queryable()
                 .Where( a => a.Guid == guid )
-                .First();
+                .FirstOrDefault();
 
             return mediaAccount;
         }
@@ -6837,7 +6844,7 @@ namespace Rock.Rest.v2
             var mediaFolderService = new Rock.Model.MediaFolderService( rockContext );
             var mediaFolder = mediaFolderService.Queryable()
                 .Where( a => a.Guid == guid )
-                .First();
+                .FirstOrDefault();
 
             return mediaFolder;
         }
@@ -6854,7 +6861,7 @@ namespace Rock.Rest.v2
             var mediaElementService = new Rock.Model.MediaElementService( rockContext );
             var mediaElement = mediaElementService.Queryable()
                 .Where( a => a.Guid == guid )
-                .First();
+                .FirstOrDefault();
 
             return mediaElement;
         }
