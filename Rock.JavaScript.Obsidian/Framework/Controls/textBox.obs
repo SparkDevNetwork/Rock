@@ -22,6 +22,7 @@
                                   :maxlength="!canExceedMaxLength ? maxLength : undefined"
                                   :placeholder="placeholder"
                                   :id="uniqueId"
+                                  :readonly="isReadOnly"
                                   class="form-control"
                                   v-bind="field"
                                   @input="onInput"
@@ -36,6 +37,7 @@
                                    :type="type"
                                    class="form-control"
                                    :class="formControlClass"
+                                   :readonly="isReadOnly"
                                    style="display: table-cell;"
                                    v-bind="field"
                                    :maxlength="!canExceedMaxLength ? maxLength : undefined"
@@ -53,6 +55,7 @@
                                        :id="uniqueId"
                                        :type="type"
                                        :class="formControlClass"
+                                       :readonly="isReadOnly"
                                        v-bind="field"
                                        :maxlength="!canExceedMaxLength ? maxLength : undefined"
                                        :placeholder="placeholder"
@@ -70,6 +73,7 @@
                                :id="uniqueId"
                                :type="type"
                                :class="formControlClass"
+                               :readonly="isReadOnly"
                                v-bind="field"
                                :maxlength="!canExceedMaxLength ? maxLength : undefined"
                                :placeholder="placeholder"
@@ -148,7 +152,11 @@
         },
         isClearable: {
             type: Boolean as PropType<boolean>,
-            default: false,
+            default: false
+        },
+        isReadOnly: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
         /**
          * If `true`, then the max length can be exceeded; i.e., the max length is not enforced.

@@ -5,8 +5,7 @@
                            :asideIconCssClass="asideIconCssClass"
                            :badgeText="badgeText"
                            :iconCssClass="iconCssClass"
-                           :iconLabelType="iconLabelType"
-                           :iconLabelCustomClass="iconLabelCustomClass"
+                           :iconLabelType="iconLabelCssClass || iconLabelType"
                            :description="description"
                            :primaryActions="primaryActions"
                            :secondaryActions="secondaryActions"
@@ -24,7 +23,7 @@
                 <TextBox v-model="badgeText" formGroupClasses="col-md-4" label="Badge Text" />
                 <TextBox v-model="iconCssClass" formGroupClasses="col-md-4" label="Icon CSS Class" />
                 <DropDownList v-model="iconLabelType" :items="labelTypes" :showBlankItem="false" formGroupClasses="col-md-4" label="Icon Label Type" />
-                <TextBox v-if="iconLabelType === 'custom'" v-model="iconLabelCustomClass" formGroupClasses="col-md-4 col-md-offset-8" label="Icon Label Custom Class" />
+                <TextBox v-if="iconLabelType === 'custom'" v-model="iconLabelCssClass" formGroupClasses="col-md-4 col-md-offset-8" label="Icon Label Custom Class" />
             </div>
 
             <div class="row">
@@ -44,7 +43,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
     import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
@@ -70,7 +69,7 @@
     const badgeText = ref<string>("Step 3");
     const iconCssClass = ref<string>("fa fa-chart-line");
     const iconLabelType = ref<"default" | "primary" | "success" | "info" | "warning" | "danger" | "custom">("info");
-    const iconLabelCustomClass = ref<string>("");
+    const iconLabelCssClass = ref<string>("");
     const description = ref<string>("This step calculates weekly growth based on new signups.");
     const title = ref<string>("Growth Metrics");
     const simulateValues = ref<string[]>([]);
@@ -133,8 +132,7 @@
                    asideIconCssClass="${asideIconCssClass.value}"
                    badgeText="${badgeText.value}"
                    iconCssClass="${iconCssClass.value}"
-                   iconLabelType="${iconLabelType.value}"
-                   iconLabelCustomClass="${iconLabelCustomClass.value}"
+                   iconLabelType="${iconLabelCssClass.value || iconLabelType.value}"
                    description="${description.value}"
                    :primaryActions="${JSON.stringify(primaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
                    :secondaryActions="${JSON.stringify(secondaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
@@ -147,4 +145,10 @@
     function onClick(): void {
         alert("Button clicked!");
     }
+
+    watch(iconLabelType, (newValue) => {
+        if (newValue !== "custom") {
+            iconLabelCssClass.value = "";
+        }
+    });
 </script>

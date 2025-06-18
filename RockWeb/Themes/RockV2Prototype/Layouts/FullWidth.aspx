@@ -1,5 +1,14 @@
 ﻿<%@ Page Language="C#" MasterPageFile="Site.Master" AutoEventWireup="true" Inherits="Rock.Web.UI.RockPage" %>
 <asp:Content ID="ctMain" ContentPlaceHolderID="main" runat="server">
+        <!-- Page Title -->
+        <section id="secPageTitle" class="page-header fullwidth" runat="server">
+            <div class="page-title">
+                <h1 class="title"><Rock:PageIcon ID="PageIcon" runat="server" /> <Rock:PageTitle ID="PageTitle" runat="server" /></h1>
+                <Rock:PageBreadCrumbs ID="PageBreadCrumbs" runat="server" />
+                <Rock:PageDescription ID="PageDescription" runat="server" />
+            </div>
+            <Rock:Zone Name="Context" CssClass="zone-context" runat="server" />
+        </section>
 
         <!-- Start Content Area -->
 

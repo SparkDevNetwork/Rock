@@ -66,6 +66,7 @@
 
     &:hover,
     &:focus {
+      cursor: pointer;
       color:            var(--color-interface-stronger);
       text-decoration:  none;
       background-color: var(--color-interface-softer);

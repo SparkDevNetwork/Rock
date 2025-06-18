@@ -28,6 +28,37 @@
                  rules="required"
                  :help="urlHelp" />
 
+        <div class="row">
+            <div class="col-md-6">
+                <CategoryPicker v-model="category"
+                                label="Category"
+                                :entityTypeGuid="EntityType.PageShortLink"
+                                :multiple="false" />
+            </div>
+
+            <div class="col-md-6">
+                <TextBox v-model="linkText"
+                         label="Short Link"
+                         :isReadOnly="true"
+                         @click="selectShortLink">
+                    <template #inputGroupAppend>
+                        <div ref="copyShortLinkRef"
+                             class="input-group-addon cursor-pointer"
+                             title="Copy"
+                             @click="copyShortLink">
+                            <i class="ti ti-clipboard"></i>
+                        </div>
+                    </template>
+                </TextBox>
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-3">
+                <CheckBox v-model="isPinned" label="Pinned" />
+            </div>
+        </div>
+
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
 
         <template v-if="isScheduled">
@@ -122,7 +153,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch, onMounted } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
@@ -142,6 +173,10 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { ScheduledRedirect } from "./types.partial";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { showTooltip, tooltip } from "@Obsidian/Utility/tooltip";
 
     const props = defineProps({
         modelValue: {
@@ -167,12 +202,16 @@
     const site = propertyRef(props?.modelValue.bag?.site?.value ?? "", "SiteId");
     const url = propertyRef(props.modelValue.bag?.url ?? "", "Url");
     const token = propertyRef(props.modelValue.bag?.token ?? "", "Token");
+    const isPinned = propertyRef(props.modelValue.bag?.isPinned ?? true, "IsPinned");
+    const category = propertyRef(props.modelValue.bag?.category ?? {}, "Category");
     const utmSource = ref(props.modelValue.bag?.utmSettings?.utmSource ?? {});
     const utmMedium = ref(props.modelValue.bag?.utmSettings?.utmMedium ?? {});
     const utmCampaign = ref(props.modelValue.bag?.utmSettings?.utmCampaign ?? {});
     const utmTerm = ref(props.modelValue.bag?.utmSettings?.utmTerm ?? "");
     const utmContent = ref(props.modelValue.bag?.utmSettings?.utmContent ?? "");
 
+    const copyShortLinkRef = ref<HTMLElement | null>(null);
+    const defaultDomainUrls = propertyRef(props.options.defaultDomainUrls ?? [], "DefaultDomainUrls");
     const isScheduled = ref((props.modelValue.bag?.scheduledRedirects ?? []).length > 0);
     const scheduledRedirects = ref<ScheduledRedirect[]>(props.modelValue.bag?.scheduledRedirects
         ?.map(sr => ({
@@ -187,11 +226,19 @@
     // objects returned by propertyRef().
     const propRefs = [url,
         token,
-        site];
+        site,
+        isPinned,
+        category];
 
     // #endregion
 
     // #region Computed Values
+
+    const linkText = computed((): string => defaultDomainURL.value + token.value);
+
+    const defaultDomainURL = computed(() => {
+        return defaultDomainUrls.value.find(d => d.value === site.value)?.text;
+    });
 
     const siteOptions = computed((): ListItemBag[] => {
         return props.options.siteOptions ?? [];
@@ -220,6 +267,8 @@
         setPropertiesBoxValue(newValue, "url", url.value);
         setPropertiesBoxValue(newValue, "token", token.value);
         setPropertiesBoxValue(newValue, "site", { value: site.value });
+        setPropertiesBoxValue(newValue, "isPinned", isPinned.value);
+        setPropertiesBoxValue(newValue, "category", category.value);
         setPropertiesBoxValue(newValue, "utmSettings", {
             utmSource: utmSource.value,
             utmMedium: utmMedium.value,
@@ -230,6 +279,25 @@
         setPropertiesBoxValue(newValue, "scheduledRedirects", scheduledRedirects.value);
 
         emit("update:modelValue", newValue);
+    }
+
+    function selectShortLink(e: MouseEvent): void {
+        const target = e.target;
+        if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+            target.select();
+        }
+    }
+
+    function copyShortLink(): void {
+        navigator.clipboard.writeText(linkText.value).then(() => {
+            if (!copyShortLinkRef.value) {
+                return;
+            }
+            copyShortLinkRef.value.setAttribute("data-original-title", "Copied");
+            showTooltip(copyShortLinkRef.value);
+
+            copyShortLinkRef.value.setAttribute("data-original-title", "Copy");
+        });
     }
 
     // #endregion
@@ -326,6 +394,8 @@
         updateRefValue(site, props.modelValue.bag?.site?.value ?? "");
         updateRefValue(url, props.modelValue.bag?.url ?? "");
         updateRefValue(token, props.modelValue.bag?.token ?? "");
+        updateRefValue(isPinned, props.modelValue.bag?.isPinned ?? true);
+        updateRefValue(category, props.modelValue.bag?.category ?? {});
         updateRefValue(utmSource, props.modelValue.bag?.utmSettings?.utmSource ?? {});
         updateRefValue(utmMedium, props.modelValue.bag?.utmSettings?.utmMedium ?? {});
         updateRefValue(utmCampaign, props.modelValue.bag?.utmSettings?.utmCampaign ?? {});
@@ -359,4 +429,10 @@
     // Watch for any changes to props that represent properties and then
     // automatically emit which property changed.
     watchPropertyChanges(propRefs, emit);
+
+    onMounted(() => {
+        if (copyShortLinkRef.value) {
+            tooltip(copyShortLinkRef.value);
+        }
+    });
 </script>

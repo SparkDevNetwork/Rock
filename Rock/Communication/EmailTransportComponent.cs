@@ -372,13 +372,10 @@ namespace Rock.Communication
                             recipient.StatusNote = result.StatusNote;
                             recipient.TransportEntityTypeName = this.GetType().FullName;
 
-                            // Update send and delivered datetimes.
                             if ( result.Status == CommunicationRecipientStatus.Delivered )
                             {
-                                var now = RockDateTime.Now;
-
-                                recipient.SendDateTime = now;
-                                recipient.DeliveredDateTime = now;
+                                recipient.SendDateTime = RockDateTime.Now;
+                                // Do not set DeliveredDateTime, as this should be set by email transport webhooks.
                             }
 
                             // Log it
@@ -1187,10 +1184,8 @@ namespace Rock.Communication
                     }
                     else
                     {
-                        var now = RockDateTime.Now;
-
-                        recipient.SendDateTime = now;
-                        recipient.DeliveredDateTime = now;
+                        recipient.SendDateTime = RockDateTime.Now;
+                        // Do not set DeliveredDateTime, as this should be set by email transport webhooks.
                     }
 
                     recipient.TransportEntityTypeName = this.GetType().FullName;

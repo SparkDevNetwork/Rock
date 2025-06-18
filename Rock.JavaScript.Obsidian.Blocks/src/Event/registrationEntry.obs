@@ -54,7 +54,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, onMounted, provide, readonly, ref, watch } from "vue";
+    import { computed, onMounted, onUnmounted, provide, readonly, ref, watch } from "vue";
     import RegistrationEntryIntro from "./RegistrationEntry/intro.partial.obs";
     import RegistrationEntryPayment from "./RegistrationEntry/payment.partial.obs";
     import RegistrationEntryRegistrants from "./RegistrationEntry/registrants.partial.obs";
@@ -93,6 +93,7 @@
     };
 
     const invokeBlockAction = useInvokeBlockAction();
+    const reloadBlock = useReloadBlock();
     const config = useConfigurationValues<RegistrationEntryInitializationBox>();
     const notFound = !!config.registrationInstanceNotFoundMessage || !config.registrationAttributesStart;
     const notFoundMessage = config.registrationInstanceNotFoundMessage || "The selected registration could not be found or is no longer active.";
@@ -531,6 +532,13 @@
         scrollToTopAfterNextRender();
     }
 
+    const handlePageShow = (e: PageTransitionEvent) => {
+        const isBackForward = e.persisted || (window.performance?.getEntriesByType("navigation")[0] as PerformanceNavigationTiming)?.type === "back_forward";
+        if (isBackForward) {
+            reloadBlock();
+        }
+    };
+
     // #endregion
 
     // #region Watchers
@@ -604,6 +612,11 @@
         if (config.loginRequiredToRegister && !currentPerson.value) {
             store.redirectToLogin();
         }
+        window.addEventListener("pageshow", handlePageShow);
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener("pageshow", handlePageShow);
     });
 
     onConfigurationValuesChanged(useReloadBlock());

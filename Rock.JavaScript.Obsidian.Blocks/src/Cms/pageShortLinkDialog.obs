@@ -11,16 +11,6 @@
                                  v-text="errorMessage"
                                  alertType="danger" />
                 <div class="row">
-                    <div class="col">
-                        <div class="clearfix">
-                            <span class="pull-right">
-                                {{ linkText }}
-                                <CopyButton :value="linkText" tooltip="Copy" btnSize="xs" />
-                            </span>
-                        </div>
-                    </div>
-                </div>
-                <div class="row">
                     <div class="col-sm-6">
                         <DropDownList v-model="siteGuid"
                                       :showBlankItem="false"
@@ -42,6 +32,36 @@
                                  label="URL"
                                  rules="required"
                                  help="The URL that short link will direct users to." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CategoryPicker v-model="category"
+                                        label="Category"
+                                        :entityTypeGuid="EntityType.PageShortLink"
+                                        :multiple="false" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <TextBox v-model="linkText"
+                                 label="Short Link"
+                                 :isReadOnly="true"
+                                 @click="selectShortLink">
+                            <template #inputGroupAppend>
+                                <div ref="copyShortLinkRef"
+                                     class="input-group-addon cursor-pointer"
+                                     title="Copy"
+                                     @click="copyShortLink">
+                                    <i class="ti ti-clipboard"></i>
+                                </div>
+                            </template>
+                        </TextBox>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <CheckBox v-model="isPinned" label="Pinned" />
                     </div>
                 </div>
                 <Panel title="Advanced Settings" hasCollapse>
@@ -98,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, onMounted } from "vue";
     import { propertyRef } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -114,6 +134,10 @@
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { showTooltip, tooltip } from "@Obsidian/Utility/tooltip";
 
     const invokeBlockAction = useInvokeBlockAction();
     const config = useConfigurationValues<DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>>();
@@ -123,19 +147,26 @@
     // #region Values
 
     const siteGuid = propertyRef(config?.entity?.site?.value ?? "", "SiteId");
-    const defaultDomainURL = propertyRef(config?.entity?.defaultDomainURL ?? "", "SiteId");
+    const defaultDomainUrls = propertyRef(config?.options?.defaultDomainUrls ?? [], "DefaultDomainUrls");
     const url = propertyRef(config?.entity?.url ?? "", "Url");
     const token = propertyRef(config?.entity?.token ?? "", "Token");
+    const category = propertyRef(config?.entity?.category ?? {}, "Category");
+    const isPinned = propertyRef(config?.entity?.isPinned ?? true, "IsPinned");
     const utmSource = ref(config?.entity?.utmSettings?.utmSource ?? {});
     const utmMedium = ref(config?.entity?.utmSettings?.utmMedium ?? {});
     const utmCampaign = ref(config?.entity?.utmSettings?.utmCampaign ?? {});
     const utmTerm = ref(config?.entity?.utmSettings?.utmTerm ?? "");
     const utmContent = ref(config?.entity?.utmSettings?.utmContent ?? "");
     const errorMessage = ref("");
+    const copyShortLinkRef = ref<HTMLElement | null>(null);
 
     // #region Computed Values
 
     const linkText = computed((): string => defaultDomainURL.value + token.value);
+
+    const defaultDomainURL = computed(() => {
+        return defaultDomainUrls.value.find(d => d.value === selectedSite.value.value)?.text;
+    });
 
     const siteOptions = computed((): ListItemBag[] => {
         return config?.options?.siteOptions ?? [];
@@ -167,6 +198,8 @@
         setPropertiesBoxValue(box, "site", selectedSite.value);
         setPropertiesBoxValue(box, "token", token.value);
         setPropertiesBoxValue(box, "url", url.value);
+        setPropertiesBoxValue(box, "category", category.value);
+        setPropertiesBoxValue(box, "isPinned", isPinned.value);
         setPropertiesBoxValue(box, "utmSettings", {
             utmSource: utmSource.value,
             utmMedium: utmMedium.value,
@@ -186,4 +219,29 @@
             errorMessage.value = result.errorMessage ?? "Failed";
         }
     };
+
+    function selectShortLink(e: MouseEvent): void {
+        const target = e.target;
+        if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+            target.select();
+        }
+    }
+
+    function copyShortLink(): void {
+        navigator.clipboard.writeText(linkText.value).then(() => {
+            if (!copyShortLinkRef.value) {
+                return;
+            }
+            copyShortLinkRef.value.setAttribute("data-original-title", "Copied");
+            showTooltip(copyShortLinkRef.value);
+
+            copyShortLinkRef.value.setAttribute("data-original-title", "Copy");
+        });
+    }
+
+    onMounted(() => {
+        if (copyShortLinkRef.value) {
+            tooltip(copyShortLinkRef.value);
+        }
+    });
 </script>

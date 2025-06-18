@@ -19,7 +19,7 @@
                        description="Monitor your Rock shortlinks with usage analytics to see clicks, traffic sources and user interactions." />
 
         <ViewAnalytics v-if="modelValue?.idKey"
-            :shortLinkId="modelValue.idKey" />
+                       :shortLinkId="modelValue.idKey" />
     </fieldset>
 </template>
 
@@ -98,6 +98,10 @@
             }
         }
 
+        if (props.modelValue.category?.text) {
+            valueBuilder.addTextValue("Category", props.modelValue.category.text);
+        }
+
         if (props.modelValue.scheduledRedirects && props.modelValue.scheduledRedirects.length > 0) {
             let html = `<div class="scheduled-redirect-list">`;
 
@@ -125,6 +129,13 @@
 
         if (props.modelValue.token) {
             valueBuilder.addTextValue("Token", props.modelValue.token);
+        }
+
+        if (props.modelValue.isPinned) {
+            valueBuilder.addTextValue("Is Pinned", "Yes");
+        }
+        else {
+            valueBuilder.addTextValue("Is Pinned", "No");
         }
 
         return valueBuilder.build();

@@ -4113,6 +4113,7 @@ pre code {
   text-decoration: none;
 }
 .dropdown-menu > li > a:hover, .dropdown-menu > li > a:focus {
+  cursor: pointer;
   color: var(--color-interface-stronger);
   text-decoration: none;
   background-color: var(--color-interface-softer);
@@ -7218,7 +7219,7 @@ td.grid-actions {
   border: none;
 }
 .chosen-container-single .chosen-search {
-  padding: var(--spacing-xsmall) var(--spacing-tiny) 0;
+  padding: var(--spacing-xsmall) var(--spacing-xsmall) 0;
   white-space: nowrap;
 }
 .chosen-container-single .chosen-search::after {
@@ -12882,7 +12883,7 @@ ul.list-group-panel .list-group-item:first-child,
 }
 .updateprogress-status .grid-loader {
   --uib-size: 90px;
-  --uib-color: var(--color-interface-softest);
+  --uib-color: var(--base-interface-softest);
   --uib-speed: 1.5s;
   --uib-dot-size: calc(var(--uib-size) * 0.1);
   position: relative;

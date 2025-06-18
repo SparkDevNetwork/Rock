@@ -21,7 +21,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -796,8 +798,8 @@ namespace RockWeb.Blocks.Event
                     {
                         var eventItemService = new EventItemService( rockContext );
                         eventItem = eventItemService.Get( eipSelectedEvent.SelectedValueAsId().Value );
-                        result.EventItemId = eventItem.Id.ToString();
-                        if ( eventItem.EventCalendarItems.Any() )
+                        result.EventItemId = eventItem?.Id.ToString();
+                        if ( eventItem?.EventCalendarItems.Any() == true )
                         {
                             result.FirstEventCalendarId = eventItem.EventCalendarItems.OrderBy( i => i.EventCalendarId ).First().EventCalendarId.ToString();
                         }

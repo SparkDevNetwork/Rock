@@ -22,7 +22,7 @@ namespace Rock.Tests.Model
 {
     [TestClass]
     public class AnalyticsSourceDateTests
-    {   
+    {
         /// <summary>
         /// Tests the fiscal week number calculation for an organization that starts its fiscal year in April.
         /// Rock adheres to the "4-day rule", meaning the first week of the fiscal year must contain at least 4 days.
@@ -51,23 +51,22 @@ namespace Rock.Tests.Model
                                                                                                  
           Mon Tue Wed Thu Fri Sat Sun      Mon Tue Wed Thu Fri Sat Sun      Mon Tue Wed Thu Fri Sat Sun  
           ━━━━━━━━━━━━━━━━━━━━━━━━━━━      ━━━━━━━━━━━━━━━━━━━━━━━━━━━      ━━━━━━━━━━━━━━━━━━━━━━━━━━━  
-            1   2   3   4   5   6   7                    1   2   3   4                    1   2   3   4 
-            8   9  10  11  12  13  14        5   6   7   8   9  10  11        5   6   7   8   9  10  11 
-           15  16  17  18  19  20  21       12  13  14  15  16  17  18       12  13  14  15  16  17  18 
-           22  23  24  25  26  27  28       19  20  21  22  23  24  25       19  20  21  22  23  24  25 
-           29  30  31                       26  27  28                       26  27  28  29  30  31     
-                                                                                                
-                                                                                                
-                     April             
-                                                                                                 
-          Mon Tue Wed Thu Fri Sat Sun 
-          ━━━━━━━━━━━━━━━━━━━━━━━━━━━ 
-                                    1
-            2   3   4   5   6   7   8 
-            9  10  11  12  13  14  15
-           16  17  18  19  20  21  22
-           23  24  25  26  27  28  29 
-           30  
+                                    1                1   2   3   4   5                1   2   3   4   5 
+            2   3   4   5   6   7   8        6   7   8   9  10  11  12        6   7   8   9  10  11  12 
+            9  10  11  12  13  14  15       13  14  15  16  17  18  19       13  14  15  16  17  18  19 
+           16  17  18  19  20  21  22       20  21  22  23  24  25  26       20  21  22  23  24  25  26 
+           23  24  25  26  27  28  29       27  28                           27  28  29  30  31         
+           30  31                                                                                       
+                                     
+                     April           
+                                     
+          Mon Tue Wed Thu Fri Sat Sun
+          ━━━━━━━━━━━━━━━━━━━━━━━━━━━
+                                1   2
+            3   4   5   6   7   8   9
+           10  11  12  13  14  15  16
+           17  18  19  20  21  22  23
+           24  25  26  27  28  29  30
          */
         [DataTestMethod]
         [DataRow( "Sun, Dec 25, 2022", 38 )]

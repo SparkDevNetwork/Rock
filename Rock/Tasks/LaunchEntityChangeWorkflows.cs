@@ -160,7 +160,7 @@ namespace Rock.Tasks
             var workflowService = new WorkflowService( rockContext );
             workflowService.Process( workflow, targetEntity, out var workflowErrors );
 
-            if ( workflow.Id == 0 )
+            if ( workflow.IsPersisted && workflow.Id == 0 )
             {
                 ExceptionLogService.LogException( $"{GetType().Name} failed. Workflow instance could not be created [WorkflowName={ name }]." );
                 return;
@@ -172,9 +172,12 @@ namespace Rock.Tasks
                 return;
             }
 
-            // Create a new EntityWorkflow instance to track the association between the target entity and the workflow.
-            // TODO: Create an interface IEntityWorkflowInstance(EntityId, WorkflowId, TriggerId) to allow the instance object to be created here using a generic implementation?
-            CreateWorkflowInstanceEntity( rockContext, targetEntity.Id, workflow.Id, triggerId );
+            if ( workflow.Id != 0 )
+            {
+                // Create a new EntityWorkflow instance to track the association between the target entity and the workflow.
+                // TODO: Create an interface IEntityWorkflowInstance(EntityId, WorkflowId, TriggerId) to allow the instance object to be created here using a generic implementation?
+                CreateWorkflowInstanceEntity( rockContext, targetEntity.Id, workflow.Id, triggerId );
+            }
 
             rockContext.SaveChanges();
         }
