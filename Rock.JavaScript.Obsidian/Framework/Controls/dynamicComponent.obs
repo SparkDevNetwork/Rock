@@ -85,7 +85,21 @@
         loading.value = true;
         error.value = "";
 
-        if (!props.definition.url) {
+        // __component and __componentError are populated by the
+        // loadDynamicComponentDefinition() function in Utility/component.ts.
+        // It is used to pre-load the component so that this control can display
+        // the component without any async delay.
+        if ("__componentError" in props.definition && typeof props.definition.__componentError === "string") {
+            error.value = props.definition.__componentError;
+            loading.value = false;
+            return;
+        }
+        else if ("__component" in props.definition && typeof props.definition.__component === "object") {
+            control.value = props.definition.__component;
+            loading.value = false;
+            return;
+        }
+        else if (!props.definition.url) {
             error.value = "Could not load the control because no URL was provided";
             loading.value = false;
             return;

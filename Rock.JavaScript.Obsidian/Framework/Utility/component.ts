@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 
-import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, VNode, watch, WatchOptions, render, createVNode } from "vue";
+import { AsyncComponentLoader, Component, ComponentPublicInstance, defineAsyncComponent as vueDefineAsyncComponent, ExtractPropTypes, PropType, reactive, ref, Ref, VNode, watch, WatchOptions, render, createVNode, markRaw } from "vue";
 import { deepEqual } from "./util";
 import { useSuspense } from "./suspense";
 import { newGuid } from "./guid";
@@ -23,6 +23,7 @@ import { PickerDisplayStyle } from "@Obsidian/Enums/Controls/pickerDisplayStyle"
 import { FilterMode } from "@Obsidian/Enums/Reporting/filterMode";
 import { ExtendedRef, ExtendedRefContext } from "@Obsidian/Types/Utility/component";
 import type { RulesPropType, ValidationRule } from "@Obsidian/Types/validationRules";
+import type { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
 import { toNumberOrNull } from "./numberUtils";
 
 type Prop = { [key: string]: unknown };
@@ -428,6 +429,47 @@ export const standardDynamicComponentProps: StandardDynamicComponentProps = {
         required: true
     }
 };
+
+/**
+ * This is used to pre-load the URL in the definition so that it is ready for
+ * immediate display when passed to the dynamic component. This can be used to
+ * delay the display of the dynamic component container until the actual
+ * component is loaded into memory and ready to be displayed.
+ *
+ * @param definition The dynamic component definition that contains the URL to load.
+ */
+export async function loadDynamicComponentDefinition(definition: DynamicComponentDefinitionBag): Promise<void> {
+    if (!definition || !definition.url) {
+        return;
+    }
+
+    try {
+        const controlComponentModule = await import(definition.url);
+        const controlModule = controlComponentModule
+            ? (controlComponentModule.default || controlComponentModule)
+            : null;
+
+        if (controlModule) {
+            Object.defineProperty(definition, "__component", {
+                value: markRaw(controlModule),
+                writable: false,
+                enumerable: false
+            });
+        }
+    }
+    catch (e) {
+        console.error(e);
+    }
+    finally {
+        if (!("__component" in definition)) {
+            Object.defineProperty(definition, "__componentError", {
+                value: `Could not load the control for '${definition.url}'`,
+                writable: false,
+                enumerable: false
+            });
+        }
+    }
+}
 
 // #endregion
 
