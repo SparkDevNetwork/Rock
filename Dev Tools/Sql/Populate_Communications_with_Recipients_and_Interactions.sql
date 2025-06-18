@@ -226,6 +226,18 @@ FROM Sentences
 CROSS JOIN (SELECT TOP 300 1 AS n FROM sys.all_objects) AS x -- plenty of rows to shuffle
 ORDER BY NEWID(); -- randomize
 
+-- Email delivery failure reasons.
+DECLARE @FailedEmailReasons TABLE
+(
+    [Reason] NVARCHAR(MAX)
+);
+
+INSERT INTO @FailedEmailReasons VALUES
+('No Email Address'),
+('Recipient Email Address is not active'),
+('Communication Preference of ''Do Not Send Communication'''),
+('Communication Preference of ''No Bulk Communication''');
+
 -- Date-range helpers: Spread the generated [Communications] across the available date range.
 DECLARE @TimeSpanSeconds BIGINT = DATEDIFF(SECOND, @StartDate, @EndDate);
 DECLARE @BaseIncrementSeconds INT = CASE
@@ -275,7 +287,18 @@ DECLARE @CommIndex INT = 0
     , @LinkPoolCount INT
     , @LinkIndex INT
 
-    , @InteractionComponentId INT;
+    , @InteractionComponentId INT
+
+    , @CommTypeRecipPref INT = 0
+    , @CommTypeEmail INT = 1
+    , @CommTypeSms INT = 2
+    , @CommTypePush INT = 3
+
+    , @CommStatusTransient INT = 0
+    , @CommStatusDraft INT = 1
+    , @CommStatusPendingApproval INT = 2
+    , @CommStatusApproved INT = 3
+    , @CommStatusDenied INT = 4;
 
 -- Declare all communication recipient variables that will be used when looping below.
 DECLARE @RecipientCount INT
@@ -283,16 +306,31 @@ DECLARE @RecipientCount INT
 
     , @RandomizeRecipStatus INT
     , @RecipientStatus INT
+    , @RecipientStatusNote NVARCHAR(MAX)
     , @RecipientPersonId INT
     , @RecipientPersonAliasId INT
     , @MediumEntityTypeId INT
+    , @RecipientSendDateTime DATETIME
 
-    , @UnsubscribeDateTime DATETIME
-    , @UnsubscribeLevel  INT
     , @RandomizeUnsubscribeOffsetMinutes INT
     , @UnsubscribeOffsetMinutes INT
+    , @UnsubscribeDateTime DATETIME
+    , @UnsubscribeLevel  INT
 
-    , @RecipientId INT;
+    , @RandomizeSpamComplaintOffsetMinutes INT
+    , @SpamComplaintOffsetMinutes INT
+    , @SpamComplaintDateTime DATETIME
+
+    , @RecipientModifiedDateTime DATETIME
+
+    , @RecipientId INT
+
+    , @RecipientStatusPending INT = 0
+    , @RecipientStatusDelivered INT = 1
+    , @RecipientStatusFailed INT = 2
+    , @RecipientStatusCancelled INT = 3
+    , @RecipientStatusOpened INT = 4
+    , @RecipientStatusSending INT = 5;
 
 -- Declare all interaction variables that will be used when looping below.
 DECLARE @ShouldGenerateOpenedInteractions BIT
@@ -366,17 +404,17 @@ BEGIN
     SET @CommType = ABS(CHECKSUM(NEWID())) % 4; -- 0=recipient preference,1=email,2=sms,3=push
     SET @RandomizeCommStatus = ABS(CHECKSUM(NEWID())) % 100;
     SET @CommStatus = CASE
-        WHEN @RandomizeCommStatus < 75 THEN 3   -- 75% Approved
-        WHEN @RandomizeCommStatus < 85 THEN 2   -- 10% Pending Approval
-        WHEN @RandomizeCommStatus < 90 THEN 1   -- 5% Draft
-        WHEN @RandomizeCommStatus < 95 THEN 4   -- 5% Denied
-        ELSE 0                                  -- 5% Transient
+        WHEN @RandomizeCommStatus < 75 THEN @CommStatusApproved         -- 75% Approved
+        WHEN @RandomizeCommStatus < 85 THEN @CommStatusPendingApproval  -- 10% Pending Approval
+        WHEN @RandomizeCommStatus < 90 THEN @CommStatusDraft            -- 5% Draft
+        WHEN @RandomizeCommStatus < 95 THEN @CommStatusDenied           -- 5% Denied
+        ELSE @CommStatusTransient                                       -- 5% Transient
     END;
 
     SET @IsBulk = CASE WHEN ABS(CHECKSUM(NEWID())) % 100 < 60 THEN 1 ELSE 0 END; -- 60% bulk
 
     -- Adjust [SendDateTime] and [FutureSendDateTime] based on status.
-    IF @CommStatus = 3 -- Approved
+    IF @CommStatus = @CommStatusApproved
     BEGIN
         IF ABS(CHECKSUM(NEWID())) % 2 = 0
         BEGIN
@@ -403,7 +441,7 @@ BEGIN
             END
         END
     END
-    ELSE IF @CommStatus NOT IN (0, 1) -- NOT transient or draft.
+    ELSE IF @CommStatus NOT IN (@CommStatusTransient, @CommStatusDraft) -- NOT transient or draft.
     BEGIN
         SET @FutureSendDateTime = DATEADD(MINUTE, ABS(CHECKSUM(NEWID())) % 1440, @CommCreatedDateTime);
     END
@@ -445,7 +483,7 @@ BEGIN
     SET @PushMessage = NULL;
     SET @Summary = NULL;
 
-    IF @CommType IN (0, 1) -- Recipient Preference, Email
+    IF @CommType IN (@CommTypeRecipPref, @CommTypeEmail)
     BEGIN
         SET @Subject = (
             SELECT LEFT(STUFF((
@@ -463,11 +501,11 @@ BEGIN
                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, ''), @SummaryLength)
             );
     END
-    ELSE IF @CommType = 2 -- SMS
+    ELSE IF @CommType = @CommTypeSms
     BEGIN
         SET @Summary = LEFT(@SMSMessage, 600);
     END
-    ELSE IF @CommType = 3 -- Push Notification
+    ELSE IF @CommType = @CommTypePush
     BEGIN
         SET @PushTitle = LEFT((SELECT TOP 1 [Text] FROM @LoremIpsum ORDER BY NEWID()), @PushTitleLength);
         SET @PushMessage = LEFT(@SMSMessage, @PushMessageLength);
@@ -522,7 +560,7 @@ BEGIN
         , @PushMessage
         , @SendDateTime
         , CASE
-            WHEN @CommType IN (0, 2) THEN @SystemPhoneNumberId -- Recipient Preference, SMS
+            WHEN @CommType IN (@CommTypeRecipPref, @CommTypeSms) THEN @SystemPhoneNumberId
             ELSE NULL
           END
         , @TopicId
@@ -621,52 +659,76 @@ BEGIN
         INSERT INTO #AlreadyAddedPersonIds VALUES (@RecipientPersonId);
         INSERT INTO #AlreadyAddedPersonAliasIds VALUES (@RecipientPersonAliasId);
 
-        SET @RecipientStatus = 0; -- Pending by default.
+        --------------------------
 
-        IF @CommStatus = 3 -- Approved
+        SET @RecipientStatus = @RecipientStatusPending; -- Pending by default.
+
+        IF @CommStatus = @CommStatusApproved
         BEGIN
             SET @RandomizeRecipStatus = ABS(CHECKSUM(NEWID())) % 100;
 
             IF @CommunicationAgeInMinutes > 2880 -- Sent more than 2 days ago.
             BEGIN
                 SET @RecipientStatus = CASE
-                    WHEN @RandomizeRecipStatus < 60 THEN 1  -- 60% Delivered
-                    WHEN @RandomizeRecipStatus < 95 THEN 4  -- 35% Opened
-                    WHEN @RandomizeRecipStatus < 97 THEN 2  -- 2% Failed
-                    ELSE 3                                  -- 3% Cancelled
+                    WHEN @RandomizeRecipStatus < 95 THEN @RecipientStatusDelivered  -- 95% Delivered (some will become Opened below)
+                    WHEN @RandomizeRecipStatus < 97 THEN @RecipientStatusFailed     -- 2% Failed
+                    ELSE @RecipientStatusCancelled                                  -- 3% Cancelled
                 END;
             END
             ELSE -- Sent within the last 2 days.
             BEGIN
                 SET @RecipientStatus = CASE
-                    WHEN @RandomizeRecipStatus < 50 THEN 0  -- 50% Pending
-                    WHEN @RandomizeRecipStatus < 90 THEN 1  -- 40% Delivered
-                    WHEN @RandomizeRecipStatus < 95 THEN 4  -- 5% Opened
-                    WHEN @RandomizeRecipStatus < 99 THEN 3  -- 4% Cancelled
-                    ELSE 5                                  -- 1% Sending
+                    WHEN @RandomizeRecipStatus < 50 THEN @RecipientStatusPending    -- 50% Pending
+                    WHEN @RandomizeRecipStatus < 95 THEN @RecipientStatusDelivered  -- 45% Delivered (some will become Opened below)
+                    WHEN @RandomizeRecipStatus < 99 THEN @RecipientStatusCancelled  -- 4% Cancelled
+                    ELSE @RecipientStatusSending                                    -- 1% Sending
                 END;
             END
         END
 
+        --------------------------
+
         SET @MediumEntityTypeId = CASE
-            WHEN @CommType = 0 THEN -- Recipient Preference
+            WHEN @CommType = @CommTypeRecipPref THEN
                 CASE
-                    WHEN ABS(CHECKSUM(NEWID())) % 2 = 0 THEN @EmailMediumEntityTypeId
-                    ELSE @SmsMediumEntityTypeId
+                    WHEN ABS(CHECKSUM(NEWID())) % 2 = 0 THEN @EmailMediumEntityTypeId   -- Half email
+                    ELSE @SmsMediumEntityTypeId                                         -- Half SMS
                 END
-            WHEN @CommType = 1 THEN @EmailMediumEntityTypeId
-            WHEN @CommType = 2 THEN @SmsMediumEntityTypeId
-            ELSE @PushMediumEntityTypeId
+            WHEN @CommType = @CommTypeEmail THEN @EmailMediumEntityTypeId               -- All email
+            WHEN @CommType = @CommTypeSms THEN @SmsMediumEntityTypeId                   -- All SMS
+            ELSE @PushMediumEntityTypeId                                                -- All Push
         END;
+
+        --------------------------
+
+        SET @RecipientStatusNote = NULL;
+
+        -- 50% of email recipients whose delivery failed will recive a failure reason.
+        IF @MediumEntityTypeId = @EmailMediumEntityTypeId
+            AND @RecipientStatus = @RecipientStatusFailed
+            AND ABS(CHECKSUM(NEWID())) % 2 = 0
+        BEGIN
+            SET @RecipientStatusNote = (SELECT TOP 1 [Reason] FROM @FailedEmailReasons ORDER BY NEWID());
+        END
+
+        --------------------------
+
+        SET @RecipientSendDateTime = NULL;
+
+        IF @RecipientStatus = @RecipientStatusDelivered
+        BEGIN
+            SET @RecipientSendDateTime = @SendDateTime;
+        END
+
+        --------------------------
 
         SET @UnsubscribeDateTime = NULL;
         SET @UnsubscribeLevel  = NULL;
 
         -- Some recipients will unsubscribe as a result of receiving this communication, as follows:
         IF @MediumEntityTypeId = @EmailMediumEntityTypeId   -- Must be an email
-            AND @CommStatus = 3                             -- Communication must be approved
-            AND @SendDateTime IS NOT NULL                   -- Communication must have a send date time
-            AND ABS(CHECKSUM(NEWID())) % 100 < 3            -- 3% of these recipients will unsubscribe
+            AND @RecipientSendDateTime IS NOT NULL          -- Recipient must have been sent the email
+            AND ABS(CHECKSUM(NEWID())) % 100 < 5            -- 5% of these recipients will unsubscribe
         BEGIN
             IF @UseRealisticInteractionDateRange = 1
             BEGIN
@@ -686,49 +748,106 @@ BEGIN
                 SET @UnsubscribeOffsetMinutes = ABS(CHECKSUM(NEWID())) % 2880;      -- Within the first 2 days
             END
 
-            SET @UnsubscribeDateTime = DATEADD(MINUTE, @UnsubscribeOffsetMinutes, @SendDateTime);
+            SET @UnsubscribeDateTime = DATEADD(MINUTE, @UnsubscribeOffsetMinutes, @RecipientSendDateTime);
             IF @UnsubscribeDateTime > GETDATE()
             BEGIN
                 SET @UnsubscribeDateTime = GETDATE();
             END
 
             SET @UnsubscribeLevel = CASE ABS(CHECKSUM(NEWID())) % 4
-                WHEN 0 THEN 1
-                WHEN 1 THEN 2
-                WHEN 2 THEN 3
-                ELSE 4
+                WHEN 0 THEN 1   -- All
+                WHEN 1 THEN 2   -- Bulk
+                WHEN 2 THEN 3   -- CommunicationList
+                ELSE 4          -- Campaign
             END;
         END
+
+        --------------------------
+
+        SET @SpamComplaintDateTime = NULL;
+
+        -- Some recipients will mark this communication as spam:
+        IF @MediumEntityTypeId = @EmailMediumEntityTypeId   -- Must be an email
+            AND @RecipientSendDateTime IS NOT NULL          -- Recipient must have been sent the email
+            AND ABS(CHECKSUM(NEWID())) % 100 < 5            -- 5% of these recipients will mark as spam
+        BEGIN
+            IF @UseRealisticInteractionDateRange = 1
+            BEGIN
+                SET @RandomizeSpamComplaintOffsetMinutes = ABS(CHECKSUM(NEWID())) % 100; -- Weighted 0-to-180-day offset
+                SET @SpamComplaintOffsetMinutes =
+                    CASE
+                        WHEN @RandomizeSpamComplaintOffsetMinutes < 80              -- ~80 % happen in first 7 days
+                            THEN ABS(CHECKSUM(NEWID())) % (7 * 1440)                -- 0-7 d
+                        WHEN @RandomizeSpamComplaintOffsetMinutes < 90              -- ~10 % in days 8-45
+                            THEN 7 * 1440 + ABS(CHECKSUM(NEWID())) % (38 * 1440)    -- 7-45 d
+                        ELSE                                                        -- ~10 % outliers up to ~6 months
+                            45 * 1440 + ABS(CHECKSUM(NEWID())) % (135 * 1440)       -- 45-180 d
+                    END;
+            END
+            ELSE
+            BEGIN
+                SET @SpamComplaintOffsetMinutes = ABS(CHECKSUM(NEWID())) % 2880;      -- Within the first 2 days
+            END
+
+            SET @SpamComplaintDateTime = DATEADD(MINUTE, @SpamComplaintOffsetMinutes, @RecipientSendDateTime);
+            IF @SpamComplaintDateTime > GETDATE()
+            BEGIN
+                SET @SpamComplaintDateTime = GETDATE();
+            END
+        END
+
+        --------------------------
+
+        SET @RecipientModifiedDateTime = (
+            SELECT MAX(ISNULL(dt, '1900-01-01')) -- Prevent 'Null value is eliminated..' warnings with a fallback for NULLs
+            FROM (
+                VALUES
+                    (@CommCreatedDateTime) -- This variable - at the least - is guaranteed to have a value.
+                    , (@RecipientSendDateTime)
+                    , (@UnsubscribeDateTime)
+                    , (@SpamComplaintDateTime)
+            ) AS AllDates(dt)
+        );
+
+        --------------------------
 
         -- Add the [CommunicationRecipient].
         INSERT INTO [CommunicationRecipient]
         (
             [CommunicationId]
             , [Status]
+            , [StatusNote]
             , [Guid]
             , [CreatedDateTime]
             , [ModifiedDateTime]
             , [PersonAliasId]
             , [MediumEntityTypeId]
+            , [SendDateTime]
             , [PersonalDeviceId]
             , [UnsubscribeDateTime]
             , [UnsubscribeLevel]
+            , [DeliveredDateTime]
+            , [SpamComplaintDateTime]
         )
         VALUES
         (
             @CommId
             , @RecipientStatus
+            , @RecipientStatusNote
             , NEWID()
             , @CommCreatedDateTime
-            , @CommCreatedDateTime
+            , @RecipientModifiedDateTime
             , @RecipientPersonAliasId
             , @MediumEntityTypeId
+            , @RecipientSendDateTime
             , CASE
-                WHEN @CommType = 3 THEN @PersonalDeviceId
+                WHEN @CommType = @CommTypePush THEN @PersonalDeviceId
                 ELSE NULL
               END
             , @UnsubscribeDateTime
             , @UnsubscribeLevel
+            , @RecipientSendDateTime
+            , @SpamComplaintDateTime
         );
 
         -- Skip the rest of the loop if the insert fails (unlikely, but we'll play it safe).
@@ -744,10 +863,8 @@ BEGIN
            ==========================*/
 
         SET @ShouldGenerateOpenedInteractions = CASE
-            WHEN @CommStatus = 3 -- Approved
-                AND @SendDateTime IS NOT NULL
+            WHEN @RecipientSendDateTime IS NOT NULL
                 AND @MediumEntityTypeId <> @SmsMediumEntityTypeId
-                AND @RecipientStatus IN (1, 4) -- Delivered, Opened
                 AND ABS(CHECKSUM(NEWID())) % 100 < 80 -- 80 % of qualifying recipients will get >= 1 open (20% won't open at all)
             THEN 1
             ELSE 0 END;
@@ -798,7 +915,7 @@ BEGIN
                 @InteractionOffsetMinutes,
                 @MinOpenOffsetMinutes);
 
-            SET @InteractionDateTime = DATEADD(MINUTE, @InteractionOffsetMinutes, @SendDateTime);
+            SET @InteractionDateTime = DATEADD(MINUTE, @InteractionOffsetMinutes, @RecipientSendDateTime);
             IF @InteractionDateTime > GETDATE()
             BEGIN
                 SET @InteractionDateTime = GETDATE();
@@ -867,6 +984,16 @@ BEGIN
             SET @OpenIndex += 1;
         END -- 'Opened' Interaction Loop
 
+        -- Set the recipient's opened datetime to match that of the latest 'Opened' interaction.
+        UPDATE [CommunicationRecipient]
+        SET [Status] = @RecipientStatusOpened
+            , [OpenedDateTime] = @InteractionDateTime
+            , [ModifiedDateTime] = CASE
+                WHEN @InteractionDateTime > [ModifiedDateTime] THEN @InteractionDateTime
+                ELSE [ModifiedDateTime]
+              END
+        WHERE [Id] = @RecipientId;
+
         /* =========================
            'Click' Interaction Loop
            =========================*/
@@ -920,7 +1047,7 @@ BEGIN
                 @MinOpenOffsetMinutes + 1,
                 @InteractionOffsetMinutes);
 
-            SET @InteractionDateTime = DATEADD(MINUTE, @InteractionOffsetMinutes, @SendDateTime);
+            SET @InteractionDateTime = DATEADD(MINUTE, @InteractionOffsetMinutes, @RecipientSendDateTime);
             IF @InteractionDateTime > GETDATE()
             BEGIN
                 SET @InteractionDateTime = GETDATE();
