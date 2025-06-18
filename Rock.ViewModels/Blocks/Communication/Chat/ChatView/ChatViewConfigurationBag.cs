@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Enums.Communication.Chat;
+
 namespace Rock.ViewModels.Blocks.Communication.Chat.ChatView
 {
     /// <summary>
@@ -55,5 +57,10 @@ namespace Rock.ViewModels.Blocks.Communication.Chat.ChatView
         /// Gets or sets the selected message ID.
         /// </summary>
         public string JumpToMessageId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the style of the chat view.
+        /// </summary>
+        public ChatViewStyle ChatStyle { get; set; }
     }
 }

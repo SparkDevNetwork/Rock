@@ -1,4 +1,4 @@
-import React, { useEffect } from "react";
+import React, { useState, useEffect } from "react";
 import {
     ChannelList,
     useChatContext,
@@ -20,8 +20,6 @@ export const WrappedChannelList: React.FC<WrappedChannelListProps> = ({
 
         const loadSelectedChannel = async () => {
             try {
-                console.log(`Loading channel with cid: ${selectedChannelId}`);
-
                 const [channel] = await client.queryChannels(
                     { cid: { $eq: selectedChannelId } },
                     { last_message_at: -1 },
@@ -29,7 +27,6 @@ export const WrappedChannelList: React.FC<WrappedChannelListProps> = ({
                 );
 
                 if (channel) {
-                    console.log(`Found channel: ${channel.cid}`);
                     setActiveChannel(channel);
                 } else {
                     console.warn(`Channel with cid ${selectedChannelId} not found.`);
@@ -43,8 +40,6 @@ export const WrappedChannelList: React.FC<WrappedChannelListProps> = ({
     }, [selectedChannelId, client, setActiveChannel]);
 
     return (
-        <ChannelList
-            {...props}
-        />
+        <ChannelList {...props} />
     );
 };

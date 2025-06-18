@@ -51,6 +51,7 @@
     <Compile Include="AI\NameRemoval.cs" />
     <Compile Include="AI\TextEnhancement.cs" />
     <Compile Include="Communication\Chat\ChatNotificationMode.cs" />
+    <Compile Include="Communication\Chat\ChatViewStyle.cs" />
     <Compile Include="Communication\CommunicationType.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\PushOpenAction.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntry\Mode.cs" />

@@ -1,3 +1,5 @@
+import { ChatViewStyle } from "./ChatViewStyle";
+
 export interface ChatComponentProps {
     primaryColor: string;
     apiKey: string;
@@ -10,4 +12,5 @@ export interface ChatComponentProps {
     channelId?: string;
     selectedChannelId?: string;
     jumpToMessageId?: string;
+    chatViewStyle?: ChatViewStyle;
 }

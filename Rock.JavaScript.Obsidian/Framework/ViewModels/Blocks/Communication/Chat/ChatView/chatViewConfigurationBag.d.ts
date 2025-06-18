@@ -21,10 +21,15 @@
 // </copyright>
 //
 
+import { ChatViewStyle } from "@Obsidian/Enums/Communication/Chat/chatViewStyle";
+
 /** A bag of settings for the chat view block. */
 export type ChatViewConfigurationBag = {
     /** Gets or sets the selected channel ID. */
     channelId?: string | null;
+
+    /** Gets or sets the style of the chat view. */
+    chatStyle: ChatViewStyle;
 
     /** Gets or sets the key for the direct message channel type. */
     directMessageChannelTypeKey?: string | null;

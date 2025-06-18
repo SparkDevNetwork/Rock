@@ -12,6 +12,7 @@ import { Avatar as DefaultAvatar } from 'stream-chat-react';
 import { RockChannelPreviewActionButtons } from './RockChannelActionButtons';
 import { DefaultChatChannelNamer } from '../ChannelNamer/DefaultChannelNamer';
 import { useChatConfig } from '../Chat/ChatConfigContext';
+import { ChatViewStyle } from '../ChatViewStyle';
 const ChannelPreviewContent = <
     SCG extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
 >(
@@ -44,7 +45,7 @@ const ChannelPreviewContent = <
 
     // compute title using DefaultChatChannelNamer if displayTitle is empty
     const title =
-        displayTitle ?? DefaultChatChannelNamer(channel, chatConfig.directMessageChannelTypeKey!, currentUserId);
+        displayTitle ?? DefaultChatChannelNamer(channel, chatConfig.directMessageChannelTypeKey!, currentUserId, chatConfig.chatViewStyle);
 
     // use title for avatar fallback
     const avatarName = title || channel.state.messages?.at(-1)?.user?.id;
@@ -63,12 +64,82 @@ const ChannelPreviewContent = <
         channelPreviewButton.current?.blur();
     };
 
-    return (
-        <div
-            onMouseEnter={() => setIsHovered(true)}
-            onMouseLeave={() => setIsHovered(false)}
-            className="str-chat__channel-preview-container">
-            <div className="rock-channel-preview-container">
+    const useCommunityComponent = chatConfig.chatViewStyle == ChatViewStyle.Community;
+
+    const conversationalComponent = () => {
+        return (
+            <div
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className="str-chat__channel-preview-container">
+                <div className="rock-channel-preview-container">
+                    <button
+                        aria-label={`Select Channel: ${displayTitle || ''}`}
+                        aria-selected={active}
+                        data-testid="channel-preview-button"
+                        onClick={onSelectChannel}
+                        ref={channelPreviewButton}
+                        className={clsx(
+                            'str-chat__channel-preview-messenger str-chat__channel-preview',
+                            active && 'str-chat__channel-preview-messenger--active',
+                            unread && unread >= 1 && 'str-chat__channel-preview-messenger--unread',
+                            isMuted && 'str-chat__channel-preview--muted',
+                            customClassName,
+                        )}
+                        role='option'>
+                        <div className='str-chat__channel-preview-messenger--left'>
+                            <Avatar
+                                className="str-chat__avatar--channel-preview"
+                                groupChannelDisplayInfo={groupChannelDisplayInfo}
+                                image={displayImage}
+                                name={avatarName}
+                            />
+                        </div>
+
+                        <div className="str-chat__channel-preview-end-row">
+                            <div className="str-chat__channel-preview-text">
+                                <div className="str-chat__channel-preview-end-first-row">
+                                    <div className="str-chat__channel-preview-messenger--name">
+                                        <span>
+                                            {title}
+                                            {isMuted && <span title="Muted"> 🔇</span>}
+                                        </span>
+                                    </div>
+                                    {!!unread && (
+                                        <div className="str-chat__channel-preview-unread-badge">
+                                            {unread}
+                                        </div>
+                                    )}
+                                </div>
+                                <div className="str-chat__channel-preview-messenger--last-message">
+                                    {isMuted ? (
+                                        <span title="Muted">Channel is muted</span>
+                                    ) : (
+                                        <span>{latestMessagePreview}</span>
+                                    )}
+                                </div>
+                            </div>
+
+                            <div className="channel-preview-actions-wrapper">
+                                {showActions && (
+                                    <div className="channel-preview-action-buttons-inline">
+                                        <ChannelPreviewActionButtons channel={channel} />
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </button>
+                </div>
+            </div>
+        )
+    }
+
+    const communityComponent = () => {
+        return (
+            <div
+                onMouseEnter={() => setIsHovered(true)}
+                onMouseLeave={() => setIsHovered(false)}
+                className="rock-channel-preview-container">
                 <button
                     aria-label={`Select Channel: ${displayTitle || ''}`}
                     aria-selected={active}
@@ -76,58 +147,39 @@ const ChannelPreviewContent = <
                     onClick={onSelectChannel}
                     ref={channelPreviewButton}
                     className={clsx(
-                        'str-chat__channel-preview-messenger str-chat__channel-preview',
-                        active && 'str-chat__channel-preview-messenger--active',
-                        unread && unread >= 1 && 'str-chat__channel-preview-messenger--unread',
-                        isMuted && 'str-chat__channel-preview--muted',
+                        'rock-channel-preview',
+                        active && 'rock-channel-preview-container--active',
+                        unread && unread >= 1 && 'rock-channel-preview-container--unread',
+                        isMuted && 'rock-channel-preview-container--muted',
                         customClassName,
                     )}
                     role='option'>
-                    <div className='str-chat__channel-preview-messenger--left'>
+                    <div className="rock-channel-preview-content">
                         <Avatar
-                            className="str-chat__avatar--channel-preview"
+                            className="rock-channel-preview-avatar str-chat__avatar--channel-preview "
                             groupChannelDisplayInfo={groupChannelDisplayInfo}
                             image={displayImage}
                             name={avatarName}
                         />
-                    </div>
 
-                    <div className="str-chat__channel-preview-end-row">
-                        <div className="str-chat__channel-preview-text">
-                            <div className="str-chat__channel-preview-end-first-row">
-                                <div className="str-chat__channel-preview-messenger--name">
-                                    <span>
-                                        {title}
-                                        {isMuted && <span title="Muted"> 🔇</span>}
-                                    </span>
-                                </div>
-                                {!!unread && (
-                                    <div className="str-chat__channel-preview-unread-badge">
-                                        {unread}
-                                    </div>
-                                )}
-                            </div>
-                            <div className="str-chat__channel-preview-messenger--last-message">
-                                {isMuted ? (
-                                    <span title="Muted">Channel is muted</span>
-                                ) : (
-                                    <span>{latestMessagePreview}</span>
-                                )}
-                            </div>
-                        </div>
-
-                        <div className="channel-preview-actions-wrapper">
-                            {showActions && (
-                                <div className="channel-preview-action-buttons-inline">
-                                    <ChannelPreviewActionButtons channel={channel} />
-                                </div>
-                            )}
+                        <div className="rock-channel-preview-title str-chat__channel-preview-messenger--name">
+                            <span>
+                                {title}
+                                {isMuted && <span title="Muted"> 🔇</span>}
+                            </span>
                         </div>
                     </div>
                 </button>
             </div>
-        </div>
+        )
+    }
+
+    return useCommunityComponent ? (
+        communityComponent()
+    ) : (
+        conversationalComponent()
     );
+
 };
 
 const UnMemoizedChannelPreviewMessenger = <

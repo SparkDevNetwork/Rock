@@ -10,10 +10,12 @@
  * @property {string} [directMessageChannelTypeKey] - Optional key to identify DM channels.
  */
 import { createContext, useContext } from "react";
+import { ChatViewStyle } from "../ChatViewStyle";
 
 interface ChatConfigContextType {
     sharedChannelTypeKey?: string;
     directMessageChannelTypeKey?: string;
+    chatViewStyle: ChatViewStyle;
 }
 
 /**
