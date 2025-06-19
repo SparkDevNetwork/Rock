@@ -17,7 +17,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const addressTypes = safeParseJson(props.options.addressTypes) ?? [];
+    const addressTypes = safeParseJson<ListItemBag[]>(props.options.addressTypes) ?? [];
 
     const addressType = ref<string>(props.modelValue.addressType ?? "");
     const location = ref<AddressControlBag | ListItemBag | string | undefined>(safeParseJson(props.modelValue.location));
