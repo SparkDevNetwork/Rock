@@ -4,19 +4,19 @@
     <div class="drag-container"
          v-dragSource="dragOptions"
          v-dragTarget="dragOptions">
-        <ConnectedListButton v-for="ev in events"
-                             :key="ev.idKey ?? undefined"
-                             :title="ev.name"
-                             :description="ev.description"
-                             :iconCssClass="ev.iconCssClass"
-                             :aside="ev.eventType?.text"
-                             :primaryActions="getPrimaryActions(ev)">
+        <ConnectedListItem v-for="ev in events"
+                           :key="ev.idKey ?? undefined"
+                           :title="ev.name"
+                           :description="ev.description"
+                           :iconCssClass="ev.iconCssClass"
+                           :aside="ev.eventType?.text"
+                           :primaryActions="getPrimaryActions(ev)">
             <template #prepend>
                 <div>
                     <i class="fa fa-bars reorder-handle" style="cursor: grab;"></i>
                 </div>
             </template>
-        </ConnectedListButton>
+        </ConnectedListItem>
     </div>
 
     <ConnectedListAddButton @click="onAddEvent" />
@@ -66,7 +66,7 @@
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import ConnectedListAddButton from "@Obsidian/Controls/connectedListAddButton.obs";
-    import ConnectedListButton from "@Obsidian/Controls/connectedListButton.obs";
+    import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
     import Modal from "@Obsidian/Controls/modal.obs";

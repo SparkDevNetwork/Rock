@@ -715,6 +715,23 @@ namespace Rock.Blocks.Workflow
 
                 lastAction = action;
                 lastActionTypeGuid = action.ActionTypeCache.Guid;
+
+                // If the LastProcessedDateTime is equal to RockDateTime.Now
+                // then the processing of the activity will be skipped. In
+                // general terms, this means some actions might not be processed
+                // if the server is too fast. However, this can be difficult to
+                // track down if the workflow type is not set to persist
+                // automatically since one of the later actions that didn't run
+                // might be the persist action.
+                // 
+                // The resolution of System.DateTime.UTCNow is between .5 and 15
+                // ms. So we need to wait until the values are no longer equal.
+                // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.utcnow?view=netframework-4.7#remarks
+                while ( workflow.LastProcessedDateTime == RockDateTime.Now )
+                {
+                    // TODO: In the future this should be an async Task.Delay.
+                    System.Threading.Thread.Sleep( 1 );
+                }
             }
 
             if ( workflow.IsPersisted )

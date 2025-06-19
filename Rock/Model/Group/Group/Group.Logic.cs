@@ -771,18 +771,7 @@ namespace Rock.Model
         /// <returns>The <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat channel.</returns>
         public ChatNotificationMode GetChatPushNotificationMode()
         {
-            if ( this.ChatPushNotificationModeOverride.HasValue )
-            {
-                return this.ChatPushNotificationModeOverride.Value;
-            }
-
-            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
-            if ( groupTypeCache != null )
-            {
-                return groupTypeCache.ChatPushNotificationMode;
-            }
-
-            return ChatNotificationMode.AllMessages;
+            return GroupCache.GetChatPushNotificationMode( ChatPushNotificationModeOverride, GroupTypeId );
         }
 
         /// <summary>

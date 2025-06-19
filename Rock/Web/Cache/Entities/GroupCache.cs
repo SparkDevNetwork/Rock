@@ -312,15 +312,41 @@ namespace Rock.Web.Cache
         /// If <see cref="ChatPushNotificationModeOverride"/> set to <see langword="null"/>, then the value of
         /// <see cref="GroupTypeCache.ChatPushNotificationMode"/> will be used.
         /// </summary>
-        /// <returns>The <see cref="ChatNotificationMode"/> to control how pushS notifications are sent for this chat channel.</returns>
+        /// <returns>The <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat channel.</returns>
         internal ChatNotificationMode GetChatPushNotificationMode()
         {
-            if ( this.ChatPushNotificationModeOverride.HasValue )
+            return GetChatPushNotificationMode( ChatPushNotificationModeOverride, GroupTypeId );
+        }
+
+        /// <summary>
+        /// Determines the <see cref="ChatNotificationMode"/> for a chat channel, using an optional override or falling back to the group type's default.
+        /// </summary>
+        /// <param name="chatPushNotificationModeOverride">
+        /// Optional override value. If provided, this value will be returned instead of the default.
+        /// </param>
+        /// <param name="groupTypeId">
+        /// The identifier of the group type used to fetch the default <see cref="ChatNotificationMode"/> from the cache.
+        /// </param>
+        /// <returns>
+        /// The resolved <see cref="ChatNotificationMode"/> to be used for push notifications.
+        /// </returns>
+        /// <remarks>
+        /// If no override is provided and the group type is not found in the cache, defaults to <see cref="ChatNotificationMode.AllMessages"/>.
+        /// </remarks>
+        internal static ChatNotificationMode GetChatPushNotificationMode( ChatNotificationMode? chatPushNotificationModeOverride, int groupTypeId )
+        {
+            if ( chatPushNotificationModeOverride.HasValue )
             {
-                return this.ChatPushNotificationModeOverride.Value;
+                return chatPushNotificationModeOverride.Value;
             }
 
-            return this.GroupType?.ChatPushNotificationMode ?? ChatNotificationMode.AllMessages;
+            var groupTypeCache = GroupTypeCache.Get( groupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.ChatPushNotificationMode;
+            }
+
+            return ChatNotificationMode.AllMessages;
         }
 
         /// <summary>
@@ -525,6 +551,7 @@ namespace Rock.Web.Cache
             IsLeavingChatChannelAllowedOverride = group.IsLeavingChatChannelAllowedOverride;
             IsChatChannelPublicOverride = group.IsChatChannelPublicOverride;
             IsChatChannelAlwaysShownOverride = group.IsChatChannelAlwaysShownOverride;
+            ChatPushNotificationModeOverride = group.ChatPushNotificationModeOverride;
             ChatChannelKey = group.ChatChannelKey;
             GroupMemberRecordSourceValueId = group.GroupMemberRecordSourceValueId;
         }

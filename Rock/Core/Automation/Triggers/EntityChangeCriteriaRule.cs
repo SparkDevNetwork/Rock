@@ -94,7 +94,8 @@ namespace Rock.Core.Automation.Triggers
             {
                 case EntityChangeSimpleChangeType.AnyChange:
                     {
-                        return entry.ModifiedProperties.Contains( _propertyName );
+                        return entry.PreSaveState == EntityContextState.Added
+                            || entry.ModifiedProperties.Contains( _propertyName );
                     }
 
                 case EntityChangeSimpleChangeType.HasSpecificValue:
@@ -106,13 +107,7 @@ namespace Rock.Core.Automation.Triggers
 
                         var currentValue = _propertyInfo.GetValue( entry.Entity );
 
-                        if ( !entry.OriginalValues.TryGetValue( _propertyName, out var originalValue ) )
-                        {
-                            originalValue = null;
-                        }
-
-                        return DoesValueMatch( _updatedValue, currentValue )
-                            || DoesValueMatch( _updatedValue, originalValue );
+                        return DoesValueMatch( _updatedValue, currentValue );
                     }
 
                 case EntityChangeSimpleChangeType.ChangedFromValue:

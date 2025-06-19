@@ -312,7 +312,6 @@ namespace RockWeb.Blocks.Groups
             return childGroups;
         }
 
-        [DotLiquid.LiquidType( "Group", "Role", "IsLeader", "GroupType" )]
         public class GroupInvolvementSummary : LavaDataObject
         {
             public Group Group { get; set; }

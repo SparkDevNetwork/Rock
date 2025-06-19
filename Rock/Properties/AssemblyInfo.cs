@@ -14,22 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Reflection;
 using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-
-// General Information about an assembly is controlled through the following
-// set of attributes. Change these attribute values to modify the information
-// associated with an assembly.
-[assembly: AssemblyTitle( "Rock" )]
-
-// Setting ComVisible to false makes the types in this assembly not visible
-// to COM components.  If you need to access a type in this assembly from
-// COM, set the ComVisible attribute to true on that type.
-[assembly: ComVisible( false )]
-
-// The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid( "a2b98b90-6dcb-4049-ad04-353c9b46a113" )]
 
 [assembly: InternalsVisibleTo( "Rock.AI.Agent" )]
 [assembly: InternalsVisibleTo( "Rock.Blocks" )]
@@ -55,6 +40,8 @@ using System.Runtime.InteropServices;
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Financial" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Lava" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Model" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Transactions" )]
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Transactions.RockQueue" )]
 [assembly: Rock.Logging.RockLoggingCategory( "Rock.Web" )]
 [assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Blocks" )]
 [assembly: Rock.Logging.RockLoggingCategory( "RockWeb.App_Code.TwilioDefaultResponseAsync" )]

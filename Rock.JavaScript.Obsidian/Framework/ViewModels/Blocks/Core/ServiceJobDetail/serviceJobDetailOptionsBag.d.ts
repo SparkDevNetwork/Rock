@@ -22,10 +22,11 @@
 //
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { ServiceJobOptionsBag } from "./serviceJobOptionsBag";
 
 export type ServiceJobDetailOptionsBag = {
     /** Gets or sets the job type options. */
-    jobTypeOptions?: ListItemBag[] | null;
+    jobTypeOptions?: ServiceJobOptionsBag[] | null;
 
     /** Gets or sets the notification status options. */
     notificationStatusOptions?: ListItemBag[] | null;

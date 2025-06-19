@@ -5,6 +5,7 @@
             <EntityTypePicker label="Entity Type"
                               v-model="entityType"
                               showBlankItem
+                              enhanceForLongLists
                               rules="required" />
 
             <CheckBoxList v-model="triggeredOn"
@@ -242,11 +243,14 @@
         updateRefValue(filterMode, toNumberOrNull(props.modelValue[ConfigurationKey.FilterMode]) ?? 0);
         updateRefValue(simpleCriteria, props.modelValue[ConfigurationKey.SimpleCriteria] ?? "");
         updateRefValue(advancedCriteria, props.modelValue[ConfigurationKey.AdvancedCriteria] ?? "");
-        updateRefValue(properties, safeParseJson<string[]>(props.options[OptionKey.Properties]) ?? []);
 
         // If this triggered an entityType change, cancel it since we already
         // have the values we need.
         entityChangeCancellationSource?.cancel();
         entityChangeCancellationSource = null;
+    });
+
+    watch(() => props.options[OptionKey.Properties], () => {
+        properties.value = safeParseJson<string[]>(props.options[OptionKey.Properties]) ?? [];
     });
 </script>

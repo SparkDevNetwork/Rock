@@ -1,0 +1,33 @@
+<Project xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <RockWebPath Condition="'$(RockWebPath)' == ''"></RockWebPath>
+    <CopyToRockWeb Condition="'$(CopyToRockWeb)' == ''">False</CopyToRockWeb>
+  </PropertyGroup>
+
+  <Target Name="_AddRockWebArtifactsToCustomOutput" BeforeTargets="CoreCompile" Condition="'$(CopyToRockWeb)' == 'True' and '$(RockWebPath)' != '' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <ItemGroup>
+      <!--
+      Visual Studio uses this to track when to recompile. If file we will copy to RockWeb
+      is missing or out of date, it will trigger a recompile.
+       -->
+      <UpToDateCheckOutput Include="$(RockWebPath)\Bin\$(TargetName)$(TargetExt)" />
+    </ItemGroup>
+  </Target>
+
+  <Target Name="_CopyArtifactsToRockWebBin" AfterTargets="AfterBuild" Condition="'$(CopyToRockWeb)' == 'True' and '$(RockWebPath)' != '' and '$(TargetFrameworkIdentifier)' == '.NETFramework'">
+    <FindUnderPath Path="$(OutDir)" Files="@(FileWrites)"
+        UpdateToAbsolutePaths="True">
+      <Output TaskParameter="InPath" ItemName="_SourceFilesToCopyToRockWeb"/>
+    </FindUnderPath>
+
+    <ItemGroup>
+      <_FilesToCopyToRockWeb Include="%(_SourceFilesToCopyToRockWeb.Identity)" Condition="!@(_SourceFilesToCopyToRockWeb->EndsWith('.dll.config'))" />
+    </ItemGroup>
+
+    <CopyToRockWeb
+        Source="$(OutDir)"
+        Destination="$(RockWebPath)\Bin"
+        Files="@(_FilesToCopyToRockWeb)"
+        Exclude="$(ExcludeFromRockWebCopy)" />
+  </Target>
+</Project>

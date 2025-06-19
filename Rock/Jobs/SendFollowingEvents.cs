@@ -388,7 +388,6 @@ namespace Rock.Jobs
     /// Helper class for following event notifications
     /// </summary>
     [LavaType( "EventType", "Notices" )]
-    [DotLiquid.LiquidType( "EventType", "Notices" )]
     public class FollowingEventTypeNotices
     {
         /// <summary>

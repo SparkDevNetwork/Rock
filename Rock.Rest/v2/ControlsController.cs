@@ -483,7 +483,8 @@ namespace Rock.Rest.v2
             var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
             var countryCode = options.CountryCode.IsNullOrWhiteSpace() ? defaultCountryCode : options.CountryCode;
 
-            var orgStateCode = globalAttributesCache.OrganizationState;
+            var enableDefaultAddressStateSelection = Rock.Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.ENABLE_DEFAULT_ADDRESS_STATE_SELECTION ).AsBoolean();
+            var orgStateCode = enableDefaultAddressStateSelection ? globalAttributesCache.OrganizationState : string.Empty;
             var defaultStateCode = countryCode == orgCountryCode ? orgStateCode : string.Empty;
 
             // Generate List of Countries
@@ -6301,6 +6302,54 @@ namespace Rock.Rest.v2
 
         #endregion
 
+        #region Icon Picker
+
+        /// <summary>
+        /// Gets the icon libraries (defined values) that match the options sent in the request body.
+        /// </summary>
+        /// <param name="options">The options that describe which icon libraries to load.</param>
+        /// <returns>A List of <see cref="ListItemBag"/> objects that represent a tree of icon libraries.</returns>
+        [HttpPost]
+        [Route( "IconPickerGetIconLibraries" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.OK, Type = typeof( ListItemBag ) )]
+        [ProducesResponseType( HttpStatusCode.NotFound )]
+        [Rock.SystemGuid.RestActionGuid( "2ED04DE5-EBE2-48E1-AED0-ACE8EEB9C84D" )]
+        public IActionResult IconPickerGetIconLibraries( IconPickerGetIconLibrariesOptionsBag options )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var definedType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.ICON_LIBRARIES );
+                var grant = SecurityGrant.FromToken( options.SecurityGrantToken );
+
+                if ( definedType == null || ( !definedType.IsAuthorized( Rock.Security.Authorization.VIEW, RockRequestContext.CurrentPerson ) && grant?.IsAccessGranted( definedType, Security.Authorization.VIEW ) == false ) )
+                {
+                    return NotFound();
+                }
+
+                var definedValues = definedType.DefinedValues
+                    .Where( v =>
+                        (
+                            v.IsAuthorized( Security.Authorization.VIEW, RockRequestContext.CurrentPerson )
+                            || grant?.IsAccessGranted( v, Security.Authorization.VIEW ) == true
+                        )
+                        && v.IsActive )
+                    .OrderBy( v => v.Order )
+                    .ThenBy( v => v.Value )
+                    .Select( v => new ListItemBag
+                    {
+                        Value = v.Description,
+                        Text = v.Value
+                    } )
+                    .ToList();
+
+                return Ok( definedValues );
+            }
+        }
+
+        #endregion
+
         #region Interaction Channel Interaction Component Picker
 
         /// <summary>
@@ -6902,43 +6951,51 @@ namespace Rock.Rest.v2
                 ListItemBag mediaFolderItem = null;
                 ListItemBag mediaElementItem = null;
 
-                // If a media element is specified, get everything based on that
+                // Always fetch the list of media accounts
+                accounts = GetMediaAccounts( rockContext );
+
                 if ( options.MediaElementGuid.HasValue )
                 {
                     mediaElement = GetMediaElementByGuid( ( Guid ) options.MediaElementGuid, rockContext );
-                    mediaFolder = mediaElement.MediaFolder;
-                    mediaAccount = mediaFolder.MediaAccount;
+                    if ( mediaElement != null )
+                    {
+                        mediaFolder = mediaElement.MediaFolder;
+                        mediaAccount = mediaFolder.MediaAccount;
 
-                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
-                    mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
-                    mediaElementItem = new ListItemBag { Text = mediaElement.Name, Value = mediaElement.Guid.ToString() };
+                        mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+                        mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
+                        mediaElementItem = new ListItemBag { Text = mediaElement.Name, Value = mediaElement.Guid.ToString() };
 
-                    accounts = GetMediaAccounts( rockContext );
-                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
-                    elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                        folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                        elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                    }
                 }
                 // Otherwise, if a media folder is specified, get everything based on that, not getting a media element
                 else if ( options.MediaFolderGuid.HasValue )
                 {
                     mediaFolder = GetMediaFolderByGuid( ( Guid ) options.MediaFolderGuid, rockContext );
-                    mediaAccount = mediaFolder.MediaAccount;
+                    if ( mediaFolder != null )
+                    {
+                        mediaAccount = mediaFolder.MediaAccount;
 
-                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
-                    mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
+                        mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
+                        mediaFolderItem = new ListItemBag { Text = mediaFolder.Name, Value = mediaFolder.Guid.ToString() };
 
-                    accounts = GetMediaAccounts( rockContext );
-                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
-                    elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                        accounts = GetMediaAccounts( rockContext );
+                        folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                        elements = GetMediaElementsForFolder( mediaFolder, rockContext );
+                    }
                 }
-                // Otherwise, if a media account is specified, get the account and the lists of accounts and folders
                 else if ( options.MediaAccountGuid.HasValue )
                 {
                     mediaAccount = GetMediaAccountByGuid( ( Guid ) options.MediaAccountGuid, rockContext );
+                    if ( mediaAccount != null )
+                    {
+                        mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
 
-                    mediaAccountItem = new ListItemBag { Text = mediaAccount.Name, Value = mediaAccount.Guid.ToString() };
-
-                    accounts = GetMediaAccounts( rockContext );
-                    folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                        accounts = GetMediaAccounts( rockContext );
+                        folders = GetMediaFoldersForAccount( mediaAccount, rockContext );
+                    }
                 }
 
                 // Some things might be null, but we pass back everything we have
@@ -6947,7 +7004,6 @@ namespace Rock.Rest.v2
                     MediaAccount = mediaAccountItem,
                     MediaFolder = mediaFolderItem,
                     MediaElement = mediaElementItem,
-
                     MediaAccounts = accounts,
                     MediaFolders = folders,
                     MediaElements = elements
@@ -6967,7 +7023,7 @@ namespace Rock.Rest.v2
             var mediaAccountService = new Rock.Model.MediaAccountService( rockContext );
             var mediaAccount = mediaAccountService.Queryable()
                 .Where( a => a.Guid == guid )
-                .First();
+                .FirstOrDefault();
 
             return mediaAccount;
         }
@@ -6984,7 +7040,7 @@ namespace Rock.Rest.v2
             var mediaFolderService = new Rock.Model.MediaFolderService( rockContext );
             var mediaFolder = mediaFolderService.Queryable()
                 .Where( a => a.Guid == guid )
-                .First();
+                .FirstOrDefault();
 
             return mediaFolder;
         }
@@ -7001,7 +7057,7 @@ namespace Rock.Rest.v2
             var mediaElementService = new Rock.Model.MediaElementService( rockContext );
             var mediaElement = mediaElementService.Queryable()
                 .Where( a => a.Guid == guid )
-                .First();
+                .FirstOrDefault();
 
             return mediaElement;
         }
@@ -7161,7 +7217,7 @@ namespace Rock.Rest.v2
             }
 
             var searchedFields = GetMergeFields( options.AdditionalFields, GetPerson() )
-                .Where( mf => mf.Text.Contains( options.SearchTerm ) )
+                .Where( mf => mf.Text.IndexOf( options.SearchTerm, StringComparison.OrdinalIgnoreCase ) >= 0 )
                 .ToList();
 
             return Ok( searchedFields );
@@ -7801,12 +7857,7 @@ namespace Rock.Rest.v2
                 propertyType = propertyType.GetGenericArguments()[0];
             }
 
-            List<PropertyInfo> childProperties = new List<PropertyInfo>();
-
-            if ( EntityTypeCache.Get( propertyType.FullName, false ) != null )
-            {
-                childProperties = Rock.Lava.LavaHelper.GetLavaProperties( propertyType ).Where( p => !parentTypes.Contains( p.PropertyType ) ).ToList();
-            }
+            List<PropertyInfo> childProperties = Rock.Lava.LavaHelper.GetLavaProperties( propertyType ).Where( p => !parentTypes.Contains( p.PropertyType ) ).ToList();
 
             if ( childProperties.Count > 0 && !parentTypes.Contains( propertyType ) )
             {

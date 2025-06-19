@@ -29,7 +29,7 @@ namespace Rock.CheckIn
     /// A person option for the current check-in
     /// </summary>
     [DataContract]
-    public class CheckInPerson : ILavaDataDictionary, Lava.ILiquidizable, IHasAttributesWrapper
+    public class CheckInPerson : ILavaDataDictionary, IHasAttributesWrapper
     {
         /// <summary>
         /// Gets or sets the person.
@@ -374,6 +374,8 @@ namespace Rock.CheckIn
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [LavaHidden]
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object this[object key]
         {
             get
@@ -401,7 +403,16 @@ namespace Rock.CheckIn
         /// <returns></returns>
         public object GetValue( string key )
         {
-            return this[key];
+            switch ( key )
+            {
+                case "FamilyMember": return FamilyMember;
+                case "LastCheckIn": return LastCheckIn;
+                case "FirstTime": return FirstTime;
+                case "SecurityCode": return SecurityCode;
+                case "GroupTypes": return GetGroupTypes( true );
+                case "SelectedOptions": return SelectedOptions;
+                default: return Person[key];
+            }
         }
 
         /// <summary>
@@ -437,6 +448,8 @@ namespace Rock.CheckIn
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public bool ContainsKey( object key )
         {
             var additionalKeys = new List<string> { "FamilyMember", "LastCheckIn", "FirstTime", "SecurityCode", "GroupTypes", "SelectedOptions" };
@@ -458,6 +471,8 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object GetValue( object key )
         {
             return this[key];
@@ -468,6 +483,8 @@ namespace Rock.CheckIn
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return this;
@@ -481,7 +498,6 @@ namespace Rock.CheckIn
     /// Helper class for summarizing the selected check-in
     /// </summary>
     [LavaType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
-    [DotLiquid.LiquidType( "Schedule", "GroupType", "Group", "Location", "GroupTypeConfiguredForLabel" )]
     public class CheckInPersonSummary
     {
         /// <summary>

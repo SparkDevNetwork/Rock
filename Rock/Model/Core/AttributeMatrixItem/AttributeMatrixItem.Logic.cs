@@ -149,7 +149,7 @@ namespace Rock.Model
                 matrixAttributeCache.Name,
                 typeof( Attribute ),
                 matrixAttributeCache.Id,
-                dbContext.GetCurrentPersonAlias()?.Id,
+                dbContext.GetCurrentPersonAliasId(),
                 dbContext.SourceOfChange );
         }
 

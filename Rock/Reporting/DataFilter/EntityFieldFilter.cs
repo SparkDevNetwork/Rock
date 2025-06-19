@@ -32,7 +32,7 @@ namespace Rock.Reporting.DataFilter
     /// <summary>
     /// Abstract class that is used by DataFilters that let a user select a field/attribute of an entity
     /// </summary>
-    public abstract class EntityFieldFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
+    public abstract class EntityFieldFilter : DataFilterComponent, IUpdateSelectionFromRockRequestContext
     {
         /// <summary>
         /// Renders the entity fields controls.
@@ -220,12 +220,26 @@ namespace Rock.Reporting.DataFilter
         }
 
         /// <summary>
-        /// Updates the selection from page parameters if there is a page parameter for the selection
+        /// Updates the selection from page parameters.
         /// </summary>
         /// <param name="selection">The selection.</param>
         /// <param name="rockBlock">The rock block.</param>
         /// <returns></returns>
+        [RockObsolete( "18.0" )]
+        [Obsolete( "This method is obsolete and will be removed in a future version of Rock because the interface that defined it is obsolete." )]
         public virtual string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        {
+            return selection;
+        }
+
+        /// <summary>
+        /// Updates the selection from parameters on the request.
+        /// </summary>
+        /// <param name="selection">The selection.</param>
+        /// <param name="requestContext">The rock request context.</param>
+        /// <param name="rockContext">The rock database context.</param>
+        /// <returns></returns>
+        public virtual string UpdateSelectionFromRockRequestContext( string selection, Rock.Net.RockRequestContext requestContext, RockContext rockContext )
         {
             if ( !string.IsNullOrWhiteSpace( selection ) )
             {
@@ -234,7 +248,7 @@ namespace Rock.Reporting.DataFilter
                 // selection list  is either "FieldName, Comparison, Value(s)" or "FieldName, Value(s)"
                 if ( values.Count == 3 )
                 {
-                    var pageParamValue = rockBlock.PageParameter( values[0] );
+                    var pageParamValue = requestContext.GetPageParameter( values[0] );
                     if ( !string.IsNullOrEmpty( pageParamValue ) )
                     {
                         values[2] = pageParamValue;
@@ -243,7 +257,7 @@ namespace Rock.Reporting.DataFilter
                 }
                 else if ( values.Count == 2 )
                 {
-                    var pageParamValue = rockBlock.PageParameter( values[0] );
+                    var pageParamValue = requestContext.GetPageParameter( values[0] );
                     if ( !string.IsNullOrEmpty( pageParamValue ) )
                     {
                         values[1] = pageParamValue;

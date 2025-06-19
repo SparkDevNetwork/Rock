@@ -14,6 +14,13 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
+using System.Collections.Generic;
+using System.ComponentModel;
+using System.Data.Entity;
+using System.Linq;
+using System.Text;
+using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
@@ -22,13 +29,6 @@ using Rock.Enums.Crm;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data.Entity;
-using System.Linq;
-using System.Text;
-using System.Web.UI.WebControls;
 
 namespace RockWeb.Blocks.Reporting
 {
@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Reporting
         #endregion
 
         #region Fields
-
+        private const string Unknown = "Unknown";
         /// <summary>
         /// The available colors for the charts
         /// </summary>
@@ -141,12 +141,12 @@ namespace RockWeb.Blocks.Reporting
             var rockContext = new RockContext();
             var personService = new PersonService( rockContext );
             //rockContext.Database.Log = sql => System.Diagnostics.Debug.WriteLine( sql );
+            //rockContext.SqlLogging( true );
 
             var personRecordDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid();
             var activeStatusDefinedValueGuid = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid();
 
             IQueryable<PersonViewModel> alivePersonsQry;
-            IQueryable<PersonViewModel> activeAlivePersonsQry;
 
             var giverAnonymousPersonGuid = Rock.SystemGuid.Person.GIVER_ANONYMOUS.AsGuid();
 
@@ -158,24 +158,34 @@ namespace RockWeb.Blocks.Reporting
                     AgeBracket = p.AgeBracket,
                     BirthDate = p.BirthDate,
                     Gender = p.Gender,
-                    IsEmailActive = p.IsEmailActive,
-                    Email = p.Email,
+                    HasActiveEmail = p.IsEmailActive && !string.IsNullOrEmpty( p.Email ),
                     PhotoId = p.PhotoId,
                     PrimaryFamilyId = p.PrimaryFamilyId,
-                    ConnectionStatusValue = new DefinedValueViewModel() { Guid = p.ConnectionStatusValue.Guid, Value = p.ConnectionStatusValue.Value },
+                    ConnectionStatusValueId = p.ConnectionStatusValueId,
                     RecordStatusValueId = p.RecordStatusValueId,
-                    MaritalStatusValue = new DefinedValueViewModel() { Guid = p.MaritalStatusValue.Guid, Value = p.MaritalStatusValue.Value },
-                    RaceValue = new DefinedValueViewModel() { Guid = p.RaceValue.Guid, Value = p.RaceValue.Value },
-                    EthnicityValue = new DefinedValueViewModel() { Guid = p.EthnicityValue.Guid, Value = p.EthnicityValue.Value },
+                    MaritalStatusValueId = p.MaritalStatusValueId,
+                    RaceValueId = p.RaceValueId,
+                    EthnicityValueId = p.EthnicityValueId
                 } );
 
-            activeAlivePersonsQry = alivePersonsQry.Where( p => p.RecordStatusValueId == _activeStatusDefinedValueId );
+            /*
+                6/6/2025 - N.A.
+
+                Converted the activeAlivePersonsQry query result to a ToList() to minimize repeated db calls during counting.
+                This change reduces the number of SQL calls significantly by materializing the result in memory.
+
+                Reason: Reduced database calls from 22+ to 6, improving performance.
+                        Before: _callCounts:22, _callMSTotal:437.476 ms, avg: 19.89 ms
+                        After:  _callCounts:6,  _callMSTotal:178.882 ms, avg: 29.81 ms
+            */
+            var activeAlivePersonsQry = alivePersonsQry.Where( p => p.RecordStatusValueId == _activeStatusDefinedValueId ).ToList();
             var total = activeAlivePersonsQry.Count();
 
             GetDemographics( activeAlivePersonsQry );
             GetInformationStatistics( activeAlivePersonsQry, rockContext, total );
             GetPercentOfActiveIndividualsWithAssessments( rockContext, total );
             GetPercentOfActiveRecords( alivePersonsQry );
+            //rockContext.SqlLogging( false );
         }
 
         /// <summary>
@@ -224,11 +234,15 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetConnectionStatusLava( IEnumerable<PersonViewModel> qry )
         {
-            var dataItems = qry.GroupBy( p => p.ConnectionStatusValue?.Value )
-                .Select( p => new DataItem() { Label = p.Key ?? "Unknown", Value = p.Count().ToString() } )
+            var dataItems = qry.Select( p => new DataItem()
+            {
+                Label = p.ConnectionStatusValueId.HasValue
+                    ? DefinedValueCache.Get( p.ConnectionStatusValueId.Value )?.Value ?? Unknown
+                    : Unknown
+            } ).GroupBy( di => di.Label )
                 .ToList();
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems );
+            return PopulateShortcodeDataItems( PieChartConfig, dataItems.Select( di => new DataItem( di.Key, di.Count().ToString() ) ).ToList() );
         }
 
         /// <summary>
@@ -237,11 +251,15 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetMaritalStatusLava( IEnumerable<PersonViewModel> qry )
         {
-            var dataItems = qry.Select( p => new DataItem() { Label = p.MaritalStatusValue?.Value ?? "Unknown" } )
-                .GroupBy( p => p.Label )
-                .ToList();
+            var dataItems = qry.Select( p => new DataItem()
+            {
+                Label = p.MaritalStatusValueId.HasValue
+                    ? DefinedValueCache.Get( p.MaritalStatusValueId.Value )?.Value ?? Unknown
+                    : Unknown
+            } ).GroupBy( di => di.Label )
+            .ToList();
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems.Select( p => new DataItem( p.Key, p.Count().ToString() ) ).ToList() );
+            return PopulateShortcodeDataItems( PieChartConfig, dataItems.Select( di => new DataItem( di.Key, di.Count().ToString() ) ).ToList() );
         }
 
         /// <summary>
@@ -277,11 +295,11 @@ namespace RockWeb.Blocks.Reporting
             var fiftyFiveAndSixtyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.FiftyFiveToSixtyFour );
             dataItems.Add( new DataItem( "55-64", fiftyFiveAndSixtyFour.ToString() ) );
 
-            var overSixtyFive = peopleWithAgeQry.Count( predicate: p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.SixtyFiveOrOlder);
+            var overSixtyFive = peopleWithAgeQry.Count( predicate: p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.SixtyFiveOrOlder );
             dataItems.Add( new DataItem( ">65", overSixtyFive.ToString() ) );
 
             var unknown = qry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.Unknown );
-            dataItems.Add( new DataItem( "Unknown", unknown.ToString() ) );
+            dataItems.Add( new DataItem( Unknown, unknown.ToString() ) );
 
             return PopulateShortcodeDataItems( PieChartConfig, dataItems );
         }
@@ -292,11 +310,15 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetRaceLava( IEnumerable<PersonViewModel> qry )
         {
-            var dataItems = qry.GroupBy( p => p.RaceValue?.Value )
-                .Select( p => new DataItem() { Label = p.Key ?? "Unknown", Value = p.Count().ToString() } )
-                .ToList();
+            var dataItems = qry.Select( p => new DataItem()
+            {
+                Label = p.RaceValueId.HasValue
+                    ? DefinedValueCache.Get( p.RaceValueId.Value )?.Value ?? Unknown
+                    : Unknown
+            } ).GroupBy( di => di.Label )
+            .ToList();
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems );
+            return PopulateShortcodeDataItems( PieChartConfig, dataItems.Select( di => new DataItem( di.Key, di.Count().ToString() ) ).ToList() );
         }
 
         /// <summary>
@@ -305,11 +327,15 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetEthnicityLava( IEnumerable<PersonViewModel> qry )
         {
-            var dataItems = qry.GroupBy( p => p.EthnicityValue?.Value )
-                .Select( p => new DataItem() { Label = p.Key ?? "Unknown", Value = p.Count().ToString() } )
-                .ToList();
+            var dataItems = qry.Select( p => new DataItem()
+            {
+                Label = p.EthnicityValueId.HasValue
+                    ? DefinedValueCache.Get( p.EthnicityValueId.Value )?.Value ?? Unknown
+                    : Unknown
+            } ).GroupBy( di => di.Label )
+            .ToList();
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems );
+            return PopulateShortcodeDataItems( PieChartConfig, dataItems.Select( di => new DataItem( di.Key, di.Count().ToString() ) ).ToList() );
         }
 
         /// <summary>
@@ -321,38 +347,45 @@ namespace RockWeb.Blocks.Reporting
 
             var dataItems = new List<DataItem>();
 
-            var hasAgeCount = qry.Count( p => p.BirthDate.HasValue );
-            dataItems.Add( new DataItem( "Age", DataItem.GetPercentage( hasAgeCount, total ) ) );
+            // Materialize the necessary flags in one pass
+            var personStats = qry.Select( p => new
+            {
+                p.Id,
+                p.PrimaryFamilyId,
+                HasBirthDate = p.BirthDate.HasValue,
+                HasGender = p.Gender != Gender.Unknown,
+                HasActiveEmail = p.HasActiveEmail,
+                HasMaritalStatus = p.MaritalStatusValueId.HasValue,
+                HasPhoto = p.PhotoId.HasValue
+            } ).ToList();
 
-            var hasGenderCount = qry.Count( p => p.Gender != Gender.Unknown );
-            dataItems.Add( new DataItem( "Gender", DataItem.GetPercentage( hasGenderCount, total ) ) );
-
-            var hasActiveEmailCount = qry.Count( p => p.IsEmailActive && p.Email.IsNotNullOrWhiteSpace() );
-            dataItems.Add( new DataItem( "Active Email", DataItem.GetPercentage( hasActiveEmailCount, total ) ) );
+            dataItems.Add( new DataItem( "Age", DataItem.GetPercentage( personStats.Count( p => p.HasBirthDate ), total ) ) );
+            dataItems.Add( new DataItem( "Gender", DataItem.GetPercentage( personStats.Count( p => p.HasGender ), total ) ) );
+            dataItems.Add( new DataItem( "Active Email", DataItem.GetPercentage( personStats.Count( p => p.HasActiveEmail ), total ) ) );
 
             var mobilePhoneTypeGuid = Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid();
 
-            var personPhoneQry = new PhoneNumberService( rockContext ).Queryable().AsNoTracking().Where( pn => pn.NumberTypeValue.Guid == mobilePhoneTypeGuid );
-            var hasMobilePhoneCount = qry.Join( personPhoneQry, person => person.Id,
-                phoneNumber => phoneNumber.PersonId,
+            var personPhoneQry = new PhoneNumberService( rockContext )
+                .Queryable().AsNoTracking()
+                .Where( pn => pn.NumberTypeValue.Guid == mobilePhoneTypeGuid )
+                .Select( pn => pn.PersonId ); // only fetch needed field
+
+            var hasMobilePhoneCount = qry.Join( personPhoneQry,
+                person => person.Id,
+                phonePersonId => phonePersonId,
                 ( person, phoneNumber ) => new { person, phoneNumber } )
                 .Count();
             dataItems.Add( new DataItem( "Mobile Phone", DataItem.GetPercentage( hasMobilePhoneCount, total ) ) );
 
-            var hasMaritalStatusCount = qry.Count( p => p.MaritalStatusValue?.Value != null );
-            dataItems.Add( new DataItem( "Marital Status", DataItem.GetPercentage( hasMaritalStatusCount, total ) ) );
-
-            var hasPhotoCount = qry.Count( p => p.PhotoId.HasValue );
-            dataItems.Add( new DataItem( "Photo", DataItem.GetPercentage( hasPhotoCount, total ) ) );
-
-            var hasBirthDateCount = qry.Count( p => p.BirthDate.HasValue );
-            dataItems.Add( new DataItem( "Date of Birth", DataItem.GetPercentage( hasBirthDateCount, total ) ) );
+            dataItems.Add( new DataItem( "Marital Status", DataItem.GetPercentage( personStats.Count( p => p.HasMaritalStatus ), total ) ) );
+            dataItems.Add( new DataItem( "Photo", DataItem.GetPercentage( personStats.Count( p => p.HasPhoto ), total ) ) );
+            dataItems.Add( new DataItem( "Date of Birth", DataItem.GetPercentage( personStats.Count( p => p.HasBirthDate ), total ) ) );
 
             var homeLocationTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() ).Id;
 
             // The GroupIds of GroupLocations of type Home
             var grpLocationQry = new GroupLocationService( rockContext ).Queryable().AsNoTracking()
-                .Where( gl=> gl.GroupLocationTypeValueId == homeLocationTypeValueId )
+                .Where( gl => gl.GroupLocationTypeValueId == homeLocationTypeValueId )
                 .Select( gl => new
                 {
                     gl.GroupId,
@@ -427,15 +460,24 @@ namespace RockWeb.Blocks.Reporting
         {
             var dataItems = new List<DataItem>();
             var total = alivePersonsQry.Count();
+            var activeRecordStatuses = DefinedTypeCache
+                .Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS )
+                .DefinedValues
+                .Where( dv => dv.IsActive )
+                .ToList();
 
-            foreach ( var recordStatus in DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS).DefinedValues )
+            var activeStatusIds = activeRecordStatuses.Select( dv => dv.Id ).ToList();
+
+            // Perform single grouped count query
+            var countsByStatus = alivePersonsQry
+                .Where( p => activeStatusIds.Contains( p.RecordStatusValueId ?? 0 ) )
+                .GroupBy( p => p.RecordStatusValueId )
+                .Select( g => new { RecordStatusValueId = g.Key.Value, Count = g.Count() } )
+                .ToDictionary( g => g.RecordStatusValueId, g => g.Count );
+
+            foreach ( var recordStatus in activeRecordStatuses )
             {
-                if ( !recordStatus.IsActive )
-                {
-                    continue;
-                }
-
-                var count = alivePersonsQry.Count( p => p.RecordStatusValueId == recordStatus.Id );
+                countsByStatus.TryGetValue( recordStatus.Id, out int count );
                 dataItems.Add( new DataItem( $"{recordStatus.Value}", DataItem.GetPercentage( count, total ) ) );
             }
 
@@ -461,11 +503,11 @@ namespace RockWeb.Blocks.Reporting
 
             foreach ( var dataItem in dataItems )
             {
-                sb.AppendFormat( dataItemFormat, dataItem.Label, dataItem.Value, GetFillColor( skipCount, dataItem.Label ) ).AppendLine();           
+                sb.AppendFormat( dataItemFormat, dataItem.Label, dataItem.Value, GetFillColor( skipCount, dataItem.Label ) ).AppendLine();
                 // Only skip if a color was used
-                if ( dataItem.Label != "Unknown" )
+                if ( dataItem.Label != Unknown )
                 {
-                    skipCount ++;
+                    skipCount++;
                 }
             }
 
@@ -482,13 +524,13 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetFillColor( int skip, string label )
         {
-            if ( label == "Unknown" )
+            if ( label == Unknown )
             {
                 return "#E7E5E4";
             }
             else
             {
-                return FillColorSource().Skip(skip).FirstOrDefault();
+                return FillColorSource().Skip( skip ).FirstOrDefault();
             }
         }
 
@@ -596,8 +638,8 @@ namespace RockWeb.Blocks.Reporting
                 }
 
                 var asDecimal = decimal.Divide( count, total );
-                var percent = decimal.Round( asDecimal * 100, 1 );
-                return percent.ToString();
+                var percent = ( decimal ) count / total * 100;
+                return percent.ToString( "0.##" ); // 2 decimal places max
             }
         }
 
@@ -608,15 +650,14 @@ namespace RockWeb.Blocks.Reporting
         {
             public int Id { get; set; }
             public int? RecordStatusValueId { get; set; }
-            public DefinedValueViewModel ConnectionStatusValue { get; set; }
-            public DefinedValueViewModel MaritalStatusValue { get; set; }
-            public DefinedValueViewModel RaceValue { get; set; }
-            public DefinedValueViewModel EthnicityValue { get; set; }
+            public int? ConnectionStatusValueId { get; set; }
+            public int? MaritalStatusValueId { get; set; }
+            public int? RaceValueId { get; set; }
+            public int? EthnicityValueId { get; set; }
             public Gender Gender { get; set; }
             public DateTime? BirthDate { get; set; }
             public AgeBracket AgeBracket { get; set; }
-            public bool IsEmailActive { get; set; }
-            public string Email { get; set; }
+            public bool HasActiveEmail { get; set; }
             public int? PhotoId { get; set; }
             public int? PrimaryFamilyId { get; set; }
         }

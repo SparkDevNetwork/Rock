@@ -210,6 +210,11 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
 
             var filterValue = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
 
+            if ( filterValue.Count >= 2 && filterValue[0] == "0" )
+            {
+                filterValue = filterValue.Skip( 1 ).ToList();
+            }
+
             selectionValues.Add( entityField.UniqueName );
             selectionValues = selectionValues.Concat( filterValue ).ToList();
 

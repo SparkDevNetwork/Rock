@@ -23,27 +23,13 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceList
     public class RegistrationInstanceListOptionsBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the current user can view the block.
+        /// Whether to show the wait list column.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if the user can view the block; otherwise, <c>false</c>.
-        /// </value>
-        public bool CanView { get; set; }
+        public bool ShowWaitList { get; set; }
 
         /// <summary>
-        /// Gets or sets a value indicating whether wait list is enabled for the Registration Template.
+        /// The name of the registration instance.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if [wait list is enabled]; otherwise, <c>false</c>.
-        /// </value>
-        public bool WaitListEnabled { get; set; }
-
-        /// <summary>
-        /// Gets or sets the name of the registration template.
-        /// </summary>
-        /// <value>
-        /// The name of the template.
-        /// </value>
-        public string TemplateName { get; set; }
+        public string RegistrationInstanceName { get; set; }
     }
 }

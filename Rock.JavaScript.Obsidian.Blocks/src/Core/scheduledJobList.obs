@@ -150,10 +150,6 @@
     padding: var(--table-cell-padding-y) 0 !important;
 }
 
-.title-right .grid-column-title {
-    text-align: right;
-}
-
 .title-center .grid-column-title {
     text-align: center;
 }

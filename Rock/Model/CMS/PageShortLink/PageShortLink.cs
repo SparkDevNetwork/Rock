@@ -91,6 +91,12 @@ namespace Rock.Model
         [DataMember]
         public int? CategoryId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a value indicating whether the short link is pinned.
+        /// </summary>
+        [DataMember]
+        public bool IsPinned { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties
@@ -123,7 +129,8 @@ namespace Rock.Model
         {
             get
             {
-                string domain = new SiteService( new RockContext() ).GetDefaultDomainUri( this.SiteId ).ToString();
+                string domain = this.Site?.DefaultDomainUri?.ToString()
+                    ?? new SiteService( new RockContext() ).GetDefaultDomainUri( this.SiteId ).ToString();
                 return domain.EnsureTrailingForwardslash() + this.Token;
             }
         }

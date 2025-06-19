@@ -2362,7 +2362,7 @@ namespace RockWeb.Blocks.Event
                     {
                         registrant.FieldValues.AddOrReplace(
                             field.Id,
-                            new FieldValueObject( field, field.PersonFieldType == RegistrationPersonFieldType.FirstName ? CurrentPerson.NickName : CurrentPerson.LastName ) );
+                            new FieldValueObject( field, field.PersonFieldType == RegistrationPersonFieldType.FirstName ? CurrentPerson.FirstName : CurrentPerson.LastName ) );
                     }
                 }
 
