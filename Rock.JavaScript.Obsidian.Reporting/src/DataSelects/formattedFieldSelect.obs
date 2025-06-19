@@ -80,10 +80,6 @@
         }
     });
 
-    watch(sortByProperty, () => {
-        console.log("Sort by property changed to:", sortByProperty.value);
-    });
-
     watch([property, sortByProperty, template], () => {
         const newData = {
             ...props.modelValue,
@@ -105,7 +101,6 @@
             options: JSON.stringify(options)
         });
 
-        // debugger;
         const sortByProperties = safeParseJson<ListItemBag[]>(response?.sortByPropertyBags ?? "[]");
 
         if (Array.isArray(sortByProperties)) {
