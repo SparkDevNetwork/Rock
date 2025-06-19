@@ -40,10 +40,10 @@
     import { computed, PropType, ref, watch } from "vue";
     import NotificationBox from "./notificationBox.obs";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
-    import { uploadBinaryFile } from "@Obsidian/Utility/http";
+    import { uploadBinaryFile, uploadContentFile } from "@Obsidian/Utility/http";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import RockFormField from "./rockFormField.obs";
-    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         /**
@@ -102,6 +102,21 @@
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        isBinaryFile: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+
+        rootFolder: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        uploadPath: {
+            type: String as PropType<string>,
+            default: ""
         }
     });
 
@@ -165,18 +180,29 @@
         uploadErrorMessage.value = "";
 
         try {
-            // Perform the actual file upload using the helper function.
-            const result = await uploadBinaryFile(file, props.binaryFileTypeGuid || BinaryFiletype.Default, {
-                isTemporary: props.uploadAsTemporary,
-                progress: (progress, total, percent) => {
-                    uploadProgressText.value = `${percent}%`;
-                },
-                parentEntityTypeId: props.parentEntityTypeId,
-                parentEntityId: props.parentEntityId,
-                baseUrl: props.uploadUrl
-            });
+            if (props.isBinaryFile) {
+                // Perform the actual file upload using the helper function.
+                const result = await uploadBinaryFile(file, props.binaryFileTypeGuid || BinaryFiletype.Default, {
+                    isTemporary: props.uploadAsTemporary,
+                    progress: (progress, total, percent) => {
+                        uploadProgressText.value = `${percent}%`;
+                    },
+                    parentEntityTypeId: props.parentEntityTypeId,
+                    parentEntityId: props.parentEntityId,
+                    baseUrl: props.uploadUrl
+                });
+                internalValue.value = result;
+            }
+            else {
+                const result = await uploadContentFile(file, props.rootFolder, props.uploadPath, {
+                    progress: (progress, total, percent) => {
+                        uploadProgressText.value = `${percent}%`;
+                    }
+                });
 
-            internalValue.value = result;
+                result.value = newGuid();
+                internalValue.value = result;
+            }
         }
         catch (e) {
             // Show any error message we got.
