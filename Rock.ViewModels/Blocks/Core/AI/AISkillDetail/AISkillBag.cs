@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -17,7 +17,7 @@
 
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Core.AISkillDetail
+namespace Rock.ViewModels.Blocks.Core.AI.AISkillDetail
 {
     /// <summary>
     /// The item details for the AI Skill Detail block.

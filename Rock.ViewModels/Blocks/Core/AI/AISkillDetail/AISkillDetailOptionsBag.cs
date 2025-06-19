@@ -15,19 +15,12 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
-using Rock.ViewModels.Controls;
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Blocks.Core.AIAgentDetail
+namespace Rock.ViewModels.Blocks.Core.AI.AISkillDetail
 {
-    public class GetComponentDefinitionResponseBag
+    /// <summary>
+    /// The additional configuration options for the AI Skill Detail block.
+    /// </summary>
+    public class AISkillDetailOptionsBag
     {
-        public List<ListItemBag> AvailableFunctions { get; set; }
-
-        public Dictionary<string, string> ConfigurationValues { get; set; }
-
-        public DynamicComponentDefinitionBag ComponentDefinition { get; set; }
     }
 }

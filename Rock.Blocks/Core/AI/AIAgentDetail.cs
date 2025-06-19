@@ -29,7 +29,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Core.AIAgentDetail;
+using Rock.ViewModels.Blocks.Core.AI.AIAgentDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     /// </summary>
 
     [DisplayName( "AI Agent Detail" )]
-    [Category( "Core" )]
+    [Category( "Core > AI" )]
     [Description( "Displays the details of a particular ai agent." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]

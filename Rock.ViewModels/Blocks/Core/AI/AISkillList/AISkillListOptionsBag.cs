@@ -15,18 +15,12 @@
 // </copyright>
 //
 
-using Rock.ViewModels.Core.Grid;
-
-namespace Rock.ViewModels.Blocks.Core.AISkillFunctionList
+namespace Rock.ViewModels.Blocks.Core.AI.AISkillList
 {
     /// <summary>
-    /// The additional configuration options for the AI Skill Function List block.
+    /// The additional configuration options for the AI Skill List block.
     /// </summary>
-    public class AISkillFunctionListOptionsBag
+    public class AISkillListOptionsBag
     {
-        /// <summary>
-        /// The data that describes the grid contents.
-        /// </summary>
-        public GridDataBag GridData { get; set; }
     }
 }

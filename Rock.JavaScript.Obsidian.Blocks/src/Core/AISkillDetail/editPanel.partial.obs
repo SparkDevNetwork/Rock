@@ -26,8 +26,8 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import { AISkillBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillDetail/aiSkillBag";
-    import { AISkillDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillDetail/aiSkillDetailOptionsBag";
+    import { AISkillBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillDetail/aiSkillBag";
+    import { AISkillDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillDetail/aiSkillDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({

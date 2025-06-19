@@ -25,7 +25,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Core.AISkillDetail;
+using Rock.ViewModels.Blocks.Core.AI.AISkillDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
@@ -36,7 +36,7 @@ namespace Rock.Blocks.Core
     /// </summary>
 
     [DisplayName( "AI Skill Detail" )]
-    [Category( "Core" )]
+    [Category( "Core > AI" )]
     [Description( "Displays the details of a particular ai skill." )]
     [IconCssClass( "fa fa-question" )]
     [SupportedSiteTypes( Model.SiteType.Web )]

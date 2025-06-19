@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,12 +15,12 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Core.AISkillList
+namespace Rock.ViewModels.Blocks.Core.AI.AIAgentList
 {
     /// <summary>
-    /// The additional configuration options for the AI Skill List block.
+    /// The additional configuration options for the AI Agent List block.
     /// </summary>
-    public class AISkillListOptionsBag
+    public class AIAgentListOptionsBag
     {
     }
 }

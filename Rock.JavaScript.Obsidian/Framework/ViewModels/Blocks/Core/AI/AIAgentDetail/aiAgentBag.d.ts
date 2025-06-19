@@ -22,7 +22,7 @@
 //
 
 import { ModelServiceRole } from "@Obsidian/Enums/Core/AI/Agent/modelServiceRole";
-import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/agentSkillBag";
+import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/agentSkillBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 

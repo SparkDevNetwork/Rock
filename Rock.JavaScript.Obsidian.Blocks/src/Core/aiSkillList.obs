@@ -37,7 +37,7 @@
     import Grid, { TextColumn, textValueFilter, DeleteColumn, SelectColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { AISkillListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillList/aiSkillListOptionsBag";
+    import { AISkillListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillList/aiSkillListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./AISkillList/types.partial";
     import { reactive, ref } from "vue";

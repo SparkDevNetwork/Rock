@@ -125,11 +125,11 @@
     import { FunctionType, FunctionTypeDescription } from "@Obsidian/Enums/Core/AI/Agent/functionType";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
-    import { AISkillFunctionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillFunctionList/aiSkillFunctionListOptionsBag";
+    import { AISkillFunctionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillFunctionList/aiSkillFunctionListOptionsBag";
     import { computed, reactive, ref } from "vue";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
-    import { AISkillFunctionBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillFunctionList/aiSkillFunctionBag";
+    import { AISkillFunctionBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillFunctionList/aiSkillFunctionBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
 

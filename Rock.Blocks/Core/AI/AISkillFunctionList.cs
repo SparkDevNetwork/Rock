@@ -29,8 +29,7 @@ using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Core.AISkillDetail;
-using Rock.ViewModels.Blocks.Core.AISkillFunctionList;
+using Rock.ViewModels.Blocks.Core.AI.AISkillFunctionList;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
@@ -42,14 +41,10 @@ namespace Rock.Blocks.Core
     /// </summary>
 
     [DisplayName( "AI Skill Function List" )]
-    [Category( "Core" )]
+    [Category( "Core > AI" )]
     [Description( "Displays a list of ai skill functions." )]
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
-
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the ai skill function details.",
-        Key = AttributeKey.DetailPage )]
 
     [Rock.SystemGuid.EntityTypeGuid( "fb397310-6bcb-49cd-9ccb-3506046cb14b" )]
     [Rock.SystemGuid.BlockTypeGuid( "1e257602-9c31-4f6c-a362-67912f06e807" )]

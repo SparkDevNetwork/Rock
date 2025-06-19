@@ -15,19 +15,18 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
+using Rock.ViewModels.Core.Grid;
 
-using Rock.ViewModels.Controls;
-using Rock.ViewModels.Utility;
-
-namespace Rock.ViewModels.Blocks.Core.AIAgentDetail
+namespace Rock.ViewModels.Blocks.Core.AI.AISkillFunctionList
 {
-    public class EditSkillResponseBag
+    /// <summary>
+    /// The additional configuration options for the AI Skill Function List block.
+    /// </summary>
+    public class AISkillFunctionListOptionsBag
     {
-        public AgentSkillBag Skill { get; set; }
-
-        public List<ListItemBag> AvailableFunctions { get; set; }
-
-        public DynamicComponentDefinitionBag ComponentDefinition { get; set; }
+        /// <summary>
+        /// The data that describes the grid contents.
+        /// </summary>
+        public GridDataBag GridData { get; set; }
     }
 }

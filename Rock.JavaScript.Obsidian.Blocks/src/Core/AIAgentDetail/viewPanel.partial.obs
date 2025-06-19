@@ -27,10 +27,10 @@
     import { computed, PropType, ref, watch } from "vue";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
-    import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentBag";
-    import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentDetailOptionsBag";
+    import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/aiAgentBag";
+    import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/aiAgentDetailOptionsBag";
     import { ModelServiceRoleDescription } from "@Obsidian/Enums/Core/AI/Agent/modelServiceRole";
-    import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/agentSkillBag";
+    import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/agentSkillBag";
 
     const props = defineProps({
         modelValue: {

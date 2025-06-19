@@ -18,7 +18,7 @@
 using Rock.ViewModels.Utility;
 using Rock.Enums.Core.AI.Agent;
 
-namespace Rock.ViewModels.Blocks.Core.AISkillFunctionList
+namespace Rock.ViewModels.Blocks.Core.AI.AISkillFunctionList
 {
     /// <summary>
     /// The item details for the AI Skill Function List block.

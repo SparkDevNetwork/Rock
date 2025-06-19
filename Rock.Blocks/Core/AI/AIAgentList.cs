@@ -19,36 +19,36 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Rock.AI.Agent;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
-using Rock.ViewModels.Blocks.Core.AISkillList;
+using Rock.ViewModels.Blocks.Core.AI.AIAgentList;
 using Rock.Web.Cache;
-using Rock.Web.Cache.Entities;
 
 namespace Rock.Blocks.Core
 {
     /// <summary>
-    /// Displays a list of ai skills.
+    /// Displays a list of ai agents.
     /// </summary>
 
-    [DisplayName( "AI Skill List" )]
-    [Category( "Core" )]
-    [Description( "Displays a list of ai skills." )]
+    [DisplayName( "AI Agent List" )]
+    [Category( "Core > AI" )]
+    [Description( "Displays a list of ai agents." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
-        Description = "The page that will show the ai skill details.",
+        Description = "The page that will show the ai agent details.",
         Key = AttributeKey.DetailPage )]
 
-    [Rock.SystemGuid.EntityTypeGuid( "8c7daf4b-db53-438a-84c8-4296ba17473b" )]
-    [Rock.SystemGuid.BlockTypeGuid( "39f5c953-0080-441f-a77c-d45676147f91" )]
+    [Rock.SystemGuid.EntityTypeGuid( "35f161d4-de63-49ef-af8a-b67cd7a755c6" )]
+    [Rock.SystemGuid.BlockTypeGuid( "4831074f-7b99-404e-b842-776b74765de5" )]
     [CustomizedGrid]
-    public class AISkillList : RockEntityListBlockType<AISkill>
+    public class AIAgentList : RockEntityListBlockType<AIAgent>
     {
         #region Keys
 
@@ -69,12 +69,12 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new ListBlockBox<AISkillListOptionsBag>();
+            var box = new ListBlockBox<AIAgentListOptionsBag>();
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
-            box.ExpectedRowCount = AISkillCache.All( RockContext ).Count;
+            box.IsDeleteEnabled = true;
+            box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
             box.GridDefinition = builder.BuildDefinition();
@@ -86,9 +86,9 @@ namespace Rock.Blocks.Core
         /// Gets the box options required for the component to render the list.
         /// </summary>
         /// <returns>The options that provide additional details to the block.</returns>
-        private AISkillListOptionsBag GetBoxOptions()
+        private AIAgentListOptionsBag GetBoxOptions()
         {
-            var options = new AISkillListOptionsBag();
+            var options = new AIAgentListOptionsBag();
 
             return options;
         }
@@ -99,7 +99,9 @@ namespace Rock.Blocks.Core
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddEnabled()
         {
-            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            var entity = new AIAgent();
+
+            return entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
         }
 
         /// <summary>
@@ -110,25 +112,26 @@ namespace Rock.Blocks.Core
         {
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "AISkillId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "AIAgentId", "((Key))" )
             };
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<AISkill> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<AIAgent> GetListQueryable( RockContext rockContext )
         {
             return base.GetListQueryable( rockContext );
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<AISkill> GetGridBuilder()
+        protected override GridBuilder<AIAgent> GetGridBuilder()
         {
-            return new GridBuilder<AISkill>()
+            return new GridBuilder<AIAgent>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
-                .AddField( "isCodeType", a => a.CodeEntityTypeId.HasValue );
+                .AddTextField( "role", a => a.GetAdditionalSettings<AgentSettings>().Role.ToString() )
+                .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 
         #endregion
@@ -143,17 +146,17 @@ namespace Rock.Blocks.Core
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            var entityService = new AISkillService( RockContext );
+            var entityService = new AIAgentService( RockContext );
             var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( entity == null )
             {
-                return ActionBadRequest( $"{AISkill.FriendlyTypeName} not found." );
+                return ActionBadRequest( $"{AIAgent.FriendlyTypeName} not found." );
             }
 
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( $"Not authorized to delete {AISkill.FriendlyTypeName}." );
+                return ActionBadRequest( $"Not authorized to delete {AIAgent.FriendlyTypeName}." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

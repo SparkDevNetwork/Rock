@@ -42,8 +42,8 @@
     import { PropType, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
-    import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentBag";
-    import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentDetailOptionsBag";
+    import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/aiAgentBag";
+    import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/aiAgentDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { ModelServiceRole, ModelServiceRoleDescription } from "@Obsidian/Enums/Core/AI/Agent/modelServiceRole";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";

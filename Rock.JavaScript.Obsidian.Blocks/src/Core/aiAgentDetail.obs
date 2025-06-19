@@ -40,8 +40,8 @@
     import { onConfigurationValuesChanged, useConfigurationValues, useEntityDetailBlock, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./AIAgentDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
-    import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentBag";
-    import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/aiAgentDetailOptionsBag";
+    import { AIAgentBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/aiAgentBag";
+    import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/aiAgentDetailOptionsBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const config = useConfigurationValues<DetailBlockBox<AIAgentBag, AIAgentDetailOptionsBag>>();

@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/agentSkillBag";
+import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/agentSkillBag";
 import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 

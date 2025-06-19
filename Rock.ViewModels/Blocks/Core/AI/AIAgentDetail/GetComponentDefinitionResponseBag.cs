@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,12 +15,19 @@
 // </copyright>
 //
 
-namespace Rock.ViewModels.Blocks.Core.AIAgentList
+using System.Collections.Generic;
+
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Core.AI.AIAgentDetail
 {
-    /// <summary>
-    /// The additional configuration options for the AI Agent List block.
-    /// </summary>
-    public class AIAgentListOptionsBag
+    public class GetComponentDefinitionResponseBag
     {
+        public List<ListItemBag> AvailableFunctions { get; set; }
+
+        public Dictionary<string, string> ConfigurationValues { get; set; }
+
+        public DynamicComponentDefinitionBag ComponentDefinition { get; set; }
     }
 }

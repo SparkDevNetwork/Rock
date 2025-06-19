@@ -15,23 +15,20 @@
 // </copyright>
 //
 
-using System;
 using System.Collections.Generic;
 
-namespace Rock.ViewModels.Blocks.Core.AIAgentDetail
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Core.AI.AIAgentDetail
 {
-    public class AgentSkillBag
+    /// <summary>
+    /// The additional configuration options for the AI Agent Detail block.
+    /// </summary>
+    public class AIAgentDetailOptionsBag
     {
-        public Guid Guid { get; set; }
-
-        public Guid SkillGuid { get; set; }
-
-        public string Name { get; set; }
-
-        public string Description { get; set; }
-
-        public List<Guid> EnabledFunctions { get; set; }
-
-        public Dictionary<string, string> ConfigurationValues { get; set; }
+        /// <summary>
+        /// The list of available skills that can be selected.
+        /// </summary>
+        public List<ListItemBag> AvailableSkills { get; set; }
     }
 }

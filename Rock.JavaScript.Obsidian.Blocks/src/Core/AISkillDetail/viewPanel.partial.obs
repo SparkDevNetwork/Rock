@@ -22,8 +22,8 @@
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
     import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
     import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
-    import { AISkillBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillDetail/aiSkillBag";
-    import { AISkillDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AISkillDetail/aiSkillDetailOptionsBag";
+    import { AISkillBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillDetail/aiSkillBag";
+    import { AISkillDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillDetail/aiSkillDetailOptionsBag";
 
     const props = defineProps({
         modelValue: {

@@ -71,9 +71,9 @@
     import { loadDynamicComponentDefinition, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { BasicSuspenseProvider, provideSuspense, useSuspense } from "@Obsidian/Utility/suspense";
-    import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/agentSkillBag";
-    import { EditSkillResponseBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/editSkillResponseBag";
-    import { GetComponentDefinitionResponseBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/getComponentDefinitionResponseBag";
+    import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/agentSkillBag";
+    import { EditSkillResponseBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/editSkillResponseBag";
+    import { GetComponentDefinitionResponseBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AIAgentDetail/getComponentDefinitionResponseBag";
     import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";

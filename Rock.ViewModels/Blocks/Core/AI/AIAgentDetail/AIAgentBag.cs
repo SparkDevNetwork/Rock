@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using Rock.Enums.Core.AI.Agent;
 using Rock.ViewModels.Utility;
 
-namespace Rock.ViewModels.Blocks.Core.AIAgentDetail
+namespace Rock.ViewModels.Blocks.Core.AI.AIAgentDetail
 {
     /// <summary>
     /// The item details for the AI Agent Detail block.
