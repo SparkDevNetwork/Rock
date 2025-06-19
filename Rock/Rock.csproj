@@ -705,10 +705,12 @@
     <Compile Include="AI\Agent\AgentProviderContainer.cs" />
     <Compile Include="AI\Agent\AgentRequestContext.cs" />
     <Compile Include="AI\Agent\AgentSettings.cs" />
+    <Compile Include="AI\Agent\AgentSkillContainer.cs" />
+    <Compile Include="AI\Agent\AgentSkillSettings.cs" />
     <Compile Include="AI\Agent\ContextAnchor.cs" />
     <Compile Include="AI\Agent\IChatAgent.cs" />
     <Compile Include="AI\Agent\IChatAgentBuilder.cs" />
-    <Compile Include="AI\Agent\AgentSkill.cs" />
+    <Compile Include="AI\Agent\AgentSkillComponent.cs" />
     <Compile Include="AI\Agent\PromptInformationSettings.cs" />
     <Compile Include="AI\Agent\SkillConfiguration.cs" />
     <Compile Include="AI\Agent\UsageMetric.cs" />

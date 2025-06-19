@@ -81,37 +81,44 @@ namespace Rock.Web.Cache.Entities
 
         internal List<SkillConfiguration> GetSkillConfigurations( RockContext rockContext )
         {
-            var skills = new AIAgentSkillService( rockContext )
+            var agentSkills = new AIAgentSkillService( rockContext )
                 .Queryable()
+                .Include( aa => aa.AISkill )
                 .Where( aa => aa.AIAgentId == Id )
-                .Select( aa => aa.AISkill )
                 .ToList();
 
             var skillConfigurations = new List<SkillConfiguration>();
 
-            foreach ( var skill in skills )
+            foreach ( var agentSkill in agentSkills )
             {
-                if ( skill.CodeEntityTypeId.HasValue )
+                var agentSkillSettings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
+
+                if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
                 {
-                    var entityType = EntityTypeCache.Get( skill.CodeEntityTypeId.Value, rockContext );
+                    var entityType = EntityTypeCache.Get( agentSkill.AISkill.CodeEntityTypeId.Value, rockContext );
                     var type = entityType?.GetEntityType();
 
                     if ( type != null )
                     {
-                        skillConfigurations.Add( new SkillConfiguration( type ) );
+                        skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.UsageHint, type, agentSkillSettings ) );
                     }
                 }
                 else
                 {
                     var functions = new AISkillFunctionService( rockContext )
                         .Queryable()
-                        .Where( f => f.AISkillId == skill.Id )
+                        .Where( f => f.AISkillId == agentSkill.Id )
                         .ToList();
 
                     var skillFunctions = new List<AgentFunction>();
 
                     foreach ( var function in functions )
                     {
+                        if ( agentSkillSettings.DisabledFunctions?.Contains( function.Guid ) == true )
+                        {
+                            continue;
+                        }
+
                         var prompt = function.GetAdditionalSettings<PromptInformationSettings>();
 
                         var agentFunction = new AgentFunction
@@ -131,7 +138,7 @@ namespace Rock.Web.Cache.Entities
                         skillFunctions.Add( agentFunction );
                     }
 
-                    skillConfigurations.Add( new SkillConfiguration( skill.Name, skill.UsageHint, skillFunctions ) );
+                    skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.UsageHint, skillFunctions ) );
                 }
             }
 

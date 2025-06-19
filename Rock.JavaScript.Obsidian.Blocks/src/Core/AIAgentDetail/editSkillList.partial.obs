@@ -1,0 +1,322 @@
+<template>
+    <h4>Skills</h4>
+
+    <Grid :data="skillGridData"
+          keyField="skillGuid"
+          itemTerm="Skill"
+          light
+          @addItem="onAddSkill">
+        <TextColumn name="name"
+                    field="name"
+                    width="30%" />
+
+        <TextColumn name="description"
+                    field="description"
+                    width="70%">
+            <template #format="{ row }">
+                <div class="text-truncate">
+                    {{ row.description }}
+                </div>
+            </template>
+        </TextColumn>
+
+        <EditColumn @click="onEditSkill" />
+
+        <DeleteColumn disableConfirmation @click="onRemoveSkill" />
+    </Grid>
+
+    <Modal v-model="isSkillModalOpen"
+           title="Skill Details"
+           @save="onSaveSkill"
+           saveText="Save">
+
+        <StaticFormControl v-if="editSkillBag"
+                           label="Skill"
+                           :modelValue="editSkillBag.name ?? 'Unknown Skill'" />
+
+        <DropDownList v-else :modelValue="editSkill"
+                      label="Skill"
+                      :items="props.availableSkills"
+                      rules="required"
+                      :disabled="isSkillLoading"
+                      @update:modelValue="onEditSkillChanged" />
+
+        <TransitionVerticalCollapse>
+            <div v-if="editSkill && !isSkillLoading">
+                <CheckBoxList v-model="editEnabledFunctions"
+                              label="Enabled Functions"
+                              :items="editAvailableFunctions"
+                              horizontal
+                              :repeatColumns="3" />
+
+
+                <DynamicComponent v-if="editSkillComponentDefinition"
+                                  v-model="editSkillComponentData"
+                                  :definition="editSkillComponentDefinition"
+                                  :executeRequest="onExecuteSkillComponentRequest" />
+            </div>
+        </TransitionVerticalCollapse>
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
+    import Grid, { DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { loadDynamicComponentDefinition, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { alert, confirm } from "@Obsidian/Utility/dialogs";
+    import { BasicSuspenseProvider, provideSuspense, useSuspense } from "@Obsidian/Utility/suspense";
+    import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/agentSkillBag";
+    import { EditSkillResponseBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/editSkillResponseBag";
+    import { GetComponentDefinitionResponseBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/getComponentDefinitionResponseBag";
+    import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { computed, PropType, ref, shallowRef } from "vue";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<AgentSkillBag[]>,
+            required: true
+        },
+
+        agentKey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        availableSkills: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: AgentSkillBag[]): void
+    }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const suspense = new BasicSuspenseProvider(useSuspense());
+    provideSuspense(suspense);
+
+    // #region Values
+
+    const skills = useVModelPassthrough(props, "modelValue", emit);
+
+    const isSkillModalOpen = ref(false);
+    const isSkillLoading = ref(false);
+    const editSkillBag = shallowRef<AgentSkillBag | null>(null);
+    const editSkill = ref("");
+    const editAvailableFunctions = ref<ListItemBag[]>([]);
+    const editEnabledFunctions = ref<string[]>([]);
+
+    const editSkillComponentDefinition = ref<DynamicComponentDefinitionBag | null>(null);
+    const editSkillComponentData = ref<Record<string, string>>({});
+
+    // #endregion
+
+    // #region Computed Values
+
+    const skillGridData = computed((): GridDataBag => {
+        return {
+            rows: skills.value
+        };
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the user clicks the "Add Skill" button on the grid. This will
+     * begin the process of adding a new skill to the agent.
+     */
+    async function onAddSkill(): Promise<void> {
+        editSkill.value = "";
+        editSkillBag.value = null;
+        editEnabledFunctions.value = [];
+        editAvailableFunctions.value = [];
+        editSkillComponentDefinition.value = null;
+        editSkillComponentData.value = {};
+        isSkillModalOpen.value = true;
+    }
+
+    /**
+     * Called when the user clicks the edit button on a skill in the grid. This
+     * will open the modal to edit the skill.
+     *
+     * @param key The key of the skill to edit.
+     */
+    async function onEditSkill(key: string): Promise<void> {
+        const skill = skills.value.find(s => s.skillGuid === key);
+
+        if (!skill) {
+            return;
+        }
+
+        editSkill.value = skill.skillGuid;
+        editSkillBag.value = skill;
+        editAvailableFunctions.value = [];
+
+        const result = await invokeBlockAction<EditSkillResponseBag>("EditSkill", {
+            agentSkillGuid: skill.guid
+        });
+
+        if (result.isSuccess && result.data) {
+            editEnabledFunctions.value = result.data.skill?.enabledFunctions ?? [];
+            editAvailableFunctions.value = result.data.availableFunctions ?? [];
+            editSkillComponentDefinition.value = result.data.componentDefinition ?? null;
+            editSkillComponentData.value = result.data.skill?.configurationValues ?? {};
+
+            isSkillModalOpen.value = true;
+        }
+        else {
+            await alert(result.errorMessage || "An error occurred while retrieving the skill.");
+        }
+    }
+
+    /**
+     * Called when the user changes the skill in the dropdown. This will load
+     * the skill and its functions so that the individual can configure it.
+     *
+     * @param value The value of the skill that was selected.
+     */
+    async function onEditSkillChanged(value: string | string[]): Promise<void> {
+        if (typeof value !== "string" || editSkill.value === value) {
+            editSkill.value = "";
+            return;
+        }
+
+        isSkillLoading.value = true;
+
+        editSkill.value = value;
+        editEnabledFunctions.value = [];
+        editAvailableFunctions.value = [];
+        editSkillComponentDefinition.value = null;
+        editSkillComponentData.value = {};
+
+        try {
+            const response = await invokeBlockAction<GetComponentDefinitionResponseBag>("GetSkillComponentDefinition", {
+                skillGuid: editSkill.value
+            });
+
+            if (response.isSuccess && response.data) {
+                editAvailableFunctions.value = response.data.availableFunctions ?? [];
+                editEnabledFunctions.value = editAvailableFunctions.value.map(f => f.value!);
+                editSkillComponentDefinition.value = response.data.componentDefinition ?? null;
+                editSkillComponentData.value = response.data.configurationValues ?? {};
+
+                if (editSkillComponentDefinition.value) {
+                    await loadDynamicComponentDefinition(editSkillComponentDefinition.value);
+                }
+            }
+            else {
+                await alert(response.errorMessage || "An error occurred while retrieving the skill.");
+            }
+        }
+        finally {
+            isSkillLoading.value = false;
+        }
+    }
+
+    /**
+     * Called when the user clicks the save button in the skill modal. This will
+     * save the skill to the agent.
+     */
+    async function onSaveSkill(): Promise<void> {
+        const bag: AgentSkillBag = {
+            ...editSkillBag.value,
+            skillGuid: editSkill.value,
+            enabledFunctions: editEnabledFunctions.value,
+            configurationValues: editSkillComponentData.value,
+        } as AgentSkillBag;
+
+        const response = await invokeBlockAction<AgentSkillBag>("SaveSkill", {
+            key: props.agentKey,
+            bag
+        });
+
+        if (response.isSuccess && response.data) {
+            const newSkills = [...skills.value];
+            const index = newSkills.findIndex(s => s.guid === response.data!.guid);
+
+            if (index >= 0) {
+                newSkills.splice(index, 1, response.data);
+            }
+            else {
+                newSkills.push(response.data);
+            }
+
+            skills.value = newSkills;
+
+            isSkillModalOpen.value = false;
+        }
+        else {
+            await alert(response.errorMessage || "An error occurred while saving the skill.");
+        }
+    }
+
+    /**
+     * Called when the user clicks the delete button on a skill in the grid. This
+     * will remove the skill from the agent.
+     *
+     * @param key The key of the skill to remove.
+     */
+    async function onRemoveSkill(key: string): Promise<void> {
+        const skill = skills.value.find(s => s.skillGuid === key);
+
+        if (!skill) {
+            return;
+        }
+
+        if (!await confirm(`Are you sure you want to remove the skill ${skill.name}?`)) {
+            return;
+        }
+
+        const response = await invokeBlockAction("RemoveSkill", {
+            agentSkillGuid: skill.guid
+        });
+
+        if (response.isSuccess) {
+            skills.value = skills.value.filter(s => s !== skill);
+        }
+        else {
+            await alert(response.errorMessage || "An error occurred while removing the skill.");
+        }
+    }
+
+    /**
+     * Called when the dynamic component needs to execute a request. This
+     * will send the request to the server and return the result.
+     *
+     * @param request The request to send to the server.
+     * @param securityGrantToken The security grant token that the dynamic component is using.
+     *
+     * @returns The response from the server or null if there was an error.
+     */
+    async function onExecuteSkillComponentRequest(request: Record<string, string>, securityGrantToken: string | null): Promise<Record<string, string> | null> {
+        const result = await invokeBlockAction<Record<string, string>>("ExecuteSkillComponentRequest", {
+            skillGuid: editSkill.value,
+            request,
+            securityGrantToken
+        });
+
+        if (result.isSuccess) {
+            return result.data;
+        }
+        else {
+            return null;
+        }
+    }
+
+    // #endregion
+</script>

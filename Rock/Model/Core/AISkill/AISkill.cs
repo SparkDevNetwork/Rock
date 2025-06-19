@@ -97,6 +97,13 @@ namespace Rock.Model
         [DataMember]
         public virtual ICollection<AIAgentSkill> AIAgentSkills { get; set; }
 
+        /// <summary>
+        /// A collection containing the <see cref="AISkillFunction" /> entities
+        /// that represent the functions this skill has.
+        /// </summary>
+        [DataMember]
+        public virtual ICollection<AISkillFunction> AISkillFunctions{ get; set; }
+
         #endregion
 
         #region Public Methods

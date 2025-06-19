@@ -22,6 +22,7 @@
 //
 
 import { ModelServiceRole } from "@Obsidian/Enums/Core/AI/Agent/modelServiceRole";
+import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/Core/AIAgentDetail/agentSkillBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
@@ -66,5 +67,5 @@ export type AIAgentBag = {
      * A collection containing the Rock.Model.AIAgentSkill entities
      * that represent the skills attached to this agent.
      */
-    skills?: ListItemBag[] | null;
+    skills?: AgentSkillBag[] | null;
 };

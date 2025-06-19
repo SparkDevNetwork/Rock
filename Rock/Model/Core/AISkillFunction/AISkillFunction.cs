@@ -118,7 +118,7 @@ namespace Rock.Model
         /// </summary>
         public AISkillFunctionConfiguration()
         {
-            this.HasRequired( a => a.AISkill ).WithMany().HasForeignKey( a => a.AISkillId ).WillCascadeOnDelete( true );
+            this.HasRequired( a => a.AISkill ).WithMany( s => s.AISkillFunctions ).HasForeignKey( a => a.AISkillId ).WillCascadeOnDelete( true );
         }
     }
 

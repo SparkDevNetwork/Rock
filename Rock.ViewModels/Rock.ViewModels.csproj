@@ -161,8 +161,11 @@
     <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailCommunicationTemplateBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailGetPreviewMessageRequestBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailInitializationBox.cs" />
+    <Compile Include="Blocks\Core\AIAgentDetail\AgentSkillBag.cs" />
     <Compile Include="Blocks\Core\AIAgentDetail\AIAgentBag.cs" />
     <Compile Include="Blocks\Core\AIAgentDetail\AIAgentDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Core\AIAgentDetail\EditSkillResponseBag.cs" />
+    <Compile Include="Blocks\Core\AIAgentDetail\GetComponentDefinitionResponseBag.cs" />
     <Compile Include="Blocks\Core\AIAgentList\AIAgentListOptionsBag.cs" />
     <Compile Include="Blocks\Core\AISkillDetail\AISkillBag.cs" />
     <Compile Include="Blocks\Core\AISkillDetail\AISkillDetailOptionsBag.cs" />

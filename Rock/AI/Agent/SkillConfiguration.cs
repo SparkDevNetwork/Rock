@@ -17,8 +17,6 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
-using System.Reflection;
 
 namespace Rock.AI.Agent
 {
@@ -30,9 +28,13 @@ namespace Rock.AI.Agent
 
         public string UsageHint { get; }
 
-        public List<AgentFunction> Functions { get; set; }
+        public List<AgentFunction> Functions { get; } = new List<AgentFunction>();
 
-        public Type NativeType { get; set; }
+        public Type NativeType { get; }
+
+        public List<Guid> DisabledFunctions { get; } = new List<Guid>();
+
+        public Dictionary<string, string> ConfigurationValues { get; } = new Dictionary<string, string>();
 
         public SkillConfiguration( string name, string usageHint, List<AgentFunction> functions )
         {
@@ -41,11 +43,13 @@ namespace Rock.AI.Agent
             Functions = functions ?? new List<AgentFunction>();
         }
 
-        public SkillConfiguration( Type nativeType )
+        public SkillConfiguration( string name, string usageHint, Type nativeType, AgentSkillSettings agentSkillSettings )
         {
-            Name = nativeType.Name.SplitCase();
-            UsageHint = nativeType.GetCustomAttribute<DescriptionAttribute>()?.Description ?? string.Empty;
+            Name = name;
+            UsageHint = usageHint;
             NativeType = nativeType;
+            DisabledFunctions = agentSkillSettings.DisabledFunctions ?? new List<Guid>();
+            ConfigurationValues = agentSkillSettings.ConfigurationValues ?? new Dictionary<string, string>();
         }
     }
 }

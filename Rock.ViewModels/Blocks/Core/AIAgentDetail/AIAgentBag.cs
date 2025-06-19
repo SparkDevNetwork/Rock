@@ -31,7 +31,7 @@ namespace Rock.ViewModels.Blocks.Core.AIAgentDetail
         /// A collection containing the Rock.Model.AIAgentSkill entities
         /// that represent the skills attached to this agent.
         /// </summary>
-        public List<ListItemBag> Skills { get; set; }
+        public List<AgentSkillBag> Skills { get; set; }
 
         /// <summary>
         /// The binary file that contains the image to use as the avatar to

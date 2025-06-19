@@ -179,6 +179,10 @@
       <Project>{8820CD93-70EE-496D-B17B-0C4C68DD4957}</Project>
       <Name>Rock.Lava.Shared</Name>
     </ProjectReference>
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
+      <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
+      <Name>Rock.ViewModels</Name>
+    </ProjectReference>
     <ProjectReference Include="..\Rock\Rock.csproj">
       <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
       <Name>Rock</Name>

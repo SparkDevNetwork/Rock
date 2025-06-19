@@ -56,11 +56,11 @@ namespace Rock.Model
 
             if ( skillType.GetConstructor( Type.EmptyTypes ) != null )
             {
-                AgentSkill instance;
+                AgentSkillComponent instance;
 
                 try
                 {
-                    instance = ( AgentSkill ) Activator.CreateInstance( skillType );
+                    instance = ( AgentSkillComponent ) Activator.CreateInstance( skillType );
                 }
                 catch
                 {

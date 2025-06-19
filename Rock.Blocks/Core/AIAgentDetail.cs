@@ -20,6 +20,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.Extensions.DependencyInjection;
+
 using Rock.AI.Agent;
 using Rock.Attribute;
 using Rock.Constants;
@@ -66,11 +68,35 @@ namespace Rock.Blocks.Core
 
         #endregion Keys
 
+        #region Fields
+
+        /// <summary>
+        /// The container that will be used to access the agent skill components.
+        /// </summary>
+        private readonly AgentSkillContainer _agentSkillContainer;
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AIAgentDetail"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The provider for our required services.</param>
+        public AIAgentDetail( IServiceProvider serviceProvider )
+        {
+            _agentSkillContainer = serviceProvider.GetRequiredService<AgentSkillContainer>();
+        }
+
+        #endregion
+
         #region Methods
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
+            _agentSkillContainer.RegisterComponents();
+
             var box = new DetailBlockBox<AIAgentBag, AIAgentDetailOptionsBag>();
 
             SetBoxInitialEntityState( box );
@@ -91,7 +117,14 @@ namespace Rock.Blocks.Core
         {
             var options = new AIAgentDetailOptionsBag
             {
-                AvailableSkills = AISkillCache.All().ToListItemBagList()
+                AvailableSkills = AISkillCache.All()
+                    .Select( s => new ListItemBag
+                    {
+                        Value = s.Guid.ToString(),
+                        Text = s.Name,
+                        Category = s.Description
+                    } )
+                    .ToList()
             };
 
             return options;
@@ -174,9 +207,6 @@ namespace Rock.Blocks.Core
             return new AIAgentBag
             {
                 IdKey = entity.IdKey,
-                Skills = entity.AIAgentSkills
-                    .Select( s => s.AISkill )
-                    .ToListItemBagList(),
                 AvatarBinaryFile = entity.AvatarBinaryFile.ToListItemBag(),
                 Description = entity.Description,
                 Name = entity.Name,
@@ -195,6 +225,10 @@ namespace Rock.Blocks.Core
 
             var bag = GetCommonEntityBag( entity );
 
+            bag.Skills = entity.AIAgentSkills
+                .Select( s => GetSkillBag( s, false ) )
+                .ToList();
+
             return bag;
         }
 
@@ -207,6 +241,49 @@ namespace Rock.Blocks.Core
             }
 
             var bag = GetCommonEntityBag( entity );
+
+            return bag;
+        }
+
+        /// <summary>
+        /// Gets the bag that will represent an agent skill in the UI. This is used
+        /// when the block is in view mode to allow the configuration of skills that
+        /// should be attached to the agent.
+        /// </summary>
+        /// <param name="agentSkill">The record that links the agent to the skill.</param>
+        /// <param name="isEditing"><c>true</c> if we need a bag for editing the linkage data.</param>
+        /// <returns>A bag that represents the agent skill.</returns>
+        private AgentSkillBag GetSkillBag( AIAgentSkill agentSkill, bool isEditing )
+        {
+            var bag = new AgentSkillBag
+            {
+                Guid = agentSkill.Guid,
+                SkillGuid = agentSkill.AISkill.Guid,
+                Name = agentSkill.AISkill.Name,
+                Description = agentSkill.AISkill.Description
+            };
+
+            if ( isEditing )
+            {
+                var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
+
+                bag.EnabledFunctions = agentSkill.AISkill
+                    .AISkillFunctions
+                    .Select( f => f.Guid )
+                    .Where( g => !settings.DisabledFunctions.Contains( g ) )
+                    .ToList();
+
+                if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
+                {
+                    var entityType = EntityTypeCache.Get( agentSkill.AISkill.CodeEntityTypeId.Value, RockContext );
+                    var skill = _agentSkillContainer.CreateInstance( entityType.Guid );
+
+                    if ( skill != null )
+                    {
+                        bag.ConfigurationValues = skill.GetPublicConfiguration( settings.ConfigurationValues ?? new Dictionary<string, string>(), RockContext, RequestContext );
+                    }
+                }
+            }
 
             return bag;
         }
@@ -294,33 +371,6 @@ namespace Rock.Blocks.Core
             return true;
         }
 
-        /// <summary>
-        /// Updates the linked skills for the agent based on the provided skill bags.
-        /// </summary>
-        /// <param name="agent">The agent to link the skills to.</param>
-        /// <param name="skillBags">The bags that represent with skills should be linked.</param>
-        private void UpdateLinkedSkills( AIAgent agent, List<ListItemBag> skillBags )
-        {
-            var agentSkillService = new AIAgentSkillService( RockContext );
-            var skillService = new AISkillService( RockContext );
-            var skillBagGuids = skillBags.Select( s => s.Value.AsGuid() ).ToList();
-            var existingSkillGuids = agent.AIAgentSkills.Select( s => s.AISkill.Guid ).ToList();
-            var newSkillGuids = skillBagGuids.Where( g => !existingSkillGuids.Contains( g ) );
-
-            // Remove any existing skills that are not in the new list.
-            agentSkillService.DeleteRange( agent.AIAgentSkills.Where( s => !skillBagGuids.Contains( s.AISkill.Guid ) ) );
-
-            // Add any new skills that are not already linked.
-            foreach ( var skillGuid in newSkillGuids )
-            {
-                agentSkillService.Add( new AIAgentSkill
-                {
-                    AIAgentId = agent.Id,
-                    AISkillId = skillService.GetId( skillGuid ).Value
-                } );
-            }
-        }
-
         #endregion
 
         #region Block Actions
@@ -377,17 +427,7 @@ namespace Rock.Blocks.Core
 
             var isNew = entity.Id == 0;
 
-            RockContext.WrapTransaction( () =>
-            {
-                RockContext.SaveChanges();
-
-                if ( box.IsValidProperty( nameof( box.Bag.Skills ) ) )
-                {
-                    UpdateLinkedSkills( entity, box.Bag.Skills );
-
-                    RockContext.SaveChanges();
-                }
-            } );
+            RockContext.SaveChanges();
 
             if ( isNew )
             {
@@ -402,7 +442,7 @@ namespace Rock.Blocks.Core
             {
                 entity = new AIAgentService( rockContext2 ).Get( entity.Id );
 
-                var bag = GetEntityBagForEdit( entity );
+                var bag = GetEntityBagForView( entity );
 
                 return ActionOk( new ValidPropertiesBox<AIAgentBag>
                 {
@@ -436,6 +476,176 @@ namespace Rock.Blocks.Core
             RockContext.SaveChanges();
 
             return ActionOk( this.GetParentPageUrl() );
+        }
+
+        #endregion
+
+        #region Agent Skill Block Actions
+
+        /// <summary>
+        /// Starts an edit operation of an existing agent skill. This will return
+        /// the data required to open the UI for editing.
+        /// </summary>
+        /// <param name="agentSkillGuid">The unique identifier of the agent skill record.</param>
+        /// <returns>A bag that contains the data required to edit the skill configuration.</returns>
+        [BlockAction]
+        public BlockActionResult EditSkill( Guid agentSkillGuid )
+        {
+            var agentSkillService = new AIAgentSkillService( RockContext );
+            var agentSkill = agentSkillService.Get( agentSkillGuid );
+            var response = new EditSkillResponseBag();
+
+            if ( agentSkill.AISkill.CodeEntityType != null )
+            {
+                var component = _agentSkillContainer.CreateInstance( agentSkill.AISkill.CodeEntityType.Guid );
+                var definition = component?.GetComponentDefinition( new Dictionary<string, string>(), RockContext, RequestContext );
+
+                response.ComponentDefinition = definition;
+            }
+
+            response.Skill = GetSkillBag( agentSkill, true );
+            response.AvailableFunctions = agentSkill.AISkill.AISkillFunctions
+                .ToListItemBagList();
+
+            return ActionOk( response );
+        }
+
+        /// <summary>
+        /// Removes a skill from the agent. This will delete the <see cref="AIAgentSkill"/>
+        /// record, not the <see cref="AISkill"/> itself.
+        /// </summary>
+        /// <param name="agentSkillGuid">The unique identifier of the agent skill to be removed.</param>
+        /// <returns>A response that indicates if the skill was removed or not.</returns>
+        [BlockAction]
+        public BlockActionResult RemoveSkill( Guid agentSkillGuid )
+        {
+            var agentSkillService = new AIAgentSkillService( RockContext );
+            var agentSkill = agentSkillService.Get( agentSkillGuid );
+
+            if ( agentSkill == null )
+            {
+                return ActionNotFound( "That skill was not found." );
+            }
+
+            agentSkillService.Delete( agentSkill );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        /// <summary>
+        /// Saves the skill configuration for the agent. This will create a new
+        /// <see cref="AIAgentSkill"/> record if required, otherwise an existing
+        /// one will be updated.
+        /// </summary>
+        /// <param name="key">The key that identifies the agent the skill should be attached to.</param>
+        /// <param name="bag">The configuration data for the skill.</param>
+        /// <returns>A bag that represents the skill for viewing purposes.</returns>
+        [BlockAction]
+        public BlockActionResult SaveSkill( string key, AgentSkillBag bag )
+        {
+            var agentSkillService = new AIAgentSkillService( RockContext );
+            var skillService = new AISkillService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var agent, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            var agentSkill = agentSkillService.Get( bag.Guid );
+
+            if ( agentSkill == null )
+            {
+                var skill = skillService.Get( bag.SkillGuid );
+
+                agentSkill = new AIAgentSkill
+                {
+                    AIAgentId = agent.Id,
+                    AISkillId = skill.Id,
+                    AISkill = skill
+                };
+
+                agentSkillService.Add( agentSkill );
+            }
+
+            var settings = agentSkill.GetAdditionalSettings<AgentSkillSettings>();
+
+            settings.DisabledFunctions = agentSkill.AISkill
+                .AISkillFunctions
+                .Select( f => f.Guid )
+                .Where( g => !bag.EnabledFunctions.Contains( g ) )
+                .ToList();
+
+            if ( agentSkill.AISkill.CodeEntityTypeId.HasValue )
+            {
+                var entityType = EntityTypeCache.Get( agentSkill.AISkill.CodeEntityTypeId.Value, RockContext );
+                var skill = _agentSkillContainer.CreateInstance( entityType.Guid );
+
+                if ( skill != null )
+                {
+                    settings.ConfigurationValues = skill.GetPrivateConfiguration( bag.ConfigurationValues ?? new Dictionary<string, string>(), RockContext, RequestContext );
+                }
+            }
+
+            agentSkill.SetAdditionalSettings( settings );
+
+            RockContext.SaveChanges();
+
+            return ActionOk( GetSkillBag( agentSkill, false ) );
+        }
+
+        /// <summary>
+        /// Gets the <see cref="DynamicComponentDefinitionBag"/> that describes
+        /// the UI component that will handle the configuration of the skill.
+        /// </summary>
+        /// <param name="skillGuid">The unique identifier of the skill.</param>
+        /// <returns>A bag that contains the component definition.</returns>
+        [BlockAction]
+        public BlockActionResult GetSkillComponentDefinition( Guid skillGuid )
+        {
+            var skill = new AISkillService( RockContext ).Get( skillGuid );
+            var response = new GetComponentDefinitionResponseBag();
+
+            if ( skill.CodeEntityType != null )
+            {
+                var component = _agentSkillContainer.CreateInstance( skill.CodeEntityType.Guid );
+                var definition = component?.GetComponentDefinition( new Dictionary<string, string>(), RockContext, RequestContext );
+
+                response.ComponentDefinition = definition;
+                response.ConfigurationValues = component?.GetPublicConfiguration( new Dictionary<string, string>(), RockContext, RequestContext );
+            }
+
+            response.AvailableFunctions = skill.AISkillFunctions
+                .ToListItemBagList();
+
+            return ActionOk( response );
+        }
+
+        /// <summary>
+        /// Executes a request from the UI component to be processed by the
+        /// server component. This is used to load additional information after
+        /// the component has been initialized.
+        /// </summary>
+        /// <param name="skillGuid">The unique identifier of the skill.</param>
+        /// <param name="request">The object that describes the parameters of the request.</param>
+        /// <param name="securityGrantToken">The security grant token that was created when the component was initialized.</param>
+        /// <returns>The response from the server component.</returns>
+        [BlockAction]
+        public BlockActionResult ExecuteSkillComponentRequest( Guid skillGuid, Dictionary<string, string> request, string securityGrantToken )
+        {
+            var skill = new AISkillService( RockContext ).Get( skillGuid );
+
+            if ( skill.CodeEntityType == null )
+            {
+                return ActionOk( ( Dictionary<string, string> ) null );
+            }
+
+            var securityGrant = SecurityGrant.FromToken( securityGrantToken ) ?? new SecurityGrant();
+            var component = _agentSkillContainer.CreateInstance( skill.CodeEntityType.Guid );
+
+            var result = component?.ExecuteComponentRequest( request, securityGrant, RockContext, RequestContext );
+
+            return ActionOk( result );
         }
 
         #endregion

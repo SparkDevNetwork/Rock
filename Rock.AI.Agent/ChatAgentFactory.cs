@@ -17,11 +17,9 @@
 
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 using System.Text.Json;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -30,7 +28,6 @@ using Microsoft.SemanticKernel;
 using Rock.Data;
 using Rock.Enums.Core.AI.Agent;
 using Rock.Logging;
-using Rock.Model;
 using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Web.Cache.Entities;
@@ -151,24 +148,17 @@ namespace Rock.AI.Agent
         private void LoadNativeSkills( KernelPluginCollection pluginCollection, IServiceProvider serviceProvider )
         {
             // Register native skills
-            var skillTypes = _agentConfiguration.Skills
-                .Select( s => s.NativeType )
-                .Where( t => t != null )
+            var nativeSkills = _agentConfiguration.Skills
+                .Where( s => s.NativeType != null )
                 .ToList();
 
-            foreach ( var type in skillTypes )
+            foreach ( var skillConfiguration in nativeSkills )
             {
-                var skillGuid = type.GetCustomAttribute<AgentSkillGuidAttribute>()?.Guid;
-
-                if ( !skillGuid.HasValue )
-                {
-                    continue;
-                }
-
-                var skill = ( AgentSkill ) ActivatorUtilities.CreateInstance( serviceProvider, type );
-                var skillDescription = type.GetCustomAttribute<DescriptionAttribute>( inherit: true )?.Description;
-                var methods = type.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static );
+                var skill = ( AgentSkillComponent ) ActivatorUtilities.CreateInstance( serviceProvider, skillConfiguration.NativeType );
+                var methods = skillConfiguration.NativeType.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static );
                 var pluginFunctions = new List<KernelFunction>();
+
+                skill.SetConfigurationValues( skillConfiguration.ConfigurationValues );
 
                 // Register the C# method functions.
                 foreach ( var method in methods )
@@ -181,6 +171,11 @@ namespace Rock.AI.Agent
                     var functionGuid = method.GetCustomAttribute<AgentFunctionGuidAttribute>()?.Guid;
 
                     if ( !functionGuid.HasValue )
+                    {
+                        continue;
+                    }
+
+                    if ( skillConfiguration.DisabledFunctions.Contains( functionGuid.Value ) )
                     {
                         continue;
                     }
@@ -201,7 +196,7 @@ namespace Rock.AI.Agent
                     .DistinctBy( kf => kf.Name );
 
                 // Register the plug-in with the native and semantic functions.
-                var plugin = KernelPluginFactory.CreateFromFunctions( type.Name, skillDescription, distinctFunctions );
+                var plugin = KernelPluginFactory.CreateFromFunctions( skillConfiguration.Name, skillConfiguration.UsageHint, distinctFunctions );
                 pluginCollection.Add( plugin );
             }
         }

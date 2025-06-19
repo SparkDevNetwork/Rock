@@ -20,7 +20,6 @@ using System.Collections.Generic;
 using System.ComponentModel.Composition;
 using System.Linq;
 
-using Rock.AI.Provider;
 using Rock.Extension;
 
 namespace Rock.AI.Agent
