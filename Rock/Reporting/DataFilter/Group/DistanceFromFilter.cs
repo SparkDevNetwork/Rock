@@ -86,16 +86,17 @@ namespace Rock.Reporting.DataFilter.Group
             var data = new Dictionary<string, string>();
             string[] selectionValues = selection.Split( '|' );
 
+            var locationTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                .DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value );
+
+            var locationTypeBags = locationTypes.ToListItemBagList();
+
+            data.AddOrReplace( "locationTypes", locationTypeBags.ToCamelCaseJson( false, true ) );
+
             if ( selectionValues.Length >= 3 )
             {
-                var locationTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
-                    .DefinedValues
-                    .OrderBy( a => a.Order )
-                    .ThenBy( a => a.Value );
-
-                var locationTypeBags = locationTypes.ToListItemBagList();
-
-                data.AddOrReplace( "locationTypes", locationTypeBags.ToCamelCaseJson( false, true ) );
                 data.AddOrReplace( "locationTypeGuid", selectionValues[0] );
 
                 var selectedLocation = new LocationService( rockContext ).Get( selectionValues[1].AsGuid() );
