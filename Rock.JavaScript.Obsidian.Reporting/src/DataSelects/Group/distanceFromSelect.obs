@@ -1,5 +1,5 @@
 <template>
-    <LocationPicker v-model="location" label="Location" />TEST
+    <LocationPicker v-model="location" label="Location" />
     <DropDownList v-model="addressType" :items="addressTypes" label="Address Type" showBlankItem />
 </template>
 
