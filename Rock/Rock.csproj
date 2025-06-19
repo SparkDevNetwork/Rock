@@ -1816,6 +1816,7 @@
     <Compile Include="Plugin\HotFixes\249_Fix_spCrm_FamilyAnalyticsAttendance.cs" />
     <Compile Include="Plugin\HotFixes\248_MigrationRollupsForV17_1_2.cs" />
     <Compile Include="Plugin\HotFixes\247_UpdateLayoutBlockListNamingObsidian.cs" />
+    <Compile Include="Plugin\HotFixes\253_UpdateLavaChartShortcode.cs" />
     <Compile Include="Plugin\HotFixes\252_MigrationRollupsForV17_2_0.cs" />
     <Compile Include="Plugin\HotFixes\251_MigrationRollupsForV17_1.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
