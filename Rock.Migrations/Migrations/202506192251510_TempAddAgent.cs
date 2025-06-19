@@ -19,12 +19,265 @@ namespace Rock.Migrations
     /// <summary>
     ///
     /// </summary>
-    public partial class TempAddAgentPagesAndBlocks : Rock.Migrations.RockMigration
+    public partial class TempAddAgent : Rock.Migrations.RockMigration
     {
         /// <summary>
         /// Operations to be performed during the upgrade process.
         /// </summary>
         public override void Up()
+        {
+            SchemaChangesUp();
+            PagesAndBlocksUp();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            PagesAndBlocksDown();
+            SchemaChangesDown();
+        }
+
+        private void SchemaChangesUp()
+        {
+            CreateTable(
+                "dbo.AIAgentSessionAnchor",
+                c => new
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    AIAgentSessionId = c.Int( nullable: false ),
+                    AddedDateTime = c.DateTime( nullable: false ),
+                    RemovedDateTime = c.DateTime(),
+                    EntityTypeId = c.Int( nullable: false ),
+                    EntityId = c.Int( nullable: false ),
+                    Name = c.String( maxLength: 100 ),
+                    IsActive = c.Boolean( nullable: false ),
+                    LastRefreshedDateTime = c.DateTime( nullable: false ),
+                    PayloadJson = c.String(),
+                    AdditionalSettingsJson = c.String(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.AIAgentSession", t => t.AIAgentSessionId, cascadeDelete: true )
+                .ForeignKey( "dbo.EntityType", t => t.EntityTypeId )
+                .Index( t => t.AIAgentSessionId )
+                .Index( t => t.EntityTypeId )
+                .Index( t => t.Guid, unique: true );
+
+            CreateTable(
+                "dbo.AIAgentSession",
+                c => new
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    AIAgentId = c.Int( nullable: false ),
+                    PersonAliasId = c.Int( nullable: false ),
+                    Name = c.String( maxLength: 100 ),
+                    RelatedEntityTypeId = c.Int(),
+                    RelatedEntityId = c.Int(),
+                    StartDateTime = c.DateTime( nullable: false ),
+                    LastMessageDateTime = c.DateTime( nullable: false ),
+                    AdditionalSettingsJson = c.String(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.AIAgent", t => t.AIAgentId, cascadeDelete: true )
+                .ForeignKey( "dbo.PersonAlias", t => t.PersonAliasId )
+                .ForeignKey( "dbo.EntityType", t => t.RelatedEntityTypeId, cascadeDelete: true )
+                .Index( t => t.AIAgentId )
+                .Index( t => t.PersonAliasId )
+                .Index( t => t.RelatedEntityTypeId )
+                .Index( t => t.Guid, unique: true );
+
+            CreateTable(
+                "dbo.AIAgent",
+                c => new
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    Name = c.String( nullable: false, maxLength: 100 ),
+                    Description = c.String(),
+                    AvatarBinaryFileId = c.Int(),
+                    Persona = c.String(),
+                    AdditionalSettingsJson = c.String(),
+                    CreatedDateTime = c.DateTime(),
+                    ModifiedDateTime = c.DateTime(),
+                    CreatedByPersonAliasId = c.Int(),
+                    ModifiedByPersonAliasId = c.Int(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.BinaryFile", t => t.AvatarBinaryFileId )
+                .ForeignKey( "dbo.PersonAlias", t => t.CreatedByPersonAliasId )
+                .ForeignKey( "dbo.PersonAlias", t => t.ModifiedByPersonAliasId )
+                .Index( t => t.AvatarBinaryFileId )
+                .Index( t => t.CreatedByPersonAliasId )
+                .Index( t => t.ModifiedByPersonAliasId )
+                .Index( t => t.Guid, unique: true );
+
+            CreateTable(
+                "dbo.AIAgentSkill",
+                c => new
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    AIAgentId = c.Int( nullable: false ),
+                    AISkillId = c.Int( nullable: false ),
+                    AdditionalSettingsJson = c.String(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.AIAgent", t => t.AIAgentId, cascadeDelete: true )
+                .ForeignKey( "dbo.AISkill", t => t.AISkillId, cascadeDelete: true )
+                .Index( t => t.AIAgentId )
+                .Index( t => t.AISkillId )
+                .Index( t => t.Guid, unique: true );
+
+            CreateTable(
+                "dbo.AISkill",
+                c => new
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    Name = c.String( nullable: false, maxLength: 100 ),
+                    Description = c.String(),
+                    UsageHint = c.String(),
+                    CodeEntityTypeId = c.Int( nullable: false ),
+                    AdditionalSettingsJson = c.String(),
+                    CreatedDateTime = c.DateTime(),
+                    ModifiedDateTime = c.DateTime(),
+                    CreatedByPersonAliasId = c.Int(),
+                    ModifiedByPersonAliasId = c.Int(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.EntityType", t => t.CodeEntityTypeId )
+                .ForeignKey( "dbo.PersonAlias", t => t.CreatedByPersonAliasId )
+                .ForeignKey( "dbo.PersonAlias", t => t.ModifiedByPersonAliasId )
+                .Index( t => t.CodeEntityTypeId )
+                .Index( t => t.CreatedByPersonAliasId )
+                .Index( t => t.ModifiedByPersonAliasId )
+                .Index( t => t.Guid, unique: true );
+
+            CreateTable(
+                "dbo.AISkillFunction",
+                c => new
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    AISkillId = c.Int( nullable: false ),
+                    Name = c.String( nullable: false, maxLength: 100 ),
+                    Description = c.String(),
+                    UsageHint = c.String(),
+                    FunctionType = c.Int( nullable: false ),
+                    AdditionalSettingsJson = c.String(),
+                    CreatedDateTime = c.DateTime(),
+                    ModifiedDateTime = c.DateTime(),
+                    CreatedByPersonAliasId = c.Int(),
+                    ModifiedByPersonAliasId = c.Int(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.AISkill", t => t.AISkillId, cascadeDelete: true )
+                .ForeignKey( "dbo.PersonAlias", t => t.CreatedByPersonAliasId )
+                .ForeignKey( "dbo.PersonAlias", t => t.ModifiedByPersonAliasId )
+                .Index( t => t.AISkillId )
+                .Index( t => t.CreatedByPersonAliasId )
+                .Index( t => t.ModifiedByPersonAliasId )
+                .Index( t => t.Guid, unique: true );
+
+            CreateTable(
+                "dbo.AIAgentSessionHistory",
+                c => new
+                {
+                    Id = c.Int( nullable: false, identity: true ),
+                    AIAgentSessionId = c.Int( nullable: false ),
+                    MessageRole = c.Int( nullable: false ),
+                    MessageDateTime = c.DateTime( nullable: false ),
+                    Message = c.String(),
+                    IsCurrentlyInContext = c.Boolean( nullable: false ),
+                    IsSummary = c.Boolean( nullable: false ),
+                    TokenCount = c.Int( nullable: false ),
+                    ConsumedTokenCount = c.Int( nullable: false ),
+                    AdditionalSettingsJson = c.String(),
+                    Guid = c.Guid( nullable: false ),
+                    ForeignId = c.Int(),
+                    ForeignGuid = c.Guid(),
+                    ForeignKey = c.String( maxLength: 100 ),
+                } )
+                .PrimaryKey( t => t.Id )
+                .ForeignKey( "dbo.AIAgentSession", t => t.AIAgentSessionId, cascadeDelete: true )
+                .Index( t => t.AIAgentSessionId )
+                .Index( t => t.Guid, unique: true );
+        }
+
+        private void SchemaChangesDown()
+        {
+            DropForeignKey( "dbo.AIAgentSessionAnchor", "EntityTypeId", "dbo.EntityType" );
+            DropForeignKey( "dbo.AIAgentSessionAnchor", "AIAgentSessionId", "dbo.AIAgentSession" );
+            DropForeignKey( "dbo.AIAgentSession", "RelatedEntityTypeId", "dbo.EntityType" );
+            DropForeignKey( "dbo.AIAgentSession", "PersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.AIAgentSessionHistory", "AIAgentSessionId", "dbo.AIAgentSession" );
+            DropForeignKey( "dbo.AIAgentSession", "AIAgentId", "dbo.AIAgent" );
+            DropForeignKey( "dbo.AIAgent", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.AIAgent", "CreatedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.AIAgent", "AvatarBinaryFileId", "dbo.BinaryFile" );
+            DropForeignKey( "dbo.AIAgentSkill", "AISkillId", "dbo.AISkill" );
+            DropForeignKey( "dbo.AISkill", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.AISkill", "CreatedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.AISkill", "CodeEntityTypeId", "dbo.EntityType" );
+            DropForeignKey( "dbo.AISkillFunction", "ModifiedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.AISkillFunction", "CreatedByPersonAliasId", "dbo.PersonAlias" );
+            DropForeignKey( "dbo.AISkillFunction", "AISkillId", "dbo.AISkill" );
+            DropForeignKey( "dbo.AIAgentSkill", "AIAgentId", "dbo.AIAgent" );
+            DropIndex( "dbo.AIAgentSessionHistory", new[] { "Guid" } );
+            DropIndex( "dbo.AIAgentSessionHistory", new[] { "AIAgentSessionId" } );
+            DropIndex( "dbo.AISkillFunction", new[] { "Guid" } );
+            DropIndex( "dbo.AISkillFunction", new[] { "ModifiedByPersonAliasId" } );
+            DropIndex( "dbo.AISkillFunction", new[] { "CreatedByPersonAliasId" } );
+            DropIndex( "dbo.AISkillFunction", new[] { "AISkillId" } );
+            DropIndex( "dbo.AISkill", new[] { "Guid" } );
+            DropIndex( "dbo.AISkill", new[] { "ModifiedByPersonAliasId" } );
+            DropIndex( "dbo.AISkill", new[] { "CreatedByPersonAliasId" } );
+            DropIndex( "dbo.AISkill", new[] { "CodeEntityTypeId" } );
+            DropIndex( "dbo.AIAgentSkill", new[] { "Guid" } );
+            DropIndex( "dbo.AIAgentSkill", new[] { "AISkillId" } );
+            DropIndex( "dbo.AIAgentSkill", new[] { "AIAgentId" } );
+            DropIndex( "dbo.AIAgent", new[] { "Guid" } );
+            DropIndex( "dbo.AIAgent", new[] { "ModifiedByPersonAliasId" } );
+            DropIndex( "dbo.AIAgent", new[] { "CreatedByPersonAliasId" } );
+            DropIndex( "dbo.AIAgent", new[] { "AvatarBinaryFileId" } );
+            DropIndex( "dbo.AIAgentSession", new[] { "Guid" } );
+            DropIndex( "dbo.AIAgentSession", new[] { "RelatedEntityTypeId" } );
+            DropIndex( "dbo.AIAgentSession", new[] { "PersonAliasId" } );
+            DropIndex( "dbo.AIAgentSession", new[] { "AIAgentId" } );
+            DropIndex( "dbo.AIAgentSessionAnchor", new[] { "Guid" } );
+            DropIndex( "dbo.AIAgentSessionAnchor", new[] { "EntityTypeId" } );
+            DropIndex( "dbo.AIAgentSessionAnchor", new[] { "AIAgentSessionId" } );
+            DropTable( "dbo.AIAgentSessionHistory" );
+            DropTable( "dbo.AISkillFunction" );
+            DropTable( "dbo.AISkill" );
+            DropTable( "dbo.AIAgentSkill" );
+            DropTable( "dbo.AIAgent" );
+            DropTable( "dbo.AIAgentSession" );
+            DropTable( "dbo.AIAgentSessionAnchor" );
+        }
+
+        private void PagesAndBlocksUp()
         {
             #region Add Pages
 
@@ -392,10 +645,7 @@ namespace Rock.Migrations
             #endregion
         }
 
-        /// <summary>
-        /// Operations to be performed during the downgrade process.
-        /// </summary>
-        public override void Down()
+        private void PagesAndBlocksDown()
         {
             #region Delete Block Type Attributes
 

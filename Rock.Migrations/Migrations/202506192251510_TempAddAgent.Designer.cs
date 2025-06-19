@@ -7,13 +7,13 @@ namespace Rock.Migrations
     using System.Resources;
     
     [GeneratedCode("EntityFramework.Migrations", "6.4.4")]
-    public sealed partial class TemporaryAddAgentTables : IMigrationMetadata
+    public sealed partial class TempAddAgent : IMigrationMetadata
     {
-        private readonly ResourceManager Resources = new ResourceManager(typeof(TemporaryAddAgentTables));
+        private readonly ResourceManager Resources = new ResourceManager(typeof(TempAddAgent));
         
         string IMigrationMetadata.Id
         {
-            get { return "202506032139319_TemporaryAddAgentTables"; }
+            get { return "202506192251510_TempAddAgent"; }
         }
         
         string IMigrationMetadata.Source

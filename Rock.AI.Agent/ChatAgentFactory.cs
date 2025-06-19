@@ -196,7 +196,7 @@ namespace Rock.AI.Agent
                     .DistinctBy( kf => kf.Name );
 
                 // Register the plug-in with the native and semantic functions.
-                var plugin = KernelPluginFactory.CreateFromFunctions( skillConfiguration.Name, skillConfiguration.UsageHint, distinctFunctions );
+                var plugin = KernelPluginFactory.CreateFromFunctions( skillConfiguration.NativeType.Name, skillConfiguration.UsageHint, distinctFunctions );
                 pluginCollection.Add( plugin );
             }
         }

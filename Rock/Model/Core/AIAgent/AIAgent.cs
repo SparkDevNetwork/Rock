@@ -120,7 +120,7 @@ namespace Rock.Model
         /// </summary>
         public AIAgentConfiguration()
         {
-            this.HasRequired( a => a.AvatarBinaryFile ).WithMany().HasForeignKey( a => a.AvatarBinaryFileId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AvatarBinaryFile ).WithMany().HasForeignKey( a => a.AvatarBinaryFileId ).WillCascadeOnDelete( false );
         }
     }
 
