@@ -15,13 +15,18 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Group
@@ -32,7 +37,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Shows the number of Members in the Group with a specified Status or Role type" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Member Count" )]
-    [Rock.SystemGuid.EntityTypeGuid( "45786F38-F50B-4FB2-8CEB-AFDCF42C5EB5")]
+    [Rock.SystemGuid.EntityTypeGuid( "45786F38-F50B-4FB2-8CEB-AFDCF42C5EB5" )]
     public class MemberCountSelect : DataSelectComponent
     {
         #region Properties
@@ -107,6 +112,57 @@ namespace Rock.Reporting.DataSelect.Group
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var memberTypes = new List<ListItemBag>
+            {
+                new ListItemBag { Text = "Leader", Value = "true" },
+                new ListItemBag { Text = "Not Leader", Value = "false" }
+            };
+
+            var memberStatuses = new List<ListItemBag>();
+
+            foreach ( GroupMemberStatus memberStatus in Enum.GetValues( typeof( GroupMemberStatus ) ) )
+            {
+                memberStatuses.Add( new ListItemBag { Text = memberStatus.ConvertToString(), Value = memberStatus.ConvertToInt().ToString() } );
+            }
+
+            var options = new Dictionary<string, string>
+            {
+                { "memberTypes", memberTypes.ToCamelCaseJson( false, true ) },
+                { "memberStatuses", memberStatuses.ToCamelCaseJson( false, true ) },
+            };
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Group/memberCountSelect.obs" ),
+                Options = options,
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            string[] selectionValues = selection.Split( '|' );
+
+            return new Dictionary<string, string>
+            {
+                { "memberType", selectionValues.Length > 0 ? selectionValues[0] : string.Empty },
+                { "memberStatus", selectionValues.Length > 1 ? selectionValues[1] : string.Empty }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return $"{data.GetValueOrDefault( "memberType", string.Empty )}|{data.GetValueOrDefault( "memberStatus", string.Empty )}";
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -138,7 +194,7 @@ namespace Rock.Reporting.DataSelect.Group
             if ( values.Length >= 2 )
             {
                 bool? isLeader = values[0].AsBooleanOrNull();
-                GroupMemberStatus? memberStatusValue = (GroupMemberStatus?)values[1].AsIntegerOrNull();
+                GroupMemberStatus? memberStatusValue = ( GroupMemberStatus? ) values[1].AsIntegerOrNull();
 
                 memberCountQuery = new GroupService( context ).Queryable()
                                                             .Select( p => p.Members.Where( a => !a.IsArchived ).Count( a =>
@@ -147,7 +203,7 @@ namespace Rock.Reporting.DataSelect.Group
             }
             else
             {
-                memberCountQuery = new GroupService( context ).Queryable().Select( p => (int)0 );
+                memberCountQuery = new GroupService( context ).Queryable().Select( p => ( int ) 0 );
             }
 
             var selectExpression = SelectExpressionExtractor.Extract( memberCountQuery, entityIdProperty, "p" );
@@ -195,8 +251,8 @@ namespace Rock.Reporting.DataSelect.Group
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            var ddlLeader = (DropDownList)controls[0];
-            var ddlMemberStatus = (DropDownList)controls[1];
+            var ddlLeader = ( DropDownList ) controls[0];
+            var ddlMemberStatus = ( DropDownList ) controls[1];
 
             return string.Format( "{0}|{1}", ddlLeader.SelectedValue, ddlMemberStatus.SelectedValue );
         }
@@ -210,8 +266,8 @@ namespace Rock.Reporting.DataSelect.Group
         {
             var values = selection.Split( '|' );
 
-            var ddlLeader = (DropDownList)controls[0];
-            var ddlMemberStatus = (DropDownList)controls[1];
+            var ddlLeader = ( DropDownList ) controls[0];
+            var ddlMemberStatus = ( DropDownList ) controls[1];
 
             if ( values.Length >= 2 )
             {
