@@ -1,0 +1,63 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <DropDownList label="Group Types"
+                  v-model="groupTypes"
+                  :items="groupTypeItems"
+                  help="The group type that will be managed by this skill."
+                  rules="required"
+                  multiple />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { standardDynamicComponentProps } from "@Obsidian/Utility/component";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ref, watch } from "vue";
+
+    const enum ConfigurationKey {
+        GroupTypes = "groupTypes",
+    }
+
+    const props = defineProps(standardDynamicComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const groupTypes = ref(props.modelValue[ConfigurationKey.GroupTypes]?.split(",") ?? []);
+    const groupTypeItems = ref(safeParseJson<ListItemBag[]>(props.options?.groupTypes) ?? []);
+
+    // #endregion
+
+    // #region Computed Values
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch([groupTypes], () => {
+        const newValues = { ...props.modelValue };
+
+        newValues[ConfigurationKey.GroupTypes] = groupTypes.value.join(",");
+
+        emit("update:modelValue", newValues);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(groupTypes, props.modelValue[ConfigurationKey.GroupTypes]?.split(",") ?? []);
+    });
+
+    watch(() => props.options, () => {
+        groupTypeItems.value = safeParseJson<ListItemBag[]>(props.options?.groupTypes) ?? [];
+    });
+</script>
