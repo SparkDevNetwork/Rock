@@ -197,8 +197,8 @@ namespace RockWeb.Blocks.Reporting
             {
                 new DemographicItem( "Connection Status", GetConnectionStatusLava( persons ) ),
                 new DemographicItem( "Age", GetAgeLava( persons ) ),
-                new DemographicItem( "Gender", GetGenderLava( persons ) ),
                 new DemographicItem( "Marital Status", GetMaritalStatusLava( persons ) ),
+                new DemographicItem( "Gender", GetGenderLava( persons ) ),
             };
 
             if ( GetAttributeValue( AttributeKey.ShowRace ).AsBoolean() )
@@ -257,15 +257,21 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetMaritalStatusLava( IEnumerable<PersonViewModel> qry )
         {
+            const string chartConfig = "{[ chart type:'bar' chartheight:'300px' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' valueformat:'percentage' ]}";
+
+            var total = qry.Count();
             var dataItems = qry
                 .Select( p => p.MaritalStatusValueId.HasValue
                     ? DefinedValueCache.Get( p.MaritalStatusValueId.Value )?.Value ?? Unknown
                     : Unknown )
                 .GroupBy( label => label )
-                .Select( g => new DataItem( g.Key, g.Count().ToString() ) )
+                .Select( g => new DataItem(
+                    g.Key,
+                    DataItem.GetPercentage( g.Count(), total )
+                ) )
                 .ToList();
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems );
+            return PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
         /// <summary>
