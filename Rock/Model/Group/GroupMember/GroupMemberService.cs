@@ -1214,6 +1214,17 @@ namespace Rock.Model
             try
             {
                 await Task.WhenAll( tasks );
+
+                /*
+                    06/20/2025 - KBH
+
+                    A real-time notification will now be sent every time a Group Member is added to a Group.
+                    To assist with troubleshooting and performance monitoring, debug-level logging has been
+                    added. This will help identify any potential slowdowns this new functionality may
+                    introduce on a church’s system.
+                 */
+                RockLogger.LoggerFactory.CreateLogger<GroupMemberService>()
+                    .LogDebug( "Sent {count} add notifications.", tasks.Count() );
             }
             catch ( Exception ex )
             {
