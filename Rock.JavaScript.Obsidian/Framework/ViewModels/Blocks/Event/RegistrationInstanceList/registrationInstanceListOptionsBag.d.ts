@@ -32,4 +32,9 @@ export type RegistrationInstanceListOptionsBag = {
      * The name of the registration instance to show.
      */
     registrationInstanceName?: string;
+
+    /**
+     * Gets or sets a value indicating whether the details column should be shown.
+     */
+    showDetailsColumn?: boolean;
 };
