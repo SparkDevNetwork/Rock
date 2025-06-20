@@ -27,6 +27,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningGradingSystemScaleDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -47,7 +48,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "b14cb1a6-b60b-45b0-8f7d-457a869a25f2" )]
     [Rock.SystemGuid.BlockTypeGuid( "332ab5bc-7e34-4710-a5dd-c50749ff11b5" )]
-    public class LearningGradingSystemScaleDetail : RockEntityDetailBlockType<LearningGradingSystemScale, LearningGradingSystemScaleBag>
+    public class LearningGradingSystemScaleDetail : RockEntityDetailBlockType<LearningGradingSystemScale, LearningGradingSystemScaleBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -372,5 +373,37 @@ namespace Rock.Blocks.Lms
         }
 
         #endregion
+
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var learningGradingSystemScaleId = pageReference.GetPageParameter( PageParameterKey.LearningGradingSystemScaleId );
+                var learningGradingSystemScaleName = new LearningGradingSystemScaleService( rockContext )
+                    .GetSelect( learningGradingSystemScaleId, b => b.Name );
+                if ( learningGradingSystemScaleName == null )
+                {
+                    // If the LearningGradingSystemScaleId is not found, we are creating a new grading scale.
+                    learningGradingSystemScaleName = "New Grading Scale";
+                }
+                else if ( learningGradingSystemScaleName == string.Empty )
+                {
+                    // If the name is empty, we will use a default name.
+                    learningGradingSystemScaleName = "Grading Scale";
+                }
+
+                    var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( learningGradingSystemScaleName, breadCrumbPageRef );
+
+                // Todo - Flip Show Name in Breadcrumb Bit in migration.
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                   {
+                       breadCrumb
+                   }
+                };
+            }
+        }
     }
 }
