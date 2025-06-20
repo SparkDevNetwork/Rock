@@ -2,7 +2,6 @@ import React, { useRef, useState } from 'react';
 import clsx from 'clsx';
 import {
     ChannelPreviewUIComponentProps,
-    DefaultStreamChatGenerics,
     DialogManagerProvider,
     useChatContext,
     useComponentContext,
@@ -13,10 +12,8 @@ import { RockChannelPreviewActionButtons } from './RockChannelActionButtons';
 import { DefaultChatChannelNamer } from '../ChannelNamer/DefaultChannelNamer';
 import { useChatConfig } from '../Chat/ChatConfigContext';
 import { ChatViewStyle } from '../ChatViewStyle';
-const ChannelPreviewContent = <
-    SCG extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
->(
-    props: ChannelPreviewUIComponentProps<SCG>
+const ChannelPreviewContent = (
+    props: ChannelPreviewUIComponentProps
 ) => {
     const {
         active,
@@ -34,7 +31,7 @@ const ChannelPreviewContent = <
     } = props;
 
     const { ChannelPreviewActionButtons = RockChannelPreviewActionButtons } =
-        useComponentContext<SCG>();
+        useComponentContext();
 
     const chatConfig = useChatConfig();
     const channelPreviewButton = useRef<HTMLButtonElement | null>(null);
@@ -182,10 +179,8 @@ const ChannelPreviewContent = <
 
 };
 
-const UnMemoizedChannelPreviewMessenger = <
-    SCG extends DefaultStreamChatGenerics = DefaultStreamChatGenerics,
->(
-    props: ChannelPreviewUIComponentProps<SCG>
+const UnMemoizedChannelPreviewMessenger = (
+    props: ChannelPreviewUIComponentProps
 ) => (
     <DialogManagerProvider>
         <ChannelPreviewContent {...props} />

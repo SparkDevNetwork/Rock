@@ -1,8 +1,5 @@
 import React from "react";
 import { Channel } from "stream-chat";
-import {
-    DefaultStreamChatGenerics as StreamChatGenerics,
-} from "stream-chat-react";
 import { ChatViewStyle } from "./ChatViewStyle";
 
 /**
@@ -14,8 +11,8 @@ export function getRenderChannelsFn(
     sharedChannelTypeKey: string
 ) {
     return (
-        channels: Channel<StreamChatGenerics>[],
-        channelPreview: (channel: Channel<StreamChatGenerics>) => React.ReactNode
+        channels: Channel[],
+        channelPreview: (channel: Channel) => React.ReactNode
     ): React.ReactNode => {
         if (chatViewStyle === ChatViewStyle.Conversational) {
             return <>{channels.map(channel => channelPreview(channel))}</>;
@@ -34,9 +31,10 @@ export function getRenderChannelsFn(
             }
         }
 
-        const sharedChannels = notPinned.filter(c => c.type === sharedChannelTypeKey);
-        const dmChannels = notPinned.filter(c => c.type !== sharedChannelTypeKey);
+        const sharedChannels = notPinned.filter(c => c.type != directMessageChannelTypeKey);
+        const dmChannels = notPinned.filter(c => c.type == directMessageChannelTypeKey);
 
+        console.log(channels)
         return (
             <div className="rock-channel-list-container">
                 {pinned.length > 0 && (

@@ -6,15 +6,18 @@
  * - Membership is added dynamically if missing.
  */
 
-import React from "react";
+import React, { useCallback } from "react";
 import {
     useChannelActionContext,
     useChannelStateContext,
     useChatContext,
     MessageInput,
     MessageInputProps,
-    MessageToSend,
 } from "stream-chat-react";
+import { useChatConfig } from "../Chat/ChatConfigContext";
+import { ChatViewStyle } from "../ChatViewStyle";
+import { CommunityMessageInput } from "./CommunityMessageInput";
+import { LocalMessage, SendMessageOptions, Message } from "stream-chat";
 
 /**
  * A React component to safely send messages.
@@ -22,39 +25,89 @@ import {
  * @param {MessageInputProps} props - Standard MessageInput props.
  * @returns {JSX.Element} A wrapped MessageInput with membership guard.
  */
-export const SafeMessageInput: React.FC<MessageInputProps> = (props) => {
+export const SafeMessageInput: React.FC<MessageInputProps> = (props: MessageInputProps) => {
     const { sendMessage } = useChannelActionContext();
     const { channel } = useChannelStateContext();
     const { client } = useChatContext();
+    const { chatViewStyle } = useChatConfig();
 
-    /**
-     * Ensures the current user is a channel member before sending.
-     *
-     * @param {MessageToSend} message - The message to be sent.
-     */
-    const overrideSubmitHandler = async (message: MessageToSend) => {
-        const userId = client.userID;
+    const submitHandler: MessageInputProps["overrideSubmitHandler"] = useCallback(
+        async ({ localMessage, message, sendOptions }: {
+            localMessage: LocalMessage;
+            message: Message;
+            sendOptions: SendMessageOptions;
+        }) => {
 
-        if (!userId) {
-            console.error("User ID is not available. Cannot send message.");
-            return;
-        }
+            const userId = client.userID;
 
-        const cid = channel.cid;
-        const isMember = !!channel.state.members[userId];
-
-        if (!isMember) {
-            try {
-                await channel.addMembers([userId]);
-                console.log(`User ${userId} added to channel ${cid}`);
-            } catch (error) {
-                console.error(`Failed to add user ${userId} to channel ${cid}:`, error);
+            if (!userId) {
+                console.error("User ID is not available. Cannot send message.");
                 return;
             }
-        }
 
-        sendMessage(message);
-    };
+            const cid = channel.cid;
+            const isMember = !!channel.state.members[userId];
 
-    return <MessageInput {...props} overrideSubmitHandler={overrideSubmitHandler} />;
+            if (!isMember) {
+                try {
+                    await channel.addMembers([userId]);
+                    console.log(`User ${userId} added to channel ${cid}`);
+                } catch (error) {
+                    console.error(`Failed to add user ${userId} to channel ${cid}:`, error);
+                    return;
+                }
+            }
+
+
+            await sendMessage({ localMessage, message, options: sendOptions });
+        },
+        [sendMessage],
+    );
+
+
+    // /**
+    //  * Ensures the current user is a channel member before sending.
+    //  *
+    //  * @param {MessageToSend} message - The message to be sent.
+    //  */
+    // const overrideSubmitHandler = async (message: MessageToSend) => {
+    //     const userId = client.userID;
+
+    //     if (!userId) {
+    //         console.error("User ID is not available. Cannot send message.");
+    //         return;
+    //     }
+
+    //     const cid = channel.cid;
+    //     const isMember = !!channel.state.members[userId];
+
+    //     if (!isMember) {
+    //         try {
+    //             await channel.addMembers([userId]);
+    //             console.log(`User ${userId} added to channel ${cid}`);
+    //         } catch (error) {
+    //             console.error(`Failed to add user ${userId} to channel ${cid}:`, error);
+    //             return;
+    //         }
+    //     }
+
+    //     sendMessage(message);
+    // };
+
+    const conversationalComponent = () => {
+        return <MessageInput {...props} overrideSubmitHandler={submitHandler} />;
+    }
+
+    const communityComponent = () => {
+        return (
+            <MessageInput {...props} overrideSubmitHandler={submitHandler}
+                Input={CommunityMessageInput} />
+        )
+    }
+
+    return (
+        <>
+            {chatViewStyle == ChatViewStyle.Community ? communityComponent() : conversationalComponent()}
+        </>
+    )
 };

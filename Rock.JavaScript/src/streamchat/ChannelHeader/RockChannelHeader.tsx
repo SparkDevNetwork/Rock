@@ -1,23 +1,141 @@
 import React from 'react';
-import { ChannelHeaderProps, useChannelListContext, ChannelHeader as DefaultHeader, useChannelMembershipState, useChannelPreviewInfo, useChannelStateContext, useChatContext, useTranslationContext } from 'stream-chat-react';
+import { Avatar as DefaultAvatar, ChannelHeaderProps, ChannelHeader as DefaultHeader, useChannelPreviewInfo, useChatContext, useChannelMembershipState } from 'stream-chat-react';
 import { DefaultChatChannelNamer } from '../ChannelNamer/DefaultChannelNamer';
 import { useChatConfig } from '../Chat/ChatConfigContext';
 import { ChatViewStyle } from '../ChatViewStyle';
-import { Avatar as DefaultAvatar } from 'stream-chat-react';
 import { useChannelListController } from '../ChannelList/ChannelListControllerContext';
-
-interface RockChannelHeaderProps extends ChannelHeaderProps {
-    chatViewStyle: ChatViewStyle
-}
+import { useChannelRightPane } from '../ChannelRightPane/PanelContext';
 
 /**
  * Overrides the built-in ChannelHeader to use the DefaultChatChannelNamer
  * for displayTitle, guarding against a null channel.
  */
-export const RockChannelHeader: React.FC<RockChannelHeaderProps> = (props: RockChannelHeaderProps) => {
+export const RockChannelHeader: React.FC = (props: ChannelHeaderProps) => {
+    const { channel, client } = useChatContext();
+    const { chatViewStyle, directMessageChannelTypeKey } = useChatConfig();
 
-    const chatConfig = useChatConfig();
+    // If there's no channel yet, render the default header without a custom title
+    if (!channel) {
+        return <DefaultHeader />;
+    }
+
+    const membershipState = useChannelMembershipState(channel);
     const { refresh } = useChannelListController();
+    const { setActivePane, activePane } = useChannelRightPane();
+
+    // Use our namer, falling back to undefined if it returns null
+    const title = DefaultChatChannelNamer(channel, directMessageChannelTypeKey!, client.userID!) ?? undefined;
+
+    const getFavoriteIcon = () => {
+        if (!membershipState) {
+            return null;
+        }
+
+        const isPinned = !!membershipState.pinned_at;
+
+        return (
+            <div
+                className={`rock-channel-header-favorite ${isPinned ? 'rock-channel-header-favorite--active' : ''}`}
+                onClick={async () => {
+                    try {
+                        if (isPinned) {
+                            await channel.unpin();
+                        } else {
+                            await channel.pin();
+                        }
+
+                        refresh();
+                    } catch (error) {
+                        console.error("Failed to toggle pin state", error);
+                    }
+                }}
+                title={isPinned ? "Unfavorite" : "Favorite"}
+            >
+                <i className={isPinned ? "fas fa-star" : "far fa-star"} />
+            </div>
+        );
+    };
+
+    const navItems = [
+        {
+            key: 'channelInfo',
+            iconClass: 'fas fa-info-circle',
+            title: 'Channel Information',
+            onClick: () => setActivePane('info'),
+        },
+        {
+            key: 'threads',
+            iconClass: 'fas fa-comments',
+            title: 'Threads',
+            onClick: () => setActivePane('threads'),
+        },
+        {
+            key: 'search',
+            iconClass: 'fas fa-search',
+            title: 'Search',
+            onClick: () => setActivePane('search'),
+        },
+        {
+            key: 'mentions',
+            iconClass: 'fas fa-at',
+            title: 'Mentions',
+            onClick: () => setActivePane('mentions'),
+        },
+        {
+            key: 'members',
+            iconClass: 'fas fa-users',
+            title: 'Members',
+            onClick: () => setActivePane('members'),
+        },
+        {
+            key: 'more',
+            iconClass: 'fas fa-ellipsis-h',
+            title: 'More Options',
+            onClick: () => setActivePane('more'),
+        },
+    ];
+
+    const communityComponent = () => {
+        return (
+            <div className="rock-channel-header">
+                <div className="rock-channel-header-left">
+                    <Avatar
+                        className='str-chat__avatar--channel-header rock-channel-header-avatar'
+                        groupChannelDisplayInfo={groupChannelDisplayInfo}
+                        image={displayImage}
+                        name={displayTitle}
+                    />
+
+                    <h6 className="rock-channel-header-title">{title}</h6>
+                    {getFavoriteIcon()}
+                </div>
+
+                <div className="rock-channel-header-right">
+                    <div className="rock-channel-header-right">
+                        {navItems.map(({ key, iconClass, title, onClick }) => (
+                            <button
+                                key={key}
+                                onClick={() => {
+                                    // Toggle off if already active
+                                    if (activePane === key.replace('channelInfo', 'info')) {
+                                        setActivePane(null);
+                                    } else {
+                                        onClick();
+                                    }
+                                }}
+                                title={title}
+                                aria-label={title}
+                                className={`rock-channel-header-nav-button${activePane === key.replace('channelInfo', 'info') ? ' rock-channel-header-nav-button--active' : ''}`}
+                            >
+                                <i className={iconClass}></i>
+                            </button>
+                        ))}
+                    </div>
+                </div>
+            </div>
+        )
+    };
+
     const {
         Avatar = DefaultAvatar,
         image: overrideImage,
@@ -25,108 +143,21 @@ export const RockChannelHeader: React.FC<RockChannelHeaderProps> = (props: RockC
         title: overrideTitle,
     } = props;
 
-    const { channel, watcher_count } = useChannelStateContext('ChannelHeader');
-    const { openMobileNav, client } = useChatContext('ChannelHeader');
-    const { t } = useTranslationContext('ChannelHeader');
     const { displayImage, displayTitle, groupChannelDisplayInfo } = useChannelPreviewInfo({
         channel,
         overrideImage,
         overrideTitle,
     });
 
-    const { member_count, subtitle } = channel?.data || {};
-
-    // If there's no channel yet, render the default header without a custom title
-    if (!channel) {
-        return <DefaultHeader />;
-    }
-
-    // Use our namer, falling back to undefined if it returns null
-    const title = DefaultChatChannelNamer(channel, chatConfig.directMessageChannelTypeKey!, client.userID!) ?? undefined;
-    if (props.chatViewStyle == ChatViewStyle.Conversational) {
-        return <DefaultHeader title={title} />;
-    }
-
-    const membershipState = useChannelMembershipState(channel);
-
-    const MenuIcon = () => (
-        <svg
-            data-testid='menu-icon'
-            fill='none'
-            height='24'
-            viewBox='0 0 24 24'
-            width='24'
-            xmlns='http://www.w3.org/2000/svg'
-        >
-            <path
-                clipRule='evenodd'
-                d='M3 8V6H21V8H3ZM3 13H21V11H3V13ZM3 18H21V16H3V18Z'
-                fill='black'
-                fillRule='evenodd'
-            />
-        </svg>
-    );
+    const conversationalComponent = () => {
+        return (
+            <DefaultHeader title={title} />
+        )
+    };
 
     return (
-        <div className='str-chat__channel-header'>
-            <button
-                aria-label={t('aria/Menu')}
-                className='str-chat__header-hamburger'
-                onClick={openMobileNav}
-            >
-                <MenuIcon />
-            </button>
-            <Avatar
-                className='str-chat__avatar--channel-header'
-                groupChannelDisplayInfo={groupChannelDisplayInfo}
-                image={displayImage}
-                name={displayTitle}
-            />
-            <div className='str-chat__channel-header-end'>
-                <p className='str-chat__channel-header-title'>
-                    {displayTitle}{' '}
-                    {live && (
-                        <span className='str-chat__header-livestream-livelabel'>{String(t('live'))}</span>
-                    )}
-
-                    <span
-                        className='rock__favorite-icon'
-                        style={{ cursor: 'pointer' }}
-                        onClick={async () => {
-                            try {
-                                if (membershipState?.pinned_at) {
-                                    await channel.unpin();
-                                } else {
-                                    await channel.pin();
-                                }
-
-                                refresh();
-                            } catch (error) {
-                                console.error("Failed to toggle pin state", error);
-                            }
-                        }}
-                    >
-                        {membershipState?.pinned_at ? (
-                            <i className="fas fa-star" title="Unpin" />
-                        ) : (
-                            <i className="far fa-star" title="Pin" />
-                        )}
-                    </span>
-
-                </p>
-                {subtitle && <p className='str-chat__channel-header-subtitle'>{subtitle}</p>}
-                <p className='str-chat__channel-header-info'>
-                    {!live && !!member_count && member_count > 0 && (
-                        <>
-                            {t('{{ memberCount }} members', {
-                                memberCount: member_count,
-                            })}
-                            ,{' '}
-                        </>
-                    )}
-                    {String(t('{{ watcherCount }} online', { watcherCount: watcher_count }))}
-                </p>
-            </div>
-        </div>
+        <>
+            {chatViewStyle == ChatViewStyle.Community ? communityComponent() : conversationalComponent()}
+        </>
     );
 };

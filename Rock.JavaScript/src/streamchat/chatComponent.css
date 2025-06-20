@@ -38,6 +38,42 @@
     height: calc(100vh - 36px);
 }
 
+.rock-chat-window {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.rock-chat-window-content {
+    display: flex;
+    flex-direction: row;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.rock-chat-window-content-left {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    min-height: 0;
+}
+
+.rock-chat-window-content-left>.str-chat__message-list {
+    flex-grow: 1;
+    min-height: 0;
+    overflow-y: auto;
+}
+
+.rock-badge {
+    border-radius: 4px;
+    font-size: .625rem;
+    font-weight: 700;
+    padding: .125rem .25rem;
+    line-height: .75rem;
+    display: flex;
+    align-items: center;
+}
 
 /* ============ Conversational Styles =============== */
 
@@ -156,7 +192,7 @@
 }
 
 /* Wrap both header + list in a vertical flex container */
-.rocktheme-conversational .rock__channel-list-container {
+.rocktheme-conversational .rock-channel-list-container {
     display: flex;
     flex-direction: column;
     width: 30%;
@@ -166,7 +202,7 @@
 }
 
 /* Header bar styling */
-.rocktheme-conversational .rock__channel-list-header {
+.rocktheme-conversational .rock-channel-list-header {
     display: flex;
     justify-content: flex-end;
     align-items: center;
@@ -177,7 +213,7 @@
 }
 
 /* Icon button reset + hover state */
-.rocktheme-conversational .rock__channel-list-header>button {
+.rocktheme-conversational .rock-channel-list-header>button {
     background: none;
     border: none;
     cursor: pointer;
@@ -185,14 +221,14 @@
     width: 24px;
 }
 
-.rocktheme-conversational .rock__channel-list-header__new-message-icon {
+.rocktheme-conversational .rock-channel-list-header-new-message-icon {
     width: 1.25rem;
     height: 1.25rem;
     color: var(--color-interface-strong);
 }
 
 /* Make sure your ChannelList sits immediately below the header */
-.rocktheme-conversational .rock__channel-list-container .str-chat__channel-list {
+.rocktheme-conversational .rock-channel-list-container .str-chat__channel-list {
     flex: 1;
     /* fill remaining height */
     overflow-y: auto;
@@ -335,40 +371,58 @@
     --str-chat__channel-list-background-color: var(--color-interface-softer);
     --str-chat__surface-color: var(--color-interface-soft);
     --str-chat__border-color: var(--color-interface-soft);
+    --sidebar-width: 220px;
+    --sidebar-md-width: 20rem;
+    --sidebar-lg-width: 21rem
 }
 
 /* Channel List Header */
-.rocktheme-community .rock__channel-list-header-container {
+.rocktheme-community .rock-channel-list-header-container {
     background-color: var(--color-interface-softer);
-    height: 64px;
 }
 
-.rocktheme-community .rock__channel-list-header {
+.rocktheme-community .rock-channel-list-header {
     display: flex;
     align-items: center;
+    padding-left: 16px;
+    padding-right: 16px;
+    padding-inline: 16px;
+    height: 64px;
     justify-content: space-between;
-    padding: 12px;
-    height: 100%;
     border-bottom: 1px solid var(--color-interface-soft);
     border-right: 1px solid var(--color-interface-soft);
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
 }
 
-.rocktheme-community .rock__channel-list-header .rock__channel-list-header-avatar {
+.rocktheme-community .rock-channel-list-header .rock-channel-list-header-avatar {
     --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 28);
 }
 
-.rocktheme-community .rock__channel-list-header__actions {
+.rocktheme-community .rock-channel-list-header-actions {
     display: flex;
-    gap: var(--spacing-xsmall, 8px);
+    gap: 4px;
+    align-items: center;
 }
 
-.rocktheme-community .rock__channel-list-header>.rock__channel-list-header__actions>.rock__channel-list-header__icon-button {
+.rocktheme-community .rock-channel-list-header>.rock-channel-list-header-actions>.rock-channel-list-header-icon-button {
     background: none;
     border: none;
     cursor: pointer;
+    height: 28px;
+    width: 28px;
+    color: var(--color-interface-stronger);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.rocktheme-community .rock__channel-list-header>.rock__channel-list-header__actions>.rock__channel-list-header__icon-button>i {
+.rocktheme-community .rock-channel-list-header>.rock-channel-list-header-actions>.rock-channel-list-header-icon-button:hover {
+    background: var(--color-interface-soft);
+}
+
+.rocktheme-community .rock-channel-list-header>.rock-channel-list-header-actions>.rock-channel-list-header-icon-button>i {
     color: var(--color-interface-stronger);
     font-size: 16px;
 }
@@ -377,13 +431,32 @@
 .rocktheme-community .rock-channel-list {
     display: flex;
     flex-direction: column;
-    width: 20%;
+    width: var(--sidebar-width);
+    min-width: var(--sidebar-width);
+}
+
+@media (min-width: 100em) {
+
+    .rocktheme-community .rock-channel-list,
+    .rocktheme-community .rock-channel-list-header {
+        width: var(--sidebar-md-width);
+        min-width: var(--sidebar-md-width);
+    }
+}
+
+@media (min-width: 120em) {
+
+    .rocktheme-community .rock-channel-list,
+    .rocktheme-community .rock-channel-list-header {
+        width: var(--sidebar-lg-width);
+        min-width: var(--sidebar-lg-width);
+    }
 }
 
 .rocktheme-community .rock-channel-list .rock-channel-list-container .rock-channel-group .rock-channel-group-items {
     display: flex;
     flex-direction: column;
-    gap: 2px;
+    gap: 0px;
 }
 
 .rocktheme-community .rock-channel-list .rock-channel-list-container .rock-channel-group .rock-channel-group-title {
@@ -396,7 +469,17 @@
     text-overflow: ellipsis;
     max-width: 100%;
     flex: 1;
-    margin: 6px 0 6px 12px;
+    margin: 6px 0 6px 16px;
+}
+
+.rocktheme-community .str-chat__list .str-chat__message-list-scroll {
+    padding-inline: 0rem !important;
+    margin-inline: 0 !important;
+}
+
+.rocktheme-community .str-chat__list .str-chat__message-list-scroll .str-chat__li {
+    padding-inline: 1.5rem !important;
+    margin-inline: 0 !important;
 }
 
 /* Channel Preview (in channel list) */
@@ -422,7 +505,8 @@
     cursor: pointer;
 }
 
-.rocktheme-community .rock-channel-preview-container--active {
+.rocktheme-community .rock-channel-preview-container--active,
+.rocktheme-community .rock-channel-preview:hover {
     background: var(--color-interface-soft);
 }
 
@@ -433,7 +517,8 @@
     text-align: start;
     padding-top: 4px;
     padding-bottom: 4px;
-    padding-left: 12px;
+    padding-left: 16px;
+    padding-inline: 16px;
 }
 
 .rocktheme-community .rock-channel-preview-content .rock-channel-preview-avatar {
@@ -451,6 +536,296 @@
     text-overflow: ellipsis;
     max-width: 100%;
     flex: 1;
+}
+
+/* Channel Header */
+.rocktheme-community .rock-channel-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: var(--color-interface-softer);
+    width: 100%;
+    min-height: 64px;
+    height: 64px;
+    /* padding: 12px; */
+    padding-inline: 1.5rem !important;
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+.rocktheme-community .rock-channel-header .rock-channel-header-left {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.rocktheme-community .rock-channel-header .rock-channel-header-right {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
+
+.rocktheme-community .rock-channel-header .rock-channel-header-avatar {
+    --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 36);
+}
+
+.rocktheme-community .rock-channel-header .rock-channel-header-title {
+    font-size: 16px;
+    padding: 0;
+    margin: 0;
+    font-weight: 700;
+    color: var(--color-interface-stronger);
+}
+
+.rocktheme-community .rock-channel-header .rock-channel-header-nav-button {
+    background: none;
+    border: none;
+    color: var(--color-interface-stronger);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    height: 28px;
+    width: 28px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rocktheme-community .rock-channel-header .rock-channel-header-nav-button--active {
+    background: var(--color-interface-soft);
+}
+
+.rocktheme-community .rock-channel-header .rock-channel-header-nav-button:hover {
+    background: var(--color-interface-soft);
+}
+
+.rocktheme-community .rock-channel-header-favorite {
+    cursor: pointer;
+}
+
+.rocktheme-community .rock-channel-header-favorite.rock-channel-header-favorite--active {
+    color: #FFD700;
+}
+
+/* Right Pane */
+.rocktheme-community .rock-chat-window--with-pane .rock-chat-window-content-right {
+    display: flex;
+    flex-direction: column;
+    width: 40%;
+    height: 100%;
+    border-left: 1px solid var(--color-interface-soft);
+    background-color: var(--color-interface-softest);
+}
+
+/* Message */
+.rocktheme-community .rock-message-container {
+    display: flex;
+    gap: 6px;
+    padding-top: 6px;
+    padding-bottom: 6px;
+}
+
+.rocktheme-community .rock-message-container .rock-message-title-layout {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.rocktheme-community .str-chat__message-text-inner p {
+    white-space: pre-line;
+}
+
+.rocktheme-community .str-chat__li:hover:not(:has(.str-chat__reaction-list:hover, .str-chat__modal--open)) {
+    background-color: var(--color-interface-softer);
+}
+
+.rocktheme-community .rock-message-container .rock-message-layout {
+    display: flex;
+    flex-direction: column;
+    line-height: 120%;
+}
+
+.rocktheme-community .rock-message-container .rock-message-layout .rock-message-content {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.rocktheme-community .rock-message-container .rock-message-layout .rock-message-author {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--color-interface-stronger);
+    line-height: 1.25rem;
+}
+
+.rocktheme-community .rock-message-container .rock-avatar-container {
+    --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 36);
+}
+
+.rock-chat-message-send-failed-icon {
+    color: var(--color-danger-strong);
+    display: none;
+    font-size: 16px;
+}
+
+.rocktheme-community .rock-chat-message-send-failed .rock-chat-message-send-failed-icon {
+    display: block;
+}
+
+.rocktheme-community .rock-message-badges {
+    display: flex;
+    gap: 0.5rem;
+}
+
+.rocktheme-community .rock-message-wrapper {
+    position: relative;
+    display: flex;
+    padding-right: 2rem;
+    /* space for the hover actions */
+}
+
+.rocktheme-community .rock-message-actions {
+    position: absolute;
+    right: 0;
+    top: -1rem;
+    display: flex;
+    gap: 0.25rem;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.30s ease;
+    background: var(--color-interface-softest);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: 4px;
+    padding: 2px;
+}
+
+.rocktheme-community .rock-message-action {
+    background: none;
+    border: none;
+    color: var(--color-interface-stronger);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    height: 24px;
+    width: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rocktheme-community .rock-message-action--active {
+    background: var(--color-interface-soft);
+}
+
+.rocktheme-community .rock-message-action:hover {
+    background: var(--color-interface-soft);
+}
+
+.rocktheme-community .rock-message-wrapper:hover .rock-message-actions {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+/* Replies Content */
+.rocktheme-community .rock-replies-content-container {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+
+    /* 6 comes from the layout gap so we add an additional 6 */
+    margin-top: 6px;
+}
+
+.rocktheme-community .rock-replies-content-container .rock-replies-content-count {
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+    font-size: 12px;
+    color: var(--color-interface-strong);
+}
+
+.rocktheme-community .rock-replies-content-container .rock-replies-content-count>.rock-replies-content-count-text {
+    font-weight: 600;
+}
+
+.rocktheme-community .rock-replies-content-thread-reply-button {
+    background: var(--color-interface-soft);
+    border: none;
+    color: var(--color-interface-stronger);
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 0.75rem;
+}
+
+.rocktheme-community .rock-replies-content-thread-reply-button:hover {
+    background: var(--color-interface-soft);
+}
+
+/* Date Separator */
+.rocktheme-community .rock-date-separator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.75rem;
+    margin: 1.5rem 0;
+    padding-inline: 1.5rem !important;
+}
+
+.rocktheme-community .rocktheme-community .rock-date-separator__bar {
+    flex-grow: 1;
+    height: 1px;
+    background-color: var(--color-interface-soft);
+}
+
+.rocktheme-community .rock-date-separator__bubble {
+    background-color: var(--color-interface-softest);
+    color: var(--color-interface-stronger);
+    font-size: 0.75rem;
+    font-weight: 500;
+    border-radius: 999px;
+    padding: 4px 12px;
+    white-space: nowrap;
+    box-shadow: 0 0 0 1px var(--color-interface-soft);
+}
+
+.rocktheme-community .rock-message-composer {
+    display: flex;
+}
+
+.rocktheme-community .rock-message-input-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    min-width: 0;
+    max-height: 100%;
+    background-color: var(--color-interface-softer);
+    margin-inline: 1.5rem;
+    margin-bottom: 1.5rem;
+    border: 1px solid var(--color-interface-soft);
+    border-radius: 4px;
+    padding: 6px;
+}
+
+.rocktheme-community .rock-message-input-container .str-chat__message-textarea {
+    resize: none;
+    border: none;
+    color: var(--color-interface-stronger);
+    box-shadow: none;
+    background: none;
+    outline: none;
+    font-size: 14px;
+    width: 100%;
+}
+
+/* bc todo: look into what this is for */
+.rocktheme-community .str-chat__list-notifications {
+    display: none;
 }
 
 /* ============ Create Channel Modal =============== */

@@ -4,8 +4,10 @@ import {
     useChannelActionContext,
     useChatContext,
 } from "stream-chat-react";
-import { RockMessageSimple } from "../Message/RockMessage";
+// import { RockMessageSimple } from "../Message/RockMessage";
 import { RockMessageActionList } from "./RockMessageActionList";
+import { RockDateSeperator } from "../DateSeperator/DateSeperator";
+import { RockMessage } from "../Message/RockMessage";
 
 interface WrappedChannelProps {
     children: ReactNode;
@@ -43,7 +45,7 @@ export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children, channe
     if (!channelReady) return null;
 
     return (
-        <Channel CustomMessageActionsList={RockMessageActionList} Message={RockMessageSimple}>
+        <Channel CustomMessageActionsList={RockMessageActionList} Message={RockMessage} DateSeparator={RockDateSeperator}>
             {children}
             {/* if there is a jumpToMessageId, we need to jump to it. this has to be done in the channel context which is why we have a nested component */}
             {jumpToMessageId && <JumpToMessage messageId={jumpToMessageId} />}

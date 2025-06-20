@@ -12,7 +12,7 @@
  * @returns {JSX.Element} Action buttons component for a channel preview.
  */
 import React, { useRef } from 'react';
-import type { Channel, ExtendableGenerics } from 'stream-chat';
+import type { Channel } from 'stream-chat';
 import {
     useChatContext,
     useTranslationContext,
@@ -23,15 +23,15 @@ import {
 import 'stream-chat-react/dist/css/v2/index.css';
 import { VerticalEllipsisIcon } from './Icons';
 
-export type ChannelPreviewActionButtonsProps<SCG extends ExtendableGenerics> = {
-    channel: Channel<SCG>;
+export type ChannelPreviewActionButtonsProps = {
+    channel: Channel;
 };
 
-export function RockChannelPreviewActionButtons<SCG extends ExtendableGenerics>({
+export function RockChannelPreviewActionButtons({
     channel,
-}: ChannelPreviewActionButtonsProps<SCG>) {
+}: ChannelPreviewActionButtonsProps) {
     const { t } = useTranslationContext();
-    const { client } = useChatContext<SCG>();
+    const { client } = useChatContext();
 
     const dialogId = `channel-actions-${channel.id}`;
     const dialog = useDialog({ id: dialogId });

@@ -22,6 +22,9 @@ import { WrappedChannelList } from "./ChannelList/WrappedChannelList";
 import { getRenderChannelsFn } from "./ChatUtils";
 import { ChannelListControllerContext } from "./ChannelList/ChannelListControllerContext";
 import { ChatViewStyle } from "./ChatViewStyle";
+import { ChannelRightPaneProvider } from "./ChannelRightPane/PanelContext";
+import { ChannelRightPane } from "./ChannelRightPane/ChannelRightPane";
+import { RockChatWindow } from "./RockChatWindow";
 
 /**
  * The ChatComponent sets up and renders the Stream Chat UI
@@ -51,7 +54,13 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     }
 
     const [, setChannelListKey] = useState(0);
-    const refreshChannelList = () => setChannelListKey(prev => prev + 1);
+
+    const refreshChannelList = () => {
+        setTimeout(() => {
+            setChannelListKey(prev => prev + 1);
+        }, 200); // delay in milliseconds
+    };
+
 
     const chatClient = useCreateChatClient({
         apiKey: apiKey,
@@ -140,14 +149,11 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                             </>
                         )}
 
-                        <WrappedChannel channelId={channelId} jumpToMessageId={jumpToMessageId}>
-                            <Window>
-                                <RockChannelHeader chatViewStyle={chatViewStyle!} />
-                                <MessageList messageActions={['edit', 'delete', 'flag', 'mute', 'quote', 'react', 'reply']} noGroupByUser />
-                                <SafeMessageInput grow />
-                            </Window>
-                            <Thread />
-                        </WrappedChannel>
+                        <ChannelRightPaneProvider>
+                            <WrappedChannel channelId={channelId} jumpToMessageId={jumpToMessageId}>
+                                <RockChatWindow />
+                            </WrappedChannel>
+                        </ChannelRightPaneProvider>
 
                         {/* Create DM modal */}
                         {showModal && (

@@ -49,19 +49,19 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
     const showProfileImage = chatViewStyle == ChatViewStyle.Community && profileImageSrc;
 
     return (
-        <div className="rock__channel-list-header-container str-chat rocktheme-community">
-            <div className="rock__channel-list-header">
+        <div className="rock-channel-list-header-container str-chat rocktheme-community">
+            <div className="rock-channel-list-header">
                 {showProfileImage && (
-                    <Avatar image={profileImageSrc} name={client.user?.name || client.user?.id} className="rock__channel-list-header-avatar" />
+                    <Avatar image={profileImageSrc} name={client.user?.name || client.user?.id} className="rock-channel-list-header-avatar" />
                 )}
 
-                <div className="rock__channel-list-header__actions">
+                <div className="rock-channel-list-header-actions">
                     {filteredActions.map(({ key, iconClass, action, ariaLabel }) => (
                         <button
                             key={key}
                             onClick={action}
                             aria-label={ariaLabel}
-                            className="rock__channel-list-header__icon-button"
+                            className="rock-channel-list-header-icon-button"
                         >
                             <i className={iconClass}></i>
                         </button>

@@ -1,6 +1,5 @@
 import type { Channel } from 'stream-chat';
 import { ChatViewStyle } from '../ChatViewStyle';
-import { DefaultStreamChatGenerics } from 'stream-chat-react';
 
 /**
  * Generates a display title for a channel based on its assigned name or its members (for DMs).
@@ -21,8 +20,8 @@ import { DefaultStreamChatGenerics } from 'stream-chat-react';
  * @param separator - Separator between names when listing multiple members
  * @returns A human-friendly title or null if none applies
  */
-export function DefaultChatChannelNamer<SCG extends DefaultStreamChatGenerics = DefaultStreamChatGenerics>(
-    channel: Channel<SCG>,
+export function DefaultChatChannelNamer(
+    channel: Channel,
     directMessageChannelTypeKey: string,
     currentUserId?: string,
     chatViewStyle: ChatViewStyle = ChatViewStyle.Conversational,

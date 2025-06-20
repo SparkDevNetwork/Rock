@@ -1,6 +1,6 @@
 // CreateChannelModal.tsx
 import React, { useState, useEffect, useRef, ChangeEvent } from "react";
-import { useChatContext, Avatar, DefaultStreamChatGenerics } from "stream-chat-react";
+import { useChatContext, Avatar } from "stream-chat-react";
 import { XIcon } from "../ChannelListHeader/Icons";
 import { useChatConfig } from '../Chat/ChatConfigContext';
 import { UserResponse } from "stream-chat";
@@ -21,8 +21,8 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({ onClose }) => {
     const chatConfig = useChatConfig();
 
     const [searchTerm, setSearchTerm] = useState("");
-    const [userResults, setUserResults] = useState<UserResponse<DefaultStreamChatGenerics>[]>([]);
-    const [selectedUsers, setSelectedUsers] = useState<UserResponse<DefaultStreamChatGenerics>[]>([]);
+    const [userResults, setUserResults] = useState<UserResponse[]>([]);
+    const [selectedUsers, setSelectedUsers] = useState<UserResponse[]>([]);
     const inputRef = useRef<HTMLInputElement>(null);
 
     // Fetch matching users, excluding already selected
@@ -34,15 +34,18 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({ onClose }) => {
         const fetchUsers = async () => {
             try {
                 const { users } = await client.queryUsers(
-                    { name: { $autocomplete: searchTerm }, id: { $ne: client.userID! }, rock_profile_public: true },
+                    { name: { $autocomplete: searchTerm }, rock_profile_public: true },
                     { id: 1, name: 1, image: 1 },
                     { limit: 10 }
                 );
-                const filtered = users.filter(u =>
-                    !selectedUsers.some(sel => sel.id === u.id)
+
+                // Filter out already selected users & the current user
+                const currentUserId = client.userID;
+                const filteredUsers = users.filter(u =>
+                    u.id !== currentUserId && !selectedUsers.some(sel => sel.id === u.id)
                 );
 
-                setUserResults(filtered);
+                setUserResults(filteredUsers);
             } catch (err) {
                 console.error("Error fetching users:", err);
             }
@@ -54,7 +57,7 @@ const CreateChannelModal: React.FC<CreateChannelModalProps> = ({ onClose }) => {
         setSearchTerm(e.target.value);
     };
 
-    const handleSelectUser = (user: UserResponse<DefaultStreamChatGenerics>) => {
+    const handleSelectUser = (user: UserResponse) => {
         setSelectedUsers(prev => [...prev, user]);
         setSearchTerm("");
         setUserResults([]);

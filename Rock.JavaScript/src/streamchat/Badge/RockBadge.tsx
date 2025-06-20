@@ -19,7 +19,6 @@
  * @returns {JSX.Element} A styled badge element.
  */
 import React from 'react';
-import './rockBadge.css';
 
 interface RockBadgeProps {
     badgeText: string;

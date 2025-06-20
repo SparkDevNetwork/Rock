@@ -1,7 +1,8 @@
-import { DateFormatterOptions, isDate, isDayOrMoment, isNumberOrString, StreamMessage, TimestampFormatterOptions } from "stream-chat-react";
+import { LocalMessage } from "stream-chat";
+import { DateFormatterOptions, isDate, isDayOrMoment, isNumberOrString, TimestampFormatterOptions } from "stream-chat-react";
 
 export const isMessageBlocked = (
-    message: Pick<StreamMessage, 'type' | 'moderation' | 'moderation_details'>,
+    message: Pick<LocalMessage, 'type' | 'moderation' | 'moderation_details'>,
 ) =>
     message.type === 'error' &&
     (message.moderation_details?.action === 'MESSAGE_RESPONSE_ACTION_REMOVE' ||

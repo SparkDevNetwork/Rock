@@ -39,7 +39,7 @@
     "react": "^19.1.0",
     "react-dom": "^19.1.0",
     "signalr-no-jquery": "0.2.0",
-    "stream-chat": "^8.60.0",
-    "stream-chat-react": "^12.14.0"
+    "stream-chat": "^9.6.0",
+    "stream-chat-react": "^13.1.2"
   }
 }
