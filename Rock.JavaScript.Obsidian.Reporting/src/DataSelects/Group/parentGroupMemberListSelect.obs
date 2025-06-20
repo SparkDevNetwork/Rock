@@ -1,0 +1,30 @@
+<template>
+    <RadioButtonList v-model="showAsLinkType"
+                     :items="showAsLinkTypeOptions" />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const showAsLinkTypeOptions: ListItemBag[] = safeParseJson(props.options.showAsLinkTypeOptions) ?? [];
+    const showAsLinkType = ref(props.modelValue.showAsLinkType ?? showAsLinkTypeOptions[0]?.value ?? "");
+
+    watch([showAsLinkType], () => {
+        const newData: Record<string, string> = {
+            ...props.modelValue,
+            showAsLinkType: showAsLinkType.value
+        };
+
+        emit("update:modelValue", newData);
+    });
+</script>
