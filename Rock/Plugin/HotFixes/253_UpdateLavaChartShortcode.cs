@@ -194,15 +194,6 @@ SET [Markup]=N'{% javascript url:''~/Scripts/moment.min.js'' id:''moment''%}{% e
             target.style.cursor = ''default'';
         }
     },
-    {%- if type != 'tsgauge' and type != 'pie' -%}
-        scales: {
-            yAxes: [{
-                ticks: {
-                    beginAtZero: true
-                }
-            }]
-        },
-    {%- endif -%}
     {%- if type != ''tsgauge'' -%}
         legend: {
             position: ''{{ legendposition }}'',
