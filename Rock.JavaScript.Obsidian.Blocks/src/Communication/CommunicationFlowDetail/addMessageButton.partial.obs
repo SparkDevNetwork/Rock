@@ -1,0 +1,79 @@
+<template>
+    <DropDownMenu anchorButtonCssClass="add-message-button"
+                  :disabled="disabled"
+                  :items="[
+                    {
+                        actionCssClass: 'add-message-action',
+                        type: 'default',
+                        iconCssClass: 'ti ti-mail text-info',
+                        title: 'Email',
+                        handler: () => $emit('email')
+                    },
+                    {
+                        actionCssClass: 'add-message-action',
+                        type: 'default',
+                        iconCssClass: 'ti ti-message text-info',
+                        title: 'SMS',
+                        handler: () => $emit('sms')
+                    },
+                    {
+                        actionCssClass: 'add-message-action',
+                        type: 'default',
+                        iconCssClass: 'ti ti-device-mobile text-info',
+                        title: 'Push Notification',
+                        handler: () => $emit('push')
+                    }
+                ]"><i class="ti ti-circle-plus"></i> Add Message</DropDownMenu>
+</template>
+
+<style scoped>
+:deep(.add-message-button) {
+    display: flex;
+    flex-direction: row;
+    justify-content: center;
+    width: 100%;
+    padding: var(--spacing-large) var(--spacing-large);
+    background-color: var(--color-interface-softest);
+    border-radius: var(--border-radius-base);
+    border: 1px dotted var(--color-info-strong);
+    cursor: pointer;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+    color: var(--color-info-strong);
+    font-weight: var(--font-weight-semibold);
+}
+
+:deep(.add-message-button:hover),
+.dropdown.open :deep(.add-message-button) {
+    background-color: var(--color-info-soft);
+}
+
+:deep(.dropdown-menu) {
+    left: 50%;
+    right: 50%;
+    transform: translate(-50%, calc(0px - var(--spacing-medium)));
+}
+
+:deep(.add-message-action) {
+    white-space: nowrap;
+    font-weight: var(--font-weight-semibold);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+
+    defineProps({
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    defineEmits<{
+        (e: "email"): void;
+        (e: "sms"): void;
+        (e: "push"): void;
+    }>();
+</script>

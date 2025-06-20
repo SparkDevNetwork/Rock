@@ -1,0 +1,57 @@
+<template>
+    <Panel v-if="hasSentCommunications"
+           panelBodyCssClass="chart-container"
+           title="Total Flow Performance Over Time">
+        <Chart :data="totalFlowPerformanceOverTimeData"
+               :options="totalFlowPerformanceOverTimeOptions"
+               type="line" />
+    </Panel>
+
+    <NothingToShow v-else title="Total Flow Performance Over Time" />
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { LineChartDataBuilder, LineChartOptionsBuilder } from "./types.partial";
+    import NothingToShow from "./nothingToShow.partial.obs";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+
+    const props = defineProps({
+        dataPoints: {
+            type: Array as PropType<ChartNumericDataPointBag[]>,
+            required: true
+        },
+
+        hasSentCommunications: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const totalFlowPerformanceOverTimeData = computed<ChartData<"line">>(() => {
+        return LineChartDataBuilder
+            .createFromData(props.dataPoints)
+            .build();
+    });
+
+    const totalFlowPerformanceOverTimeOptions = computed<ChartOptions<"line">>(() => {
+        return LineChartOptionsBuilder
+            .create()
+            .withValueFormattedAsPercentage()
+            .withResponsiveSizing()
+            .build();
+    });
+
+    // #endregion Computed Values
+</script>

@@ -1799,7 +1799,7 @@ function onTaskCompleted( resultData )
             var templateQuery = new CommunicationTemplateService( rockContext )
                 .Queryable()
                 .AsNoTracking()
-                .Where( a => a.IsActive );
+                .Where( a => a.IsActive && a.UsageType == null ); // By default, exclude templates with a specified usage type (e.g., Communication Flows)
 
             int? categoryId = cpCommunicationTemplate.SelectedValue.AsIntegerOrNull();
             if ( categoryId.HasValue && categoryId > 0 )

@@ -1,27 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div ref="progressBarElement"
-         :class="`progress text-${state} m-0 flex-fill`"
-         role="progressbar"
-         aria-label="Group Scheduler Progress"
-         data-toggle="tooltip"
-         :data-original-title="progressBarTooltip">
-
-        <div :class="`progress-bar bg-${state}`" :style="`width:${confirmedPercentage}%`"></div>
-        <div :class="`progress-bar bg-${state} o-50`" :style="`width:${pendingPercentage}%`"></div>
-
-        <div v-if="showMinimumThreshold"
-             class="indicator"
-             :style="`left:${minimumPercentage}%;`"></div>
-
-        <div v-if="showDesiredThreshold"
-             class="indicator"
-             :style="`left:${desiredPercentage}%;`"></div>
-
-        <div v-if="showMaximumThreshold"
-             class="indicator"
-             :style="`left:${maximumPercentage}%;`"></div>
-    </div>
+    <EnhancedProgressBar aria-label="Group Scheduler Progress"
+                         :progressType="state"
+                         :indicators="indicators"
+                         :modelValue="[
+                            { value: pendingPercentage, opacity: '50%' },
+                            { value: confirmedPercentage, text: confirmedPercentage ? `${confirmedPercentage}%` : '' }
+                        ]"
+                         :tooltip="progressBarTooltip" />
 </template>
 
 <!-- These styles cannot be scoped since they're being used in a tooltip. -->
@@ -56,6 +42,7 @@
     import { computed, nextTick, PropType, ref, watch } from "vue";
     import { IScheduleProgress, ProgressState } from "./types.partial";
     import { tooltip } from "@Obsidian/Utility/tooltip";
+    import EnhancedProgressBar from "@Obsidian/Controls/enhancedProgressBar.obs";
 
     const props = defineProps({
         progress: {
@@ -72,32 +59,51 @@
 
     // #region Computed Values
 
+    const indicators = computed<number[]>(() => {
+        const i: number[] = [];
+
+        if (showMinimumThreshold.value) {
+            i.push(minimumPercentage.value);
+        }
+
+        if (showDesiredThreshold.value) {
+            i.push(desiredPercentage.value);
+        }
+
+        if (showMaximumThreshold.value) {
+            i.push(maximumPercentage.value);
+        }
+
+        return i;
+    });
+
     const progressBarTooltip = computed((): string => {
-        return `
-<div class='progress-bar-tooltip'>
-    <div class='progress-bar-tooltip-configured'>
-        <span class="progress-bar-tooltip-label">Configured</span>
-        <div class='progress-bar-tooltip-counts'>
-            <span>
-                <i class='far fa-minus-square'></i>
-                ${minimumCapacity.value === 0 ? "-" : minimumCapacity.value}
-            </span>
-            <span>
-                <i class='far fa-star'></i>
-                ${desiredCapacity.value === 0 ? "-" : desiredCapacity.value}
-            </span>
-            <span>
-                <i class='far fa-plus-square'></i>
-                ${maximumCapacity.value === 0 ? "-" : maximumCapacity.value}
-            </span>
+        return `<div class='group-scheduler-v2'>
+    <div class='progress-bar-tooltip'>
+        <div class='progress-bar-tooltip-configured'>
+            <span class="progress-bar-tooltip-label">Configured</span>
+            <div class='progress-bar-tooltip-counts'>
+                <span>
+                    <i class='ti ti-minus'></i>
+                    ${minimumCapacity.value === 0 ? "-" : minimumCapacity.value}
+                </span>
+                <span>
+                    <i class='ti ti-star'></i>
+                    ${desiredCapacity.value === 0 ? "-" : desiredCapacity.value}
+                </span>
+                <span>
+                    <i class='ti ti-plus'></i>
+                    ${maximumCapacity.value === 0 ? "-" : maximumCapacity.value}
+                </span>
+            </div>
         </div>
-    </div>
-    <div class='progress-bar-tooltip-responses'>
-        <span class="progress-bar-tooltip-label">Responses</span>
-        <div class='progress-bar-tooltip-counts'>
-            <span><i class='far fa-calendar-check'></i> ${confirmedCount.value}</span>
-            <span><i class='fa fa-question'></i> ${pendingCount.value}</span>
-            <span><i class='far fa-calendar-times'></i> ${declinedCount.value}</span>
+        <div class='progress-bar-tooltip-responses'>
+            <span class="progress-bar-tooltip-label">Responses</span>
+            <div class='progress-bar-tooltip-counts'>
+                <span><i class='ti ti-calendar-check'></i> ${confirmedCount.value}</span>
+                <span><i class='ti ti-calendar-question'></i> ${pendingCount.value}</span>
+                <span><i class='ti ti-calendar-x'></i> ${declinedCount.value}</span>
+            </div>
         </div>
     </div>
 </div>`;
@@ -166,13 +172,13 @@
         return confirmedCount.value + pendingCount.value;
     });
 
-    const state = computed((): string => {
+    const state = computed((): "danger" | "success" | "critical" | "warning" => {
         const min = minimumCapacity.value;
         const desired = desiredCapacity.value;
         const max = maximumCapacity.value;
         const confirmed = confirmedCount.value;
 
-        let progressState = ProgressState.danger;
+        let progressState: "danger" | "success" | "critical" | "warning" = ProgressState.danger;
         if (confirmed > 0) {
             progressState = ProgressState.success;
             if (max > 0 && confirmed > max) {

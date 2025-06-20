@@ -1,0 +1,160 @@
+<template>
+    <Panel panelBodyCssClass="chart-container"
+           title="Message Instance vs. Flow Average">
+        <Chart :data="data"
+               :options="options"
+               :plugins="[BarDatasetLabelsPlugin, BarValueLabelsPlugin]"
+               type="bar" />
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { BarChartDataBuilder, BarChartOptionsBuilder } from "./types.partial";
+    import { BarDatasetLabelsPlugin, BarValueLabelsPlugin } from "./utils.partial";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+    import { CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowMessagePerformance/communicationFlowMessagePerformanceFlowInstanceCommunicationBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag | null | undefined>,
+            required: true
+        },
+
+        flowInstanceCommunications: {
+            type: Array as PropType<CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag[] | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const data = computed<ChartData<"bar">>(() => {
+        return BarChartDataBuilder
+            .createFromDataPoints(dataPoints.value)
+            .withSeriesOrder(["Instance", "Average"])
+            .build();
+    });
+
+    const options = computed<ChartOptions<"bar">>(() => {
+        return BarChartOptionsBuilder
+            .create()
+            .withoutLegend()
+            .withResponsiveSizing()
+            .withValueFormattedAsPercentage()
+            .withoutTooltips()
+            .build();
+    });
+
+    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
+        const instanceCommunications = props.flowInstanceCommunications ?? [];
+
+        if (isNullish(props.modelValue) || instanceCommunications.length <= 0) {
+            return [];
+        }
+
+        // Calculate conversion and unsubscribe rates for each instance.
+        const allInstanceCommunicationRates = Enumerable
+            .from(instanceCommunications)
+            .select(ic => {
+                const recipientMetrics = ic.recipientMetrics ?? [];
+                const recipientCount = recipientMetrics.length;
+                const conversionCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.conversionDate));
+                const unsubscribeCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.unsubscribeDate));
+                const openCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.openedDate));
+                const clickCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.clickedDate));
+
+                return {
+                    instanceCommunication: ic,
+                    rates: {
+                        conversionRate: recipientCount && conversionCount ? conversionCount / recipientCount : 0,
+                        unsubscribeRate: recipientCount && unsubscribeCount ? unsubscribeCount / recipientCount : 0,
+                        openRate: recipientCount && openCount ? openCount / recipientCount : 0,
+                        clickRate: recipientCount && clickCount ? clickCount / recipientCount : 0
+                    }
+                };
+            })
+            .toDictionary(ir => ir.instanceCommunication, ir => ir.rates);
+
+        const selectedInstanceCommunicationRates = allInstanceCommunicationRates.has(props.modelValue)
+            ? allInstanceCommunicationRates.get(props.modelValue)
+            : null;
+
+        if (isNullish(selectedInstanceCommunicationRates)) {
+            return [];
+        }
+
+        const dataPoints: ChartNumericDataPointBag[] = [];
+
+        dataPoints.push({
+            seriesName: "Instance",
+            label: "Conversion Rate",
+            value: selectedInstanceCommunicationRates.conversionRate,
+            color: "#2F855A"
+        });
+
+        dataPoints.push({
+            seriesName: "Average",
+            label: "Conversion Rate",
+            value: Enumerable.from(allInstanceCommunicationRates.values()).average(i => i.conversionRate),
+            color: "#9AE6B4"
+        });
+
+        dataPoints.push({
+            seriesName: "Instance",
+            label: "Open Rate",
+            value: selectedInstanceCommunicationRates.openRate,
+            color: "#3182CE"
+        });
+
+        dataPoints.push({
+            seriesName: "Average",
+            label: "Open Rate",
+            value: Enumerable.from(allInstanceCommunicationRates.values()).average(i => i.openRate),
+            color: "#90CDF4"
+        });
+
+        dataPoints.push({
+            seriesName: "Instance",
+            label: "Click-Through Rate",
+            value: selectedInstanceCommunicationRates.clickRate,
+            color: "#DD6B20"
+        });
+
+        dataPoints.push({
+            seriesName: "Average",
+            label: "Click-Through Rate",
+            value: Enumerable.from(allInstanceCommunicationRates.values()).average(i => i.clickRate),
+            color: "#FBD38D"
+        });
+
+        dataPoints.push({
+            seriesName: "Instance",
+            label: "Unsubscribe Rate",
+            value: selectedInstanceCommunicationRates.unsubscribeRate,
+            color: "#C53030"
+        });
+
+        dataPoints.push({
+            seriesName: "Average",
+            label: "Unsubscribe Rate",
+            value: Enumerable.from(allInstanceCommunicationRates.values()).average(i => i.unsubscribeRate),
+            color: "#FEB2B2"
+        });
+
+        return dataPoints;
+    });
+
+    // #endregion Computed Values
+</script>

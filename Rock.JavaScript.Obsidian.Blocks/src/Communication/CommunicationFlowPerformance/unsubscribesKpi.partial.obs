@@ -1,0 +1,46 @@
+<template>
+    <Kpi color="red"
+         :colorShade="700"
+         iconCssClass="ti ti-circle-minus"
+         isCard
+         label="Unsubscribes From Flow"
+         :tooltip="tooltip"
+         :value="value" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { UnsubscribeInfo } from "./types.partial";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<UnsubscribeInfo | null | undefined>,
+            required: true
+        }
+    });
+
+    const value = computed<string>(() => {
+        if (isNullish(props.modelValue?.unsubscribesFromFlow) &&
+            isNullish(props.modelValue?.unsubscribesFromAll) &&
+            isNullish(props.modelValue?.unsubscribesFromOther)) {
+            return "N/A";
+        }
+
+        const totalUnsubscribes = (props.modelValue?.unsubscribesFromFlow ?? 0)
+            + (props.modelValue?.unsubscribesFromAll ?? 0)
+            + (props.modelValue?.unsubscribesFromOther ?? 0);
+        return `${totalUnsubscribes}`;
+    });
+
+    const tooltip = computed<string | undefined>(() => {
+        if (isNullish(props.modelValue)) {
+            return;
+        }
+
+        return `Unsubscribes from Flows: ${props.modelValue.unsubscribesFromFlow ?? 0}\n` +
+            `Unsubscribes from All: ${props.modelValue.unsubscribesFromAll ?? 0}\n` +
+            `Unsubscribes from Other: ${props.modelValue.unsubscribesFromOther ?? 0}`;
+    });
+</script>

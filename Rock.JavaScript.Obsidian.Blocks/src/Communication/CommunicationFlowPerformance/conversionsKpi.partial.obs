@@ -1,0 +1,20 @@
+<template>
+    <Kpi color="green"
+         :colorShade="700"
+         iconCssClass="ti ti-bolt"
+         isCard
+         label="Conversions"
+         :value="modelValue ?? 'N/A'" />
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+
+    defineProps({
+        modelValue: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        }
+    });
+</script>

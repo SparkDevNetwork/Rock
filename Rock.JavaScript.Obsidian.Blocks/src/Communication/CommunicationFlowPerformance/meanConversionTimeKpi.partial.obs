@@ -1,0 +1,20 @@
+<template>
+    <Kpi color="gray"
+         :colorShade="700"
+         iconCssClass="ti ti-hourglass"
+         isCard
+         label="Avg. Time Before Conversion"
+         :value="modelValue ?? 'N/A'" />
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+
+    defineProps({
+        modelValue: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        }
+    });
+</script>

@@ -1,0 +1,52 @@
+<template>
+    <div class="well well-guide">
+        <slot>
+            <slot name="title">
+                <h5 v-if="title || $slots.titleContent" class="well-guide-title">
+                    <slot name="titleContent">{{ title }}</slot>
+                </h5>
+            </slot>
+
+            <slot name="body">
+                <div v-if="body || $slots.bodyContent" class="well-guide-body">
+                    <slot name="bodyContent">{{ body }}</slot>
+                </div>
+            </slot>
+        </slot>
+    </div>
+</template>
+
+<style scoped>
+.well-guide {
+    border: none;
+    padding: var(--spacing-medium);
+    background-color: var(--color-interface-softer);
+}
+
+.well-guide-title {
+    font-size: var(--font-size-h5);
+    color: var(--color-interface-strong);
+    margin: 0 0 var(--spacing-tiny) 0;
+}
+
+.well-guide-body {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+
+    defineProps({
+        title: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        body: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+</script>

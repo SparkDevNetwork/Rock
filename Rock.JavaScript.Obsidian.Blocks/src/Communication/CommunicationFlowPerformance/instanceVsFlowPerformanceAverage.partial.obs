@@ -1,0 +1,57 @@
+<template>
+    <Panel v-if="hasSentCommunications"
+           panelBodyCssClass="chart-container"
+           title="Instance vs. Flow Performance Average">
+        <Chart :data="instanceVsFlowPerformanceAverageData"
+               :options="instanceVsFlowPerformanceAverageOptions"
+               :plugins="[BarDatasetLabelsPlugin, BarValueLabelsPlugin]"
+               type="bar" />
+    </Panel>
+
+    <NothingToShow v-else title="Instance vs. Flow Performance Average" />
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import NothingToShow from "./nothingToShow.partial.obs";
+    import { BarChartDataBuilder, BarChartOptionsBuilder } from "./types.partial";
+    import { BarDatasetLabelsPlugin, BarValueLabelsPlugin } from "./utils.partial";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+
+    const props = defineProps({
+        dataPoints: {
+            type: Array as PropType<ChartNumericDataPointBag[]>,
+            required: true
+        },
+
+        hasSentCommunications: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const instanceVsFlowPerformanceAverageData = computed<ChartData<"bar">>(() => {
+        return BarChartDataBuilder
+            .createFromDataPoints(props.dataPoints)
+            .build();
+    });
+
+    const instanceVsFlowPerformanceAverageOptions = computed<ChartOptions<"bar">>(() => {
+        return BarChartOptionsBuilder
+            .create()
+            .withoutLegend()
+            .withResponsiveSizing()
+            .withValueFormattedAsPercentage()
+            .withoutTooltips()
+            .build();
+    });
+</script>

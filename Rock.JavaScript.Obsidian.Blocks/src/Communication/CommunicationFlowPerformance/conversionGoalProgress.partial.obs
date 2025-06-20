@@ -1,0 +1,184 @@
+<template>
+    <Panel>
+        <template #title>
+            Conversion Goal Progress <HighlightLabel :labelType="getConversionGoalStatusLabelType(conversionGoalStatus)">{{ conversionGoalStatus }}</HighlightLabel>
+        </template>
+
+        <div class="conversion-goal-progress-body">
+            <template v-if="hasSentMessages">
+                <div class="goal-summary">
+                    <HighlightLabel labelType="success"><i class="ti ti-target"></i></HighlightLabel> <span v-html="conversionGoalSummaryHtml"></span>
+                </div>
+
+                <EnhancedProgressBar :indicators="[targetConversionPercent ?? 0]"
+                                     :modelValue="{
+                                        value: conversionPercent,
+                                        text: roundedConversionPercent ? `${roundedConversionPercent}%` : null
+                                    }"
+                                     :progressType="progressBarType"
+                                     :indicatorType="progressBarType" />
+            </template>
+
+            <template v-else>
+                <div class="goal-summary">
+                    <HighlightLabel labelType="default"><i class="ti ti-target"></i></HighlightLabel> <span>No data available yet.</span>
+                </div>
+
+                <EnhancedProgressBar :indicators="[targetConversionPercent ?? 0]"
+                                     :modelValue="null" />
+            </template>
+        </div>
+    </Panel>
+</template>
+
+<style scoped>
+.conversion-goal-progress-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.goal-summary {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.goal-summary i {
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+}
+
+.progress-wrapper {
+    /* Needed for absolute positioning of the target line */
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 16px;
+}
+
+.progress-filled,
+.progress-empty {
+    height: 100%;
+    transition: width 0.4s ease-in-out;
+    will-change: width;
+    box-sizing: border-box;
+}
+
+.progress-filled {
+    font-size: var(--font-size-xsmall);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-interface-softest);
+    background-color: v-bind(progressBarType);
+    border: 1px solid v-bind(progressBarType);
+    border-right: none;
+    border-radius: 50px 0 0 50px;
+}
+
+.progress-empty {
+    background-color: var(--color-interface-softest);
+    border: 1px solid v-bind(progressBarType);
+    border-left: none;
+    border-radius: 0 50px 50px 0;
+}
+
+.progress-target {
+    position: absolute;
+    /* Overlap above the bar */
+    top: -3px;
+    height: 22px;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.progress-target svg {
+    stroke: v-bind(progressBarType);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import EnhancedProgressBar from "@Obsidian/Controls/enhancedProgressBar.obs";
+    import { ConversionGoalStatus } from "./types.partial";
+
+    const props = defineProps({
+        conversionGoalSummaryHtml: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        conversionGoalStatus: {
+            type: String as PropType<ConversionGoalStatus>,
+            required: true
+        },
+
+        /**
+         * The current conversion percent, which should be a value between 0 and 100.
+         */
+        conversionPercent: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        /**
+         * Indicates if any messages have been sent yet for the selected flow instances.
+         */
+        hasSentMessages: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        /**
+         * The target conversion percent, which should be a value between 0 and 100.
+         */
+        targetConversionPercent: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Computed Properties
+
+    const roundedConversionPercent = computed((): number => {
+        return Math.round(props.conversionPercent);
+    });
+
+    // #endregion Computed Properties
+
+    // #region Functions
+
+    function getConversionGoalStatusLabelType(conversionGoalStatus: ConversionGoalStatus): "success" | "danger" | "default" | "warning" {
+        switch (conversionGoalStatus) {
+            case "Achieved":
+                return "success";
+            case "Missed":
+                return "danger";
+            case "Pending":
+                return "warning";
+            case "Not Tracked":
+            default:
+                return "default";
+        }
+    }
+
+    const progressBarType = computed<"danger" | "success" | "critical" | "warning" | "default">(() => {
+        switch (props.conversionGoalStatus) {
+            case "Achieved":
+                return "success";
+            case "Missed":
+                return "danger";
+            case "Pending":
+                return "warning";
+            case "Not Tracked":
+            default:
+                return "default";
+        }
+    });
+
+    // #endregion Functions
+</script>

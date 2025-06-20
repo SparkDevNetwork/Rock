@@ -1,0 +1,305 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="enhanced-progress-bar">
+        <div v-bind="$attrs"
+             :ref="e => applyTooltip(e, { html: true })"
+             class="progress m-0 flex-fill"
+             :class="progressCssClass"
+             role="progressbar"
+             data-toggle="tooltip"
+             :data-original-title="tooltip">
+
+            <div class="progress-bar-wrapper">
+                <div v-for="(progressItem, index) in progressItems" :key="index"
+                     class="progress-bar"
+                     :class="getProgressBarCssClass(progressItem)"
+                     :style="{
+                        width: `${progressItem.value}%`,
+                        opacity: progressItem.opacity ?? '1'
+                    }">{{ progressItem.text }}</div>
+            </div>
+
+            <div v-for="(indicator, index) in indicatorItems" :key="index"
+                 class="indicator"
+                 :class="getIndicatorCssClass(indicator)"
+                 :style="{
+                    left: `${indicator.value}%`
+                }"></div>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.enhanced-progress-bar {
+    width: 100%;
+}
+
+.progress {
+    position: relative;
+    height: 16px;
+    overflow: visible;
+    background-color: var(--color-interface-softer);
+    border-radius: 50px;
+    /* There is a gap issue between this and the progress bar sides */
+    border: 1px solid currentColor;
+}
+
+.progress.progress-default {
+    border: none;
+}
+
+.progress.progress-critical {
+    border-color: var(--color-critical-strong);
+}
+
+.progress.progress-danger {
+    border-color: var(--color-danger-strong);
+}
+
+.progress.progress-info {
+    border-color: var(--color-info-strong);
+}
+
+.progress.progress-success {
+    border-color: var(--color-success-strong);
+}
+
+.progress.progress-warning {
+    border-color: var(--color-warning-strong);
+}
+
+/* The .progress-bar-wrapper resolves an anti-aliasing issue
+   where a tiny gap is rendered between the .progress and .progress-bar
+   when they both have pill shapes. */
+.progress-bar-wrapper {
+    border-radius: 50px;
+    overflow: hidden;
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    left: -1px;
+    right: -1px;
+}
+
+.progress-bar {
+    border-radius: 50px;
+    box-shadow: none;
+
+    /* Center text in progress bar */
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    font-size: var(--font-size-xsmall);
+}
+
+.progress-bar.progress-bar-default {
+    background-color: var(--color-interface-medium);
+}
+
+.indicator {
+    position: absolute;
+    top: -1px;
+    bottom: -1px;
+    width: 5px;
+}
+
+.indicator::before,
+.indicator::after {
+    position: absolute;
+    left: 0;
+    width: 1px;
+    height: 3px;
+    content: "";
+    background: currentColor;
+    box-shadow: inset 0 0 0 1px rgba(0, 0, 0, 0.25);
+}
+
+.indicator::before {
+    top: -1px;
+}
+
+.indicator::after {
+    bottom: -1px;
+}
+
+.indicator.indicator-default {
+    color: var(--color-interface-medium);
+}
+
+.indicator.indicator-critical {
+    color: var(--color-critical-shade);
+}
+
+.indicator.indicator-danger {
+    color: var(--color-danger-shade);
+}
+
+.indicator.indicator-info {
+    color: var(--color-info-shade);
+}
+
+.indicator.indicator-success {
+    color: var(--color-success-shade);
+}
+
+.indicator.indicator-warning {
+    color: var(--color-warning-shade);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { applyTooltip } from "@Obsidian/Utility/tooltip";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+
+    type ProgressBar = {
+        /**
+         * The percentage value of the progress bar.
+         *
+         * This should be a number between 0 and 100.
+         */
+        value: number;
+
+        /**
+         * The opacity of the progress bar (defaults to 100% opacity when nullish).
+         *
+         * This should be a string representing a CSS opacity value (e.g., "0.5", "1").
+         */
+        opacity?: string | null | undefined;
+
+        /**
+         * The text to display inside the progress bar.
+         */
+        text?: string | null | undefined;
+
+        /**
+         * The progress bar type, which determines the color and style of the bar (defaults to `props.progressType`).
+         */
+        type?: ProgressBarType;
+    };
+
+    type Indicator = {
+        /**
+         * The percentage value of the progress bar where the indicator should appear.
+         *
+         * This should be a number between 0 and 100.
+         */
+        value: number;
+
+        /**
+         * The indicator type, which determines the color and style of the indicator (defaults to `props.indicatorType`).
+         */
+        type?: ProgressBarType | null | undefined;
+    };
+
+    type ProgressBarType = "danger" | "success" | "critical" | "warning" | "info" | "default";
+
+    const props = defineProps({
+        /**
+         * The progress to display in the progress bar.
+         *
+         * These should be percentages (0-100) that indicate the progress of the task.
+         */
+        modelValue: {
+            type: Object as PropType<number | ProgressBar | ProgressBar[] | null | undefined>,
+            required: true
+        },
+
+        /**
+         * Optional indicator marks to display along the progress bar.
+         *
+         * These should be percentages (0-100) that represent where the indicators should be placed.
+         */
+        indicators: {
+            type: Array as PropType<(number | Indicator)[] | null | undefined>
+        },
+
+        /**
+         * The type of indicator marks to display along the progress bar.
+         */
+        indicatorType: {
+            type: String as PropType<ProgressBarType>,
+            default: "default"
+        },
+
+        /**
+         * The color for the progress bar.
+         */
+        progressType: {
+            type: String as PropType<ProgressBarType>,
+            default: "default"
+        },
+
+        /**
+         *  The tooltip for the progress bar (supports HTML)
+         */
+        tooltip: {
+            type: String as PropType<string | null | undefined>
+        }
+    });
+
+    // #region Computed Values
+
+    const progressCssClass = computed<string>(() => {
+        return `progress-${props.progressType}`;
+    });
+
+    const progressItems = computed<ProgressBar[]>(() => {
+        if (isNullish(props.modelValue)) {
+            return [];
+        }
+
+        if (typeof props.modelValue === "number") {
+            return [
+                {
+                    value: props.modelValue
+                }
+            ];
+        }
+
+        if (Array.isArray(props.modelValue)) {
+            return props.modelValue;
+        }
+
+        return [props.modelValue];
+    });
+
+    const indicatorItems = computed<Indicator[]>(() => {
+        if (isNullish(props.indicators)) {
+            return [];
+        }
+
+        // Indicators with the same value overwrite each other with the last one.
+        return Enumerable.from(props.indicators)
+            .select<Indicator>(i => {
+                if (typeof i === "number") {
+                    return { value: i };
+                }
+                else {
+                    return i;
+                }
+            })
+            // Overwrite duplicate indicators, keeping the last one.
+            .groupBy(i => i.value)
+            .select(g => g.last())
+            // Order the values by percentage value.
+            .orderBy(i => i.value)
+            .toArray();
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getProgressBarCssClass(progressItem: ProgressBar): string {
+        return `progress-bar-${progressItem.type ?? props.progressType}`;
+    }
+
+    function getIndicatorCssClass(indicator: Indicator): string {
+        return `indicator-${indicator.type ?? props.indicatorType}`;
+    }
+
+    // #endregion Functions
+</script>

@@ -165,6 +165,18 @@ export const EntityType = {
     Communication: "C4CCBD91-1264-48BF-BC33-92751C8948B5",
     /** The EntityType Guid for Rock.Model.CommunicationAttachment  */
     CommunicationAttachment: "4271BFB1-AF05-4B6C-8931-032EB02DD760",
+    /** The guid for the communication flow */
+    CommunicationFlow: "C7A67172-9A41-4421-94B0-F59DFEACF705",
+    /** The guid for the communication flow communication */
+    CommunicationFlowCommunication: "07D0CECC-066F-45A8-95BC-7C8F5199D53C",
+    /** The guid for the communication flow instance */
+    CommunicationFlowInstance: "7B487D88-0667-4AFF-BC6C-1FC8482392C8",
+    /** The guid for the communication flow instance communication */
+    CommunicationFlowInstanceCommunication: "FC2D426E-07E4-4803-BCB6-09CB43031856",
+    /** The guid for the communication flow instance conversion history */
+    CommunicationFlowInstanceConversionHistory: "726B5B81-B4B2-4E74-9069-0409A3D19753",
+    /** The guid for the communication flow instance recipient */
+    CommunicationFlowInstanceRecipient: "F615AC08-8ACD-48F9-B42E-2F4CE02D4206",
     /** The guid for the email communication medium */
     CommunicationMediumEmail: "5A653EBE-6803-44B4-85D2-FB7B8146D55D",
     /** The guid for the push notification communication medium */

@@ -558,7 +558,7 @@ namespace Rock.CodeGeneration.FileGenerators
                 tsType = "string";
                 isNullable = isNullable || !isRequired;
             }
-            else if ( type == typeof( DateTime ) || type == typeof( DateTimeOffset ) )
+            else if ( type == typeof( DateTime ) || type == typeof( DateTimeOffset ) || type == typeof ( TimeSpan ) )
             {
                 tsType = "string";
                 isNullable = isNullable || !isRequired;
