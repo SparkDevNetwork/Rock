@@ -37,7 +37,7 @@
     }>();
 
     const showAsLinkTypeOptions: ListItemBag[] = safeParseJson(props.options.showAsLinkTypeOptions) ?? [];
-    const showAsLinkType = ref(props.modelValue.showAsLinkType ?? "");
+    const showAsLinkType = ref(props.modelValue.showAsLinkType ?? showAsLinkTypeOptions[0]?.value ?? "");
 
     const groupTypeOptions: ListItemBag[] = safeParseJson(props.options.groupTypeOptions) ?? [];
     const groupType = ref(props.modelValue.groupType ?? "");
