@@ -4,7 +4,6 @@
 //     Changes to this file will be lost when the code is regenerated.
 // </auto-generated>
 //------------------------------------------------------------------------------
-
 // <copyright>
 // Copyright by the Spark Development Network
 //
@@ -24,19 +23,14 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** A container class for job type options that includes basic details about a job type */
 export type ServiceJobOptionsBag = {
-    /**
-     * The job types.
-     */
-    jobType: ListItemBag;
+    /** Gets or sets the default description for the job type. */
+    defaultDescription?: string | null;
 
-    /**
-     * The default name used for the job type.
-     */
-    defaultName: string;
+    /** Gets or sets the default name for the job type. */
+    defaultName?: string | null;
 
-    /**
-     * The default description provided for the job type.
-     */
-    defaultDescription: string;
+    /** Gets or sets the list of available job type options. */
+    jobType?: ListItemBag | null;
 };
