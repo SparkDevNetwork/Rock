@@ -16,7 +16,7 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import { LineChartDataBuilder, LineChartOptionsBuilder } from "./types.partial";
-    import { RockDateTimeFormatter, useRockDateTimeParser } from "./utils.partial";
+    import { isRockDateTime, RockDateTimeFormatter, useRockDateTimeParser } from "./utils.partial";
     import Chart from "@Obsidian/Controls/chart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
@@ -24,7 +24,6 @@
     import { isNullish } from "@Obsidian/Utility/util";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
     import { CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowMessagePerformance/communicationFlowMessagePerformanceFlowInstanceCommunicationBag";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const props = defineProps({
         modelValue: {
@@ -174,13 +173,4 @@
     });
 
     // #endregion Computed Values
-
-    // #region Functions
-
-    function isRockDateTime(value: RockDateTime | null | undefined): value is RockDateTime {
-        return !isNullish(value);
-    }
-
-    // #endregion Functions
-
 </script>

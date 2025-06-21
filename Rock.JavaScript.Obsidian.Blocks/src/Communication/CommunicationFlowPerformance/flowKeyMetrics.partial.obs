@@ -3,51 +3,40 @@
         <div v-if="!vertical"
              class="row">
             <div class="col-md-4">
-                <ConversionsKpi :modelValue="conversionCount" />
+                <ConversionsKpi :modelValue="modelValue" />
             </div>
 
             <div class="col-md-4">
-                <MeanConversionTimeKpi :modelValue="averageTimeBeforeConversionKpiValue" />
+                <MeanConversionTimeKpi :modelValue="modelValue" />
             </div>
 
             <div class="col-md-4">
-                <UnsubscribesKpi :modelValue="unsubscribeInfo" />
+                <UnsubscribesKpi :modelValue="modelValue" />
             </div>
         </div>
 
         <div v-else
              class="row">
             <div class="col-md-12">
-                <ConversionsKpi :modelValue="conversionCount" />
-                <MeanConversionTimeKpi :modelValue="averageTimeBeforeConversionKpiValue" />
-                <UnsubscribesKpi :modelValue="unsubscribeInfo" />
+                <ConversionsKpi :modelValue="modelValue" />
+                <MeanConversionTimeKpi :modelValue="modelValue" />
+                <UnsubscribesKpi :modelValue="modelValue" />
             </div>
         </div>
     </Panel>
 </template>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
+    import { PropType } from "vue";
     import ConversionsKpi from "./conversionsKpi.partial.obs";
     import MeanConversionTimeKpi from "./meanConversionTimeKpi.partial.obs";
-    import { UnsubscribeInfo } from "./types.partial";
     import UnsubscribesKpi from "./unsubscribesKpi.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
+    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
 
-    const props = defineProps({
-        averageTimeBeforeConversion: {
-            type: Object as PropType<RockTimeSpan | null | undefined>,
-            required: true
-        },
-
-        conversionCount: {
-            type: Number as PropType<number | null | undefined>,
-            required: true
-        },
-
-        unsubscribeInfo: {
-            type: Object as PropType<UnsubscribeInfo | null | undefined>,
+    defineProps({
+        modelValue: {
+            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
             required: true
         },
 
@@ -56,12 +45,4 @@
             default: false
         }
     });
-
-    // #region Computed Values
-
-    const averageTimeBeforeConversionKpiValue = computed<string | null | undefined>(() => {
-        return props.averageTimeBeforeConversion?.toElapsedString();
-    });
-
-    // #endregion Computed Values
 </script>

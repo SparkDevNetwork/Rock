@@ -21,6 +21,7 @@ import { Chart, BarElement, ChartMeta, ChartType, Plugin, BarProps } from "@Obsi
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { isHTMLElement } from "@Obsidian/Utility/dom";
 import { tooltip } from "@Obsidian/Utility/tooltip";
+import { isNullish } from "@Obsidian/Utility/util";
 
 export function isEnumValue<T extends Record<string, number | string>>(enumObject: T, value: unknown): value is T[keyof T] {
     return Object.values(enumObject).includes(value as T[keyof T]);
@@ -458,3 +459,7 @@ export const RockDateTimeFormatter = {
 
     // #endregion Date Time Formats
 };
+
+export function isRockDateTime(value: unknown): value is RockDateTime {
+    return !isNullish(value) && value instanceof RockDateTime;
+}

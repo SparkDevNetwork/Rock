@@ -5,7 +5,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
     public class CommunicationFlowPerformanceGridItemBag
     {
-        public object IdKey { get; set; }
+        public string IdKey { get; set; }
         public string MessageName { get; set; }
         public CommunicationType CommunicationType { get; set; }
         public int Sent { get; set; }

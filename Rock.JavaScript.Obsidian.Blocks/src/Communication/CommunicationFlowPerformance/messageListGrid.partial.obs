@@ -1,0 +1,95 @@
+<template>
+    <Grid :definition="gridDefinition ?? undefined"
+          :data="gridDataSource ?? undefined"
+          :entityTypeGuid="EntityType.CommunicationFlowCommunication"
+          :keyField="getField('idKey')"
+          itemTerm="Message"
+          stickyHeader
+          @selectItem="onViewMessage">
+        <TextColumn :field="getField('messageName')"
+                    :name="getField('messageName')"
+                    title="Message Name" />
+
+        <Column :field="getField('communicationType')"
+                :name="getField('communicationType')"
+                title="Type">
+            <template #format="{ row }">
+                <HighlightLabel labelType="info">
+                    <template v-if="getRow(row).communicationType === CommunicationType.Email"><i class="ti ti-mail"></i> Email</template>
+                    <template v-else-if="getRow(row).communicationType === CommunicationType.SMS"><i class="ti ti-message"></i> SMS</template>
+                    <template v-else-if="getRow(row).communicationType === CommunicationType.PushNotification"><i class="ti ti-device-mobile"></i> Push</template>
+                </HighlightLabel>
+            </template>
+        </Column>
+
+        <TextColumn :field="getField('sent')"
+                    :name="getField('sent')"
+                    title="Sent" />
+
+        <Column :field="getField('conversions')"
+                :name="getField('conversions')"
+                title="Conversions">
+            <template #format="{ row }">
+                <template v-if="!isNullish(getRow(row).conversions)">
+                    <span>
+                        {{ getRow(row).conversions }}
+                    </span>
+                    <span>
+                        {{ `&nbsp;(${getRow(row).sent === 0 ? 0 : Math.round(getRow(row).conversions! / getRow(row).sent * 100)}%)` }}
+                    </span>
+                </template>
+            </template>
+        </Column>
+
+        <TextColumn :field="getField('unsubscribes')"
+                    :name="getField('unsubscribes')"
+                    title="Unsubscribes" />
+
+        <Column :field="getField('opens')"
+                :name="getField('opens')"
+                title="Open Rate">
+            <template #format="{ row }">
+                {{ `${getRow(row).sent === 0 ? 0 : Math.round(getRow(row).opens / getRow(row).sent * 100)}%` }}
+            </template>
+        </Column>
+
+        <Column :field="getField('clicks')"
+                :name="getField('clicks')"
+                title="Click Rate">
+            <template #format="{ row }">
+                {{ `${getRow(row).sent ? 0 : Math.round(getRow(row).clicks / getRow(row).sent * 100)}%` }}
+            </template>
+        </Column>
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import Grid, { TextColumn, Column } from "@Obsidian/Controls/grid";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { useGetTypeMemberName } from "@Obsidian/Utility/objectUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { CommunicationFlowPerformanceGridItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceGridItemBag";
+
+    const getField = useGetTypeMemberName<CommunicationFlowPerformanceGridItemBag>();
+    const getRow = (v: unknown): CommunicationFlowPerformanceGridItemBag => v as CommunicationFlowPerformanceGridItemBag;
+
+    defineProps({
+        gridDefinition: {
+            type: Object as PropType<GridDefinitionBag | null | undefined>,
+            required: true
+        },
+
+        gridDataSource: {
+            type: Object as PropType<GridDataBag | Promise<GridDataBag> | null | undefined>,
+            required: true
+        },
+
+        onViewMessage: {
+            type: Function as PropType<((communicationFlowCommunicationIdKey: string) => void) | undefined>
+        }
+    });
+</script>

@@ -4,17 +4,74 @@
          iconCssClass="ti ti-hourglass"
          isCard
          label="Avg. Time Before Conversion"
-         :value="modelValue ?? 'N/A'" />
+         :value="averageTimeBeforeConversion" />
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType } from "vue";
+    import { isRockDateTime, useRockDateTimeParser } from "./utils.partial";
     import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
+    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
 
-    defineProps({
+    const props = defineProps({
         modelValue: {
-            type: String as PropType<string | null | undefined>,
+            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
             required: true
         }
     });
+
+    const { parseRockDateTime } = useRockDateTimeParser();
+
+    // #region Computed Values
+
+    const averageTimeBeforeConversion = computed<string>(() => {
+        const enumerable = Enumerable.from(props.modelValue ?? []);
+
+        if (!enumerable.any()
+            || enumerable.sum(i => (i.recipients ?? []).length) === 0) {
+            // There are no selected flow instances
+            // or there are no recipients in the selected flow instances,
+            // so there is no average conversion time to calculate.
+            return "N/A";
+        }
+
+        const conversionTimesInMilliseconds = enumerable
+            .selectMany(instance => {
+                // For each instance, return a collection of conversion times.
+                const instanceStartDate = instance.startDate ? RockDateTime.parseISO(instance.startDate) : null;
+
+                if (instanceStartDate === null || !instance.conversions || instance.conversions.length === 0) {
+                    return [];
+                }
+                else {
+                    const conversionDateTimes = Enumerable
+                        .from(instance.conversions)
+                        .select(conversion => parseRockDateTime(conversion.date))
+                        .ofType(isRockDateTime);
+
+                    // Return the collection of conversion times for this instance in milliseconds.
+                    // This will be averaged at the end.
+                    return conversionDateTimes
+                        .select(conversionDateTime => conversionDateTime.toMilliseconds() - instanceStartDate.toMilliseconds())
+                        .toArray();
+                }
+            })
+            .toArray();
+
+        if (conversionTimesInMilliseconds.length === 0) {
+            // There are no conversion times to average
+            // so return "N/A".
+            return "N/A";
+        }
+
+
+        const meanConversionTime = Enumerable.from(conversionTimesInMilliseconds).average(conversionTimeSpanMilliseconds => conversionTimeSpanMilliseconds);
+
+        return RockTimeSpan.fromMilliseconds(meanConversionTime).toElapsedString();
+    });
+
+    // #endregion Computed Values
 </script>

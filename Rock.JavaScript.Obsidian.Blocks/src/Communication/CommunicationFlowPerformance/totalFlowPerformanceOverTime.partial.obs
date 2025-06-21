@@ -17,22 +17,41 @@
 </style>
 
 <script setup lang="ts">
+    /* eslint-disable @typescript-eslint/naming-convention */
     import { computed, PropType } from "vue";
-    import { LineChartDataBuilder, LineChartOptionsBuilder } from "./types.partial";
     import NothingToShow from "./nothingToShow.partial.obs";
+    import { LineChartDataBuilder, LineChartOptionsBuilder } from "./types.partial";
+    import { RockDateTimeFormatter, useRockDateTimeParser } from "./utils.partial";
     import Chart from "@Obsidian/Controls/chart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
 
+    const {
+        format_Jan_1,
+        format_Day_1,
+        format_January_70,
+        format_1_1_1970
+    } = RockDateTimeFormatter;
+    const { parseRockDateTime } = useRockDateTimeParser();
+
     const props = defineProps({
-        dataPoints: {
-            type: Array as PropType<ChartNumericDataPointBag[]>,
+        modelValue: {
+            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
             required: true
         },
 
         hasSentCommunications: {
             type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        dateUnit: {
+            type: String as PropType<"day" | "month" | "week">,
             required: true
         }
     });
@@ -41,7 +60,7 @@
 
     const totalFlowPerformanceOverTimeData = computed<ChartData<"line">>(() => {
         return LineChartDataBuilder
-            .createFromData(props.dataPoints)
+            .createFromData(dataPoints.value)
             .build();
     });
 
@@ -51,6 +70,121 @@
             .withValueFormattedAsPercentage()
             .withResponsiveSizing()
             .build();
+    });
+
+    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
+        const dataPoints: ChartNumericDataPointBag[] = [];
+        const selectedInstanceEnumerable = Enumerable.from(props.modelValue ?? []);
+        const selectedInstancesTotalRecipientCount = selectedInstanceEnumerable.sum(i => i.recipients?.length ?? 0);
+
+        if (selectedInstancesTotalRecipientCount <= 0) {
+            return dataPoints;
+        }
+
+        const transformDate: (d: RockDateTime) => RockDateTime = (d: RockDateTime) => {
+            switch (props.dateUnit) {
+                case "week":
+                    return d.startOfWeek();
+                case "month":
+                    return d.startOfMonth();
+                case "day":
+                default:
+                    return d;
+            }
+        };
+
+        const formatDate: (d: RockDateTime) => string = (d: RockDateTime) => {
+            switch (props.dateUnit) {
+                case "month":
+                    // January 24
+                    return format_January_70(d);
+                case "week": {
+                    const nextWeek = d.addDays(7);
+
+                    if (d.month === nextWeek.month) {
+                        // The week is within the same month, format it as "Jan 1-7"
+                        return format_Jan_1(d) + "-" + format_Day_1(nextWeek);
+                    }
+                    else {
+                        // If the week spans two months, format it as "Jan 31-Feb 6"
+                        return format_Jan_1(d) + "-" + format_Jan_1(nextWeek);
+                    }
+                }
+                case "day":
+                default:
+                    return format_1_1_1970(d);
+            }
+        };
+
+        let conversionRateAccumulator = 0;
+        const selectedInstanceConversionRateData =
+            selectedInstanceEnumerable
+                .selectMany(i => i.conversions ?? [])
+                .select(c => parseRockDateTime(c.date)?.date)
+                .ofType((convertedRockDateTime): convertedRockDateTime is RockDateTime => !isNullish(convertedRockDateTime))
+                .select(r => {
+                    const transformedDate = transformDate(r);
+
+                    return {
+                        seriesName: "Conversion Rate",
+                        color: "#68D391",
+                        label: formatDate(transformedDate),
+                        // Needed for sorting later when the two data series are combined.
+                        timestamp: transformedDate.toMilliseconds()
+                    };
+                })
+                .groupBy(r => r.label)
+                .orderBy(r => r.first().timestamp)
+                .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
+                    const firstDataPoint = g.first();
+                    conversionRateAccumulator += g.count();
+
+                    return {
+                        seriesName: firstDataPoint.seriesName,
+                        label: firstDataPoint.label,
+                        value: conversionRateAccumulator / selectedInstancesTotalRecipientCount * 100,
+                        color: firstDataPoint.color,
+                        timestamp: firstDataPoint.timestamp
+                    };
+                });
+
+        let unsubscribeRateAccumulator = 0;
+        const selectInstanceUnubscribeRateData =
+            selectedInstanceEnumerable
+                .selectMany(i => i.recipients ?? [])
+                .where(r => r.causedUnsubscribe)
+                .select(r => parseRockDateTime(r.unsubscribeDateTime))
+                .ofType((unsubscribeRockDateTime): unsubscribeRockDateTime is RockDateTime => !isNullish(unsubscribeRockDateTime))
+                .select(r => {
+                    const transformedDate = transformDate(r);
+
+                    return {
+                        seriesName: "Unsubscribe Rate",
+                        color: "#FC8181",
+                        label: formatDate(transformedDate),
+                        // Needed for sorting later when the two data series are combined.
+                        timestamp: transformedDate.toMilliseconds()
+                    };
+                })
+                .groupBy(r => r.label)
+                .orderBy(r => r.first().timestamp)
+                .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
+                    const firstDataPoint = g.first();
+                    unsubscribeRateAccumulator += g.count();
+
+                    return {
+                        seriesName: firstDataPoint.seriesName,
+                        label: firstDataPoint.label,
+                        value: unsubscribeRateAccumulator / selectedInstancesTotalRecipientCount * 100,
+                        color: firstDataPoint.color,
+                        timestamp: firstDataPoint.timestamp
+                    };
+                });
+
+        return selectedInstanceConversionRateData
+            .concat(selectInstanceUnubscribeRateData)
+            .orderBy(dp => dp.timestamp) // Re-order so the data are all in chronological order.
+            .toArray();
     });
 
     // #endregion Computed Values

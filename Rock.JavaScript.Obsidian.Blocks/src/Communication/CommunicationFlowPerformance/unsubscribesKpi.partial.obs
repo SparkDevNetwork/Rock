@@ -12,25 +12,34 @@
     import { computed, PropType } from "vue";
     import { UnsubscribeInfo } from "./types.partial";
     import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
+
+    enum UnsubscribeLevel {
+        Flow = 1,
+        CommunicationList = 2,
+        Bulk = 3,
+        All = 4,
+    }
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<UnsubscribeInfo | null | undefined>,
+            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
             required: true
         }
     });
 
     const value = computed<string>(() => {
-        if (isNullish(props.modelValue?.unsubscribesFromFlow) &&
-            isNullish(props.modelValue?.unsubscribesFromAll) &&
-            isNullish(props.modelValue?.unsubscribesFromOther)) {
+        if (isNullish(unsubscribeInfo.value?.unsubscribesFromFlow) &&
+            isNullish(unsubscribeInfo.value?.unsubscribesFromAll) &&
+            isNullish(unsubscribeInfo.value?.unsubscribesFromOther)) {
             return "N/A";
         }
 
-        const totalUnsubscribes = (props.modelValue?.unsubscribesFromFlow ?? 0)
-            + (props.modelValue?.unsubscribesFromAll ?? 0)
-            + (props.modelValue?.unsubscribesFromOther ?? 0);
+        const totalUnsubscribes = (unsubscribeInfo.value?.unsubscribesFromFlow ?? 0)
+            + (unsubscribeInfo.value?.unsubscribesFromAll ?? 0)
+            + (unsubscribeInfo.value?.unsubscribesFromOther ?? 0);
         return `${totalUnsubscribes}`;
     });
 
@@ -39,8 +48,31 @@
             return;
         }
 
-        return `Unsubscribes from Flows: ${props.modelValue.unsubscribesFromFlow ?? 0}\n` +
-            `Unsubscribes from All: ${props.modelValue.unsubscribesFromAll ?? 0}\n` +
-            `Unsubscribes from Other: ${props.modelValue.unsubscribesFromOther ?? 0}`;
+        return `Unsubscribes from Flows: ${unsubscribeInfo.value?.unsubscribesFromFlow ?? 0}\n` +
+            `Unsubscribes from All: ${unsubscribeInfo.value?.unsubscribesFromAll ?? 0}\n` +
+            `Unsubscribes from Other: ${unsubscribeInfo.value?.unsubscribesFromOther ?? 0}`;
+    });
+
+    const unsubscribeInfo = computed<UnsubscribeInfo | null | undefined>(() => {
+        const enumerable = Enumerable.from(props.modelValue ?? []);
+
+        if (!enumerable.any(i => i.hasSentCommunications)
+            || enumerable.sum(i => (i.recipients ?? []).length) === 0) {
+            // There are no selected instances with sent communications
+            // or none of the selected instances have any recipients.
+            // There is no unsubscribe info at this point until at least one communication is sent.
+            return null;
+        }
+
+        const unsubscribedRecipients = enumerable
+            .selectMany(i => i.recipients ?? [])
+            .where(r => r.causedUnsubscribe)
+            .toArray();
+
+        return {
+            unsubscribesFromAll: Enumerable.from(unsubscribedRecipients).count(r => r.unsubscribeLevel === UnsubscribeLevel.All),
+            unsubscribesFromFlow: Enumerable.from(unsubscribedRecipients).count(r => r.unsubscribeLevel === UnsubscribeLevel.Flow),
+            unsubscribesFromOther: Enumerable.from(unsubscribedRecipients).count(r => isNullish(r.unsubscribeLevel) || ![UnsubscribeLevel.All, UnsubscribeLevel.Flow].includes(r.unsubscribeLevel)),
+        };
     });
 </script>

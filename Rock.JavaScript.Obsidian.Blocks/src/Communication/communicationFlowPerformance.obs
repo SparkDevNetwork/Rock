@@ -49,31 +49,30 @@
                 <template v-if="config.communicationFlow?.triggerType === CommunicationFlowTriggerType.OneTime">
                     <div class="row">
                         <div class="col-md-4">
-                            <FlowKeyMetrics :averageTimeBeforeConversion="averageTimeBeforeConversion"
-                                            :conversionCount="conversionCount"
-                                            :unsubscribeInfo="unsubscribeInfo"
+                            <FlowKeyMetrics :modelValue="selectedFlowInstances"
                                             vertical />
                         </div>
 
                         <div class="col-md-8">
-                            <TotalFlowPerformanceOverTime :dataPoints="totalFlowPerformanceOverTimeDataPoints"
+                            <TotalFlowPerformanceOverTime :modelValue="selectedFlowInstances"
+                                                          :dateUnit="dateUnit"
                                                           :hasSentCommunications="selectedFlowInstances.some(i => i.hasSentCommunications)" />
                         </div>
                     </div>
                 </template>
 
                 <template v-else>
-                    <FlowKeyMetrics :averageTimeBeforeConversion="averageTimeBeforeConversion"
-                                    :conversionCount="conversionCount"
-                                    :unsubscribeInfo="unsubscribeInfo" />
+                    <FlowKeyMetrics :modelValue="selectedFlowInstances" />
 
                     <div class="row">
                         <div class="col-md-6">
-                            <TotalFlowPerformanceOverTime :dataPoints="totalFlowPerformanceOverTimeDataPoints"
+                            <TotalFlowPerformanceOverTime :modelValue="selectedFlowInstances"
+                                                          :dateUnit="dateUnit"
                                                           :hasSentCommunications="selectedFlowInstances.some(i => i.hasSentCommunications)" />
                         </div>
                         <div class="col-md-6">
-                            <InstanceVsFlowPerformanceAverage :dataPoints="instanceVsFlowPerformanceAverageDataPoints"
+                            <InstanceVsFlowPerformanceAverage :modelValue="selectedFlowInstances"
+                                                              :flowInstances="config.communicationFlow?.instances"
                                                               :hasSentCommunications="selectedFlowInstances.some(i => i.hasSentCommunications)" />
                         </div>
                     </div>
@@ -83,7 +82,7 @@
             <template v-else>
                 <div class="row">
                     <div class="col-md-4">
-                        <UnsubscribesKpi :modelValue="unsubscribeInfo" />
+                        <UnsubscribesKpi :modelValue="selectedFlowInstances" />
                     </div>
                 </div>
             </template>
@@ -100,68 +99,9 @@
         </template>
     </Panel>
 
-    <Grid :definition="config.gridDefinition ?? undefined"
-          :data="gridDataSource"
-          :entityTypeGuid="EntityType.CommunicationFlowCommunication"
-          :keyField="getGridColumnKey('idKey')"
-          itemTerm="Message"
-          stickyHeader
-          @selectItem="getSelectItemHandler">
-        <TextColumn :field="getGridColumnKey('messageName')"
-                    :name="getGridColumnKey('messageName')"
-                    title="Message Name" />
-
-        <Column :field="getGridColumnKey('communicationType')"
-                :name="getGridColumnKey('communicationType')"
-                title="Type">
-            <template #format="{ row }">
-                <HighlightLabel labelType="info">
-                    <template v-if="getGridRowData(row, 'communicationType') === CommunicationType.Email"><i class="ti ti-mail"></i> Email</template>
-                    <template v-else-if="getGridRowData(row, 'communicationType') === CommunicationType.SMS"><i class="ti ti-message"></i> SMS</template>
-                    <template v-else-if="getGridRowData(row, 'communicationType') === CommunicationType.PushNotification"><i class="ti ti-device-mobile"></i> Push</template>
-                </HighlightLabel>
-            </template>
-        </Column>
-
-        <TextColumn :field="getGridColumnKey('sent')"
-                    :name="getGridColumnKey('sent')"
-                    title="Sent" />
-
-        <Column :field="getGridColumnKey('conversions')"
-                :name="getGridColumnKey('conversions')"
-                title="Conversions">
-            <template #format="{ row }">
-                <template v-if="!isNullish(getGridRowData(row, 'conversions'))">
-                    <span>
-                        {{ getGridRowData(row, 'conversions') }}
-                    </span>
-                    <span>
-                        {{ `&nbsp;(${getGridRowData(row, 'sent') === 0 ? 0 : Math.round(getGridRowData(row, 'conversions')! / getGridRowData(row, 'sent') * 100)}%)` }}
-                    </span>
-                </template>
-            </template>
-        </Column>
-
-        <TextColumn :field="getGridColumnKey('unsubscribes')"
-                    :name="getGridColumnKey('unsubscribes')"
-                    title="Unsubscribes" />
-
-        <Column :field="getGridColumnKey('opens')"
-                :name="getGridColumnKey('opens')"
-                title="Open Rate">
-            <template #format="{ row }">
-                {{ `${getGridRowData(row, 'sent') === 0 ? 0 : Math.round(getGridRowData(row, 'opens') / getGridRowData(row, 'sent') * 100)}%` }}
-            </template>
-        </Column>
-
-        <Column :field="getGridColumnKey('clicks')"
-                :name="getGridColumnKey('clicks')"
-                title="Click Rate">
-            <template #format="{ row }">
-                {{ `${getGridRowData(row, 'sent') === 0 ? 0 : Math.round(getGridRowData(row, 'clicks') / getGridRowData(row, 'sent') * 100)}%` }}
-            </template>
-        </Column>
-    </Grid>
+    <MessageListGrid :gridDefinition="config.gridDefinition"
+                     :gridDataSource="gridDataSource"
+                     @viewMessage="onViewMessage" />
 </template>
 
 <style scoped>
@@ -182,12 +122,12 @@
     import { computed, ref, watch } from "vue";
     import ConversionGoalProgress from "./CommunicationFlowPerformance/conversionGoalProgress.partial.obs";
     import FlowKeyMetrics from "./CommunicationFlowPerformance/flowKeyMetrics.partial.obs";
+    import MessageListGrid from "./CommunicationFlowPerformance/messageListGrid.partial.obs";
     import TotalFlowPerformanceOverTime from "./CommunicationFlowPerformance/totalFlowPerformanceOverTime.partial.obs";
     import InstanceVsFlowPerformanceAverage from "./CommunicationFlowPerformance/instanceVsFlowPerformanceAverage.partial.obs";
     import { provideRockDateTimeParser, RockDateTimeFormatter } from "./CommunicationFlowPerformance/utils.partial";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import Grid, { TextColumn, Column } from "@Obsidian/Controls/grid";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
@@ -197,35 +137,26 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
     import { calculateSlidingDateRange, RangeType, SlidingDateRange, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
     import { prependSingularIndefiniteArticle } from "@Obsidian/Utility/stringUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { CommunicationFlowPerformanceGridItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceGridItemBag";
     import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
     import { CommunicationFlowPerformanceInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceInitializationBox";
-    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { ConversionGoalStatus, NavigationUrlKey, UnsubscribeInfo } from "./CommunicationFlowPerformance/types.partial";
+    import { ConversionGoalStatus, NavigationUrlKey } from "./CommunicationFlowPerformance/types.partial";
     import UnsubscribesKpi from "./CommunicationFlowPerformance/unsubscribesKpi.partial.obs";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
-    import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { useStore } from "@Obsidian/PageState";
 
-    enum UnsubscribeLevel {
-        Flow = 1,
-        CommunicationList = 2,
-        Bulk = 3,
-        All = 4,
-    }
+    type ViewMessageIdKeys = {
+        instanceIdKey: string;
+        instanceCommunicationIdKey: string;
+    };
 
     const config = useConfigurationValues<CommunicationFlowPerformanceInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const {
-        format_Jan_1,
-        format_Day_1,
-        format_January_70,
         format_1_1_1970,
         format_Thursday_JanDot_1_1970
     } = RockDateTimeFormatter;
@@ -242,6 +173,7 @@
     const selectedRecurringFlowInstanceIdKeyOrEmptyString = ref<string>(getPageParameter("CommunicationFlowInstance") as string ?? "");
     const selectedOnDemandSlidingDateRange = ref<SlidingDateRange | null>({ rangeType: RangeType.Last, timeValue: 1, timeUnit: TimeUnit.Month });
     const gridDataSource = ref<Promise<GridDataBag>>();
+    const firstCommunicationIdKey = ref<string | null | undefined>();
 
     // #endregion Values
 
@@ -298,17 +230,6 @@
                     return conversionCount / recipientCount;
                 }
             }) * 100;
-    });
-
-    const dateUnit = computed<"day" | "month" | "week">(() => {
-        switch (config.communicationFlow?.triggerType) {
-            case CommunicationFlowTriggerType.OnDemand: {
-                const timeUnit = selectedOnDemandSlidingDateRange.value?.timeUnit;
-                return timeUnit === TimeUnit.Month ? "week" : timeUnit === TimeUnit.Year ? "month" : "day";
-            }
-            default:
-                return "day";
-        }
     });
 
     const recurringFlowInstances = computed<ListItemBag[]>(() => {
@@ -517,306 +438,62 @@
         }
     });
 
-    const conversionCount = computed<number | null>(() => {
-        const enumerable = Enumerable.from(selectedFlowInstances.value);
-
-        if (!enumerable.any(i => i.hasSentCommunications)) {
-            return null;
-        }
-        else {
-            return enumerable.sum(i => i.conversions?.length ?? 0);
-        }
-    });
-
-    const averageTimeBeforeConversion = computed<RockTimeSpan | null | undefined>(() => {
-        const enumerable = Enumerable.from(selectedFlowInstances.value);
-
-        if (!enumerable.any(i => i.hasSentCommunications)
-            || enumerable.sum(i => (i.recipients ?? []).length) === 0) {
-            return null;
-        }
-
-        const conversionTimesInMilliseconds = enumerable
-            .selectMany(instance => {
-                // For each instance, return a collection of conversion times.
-                const instanceStartDate = instance.startDate ? RockDateTime.parseISO(instance.startDate) : null;
-
-                if (instanceStartDate === null || !instance.conversions || instance.conversions.length === 0) {
-                    return [];
-                }
-                else {
-                    const conversionDateTimes = Enumerable
-                        .from(instance.conversions)
-                        .select(conversion => parseRockDateTime(conversion.date))
-                        .ofType((d): d is RockDateTime => !isNullish(d));
-
-                    // Return the collection of conversion times for this instance in milliseconds.
-                    // This will be averaged at the end.
-                    return conversionDateTimes
-                        .select(conversionDateTime => conversionDateTime.toMilliseconds() - instanceStartDate.toMilliseconds())
-                        .toArray();
-                }
-            })
-            .toArray();
-
-        if (conversionTimesInMilliseconds.length === 0) {
-            // There are no conversion times to average
-            // so return "N/A".
-            return null;
-        }
-
-
-        const meanConversionTime = Enumerable.from(conversionTimesInMilliseconds).average(conversionTimeSpanMilliseconds => conversionTimeSpanMilliseconds);
-
-        return RockTimeSpan.fromMilliseconds(meanConversionTime);
-    });
-
-    const unsubscribeInfo = computed<UnsubscribeInfo | null | undefined>(() => {
-        const enumerable = Enumerable.from(selectedFlowInstances.value);
-
-        if (!enumerable.any(i => i.hasSentCommunications)
-            || enumerable.sum(i => (i.recipients ?? []).length) === 0) {
-            // There are no selected instances with sent communications
-            // or none of the selected instances have any recipients.
-            // There is no unsubscribe info at this point until at least one communication is sent.
-            return null;
-        }
-
-        const unsubscribedRecipients = enumerable
-            .selectMany(i => i.recipients ?? [])
-            .where(r => r.causedUnsubscribe)
-            .toArray();
-
-        return {
-            unsubscribesFromAll: Enumerable.from(unsubscribedRecipients).count(r => r.unsubscribeLevel === UnsubscribeLevel.All),
-            unsubscribesFromFlow: Enumerable.from(unsubscribedRecipients).count(r => r.unsubscribeLevel === UnsubscribeLevel.Flow),
-            unsubscribesFromOther: Enumerable.from(unsubscribedRecipients).count(r => isNullish(r.unsubscribeLevel) || ![UnsubscribeLevel.All, UnsubscribeLevel.Flow].includes(r.unsubscribeLevel)),
-        };
-    });
-
-    const totalFlowPerformanceOverTimeDataPoints = computed<ChartNumericDataPointBag[]>(() => {
-        const dataPoints: ChartNumericDataPointBag[] = [];
-        const selectedInstancesTotalRecipientCount = Enumerable.from(selectedFlowInstances.value).sum(i => i.recipients?.length ?? 0);
-
-        if (selectedInstancesTotalRecipientCount <= 0) {
-            return dataPoints;
-        }
-
-        const transformDate: (d: RockDateTime) => RockDateTime = (d: RockDateTime) => {
-            switch (dateUnit.value) {
-                case "week":
-                    return d.startOfWeek();
-                case "month":
-                    return d.startOfMonth();
-                case "day":
-                default:
-                    return d;
+    const dateUnit = computed<"day" | "month" | "week">(() => {
+        switch (config.communicationFlow?.triggerType) {
+            case CommunicationFlowTriggerType.OnDemand: {
+                const timeUnit = selectedOnDemandSlidingDateRange.value?.timeUnit;
+                return timeUnit === TimeUnit.Month ? "week" : timeUnit === TimeUnit.Year ? "month" : "day";
             }
-        };
-
-        const formatDate: (d: RockDateTime) => string = (d: RockDateTime) => {
-            switch (dateUnit.value) {
-                case "month":
-                    // January 24
-                    return format_January_70(d);
-                case "week": {
-                    const nextWeek = d.addDays(7);
-
-                    if (d.month === nextWeek.month) {
-                        // The week is within the same month, format it as "Jan 1-7"
-                        return format_Jan_1(d) + "-" + format_Day_1(nextWeek);
-                    }
-                    else {
-                        // If the week spans two months, format it as "Jan 31-Feb 6"
-                        return format_Jan_1(d) + "-" + format_Jan_1(nextWeek);
-                    }
-                }
-                case "day":
-                default:
-                    return format_1_1_1970(d);
-            }
-        };
-
-        let conversionRateAccumulator = 0;
-        const selectedInstanceConversionRateData =
-            Enumerable
-                .from(selectedFlowInstances.value)
-                .selectMany(i => i.conversions ?? [])
-                .select(c => parseRockDateTime(c.date)?.date)
-                .ofType((convertedRockDateTime): convertedRockDateTime is RockDateTime => !isNullish(convertedRockDateTime))
-                .select(r => {
-                    const transformedDate = transformDate(r);
-
-                    return {
-                        seriesName: "Conversion Rate",
-                        color: "#68D391",
-                        label: formatDate(transformedDate),
-                        // Needed for sorting later when the two data series are combined.
-                        timestamp: transformedDate.toMilliseconds()
-                    };
-                })
-                .groupBy(r => r.label)
-                .orderBy(r => r.first().timestamp)
-                .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
-                    const firstDataPoint = g.first();
-                    conversionRateAccumulator += g.count();
-
-                    return {
-                        seriesName: firstDataPoint.seriesName,
-                        label: firstDataPoint.label,
-                        value: conversionRateAccumulator / selectedInstancesTotalRecipientCount * 100,
-                        color: firstDataPoint.color,
-                        timestamp: firstDataPoint.timestamp
-                    };
-                });
-
-        let unsubscribeRateAccumulator = 0;
-        const selectInstanceUnubscribeRateData =
-            Enumerable
-                .from(selectedFlowInstances.value)
-                .selectMany(i => i.recipients ?? [])
-                .where(r => r.causedUnsubscribe)
-                .select(r => parseRockDateTime(r.unsubscribeDateTime))
-                .ofType((unsubscribeRockDateTime): unsubscribeRockDateTime is RockDateTime => !isNullish(unsubscribeRockDateTime))
-                .select(r => {
-                    const transformedDate = transformDate(r);
-
-                    return {
-                        seriesName: "Unsubscribe Rate",
-                        color: "#FC8181",
-                        label: formatDate(transformedDate),
-                        // Needed for sorting later when the two data series are combined.
-                        timestamp: transformedDate.toMilliseconds()
-                    };
-                })
-                .groupBy(r => r.label)
-                .orderBy(r => r.first().timestamp)
-                .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
-                    const firstDataPoint = g.first();
-                    unsubscribeRateAccumulator += g.count();
-
-                    return {
-                        seriesName: firstDataPoint.seriesName,
-                        label: firstDataPoint.label,
-                        value: unsubscribeRateAccumulator / selectedInstancesTotalRecipientCount * 100,
-                        color: firstDataPoint.color,
-                        timestamp: firstDataPoint.timestamp
-                    };
-                });
-
-        return selectedInstanceConversionRateData
-            .concat(selectInstanceUnubscribeRateData)
-            .orderBy(dp => dp.timestamp) // Re-order so the data are all in chronological order.
-            .toArray();
-    });
-
-    const instanceVsFlowPerformanceAverageDataPoints = computed<ChartNumericDataPointBag[]>(() => {
-        // NOT SPECIFIC TO SELECTED INSTANCE(S) AND ONLY VISIBLE FOR RECURRING AND ON-DEMAND FLOWS
-        const instances = config.communicationFlow?.instances ?? [];
-
-        // Calculate conversion and unsubscribe rates for each instance.
-        const allInstanceRates = Enumerable
-            .from(instances)
-            .select(i => {
-                const recipientCount = i.recipients?.length ?? 0;
-                const conversionCount = i.conversions?.length ?? 0;
-                const unsubscribeCount = i.recipients ? Enumerable.from(i.recipients).where(r => r.causedUnsubscribe).count() : 0;
-
-                return {
-                    instance: i,
-                    rates: {
-                        conversionRate: recipientCount && conversionCount ? conversionCount / recipientCount * 100 : 0,
-                        unsubscribeRate: recipientCount && unsubscribeCount ? unsubscribeCount / recipientCount * 100 : 0
-                    }
-                };
-            })
-            .toDictionary(ir => ir.instance, ir => ir.rates);
-
-        // If there are no instances, return an empty array.
-        if (allInstanceRates.size === 0) {
-            return [];
+            default:
+                return "day";
         }
-
-        const selectedInstanceRates = Enumerable
-            .from(selectedFlowInstances.value)
-            .where(i => allInstanceRates.has(i))
-            .select(i => allInstanceRates.get(i)!)
-            .toArray();
-
-        const dataPoints: ChartNumericDataPointBag[] = [];
-
-        // Add data points for the average rates of selected instances.
-        if (selectedInstanceRates.length > 0) {
-            dataPoints.push({
-                seriesName: selectedInstanceRates.length > 1 ? "Instances" : "Instance",
-                label: "Conversion Rate",
-                value: Enumerable.from(selectedInstanceRates).average(r => r.conversionRate),
-                color: "#38A169"
-            });
-
-            dataPoints.push({
-                seriesName: selectedInstanceRates.length > 1 ? "Instances" : "Instance",
-                label: "Unsubscribe Rate",
-                value: Enumerable.from(selectedInstanceRates).average(r => r.unsubscribeRate),
-                color: "#E53E3E"
-            });
-        }
-
-        // Add data points for the average rates of all instances.
-        dataPoints.push({
-            seriesName: "Average",
-            label: "Conversion Rate",
-            value: Enumerable.from(allInstanceRates.values()).average(i => i.conversionRate),
-            color: "#CDEAE1"
-        });
-
-        dataPoints.push({
-            seriesName: "Average",
-            label: "Unsubscribe Rate",
-            value: Enumerable.from(allInstanceRates.values()).average(i => i.unsubscribeRate),
-            color: "#FAD8D8"
-        });
-
-        return dataPoints;
     });
 
     const dataLastUpdatedMessage = computed<string>(() => {
         return `Data Last Updated On:  ${format_1_1_1970(RockDateTime.now())}`;
     });
 
-    const getSelectItemHandler = computed<((key: string) => void) | undefined>(() => {
+    const onViewMessage = computed<((key: string) => void) | undefined>(() => {
         const messagePerformanceUrl = config.navigationUrls?.[NavigationUrlKey.MessagePerformancePage];
+
         if (isNullish(messagePerformanceUrl)) {
             // The message performance page URL is not configured.
             return;
         }
 
         if (isNullish(firstCommunicationIdKey.value)) {
-            // Grid data has not been loaded yet or there are no flow communications to select from.
+            // Grid data has not been loaded yet or
+            // there are no flow communications to select from.
             return;
         }
-        // Use a random communication id key to get
-        // the instance and instance communication keys
-        // as they are needed to navigate to the message performance page.
-        const { instanceIdKey, instanceCommunicationIdKey } = getSelectedKeys(firstCommunicationIdKey.value);
+
+        // Check if the necessary ID keys can be retrieved for the first communication.
+        // If so, then we can create a "view message" handler for all of the communications.
+        // If not, then we cannot create a "view message" handler.
+        const { instanceIdKey, instanceCommunicationIdKey } = getViewMessageIdKeys(firstCommunicationIdKey.value);
+
         if (!instanceIdKey || !instanceCommunicationIdKey) {
             return;
         }
 
+        return (communicationFlowCommunicationIdKey: string): void => {
+            // Given the selected instance, find the instance communication associated with
+            // the communication flow communication key.
+            const { instanceIdKey, instanceCommunicationIdKey } = getViewMessageIdKeys(communicationFlowCommunicationIdKey);
 
-        return onSelectItem;
+            if (instanceIdKey && instanceCommunicationIdKey) {
+                window.location.href = messagePerformanceUrl
+                    .replace("((CommunicationFlowInstanceKey))", instanceIdKey ?? "")
+                    .replace("((Key))", instanceCommunicationIdKey ?? "");
+            }
+        };
     });
 
-    // #endregion Computed Values
+    // #endregion Event Handlers
 
-    // #region Event Handlers
+    // #region Functions
 
-    type Keys = {
-        instanceIdKey: string;
-        instanceCommunicationIdKey: string;
-    };
-
-    function getSelectedKeys(communicationFlowCommunicationIdKey: string): Keys {
+    function getViewMessageIdKeys(communicationFlowCommunicationIdKey: string): ViewMessageIdKeys {
         return Enumerable
             .from(selectedFlowInstances.value)
             .select(i => ({
@@ -827,7 +504,7 @@
                     .select(c => c.idKey)
                     .firstOrDefault()
             }))
-            .ofType((k): k is Keys => {
+            .ofType((k): k is ViewMessageIdKeys => {
                 return !isNullish(k.instanceIdKey) && !isNullish(k.instanceCommunicationIdKey);
             })
             .firstOrDefault({
@@ -836,33 +513,12 @@
             });
     }
 
-    function onSelectItem(communicationFlowCommunicationIdKey: string): void {
-        // Given the selected instance, find the instance communication associated with
-        // the communication flow communication key.
-
-        if (config.navigationUrls?.[NavigationUrlKey.MessagePerformancePage]) {
-            const { instanceIdKey, instanceCommunicationIdKey } = getSelectedKeys(communicationFlowCommunicationIdKey);
-
-            if (instanceIdKey && instanceCommunicationIdKey) {
-                window.location.href = config.navigationUrls[NavigationUrlKey.MessagePerformancePage]
-                    .replace("((CommunicationFlowInstanceKey))", instanceIdKey ?? "")
-                    .replace("((Key))", instanceCommunicationIdKey ?? "");
-            }
-        }
-    }
-
-    // #endregion Event Handlers
+    // #endregion Computed Values
 
     // #region Functions
 
-    function getGridColumnKey<K extends keyof CommunicationFlowPerformanceGridItemBag>(value: K): K {
-        return value;
-    }
-
-    function getGridRowData<K extends keyof CommunicationFlowPerformanceGridItemBag>(row: unknown, key: K): CommunicationFlowPerformanceGridItemBag[K] {
-        const typedRow = row as CommunicationFlowPerformanceGridItemBag;
-
-        return typedRow[key];
+    function getRow(value: unknown): CommunicationFlowPerformanceGridItemBag {
+        return value as CommunicationFlowPerformanceGridItemBag;
     }
 
     async function loadGridData(): Promise<GridDataBag> {
@@ -884,15 +540,13 @@
 
     // #region Watchers
 
-    const firstCommunicationIdKey = ref<string | null | undefined>();
-
     watch(gridDataSource, async newValue => {
         if (newValue) {
             const data = await newValue;
 
             firstCommunicationIdKey.value = Enumerable
                 .from(data.rows ?? [])
-                .select(r => r[getGridColumnKey("idKey")] as string | null | undefined)
+                .select(r => getRow(r).idKey)
                 .ofType((k): k is string => typeof k === "string")
                 .firstOrDefault("");
         }

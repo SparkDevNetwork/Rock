@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+import { assertType } from "./util";
+
 /**
  * A function that will select a value from the object.
  */
@@ -1184,11 +1186,4 @@ export class GroupedEnumerable<TKey, TElement> extends Enumerable<TElement> {
     ) {
         super(() => elements);
     }
-}
-
-/**
- * Blindly asserts that the value is of type T.
- */
-function assertType<T>(value: unknown): value is T {
-    return true;
 }

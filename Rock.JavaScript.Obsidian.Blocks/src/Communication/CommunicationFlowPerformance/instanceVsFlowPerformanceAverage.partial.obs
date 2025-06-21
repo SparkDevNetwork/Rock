@@ -25,11 +25,18 @@
     import Chart from "@Obsidian/Controls/chart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
 
     const props = defineProps({
-        dataPoints: {
-            type: Array as PropType<ChartNumericDataPointBag[]>,
+        modelValue: {
+            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
+            required: true
+        },
+
+        flowInstances: {
+            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
             required: true
         },
 
@@ -39,9 +46,11 @@
         }
     });
 
+    // #region Computed Values
+
     const instanceVsFlowPerformanceAverageData = computed<ChartData<"bar">>(() => {
         return BarChartDataBuilder
-            .createFromDataPoints(props.dataPoints)
+            .createFromDataPoints(dataPoints.value)
             .build();
     });
 
@@ -54,4 +63,76 @@
             .withoutTooltips()
             .build();
     });
+
+    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
+        // NOT SPECIFIC TO SELECTED INSTANCE(S) AND ONLY VISIBLE FOR RECURRING AND ON-DEMAND FLOWS
+        const instances = props.flowInstances ?? [];
+
+        // Calculate conversion and unsubscribe rates for each instance.
+        const allInstanceRates = Enumerable
+            .from(instances)
+            .select(i => {
+                const recipientCount = i.recipients?.length ?? 0;
+                const conversionCount = i.conversions?.length ?? 0;
+                const unsubscribeCount = i.recipients ? Enumerable.from(i.recipients).where(r => r.causedUnsubscribe).count() : 0;
+
+                return {
+                    instance: i,
+                    rates: {
+                        conversionRate: recipientCount && conversionCount ? conversionCount / recipientCount * 100 : 0,
+                        unsubscribeRate: recipientCount && unsubscribeCount ? unsubscribeCount / recipientCount * 100 : 0
+                    }
+                };
+            })
+            .toDictionary(ir => ir.instance, ir => ir.rates);
+
+        // If there are no instances, return an empty array.
+        if (allInstanceRates.size === 0) {
+            return [];
+        }
+
+        const selectedInstanceRates = Enumerable
+            .from(props.modelValue ?? [])
+            .where(i => allInstanceRates.has(i))
+            .select(i => allInstanceRates.get(i)!)
+            .toArray();
+
+        const dataPoints: ChartNumericDataPointBag[] = [];
+
+        // Add data points for the average rates of selected instances.
+        if (selectedInstanceRates.length > 0) {
+            dataPoints.push({
+                seriesName: selectedInstanceRates.length > 1 ? "Instances" : "Instance",
+                label: "Conversion Rate",
+                value: Enumerable.from(selectedInstanceRates).average(r => r.conversionRate),
+                color: "#38A169"
+            });
+
+            dataPoints.push({
+                seriesName: selectedInstanceRates.length > 1 ? "Instances" : "Instance",
+                label: "Unsubscribe Rate",
+                value: Enumerable.from(selectedInstanceRates).average(r => r.unsubscribeRate),
+                color: "#E53E3E"
+            });
+        }
+
+        // Add data points for the average rates of all instances.
+        dataPoints.push({
+            seriesName: "Average",
+            label: "Conversion Rate",
+            value: Enumerable.from(allInstanceRates.values()).average(i => i.conversionRate),
+            color: "#CDEAE1"
+        });
+
+        dataPoints.push({
+            seriesName: "Average",
+            label: "Unsubscribe Rate",
+            value: Enumerable.from(allInstanceRates.values()).average(i => i.unsubscribeRate),
+            color: "#FAD8D8"
+        });
+
+        return dataPoints;
+    });
+
+    // #endregion Computed Values
 </script>
