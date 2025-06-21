@@ -87,6 +87,8 @@ namespace Rock.Field.Types
         /// <inheritdoc />
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
+            // The value we'll return to the editor will include the:
+            //    {Provider EntityType's Guid},{Providers Name},{Remote Record Key|BinaryFileGuid}
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
                 if ( Guid.TryParse( privateValue, out Guid binaryFileGuid ) )
@@ -124,14 +126,8 @@ namespace Rock.Field.Types
 
                     if ( entityType != null )
                     {
-                        if ( entityType.Guid == SystemGuid.EntityType.CHECKR_PROVIDER.AsGuid() )
-                        {
-                            return $"{entityType.Id},{valueSplit[2]}";
-                        }
-                        else
-                        {
-                            return $"{valueSplit[2]}";
-                        }
+                        // All providers except PMM must store a value that includes EntityTypeId
+                        return $"{entityType.Id},{valueSplit[2]}";
                     }
                 }
             }
@@ -203,7 +199,9 @@ namespace Rock.Field.Types
         /// <returns></returns>
         private static string GetFileName( string privateValue )
         {
-            Guid? guid = privateValue.AsGuidOrNull();
+            var parts = ( privateValue ?? "" ).Split( ',' );
+            Guid? guid = privateValue.AsGuidOrNull() ?? ( parts.Length > 1 ? parts[1].AsGuidOrNull() : null );
+
             if ( guid.HasValue && !guid.Value.IsEmpty() )
             {
                 using ( var rockContext = new RockContext() )
@@ -294,7 +292,8 @@ namespace Rock.Field.Types
                 binaryFileTypeGuid = configurationValues["binaryFileType"].Value.AsGuid();
             }
 
-            var control = new BackgroundCheckDocument()
+            bool includeInactive = true;
+            var control = new BackgroundCheckDocument( includeInactive )
             {
                 ID = id,
                 BinaryFileTypeGuid = binaryFileTypeGuid
@@ -317,13 +316,27 @@ namespace Rock.Field.Types
                 int? binaryFileId = backgroundCheckDocument.BinaryFileId;
                 if ( binaryFileId.HasValue )
                 {
+                    string binaryFileGuidString = string.Empty;
                     using ( var rockContext = new RockContext() )
                     {
                         Guid? binaryFileGuid = new BinaryFileService( rockContext ).Queryable().AsNoTracking().Where( a => a.Id == binaryFileId.Value ).Select( a => ( Guid? ) a.Guid ).FirstOrDefault();
                         if ( binaryFileGuid.HasValue )
                         {
-                            return binaryFileGuid?.ToString();
+                            binaryFileGuidString = binaryFileGuid?.ToString();
                         }
+                    }
+
+                    // Only the legacy PMM provider can store only the Guid,
+                    // everything else must store the <provider EntityTypeId>,<Binary File Guid|RecordKey>
+                    Guid? entityTypeGuid = backgroundCheckDocument.ProviderEntityTypeGuid;
+                    if ( entityTypeGuid.HasValue && entityTypeGuid.Value == Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid() )
+                    {
+                        return binaryFileGuidString;
+                    }
+                    else if ( entityTypeGuid.HasValue )
+                    {
+                        var entityTypeId = EntityTypeCache.Get( entityTypeGuid.Value ).Id;
+                        return $"{entityTypeId},{binaryFileGuidString}";
                     }
                 }
                 else
@@ -338,7 +351,12 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// Sets the value where value is BinaryFile.Guid as a string (or null)
+        /// Sets the value into the corresponding properties of the BackgroundCheckDocument control.
+        /// For PMM, the backgroundCheckDocument.BinaryFileId is set.
+        /// For Checkr, backgroundCheckDocument.Text is set to the full stored value because the
+        /// control knows how to split it.
+        /// For other providers, the backgroundCheckDocument.BinaryFileId and the
+        /// backgroundCheckDocument.ProviderEntityTypeGuid are set.
         /// </summary>
         /// <param name="control">The control.</param>
         /// <param name="configurationValues"></param>
@@ -346,23 +364,70 @@ namespace Rock.Field.Types
         public override void SetEditValue( Control control, Dictionary<string, ConfigurationValue> configurationValues, string value )
         {
             var backgroundCheckDocument = control as BackgroundCheckDocument;
-            if ( backgroundCheckDocument != null )
+            if ( backgroundCheckDocument == null )
             {
-                Guid? binaryFileGuid = value.AsGuidOrNull();
-                if ( binaryFileGuid.HasValue )
-                {
-                    int? binaryFileId = null;
-                    using ( var rockContext = new RockContext() )
-                    {
-                        binaryFileId = new BinaryFileService( rockContext ).Queryable().Where( a => a.Guid == binaryFileGuid.Value ).Select( a => ( int? ) a.Id ).FirstOrDefault();
-                    }
+                return;
+            }
 
-                    backgroundCheckDocument.BinaryFileId = binaryFileId;
-                }
-                else
+            var jsonValue = value.FromJsonOrNull<ListItemBag>();
+
+            // Legacy PMM Background Check Documents are stored with only the Guid.
+            Guid? binaryFileGuid = value.AsGuidOrNull();
+            if ( binaryFileGuid.HasValue )
+            {
+                int? binaryFileId = null;
+                using ( var rockContext = new RockContext() )
                 {
-                    backgroundCheckDocument.Text = value;
+                    binaryFileId = new BinaryFileService( rockContext )
+                        .Queryable()
+                        .Where( f => f.Guid == binaryFileGuid )
+                        .Select( f => ( int? ) f.Id )
+                        .FirstOrDefault();
                 }
+
+                backgroundCheckDocument.BinaryFileId = binaryFileId;
+                backgroundCheckDocument.ProviderEntityTypeGuid = Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid();
+                return;
+            }
+
+            var parts = value.Split( ',' );
+            if ( parts == null || parts.Length != 2 )
+            {
+                return;
+            }
+
+            var providerEntityTypeId = parts[0].AsInteger();
+            var providerEntityType = EntityTypeCache.Get( providerEntityTypeId );
+
+            // At this point, we must have a provider component to continue.
+            if ( providerEntityType == null )
+            {
+                return;
+            }
+
+            // If it's Checkr, then we just put the value in the backgroundCheckDocument's Text property.
+            if ( providerEntityType.Guid == Rock.SystemGuid.EntityType.CHECKR_PROVIDER.AsGuid() )
+            {
+                backgroundCheckDocument.Text = value;
+                return;
+            }
+
+            // Otherwise, we assume it's an 'other' provider and set the BinaryFileId and ProviderEntityTypeGuid.
+            var binaryFileGuidFromValue = parts[1].AsGuidOrNull();
+            if ( binaryFileGuidFromValue.HasValue )
+            {
+                int? binaryFileId = null;
+                using ( var rockContext = new RockContext() )
+                {
+                    binaryFileId = new BinaryFileService( rockContext )
+                        .Queryable()
+                        .Where( f => f.Guid == binaryFileGuidFromValue.Value )
+                        .Select( f => ( int? ) f.Id )
+                        .FirstOrDefault();
+                }
+
+                backgroundCheckDocument.BinaryFileId = binaryFileId;
+                backgroundCheckDocument.ProviderEntityTypeGuid = providerEntityType.Guid;
             }
         }
 

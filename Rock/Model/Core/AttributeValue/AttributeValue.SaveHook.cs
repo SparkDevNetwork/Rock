@@ -173,12 +173,15 @@ new System.Data.SqlClient.SqlParameter( "@entityId", Entity.Id ) );
 
                 if ( State == EntityContextState.Added || State == EntityContextState.Modified )
                 {
-                    newBinaryFileGuid = Entity.Value.AsGuidOrNull();
+                    var parts = ( Entity.Value ?? "" ).Split( ',' );
+                    newBinaryFileGuid = Entity.Value.AsGuidOrNull() ?? ( parts.Length > 1 ? parts[1].AsGuidOrNull() : null );
                 }
 
                 if ( State == EntityContextState.Modified || State == EntityContextState.Deleted )
                 {
-                    oldBinaryFileGuid = Entry.OriginalValues[ nameof( Entity.Value )]?.ToString().AsGuidOrNull();
+                    var originalValue = Entry.OriginalValues[nameof( Entity.Value )]?.ToString() ?? "";
+                    var parts = originalValue.Split( ',' );
+                    oldBinaryFileGuid = originalValue.AsGuidOrNull() ?? ( parts.Length > 1 ? parts[1].AsGuidOrNull() : null );
                 }
 
                 if ( oldBinaryFileGuid.HasValue )
