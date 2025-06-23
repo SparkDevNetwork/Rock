@@ -17,9 +17,7 @@
 using Rock.Data;
 using Rock.Utility;
 using System.ComponentModel.DataAnnotations.Schema;
-#if REVIEW_NET5_0_OR_GREATER
 using System.Data.Entity.ModelConfiguration;
-#endif
 using System.Runtime.Serialization;
 
 namespace Rock.Model

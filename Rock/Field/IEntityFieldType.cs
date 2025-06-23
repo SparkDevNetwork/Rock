@@ -19,10 +19,6 @@ using System.Web.UI;
 
 using Rock.Data;
 
-#if REVIEW_NET5_0_OR_GREATER
-using Control = System.Object;
-#endif
-
 namespace Rock.Field
 {
     /// <summary>
@@ -30,6 +26,7 @@ namespace Rock.Field
     /// </summary>
     public interface IEntityFieldType : IFieldType
     {
+#if WEBFORMS
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -45,6 +42,7 @@ namespace Rock.Field
         /// <param name="configurationValues">The configuration values.</param>
         /// <param name="id">The identifier.</param>
         void SetEditValueFromEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues, int? id );
+#endif
 
         /// <summary>
         /// Gets the entity.

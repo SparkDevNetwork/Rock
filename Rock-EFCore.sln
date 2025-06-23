@@ -48,6 +48,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava", "Rock.Lava\Rock
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.DownhillCss", "Rock.DownhillCss\Rock.DownhillCss.csproj", "{7E5AB14F-37CA-CCDE-3FD2-53D05922C93F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{F17BDE00-851B-7D92-2E43-031E08BC410E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -126,6 +128,10 @@ Global
 		{7E5AB14F-37CA-CCDE-3FD2-53D05922C93F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7E5AB14F-37CA-CCDE-3FD2-53D05922C93F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{7E5AB14F-37CA-CCDE-3FD2-53D05922C93F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F17BDE00-851B-7D92-2E43-031E08BC410E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F17BDE00-851B-7D92-2E43-031E08BC410E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F17BDE00-851B-7D92-2E43-031E08BC410E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F17BDE00-851B-7D92-2E43-031E08BC410E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -139,6 +145,7 @@ Global
 		TestApp.Shared\TestApp.Shared.projitems*{7ad1926c-0a4a-4950-a6ce-aefc667144b9}*SharedItemsImports = 5
 		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{8e9cc5a2-0c0c-4a64-9f3b-b4618a31e2f0}*SharedItemsImports = 5
 		TestApp.Shared\TestApp.Shared.projitems*{92f92b58-2623-4dc3-b151-49adf57ef7d7}*SharedItemsImports = 4
+		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{f17bde00-851b-7d92-2e43-031e08bc410e}*SharedItemsImports = 5
 		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{f37318e7-b269-43d1-83a1-b88cb1d1cb9f}*SharedItemsImports = 5
 	EndGlobalSection
 EndGlobal

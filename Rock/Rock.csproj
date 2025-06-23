@@ -1,7 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
-    <TargetFramework>net472</TargetFramework>
+    <TargetFrameworks>net472;net6.0</TargetFrameworks>
     <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
     <GenerateDocumentationFile>True</GenerateDocumentationFile>
     <RockWebPath>..\RockWeb</RockWebPath>
@@ -9,10 +9,17 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <DefineConstants>$(DefineConstants);WEBFORMS</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'net472' ">$(DefineConstants);WEBFORMS</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'net472' ">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0' ">$(DefineConstants);REVIEW_NET5_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
   <ItemGroup>
+    <Compile Condition=" '$(TargetFramework)' == 'net472' " Remove="**/*.NG.cs" />
+    <Compile Condition=" '$(TargetFramework)' == 'net472' " Remove="CoreShims/**/*.cs" />
+    <Compile Condition=" '$(TargetFramework)' == 'net6.0' " Remove="**/*.WebForms.cs" />
+    <Compile Condition=" '$(TargetFramework)' == 'net6.0' " Remove="Web/UI/**/*.cs" />
+    <Compile Condition=" '$(TargetFramework)' == 'net6.0' " Include="Web/UI/ContextAttribute.cs" />
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
@@ -94,6 +101,10 @@
     <PackageReference Include="Z.EntityFramework.Plus.EF6" Version="1.8.6" />
   </ItemGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
+  </ItemGroup>
+
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj" />
@@ -105,7 +116,7 @@
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj" />
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
     <Reference Include="EntityFramework.Utilities">
       <HintPath>..\libs\EFUtilities\EntityFramework.Utilities.dll</HintPath>
     </Reference>
