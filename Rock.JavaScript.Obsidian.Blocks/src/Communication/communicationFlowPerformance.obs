@@ -366,6 +366,9 @@
 
     watch(gridDataSource, async newValue => {
         if (newValue) {
+            // Load the new grid data so we can get the first communication ID key.
+            // This is needed to determine if we can create a "view message" handler
+            // for the grid rows.
             const data = await newValue;
 
             firstCommunicationIdKey.value = Enumerable
