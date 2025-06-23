@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,12 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +38,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select an Address of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Person's Address" )]
-    [Rock.SystemGuid.EntityTypeGuid( "0A1731E9-CBFC-4CB9-920C-107C8D275583")]
+    [Rock.SystemGuid.EntityTypeGuid( "0A1731E9-CBFC-4CB9-920C-107C8D275583" )]
     public class AddressSelect : DataSelectComponent
     {
         #region Properties
@@ -105,6 +109,94 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 return "Address";
             }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var locationTypeList = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                .DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value )
+                .Select( glt => new ListItemBag { Text = glt.Value, Value = glt.Guid.ToString() } )
+                .ToList();
+
+
+            var addressPartList = new List<ListItemBag>();
+            var newLabels = new Dictionary<string, string>();
+            var globalAttributesCache = GlobalAttributesCache.Get();
+            var defaultCountry = ( !string.IsNullOrWhiteSpace( globalAttributesCache.OrganizationCountry ) ) ? globalAttributesCache.OrganizationCountry : "US";
+            var countryValue = DefinedTypeCache.Get( new Guid( SystemGuid.DefinedType.LOCATION_COUNTRIES ) )
+                    .DefinedValues
+                    .Where( v => v.Value.Equals( defaultCountry, StringComparison.OrdinalIgnoreCase ) )
+                    .FirstOrDefault();
+
+            if ( countryValue != null )
+            {
+                newLabels.Add( "City", countryValue.GetAttributeValue( "CityLabel" ) );
+                newLabels.Add( "State", countryValue.GetAttributeValue( "StateLabel" ) );
+                newLabels.Add( "Postal Code", countryValue.GetAttributeValue( "PostalCodeLabel" ) );
+            }
+
+            foreach ( RockUdfHelper.AddressNamePart addressPart in Enum.GetValues( typeof( RockUdfHelper.AddressNamePart ) ) )
+            {
+                var Text = addressPart.ConvertToString();
+                if ( newLabels.ContainsKey( Text ) )
+                {
+                    Text = newLabels[Text];
+                }
+                addressPartList.Add( new ListItemBag { Text = Text, Value = addressPart.ConvertToInt().ToString() } );
+            }
+
+
+            var options = new Dictionary<string, string>
+            {
+                ["locationTypeList"] = locationTypeList.ToCamelCaseJson( false, true ),
+                ["addressPartList"] = addressPartList.ToCamelCaseJson( false, true ),
+            };
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/addressSelect.obs" ),
+                Options = options,
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var locationType = string.Empty;
+            var addressPart = string.Empty;
+            var selections = selection.Split( '|' );
+
+            if ( selections.Length >= 1 )
+            {
+                locationType = selections[0];
+            }
+
+            if ( selections.Length >= 2 )
+            {
+                addressPart = selections[1];
+            }
+
+            return new Dictionary<string, string>
+            {
+                ["locationType"] = locationType,
+                ["addressPart"] = addressPart
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var locationType = data.GetValueOrDefault( "locationType", string.Empty );
+            var addressPart = data.GetValueOrDefault( "addressPart", string.Empty );
+
+            return $"{locationType}|{addressPart}";
         }
 
         #endregion
@@ -186,7 +278,7 @@ namespace Rock.Reporting.DataSelect.Person
                     .DefinedValues
                     .Where( v => v.Value.Equals( defaultCountry, StringComparison.OrdinalIgnoreCase ) )
                     .FirstOrDefault();
-            
+
             if ( countryValue != null )
             {
                 if ( !newLabels.ContainsKey( "City" ) )

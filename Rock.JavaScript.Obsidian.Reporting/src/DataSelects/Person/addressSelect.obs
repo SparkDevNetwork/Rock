@@ -1,0 +1,42 @@
+<template>
+    <DropDownList v-model="locationType"
+                  :items="locationTypeList"
+                  label="Location Type"
+                  :showBlankItem="false" />
+
+    <RadioButtonList v-model="addressPart"
+                     :items="addressPartList"
+                     label="Address Part"
+                     help="Select the part of the address to show in the grid, or select Full to show the full address." />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { ref, watch } from "vue";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const locationTypeList = safeParseJson<ListItemBag[]>(props.options.locationTypeList);
+    const addressPartList = safeParseJson<ListItemBag[]>(props.options.addressPartList);
+
+    const locationType = ref(props.modelValue.locationType ?? "");
+    const addressPart = ref(props.modelValue.addressPart ?? "");
+
+    watch([locationType, addressPart], () => {
+        const newData = {
+            ...props.modelValue,
+            locationType: locationType.value,
+            addressPart: addressPart.value,
+        };
+
+        emit("update:modelValue", newData);
+    });
+</script>
