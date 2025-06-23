@@ -27,7 +27,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Version\Rock.Version.NG.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
     <ProjectReference Include="..\Rock\Rock.NG.csproj" />
   </ItemGroup>
 

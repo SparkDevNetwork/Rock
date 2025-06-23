@@ -14,7 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="Humanizer" Version="2.1.0" />
+    <PackageReference Condition=" '$(TargetFramework)' == 'net6.0' " Include="Humanizer" Version="2.1.0" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
   </ItemGroup>
 

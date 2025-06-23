@@ -31,7 +31,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
-    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.NG.csproj" />
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj" />
     <ProjectReference Include="..\Rock\Rock.NG.csproj" />
   </ItemGroup>
 

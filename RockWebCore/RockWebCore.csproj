@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk.Web">
+﻿<Project Sdk="Microsoft.NET.Sdk.Web">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -25,7 +25,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.Blocks\Rock.Blocks.NG.csproj" />
-    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.NG.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Fluid\Rock.Lava.Fluid.csproj" />
     <ProjectReference Include="..\Rock.Rest.NG\Rock.Rest.NG.csproj" />
     <ProjectReference Include="..\Rock.Web2\Rock.Web2.csproj" />
   </ItemGroup>
