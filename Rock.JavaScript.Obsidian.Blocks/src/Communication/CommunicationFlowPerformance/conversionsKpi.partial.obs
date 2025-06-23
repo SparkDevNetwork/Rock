@@ -3,7 +3,7 @@
          :colorShade="700"
          iconCssClass="ti ti-bolt"
          isCard
-         label="Conversions"
+         label="Conversions*"
          :value="conversionCount" />
 </template>
 
