@@ -1,4 +1,4 @@
-<Project Sdk="Microsoft.NET.Sdk">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
   <PropertyGroup>
     <TargetFramework>net6.0</TargetFramework>
@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Common\Rock.Common.NG.csproj" />
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.NG.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.NG.csproj" />
   </ItemGroup>

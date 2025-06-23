@@ -20,11 +20,6 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.NG", "Rock.Lava\R
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.Shared.NG", "Rock.Lava.Shared\Rock.Lava.Shared.NG.csproj", "{073C6A87-15FD-409B-BB85-B13922FB0D72}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Common.NG", "Rock.Common\Rock.Common.NG.csproj", "{681CD8A5-9B62-41EC-8BE7-0EB6CC5792A2}"
-	ProjectSection(ProjectDependencies) = postProject
-		{B52764ED-C73A-4D19-A81E-FAFF6B808B06} = {B52764ED-C73A-4D19-A81E-FAFF6B808B06}
-	EndProjectSection
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Version.NG", "Rock.Version\Rock.Version.NG.csproj", "{0E6036B1-F48E-4B69-83EF-83C709DA8B42}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.DownhillCss.NG", "Rock.DownhillCss\Rock.DownhillCss.NG.csproj", "{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}"
@@ -43,13 +38,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Web2", "Rock.Web2\Rock
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Lava.Fluid.NG", "Rock.Lava.Fluid\Rock.Lava.Fluid.NG.csproj", "{D3D90E48-B6D1-45E3-90C8-31B3CE95E65E}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Enums.NG", "Rock.Enums\Rock.Enums.NG.csproj", "{B52764ED-C73A-4D19-A81E-FAFF6B808B06}"
-EndProject
 Project("{9092AA53-FB77-4645-B42D-1CCCA6BD08BD}") = "Rock.JavaScript.Obsidian.Blocks", "Rock.JavaScript.Obsidian.Blocks\Rock.JavaScript.Obsidian.Blocks.njsproj", "{11ACFF28-4199-450B-8A43-F59ADEF63A99}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.CloudPrint.Shared", "Applications\RockCloudPrint\Rock.CloudPrint.Shared\Rock.CloudPrint.Shared.csproj", "{F37318E7-B269-43D1-83A1-B88CB1D1CB9F}"
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "Rock.CloudPrint.Shared.Common", "Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.shproj", "{6519C205-3304-4D09-86BC-16BE8A0D9C41}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Common", "Rock.Common\Rock.Common.csproj", "{340A3597-37D7-19FC-EC71-3EB665EE234A}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Enums", "Rock.Enums\Rock.Enums.csproj", "{EBB7F2CC-AE94-C90D-0EC9-5BF05E54A911}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -77,10 +74,6 @@ Global
 		{073C6A87-15FD-409B-BB85-B13922FB0D72}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{073C6A87-15FD-409B-BB85-B13922FB0D72}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{073C6A87-15FD-409B-BB85-B13922FB0D72}.Release|Any CPU.Build.0 = Release|Any CPU
-		{681CD8A5-9B62-41EC-8BE7-0EB6CC5792A2}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{681CD8A5-9B62-41EC-8BE7-0EB6CC5792A2}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{681CD8A5-9B62-41EC-8BE7-0EB6CC5792A2}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{681CD8A5-9B62-41EC-8BE7-0EB6CC5792A2}.Release|Any CPU.Build.0 = Release|Any CPU
 		{0E6036B1-F48E-4B69-83EF-83C709DA8B42}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{0E6036B1-F48E-4B69-83EF-83C709DA8B42}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0E6036B1-F48E-4B69-83EF-83C709DA8B42}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -117,10 +110,6 @@ Global
 		{D3D90E48-B6D1-45E3-90C8-31B3CE95E65E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{D3D90E48-B6D1-45E3-90C8-31B3CE95E65E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{D3D90E48-B6D1-45E3-90C8-31B3CE95E65E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{B52764ED-C73A-4D19-A81E-FAFF6B808B06}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{B52764ED-C73A-4D19-A81E-FAFF6B808B06}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{B52764ED-C73A-4D19-A81E-FAFF6B808B06}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{B52764ED-C73A-4D19-A81E-FAFF6B808B06}.Release|Any CPU.Build.0 = Release|Any CPU
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{11ACFF28-4199-450B-8A43-F59ADEF63A99}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -129,6 +118,14 @@ Global
 		{F37318E7-B269-43D1-83A1-B88CB1D1CB9F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F37318E7-B269-43D1-83A1-B88CB1D1CB9F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F37318E7-B269-43D1-83A1-B88CB1D1CB9F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{340A3597-37D7-19FC-EC71-3EB665EE234A}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{340A3597-37D7-19FC-EC71-3EB665EE234A}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{340A3597-37D7-19FC-EC71-3EB665EE234A}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{340A3597-37D7-19FC-EC71-3EB665EE234A}.Release|Any CPU.Build.0 = Release|Any CPU
+		{EBB7F2CC-AE94-C90D-0EC9-5BF05E54A911}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{EBB7F2CC-AE94-C90D-0EC9-5BF05E54A911}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{EBB7F2CC-AE94-C90D-0EC9-5BF05E54A911}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{EBB7F2CC-AE94-C90D-0EC9-5BF05E54A911}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

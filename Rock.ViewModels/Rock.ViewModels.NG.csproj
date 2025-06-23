@@ -12,7 +12,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Enums\Rock.Enums.NG.csproj" />
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
   </ItemGroup>
 
 </Project>

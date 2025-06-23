@@ -234,6 +234,7 @@ namespace Rock.Reporting.DataFilter
         {
             return selection;
         }
+#endif
 
         /// <summary>
         /// Updates the selection from parameters on the request.
@@ -272,7 +273,6 @@ namespace Rock.Reporting.DataFilter
 
             return selection;
         }
-#endif
 
         /// <summary>
         /// Updates the selection from user preference selection if the original selection is compatible with the user preference

@@ -21,13 +21,17 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Threading.Tasks;
+#if REVIEW_WEBFORMS
 using System.Web.Hosting;
+#endif
 
 using Rock.Attribute;
 using Rock.Model;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
+#if REVIEW_WEBFORMS
 using Rock.Slingshot;
+#endif
 using Rock.Utility;
 using Rock.ViewModels.Blocks.BulkImport;
 using Rock.Web;
@@ -90,12 +94,14 @@ namespace Rock.Blocks.BulkImport
         private string GetSlingshotRootFolder()
         {
             string virtualPath = "~/App_Data/SlingshotFiles";
+#if REVIEW_WEBFORMS
             string physicalPath = HostingEnvironment.MapPath( virtualPath );
 
             if ( !Directory.Exists( physicalPath ) )
             {
                 Directory.CreateDirectory( physicalPath );
             }
+#endif
 
             return virtualPath;
         }
@@ -138,6 +144,7 @@ namespace Rock.Blocks.BulkImport
                 return ActionBadRequest( "Slingshot file not found." );
             }
 
+#if REVIEW_WEBFORMS
             var importTask = new Task( () =>
             {
                 // Wait a little so the browser can render and start listening to events
@@ -271,6 +278,9 @@ namespace Rock.Blocks.BulkImport
             {
                 return ActionBadRequest( ex.Message );
             }
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <summary>
@@ -286,6 +296,7 @@ namespace Rock.Blocks.BulkImport
                 return ActionBadRequest( "Foreign system key is required." );
             }
 
+#if REVIEW_WEBFORMS
             var tableList = Rock.Slingshot.BulkImporter.TablesThatHaveForeignSystemKey( foreignSystemKey );
             var foreignSystemKeyList = BulkImporter.UsedForeignSystemKeys();
 
@@ -297,6 +308,9 @@ namespace Rock.Blocks.BulkImport
             };
 
             return ActionOk( result );
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <summary>

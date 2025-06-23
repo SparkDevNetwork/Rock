@@ -275,9 +275,8 @@
   </ItemGroup>
 
   <ItemGroup>
-    <ProjectReference Include="..\Rock.Common\Rock.Common.NG.csproj" />
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
     <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.NG.csproj" />
-    <ProjectReference Include="..\Rock.Enums\Rock.Enums.NG.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.NG.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.NG.csproj" />
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.NG.csproj" />

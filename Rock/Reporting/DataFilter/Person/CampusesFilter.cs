@@ -201,7 +201,6 @@ function() {{
             return null;
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Updates the selection from parameters on the request.
         /// </summary>
@@ -230,7 +229,6 @@ function() {{
 
             return selection;
         }
-#endif
 
         #endregion
 

@@ -257,6 +257,7 @@ function() {{
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Updates the selection from parameters on the request.
@@ -293,7 +294,6 @@ function() {{
 
             return selection;
         }
-#endif
 
         /// <summary>
         /// Gets the expression.
