@@ -25,11 +25,15 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Model;
+using Rock.Net;
 using Rock.Reporting.DataFilter.Person;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
-namespace Rock.Reporting.DataSelect.Group
+namespace Rock.Reporting.DataSelect.Person
 {
     /// <summary>
     /// The Data Select responsible for including completed learning course details.
@@ -56,6 +60,58 @@ namespace Rock.Reporting.DataSelect.Group
 
         /// <inheritdoc/>
         public override string ColumnHeaderText => "Has Completed Course";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/hasCompletedCourseSelect.obs" ),
+                Options = new Dictionary<string, string>(),
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            string[] selections = selection.Split( '|' );
+
+            if ( selections.Count() > 0 )
+            {
+                var selectionAccountGuidValues = selections[0].Split( ',' ).ToList().Select( a => a.AsGuidOrNull() ?? Guid.Empty ).ToList();
+
+                var accounts = FinancialAccountCache.GetMany( selectionAccountGuidValues, rockContext )
+                    .Select( a => new ListItemBag { Text = a.Name, Value = a.Guid.ToString() } )
+                    .ToList();
+
+                data.Add( "accounts", accounts.ToCamelCaseJson( false, true ) );
+            }
+
+            if ( selections.Count() > 1 )
+            {
+                data.Add( "useSundayDate", selections[1].AsBoolean().ToString() );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var accounts = data.GetValueOrDefault( "accounts", "[]" )
+                .FromJsonOrNull<List<ListItemBag>>()
+                ?.Select( a => a.Value )
+                ?.JoinStrings( "," );
+
+            var useSundayDate = data.GetValueOrDefault( "useSundayDate", "False" );
+
+            return $"{accounts}|{useSundayDate}";
+        }
 
         #endregion
 
