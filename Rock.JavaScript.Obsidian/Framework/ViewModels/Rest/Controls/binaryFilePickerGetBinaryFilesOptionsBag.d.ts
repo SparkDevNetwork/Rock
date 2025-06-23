@@ -30,4 +30,10 @@ import { Guid } from "@Obsidian/Types";
 export type BinaryFilePickerGetBinaryFilesOptionsBag = {
     /** The type of binary files to search for */
     binaryFileTypeGuid: Guid;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };

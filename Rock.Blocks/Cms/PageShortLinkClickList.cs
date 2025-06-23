@@ -90,9 +90,7 @@ namespace Rock.Blocks.Cms
                 .Include( i => i.InteractionComponent )
                 .Where( i =>
                    i.InteractionComponent.InteractionChannel.ChannelTypeMediumValueId == dv.Id &&
-                   i.InteractionComponent.EntityId == shortLinkId )
-                .ToList()
-                .AsQueryable();
+                   i.InteractionComponent.EntityId == shortLinkId );
 
             return interactions;
         }
@@ -102,9 +100,9 @@ namespace Rock.Blocks.Cms
         {
             return new GridBuilder<Interaction>()
                 .WithBlock( this )
-                .AddField("idKey", a => a.InteractionComponent.IdKey )
-                .AddField( "id", a => a.InteractionComponent.EntityId )
-                .AddField( "interactionDateTime", a => a.InteractionDateTime )
+                .AddTextField( "idKey", a => a.IdKey )
+                .AddTextField( "id", a => a.Id.ToString() )
+                .AddDateTimeField( "interactionDateTime", a => a.InteractionDateTime )
                 .AddPersonField( "person", a => a.PersonAlias?.Person )
                 .AddTextField( "application", a => a.InteractionSession.DeviceType.Application )
                 .AddTextField( "clientType", a => a.InteractionSession.DeviceType.ClientType )
@@ -114,6 +112,11 @@ namespace Rock.Blocks.Cms
 
         #endregion
 
+        /// <summary>
+        /// Gets the UTM source name for the given source value ID.
+        /// </summary>
+        /// <param name="sourceValueId">The source value ID.</param>
+        /// <returns>The UTM source name or empty string.</returns>
         private string GetUtmSourceName( int? sourceValueId )
         {
             if ( sourceValueId == null )

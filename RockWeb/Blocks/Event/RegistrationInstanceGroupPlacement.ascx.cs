@@ -28,6 +28,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Reporting;
+using Rock.Security;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -933,9 +934,13 @@ namespace RockWeb.Blocks.Event
 
             var fakeGroupMember = new GroupMember() { Group = fakeGroup, GroupId = fakeGroup.Id };
             fakeGroupMember.LoadAttributes();
-            var groupMemberAttributeList = fakeGroupMember.Attributes.Select( a => a.Value ).ToList();
+            var groupMemberAttributeList = fakeGroupMember.GetAuthorizedAttributes( Authorization.VIEW, CurrentPerson )
+                .Select( a => a.Value )
+                .OrderBy( a => a.Order )
+                .ToList();
+
             cblDisplayedGroupMemberAttributes.Items.Clear();
-            foreach ( var groupMemberAttribute in groupMemberAttributeList.OrderBy( a => a.Order ).ThenBy( a => a.Name ) )
+            foreach ( var groupMemberAttribute in groupMemberAttributeList )
             {
                 cblDisplayedGroupMemberAttributes.Items.Add( new ListItem( groupMemberAttribute.Name, groupMemberAttribute.Id.ToString() ) );
             }
@@ -1999,7 +2004,10 @@ namespace RockWeb.Blocks.Event
             fakeGroup.LoadAttributes();
             var fakeGroupMember = new GroupMember() { Group = fakeGroup, GroupId = fakeGroup.Id };
             fakeGroupMember.LoadAttributes();
-            var groupMemberAttributeList = fakeGroupMember.Attributes.Select( a => a.Value ).ToList();
+            var groupMemberAttributeList = fakeGroupMember.GetAuthorizedAttributes( Authorization.VIEW, CurrentPerson )
+                .Select( a => a.Value )
+                .OrderBy( a => a.Order )
+                .ToList();
 
             phGroupMemberFilters.Controls.Clear();
 
@@ -2062,7 +2070,11 @@ namespace RockWeb.Blocks.Event
             fakeGroup.LoadAttributes();
             var fakeGroupMember = new GroupMember() { Group = fakeGroup, GroupId = fakeGroup.Id };
             fakeGroupMember.LoadAttributes();
-            var groupMemberAttributeList = fakeGroupMember.Attributes.Select( a => a.Value ).ToList();
+            var groupMemberAttributeList = fakeGroupMember.GetAuthorizedAttributes( Authorization.VIEW, CurrentPerson )
+                .Select( a => a.Value )
+                .OrderBy( a => a.Order )
+                .ToList();
+
             var displayedGroupMemberAttributes = cblDisplayedGroupMemberAttributes.SelectedValuesAsInt;
             foreach ( var attribute in groupMemberAttributeList )
             {
@@ -2095,7 +2107,11 @@ namespace RockWeb.Blocks.Event
             fakeGroup.LoadAttributes();
             var fakeGroupMember = new GroupMember() { Group = fakeGroup, GroupId = fakeGroup.Id };
             fakeGroupMember.LoadAttributes();
-            var groupMemberAttributeList = fakeGroupMember.Attributes.Select( a => a.Value ).ToList();
+            var groupMemberAttributeList = fakeGroupMember.GetAuthorizedAttributes( Authorization.VIEW, CurrentPerson )
+                .Select( a => a.Value )
+                .OrderBy( a => a.Order )
+                .ToList();
+
             Dictionary<int, string> attributeFilters = new Dictionary<int, string>();
             foreach ( var attribute in groupMemberAttributeList )
             {

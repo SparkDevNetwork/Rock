@@ -510,6 +510,7 @@ namespace Rock.Mobile
                 Auth0ClientDomain = additionalSettings.Auth0Domain,
                 EntraTenantId = additionalSettings.EntraTenantId,
                 EntraClientId = additionalSettings.EntraClientId,
+                OrganizationBeaconGuid = Rock.Web.SystemSettings.GetRockInstanceId(),
                 OrganizationName = organizationName,
             };
 

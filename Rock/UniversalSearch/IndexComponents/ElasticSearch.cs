@@ -82,17 +82,19 @@ namespace Rock.UniversalSearch.IndexComponents
 
     [BooleanField( "Include Explain",
         Key = AttributeKey.IncludeExplain,
-        Description = "Set this to true if debugging and what to an Explain in the search results.",
+        Description = "Set this to true for debugging if you want to include a score explanation in the search results.",
         Category = "Advanced Settings",
         Order = 6 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "97DACCE9-F397-4E7B-9596-783A233FCFCF" )]
     public class Elasticsearch : IndexComponent
     {
-        // These attribute keys are also used by the Elasticsearch content collection
-        // index component. If any changes are made here, they need to be updated
-        // in that class too.
-        private static class AttributeKey
+        /// <summary>
+        /// These attribute keys are also used by the Elasticsearch content collection index
+        /// component (<see cref="Rock.Cms.ContentCollection.IndexComponents.Elasticsearch" />).
+        /// This class is internal so that they can be referenced directly by that component.
+        /// </summary>
+        internal static class AttributeKey
         {
             public const string NodeURL = "NodeURL";
             public const string ShardCount = "ShardCount";

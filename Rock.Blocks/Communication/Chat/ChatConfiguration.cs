@@ -81,9 +81,6 @@ namespace Rock.Blocks.Communication.Chat
                 return ActionBadRequest();
             }
 
-            var oldConfig = GetCurrentChatConfigurationBag();
-            var shouldReinitialize = oldConfig.ApiKey != bag.ApiKey || oldConfig.ApiSecret != bag.ApiSecret;
-
             SaveChatConfigurationToSystemSettings( bag );
 
             // Perform an app settings and group type sync to the external chat system in a background task, as it could
@@ -93,10 +90,7 @@ namespace Rock.Blocks.Communication.Chat
                 using ( var rockContext = new RockContext() )
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
-                    if ( shouldReinitialize )
-                    {
-                        chatHelper.InitializeChatProvider();
-                    }
+                    chatHelper.Reinitialize();
 
                     var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
                     if ( isSetUpResult?.IsSetUp != true )
@@ -190,13 +184,18 @@ namespace Rock.Blocks.Communication.Chat
                 }
             }
 
+            // Get the system user GUID from the current (pre-save) config so we always have the latest value, since
+            // this isn't managed by the UI.
+            var preSaveChatConfiguration = ChatHelper.GetChatConfiguration();
+
             var chatConfiguration = new Rock.Communication.Chat.ChatConfiguration
             {
                 ApiKey = bag.ApiKey,
                 ApiSecret = bag.ApiSecret,
                 AreChatProfilesVisible = bag.AreChatProfilesVisible,
                 IsOpenDirectMessagingAllowed = bag.IsOpenDirectMessagingAllowed,
-                ChatBadgeDataViewGuids = chatBadgeDataViewGuids
+                ChatBadgeDataViewGuids = chatBadgeDataViewGuids,
+                SystemUserGuid = preSaveChatConfiguration.SystemUserGuid
             };
 
             ChatHelper.SaveChatConfiguration( chatConfiguration );

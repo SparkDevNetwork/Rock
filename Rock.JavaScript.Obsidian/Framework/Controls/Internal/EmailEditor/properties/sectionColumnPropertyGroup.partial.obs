@@ -56,6 +56,7 @@
     import { findComponentInnerWrappers } from "../utils.partial";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import { isNullish } from "@Obsidian/Utility/util";
 
     const props = defineProps({
         element: {
@@ -108,7 +109,18 @@
         return attributeProvider<HorizontalAlignment | "" | null | undefined>(
             componentWrapper.value!.marginWrapper.borderWrapper.paddingWrapper.td,
             "align",
-            converter
+            converter,
+            undefined,
+            {
+                onSourceValueUpdated(sourceValue) {
+                    if (!isNullish(sourceValue)) {
+                        componentWrapper.value!.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = sourceValue;
+                    }
+                    else {
+                        componentWrapper.value!.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "";
+                    }
+                }
+            }
         );
     }
 

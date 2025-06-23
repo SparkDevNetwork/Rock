@@ -44,8 +44,21 @@ namespace Rock.Communication.Chat.DTO
         /// </summary>
         public string ChatChannelKey { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether this <see cref="Group.ChatChannelKey"/> should be saved in the Rock database.
+        /// </summary>
+        public bool ShouldSaveChatChannelKeyInRock { get; set; }
+
         /// <inheritdoc cref="Group.Name"/>
         public string Name { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL of the avatar image to use for this channel in the external chat system.
+        /// </summary>
+        public string AvatarImageUrl { get; set; }
+
+        /// <inheritdoc cref="Group.CampusId"/>
+        public int? CampusId { get; set; }
 
         /// <inheritdoc cref="Group.GetIsLeavingChatChannelAllowed"/>
         public bool IsLeavingAllowed { get; set; }

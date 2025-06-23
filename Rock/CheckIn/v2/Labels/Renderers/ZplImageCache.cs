@@ -54,7 +54,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
             Width = width;
             Height = height;
 
-            ZplContent = ZplImageHelper.ByteArrayToHexViaLookup32( ImageData );
+            ZplContent = Zebra64.Compress( imageData );
         }
     }
 }

@@ -21,7 +21,7 @@
 // </copyright>
 //
 
-/** The Push Open Action used by the Communication Entry block. */
+/** The Push Open Action used by the Communication Entry Wizard block. */
 export const PushOpenAction = {
     /** No action */
     NoAction: 0,
@@ -36,7 +36,7 @@ export const PushOpenAction = {
     LinkToUrl: 3
 } as const;
 
-/** The Push Open Action used by the Communication Entry block. */
+/** The Push Open Action used by the Communication Entry Wizard block. */
 export const PushOpenActionDescription: Record<number, string> = {
     0: "No Action",
 
@@ -47,5 +47,5 @@ export const PushOpenActionDescription: Record<number, string> = {
     3: "Link To Url"
 };
 
-/** The Push Open Action used by the Communication Entry block. */
+/** The Push Open Action used by the Communication Entry Wizard block. */
 export type PushOpenAction = typeof PushOpenAction[keyof typeof PushOpenAction];

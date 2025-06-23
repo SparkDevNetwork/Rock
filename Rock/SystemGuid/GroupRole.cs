@@ -222,5 +222,19 @@ namespace Rock.SystemGuid
         public const string GROUPROLE_SIGNUP_GROUP_MEMBER = "3849B594-C079-4AB3-869A-E1DEC6790A34";
 
         #endregion
+
+        #region Application Groups
+
+        /// <summary>
+        /// The Member group member role for Application Group
+        /// </summary>
+        public const string GROUP_ROLE_APPLICATION_GROUP_MEMBER = "09B14358-FA17-4D65-A8E9-03FA7312CD62";
+
+        /// <summary>
+        /// The Member group member role for Hidden Application Group
+        /// </summary>
+        public const string GROUP_ROLE_HIDDEN_APPLICATION_GROUP_MEMBER = "2008B263-CD41-45F0-8033-26D949FC0DA7";
+
+        #endregion;
     }
 }

@@ -2,6 +2,7 @@
   "files": [],
   "include": [],
   "references": [
+    { "path": "./src/Administration" },
     { "path": "./src/Bus" },
     { "path": "./src/CheckIn" },
     { "path": "./src/Cms" },

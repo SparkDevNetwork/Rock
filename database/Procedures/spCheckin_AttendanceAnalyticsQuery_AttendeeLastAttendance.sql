@@ -45,13 +45,13 @@ BEGIN
 	FROM dbo.ufnUtility_GetSundayDateRange(@StartDate, @EndDate) x
 
 	DECLARE @CampusTbl TABLE ( [Id] int )
-	INSERT INTO @CampusTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@CampusIds,'') )
+	INSERT INTO @CampusTbl SELECT value FROM STRING_SPLIT(@CampusIds,',')
 
 	DECLARE @ScheduleTbl TABLE ( [Id] int )
-	INSERT INTO @ScheduleTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@ScheduleIds,'') )
+	INSERT INTO @ScheduleTbl SELECT value FROM STRING_SPLIT(@ScheduleIds,',')
 
 	DECLARE @GroupTbl TABLE ( [Id] int )
-	INSERT INTO @GroupTbl SELECT [Item] FROM ufnUtility_CsvToTable( ISNULL(@GroupIds,'') )
+	INSERT INTO @GroupTbl SELECT value FROM STRING_SPLIT(@GroupIds,',')
 
 	SELECT B.[PersonId], B.[CampusId], B.[CampusName], B.[GroupId], B.[GroupName], B.[ScheduleId], B.[StartDateTime], B.[LocationId], B.[RoleName], B.[LocationName] 
 	FROM

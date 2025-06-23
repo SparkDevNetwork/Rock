@@ -179,10 +179,26 @@
                     <CheckBox v-model="enableMobileRedirect"
                               label="Enabled Mobile Redirect" />
 
+                    <div v-if="enableMobileRedirect">
+                        <PagePicker v-model="mobilePageComputed"
+                                    label="Mobile Page"
+                                    :multiple="false"
+                                    help="The page that users will be redirected to when accessing this site from a mobile device."
+                                    showSelectCurrentPage />
+
+                        <TextBox v-model="externalUrl"
+                                 label="External URL"
+                                 help="If users should be redirected to an external URL when accessing this site from a mobile device, enter the URL here." />
+
+                        <CheckBox v-model="redirectTablets"
+                                  label="Redirect Tablets" />
+                    </div>
+
                     <CheckBox v-model="enablePageViews"
                               label="Log Page Views" />
 
                     <NumberBox v-model="retentionDuration"
+                               v-if="enablePageViews"
                                label="Page View Retention Period"
                                help="The number of days to keep page views logged. Leave blank to keep page views logged indefinitely." />
 
@@ -193,7 +209,6 @@
                       The value you enter here will be used for the &lt;source&gt; as described in [Content-Security-Policy frame-ancestors directive](https://developer.mozilla.org/en-US/docs/Web/HTTP/Headers/Content-Security-Policy/frame-ancestors#Syntax).
                       Be sure to include your own server domain(s) in the list to prevent locking yourself out from modal use.
                       If left blank, Rock will inject properties into the HTTP Header which modern web browsers will use to prevent site embedding and it will use a frame-ancestors value of 'self'." />
-
                 </div>
 
                 <div class="col-md-6">
@@ -215,11 +230,9 @@
                               help="This should be disabled only with the knowledge that the site was created/built to handle this (rare)." />
 
                 </div>
-
             </div>
 
             <CodeEditor v-model="pageHeaderContent" label="Page Header Content" theme="rock" mode="text" :editorHeight="200" help="The content provided here will be added to each page's head section." />
-
         </Panel>
 
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
@@ -227,7 +240,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, reactive, ref, watch } from "vue";
+    import { PropType, reactive, ref, watch, computed } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -278,8 +291,8 @@
     const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
     const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
     const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
-    const theme = propertyRef(props.modelValue?.bag?.theme ?? "", "Theme");
-    const siteDomains = ref(props.modelValue?.bag?.siteDomains ?? "");
+    const theme = propertyRef(props.modelValue?.bag?.theme ?? "Rock", "Theme");
+    const siteDomains = propertyRef(props.modelValue?.bag?.siteDomains ?? "", "SiteDomains");
     const errorPage = propertyRef(props.modelValue?.bag?.errorPage ?? "", "ErrorPage");
     const googleAnalyticsCode = propertyRef(props.modelValue?.bag?.googleAnalyticsCode ?? "", "GoogleAnalyticsCode");
     const requiresEncryption = propertyRef(props.modelValue?.bag?.requiresEncryption ?? false, "RequiresEncryption");
@@ -289,6 +302,8 @@
     const favIconBinaryFile = propertyRef(props.modelValue?.bag?.favIconBinaryFile ?? null, "FavIconBinaryFile");
     const siteLogoBinaryFile = propertyRef(props.modelValue?.bag?.siteLogoBinaryFile ?? null, "SiteLogoBinaryFile");
     const enableMobileRedirect = propertyRef(props.modelValue?.bag?.enableMobileRedirect ?? false, "EnableMobileRedirect");
+    const redirectTablets = propertyRef(props.modelValue?.bag?.redirectTablets ?? false, "RedirectTablets");
+    const externalUrl = propertyRef(props.modelValue?.bag?.externalUrl ?? "", "ExternalUrl");
     const enablePageViews = propertyRef(props.modelValue?.bag?.enablePageViews ?? false, "EnablePageViews");
     const retentionDuration = ref(props.modelValue?.bag?.retentionDuration);
     const allowedFrameDomains = propertyRef(props.modelValue?.bag?.allowedFrameDomains ?? "", "AllowedFrameDomains");
@@ -308,28 +323,39 @@
     const submitEditAttribute = ref<boolean>(false);
 
     const defaultPage = ref({
-        page: props.modelValue?.bag?.defaultPage ?? null
+        page: props.modelValue?.bag?.defaultPage ?? null,
+        route: props.modelValue?.bag?.defaultPageRoute ?? null
     });
     const loginPage = ref({
-        page: props.modelValue?.bag?.loginPage ?? null
+        page: props.modelValue?.bag?.loginPage ?? null,
+        route: props.modelValue?.bag?.loginPageRoute ?? null
     });
     const changePasswordPage = ref({
-        page: props.modelValue?.bag?.changePasswordPage ?? null
+        page: props.modelValue?.bag?.changePasswordPage ?? null,
+        route: props.modelValue?.bag?.changePasswordPageRoute ?? null
     });
     const communicationPage = ref({
-        page: props.modelValue?.bag?.communicationPage ?? null
+        page: props.modelValue?.bag?.communicationPage ?? null,
+        route: props.modelValue?.bag?.communicationPageRoute ?? null
     });
     const registrationPage = ref({
-        page: props.modelValue?.bag?.registrationPage ?? null
+        page: props.modelValue?.bag?.registrationPage ?? null,
+        route: props.modelValue?.bag?.registrationPageRoute ?? null
     });
     const pageNotFoundPage = ref({
-        page: props.modelValue?.bag?.pageNotFoundPage ?? null
+        page: props.modelValue?.bag?.pageNotFoundPage ?? null,
+        route: props.modelValue?.bag?.pageNotFoundPageRoute ?? null
+    });
+
+    const mobilePage = ref({
+        page: props.modelValue?.bag?.mobilePage ?? null,
+        route: null
     });
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
     const propRefs = [description, isActive, name, theme, googleAnalyticsCode, requiresEncryption, enabledForShortening, enableVisitorTracking, enablePersonalization, favIconBinaryFile, enablePageViews,
-        siteLogoBinaryFile, enableMobileRedirect, allowedFrameDomains, allowIndexing, indexStartingLocation, enableExclusiveRoutes, disablePredictableIds, pageHeaderContent, errorPage];
+        siteLogoBinaryFile, enableMobileRedirect, redirectTablets, externalUrl, allowedFrameDomains, allowIndexing, indexStartingLocation, enableExclusiveRoutes, disablePredictableIds, pageHeaderContent, errorPage];
 
     // #endregion
 
@@ -338,6 +364,23 @@
     const gridData: GridDataBag = reactive<GridDataBag>({
         rows: siteAttributes.value.map(x => convertToRowItem(x))
     });
+
+    const mobilePageComputed = computed({
+        get: () => enableMobileRedirect.value ? mobilePage.value : { page: null, route: null },
+        set: (value) => {
+            mobilePage.value = value;
+        }
+    });
+
+    // Watch enableMobileRedirect and clear mobilePage when disabled
+    watch(enableMobileRedirect, (newValue) => {
+        if (!newValue) {
+            mobilePage.value = { page: null, route: null };
+            redirectTablets.value = false;
+            externalUrl.value = "";
+        }
+    });
+
     // #endregion
 
     // #region Functions
@@ -454,7 +497,7 @@
         updateRefValue(description, props.modelValue?.bag?.description ?? "");
         updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
         updateRefValue(name, props.modelValue?.bag?.name ?? "");
-        updateRefValue(theme, props.modelValue?.bag?.theme ?? "");
+        updateRefValue(theme, props.modelValue?.bag?.theme ?? "Rock");
         updateRefValue(siteDomains, props.modelValue?.bag?.siteDomains ?? "");
         updateRefValue(errorPage, props.modelValue?.bag?.errorPage ?? "");
         updateRefValue(googleAnalyticsCode, props.modelValue?.bag?.googleAnalyticsCode ?? "");
@@ -465,6 +508,8 @@
         updateRefValue(favIconBinaryFile, props.modelValue?.bag?.favIconBinaryFile ?? null);
         updateRefValue(siteLogoBinaryFile, props.modelValue?.bag?.siteLogoBinaryFile ?? null);
         updateRefValue(enableMobileRedirect, props.modelValue?.bag?.enableMobileRedirect ?? false);
+        updateRefValue(redirectTablets, props.modelValue?.bag?.redirectTablets ?? false);
+        updateRefValue(externalUrl, props.modelValue?.bag?.externalUrl ?? "");
         updateRefValue(enablePageViews, props.modelValue?.bag?.enablePageViews ?? false);
         updateRefValue(retentionDuration, props.modelValue?.bag?.retentionDuration);
         updateRefValue(allowedFrameDomains, props.modelValue?.bag?.allowedFrameDomains ?? "");
@@ -477,28 +522,38 @@
         updateRefValue(binaryFileTypeGuid, props.modelValue?.bag?.binaryFileTypeGuid ?? BinaryFiletype.Default);
 
         updateRefValue(defaultPage, {
-            page: props.modelValue?.bag?.defaultPage ?? null
+            page: props.modelValue?.bag?.defaultPage ?? null,
+            route: props.modelValue?.bag?.defaultPageRoute ?? null
         });
         updateRefValue(loginPage, {
-            page: props.modelValue?.bag?.loginPage ?? null
+            page: props.modelValue?.bag?.loginPage ?? null,
+            route: props.modelValue?.bag?.loginPageRoute ?? null
         });
         updateRefValue(changePasswordPage, {
-            page: props.modelValue?.bag?.changePasswordPage ?? null
+            page: props.modelValue?.bag?.changePasswordPage ?? null,
+            route: props.modelValue?.bag?.changePasswordPageRoute ?? null
         });
         updateRefValue(communicationPage, {
-            page: props.modelValue?.bag?.communicationPage ?? null
+            page: props.modelValue?.bag?.communicationPage ?? null,
+            route: props.modelValue?.bag?.communicationPageRoute ?? null
         });
         updateRefValue(registrationPage, {
-            page: props.modelValue?.bag?.registrationPage ?? null
+            page: props.modelValue?.bag?.registrationPage ?? null,
+            route: props.modelValue?.bag?.registrationPageRoute ?? null
         });
         updateRefValue(pageNotFoundPage, {
-            page: props.modelValue?.bag?.pageNotFoundPage ?? null
+            page: props.modelValue?.bag?.pageNotFoundPage ?? null,
+            route: props.modelValue?.bag?.pageNotFoundPageRoute ?? null
+        });
+        updateRefValue(mobilePage, {
+            page: props.modelValue?.bag?.mobilePage ?? null,
+            route: null
         });
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([attributeValues, siteDomains, defaultPage, loginPage, changePasswordPage, communicationPage, registrationPage, pageNotFoundPage, siteAttributes, ...propRefs], () => {
+    watch([attributeValues, siteDomains, defaultPage, loginPage, changePasswordPage, communicationPage, registrationPage, pageNotFoundPage, siteAttributes, mobilePage, ...propRefs], () => {
         const newValue: ValidPropertiesBox<SiteBag> = {
             bag: { ...props.modelValue.bag } as SiteBag
         };
@@ -509,11 +564,17 @@
         setPropertiesBoxValue(newValue, "name", name.value);
         setPropertiesBoxValue(newValue, "theme", theme.value);
         setPropertiesBoxValue(newValue, "defaultPage", defaultPage.value?.page);
+        setPropertiesBoxValue(newValue, "defaultPageRoute", defaultPage.value?.route);
         setPropertiesBoxValue(newValue, "loginPage", loginPage.value?.page);
+        setPropertiesBoxValue(newValue, "loginPageRoute", loginPage.value?.route);
         setPropertiesBoxValue(newValue, "changePasswordPage", changePasswordPage.value?.page);
+        setPropertiesBoxValue(newValue, "changePasswordPageRoute", changePasswordPage.value?.route);
         setPropertiesBoxValue(newValue, "communicationPage", communicationPage.value?.page);
+        setPropertiesBoxValue(newValue, "communicationPageRoute", communicationPage.value?.route);
         setPropertiesBoxValue(newValue, "registrationPage", registrationPage.value?.page);
+        setPropertiesBoxValue(newValue, "registrationPageRoute", registrationPage.value?.route);
         setPropertiesBoxValue(newValue, "pageNotFoundPage", pageNotFoundPage.value?.page);
+        setPropertiesBoxValue(newValue, "pageNotFoundPageRoute", pageNotFoundPage.value?.route);
         setPropertiesBoxValue(newValue, "siteDomains", siteDomains.value);
         setPropertiesBoxValue(newValue, "errorPage", errorPage.value);
         setPropertiesBoxValue(newValue, "googleAnalyticsCode", googleAnalyticsCode.value);
@@ -524,6 +585,8 @@
         setPropertiesBoxValue(newValue, "favIconBinaryFile", favIconBinaryFile.value);
         setPropertiesBoxValue(newValue, "siteLogoBinaryFile", siteLogoBinaryFile.value);
         setPropertiesBoxValue(newValue, "enableMobileRedirect", enableMobileRedirect.value);
+        setPropertiesBoxValue(newValue, "redirectTablets", redirectTablets.value);
+        setPropertiesBoxValue(newValue, "externalUrl", externalUrl.value);
         setPropertiesBoxValue(newValue, "enablePageViews", enablePageViews.value);
         setPropertiesBoxValue(newValue, "retentionDuration", retentionDuration.value);
         setPropertiesBoxValue(newValue, "allowedFrameDomains", allowedFrameDomains.value);
@@ -534,6 +597,7 @@
         setPropertiesBoxValue(newValue, "pageHeaderContent", pageHeaderContent.value);
         setPropertiesBoxValue(newValue, "siteAttributes", siteAttributes.value);
         setPropertiesBoxValue(newValue, "binaryFileTypeGuid", binaryFileTypeGuid.value);
+        setPropertiesBoxValue(newValue, "mobilePage", mobilePage.value?.page);
 
         emit("update:modelValue", newValue);
     });

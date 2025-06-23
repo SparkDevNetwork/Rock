@@ -781,6 +781,10 @@ namespace RockWeb.Blocks.Finance
                         benevolenceRequests = benevolenceRequests.OrderBy( a => a.BenevolenceResults.Sum( b => b.Amount ) );
                     }
                 }
+                else
+                {
+                    benevolenceRequests = benevolenceRequests.Sort( sortProperty );
+                }
             }
             else
             {
@@ -797,14 +801,9 @@ namespace RockWeb.Blocks.Finance
                 }
             }
 
-            if ( sortProperty != null )
-            {
-                gList.DataSource = benevolenceRequests.Sort( sortProperty ).ToList();
-            }
-            else
-            {
-                gList.DataSource = benevolenceRequests.OrderByDescending( r => r.RequestDateTime ).ThenByDescending( r => r.Id ).ToList();
-            }
+            // Only include items they are authorized to see.
+            var authorizedBenevolenceRequests =  benevolenceRequests.ToList().Where( r => r.IsAuthorized( Authorization.VIEW, CurrentPerson ) ).ToList();
+            gList.DataSource = authorizedBenevolenceRequests;
 
             // Hide the campus column if the campus filter is not visible.
             gList.ColumnsOfType<RockBoundField>().First( c => c.DataField == "Campus.Name" ).Visible = cpCampus.Visible;
@@ -830,7 +829,7 @@ namespace RockWeb.Blocks.Finance
             var definedTypeCache = DefinedTypeCache.Get( new Guid( Rock.SystemGuid.DefinedType.BENEVOLENCE_RESULT_TYPE ) );
             Dictionary<string, decimal> resultTotals = new Dictionary<string, decimal>();
             decimal grandTotal = 0;
-            foreach ( BenevolenceRequest request in benevolenceRequests )
+            foreach ( BenevolenceRequest request in authorizedBenevolenceRequests )
             {
                 foreach ( BenevolenceResult result in request.BenevolenceResults )
                 {

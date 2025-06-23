@@ -25,6 +25,7 @@ import { Enumerable } from "@Obsidian/Utility/linq";
 import { isPromise } from "@Obsidian/Utility/promiseUtils";
 import { EmailEditorDeleteEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorDeleteEmailSectionOptionsBag";
 import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
+import { EmailEditorGetAllEmailSectionsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorGetAllEmailSectionsOptionsBag";
 import { EmailEditorGetEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorGetEmailSectionOptionsBag";
 import { EmailEditorRegisterRsvpRecipientsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorRegisterRsvpRecipientsOptionsBag";
 import { EmailEditorAttendanceOccurrenceBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorAttendanceOccurrenceBag";
@@ -33,6 +34,8 @@ import { EmailEditorGetFutureAttendanceOccurrencesOptionsBag } from "@Obsidian/V
 import { EmailEditorCreateAttendanceOccurrenceOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorCreateAttendanceOccurrenceOptionsBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { Guid } from "@Obsidian/Types";
+import { findComponentInnerWrappers, getImageComponentHelper, getSectionComponentHelper, getTextComponentHelper, getTitleComponentHelper } from "./utils.partial";
+import { inject, provide, Ref } from "vue";
 
 type ElementBinaryFileInfo = {
     binaryFile: ListItemBag | null | undefined;
@@ -51,270 +54,550 @@ type CreateBinaryFileFromElementOptions = {
     binaryFileTypeGuid: Guid;
 };
 
-/**
- * Creates a binary file image from an HTML element.
- *
- * @param options `options.element` must exist in the DOM.
- */
-export async function createBinaryFileImageFromElement(
-    options: CreateBinaryFileFromElementOptions
-): Promise<ElementBinaryFileInfo> {
-    // Convert the element to an image.
-    const canvas = await html2canvas(options.element, {
-        // Set to null for transparent background.
-        backgroundColor: null,
+const apiSymbol = Symbol("EmailEditorApi");
 
-        // Turn on logging if needed but remember to turn it back off.
-        logging: false,
+export function provideApi(api: EmailEditorApi): void {
+    provide(apiSymbol, api);
+}
 
-        windowWidth: options.elementWidth
-    }) as HTMLCanvasElement;
+export function useApi(): EmailEditorApi {
+    const api = inject(apiSymbol) as EmailEditorApi;
 
-    const blob = await new Promise<Blob | null>(resolve => {
-        return canvas.toBlob(blob => resolve(blob), "image/png");
-    });
+    if (!api) {
+        throw new Error("EmailEditorApi not found. Make sure to provide it in the component context.");
+    }
 
-    // Upload the thumbnail file.
-    let binaryFile: ListItemBag | null | undefined;
+    return api;
+}
 
-    if (blob) {
-        // Create the thumbnail file.
-        let file = new File([blob], options.fileName, { type: "image/png" });
+export class EmailEditorApi {
+    private securityGrantToken: Ref<string | null>;
 
-        if (options.fileProcessor) {
-            const res = options.fileProcessor(file);
+    constructor(options: { securityGrantToken: Ref<string | null> }) {
+        this.securityGrantToken = options.securityGrantToken;
+    }
 
-            if (isPromise(res)) {
-                file = await res;
-            }
-            else {
-                file = res;
-            }
-        }
+    /**
+     * Creates a binary file image from an HTML element.
+     *
+     * @param options `options.element` must exist in the DOM.
+     */
+    public async createBinaryFileImageFromElement(
+        options: CreateBinaryFileFromElementOptions
+    ): Promise<ElementBinaryFileInfo> {
+        // Convert the element to an image.
+        const canvas = await html2canvas(options.element, {
+            // Set to null for transparent background.
+            backgroundColor: null,
+
+            // Turn on logging if needed but remember to turn it back off.
+            logging: false,
+
+            windowWidth: options.elementWidth
+        }) as HTMLCanvasElement;
+
+        const blob = await new Promise<Blob | null>(resolve => {
+            return canvas.toBlob(blob => resolve(blob), "image/png");
+        });
 
         // Upload the thumbnail file.
-        binaryFile = await uploadBinaryFile(
-            file,
-            options.binaryFileTypeGuid,
-            {
-                isTemporary: true,
-                progress: () => { }
-            }
-        );
-    }
+        let binaryFile: ListItemBag | null | undefined;
 
-    return {
-        binaryFile
-    };
-}
+        if (blob) {
+            // Create the thumbnail file.
+            let file = new File([blob], options.fileName, { type: "image/png" });
 
-export async function createEmailSection(bag: EmailEditorEmailSectionBag): Promise<HttpResult<EmailEditorEmailSectionBag>> {
-    return await post<EmailEditorEmailSectionBag>("/api/v2/Controls/EmailEditorCreateEmailSection", undefined, bag);
-}
+            if (options.fileProcessor) {
+                const res = options.fileProcessor(file);
 
-export async function getEmailSection(bag: EmailEditorGetEmailSectionOptionsBag): Promise<HttpResult<EmailEditorEmailSectionBag>> {
-    return await post<EmailEditorEmailSectionBag>("/api/v2/Controls/EmailEditorGetEmailSection", undefined, bag);
-}
-
-export async function getAllEmailSections(): Promise<HttpResult<EmailEditorEmailSectionBag[]>> {
-    return await post<EmailEditorEmailSectionBag[]>("/api/v2/Controls/EmailEditorGetAllEmailSections");
-}
-
-export async function updateEmailSection(bag: EmailEditorEmailSectionBag): Promise<HttpResult<EmailEditorEmailSectionBag>> {
-    return await post<EmailEditorEmailSectionBag>("/api/v2/Controls/EmailEditorUpdateEmailSection", undefined, bag);
-}
-
-export async function deleteEmailSection(options: EmailEditorDeleteEmailSectionOptionsBag): Promise<HttpResult<void>> {
-    return await post("/api/v2/Controls/EmailEditorDeleteEmailSection", undefined, options);
-}
-
-function useTemporaryElement(document: Document, html: string, similarElementSelector: string, callback: (tempElement: HTMLElement) => void): void {
-    const tempElement = document.createElement("div");
-
-    try {
-        // Generate the element from the email section source markup.
-        tempElement.innerHTML = html;
-
-        // Add the clone temporarily to the get html2canvas to work.
-
-        // To get the most accurate thumbnail image,
-        // the temporary element should be
-        // added where a similar section has been placed.
-        const tempElementContent = tempElement.textContent ?? "";
-        const bestElement = Enumerable.from(document.querySelectorAll(similarElementSelector))
-            .select(e => {
-                if (e.textContent && e.textContent.includes(tempElementContent)) {
-                    // Text content matches.
-                    return {
-                        element: e,
-                        rank: 0
-                    };
-                }
-                else if (!e.textContent && !tempElementContent) {
-                    // Neither has text content.
-                    return {
-                        element: e,
-                        rank: 1
-                    };
+                if (isPromise(res)) {
+                    file = await res;
                 }
                 else {
-                    // Text content doesn't match, but they are both section components.
-                    return {
-                        element: e,
-                        rank: 2
-                    };
+                    file = res;
                 }
-            })
-            .orderBy(e => e.rank)
-            .firstOrDefault();
-
-        if (bestElement?.element.parentNode) {
-            // Place it after the best matching element.
-            bestElement.element.parentNode.insertBefore(tempElement, bestElement.element.nextSibling);
-        }
-        else {
-            // Place it at the end of the document.
-            document.body.append(tempElement);
-        }
-
-        callback(tempElement);
-    }
-    finally {
-        tempElement.remove();
-    }
-}
-
-async function createEmailSectionAndThumbnail(document: Document, bag: Omit<EmailEditorEmailSectionBag, "thumbnailBinaryFile">): Promise<HttpResult<EmailEditorEmailSectionBag>> {
-    return await new Promise<HttpResult<EmailEditorEmailSectionBag>>(resolve => {
-        useTemporaryElement(
-            document,
-            bag.sourceMarkup ?? "",
-            ".component-section",
-            async tempElement => {
-                const { binaryFile: thumbnailBinaryFile } = await createBinaryFileImageFromElement({
-                    element: tempElement,
-                    fileName: `${bag.name!.replace(" ", "_")}.png`,
-                    binaryFileTypeGuid: BinaryFiletype.CommunicationImage
-                });
-
-                const result = await createEmailSection({
-                    ...bag,
-                    thumbnailBinaryFile
-                });
-
-                resolve(result);
             }
-        );
-    });
-}
 
-export async function createStarterSections(document: Document): Promise<HttpResult<EmailEditorEmailSectionBag[]>> {
-    const starterSectionsCategory: ListItemBag = {
-        value: Category.EmailSectionStarterSections,
-        text: "Starter Sections"
-    } as const;
-
-    const result1 = await createEmailSectionAndThumbnail(document, {
-        guid: EmailSection.StarterHero,
-        category: starterSectionsCategory,
-        isSystem: true,
-        name: "Starter Hero",
-        sourceMarkup: `<div class="component component-section selected" data-state="component" style="" data-email-section-guid="acae542b-51e3-4bb2-99b3-ff420a85d019"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0;" width="100%">
-    <tbody>
-        <tr>
-            <td class="dropzone columns small-12 start last large-12" valign="top" width="100%" style="text-align: center; padding: 8px;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 1</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td>
-        </tr>
-    </tbody>
-</table></div>`,
-        usageSummary: "Single-column layout with an image, title, and summary. Ideal for a bold, welcoming introduction."
-    });
-
-    const result2 = await createEmailSectionAndThumbnail(document, {
-        guid: EmailSection.StarterStandardPromo,
-        category: starterSectionsCategory,
-        isSystem: true,
-        name: "Starter Standard Promo",
-        sourceMarkup: `<div class="component component-section selected" data-state="component" style="" data-email-section-guid="6cbe0906-9a9a-4b67-91af-fabd4936dec9"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0;" width="100%">
-    <tbody>
-        <tr>
-            <td class="dropzone columns small-12 start large-6" valign="top" width="50%" style="text-align: center; padding: 8px; width: 50%;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 1</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td><td class="dropzone columns small-12 last large-6" valign="top" width="50%" style="padding: 8px; width: 50%; text-align: center;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 2</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td>
-        </tr>
-    </tbody>
-</table></div>`,
-        usageSummary: "Two-column layout with an image, title, and summary. Perfect for promoting multiple offerings side-by-side."
-    });
-
-    const result3 = await createEmailSectionAndThumbnail(document, {
-        guid: EmailSection.Starter3ColumnPromo,
-        category: starterSectionsCategory,
-        isSystem: true,
-        name: "Starter 3-Column Promo",
-        sourceMarkup: `<div><div class="component component-section selected" data-state="component" style="" data-email-section-guid="63c1ebf8-0398-4039-9fba-a99886ed7106"><table class="row" cellpadding="0" cellspacing="0" border="0" style="border-spacing: 0;" width="100%">
-    <tbody>
-        <tr>
-            <td class="dropzone columns small-12 start large-4" valign="top" width="33.33333333333333%" style="text-align: center; padding: 8px; width: 33.3333%;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 1</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td><td class="dropzone columns small-12 large-4" valign="top" width="33.33333333333333%" style="padding: 8px; width: 33.3333%; text-align: center;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 2</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td><td class="dropzone columns small-12 last large-4" valign="top" width="33.33333333333333%" style="width: 33.3333%; text-align: center; padding: 8px;"><div class="component component-image" data-state="component" style="line-height: 0;"><img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></div><div class="component component-title" data-state="component"><h1 class="rock-content-editable" style="margin: 12px 0px 0px;">Item Title 3</h1></div><div class="component component-text rock-content-editable" data-state="component" style="padding: 0px; margin: 0px; line-height: 1.5;"><p style="margin: 0;">Join us in a welcoming community.</p></div></td>
-        </tr>
-    </tbody>
-</table></div></div>`,
-        usageSummary: "3-column layout with an image, title, and summary. Perfect for promoting multiple offerings side-by-side."
-    });
-
-    const isAnySuccess = result1.isSuccess || result2.isSuccess || result3.isSuccess;
-    let data: EmailEditorEmailSectionBag[] | null = null;
-    if (isAnySuccess) {
-        data = [];
-        if (result1.isSuccess && result1.data) {
-            data.push(result1.data);
+            // Upload the thumbnail file.
+            binaryFile = await uploadBinaryFile(
+                file,
+                options.binaryFileTypeGuid,
+                {
+                    isTemporary: true,
+                    progress: () => { }
+                }
+            );
         }
-        if (result2.isSuccess && result2.data) {
-            data.push(result2.data);
+
+        return {
+            binaryFile
+        };
+    }
+
+    public async createEmailSection(bag: EmailEditorEmailSectionBag): Promise<HttpResult<EmailEditorEmailSectionBag>> {
+        const options = {
+            ...bag,
+            securityGrantToken: this.securityGrantToken.value
+        };
+
+        return await post<EmailEditorEmailSectionBag>("/api/v2/Controls/EmailEditorCreateEmailSection", undefined, options);
+    }
+
+    public async getEmailSection(bag: EmailEditorGetEmailSectionOptionsBag): Promise<HttpResult<EmailEditorEmailSectionBag>> {
+        const options = {
+            ...bag,
+            securityGrantToken: this.securityGrantToken.value
+        };
+
+        return await post<EmailEditorEmailSectionBag>("/api/v2/Controls/EmailEditorGetEmailSection", undefined, options);
+    }
+
+    public async getAllEmailSections(): Promise<HttpResult<EmailEditorEmailSectionBag[]>> {
+        const options: EmailEditorGetAllEmailSectionsOptionsBag = {
+            securityGrantToken: this.securityGrantToken.value
+        };
+
+        return await post<EmailEditorEmailSectionBag[]>("/api/v2/Controls/EmailEditorGetAllEmailSections", undefined, options);
+    }
+
+    public async updateEmailSection(bag: EmailEditorEmailSectionBag): Promise<HttpResult<EmailEditorEmailSectionBag>> {
+        const options = {
+            ...bag,
+            securityGrantToken: this.securityGrantToken.value
+        };
+
+        return await post<EmailEditorEmailSectionBag>("/api/v2/Controls/EmailEditorUpdateEmailSection", undefined, options);
+    }
+
+    public async deleteEmailSection(bag: EmailEditorDeleteEmailSectionOptionsBag): Promise<HttpResult<void>> {
+        const options = {
+            ...bag,
+            securityGrantToken: this.securityGrantToken.value
+        };
+
+        return await post("/api/v2/Controls/EmailEditorDeleteEmailSection", undefined, options);
+    }
+
+    private useTemporaryElement(document: Document, html: string, similarElementSelector: string, callback: (tempElement: HTMLElement) => void): void {
+        const tempElement = document.createElement("div");
+
+        try {
+            // Generate the element from the email section source markup.
+            tempElement.innerHTML = html;
+
+            // Add the clone temporarily to the get html2canvas to work.
+
+            // To get the most accurate thumbnail image,
+            // the temporary element should be
+            // added where a similar section has been placed.
+            const tempElementContent = tempElement.textContent ?? "";
+            const bestElement = Enumerable.from(document.querySelectorAll(similarElementSelector))
+                .select(e => {
+                    if (e.textContent && e.textContent.includes(tempElementContent)) {
+                        // Text content matches.
+                        return {
+                            element: e,
+                            rank: 0
+                        };
+                    }
+                    else if (!e.textContent && !tempElementContent) {
+                        // Neither has text content.
+                        return {
+                            element: e,
+                            rank: 1
+                        };
+                    }
+                    else {
+                        // Text content doesn't match, but they are both section components.
+                        return {
+                            element: e,
+                            rank: 2
+                        };
+                    }
+                })
+                .orderBy(e => e.rank)
+                .firstOrDefault();
+
+            if (bestElement?.element.parentNode) {
+                // Place it after the best matching element.
+                bestElement.element.parentNode.insertBefore(tempElement, bestElement.element.nextSibling);
+            }
+            else {
+                // Place it at the end of the document.
+                document.body.append(tempElement);
+            }
+
+            callback(tempElement);
         }
-        if (result3.isSuccess && result3.data) {
-            data.push(result3.data);
+        finally {
+            tempElement.remove();
         }
     }
 
-    const isAnyError = result1.isError || result2.isError || result3.isError;
-    let errorMessage: string | null = null;
-    if (isAnyError) {
+    private async createEmailSectionAndThumbnail(document: Document, bag: Omit<EmailEditorEmailSectionBag, "thumbnailBinaryFile">): Promise<HttpResult<EmailEditorEmailSectionBag>> {
+        return await new Promise<HttpResult<EmailEditorEmailSectionBag>>(resolve => {
+            this.useTemporaryElement(
+                document,
+                bag.sourceMarkup ?? "",
+                ".component-section",
+                async tempElement => {
+                    const { binaryFile: thumbnailBinaryFile } = await this.createBinaryFileImageFromElement({
+                        element: tempElement,
+                        fileName: `${bag.name!.replace(" ", "_")}.png`,
+                        binaryFileTypeGuid: BinaryFiletype.CommunicationImage
+                    });
 
-        const errorMessages: string[] = [];
-        if (result1.isError && result1.errorMessage) {
-            errorMessages.push(result1.errorMessage);
-        }
-        if (result2.isError && result2.errorMessage) {
-            errorMessages.push(result2.errorMessage);
-        }
-        if (result3.isError && result3.errorMessage) {
-            errorMessages.push(result3.errorMessage);
-        }
+                    const result = await this.createEmailSection({
+                        ...bag,
+                        thumbnailBinaryFile
+                    });
 
-        if (errorMessages.length) {
-            errorMessage = errorMessages.join(", ");
-        }
+                    resolve(result);
+                }
+            );
+        });
     }
 
-    return {
-        isError: isAnyError,
-        errorMessage,
-        isSuccess: isAnySuccess,
-        statusCode: result1.statusCode,
-        data
-    };
-}
+    public async createStarterSections(document: Document): Promise<HttpResult<EmailEditorEmailSectionBag[]>> {
+        const starterSectionsCategory: ListItemBag = {
+            value: Category.EmailSectionStarterSections,
+            text: "Starter Sections"
+        } as const;
 
-export async function registerRsvpRecipients(bag: EmailEditorRegisterRsvpRecipientsOptionsBag): Promise<HttpResult<void>> {
-    return await post("/api/v2/Controls/EmailEditorRegisterRsvpRecipients", undefined, bag);
-}
+        const sectionComponentHelper = getSectionComponentHelper();
+        const imageComponentHelper = getImageComponentHelper();
+        const titleComponentHelper = getTitleComponentHelper();
+        const textComponentHelper = getTextComponentHelper();
 
-export async function getAttendanceOccurrence(bag: EmailEditorGetAttendanceOccurrenceOptionsBag): Promise<HttpResult<EmailEditorAttendanceOccurrenceBag>> {
-    return await post<EmailEditorAttendanceOccurrenceBag>("/api/v2/Controls/EmailEditorGetAttendanceOccurrence", undefined, bag);
-}
+        const starterHeroSectionComponent = sectionComponentHelper.createComponentElement("section");
+        const elements = sectionComponentHelper.getElements(starterHeroSectionComponent);
+        if (elements) {
+            elements.marginWrapper.table.setAttribute("data-email-section-guid", "acae542b-51e3-4bb2-99b3-ff420a85d019");
+            const column = elements.rowWrapper?.querySelector(".columns") as HTMLTableCellElement;
+            if (column) {
+                const wrappers = findComponentInnerWrappers(column);
+                if (wrappers) {
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
 
-export async function getFutureAttendanceOccurrences(bag: EmailEditorGetFutureAttendanceOccurrencesOptionsBag): Promise<HttpResult<ListItemBag[]>> {
-    return await post<ListItemBag[]>("/api/v2/Controls/EmailEditorGetFutureAttendanceOccurrences", undefined, bag);
-}
+                    const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
 
-export async function createAttendanceOccurrence(bag: EmailEditorCreateAttendanceOccurrenceOptionsBag): Promise<HttpResult<EmailEditorAttendanceOccurrenceBag>> {
-    return await post<EmailEditorAttendanceOccurrenceBag>("/api/v2/Controls/EmailEditorCreateAttendanceOccurrence", undefined, bag);
+                    if (dropzone) {
+                        const imageComponent = imageComponentHelper.createComponentElement();
+                        dropzone.appendChild(imageComponent);
+
+                        const titleComponent = titleComponentHelper.createComponentElement();
+                        const titleElements = titleComponentHelper.getElements(titleComponent);
+                        if (titleElements) {
+                            titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                            if (titleElements.headingEl) {
+                                titleElements.headingEl.innerText = "Item Title 1";
+                            }
+                        }
+                        dropzone.appendChild(titleComponent);
+
+                        const textComponent = textComponentHelper.createComponentElement();
+                        const textElements = textComponentHelper.getElements(textComponent);
+                        if (textElements?.contentWrapper) {
+                            textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                        }
+                        dropzone.appendChild(textComponent);
+                    }
+                }
+            }
+        }
+
+        const result1 = await this.createEmailSectionAndThumbnail(document, {
+            guid: EmailSection.StarterHero,
+            category: starterSectionsCategory,
+            isSystem: true,
+            name: "Starter Hero",
+            sourceMarkup: starterHeroSectionComponent.outerHTML,
+            usageSummary: "Single-column layout with an image, title, and summary. Ideal for a bold, welcoming introduction."
+        });
+
+        const starterStandardPromoSectionComponent = sectionComponentHelper.createComponentElement("two-column-section");
+        const elements2 = sectionComponentHelper.getElements(starterStandardPromoSectionComponent);
+        if (elements2) {
+            elements2.marginWrapper.table.setAttribute("data-email-section-guid", "6cbe0906-9a9a-4b67-91af-fabd4936dec9");
+            const columns = elements2.rowWrapper?.querySelectorAll(".columns");
+
+            const column1 = columns?.item(0) as HTMLTableCellElement;
+            const column2 = columns?.item(1) as HTMLTableCellElement;
+
+            if (column1) {
+                const wrappers = findComponentInnerWrappers(column1);
+                if (wrappers) {
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                    const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                    if (dropzone) {
+                        const imageComponent = imageComponentHelper.createComponentElement();
+                        dropzone.appendChild(imageComponent);
+
+                        const titleComponent = titleComponentHelper.createComponentElement();
+                        const titleElements = titleComponentHelper.getElements(titleComponent);
+                        if (titleElements) {
+                            titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                            if (titleElements.headingEl) {
+                                titleElements.headingEl.innerText = "Item Title 1";
+                            }
+                        }
+                        dropzone.appendChild(titleComponent);
+
+                        const textComponent = textComponentHelper.createComponentElement();
+                        const textElements = textComponentHelper.getElements(textComponent);
+                        if (textElements?.contentWrapper) {
+                            textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                        }
+                        dropzone.appendChild(textComponent);
+                    }
+                }
+            }
+
+            if (column2) {
+                const wrappers = findComponentInnerWrappers(column2);
+                if (wrappers) {
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                    const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                    if (dropzone) {
+                        const imageComponent = imageComponentHelper.createComponentElement();
+                        dropzone.appendChild(imageComponent);
+
+                        const titleComponent = titleComponentHelper.createComponentElement();
+                        const titleElements = titleComponentHelper.getElements(titleComponent);
+                        if (titleElements) {
+                            titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                            if (titleElements.headingEl) {
+                                titleElements.headingEl.innerText = "Item Title 2";
+                            }
+                        }
+                        dropzone.appendChild(titleComponent);
+
+                        const textComponent = textComponentHelper.createComponentElement();
+                        const textElements = textComponentHelper.getElements(textComponent);
+                        if (textElements?.contentWrapper) {
+                            textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                        }
+                        dropzone.appendChild(textComponent);
+                    }
+                }
+            }
+        }
+
+        const result2 = await this.createEmailSectionAndThumbnail(document, {
+            guid: EmailSection.StarterStandardPromo,
+            category: starterSectionsCategory,
+            isSystem: true,
+            name: "Starter Standard Promo",
+            sourceMarkup: starterStandardPromoSectionComponent.outerHTML,
+            usageSummary: "Two-column layout with an image, title, and summary. Perfect for promoting multiple offerings side-by-side."
+        });
+
+        const starter3ColumnPromoSectionComponent = sectionComponentHelper.createComponentElement("three-column-section");
+        const elements3 = sectionComponentHelper.getElements(starter3ColumnPromoSectionComponent);
+        if (elements3) {
+            elements3.marginWrapper.table.setAttribute("data-email-section-guid", "63c1ebf8-0398-4039-9fba-a99886ed7106");
+            const columns = elements3.rowWrapper?.querySelectorAll(".columns");
+
+            const column1 = columns?.item(0) as HTMLTableCellElement;
+            const column2 = columns?.item(1) as HTMLTableCellElement;
+            const column3 = columns?.item(2) as HTMLTableCellElement;
+
+            if (column1) {
+                const wrappers = findComponentInnerWrappers(column1);
+                if (wrappers) {
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                    const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                    if (dropzone) {
+                        const imageComponent = imageComponentHelper.createComponentElement();
+                        dropzone.appendChild(imageComponent);
+
+                        const titleComponent = titleComponentHelper.createComponentElement();
+                        const titleElements = titleComponentHelper.getElements(titleComponent);
+                        if (titleElements) {
+                            titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                            if (titleElements.headingEl) {
+                                titleElements.headingEl.innerText = "Item Title 1";
+                            }
+                        }
+                        dropzone.appendChild(titleComponent);
+
+                        const textComponent = textComponentHelper.createComponentElement();
+                        const textElements = textComponentHelper.getElements(textComponent);
+                        if (textElements?.contentWrapper) {
+                            textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                        }
+                        dropzone.appendChild(textComponent);
+                    }
+                }
+            }
+
+            if (column2) {
+                const wrappers = findComponentInnerWrappers(column2);
+                if (wrappers) {
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                    const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                    if (dropzone) {
+                        const imageComponent = imageComponentHelper.createComponentElement();
+                        dropzone.appendChild(imageComponent);
+
+                        const titleComponent = titleComponentHelper.createComponentElement();
+                        const titleElements = titleComponentHelper.getElements(titleComponent);
+                        if (titleElements) {
+                            titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                            if (titleElements.headingEl) {
+                                titleElements.headingEl.innerText = "Item Title 2";
+                            }
+                        }
+                        dropzone.appendChild(titleComponent);
+
+                        const textComponent = textComponentHelper.createComponentElement();
+                        const textElements = textComponentHelper.getElements(textComponent);
+                        if (textElements?.contentWrapper) {
+                            textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                        }
+                        dropzone.appendChild(textComponent);
+                    }
+                }
+            }
+
+            if (column3) {
+                const wrappers = findComponentInnerWrappers(column3);
+                if (wrappers) {
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.textAlign = "center";
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.setAttribute("align", "center");
+                    wrappers.marginWrapper.borderWrapper.paddingWrapper.td.style.padding = "8px";
+
+                    const dropzone = wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") as HTMLElement;
+
+                    if (dropzone) {
+                        const imageComponent = imageComponentHelper.createComponentElement();
+                        dropzone.appendChild(imageComponent);
+
+                        const titleComponent = titleComponentHelper.createComponentElement();
+                        const titleElements = titleComponentHelper.getElements(titleComponent);
+                        if (titleElements) {
+                            titleElements.marginWrapper.td.style.padding = "12px 0px 0px";
+                            if (titleElements.headingEl) {
+                                titleElements.headingEl.innerText = "Item Title 3";
+                            }
+                        }
+                        dropzone.appendChild(titleComponent);
+
+                        const textComponent = textComponentHelper.createComponentElement();
+                        const textElements = textComponentHelper.getElements(textComponent);
+                        if (textElements?.contentWrapper) {
+                            textElements.contentWrapper.innerHTML = `<p style="margin: 0;">Join us in a welcoming community.</p>`;
+                        }
+                        dropzone.appendChild(textComponent);
+                    }
+                }
+            }
+        }
+
+        const result3 = await this.createEmailSectionAndThumbnail(document, {
+            guid: EmailSection.Starter3ColumnPromo,
+            category: starterSectionsCategory,
+            isSystem: true,
+            name: "Starter 3-Column Promo",
+            sourceMarkup: starter3ColumnPromoSectionComponent.outerHTML,
+            usageSummary: "3-column layout with an image, title, and summary. Perfect for promoting multiple offerings side-by-side."
+        });
+
+        const isAnySuccess = result1.isSuccess || result2.isSuccess || result3.isSuccess;
+        let data: EmailEditorEmailSectionBag[] | null = null;
+        if (isAnySuccess) {
+            data = [];
+            if (result1.isSuccess && result1.data) {
+                data.push(result1.data);
+            }
+            if (result2.isSuccess && result2.data) {
+                data.push(result2.data);
+            }
+            if (result3.isSuccess && result3.data) {
+                data.push(result3.data);
+            }
+        }
+
+        const isAnyError = result1.isError || result2.isError || result3.isError;
+        let errorMessage: string | null = null;
+        if (isAnyError) {
+
+            const errorMessages: string[] = [];
+            if (result1.isError && result1.errorMessage) {
+                errorMessages.push(result1.errorMessage);
+            }
+            if (result2.isError && result2.errorMessage) {
+                errorMessages.push(result2.errorMessage);
+            }
+            if (result3.isError && result3.errorMessage) {
+                errorMessages.push(result3.errorMessage);
+            }
+
+            if (errorMessages.length) {
+                errorMessage = errorMessages.join(", ");
+            }
+        }
+
+        return {
+            isError: isAnyError,
+            errorMessage,
+            isSuccess: isAnySuccess,
+            statusCode: result1.statusCode,
+            data
+        };
+    }
+
+    public async registerRsvpRecipients(bag: EmailEditorRegisterRsvpRecipientsOptionsBag): Promise<HttpResult<void>> {
+        const options = {
+            ...bag,
+            securityGrantToken: this.securityGrantToken.value
+        };
+
+        return await post("/api/v2/Controls/EmailEditorRegisterRsvpRecipients", undefined, options);
+    }
+
+    public async getAttendanceOccurrence(bag: EmailEditorGetAttendanceOccurrenceOptionsBag): Promise<HttpResult<EmailEditorAttendanceOccurrenceBag>> {
+        const options = {
+            ...bag,
+            securityGrantToken: this.securityGrantToken.value
+        };
+
+        return await post<EmailEditorAttendanceOccurrenceBag>("/api/v2/Controls/EmailEditorGetAttendanceOccurrence", undefined, options);
+    }
+
+    public async getFutureAttendanceOccurrences(bag: EmailEditorGetFutureAttendanceOccurrencesOptionsBag): Promise<HttpResult<ListItemBag[]>> {
+        const options = {
+            ...bag,
+            securityGrantToken: this.securityGrantToken.value
+        };
+
+        return await post<ListItemBag[]>("/api/v2/Controls/EmailEditorGetFutureAttendanceOccurrences", undefined, options);
+    }
+
+    public async createAttendanceOccurrence(bag: EmailEditorCreateAttendanceOccurrenceOptionsBag): Promise<HttpResult<EmailEditorAttendanceOccurrenceBag>> {
+        const options = {
+            ...bag,
+            securityGrantToken: this.securityGrantToken.value
+        };
+
+        return await post<EmailEditorAttendanceOccurrenceBag>("/api/v2/Controls/EmailEditorCreateAttendanceOccurrence", undefined, options);
+    }
 }

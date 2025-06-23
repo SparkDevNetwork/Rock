@@ -998,19 +998,6 @@ icon {
     background-color: transparent;
 }
 
-.flyout-menu ^listview {
-    background-color: ?color-brand;
-}
-
-.flyout-menu ^boxview {
-    background-color: #fff;
-    opacity: 0.4;
-}
-
-.flyout-menu-item {
-    font-size: 21;
-}
-
 /* Button Sizes */
 .btn {
     font-size: 17;
@@ -1502,6 +1489,19 @@ icon {
 
 .text-subtitle {
     font-size: subtitle;
+}
+
+.flyout-menu ^listview {
+    background-color: ?color-brand;
+}
+
+.flyout-menu ^boxview {
+    background-color: #fff;
+    opacity: 0.4;
+}
+
+.flyout-menu-item {
+    font-size: 21;
 }
 
 .text-caption {

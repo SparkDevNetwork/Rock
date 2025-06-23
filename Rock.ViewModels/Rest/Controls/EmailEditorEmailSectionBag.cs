@@ -59,5 +59,12 @@ namespace Rock.ViewModels.Rest.Controls
         /// Gets or sets the email section usage summary.
         /// </summary>
         public string UsageSummary { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token to use when performing
+        /// authorization checks.
+        /// </summary>
+        /// <value>The security grant token.</value>
+        public string SecurityGrantToken { get; set; }
     }
 }

@@ -473,7 +473,8 @@
       <HintPath>..\packages\SixLabors.ImageSharp.Drawing.1.0.0-beta15\lib\net472\SixLabors.ImageSharp.Drawing.dll</HintPath>
     </Reference>
     <Reference Include="stream-chat-net, Version=2.10.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <HintPath>..\packages\stream-chat-net.2.10.0\lib\net47\stream-chat-net.dll</HintPath>
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\libs\StreamChat\stream-chat-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -712,17 +713,25 @@
     <Compile Include="Attribute\CheckListFieldAttribute.cs" />
     <Compile Include="Attribute\ColorSelectorFieldAttribute.cs" />
     <Compile Include="Attribute\CustomSettingsBlockTypeAttribute.cs" />
+    <Compile Include="Attribute\AIProviderFieldAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="CheckIn\v2\Labels\Renderers\Zebra64.cs" />
+    <Compile Include="CheckIn\v2\ProximityDirector.cs" />
+    <Compile Include="ClientService\Core\Note\NoteClientService.cs" />
     <Compile Include="Cms\RestActionMetadata.cs" />
     <Compile Include="Cms\RestControllerMetadata.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AlertData.cs" />
+    <Compile Include="Cms\StructuredContent\BlockTypes\AlertRenderer.cs" />
+    <Compile Include="Cms\StructuredContent\IStructuredContentBlockLavaRenderer.cs" />
     <Compile Include="Communication\Chat\DTO\ChatUserAuthentication.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatGroup.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatAccountInvalidException.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatAccountSuspendedException.cs" />
     <Compile Include="Communication\Chat\Exceptions\ChatSyncException.cs" />
     <Compile Include="Communication\Chat\Exceptions\ChatWebhookParseException.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncBanResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncMuteResult.cs" />
-    <Compile Include="Communication\Chat\Sync\ChatToRockSyncConfig.cs" />
     <Compile Include="Communication\Chat\Sync\ChatUserMessageCountsByChatChannelResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatWebhookRequest.cs" />
     <Compile Include="Communication\Chat\DTO\RockChatGroupMember.cs" />
@@ -773,6 +782,11 @@
     <Compile Include="Core\EntitySearch\EntitySearchSystemQuery.cs" />
     <Compile Include="Core\EntitySearch\IdKeyExpressionVisitor.cs" />
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171UpdateCommunicationRecipientIndex.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />
+    <Compile Include="Jobs\RunLava.cs" />
+    <Compile Include="Model\CRM\UserLogin\UpdateLastLoginArgs.cs" />
     <Compile Include="Data\AttributeValueExpressionVisitor.cs" />
     <Compile Include="Data\EnableAttributeQualificationAttribute.cs" />
     <Compile Include="Attribute\GroupMemberRequirementFieldAttribute.cs" />
@@ -1316,6 +1330,7 @@
     <Compile Include="Field\Types\AdaptiveMessageFieldType.cs" />
     <Compile Include="Field\Types\AIProviderFieldType.cs" />
     <Compile Include="Field\Types\ColorSelectorFieldType.cs" />
+    <Compile Include="Field\Types\FinancialTransactionFieldType.cs" />
     <Compile Include="Field\Types\GroupMemberRequirementFieldType.cs" />
     <Compile Include="Field\Types\MediaSelectorFieldType.cs" />
     <Compile Include="Field\Types\PrayerRequestFieldType.cs" />
@@ -1334,6 +1349,7 @@
     <Compile Include="Financial\ISettlementGateway.cs" />
     <Compile Include="Jobs\CalculatePeerNetwork.cs" />
     <Compile Include="Jobs\ChatSync.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV171MigrateLoginHistory.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17AddAndUpdatePeerNetworkIndexes.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdateHistoryTableEntityTypeIdIndexPostMigration.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV17UpdatePersonPrimaryAliasGuid.cs" />
@@ -1674,6 +1690,7 @@
     <Compile Include="Obsidian\UI\GridBuilderExtensions.cs" />
     <Compile Include="Obsidian\UI\GridBuilderGridOptions.cs" />
     <Compile Include="Obsidian\UI\GridHelper.cs" />
+    <Compile Include="Oidc\OidcHelper.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\EnvironmentRequestFilter.cs" />
     <Compile Include="Net\IRequest.cs" />
     <Compile Include="Personalization\PersonalizationRequestFilters\GeolocationRequestFilter.cs" />
@@ -1747,6 +1764,14 @@
     <Compile Include="Plugin\HotFixes\198_MigrationRollupsForV17_0_6.cs" />
     <Compile Include="Plugin\HotFixes\197_MigrationRollupsForV17_0_5.cs" />
     <Compile Include="Plugin\HotFixes\226_UpdateIndexesForV16_8.cs" />
+    <Compile Include="Plugin\HotFixes\250_AddDuplicateCommunicationRecipientHandling.cs" />
+    <Compile Include="Plugin\HotFixes\242_UpdateFileAssetManagerDefaultValues.cs" />
+    <Compile Include="Plugin\HotFixes\241_ChatBackendSyncAdditions.cs" />
+    <Compile Include="Plugin\HotFixes\239_AddLoginHistoryPageAndBlocks.cs" />
+    <Compile Include="Plugin\HotFixes\238_ChatSharedChannelDefaultGroupRole.cs" />
+    <Compile Include="Plugin\HotFixes\237_ChatAdminImprovements.cs" />
+    <Compile Include="Plugin\HotFixes\236_MigrationRollupsForV17_1_0.cs" />
+    <Compile Include="Plugin\HotFixes\235_AddChatConfigurationAdminUI.cs" />
     <Compile Include="Plugin\HotFixes\231_MigrationRollupsForV16_10_0.cs" />
     <Compile Include="Plugin\HotFixes\230_FixVolGenBuildScript_CampusName.cs" />
     <Compile Include="Plugin\HotFixes\228_SetConnectionTypeLinkUrl.cs" />
@@ -1782,6 +1807,14 @@
     <Compile Include="Plugin\HotFixes\234_MigrationRollupsForV16_10_1.cs" />
     <Compile Include="Plugin\HotFixes\233_UpdateAppleDeviceList.cs" />
     <Compile Include="Plugin\HotFixes\232_UpdateContentFileTypeBlacklist.cs" />
+    <Compile Include="Plugin\HotFixes\244_MigrationRollupsForV17_1_1.cs" />
+    <Compile Include="Plugin\HotFixes\243_AddDefaultAllowedGroupTypesToMobileGroupRegistration.cs" />
+    <Compile Include="Plugin\HotFixes\245_UpdateMergeFieldAttributeDescription.cs" />
+    <Compile Include="Plugin\HotFixes\246_AddProximityCheckInAttribute.cs" />
+    <Compile Include="Plugin\HotFixes\249_Fix_spCrm_FamilyAnalyticsAttendance.cs" />
+    <Compile Include="Plugin\HotFixes\248_MigrationRollupsForV17_1_2.cs" />
+    <Compile Include="Plugin\HotFixes\247_UpdateLayoutBlockListNamingObsidian.cs" />
+    <Compile Include="Plugin\HotFixes\251_MigrationRollupsForV17_1.cs" />
     <Compile Include="Plugin\HotFixes\HotFixMigrationResource.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTime>True</DesignTime>
@@ -1876,7 +1909,10 @@
     <Compile Include="Security\ExcludeSecurityActionsAttribute.cs" />
     <Compile Include="Security\GlobalRestrictedDefault.cs" />
     <Compile Include="Security\HistoryLoginRelatedData.cs" />
+    <Compile Include="Security\SecurityGrantRules\AddDefinedValueToTypeGrantRule.cs" />
     <Compile Include="Security\SecurityGrantRules\AssetAndFileManagerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\ConnectionRequestPickerSecurityGrantRule.cs" />
+    <Compile Include="Security\SecurityGrantRules\EmailEditorSecurityGrantRule.cs" />
     <Compile Include="Storage\AssetManagerAsset.cs" />
     <Compile Include="SystemGuid\EmailSection.cs" />
     <Compile Include="SystemGuid\SnippetType.cs" />
@@ -2465,6 +2501,7 @@
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiMetadataBox.cs" />
     <Compile Include="Utility\ContentLibraryApi\ContentLibraryApiResult.cs" />
     <Compile Include="Utility\ContentLibraryApi\IContentLibraryApi.cs" />
+    <Compile Include="Utility\EntityReferenceEqualityComparer.cs" />
     <Compile Include="Utility\Enums\PrayerRequestOrder.cs" />
     <Compile Include="Utility\Enums\RockPlatform.cs" />
     <Compile Include="Utility\Enums\TimePeriodOfDay.cs" />
@@ -2558,7 +2595,6 @@
     <Compile Include="Media\MediaAccountComponent.cs" />
     <Compile Include="Media\MediaAccountContainer.cs" />
     <Compile Include="Media\MediaElementFileData.cs" />
-    <Compile Include="Media\MediaElementQuality.cs" />
     <Compile Include="Media\SyncOperationResult.cs" />
     <Compile Include="Media\MediaElementThumbnailData.cs" />
     <Compile Include="Model\Engagement\AchievementAttempt\AchievementAttemptService.cs" />
@@ -2956,7 +2992,6 @@
     <Compile Include="Blocks\Types\Mobile\Cms\Login.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\ProfileDetails.cs" />
     <Compile Include="Blocks\Types\Mobile\Cms\Register.cs" />
-    <Compile Include="Blocks\Types\Mobile\Cms\WorkflowEntry.cs" />
     <Compile Include="Communication\RockSMSMessageRecipient.cs" />
     <Compile Include="Communication\RockPushMessageRecipient.cs" />
     <Compile Include="Communication\RockEmailMessageRecipient.cs" />
@@ -4778,6 +4813,7 @@
     <Compile Include="Workflow\ActionCategoryAttribute.cs" />
     <Compile Include="Workflow\ActionComponent.cs" />
     <Compile Include="Workflow\ActionContainer.cs" />
+    <Compile Include="Workflow\Action\AI\AICompletion.cs" />
     <Compile Include="Workflow\Action\Assessments\CreateAssessmentRequest.cs" />
     <Compile Include="Workflow\Action\BackgroundCheck\BackgroundCheckRequest.cs" />
     <Compile Include="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
@@ -4882,6 +4918,7 @@
     <Compile Include="Workflow\Action\Entity\SetEntityProperty.cs" />
     <Compile Include="Workflow\Action\Utility\UpdatePersistedDataset.cs" />
     <Compile Include="Workflow\Action\WorkflowAttributes\SetFileAttributeFromLava.cs" />
+    <Compile Include="Workflow\Action\WorkflowControl\PaymentEntry.cs" />
     <Compile Include="Workflow\Action\WorkflowControl\Redirect.cs" />
     <Compile Include="Workflow\Action\Utility\RunJob.cs" />
     <Compile Include="Workflow\Action\Utility\RunSQL.cs" />
@@ -4930,6 +4967,9 @@
     <Compile Include="Workflow\FormBuilder\FormPersonEntrySettings.cs" />
     <Compile Include="Workflow\FormBuilder\FormSettings.cs" />
     <Compile Include="Workflow\FormBuilder\PersonEntryAdditionalSettings.cs" />
+    <Compile Include="Workflow\IInteractiveAction.cs" />
+    <Compile Include="Workflow\InteractiveActionResult.cs" />
+    <Compile Include="Workflow\WorkflowPersonEntryProcessor.cs" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="..\packages\Microsoft.SqlServer.Types.11.0.2\nativeBinaries\x64\msvcr100.dll">
@@ -5067,6 +5107,7 @@
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateFollowing.sql" />
     <Content Include="Plugin\HotFixes\221_PeerNetworkPageAndBlocks_spPeerNetwork_UpdateGroupConnections.sql" />
     <Content Include="Plugin\HotFixes\225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections.sql" />
+    <Content Include="Plugin\HotFixes\250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails.sql" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\configuration91.svcinfo" />
     <Content Include="Service References\MelissaData.AddressCheck\Reference.svcmap">

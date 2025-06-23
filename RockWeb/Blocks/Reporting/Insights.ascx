@@ -94,11 +94,11 @@
 
                 <div class="row">
                     <div class="col-md-3">
-                        <!-- Percent of Active Records -->
+                        <!-- Percent of Active Records / Record Statuses -->
                         <div class="panel panel-block">
                             <div class="panel-heading">
                                 <div class="pull-left">
-                                    <h1 class="panel-title">Percent of Active Records</h1>
+                                    <h1 class="panel-title">Record Statuses</h1>
                                 </div>
 
                                 <div class="panel-labels">

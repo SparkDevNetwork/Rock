@@ -38,6 +38,7 @@ iframe {
         copyShorthandInlineStyles,
         createComponentElement,
         createComponentElementPlaceholder,
+        getComponentHelper,
         moveShorthandInlineStyles,
         moveStandaloneInlineStyles,
         removeTemporaryAttributes,
@@ -210,7 +211,7 @@ iframe {
      * Adds event handlers to the iframe.
      */
     function addEventHandlers(iFrameElement: HTMLIFrameElement): void {
-        iFrameElement.addEventListener("load", () => {
+        iFrameElement.addEventListener("load", async () => {
             const iFrameWindow = iFrameElement.contentWindow!;
 
             // Window Events
@@ -233,7 +234,7 @@ iframe {
             iFrameWindow.document.removeEventListener("keydown", onIFrameKeyDownEscape);
             iFrameWindow.document.addEventListener("keydown", onIFrameKeyDownEscape);
 
-            onIFrameLoaded();
+            await onIFrameLoaded();
         });
     }
 
@@ -590,6 +591,20 @@ iframe {
             });
     }
 
+    function getComponentCssClass(componentElement: Element): string {
+        // Get the component type name from the class list.
+        const componentCssClass = [...componentElement.classList].find(cssClass => cssClass.startsWith("component-"));
+
+        return componentCssClass ?? "";
+    }
+
+    function getWrapperForCssClass(wrapperElement: Element): string {
+        // Get the component type name from the class list.
+        const wrapperForCssClass = [...wrapperElement.classList].find(cssClass => cssClass.startsWith("for-"));
+
+        return wrapperForCssClass ?? "";
+    }
+
     /**
      * Adds a wrapper to a component element.
      */
@@ -604,13 +619,14 @@ iframe {
             return componentElement;
         }
 
-        const componentTypeNameCssClass = [...componentElement.classList].find(cssClass => cssClass.startsWith("component-"));
+
+        const componentCssClass = getComponentCssClass(componentElement);
 
         // Create the wrapper element.
         const wrapper = document.createElement("div");
         wrapper.classList.add(RockRuntimeWrapperElementCssClass, "component-side-menu-wrapper");
-        if (componentTypeNameCssClass) {
-            wrapper.classList.add(`for-${componentTypeNameCssClass}`);
+        if (componentCssClass) {
+            wrapper.classList.add(`for-${componentCssClass}`);
         }
 
         // Insert wrapper before the component and move the component inside it.
@@ -646,7 +662,7 @@ iframe {
             });
         }
 
-        // Automatically remove the wrapper if all of its children elements are removed.
+        // Automatically remove the wrapper if all of its children component elements are removed.
         wrapperAutoRemovalObserver.value?.observe(wrapper, { childList: true });
 
         // Add a resize observer if a section component.
@@ -681,7 +697,7 @@ iframe {
         dropzoneEmptyResizeObserver.value?.unobserve(dropzone);
     }
 
-    function fixOldWizardElements(document: Document): void {
+    async function fixOldWizardElements(document: Document): Promise<void> {
         // RSVP Component Fixes
 
         // The old wizard set some font styles and padding on the content elements instead of the button elements.
@@ -758,6 +774,24 @@ iframe {
                     }
                 }
             });
+
+        // Auto-migrate each component type to ensure they are all using the latest versions.
+        document.querySelectorAll(".component").forEach(componentElement => {
+            try {
+                const componentTypeName = getComponentTypeName(componentElement);
+                const componentHelper = getComponentHelper(componentTypeName);
+                if (componentHelper?.isMigrationRequired(componentElement)) {
+                    componentElement.replaceWith(componentHelper.migrate(componentElement));
+                }
+            }
+            catch (e) {
+                // Log and ignore errors so the email can load.
+                console.error(`Error migrating component type ${e}`, componentElement);
+            }
+        });
+
+        // Wait for the next tick to ensure the DOM is updated before wrapping body.
+        await nextTick();
 
         ensureBodyWrapsEmailWrapper(document);
     }
@@ -841,7 +875,7 @@ iframe {
      * to the editor, like CSS, fonts, etc., but they should
      * be removed before saving the email communication message.
      */
-    function onIFrameLoaded(): void {
+    async function onIFrameLoaded(): Promise<void> {
         console.log(`"loaded" iframe`);
 
         const iFrameDocument = iFrameElement.value?.contentDocument;
@@ -1094,6 +1128,10 @@ ${createCssRuleset(":root", props.cssVariables)}
             iFrameDocument.body.append(dropzone);
         }
 
+        removeWhiteSpaceFromChildElements(iFrameDocument, ".structure-dropzone, .dropzone");
+
+        await fixOldWizardElements(iFrameDocument);
+
         // Auto-select the first component with the "selected" CSS class.
         for (const [element, index] of Enumerable.from(iFrameDocument.querySelectorAll(".component.selected")).ofType(isHTMLElement).withIndex()) {
             if (index === 0) {
@@ -1103,10 +1141,6 @@ ${createCssRuleset(":root", props.cssVariables)}
                 deselectComponentElement(element);
             }
         }
-
-        removeWhiteSpaceFromChildElements(iFrameDocument, ".structure-dropzone, .dropzone");
-
-        fixOldWizardElements(iFrameDocument);
 
         applyDefaultGlobalStylesIfNeeded(iFrameDocument);
 
@@ -1126,15 +1160,17 @@ ${createCssRuleset(":root", props.cssVariables)}
                     if (isElement(wrapper) && !processedWrappers.has(wrapper)) {
                         processedWrappers.add(wrapper);
 
-                        // Check if there are any runtime children.
-                        const hasRuntimeChildren = Enumerable.from(wrapper.children).any(
-                            (child) => child.classList.contains(RockRuntimeElementCssClass)
-                        );
+                        // Get the child component this wrapper is for.
+                        const wrapperForCssClass = getWrapperForCssClass(wrapper);
 
-                        // If there were no runtime children initially,
-                        // and none were added, remove the wrapper.
-                        if (!hasRuntimeChildren && wrapper.isConnected) {
-                            wrapper.remove();
+                        if (wrapperForCssClass) {
+                            const componentCssClass = wrapperForCssClass.substring(4); // skip "for-" to get the component class name
+                            const component = wrapper.querySelector(`.${componentCssClass}`);
+
+                            // If the component for this wrapper was removed, remove the wrapper as well.
+                            if (!component || component.closest(`.${wrapperForCssClass}`) !== wrapper) {
+                                wrapper.remove();
+                            }
                         }
                     }
                 });
@@ -1646,6 +1682,13 @@ ${createCssRuleset(":root", props.cssVariables)}
         if (customHtml) {
             const tempElement = iFrameDocument.createElement("div");
             tempElement.innerHTML = customHtml;
+            const customComponentElement = tempElement.querySelector(".component");
+            if (customComponentElement) {
+                const helper = getComponentHelper(getComponentTypeName(customComponentElement));
+                if (helper && helper.isMigrationRequired(customComponentElement)) {
+                    customComponentElement.replaceWith(helper.migrate(customComponentElement));
+                }
+            }
             draggingElement.value = tempElement.firstElementChild as HTMLElement;
         }
         else {
@@ -1986,13 +2029,34 @@ ${createCssRuleset(":root", props.cssVariables)}
         }
 
         if (draggingPlaceholderElement.value && draggingElement.value) {
+            let elementToPlace = draggingElement.value;
+
+            // Try to automatically migrate the component if it is old.
+            // This is needed for email sections.
+            const componentElement = getComponentElement(draggingElement.value) ?? draggingElement.value.querySelector(".component");
+            const isComponentChild = draggingElement.value.contains(componentElement);
+            if (componentElement) {
+                const componentHelper = getComponentHelper(getComponentTypeName(componentElement));
+                if (componentHelper && componentHelper.isMigrationRequired(componentElement)) {
+                    const migratedComponentElement = componentHelper.migrate(componentElement);
+                    if (migratedComponentElement !== componentElement) {
+                        if (isComponentChild) {
+                            componentElement.replaceWith(migratedComponentElement);
+                        }
+                        else {
+                            elementToPlace = migratedComponentElement as HTMLElement;
+                        }
+                    }
+                }
+            }
+
             if (draggingPlaceholderElement.value.parentElement) {
                 // Swap the placeholder element with the permanent element.
-                draggingPlaceholderElement.value.replaceWith(draggingElement.value);
+                draggingPlaceholderElement.value.replaceWith(elementToPlace);
             }
             else if (emptySectionElementToBeAddedTo.value) {
                 // Put the permanent element in the empty section being dragged over.
-                emptySectionElementToBeAddedTo.value.appendChild(draggingElement.value);
+                emptySectionElementToBeAddedTo.value.appendChild(elementToPlace);
             }
         }
 

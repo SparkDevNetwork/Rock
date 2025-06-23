@@ -63,5 +63,8 @@ namespace Rock.Communication.Chat.DTO
 
         /// <inheritdoc cref="ChatUser.Badges"/>
         public List<ChatBadge> Badges { get; set; }
+
+        /// <inheritdoc cref="Person.PrimaryCampusId"/>
+        public int? CampusId { get; set; }
     }
 }

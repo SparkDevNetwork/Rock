@@ -23,6 +23,7 @@ using System.Linq;
 using System.Linq.Dynamic.Core;
 using System.Text;
 
+using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
 using Rock.Data;
@@ -140,17 +141,18 @@ namespace Rock.Model
         /// <summary>
         /// Gets a Queryable of chat-specific <see cref="Group"/>s, regardless of whether they're currently chat-enabled.
         /// </summary>
+        /// <param name="groupTypeId">The optional identifier of the <see cref="GroupType"/> for the <see cref="Group"/>s to query.</param>
         /// <returns>A Queryable of chat-specific <see cref="Group"/>s.</returns>
-        /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
-        internal IQueryable<Group> GetChatChannelGroupsQuery()
+        /// <remarks>This will include archived and inactive, chat-specific <see cref="Group"/>s.</remarks>
+        [RockInternal( "17.1", true )]
+        public IQueryable<Group> GetChatChannelGroupsQuery( int? groupTypeId = null )
         {
-            return AsNoFilter()
+            var qry = AsNoFilter()
                 .Where( g =>
                     (
                         // Even if a group is not currently chat-enabled, include it if it has a chat channel key.
-                        // (so we don't accidentally create a duplicate)
                         g.ChatChannelKey != null
-                        && g.ChatChannelKey != ""
+                        && g.ChatChannelKey != string.Empty
                     )
                     || (
                         g.GroupType.IsChatAllowed
@@ -163,47 +165,24 @@ namespace Rock.Model
                         )
                     )
                 );
-        }
 
-        /// <summary>
-        /// Gets the complete list of <see cref="RockChatGroup"/>s - lightweight objects which represent all
-        /// <see cref="Group"/>s that correspond to <see cref="ChatChannel"/>s in the external chat system, regardless
-        /// of whether they're currently chat-enabled.
-        /// </summary>
-        /// <returns>
-        /// A list of <see cref="RockChatGroup"/>s.
-        /// </returns>
-        /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
-        internal List<RockChatGroup> GetRockChatGroups()
-        {
-            return GetChatChannelGroupsQuery()
-                .AsEnumerable() // Materialize the query.
-                .Select( g =>
-                    new RockChatGroup
-                    {
-                        GroupTypeId = g.GroupTypeId,
-                        GroupId = g.Id,
-                        ChatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( g.GroupTypeId ),
-                        ChatChannelKey = ChatHelper.GetChatChannelKey( g.Id, g.ChatChannelKey ),
-                        Name = g.Name,
-                        IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
-                        IsPublic = g.GetIsChatChannelPublic(),
-                        IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
-                        IsChatEnabled = g.GetIsChatEnabled(),
-                        IsChatChannelActive = g.GetIsChatChannelActive()
-                    }
-                )
-                .ToList();
+            if ( groupTypeId.HasValue )
+            {
+                qry = qry.Where( g => g.GroupTypeId == groupTypeId.Value );
+            }
+
+            return qry;
         }
 
         /// <summary>
         /// Gets a Queryable of all <see cref="Group"/>s that are currently chat-enabled.
         /// </summary>
+        /// <param name="groupTypeId">The optional identifier of the <see cref="GroupType"/> for the <see cref="Group"/>s to query.</param>
         /// <returns>A Queryable of all <see cref="Group"/>s that are currently chat-enabled.</returns>
-        /// <remarks>This will include archived, chat-enabled <see cref="Group"/>s.</remarks>
-        internal IQueryable<Group> GetChatEnabledGroupsQuery()
+        /// <remarks>This will include archived and inactive, chat-enabled <see cref="Group"/>s.</remarks>
+        internal IQueryable<Group> GetChatEnabledGroupsQuery( int? groupTypeId = null )
         {
-            return AsNoFilter()
+            var qry = AsNoFilter()
                 .Where( g =>
                     g.GroupType.IsChatAllowed
                     && (
@@ -214,6 +193,13 @@ namespace Rock.Model
                         )
                     )
                 );
+
+            if ( groupTypeId.HasValue )
+            {
+                qry = qry.Where( g => g.GroupTypeId == groupTypeId.Value );
+            }
+
+            return qry;
         }
 
         /// <summary>

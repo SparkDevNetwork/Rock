@@ -30,6 +30,7 @@ using Rock.Communication.Chat.Exceptions;
 using Rock.Communication.Chat.Sync;
 using Rock.Enums.Communication.Chat;
 using Rock.Logging;
+using Rock.SystemKey;
 using Rock.Transactions;
 
 using StreamChat.Clients;
@@ -70,10 +71,12 @@ namespace Rock.Communication.Chat
         private static class ChannelDataKey
         {
             public const string Disabled = "disabled";
+            public const string Image = "image";
             public const string Name = "name";
             public const string IsLeavingAllowed = "rock_leaving_allowed";
             public const string IsPublic = "rock_public";
             public const string IsAlwaysShown = "rock_always_shown";
+            public const string CampusId = "rock_campus_id";
         }
 
         /// <summary>
@@ -86,6 +89,7 @@ namespace Rock.Communication.Chat
             public const string IsProfileVisible = "rock_profile_public";
             public const string IsOpenDirectMessageAllowed = "rock_open_direct_message_allowed";
             public const string Badges = "rock_badges";
+            public const string CampusId = "rock_campus_id";
         }
 
         /// <summary>
@@ -211,59 +215,82 @@ namespace Rock.Communication.Chat
         // https://getstream.io/chat/docs/dotnet-csharp/permissions_reference/#scope-app
 
         /// <summary>
+        /// A helper method to lazily get or create the default app-scoped permission grants by role.
+        /// </summary>
+        /// <returns>The lazy, default app-scoped permission grants by role.</returns>
+        private static Lazy<Dictionary<string, List<string>>> GetOrCreateDefaultAppGrantsByRole()
+        {
+            return new Lazy<Dictionary<string, List<string>>>( () =>
+            {
+                lock ( _initializationLock )
+                {
+                    var grantsJson = Rock.Web.SystemSettings.GetValue( SystemSetting.CHAT_STREAM_GRANTS_APP_SCOPED );
+                    var grants = grantsJson.FromJsonOrNull<Dictionary<string, List<string>>>();
+
+                    if ( grants == null )
+                    {
+                        grants = new Dictionary<string, List<string>>
+                        {
+                            {
+                                ChatRole.User.GetDescription(),
+                                new List<string>
+                                {
+                                    // The following were taken from the default "app (global scope)" > "user" grants.
+                                    "close-poll-owner",
+                                    "create-poll-any-team",
+                                    "delete-poll-owner",
+                                    "flag-user",
+                                    "mute-user",
+                                    "query-polls-owner",
+                                    "search-user",
+                                    "update-poll-owner",
+                                    "update-user-owner",
+                                }
+                            },
+                            {
+                                ChatRole.Administrator.GetDescription(),
+                                new List<string>
+                                {
+                                    // The following were taken from the default "app (global scope)" > "global_admin" grants.
+                                    "close-poll-any-team",
+                                    "create-block-list-any-team",
+                                    "create-poll-any-team",
+                                    "delete-block-list-any-team",
+                                    "delete-moderation-config-any-team",
+                                    "delete-poll-any-team",
+                                    "flag-user-any-team",
+                                    "mute-user-any-team",
+                                    "query-moderation-review-queue-any-team",
+                                    "query-polls-owner-any-team",
+                                    "read-block-lists-any-team",
+                                    "read-flag-reports-any-team",
+                                    "read-moderation-config-any-team",
+                                    "search-user-any-team",
+                                    "submit-moderation-action-any-team",
+                                    "update-block-list-any-team",
+                                    "update-flag-report-any-team",
+                                    "update-poll-any-team",
+                                    "update-user-owner",
+                                    "upsert-moderation-config-any-team",
+
+                                    // The following have been added as needed.
+                                    "ban-user", // Admins SHOULD be able to ban any user.
+                                }
+                            }
+                        };
+
+                        Rock.Web.SystemSettings.SetValue( SystemSetting.CHAT_STREAM_GRANTS_APP_SCOPED, grants.ToJson() );
+                    }
+
+                    return grants;
+                }
+            } );
+        }
+
+        /// <summary>
         /// The backing field for the <see cref="DefaultAppGrantsByRole"/> property.
         /// </summary>
-        private readonly Lazy<Dictionary<string, List<string>>> _defaultAppGrantsByRole = new Lazy<Dictionary<string, List<string>>>( () =>
-        {
-            return new Dictionary<string, List<string>>
-            {
-                {
-                    ChatRole.User.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "app (global scope)" > "user" grants.
-                        "close-poll-owner",
-                        "create-poll-any-team",
-                        "delete-poll-owner",
-                        "flag-user",
-                        "mute-user",
-                        "query-polls-owner",
-                        "search-user",
-                        "update-poll-owner",
-                        "update-user-owner"
-                    }
-                },
-                {
-                    ChatRole.Administrator.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "app (global scope)" > "global_admin" grants.
-                        "close-poll-any-team",
-                        "create-block-list-any-team",
-                        "create-poll-any-team",
-                        "delete-block-list-any-team",
-                        "delete-moderation-config-any-team",
-                        "delete-poll-any-team",
-                        "flag-user-any-team",
-                        "mute-user-any-team",
-                        "query-moderation-review-queue-any-team",
-                        "query-polls-owner-any-team",
-                        "read-block-lists-any-team",
-                        "read-flag-reports-any-team",
-                        "read-moderation-config-any-team",
-                        "search-user-any-team",
-                        "submit-moderation-action-any-team",
-                        "update-block-list-any-team",
-                        "update-flag-report-any-team",
-                        "update-poll-any-team",
-                        "update-user-owner",
-                        "upsert-moderation-config-any-team",
-                        // The following have been added as needed.
-                        "ban-user" // Admins SHOULD be able to ban any user.
-                    }
-                }
-            };
-        } );
+        private static Lazy<Dictionary<string, List<string>>> _defaultAppGrantsByRole = GetOrCreateDefaultAppGrantsByRole();
 
         // The best way to see default "messaging"-scoped permission grants is to query Stream's "ListChannelTypes"
         // Swagger endpoint while targeting a newly-created, unmodified app.
@@ -273,168 +300,203 @@ namespace Rock.Communication.Chat
         // https://getstream.io/chat/docs/dotnet-csharp/permissions_reference/#scope-messaging
 
         /// <summary>
+        /// A helper method to lazily get or create the default channel type-scoped permission grants by role.
+        /// </summary>
+        /// <returns>The lazy, default channel type-scoped permission grants by role.</returns>
+        private static Lazy<Dictionary<string, List<string>>> GetOrCreateDefaultChannelTypeGrantsByRole()
+        {
+            return new Lazy<Dictionary<string, List<string>>>( () =>
+            {
+                lock ( _initializationLock )
+                {
+                    var grantsJson = Rock.Web.SystemSettings.GetValue( SystemSetting.CHAT_STREAM_GRANTS_CHANNEL_TYPE_SCOPED );
+                    var grants = grantsJson.FromJsonOrNull<Dictionary<string, List<string>>>();
+
+                    if ( grants == null )
+                    {
+                        grants = new Dictionary<string, List<string>>
+                        {
+                            {
+                                ChatRole.User.GetDescription(),
+                                new List<string>
+                                {
+                                    // We allow channels to be displayed that a person may not be a member of.
+                                    // These channels are automatically joined when a user sends a message to them.
+                                    "add-own-channel-membership",
+
+                                    // The following were taken from the default "messaging (Channel Type scope)" > "channel_member" grants.
+                                    "add-links",
+                                    "cast-vote",
+                                    "create-attachment",
+                                    "create-call",
+                                    "create-mention",
+                                    "create-message",
+                                    "create-reaction",
+                                    "create-reply",
+                                    "flag-message",
+                                    "join-call",
+                                    "mute-channel",
+                                    "pin-message",
+                                    "query-votes",
+                                    "read-channel",
+                                    "read-channel-members",
+                                    "remove-own-channel-membership",
+                                    "run-message-action",
+                                    "send-custom-event",
+                                    "send-poll",
+                                    "upload-attachment",
+
+                                    // The following were taken from the default "messaging (Channel Type scope)" > "user" grants.
+                                    // (with redundant grants commented out)
+                                    //"add-links-owner",
+                                    //"create-attachment-owner",
+                                    "create-channel",
+                                    //"create-mention-owner",
+                                    //"create-message-owner",
+                                    //"create-reaction-owner",
+                                    //"create-reply-owner",
+                                    "delete-attachment-owner",
+                                    //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
+                                    "delete-message-owner",
+                                    "delete-reaction-owner",
+                                    //"flag-message-owner",
+                                    //"mute-channel-owner",
+                                    //"pin-message-owner",
+                                    //"query-votes",
+                                    //"read-channel-members-owner",
+                                    //"read-channel-owner",
+                                    "recreate-channel-owner",
+                                    //"remove-own-channel-membership-owner",
+                                    //"run-message-action-owner",
+                                    //"send-custom-event-owner",
+                                    //"send-poll",
+                                    "truncate-channel-owner",
+                                    "update-channel-members-owner",
+                                    "update-channel-owner",
+                                    "update-message-owner",
+                                    "update-thread-owner",
+                                    //"upload-attachment-owner"
+                                }
+                            },
+                            {
+                                ChatRole.Moderator.GetDescription(),
+                                new List<string>
+                                {
+                                    // We allow channels to be displayed that a person may not be a member of.
+                                    // These channels are automatically joined when a user sends a message to them.
+                                    "add-own-channel-membership",
+
+                                    // The following were taken from the default "messaging (Channel Type scope)" > "moderator" grants.
+                                    "add-links",
+                                    "ban-channel-member",
+                                    "ban-user",
+                                    "cast-vote",
+                                    "create-attachment",
+                                    "create-call",
+                                    "create-channel",
+                                    "create-mention",
+                                    "create-message",
+                                    "create-reaction",
+                                    "create-reply",
+                                    "create-restricted-visibility-message",
+                                    "create-system-message",
+                                    "delete-attachment",
+                                    //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
+                                    "delete-message",
+                                    "delete-reaction",
+                                    "flag-message",
+                                    "join-call",
+                                    "mute-channel",
+                                    "pin-message",
+                                    "query-votes",
+                                    "read-channel",
+                                    "read-channel-members",
+                                    "read-message-flags",
+                                    "recreate-channel-owner",
+                                    "remove-own-channel-membership",
+                                    "run-message-action",
+                                    "send-custom-event",
+                                    "send-poll",
+                                    "skip-channel-cooldown",
+                                    "skip-message-moderation",
+                                    "truncate-channel-owner",
+                                    "unblock-message",
+                                    "update-channel",
+                                    "update-channel-cooldown",
+                                    "update-channel-frozen",
+                                    //"update-channel-members", // Moderators should NOT be able to manage members for channels they didn't create (this should be done within Rock).
+                                    "update-channel-members-owner", // But they SHOULD be able to manage members for channels they personally create within Stream.
+                                    "update-message",
+                                    "update-thread",
+                                    "upload-attachment"
+                                }
+                            },
+                            {
+                                ChatRole.Administrator.GetDescription(),
+                                new List<string>
+                                {
+                                    // We allow channels to be displayed that a person may not be a member of.
+                                    // These channels are automatically joined when a user sends a message to them.
+                                    "add-own-channel-membership",
+
+                                    // The following were taken from the default "messaging (Channel Type scope)" > "admin" grants.
+                                    "add-links",
+                                    "ban-channel-member",
+                                    "ban-user",
+                                    "cast-vote",
+                                    "create-attachment",
+                                    "create-call",
+                                    "create-channel",
+                                    "create-mention",
+                                    "create-message",
+                                    "create-reaction",
+                                    "create-reply",
+                                    "create-restricted-visibility-message",
+                                    "create-system-message",
+                                    "delete-attachment",
+                                    //"delete-channel", // We're not going to allow ANY channel deletions from the client.
+                                    "delete-message",
+                                    "delete-reaction",
+                                    "flag-message",
+                                    "join-call",
+                                    "mute-channel",
+                                    "pin-message",
+                                    "query-votes",
+                                    "read-channel",
+                                    "read-channel-members",
+                                    "read-message-flags",
+                                    "recreate-channel",
+                                    "remove-own-channel-membership",
+                                    "run-message-action",
+                                    "send-custom-event",
+                                    "send-poll",
+                                    "skip-channel-cooldown",
+                                    "skip-message-moderation",
+                                    "truncate-channel",
+                                    "unblock-message",
+                                    "update-channel",
+                                    "update-channel-cooldown",
+                                    "update-channel-frozen",
+                                    "update-channel-members",
+                                    "update-message",
+                                    "update-thread",
+                                    "upload-attachment"
+                                }
+                            }
+                        };
+
+                        Rock.Web.SystemSettings.SetValue( SystemSetting.CHAT_STREAM_GRANTS_CHANNEL_TYPE_SCOPED, grants.ToJson() );
+                    }
+
+                    return grants;
+                }
+            } );
+        }
+
+        /// <summary>
         /// The backing field for the <see cref="DefaultChannelTypeGrantsByRole"/> property.
         /// </summary>
-        private readonly Lazy<Dictionary<string, List<string>>> _defaultChannelTypeGrantsByRole = new Lazy<Dictionary<string, List<string>>>( () =>
-        {
-            return new Dictionary<string, List<string>>
-            {
-                {
-                    ChatRole.User.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "messaging (Channel Type scope)" > "channel_member" grants.
-                        "add-links",
-                        "cast-vote",
-                        "create-attachment",
-                        "create-call",
-                        "create-mention",
-                        "create-message",
-                        "create-reaction",
-                        "create-reply",
-                        "flag-message",
-                        "join-call",
-                        "mute-channel",
-                        "pin-message",
-                        "query-votes",
-                        "read-channel",
-                        "read-channel-members",
-                        "remove-own-channel-membership",
-                        "run-message-action",
-                        "send-custom-event",
-                        "send-poll",
-                        "upload-attachment",
-                        // The following were taken from the default "messaging (Channel Type scope)" > "user" grants.
-                        // (with redundant grants commented out)
-                        //"add-links-owner",
-                        //"create-attachment-owner",
-                        "create-channel",
-                        //"create-mention-owner",
-                        //"create-message-owner",
-                        //"create-reaction-owner",
-                        //"create-reply-owner",
-                        "delete-attachment-owner",
-                        //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
-                        "delete-message-owner",
-                        "delete-reaction-owner",
-                        //"flag-message-owner",
-                        //"mute-channel-owner",
-                        //"pin-message-owner",
-                        //"query-votes",
-                        //"read-channel-members-owner",
-                        //"read-channel-owner",
-                        "recreate-channel-owner",
-                        //"remove-own-channel-membership-owner",
-                        //"run-message-action-owner",
-                        //"send-custom-event-owner",
-                        //"send-poll",
-                        "truncate-channel-owner",
-                        "update-channel-members-owner",
-                        "update-channel-owner",
-                        "update-message-owner",
-                        "update-thread-owner",
-                        //"upload-attachment-owner"
-                    }
-                },
-                {
-                    ChatRole.Moderator.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "messaging (Channel Type scope)" > "moderator" grants.
-                        "add-links",
-                        "ban-channel-member",
-                        "ban-user",
-                        "cast-vote",
-                        "create-attachment",
-                        "create-call",
-                        "create-channel",
-                        "create-mention",
-                        "create-message",
-                        "create-reaction",
-                        "create-reply",
-                        "create-restricted-visibility-message",
-                        "create-system-message",
-                        "delete-attachment",
-                        //"delete-channel-owner", // We're not going to allow ANY channel deletions from the client.
-                        "delete-message",
-                        "delete-reaction",
-                        "flag-message",
-                        "join-call",
-                        "mute-channel",
-                        "pin-message",
-                        "query-votes",
-                        "read-channel",
-                        "read-channel-members",
-                        "read-message-flags",
-                        "recreate-channel-owner",
-                        "remove-own-channel-membership",
-                        "run-message-action",
-                        "send-custom-event",
-                        "send-poll",
-                        "skip-channel-cooldown",
-                        "skip-message-moderation",
-                        "truncate-channel-owner",
-                        "unblock-message",
-                        "update-channel",
-                        "update-channel-cooldown",
-                        "update-channel-frozen",
-                        //"update-channel-members", // Moderators should NOT be able to manage members for channels they didn't create (this should be done within Rock).
-                        "update-channel-members-owner", // But they SHOULD be able to manage members for channels they personally create within Stream.
-                        "update-message",
-                        "update-thread",
-                        "upload-attachment"
-                    }
-                },
-                {
-                    ChatRole.Administrator.GetDescription(),
-                    new List<string>
-                    {
-                        // The following were taken from the default "messaging (Channel Type scope)" > "admin" grants.
-                        "add-links",
-                        "ban-channel-member",
-                        "ban-user",
-                        "cast-vote",
-                        "create-attachment",
-                        "create-call",
-                        "create-channel",
-                        "create-mention",
-                        "create-message",
-                        "create-reaction",
-                        "create-reply",
-                        "create-restricted-visibility-message",
-                        "create-system-message",
-                        "delete-attachment",
-                        //"delete-channel", // We're not going to allow ANY channel deletions from the client.
-                        "delete-message",
-                        "delete-reaction",
-                        "flag-message",
-                        "join-call",
-                        "mute-channel",
-                        "pin-message",
-                        "query-votes",
-                        "read-channel",
-                        "read-channel-members",
-                        "read-message-flags",
-                        "recreate-channel",
-                        "remove-own-channel-membership",
-                        "run-message-action",
-                        "send-custom-event",
-                        "send-poll",
-                        "skip-channel-cooldown",
-                        "skip-message-moderation",
-                        "truncate-channel",
-                        "unblock-message",
-                        "update-channel",
-                        "update-channel-cooldown",
-                        "update-channel-frozen",
-                        "update-channel-members",
-                        "update-message",
-                        "update-thread",
-                        "upload-attachment"
-                    }
-                }
-            };
-        } );
+        private static Lazy<Dictionary<string, List<string>>> _defaultChannelTypeGrantsByRole = GetOrCreateDefaultChannelTypeGrantsByRole();
 
         /// <summary>
         /// The backing field for the <see cref="UnrecoverableErrorCodes"/> property.
@@ -515,16 +577,6 @@ namespace Rock.Communication.Chat
             };
         } );
 
-        /// <summary>
-        /// The backing field for the <see cref="RockToChatSyncConfig"/> property.
-        /// </summary>
-        private RockToChatSyncConfig _rockToChatSyncConfig = new RockToChatSyncConfig();
-
-        /// <summary>
-        /// The backing field for the <see cref="ChatToRockSyncConfig"/> property;
-        /// </summary>
-        private ChatToRockSyncConfig _chatToRockSyncConfig = new ChatToRockSyncConfig();
-
         #endregion Fields
 
         #region Properties
@@ -576,6 +628,16 @@ namespace Rock.Communication.Chat
         private IMessageClient MessageClient => _messageClient.Value;
 
         /// <summary>
+        /// Gets the default, app-scoped permission grants by role.
+        /// </summary>
+        public static Dictionary<string, List<string>> DefaultAppGrantsByRole => _defaultAppGrantsByRole.Value;
+
+        /// <summary>
+        /// Gets the default, channel type-scoped permission grants by role.
+        /// </summary>
+        public static Dictionary<string, List<string>> DefaultChannelTypeGrantsByRole => _defaultChannelTypeGrantsByRole.Value;
+
+        /// <summary>
         /// Gets the "unrecoverable" error codes that can be returned by Stream's API.
         /// </summary>
         private List<int> UnrecoverableErrorCodes => _unrecoverableErrorCodes.Value;
@@ -601,36 +663,6 @@ namespace Rock.Communication.Chat
         #region IChatProvider Implementation
 
         #region Configuration
-
-        /// <inheritdoc/>
-        public RockToChatSyncConfig RockToChatSyncConfig
-        {
-            get => _rockToChatSyncConfig;
-            set
-            {
-                if ( value == null )
-                {
-                    value = new RockToChatSyncConfig();
-                }
-
-                _rockToChatSyncConfig = value;
-            }
-        }
-
-        /// <inheritdoc/>
-        public ChatToRockSyncConfig ChatToRockSyncConfig
-        {
-            get => _chatToRockSyncConfig;
-            set
-            {
-                if ( value == null )
-                {
-                    value = new ChatToRockSyncConfig();
-                }
-
-                _chatToRockSyncConfig = value;
-            }
-        }
 
         /// <inheritdoc/>
         public void Initialize()
@@ -671,6 +703,9 @@ namespace Rock.Communication.Chat
                 _channelClient = new Lazy<IChannelClient>( () => _clientFactory.Value.GetChannelClient() );
                 _userClient = new Lazy<IUserClient>( () => _clientFactory.Value.GetUserClient() );
                 _messageClient = new Lazy<IMessageClient>( () => _clientFactory.Value.GetMessageClient() );
+
+                _defaultAppGrantsByRole = GetOrCreateDefaultAppGrantsByRole();
+                _defaultChannelTypeGrantsByRole = GetOrCreateDefaultChannelTypeGrantsByRole();
             }
         }
 
@@ -699,6 +734,12 @@ namespace Rock.Communication.Chat
                     WebhookEvent.UserUnbanned,
 
                     WebhookEvent.UserDeleted
+                },
+
+                // Push version should be to set to v3. 
+                PushConfig = new PushConfigRequest
+                {
+                    Version = "v3"
                 }
             };
 
@@ -720,15 +761,99 @@ namespace Rock.Communication.Chat
             return result;
         }
 
+        /// <inheritdoc/>
+        public async Task<ChatSyncSetupResult> UpdatePushNotificationSettingsAsync()
+        {
+            var result = new ChatSyncSetupResult();
+
+            var operationName = nameof( UpdatePushNotificationSettingsAsync ).SplitCase();
+
+            var pushProviderName = "rock-firebase";
+
+            try
+            {
+                var firebaseCredentials = ChatHelper.GetRockMobilePushServiceAccountJson();
+                if ( firebaseCredentials.IsNotNullOrWhiteSpace() )
+                {
+                    // Ensure Stream has the latest firebase account details.
+                    var pushProviderRequest = new PushProviderRequest
+                    {
+                        Type = PushProviderType.Firebase,
+                        Name = pushProviderName,
+                        FirebaseCredentials = firebaseCredentials
+                    };
+
+                    await RetryAsync(
+                        async () => await AppClient.UpsertPushProviderAsync( pushProviderRequest ),
+                        operationName
+                    );
+
+                    // For v3 push configuration, opt-in for the "message.new" event push template.
+                    var pushTemplateRequest = new PushTemplateRequest
+                    {
+                        EnablePush = true,
+                        EventType = "message.new",
+                        PushProviderName = pushProviderName,
+                        PushProviderType = PushProviderType.Firebase,
+                        Template = string.Empty
+                    };
+
+                    await RetryAsync(
+                        async () => await AppClient.UpsertPushTemplateAsync( pushTemplateRequest ),
+                        operationName
+                    );
+                }
+                else
+                {
+                    // Do we need to remove an existing push provider?
+                    var listPushProviderResponse = await RetryAsync(
+                        async () => await AppClient.ListPushProvidersAsync(),
+                        operationName
+                    );
+
+                    var shouldDelete = listPushProviderResponse
+                        ?.PushProviders
+                        ?.Any( p =>
+                            p.Type == PushProviderType.Firebase
+                            && p.Name == pushProviderName
+                        ) == true;
+
+                    if ( shouldDelete )
+                    {
+                        // TODO (Jason): Enable push provider deletion when Stream fixes an issue preventing deletion.
+                        //await RetryAsync(
+                        //    async () => await AppClient.DeletePushProviderAsync( PushProviderType.Firebase, pushProviderName ),
+                        //    operationName
+                        //);
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            // If an exception wasn't thrown, assume push notification settings were updated.
+            result.IsSetUp = !result.HasException;
+
+            return result;
+        }
+
         #endregion Configuration
 
         #region Roles & Permission Grants
 
         /// <inheritdoc/>
-        public Dictionary<string, List<string>> DefaultAppGrantsByRole => _defaultAppGrantsByRole.Value;
+        public Dictionary<string, List<string>> GetDefaultAppGrantsByRole()
+        {
+            return DefaultAppGrantsByRole;
+        }
 
         /// <inheritdoc/>
-        public Dictionary<string, List<string>> DefaultChannelTypeGrantsByRole => _defaultChannelTypeGrantsByRole.Value;
+        public Dictionary<string, List<string>> GetDefaultChannelTypeGrantsByRole()
+        {
+            return DefaultChannelTypeGrantsByRole;
+        }
 
         /// <inheritdoc/>
         public async Task<ChatSyncSetupResult> EnsureAppRolesExistAsync()
@@ -780,9 +905,14 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public async Task<ChatSyncSetupResult> EnsureAppGrantsExistAsync()
+        public async Task<ChatSyncSetupResult> EnsureAppGrantsExistAsync( RockToChatSyncConfig config )
         {
             var result = new ChatSyncSetupResult();
+
+            if ( config == null )
+            {
+                return result;
+            }
 
             var operationName = nameof( EnsureAppGrantsExistAsync ).SplitCase();
 
@@ -795,7 +925,7 @@ namespace Rock.Communication.Chat
 
                 var anyGrantsToAdd = false;
                 var grants = getAppResponse?.App?.Grants;
-                if ( grants?.Any() != true || RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole )
+                if ( grants?.Any() != true || config.ShouldEnforceDefaultGrantsPerRole )
                 {
                     if ( grants == null )
                     {
@@ -917,8 +1047,14 @@ namespace Rock.Communication.Chat
 
             foreach ( var chatChannelType in chatChannelTypes )
             {
-                // Always set default property values and permission grants for newly-created channel types.
-                var request = TryConvertToStreamChannelTypeWithStringCommandsRequest( chatChannelType, true, true );
+                // Always set default permission grants and property values for newly-created channel types.
+                var config = new RockToChatSyncConfig
+                {
+                    ShouldEnforceDefaultGrantsPerRole = true,
+                    ShouldEnforceDefaultSettings = true
+                };
+
+                var request = TryConvertToStreamChannelTypeWithStringCommandsRequest( chatChannelType, config );
                 if ( request == null )
                 {
                     continue;
@@ -948,11 +1084,11 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public async Task<ChatSyncCrudResult> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes )
+        public async Task<ChatSyncCrudResult> UpdateChatChannelTypesAsync( List<ChatChannelType> chatChannelTypes, RockToChatSyncConfig config )
         {
             var result = new ChatSyncCrudResult();
 
-            if ( chatChannelTypes?.Any() != true )
+            if ( chatChannelTypes?.Any() != true || config == null )
             {
                 return result;
             }
@@ -964,12 +1100,9 @@ namespace Rock.Communication.Chat
 
             foreach ( var chatChannelType in chatChannelTypes )
             {
-                // Only set default property values and/or permission grants for updates if explicitly instructed to do so.
-                var request = TryConvertToStreamChannelTypeWithStringCommandsRequest(
-                    chatChannelType,
-                    RockToChatSyncConfig.ShouldEnforceDefaultSettings,
-                    RockToChatSyncConfig.ShouldEnforceDefaultGrantsPerRole
-                );
+                // Only set default property values and/or permission grants for updates if explicitly instructed to do
+                // so by the caller of this method.
+                var request = TryConvertToStreamChannelTypeWithStringCommandsRequest( chatChannelType, config );
                 if ( request == null )
                 {
                     continue;
@@ -1751,6 +1884,14 @@ namespace Rock.Communication.Chat
                             }
                         }
                     }
+
+                    // Update member push preferences. Always do this no matter what.
+                    // We are not tracking the result of this operation, just the exceptions.
+                    var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers );
+                    if ( pushPreferenceResult?.HasException == true )
+                    {
+                        exceptions.Add( pushPreferenceResult.Exception );
+                    }
                 }
                 catch ( Exception ex )
                 {
@@ -1911,6 +2052,15 @@ namespace Rock.Communication.Chat
                 }
             }
 
+            // --------------------------------------------------------
+            // 4) Update member push preferences. Always do this no matter what.
+            // We are not tracking the result of this operation, just the exceptions.
+            var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers.Select( kvp => kvp.Value ).ToList() );
+            if( pushPreferenceResult?.HasException == true )
+            {
+                exceptions.Add( pushPreferenceResult.Exception );
+            }
+
             if ( exceptions.Any() )
             {
                 result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
@@ -1974,6 +2124,68 @@ namespace Rock.Communication.Chat
                             chatChannelKey,
                             assignRoleRequest
                         ),
+                        operationName
+                    );
+
+                    result.Updated.UnionWith( batchedAssignments.Select( a => a.Key ) );
+                }
+                catch ( Exception ex )
+                {
+                    exceptions.Add( ex );
+                }
+                finally
+                {
+                    offset += pageSize;
+                }
+            }
+
+            if ( exceptions.Any() )
+            {
+                result.Exception = ChatHelper.GetFirstOrAggregateException( exceptions, $"{LogMessagePrefix} {operationName} failed." );
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc />
+        public async Task<ChatSyncCrudResult> UpdateChatChannelMemberPushPreferencesAsync( List<ChatChannelMember> chatChannelMembers )
+        {
+            var result = new ChatSyncCrudResult();
+
+            var operationName = nameof( UpdateChatChannelMemberPushPreferencesAsync ).SplitCase();
+
+            var pageSize = 100;
+            var offset = 0;
+            var membersToAssignCount = chatChannelMembers.Count;
+
+            // Don't let individual batch failures cause all to fail.
+            var exceptions = new List<Exception>();
+            while ( offset < membersToAssignCount )
+            {
+                var batchedAssignments = chatChannelMembers
+                    .Skip( offset )
+                    .Take( pageSize )
+                    .ToList();
+
+                var pushPreferenceRequests = new List<PushPreferenceRequest>();
+                batchedAssignments.ForEach( a =>
+                {
+                    var chatLevel = ConvertNotificationModeToPushPreferenceValue( a.PushNotificationMode );
+
+                    var preferenceRequest = new PushPreferenceRequest
+                    {
+                        ChannelCid = $"{a.ChatChannelTypeKey}:{a.ChatChannelKey}",
+                        ChatLevel = chatLevel,
+                        UserId = a.ChatUserKey,
+                    };
+
+                    pushPreferenceRequests.Add( preferenceRequest );
+                } );
+
+                try
+                {
+                    await RetryAsync(
+                        async () => await UserClient.UpsertManyPushPreferencesAsync( pushPreferenceRequests ),
                         operationName
                     );
 
@@ -3092,6 +3304,18 @@ namespace Rock.Communication.Chat
                 {
                     if ( ex is StreamChatException streamChatException )
                     {
+                        if ( streamChatException.ErrorCode == 2 )
+                        {
+                            ChatHelper.ReportAccountInvalidResponseReceived( streamChatException );
+                            throw;
+                        }
+
+                        if ( streamChatException.ErrorCode == 99 )
+                        {
+                            ChatHelper.ReportAccountSuspendedResponseReceived( streamChatException );
+                            throw;
+                        }
+
                         /*
                             3/7/2025 - JPH
 
@@ -3111,7 +3335,7 @@ namespace Rock.Communication.Chat
                             Reason: Know when to retry for "eventual consistency" scenarios vs. handling differently.
                         */
 
-                        // First, attempt to detect if Rock is syncing a chat user who's been deleted in Stream.
+                        // Attempt to detect if Rock is syncing a chat user who's been deleted in Stream.
                         if ( streamChatException.ErrorCode == 16 )
                         {
                             /*
@@ -3206,14 +3430,11 @@ namespace Rock.Communication.Chat
         /// Tries to convert a <see cref="ChatChannelType"/> to a <see cref="ChannelTypeWithStringCommandsRequest"/>.
         /// </summary>
         /// <param name="chatChannelType">The <see cref="ChatChannelType"/> to convert.</param>
-        /// <param name="setDefaultPropertyValues">If <see langword="true"/>, will set property values to match Rock's
-        /// preferred, default channel type settings in Stream. If <see langword="false"/>, will only set the
-        /// `Name` property.</param>
-        /// <param name="setDefaultGrants">If <see langword="true"/>, will set `Grants` to match Rock's preferred,
-        /// default channel type permission grants (per role) in Stream. If <see langword="false"/>, will not set the
-        /// `Grants` property.</param>
+        /// <param name="config">
+        /// A <see cref="RockToChatSyncConfig"/> to fine-tune how Rock-to-Chat synchronization should be completed.
+        /// </param>
         /// <returns>A <see cref="ChannelTypeWithStringCommandsRequest"/> or <see langword="null"/> if unable to convert.</returns>
-        private ChannelTypeWithStringCommandsRequest TryConvertToStreamChannelTypeWithStringCommandsRequest( ChatChannelType chatChannelType, bool setDefaultPropertyValues, bool setDefaultGrants )
+        private ChannelTypeWithStringCommandsRequest TryConvertToStreamChannelTypeWithStringCommandsRequest( ChatChannelType chatChannelType, RockToChatSyncConfig config )
         {
             if ( ( chatChannelType?.Key ).IsNullOrWhiteSpace() )
             {
@@ -3232,7 +3453,7 @@ namespace Rock.Communication.Chat
 
             ChannelTypeWithStringCommandsRequest request;
 
-            if ( setDefaultPropertyValues )
+            if ( config.ShouldEnforceDefaultSettings )
             {
                 request = new ChannelTypeWithStringCommandsRequest
                 {
@@ -3268,7 +3489,7 @@ namespace Rock.Communication.Chat
                 };
             }
 
-            if ( setDefaultGrants )
+            if ( config.ShouldEnforceDefaultGrantsPerRole )
             {
                 request.Grants = DefaultChannelTypeGrantsByRole;
             }
@@ -3329,7 +3550,13 @@ namespace Rock.Communication.Chat
                 CreatedBy = TryConvertToStreamUserRequest( ChatHelper.GetChatSystemUser() ),
             };
 
-            channelRequest.SetData( ChannelDataKey.Name, chatChannel.Name ?? string.Empty );
+            if ( chatChannel.Name.IsNotNullOrWhiteSpace() )
+            {
+                channelRequest.SetData( ChannelDataKey.Name, chatChannel.Name );
+            }
+
+            channelRequest.SetData( ChannelDataKey.Image, chatChannel.AvatarImageUrl ?? string.Empty );
+            channelRequest.SetData( ChannelDataKey.CampusId, chatChannel.CampusId ?? 0 );
             channelRequest.SetData( ChannelDataKey.IsLeavingAllowed, chatChannel.IsLeavingAllowed );
             channelRequest.SetData( ChannelDataKey.IsPublic, chatChannel.IsPublic );
             channelRequest.SetData( ChannelDataKey.IsAlwaysShown, chatChannel.IsAlwaysShown );
@@ -3361,6 +3588,7 @@ namespace Rock.Communication.Chat
             request.SetData( UserDataKey.IsProfileVisible, chatUser.IsProfileVisible );
             request.SetData( UserDataKey.IsOpenDirectMessageAllowed, chatUser.IsOpenDirectMessageAllowed );
             request.SetData( UserDataKey.Badges, chatUser.Badges ?? new List<ChatBadge>() );
+            request.SetData( UserDataKey.CampusId, chatUser.CampusId ?? 0 );
 
             return request;
         }
@@ -3401,6 +3629,11 @@ namespace Rock.Communication.Chat
                 return null;
             }
 
+            var campusId = channel.GetDataOrDefault<int?>( ChannelDataKey.CampusId, null );
+
+            // A Stream rock_campus_id value of 0 represents a null campus ID in Rock.
+            campusId = ( campusId > 0 ) ? campusId : null;
+
             var isChannelDisabled = channel.GetDataOrDefault( ChannelDataKey.Disabled, false );
 
             return new ChatChannel
@@ -3408,7 +3641,9 @@ namespace Rock.Communication.Chat
                 Key = channel.Id,
                 ChatChannelTypeKey = channel.Type,
                 QueryableKey = channel.Cid,
-                Name = channel.GetDataOrDefault( ChannelDataKey.Name, channel.Cid ),
+                Name = channel.GetDataOrDefault<string>( ChannelDataKey.Name, null ),
+                AvatarImageUrl = channel.GetDataOrDefault( ChannelDataKey.Image, string.Empty ),
+                CampusId = campusId,
                 IsLeavingAllowed = channel.GetDataOrDefault( ChannelDataKey.IsLeavingAllowed, false ),
                 IsPublic = channel.GetDataOrDefault( ChannelDataKey.IsPublic, false ),
                 IsAlwaysShown = channel.GetDataOrDefault( ChannelDataKey.IsAlwaysShown, false ),
@@ -3455,6 +3690,11 @@ namespace Rock.Communication.Chat
 
             var badges = user.GetDataOrDefault( UserDataKey.Badges, new List<ChatBadge>() ) ?? new List<ChatBadge>();
 
+            var campusId = user.GetDataOrDefault<int?>( UserDataKey.CampusId, null );
+
+            // A Stream rock_campus_id value of 0 represents a null campus ID in Rock.
+            campusId = ( campusId > 0 ) ? campusId : null;
+
             return new ChatUser
             {
                 Key = user.Id,
@@ -3463,7 +3703,8 @@ namespace Rock.Communication.Chat
                 IsAdmin = user.Role.Equals( ChatRole.Administrator.GetDescription() ),
                 IsProfileVisible = user.GetDataOrDefault( UserDataKey.IsProfileVisible, false ),
                 IsOpenDirectMessageAllowed = user.GetDataOrDefault( UserDataKey.IsOpenDirectMessageAllowed, false ),
-                Badges = badges
+                Badges = badges,
+                CampusId = campusId
             };
         }
 
@@ -3490,7 +3731,7 @@ namespace Rock.Communication.Chat
 
             // ----------------------------------------------------
             // 1) Start by adding the sync command for the channel.
-            var channelSyncCommand = new SyncChatChannelToRockCommand( ChatToRockSyncConfig.SyncCommandAttemptLimit, chatSyncType );
+            var channelSyncCommand = new SyncChatChannelToRockCommand( chatSyncType );
 
             // Ensure the payload contains a chat group identifier.
             var chatGroupIdentifiers = TryGetChatGroupIdentifiers( json );
@@ -3518,16 +3759,12 @@ namespace Rock.Communication.Chat
 
             if ( chatSyncType != ChatSyncType.Delete )
             {
+                // Try to get the channel's name.
                 var groupName = json[WebhookJsonProperty.Channel]?[WebhookJsonProperty.Name]?.ToString();
-                if ( groupName.IsNullOrWhiteSpace() )
+                if ( groupName.IsNotNullOrWhiteSpace() )
                 {
-                    // If a channel name wasn't provided, we'll fall back to using the channel ID for the name. This
-                    // isn't ideal, but we need a value to use for the required Rock group name field.
-                    groupName = chatGroupIdentifiers.ChannelKey;
+                    channelSyncCommand.GroupName = groupName;
                 }
-
-                // Assign the group name to the sync command.
-                channelSyncCommand.GroupName = groupName;
 
                 // Try to get the channel's disabled status.
                 var disabledToken = json[WebhookJsonProperty.Disabled];
@@ -3596,7 +3833,7 @@ namespace Rock.Communication.Chat
         /// <exception cref="ChatWebhookParseException">If the member JSON is missing expected values.</exception>
         private SyncChatChannelMemberToRockCommand GetSyncChatChannelMemberToRockCommand( ChatSyncType chatSyncType, JObject memberJson, ChatGroupIdentifiers chatGroupIdentifiers, string memberJsonPathRoot = WebhookJsonProperty.Member )
         {
-            var syncCommand = new SyncChatChannelMemberToRockCommand( ChatToRockSyncConfig.SyncCommandAttemptLimit, chatSyncType )
+            var syncCommand = new SyncChatChannelMemberToRockCommand( chatSyncType )
             {
                 ChatChannelKey = chatGroupIdentifiers.ChannelKey,
                 GroupId = chatGroupIdentifiers.GroupId
@@ -3649,7 +3886,7 @@ namespace Rock.Communication.Chat
         /// <exception cref="ChatWebhookParseException">If the Stream webhook payload is missing expected values.</exception>
         private SyncChatChannelMutedStatusToRockCommand GetSyncChatChannelMutedStatusToRockCommand( ChatSyncType chatSyncType, JObject json )
         {
-            var syncCommand = new SyncChatChannelMutedStatusToRockCommand( ChatToRockSyncConfig.SyncCommandAttemptLimit, chatSyncType );
+            var syncCommand = new SyncChatChannelMutedStatusToRockCommand( chatSyncType );
 
             // Ensure the payload contains a chat user ID;
             var userId = json[WebhookJsonProperty.User]?[WebhookJsonProperty.Id]?.ToString();
@@ -3696,15 +3933,17 @@ namespace Rock.Communication.Chat
             var isChannelSpecific = chatGroupIdentifiers.GroupId.HasValue
                 || chatGroupIdentifiers.ChannelKey.IsNotNullOrWhiteSpace();
 
-            var attemptLimit = isChannelSpecific
-                ? ChatToRockSyncConfig.SyncCommandAttemptLimit
-                : 1; // Only attempt once for global ban/unban events.
-
-            var syncCommand = new SyncChatBannedStatusToRockCommand( attemptLimit, chatSyncType )
+            var syncCommand = new SyncChatBannedStatusToRockCommand( chatSyncType )
             {
                 ChatChannelKey = chatGroupIdentifiers.ChannelKey,
                 GroupId = chatGroupIdentifiers.GroupId
             };
+
+            if ( !isChannelSpecific )
+            {
+                // Only attempt once for global ban/unban events.
+                syncCommand.AttemptLimit = 1;
+            }
 
             // Ensure the payload contains a chat user ID;
             var userId = json[WebhookJsonProperty.User]?[WebhookJsonProperty.Id]?.ToString();
@@ -3821,6 +4060,34 @@ namespace Rock.Communication.Chat
         }
 
         #endregion Converters: From Stream Webhook Payload To Sync Commands
+
+        #region Utilities
+
+        /// <summary>
+        /// Converts a <see cref="ChatNotificationMode"/> to the corresponding Stream Chat push preference value.
+        /// </summary>
+        /// <param name="notificationMode">The notification mode to convert.</param>
+        /// <returns>
+        /// A string representing the Stream push preference value:
+        /// <c>"all"</c> for all messages, <c>"mentions"</c> for mentions only, <c>"none"</c> for silent mode.
+        /// Returns an empty string if the mode is unrecognized.
+        /// </returns>
+        private string ConvertNotificationModeToPushPreferenceValue( ChatNotificationMode notificationMode )
+        {
+            switch ( notificationMode )
+            {
+                case ChatNotificationMode.AllMessages:
+                    return "all";
+                case ChatNotificationMode.Silent:
+                    return "none";
+                case ChatNotificationMode.Mentions:
+                    return "mentions";
+                default:
+                    return string.Empty;
+            }
+        }
+
+        #endregion
 
         #endregion Private Methods
 

@@ -36,6 +36,7 @@ using System.Web.UI.WebControls;
 using System.Xml.Linq;
 
 using Microsoft.Extensions.Logging;
+using System.Threading.Tasks;
 
 namespace Rock.Utility
 {
@@ -75,7 +76,7 @@ namespace Rock.Utility
         /// Create a new instance.
         /// </summary>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public SampleDataManager( IRockLogger logDevice )
             : this( ( ILogger ) null )
         {
@@ -278,7 +279,7 @@ namespace Rock.Utility
         /// The log device used to record processing details.
         /// </summary>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public IRockLogger LogDevice => null;
 
         /// <summary>
@@ -286,6 +287,12 @@ namespace Rock.Utility
         /// </summary>
         /// <value>The logger.</value>
         public ILogger Logger => _taskLog;
+
+        /// <summary>
+        /// Flag to indicate if this is running as Unit Tests.
+        /// When false, some things can be run in a separate thread (such as the RunNow job).
+        /// </summary>
+        public bool IsUnitTest { get; set; } = true;
 
         /// <summary>
         /// Process all the data in the XML file; deleting stuff and then adding stuff.
@@ -463,7 +470,7 @@ namespace Rock.Utility
                         LogElapsed( "registration templates added" );
 
                         AddRegistrationInstances( elemRegistrationInstances, rockContext );
-                        LogElapsed( "registration instances added..." );
+                        LogElapsed( "registration instances added" );
 
                         rockContext.ChangeTracker.DetectChanges();
                         rockContext.SaveChanges( disablePrePostProcessing: true );
@@ -505,9 +512,25 @@ namespace Rock.Utility
                 }
 
                 // PA: Run the Update Persisted Attribute Value Job to populate the Field Type, like [ValueByDateTime], columns of the attributes table
-                var serviceJobService = new ServiceJobService( rockContext );
-                var updatePersistedAttributeValueJob = serviceJobService.Get( Rock.SystemGuid.ServiceJob.UPDATE_PERSISTED_ATTRIBUTE_VALUE );
-                serviceJobService.RunNow( updatePersistedAttributeValueJob );
+                if ( IsUnitTest )
+                {
+                    var serviceJobService = new ServiceJobService( rockContext );
+                    var updatePersistedAttributeValueJob = serviceJobService.Get( Rock.SystemGuid.ServiceJob.UPDATE_PERSISTED_ATTRIBUTE_VALUE );
+                    serviceJobService.RunNow( updatePersistedAttributeValueJob );
+                }
+                else
+                {
+                    // Fire-and-forget in background to prevent blocking
+                    Task.Run( () =>
+                    {
+                        using ( var backgroundContext = new RockContext() )
+                        {
+                            var serviceJobService = new ServiceJobService( backgroundContext );
+                            var job = serviceJobService.Get( Rock.SystemGuid.ServiceJob.UPDATE_PERSISTED_ATTRIBUTE_VALUE );
+                            serviceJobService.RunNow( job );
+                        }
+                    } );
+                }
 
                 // done.
                 LogElapsed( "done" );
@@ -1366,6 +1389,8 @@ namespace Rock.Utility
             {
                 return;
             }
+
+            LogElapsed( "adding families..." );
 
             // Persist the storage type's settings specific to the photo binary file type
             var settings = new Dictionary<string, string>();

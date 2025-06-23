@@ -68,6 +68,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution Items", "{585C34CC-D99C-4E21-9957-FDCB364DD275}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.github\copilot-instructions.md = .github\copilot-instructions.md
 		Rock.sln.vsspell = Rock.sln.vsspell
 	EndProjectSection
 EndProject

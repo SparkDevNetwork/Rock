@@ -252,8 +252,6 @@ var Rock;
                     }
                 }
                 if (startPosition < this.watchBits.length) {
-                    // Setting the currentTime sometimes results on the audio of a video not playing (issue with plyr library(https://github.com/sampotts/plyr/issues/1527))
-                    // only set the value when absolutely necessary.
                     if (this.player.currentTime !== startPosition) {
                         this.player.currentTime = startPosition;
                     }

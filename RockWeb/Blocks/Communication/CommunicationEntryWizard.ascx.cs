@@ -149,7 +149,18 @@ namespace RockWeb.Blocks.Communication
         IsRequired = false,
         Order = 14 )]
 
+    // *** Advanced Category attributes.
+
+    [BooleanField( "Disable Navigation Shortcuts",
+        Key = AttributeKey.DisableNavigationShortcuts,
+        Description = "When enabled, the block will turn off the keyboard shortcuts (arrow keys) used to navigate the steps.",
+        DefaultBooleanValue = false,
+        IsRequired = false,
+        Category = "Advanced",
+        Order = 100 )]
+
     #endregion Block Attributes
+
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.COMMUNICATION_ENTRY_WIZARD )]
     public partial class CommunicationEntryWizard : RockBlock
     {
@@ -174,6 +185,8 @@ namespace RockWeb.Blocks.Communication
             public const string DefaultAsBulk = "DefaultAsBulk";
             public const string EnablePersonParameter = "EnablePersonParameter";
             public const string DisableAddingIndividualsToRecipientLists = "DisableAddingIndividualsToRecipientLists";
+
+            public const string DisableNavigationShortcuts = "DisableNavigationShortcuts";
         }
 
         #endregion Attribute Keys
@@ -458,6 +471,7 @@ function onTaskCompleted( resultData )
 
             if ( !Page.IsPostBack )
             {
+                ConfigureNavigationShortcuts();
                 hfNavigationHistoryInstance.Value = Guid.NewGuid().ToString();
                 ShowDetail( PageParameter( PageParameterKey.CommunicationId ).AsInteger() );
             }
@@ -3822,6 +3836,57 @@ function onTaskCompleted( resultData )
 
                 return recipient;
             }
+        }
+
+        /// <summary>
+        /// Enables the navigation shortcuts (arrow keys) unless the block
+        /// setting has disabled them.
+        /// </summary>
+        private void ConfigureNavigationShortcuts()
+        {
+            if ( GetAttributeValue( AttributeKey.DisableNavigationShortcuts ).AsBoolean() )
+            {
+                return;
+            }
+
+            btnRecipientSelectionNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnRecipientSelectionNext.ToolTip = "Alt+🡆";
+
+            btnRecipientListNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnRecipientListNext.ToolTip = "Alt+🡆";
+
+            btnCommunicationDeliveryPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnCommunicationDeliveryPrevious.ToolTip = "Alt+🡄";
+            btnCommunicationDeliveryNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnCommunicationDeliveryNext.ToolTip = "Alt+🡆";
+
+            btnTemplateSelectionPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnTemplateSelectionPrevious.ToolTip = "Alt+🡄";
+            btnTemplateSelectionNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnTemplateSelectionNext.ToolTip = "Alt+🡆";
+
+            btnEmailEditorPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnEmailEditorPrevious.ToolTip = "Alt+🡄";
+            btnEmailEditorNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnEmailEditorNext.ToolTip = "Alt+🡆";
+
+            btnEmailSummaryPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnEmailSummaryPrevious.ToolTip = "Alt+🡄";
+            btnEmailSummaryNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnEmailSummaryNext.ToolTip = "Alt+🡆";
+
+            btnMobileTextEditorPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnMobileTextEditorPrevious.ToolTip = "Alt+🡄";
+            btnMobileTextEditorNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnMobileTextEditorNext.ToolTip = "Alt+🡆";
+
+            btnPushEditorPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnPushEditorPrevious.ToolTip = "Alt+🡄";
+            btnPushEditorNext.Attributes["data-shortcut-key"] = "arrowright";
+            btnPushEditorNext.ToolTip = "Alt+🡆";
+
+            btnConfirmationPrevious.Attributes["data-shortcut-key"] = "arrowleft";
+            btnConfirmationPrevious.ToolTip = "Alt+🡄";
         }
 
         #region Support Classes

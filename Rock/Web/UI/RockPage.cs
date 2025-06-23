@@ -38,6 +38,7 @@ using Rock.Blocks;
 using Rock.Cms.Utm;
 using Rock.Data;
 using Rock.Lava;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Observability;
@@ -845,6 +846,7 @@ namespace Rock.Web.UI
                 Activity.Current.AddTag( "rock.site.id", this.Site.Id );
                 Activity.Current.AddTag( "rock.page.id", this.PageId );
                 Activity.Current.AddTag( "rock.page.ispostback", this.IsPostBack );
+                Activity.Current.AddTag( "rock.page.issystem", _pageCache?.IsSystem ?? false );
             }
 
             var stopwatchInitEvents = Stopwatch.StartNew();
@@ -1052,7 +1054,7 @@ namespace Rock.Web.UI
                     // don't redirect if this is the change password page
                     if ( Site.ChangePasswordPageReference.PageId != this.PageId )
                     {
-                        Site.RedirectToChangePasswordPage( true, true );
+                        Site.RedirectToChangePasswordPage( true, true, user );
                     }
                 }
 
@@ -1553,6 +1555,7 @@ Obsidian.onReady(() => {{
             pageId: {_pageCache.Id},
             pageGuid: '{_pageCache.Guid}',
             pageParameters: {sanitizedPageParameters.ToJson()},
+            sessionGuid: '{RequestContext.SessionGuid}',
             interactionGuid: '{RequestContext.RelatedInteractionGuid}',
             currentPerson: {currentPersonJson},
             isAnonymousVisitor: {( isAnonymousVisitor ? "true" : "false" )},
@@ -2332,7 +2335,12 @@ Obsidian.onReady(() => {{
             if ( impersonatedByUser != null )
             {
                 Authorization.SignOut();
-                UserLoginService.UpdateLastLogin( impersonatedByUser.UserName );
+                UserLoginService.UpdateLastLogin(
+                    new UpdateLastLoginArgs {
+                        UserName = impersonatedByUser.UserName,
+                        ShouldSkipWritingHistoryLog = true
+                    }
+                );
 
                 /*
                     10/23/2023 - JMH
@@ -2403,7 +2411,8 @@ Obsidian.onReady(() => {{
                         isImpersonated: true,
                         isTwoFactorAuthenticated: true );
                     CurrentUser = impersonatedPerson.GetImpersonatedUser();
-                    UserLoginService.UpdateLastLogin( "rckipid=" + impersonatedPersonKeyParam );
+                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = "rckipid=" + impersonatedPersonKeyParam } );
+
 
                     // reload page as the impersonated user (we probably could remove the token from the URL, but some blocks might be looking for rckipid in the PageParameters, so just leave it)
                     Response.Redirect( Request.RawUrl, false );
@@ -2781,6 +2790,7 @@ Sys.Application.add_load(function () {
             {
                 WebRootPath = AppDomain.CurrentDomain.BaseDirectory
             } );
+            serviceCollection.AddRockLogging();
 
             return serviceCollection.BuildServiceProvider();
         }
@@ -3551,7 +3561,7 @@ Sys.Application.add_load(function () {
         /// Converts the legacy, "structured" context cookies to a simpler, JSON format.
         /// </summary>
         [Obsolete( "Remove this method after a few major versions, hopefully allowing enough time to convert all legacy context cookies." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         private void ConvertLegacyContextCookiesToJSON()
         {
             // Find any cookies whose names start with the legacy cookie name prefix.

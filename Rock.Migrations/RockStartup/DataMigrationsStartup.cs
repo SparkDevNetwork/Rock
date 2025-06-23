@@ -104,6 +104,11 @@ namespace Rock.Migrations.RockStartup
             SystemGuid.ServiceJob.DATA_MIGRATIONS_170_UPDATE_PERSON_PRIMARY_PERSON_ALIAS_GUID.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_170_INTERACTION_INDEX_POST_MIGRATION_JOB.AsGuid(),
             SystemGuid.ServiceJob.DATA_MIGRATIONS_168_UPDATE_INDEXES.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_171_MIGRATE_LOGIN_HISTORY.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_171_UPDATE_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_171_ADD_COMMUNICATIONRECIPIENT_INDEX.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_171_POPULATE_ATTENDANCE_ROOT_GROUP_TYPE.AsGuid(),
+            SystemGuid.ServiceJob.DATA_MIGRATIONS_171_CHOP_OBSIDIAN_BLOCKS.AsGuid(),
         };
 
 

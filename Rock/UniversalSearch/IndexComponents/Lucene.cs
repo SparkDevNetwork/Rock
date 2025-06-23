@@ -38,6 +38,7 @@ using Lucene.Net.Util;
 
 using Newtonsoft.Json.Linq;
 
+using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels;
@@ -56,9 +57,20 @@ namespace Rock.UniversalSearch.IndexComponents
     [Export( typeof( IndexComponent ) )]
     [ExportMetadata( "ComponentName", "Lucene.Net 4.8" )]
 
+    [BooleanField( "Include Explain",
+        Key = AttributeKey.IncludeExplain,
+        Description = "Set this to true if debugging and what to an Explain in the search results.",
+        Category = "Advanced Settings",
+        Order = 0 )]
+
     [Rock.SystemGuid.EntityTypeGuid( "C06ABF4E-6178-45DB-BC26-A057124D98A7" )]
     public class Lucene : IndexComponent
     {
+        internal static class AttributeKey
+        {
+            public const string IncludeExplain = "IncludeExplain";
+        }
+
         #region Private Fields
         private static readonly LuceneVersion _matchVersion = LuceneVersion.LUCENE_48;
         private static ConcurrentDictionary<string, Index> _indexes = new ConcurrentDictionary<string, Index>();
@@ -251,8 +263,9 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         /// <param name="query">The query.</param>
         /// <param name="hit">The scoredoc.</param>
+        /// <param name="explain">If <c>true</c> then the explain information will be included in the document.</param>
         /// <returns>Index model</returns>
-        private IndexModelBase LuceneDocToIndexModel( Query query, ScoreDoc hit )
+        private IndexModelBase LuceneDocToIndexModel( Query query, ScoreDoc hit, bool explain )
         {
             var doc = _indexSearcher.Doc( hit.Doc );
 
@@ -277,8 +290,12 @@ namespace Rock.UniversalSearch.IndexComponents
                     }
                 }
 
-                Explanation explanation = _indexSearcher.Explain( query, hit.Doc );
-                document["Explain"] = explanation.ToString();
+                if ( explain )
+                {
+                    Explanation explanation = _indexSearcher.Explain( query, hit.Doc );
+                    document["Explain"] = explanation.ToString();
+                }
+
                 document.Score = hit.Score;
 
                 return document;
@@ -480,7 +497,9 @@ namespace Rock.UniversalSearch.IndexComponents
 
             if ( docs.TotalHits >= 1 )
             {
-                return LuceneDocToIndexModel( query, docs.ScoreDocs[0] );
+                var explain = GetAttributeValue( AttributeKey.IncludeExplain ).AsBoolean();
+
+                return LuceneDocToIndexModel( query, docs.ScoreDocs[0], explain );
             }
 
             return null;
@@ -526,7 +545,6 @@ namespace Rock.UniversalSearch.IndexComponents
 
             using ( RockContext rockContext = new RockContext() )
             {
-                var entityTypeService = new EntityTypeService( rockContext );
                 if ( entities == null || entities.Count == 0 )
                 {
                     // add all entities
@@ -542,7 +560,7 @@ namespace Rock.UniversalSearch.IndexComponents
                 foreach ( var entityId in entities )
                 {
                     // get entities search model name
-                    var entityType = entityTypeService.GetNoTracking( entityId );
+                    var entityType = EntityTypeCache.Get( entityId, rockContext );
                     var entityRelatedIndexes = IndexHelper.GetRelatedIndexes( entityType.IndexModelType );
 
                     indexModelTypes.AddRange( entityRelatedIndexes );
@@ -761,9 +779,11 @@ namespace Rock.UniversalSearch.IndexComponents
 
             if ( topDocs != null )
             {
+                var explain = GetAttributeValue( AttributeKey.IncludeExplain ).AsBoolean();
+
                 foreach ( var hit in topDocs.ScoreDocs )
                 {
-                    var document = LuceneDocToIndexModel( queryContainer, hit );
+                    var document = LuceneDocToIndexModel( queryContainer, hit, explain );
                     if ( document != null )
                     {
                         documents.Add( document );
@@ -1010,6 +1030,30 @@ namespace Rock.UniversalSearch.IndexComponents
             _reader?.Dispose();
             _reader = null;
         }
+
+        /// <summary>
+        /// Method that is called when attribute values are updated. Components can
+        /// override this to perform any needed setup/validation based on current attribute
+        /// values.
+        /// </summary>
+        /// <param name="errorMessage">The error message.</param>
+        /// <returns></returns>
+        public override bool ValidateAttributeValues( out string errorMessage )
+        {
+            // Notify the content collection index component that our settings
+            // have been updated, since they share settings with us.
+            Cms.ContentCollection.ContentIndexContainer.Instance
+                .Components
+                .Values
+                .Select( c => c.Value )
+                .Where( c => c.GetType() == typeof( Cms.ContentCollection.IndexComponents.Lucene ) )
+                .Cast<Cms.ContentCollection.IndexComponents.Lucene>()
+                .FirstOrDefault()
+                ?.SettingsUpdated();
+
+            return base.ValidateAttributeValues( out errorMessage );
+        }
+
         #endregion
 
         #region Classes

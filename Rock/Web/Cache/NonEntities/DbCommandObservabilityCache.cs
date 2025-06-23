@@ -304,6 +304,19 @@ namespace Rock.Web.Cache.NonEntities
         {
             if ( activity == null )
             {
+                // Special case logic for incrementing the database query count
+                // on the root activity if for some reason we couldn't create
+                // a child activity. This may happen if we exceeded the span
+                // count or if we are using minimum tracing.
+                var currentActivity = Activity.Current;
+
+                if ( currentActivity != null )
+                {
+                    var rootActivity = ObservabilityHelper.GetRootActivity( currentActivity );
+
+                    ObservabilityHelper.IncrementDbQueryCount( rootActivity );
+                }
+
                 return;
             }
 

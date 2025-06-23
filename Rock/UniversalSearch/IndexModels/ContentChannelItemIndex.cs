@@ -252,5 +252,13 @@ namespace Rock.UniversalSearch.IndexModels
 
             return base.FormatSearchResult( person, displayOptions );
         }
+
+        /// <inheritdoc/>
+        public override bool IsViewAllowed( Person person, RockContext rockContext )
+        {
+            var contentChannelItem = new ContentChannelItemService( rockContext ).Get( ( int ) this.Id );
+
+            return contentChannelItem?.IsAuthorized( Security.Authorization.VIEW, person ) ?? false;
+        }
     }
 }

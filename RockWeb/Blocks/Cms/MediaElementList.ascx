@@ -16,7 +16,7 @@
                     <Rock:GridFilter ID="gfFilter" runat="server">
                         <Rock:RockTextBox ID="txtElementName" runat="server" Label="Name" />
                     </Rock:GridFilter>
-                    <Rock:Grid ID="gElementList" runat="server" AllowSorting="true" RowItemText="Media Element" OnRowSelected="gElementList_RowSelected"  CssClass="js-grid-elements">
+                    <Rock:Grid ID="gElementList" runat="server" AllowSorting="true" RowItemText="Media Element" OnRowSelected="gElementList_RowSelected" CssClass="js-grid-elements">
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" ItemStyle-CssClass="js-name-element" />
                              <Rock:RockTemplateField SortExpression="DurationSeconds" HeaderText="Duration">
@@ -25,6 +25,7 @@
                                  </ItemTemplate>
                             </Rock:RockTemplateField>
                             <Rock:RockBoundField DataField="WatchCount" HeaderText="Watch Count" SortExpression="WatchCount" />
+                            <Rock:BoolField DataField="Transcribed" HeaderText="Transcribed" SortExpression="Transcribed" />                          
                             <Rock:DeleteField OnClick="gElementList_DeleteClick" />
                         </Columns>
                     </Rock:Grid>

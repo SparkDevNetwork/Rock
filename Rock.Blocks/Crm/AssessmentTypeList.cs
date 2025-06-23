@@ -40,7 +40,7 @@ namespace Rock.Blocks.Crm
     [Category( "CRM" )]
     [Description( "Displays a list of assessment types." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the assessment type details.",

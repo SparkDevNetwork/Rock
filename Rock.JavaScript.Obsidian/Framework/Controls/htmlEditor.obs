@@ -164,6 +164,7 @@
     import MetaTagsPlugin from "./NoteEditor/metaTagsPlugin.partial.obs";
     import ParagraphPlugin from "./NoteEditor/paragraphPlugin.partial.obs";
     import PasteAsPlainTextPlugin from "./NoteEditor/pasteAsPlainTextPlugin.partial.obs";
+
     import ShortLinkPlugin from "./NoteEditor/shortLinkPlugin.partial.obs";
     import StylesheetsPlugin from "./NoteEditor/stylesheetsPlugin.partial.obs";
     import { providePluginsFeature } from "./NoteEditor/utils.partial";
@@ -267,6 +268,17 @@
             type: Boolean,
             default: false
         },
+
+        /**
+         * When set to true, the HTML editor will show the asset manager button
+         * in the toolbar. This requires that a security grant token be available
+         * that provides access to the asset manager.
+         */
+        enableAssetManager: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
 
         /**
          * When set to true, the code editor allows toggling even if the content includes Lava commands,
@@ -476,6 +488,9 @@
     // This gets called after the plugins have been mounted.
     onMounted(() => {
         if (editorId.value) {
+            const assetManagerPluginId = props.enableAssetManager
+                ? assetManagerPlugin.value?.id
+                : undefined;
             // Define the toolbar buttons depending on the toolbar config (light or full).
             // They are displayed in the order in which they are defined
             // and grouped using pipe (|) characters; e.g.,
@@ -486,9 +501,9 @@
             // so no need to create a rockpastefromword plugin at this point.
             // https://www.tiny.cloud/docs/tinymce/6/available-toolbar-buttons/
             const toolbarConfigs: Record<ToolbarConfig, string> = {
-                "light": `${editSourceCodePlugin.value?.id} | bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist | removeformat | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | undo redo`,
-                "light-compact": `${editSourceCodePlugin.value?.id} bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist ${paragraphPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} removeformat ${pasteAsPlainTextPlugin.value?.id} ${mergeFieldPlugin.value?.id} undo redo`,
-                "full": `${editSourceCodePlugin.value?.id} | bold italic underline strikethrough numlist bullist link ${shortLinkPlugin.value?.id} | undo redo | removeformat | styles forecolor backcolor | fontfamily fontsize superscript subscript table hr | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | help`,
+                "light": `${editSourceCodePlugin.value?.id} | bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist | removeformat | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPluginId} | ${pasteAsPlainTextPlugin.value?.id} | undo redo`,
+                "light-compact": `${editSourceCodePlugin.value?.id} bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist ${paragraphPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPluginId} removeformat ${pasteAsPlainTextPlugin.value?.id} ${mergeFieldPlugin.value?.id} undo redo`,
+                "full": `${editSourceCodePlugin.value?.id} | bold italic underline strikethrough numlist bullist link ${shortLinkPlugin.value?.id} | undo redo | removeformat | styles forecolor backcolor | fontfamily fontsize superscript subscript table hr | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPluginId} | ${pasteAsPlainTextPlugin.value?.id} | help`,
             };
 
             // Get the default system font.

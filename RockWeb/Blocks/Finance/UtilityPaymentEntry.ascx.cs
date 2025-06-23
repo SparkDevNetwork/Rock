@@ -176,9 +176,9 @@ namespace RockWeb.Blocks.Finance
         "Use Account Campus Mapping Logic",
         Description = @"If enabled, the accounts will be determined as follows:
         <ul>
-          <li>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</li>
-          <li>If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the user sees) will be returned.</li>
-          <li>If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)</li>
+          <li>If no campus is selected, then the selected account will be used.</li>
+          <li>If an active direct child account has a campus that matches the selected campus, then the first matching child account will be used.</li>
+          <li>If no active direct child account matches the selected campus, then the selected account will be used.</li>
         <ul>",
         Key = AttributeKey.UseAccountCampusMappingLogic,
         DefaultBooleanValue = false,
@@ -2108,6 +2108,18 @@ mission. We are so grateful for your commitment.</p>
                 allowedCurrencyTypes.Add( achCurrency );
             }
 
+            var applePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_APPLE_PAY.AsGuid() );
+            if ( financialGatewayComponent.SupportsSavedAccount( applePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( applePayCurrency );
+            }
+
+            var googlePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ANDROID_PAY.AsGuid() );
+            if ( financialGatewayComponent.SupportsSavedAccount( googlePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( googlePayCurrency );
+            }
+
             int[] allowedCurrencyTypeIds = allowedCurrencyTypes.Select( a => a.Id ).ToArray();
 
             personSavedAccountsQuery = personSavedAccountsQuery.Where( a =>
@@ -2194,6 +2206,15 @@ mission. We are so grateful for your commitment.</p>
 
                     var participationMode = PageParameters().ContainsKey( PageParameterKey.ParticipationMode ) ? PageParameter( PageParameterKey.ParticipationMode ).AsIntegerOrNull() ?? 1 : 1;
 
+                    /*
+                         4/3/2025 - SMC
+
+                         This logic overlaps with logic in the Fundraising Donation Entry block. Any changes made here should also be applied there.
+                         When these blocks are migrated to Obsidian, this redundancy should be resolved to ensure the logic exists in only one place.
+
+                         Reason: Prevent code duplication and maintain consistency between blocks.
+                    */
+
                     if ( EntityTypeCache.Get( transactionEntityTypeId ).Guid == Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() )
                     {
                         var groupMember = new GroupMemberService( rockContext ).Get( transactionEntity.Guid );
@@ -2210,7 +2231,7 @@ mission. We are so grateful for your commitment.</p>
                             }
 
                             var contributionTotal = new FinancialTransactionDetailService( rockContext )
-                            .GetContributionsForGroupMemberList( transactionEntityTypeId, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
+                                .GetContributionsForGroupMemberList( transactionEntityTypeId, familyMemberGroupMembersInCurrentGroup.Select( m => m.Id ).ToList() );
                             mergeFields.Add( "FundraisingGoal", groupFundraisingGoal );
                             mergeFields.Add( "AmountRaised", contributionTotal );
                         }

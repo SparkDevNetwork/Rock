@@ -1752,6 +1752,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
             parentControl.Controls.Add( control );
             control.ID = actionType.Guid.ToString( "N" );
             control.ValidationGroup = btnSave.ValidationGroup;
+            control.ModalManagerId = upDetail.ClientID;
 
             control.DeleteActionTypeClick += workflowActionTypeEditor_DeleteActionTypeClick;
             control.ChangeActionTypeClick += workflowActionTypeEditor_ChangeActionTypeClick;

@@ -42,6 +42,19 @@ namespace Rock.Web.UI.Controls
             {
                 _interactionChannelId = value;
                 LoadDropDownItems( this, true );
+
+                // If the page is posting back (i.e., user submitted the form or caused an event),
+                // we want to restore the selected Interaction Component value manually.
+                if ( Page.IsPostBack )
+                {
+                    // Get the raw posted value from the form using the dropdown's UniqueID.
+                    var postedValue = Page.Request[this.UniqueID];
+                    if ( postedValue.IsNotNullOrWhiteSpace() && this.Items.FindByValue( postedValue ) != null )
+                    {
+                        // Manually restore the selected value
+                        this.SelectedValue = postedValue;
+                    }
+                }
             }
         }
 
