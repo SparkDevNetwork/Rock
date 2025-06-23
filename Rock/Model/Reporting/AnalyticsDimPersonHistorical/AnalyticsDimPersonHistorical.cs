@@ -48,12 +48,14 @@ namespace Rock.Model
         /// </summary>
         public AnalyticsDimPersonHistoricalConfiguration()
         {
+#if REVIEW_NET5_0_OR_GREATER
             // NOTE: When creating a migration for this, don't create the actual FK's in the database for this just in case there are outlier birthdates 
             // and so that the AnalyticsSourceDate can be rebuilt from scratch as needed
             Builder.HasOne( t => t.BirthDateDim )
                 .WithMany()
                 .HasForeignKey( t => t.BirthDateKey )
                 .OnDelete( Microsoft.EntityFrameworkCore.DeleteBehavior.Restrict );
+#endif
         }
     }
 

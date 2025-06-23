@@ -443,7 +443,7 @@ namespace Rock.Model
 #if REVIEW_NET5_0_OR_GREATER
                     course.CourseRequirements.ToList().ForEach( cr =>
 #else
-                    course.LearningCourseRequirements.ForEach( cr =>
+                    course.CourseRequirements.ForEach( cr =>
 #endif
                         cr.RequiredLearningCourse =
                             requiredCourses.FirstOrDefault( r => r.Id == cr.RequiredLearningCourseId ) );
