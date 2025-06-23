@@ -34,6 +34,7 @@ import RockBadge from '../Badge/RockBadge';
 import { useChatConfig } from '../Chat/ChatConfigContext';
 import { ChatViewStyle } from '../ChatViewStyle';
 import { RockMessageThreadReplyContent } from './RockMessageThreadReplyContent';
+import { RockMessageTimestamp } from "./RockMessageTimestamp";
 
 type RockMessageProps = MessageContextValue;
 
@@ -238,6 +239,7 @@ const RockMessageWithContext = (props: RockMessageProps) => {
 
     const messageActions = getSupportedMessageActions();
 
+
     const conversationalComponent = () => {
         return (
             <>
@@ -397,6 +399,14 @@ const RockMessageWithContext = (props: RockMessageProps) => {
                                     </span>
                                     <div className='rock-message-badges'>
                                         {getRockBadges() as React.ReactNode}
+                                    </div>
+
+                                    <div className="rock-message-time">
+                                        {/* Show a simple 1:42PM formatted time */}
+                                        <RockMessageTimestamp
+                                            customClass='rock-message-simple-timestamp'
+                                            message={message}
+                                        />
                                     </div>
                                 </div>
 

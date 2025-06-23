@@ -627,7 +627,7 @@
 .rocktheme-community .rock-message-container .rock-message-title-layout {
     display: flex;
     align-items: center;
-    gap: 6px;
+    gap: 4px;
 }
 
 .rocktheme-community .str-chat__message-text-inner p {
@@ -725,6 +725,12 @@
     pointer-events: auto;
 }
 
+.rocktheme-community .rock-message-simple-timestamp {
+    font-size: 12px;
+    color: var(--color-interface-strong);
+    line-height: 1.25rem;
+}
+
 /* Replies Content */
 .rocktheme-community .rock-replies-content-container {
     display: flex;
@@ -794,6 +800,12 @@
 
 .rocktheme-community .rock-message-composer {
     display: flex;
+    flex-direction: column;
+    margin-inline: 1.5rem;
+    margin-bottom: 1.5rem;
+    background-color: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: 4px;
 }
 
 .rocktheme-community .rock-message-input-container {
@@ -804,11 +816,7 @@
     width: 100%;
     min-width: 0;
     max-height: 100%;
-    background-color: var(--color-interface-softer);
-    margin-inline: 1.5rem;
-    margin-bottom: 1.5rem;
-    border: 1px solid var(--color-interface-soft);
-    border-radius: 4px;
+    background-color: var(--color-interface-softest);
     padding: 6px;
 }
 
@@ -816,11 +824,48 @@
     resize: none;
     border: none;
     color: var(--color-interface-stronger);
+    background-color: var(--color-interface-softest);
     box-shadow: none;
     background: none;
     outline: none;
     font-size: 14px;
     width: 100%;
+    border-radius: 4px;
+}
+
+.rocktheme-community .rock-message-composer .rock-message-composer-actions {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+    padding: 4px;
+}
+
+.rocktheme-community .rock-message-composer>.rock-message-composer-actions>.rock-message-composer-action {
+    background: none;
+    border: none;
+    cursor: pointer;
+    height: 24px;
+    width: 24px;
+    color: var(--color-interface-stronger);
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.rock-message-composer-input {
+    display: flex;
+    gap: 4px;
+    align-items: center;
+}
+
+.rocktheme-community .rock-message-composer>.rock-message-composer-actions>.rock-message-composer-action:hover {
+    background: var(--color-interface-soft);
+}
+
+.rocktheme-community .rock-message-composer>.rock-message-composer-actions>.rock-message-composer-action>i {
+    color: var(--color-interface-stronger);
+    font-size: 14px;
 }
 
 /* bc todo: look into what this is for */

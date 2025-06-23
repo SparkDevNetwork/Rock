@@ -24,12 +24,18 @@ export const RockDateSeperator = (props: DateSeparatorProps) => {
     const formattedDate = getDateString({
         calendar,
         ...restTimestampFormatterOptions,
-        formatDate,
+        formatDate: (date: Date) =>
+            date.toLocaleDateString(undefined, {
+                month: 'long',
+                day: 'numeric',
+                year: 'numeric',
+            }),
         messageCreatedAt,
         t,
         tDateTimeParser,
         timestampTranslationKey: 'timestamp/DateSeparator',
     });
+
 
     if (chatViewStyle == ChatViewStyle.Conversational) {
         return <DateSeparator {...props} />;
