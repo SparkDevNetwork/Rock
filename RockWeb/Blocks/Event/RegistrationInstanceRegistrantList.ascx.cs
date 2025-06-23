@@ -59,7 +59,7 @@ namespace RockWeb.Blocks.Event
         "Group Placement Page",
         Description = "The page for managing the registrant's group placements",
         Key = AttributeKey.GroupPlacementPage,
-        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_INSTANCE_PLACEMENT_GROUPS,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_PLACEMENT + "," + Rock.SystemGuid.PageRoute.GROUP_PLACEMENT,
         IsRequired = false,
         Order = 2 )]
 
@@ -944,6 +944,8 @@ namespace RockWeb.Blocks.Event
                 var queryParams = new Dictionary<string, string>();
                 queryParams.Add( "RegistrationTemplatePlacementId", registrationTemplatePlacement.Id.ToString() );
                 queryParams.Add( "RegistrationInstanceId", this.RegistrationInstanceId.ToString() );
+                queryParams.Add( "SourcePerson", registrant.PersonAlias.PersonId.ToString() );
+                queryParams.Add( "ReturnUrl", GetCurrentPageUrl() );
 
                 /* NOTE: MDP - 2020-02-12
                   We could add RegistrantId has a parameter, but decided not to do this (yet).

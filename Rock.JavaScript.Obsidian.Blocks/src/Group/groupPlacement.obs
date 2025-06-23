@@ -1,0 +1,2452 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <NotificationBox v-if="!isNullOrWhiteSpace(initializationError)" alertType="danger">
+        {{ initializationError }}
+    </NotificationBox>
+    <Panel v-else
+           type="block"
+           panelBodyCssClass="overflow-hidden"
+           class="styled-scroll">
+        <template #title>
+            <div class="d-flex align-items-center gap-3">
+                <span v-if="!isNullOrWhiteSpace(box.backPageUrl)" class="clickable text-sm" @click="onBack">
+                    <i class="fa fa-chevron-left d-block"></i>
+                </span>
+                <h1 class="panel-title">
+                    {{ box.title }}
+                </h1>
+                <HighlightLabel v-if="placementConfigurationSettings.displayedCampus" labelType="campus">
+                    {{ placementConfigurationSettings.displayedCampus.text }}
+                </HighlightLabel>
+            </div>
+        </template>
+
+        <template #headerActions>
+            <div class="d-flex gap-1">
+                <DropDownList v-model="fallbackRegistrationTemplatePlacement"
+                              v-if="box.registrationTemplatePlacements"
+                              :items="box.registrationTemplatePlacements"
+                              :showBlankItem="false"
+                              inputClasses="placements-dropdown" />
+                <div class="dropdown">
+                    <RockButton :btnType="BtnType.Default"
+                                :btnSize="BtnSize.Small"
+                                :isSquare="true"
+                                title="Sort Items"
+                                data-toggle="dropdown">
+                        <i class="fa fa-sort"></i>
+                    </RockButton>
+                    <ul class="dropdown-menu dropdown-menu-right">
+                        <li>
+                            <span class="dropdown-header">
+                                Sort Person Order
+                            </span>
+                        </li>
+                        <li v-for="[key, label] in sortOptions"
+                            :key="key"
+                            :class="{ 'selected': currentSortOrder === key }">
+                            <a href="#" @click.prevent="changeSort(key)">
+                                {{ label }}
+                            </a>
+                        </li>
+                    </ul>
+                </div>
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isSquare="true"
+                            title="Toggle Gender Highlight View"
+                            @click="toggleHighlightGender">
+                    <i class="fa fa-venus-mars"></i>
+                </RockButton>
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isSquare="true"
+                            title="Toggle Details"
+                            @click="toggleCardExpansion">
+                    <i class="fa fa-info-circle"></i>
+                </RockButton>
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isSquare="true"
+                            @click="openPlacementConfigSettings">
+                    <i class="fa fa-cog"></i>
+                </RockButton>
+            </div>
+        </template>
+
+        <NotificationBox v-if="!isNullOrWhiteSpace(dataRetrievalError)" alertType="danger">
+            {{ dataRetrievalError }}
+        </NotificationBox>
+        <div v-else class="d-flex w-100 h-100">
+            <div class="col-xs-5 col-md-4 col-lg-3 p-0 h-100 helper-height">
+                <Panel type="default"
+                       title="People To Place"
+                       panelBodyCssClass="h-100 overflow-hidden"
+                       :isDrawerOpen="isPersonFilterDrawerOpen"
+                       @update:isDrawerOpen="isPersonFilterDrawerOpen = !isPersonFilterDrawerOpen">
+                    <template #headerActions>
+                        <RockButton :btnType="BtnType.Default"
+                                    :btnSize="BtnSize.Small"
+                                    :isSquare="true"
+                                    title="Search People"
+                                    :class="{ 'active': isPersonSearchVisible }"
+                                    @click="toggleIsPersonSearchVisible">
+                            <i class="fa fa-search"></i>
+                        </RockButton>
+                    </template>
+                    <template #subheaderLeft>
+                        <transition name="slide">
+                            <div v-show="isPersonSearchVisible" ref="personSearchContainerElement" class="p-3">
+                                <TextBox v-model="personSearchText" placeholder="Search" isClearable>
+                                    <template #inputGroupPrepend>
+                                        <div class="input-group-addon">
+                                            <i class="fa fa-search"></i>
+                                        </div>
+                                    </template>
+                                </TextBox>
+                            </div>
+                        </transition>
+                    </template>
+
+                    <template #drawerToggle>
+                        <div class="placement-drawer">
+                            Filter <i :class="isPersonFilterDrawerOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+                        </div>
+                    </template>
+
+                    <template v-if="Object.keys(sourceAttributesForFilter).length > 0 || registrantFeeItemsForFilter.length > 0" #drawer>
+                        <AttributeValuesContainer v-model="pendingSourceAttributeValuesForFilter" :attributes="sourceAttributesForFilter" isEditMode :numberOfColumns="1" />
+                        <DropDownList v-model="pendingRegistrantFeeItemValuesForFilter"
+                                      v-if="placementConfigurationSettings.areFeesDisplayed"
+                                      label="Fees"
+                                      :items="registrantFeeItemsForFilter ?? []"
+                                      :enhanceForLongLists="true"
+                                      :multiple="true" />
+                        <RockButton :btnType="BtnType.Action"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    @click="applyPeopleFilter"
+                                    class="mr-2">
+                            Apply Filter
+                        </RockButton>
+                        <RockButton :btnType="BtnType.Default"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    @click="clearPeopleFilters">
+                            Clear Filter
+                        </RockButton>
+                    </template>
+
+                    <div class="people-to-place-panel-body">
+                        <div class="w-100 p-2 pb-0">
+                            <div class="d-flex justify-content-start">
+                                <HighlightLabel v-if="sourcePerson" labelType="custom" customClass="source-person-label">
+                                    {{ sourcePerson.firstName }} {{ sourcePerson.lastName }} <i class="fa fa-times cursor-pointer" @click="removeSourcePerson"></i>
+                                </HighlightLabel>
+                            </div>
+                            <div class="d-flex justify-content-between align-items-center">
+                                <div class="prevent-clear">
+                                    <CheckBox v-model="areAllPeopleSelected"
+                                              label=""
+                                              text="Select All"
+                                              @click="toggleSelectAllCheckbox()" />
+                                </div>
+                                <span class="text-muted">{{ selectedPeopleCount }} Selected
+                                    <i ref="selectionInfoElement"
+                                       class="fa fa-info-circle cursor-pointer"
+                                       data-toggle="tooltip"
+                                       title="Ctrl (Mac: Cmd) + Click to select multiple people.">
+                                    </i>
+                                </span>
+                            </div>
+                        </div>
+                        <div v-drag-source="personDragSourceOptions"
+                             v-drag-target="groupMemberDragSourceOptions.id"
+                             class="people-to-place-card-container">
+                            <div v-if="arePeopleLoading" class="d-flex align-items-center justify-content-center">
+                                <Loading :isLoading="arePeopleLoading" />
+                            </div>
+                            <template v-for="(person, index) in filteredAndSortedPeopleToPlace"
+                                      v-else-if="filteredAndSortedPeopleToPlace.length > 0">
+                                <PersonCard v-if="person.personIdKey"
+                                            :key="index"
+                                            :data-person-id-key="person.personIdKey"
+                                            :isCardExpanded="arePersonCardsExpanded"
+                                            :isTransitionEnabled="isCardTransitionEnabled"
+                                            :person="person"
+                                            :index="index"
+                                            :isSelected="isSelected(person.personIdKey)"
+                                            :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
+                                            :areFeesDisplayed="placementConfigurationSettings.areFeesDisplayed"
+                                            :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                            :isGenderHighlighting="isGenderHighlighting"
+                                            :placementMode="box.placementMode"
+                                            :class="{ 'hovered-card': showPointer }"
+                                            @toggleCardExpansion="toggleCardExpansion"
+                                            @toggleSelection="toggleSelection(person.personIdKey)"
+                                            @hover="togglePersonCardHovered" />
+                            </template>
+                            <div v-else>
+                                <span v-if="!isNoPeopleLabelHidden" class="no-people-label">No People Available</span>
+                            </div>
+                        </div>
+                    </div>
+
+                </Panel>
+
+            </div>
+
+            <div class="col-xs-7 col-md-8 col-lg-9 p-0 h-100 helper-height">
+                <Panel type="default"
+                       title="Destination Groups"
+                       panelBodyCssClass="h-100 overflow-hidden"
+                       :isDrawerOpen="isGroupFilterDrawerOpen"
+                       @update:isDrawerOpen="isGroupFilterDrawerOpen = !isGroupFilterDrawerOpen">
+                    <template #headerActions>
+                        <div class="d-flex gap-1">
+                            <RockButton :btnType="BtnType.Default"
+                                        :btnSize="BtnSize.Small"
+                                        title="Add Group"
+                                        @click="openAddGroupModal">
+                                <i class="fa fa-group text-xs mr-2"></i>
+                                <span>Add Group</span>
+                            </RockButton>
+
+                            <RockButton :btnType="BtnType.Default"
+                                        :btnSize="BtnSize.Small"
+                                        :isSquare="true"
+                                        @click="toggleGroupExpansion">
+                                <i :class="areGroupsExpanded ? 'fa fa-angle-double-up' : 'fa fa-angle-double-down'"></i>
+                            </RockButton>
+                        </div>
+                    </template>
+
+                    <template #drawerToggle>
+                        <div class="placement-drawer">
+                            Filter <i :class="isGroupFilterDrawerOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+                        </div>
+                    </template>
+
+                    <template #drawer v-if="Object.keys(destinationGroupAttributesForFilter).length > 0 || Object.keys(destinationGroupMemberAttributesForFilter).length > 0">
+
+                        <AttributeValuesContainer v-model="pendingDestinationGroupAttributeValuesForFilter"
+                                                  :attributes="destinationGroupAttributesForFilter"
+                                                  isEditMode
+                                                  :numberOfColumns="3"
+                                                  columnBreakpoint="lg"
+                                                  :showCategoryLabel="false" />
+                        <div class="w-100 mb-2">
+                            <RockLabel v-if="Object.keys(destinationGroupMemberAttributesForFilter).length > 0"
+                                       @click="toggleIsGroupMemberFilterDisplayed"
+                                       class="group-member-filter-toggle">
+                                Group Member Filters <i :class="groupMemberFilterIcon"></i>
+                            </RockLabel>
+                            <TransitionVerticalCollapse>
+                                <div v-show="isGroupMemberFilterDisplayed">
+                                    <AttributeValuesContainer v-model="pendingDestinationGroupMemberAttributeValuesForFilter"
+                                                              :attributes="destinationGroupMemberAttributesForFilter"
+                                                              isEditMode
+                                                              :numberOfColumns="3"
+                                                              columnBreakpoint="lg"
+                                                              :showCategoryLabel="false" />
+                                </div>
+                            </TransitionVerticalCollapse>
+                        </div>
+                        <RockButton :btnType="BtnType.Action"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    @click="applyGroupFilter"
+                                    class="mr-2">
+                            Apply Filter
+                        </RockButton>
+                        <RockButton :btnType="BtnType.Default"
+                                    :btnSize="BtnSize.ExtraSmall"
+                                    @click="clearGroupFilters">
+                            Clear Filter
+                        </RockButton>
+                    </template>
+
+
+                    <div class="p-3 h-100 group-container">
+                        <div v-if="areGroupsLoading" class="d-flex align-items-center justify-content-center">
+                            <Loading :isLoading="areGroupsLoading" />
+                        </div>
+                        <div v-else-if="filteredAndSortedGroups.length === 0" class="h-100 d-flex align-items-center justify-content-center">
+                            <div class="no-groups">
+                                <i class="fa fa-group fa-2x"></i>
+                                <p>No Groups</p>
+                            </div>
+                        </div>
+                        <DestinationGroup v-for="(group, index) in filteredAndSortedGroups"
+                                          v-else
+                                          :key="index"
+                                          :destinationGroup="group"
+                                          :arePersonCardsExpanded="arePersonCardsExpanded"
+                                          :isGroupExpanded="areGroupsExpanded"
+                                          :groupTypeRoles="box.destinationGroupTypeRoles ?? []"
+                                          :dragTargetId="personDragSourceOptions.id"
+                                          :groupMemberDragOptions="groupMemberDragSourceOptions"
+                                          :getGroupError="getGroupError"
+                                          :getGroupRoleError="getGroupRoleError"
+                                          :clearGroupError="clearGroupError"
+                                          :clearGroupRoleError="clearGroupRoleError"
+                                          :currentSortOrder="currentSortOrder"
+                                          :isGenderHighlighting="isGenderHighlighting"
+                                          :isInstanceDisplayed="placementConfigurationSettings.showRegistrationInstanceName"
+                                          :areSourceAttributesDisplayedOnDestinationGroupMembers="placementConfigurationSettings.areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                          :arePeopleLoading="arePeopleLoading"
+                                          :placementMode="box.placementMode"
+                                          :isTransitionEnabled="isCardTransitionEnabled"
+                                          @editGroup="editGroup"
+                                          @detachGroup="detachPlacementGroup"
+                                          @deleteGroup="deletePlacementGroup"
+                                          @editGroupMember="editGroupMember"
+                                          @removeGroupMember="removeGroupMember" />
+                    </div>
+
+                </Panel>
+            </div>
+        </div>
+
+    </Panel>
+
+    <PlacementConfigurationModal v-model="isPlacementConfigModalVisible"
+                                 :placementConfigurationSettings="placementConfigurationSettings"
+                                 :placementConfigurationSettingOptions="box.placementConfigurationSettingOptions ?? {}"
+                                 :placementMode="box.placementMode"
+                                 @save="savePlacementCofigSettings" />
+
+    <AddGroupModal v-model="isAddGroupModalVisible"
+                   ref="addGroupModalElement"
+                   :groupAttributes="box.attributesForGroupAdd ?? {}"
+                   :errorMessage="addGroupModalErrorText"
+                   :isPersonPermittedToEditGroupType="box.isPersonPermittedToEditGroupType"
+                   @save="addGroup"
+                   @dismissMessage="addGroupModalErrorText = ''" />
+</template>
+
+<style scoped>
+:deep(.panel-default) {
+    height: 100%;
+}
+
+:deep(.panel-sub-header) {
+    padding: 0;
+    background-color: var(--color-interface-softer);
+    min-height: unset;
+}
+
+:deep(.panel-default>.panel-heading) {
+    background-color: var(--color-interface-softest);
+    border-color: var(--color-interface-softer);
+    color: var(--color-interface-stronger);
+}
+
+/* Work-around to allow the height to descend (through the fullscreen div) all the way down to panel-body */
+:deep(.helper-height > div:first-child) {
+    height: 100%;
+}
+
+.slide-enter-active,
+.slide-leave-active {
+    transition: all 0.5s ease;
+}
+
+.slide-enter-from,
+.slide-leave-to {
+    max-height: 0;
+    opacity: 0;
+    overflow: hidden;
+    padding: 0 1rem !important;
+}
+
+.slide-enter-to,
+.slide-leave-from {
+    max-height: var(--slide-height, 200px);
+    opacity: 1;
+    padding: 1rem !important;
+}
+
+.dropdown-menu li.selected {
+    background-color: var(--color-interface-soft);
+}
+
+.dropdown-menu li.selected > a {
+    font-weight: var(--font-weight-semibold);
+}
+
+.group-member-filter-toggle {
+    cursor: pointer;
+    user-select: none;
+    color: var(--color-interface-medium);
+}
+
+.no-people-label {
+    color: var(--color-interface-medium);
+}
+
+:deep(.placements-dropdown) {
+    font-size: 14px !important;
+    height: 34px !important;
+    min-width: 100px !important;
+}
+
+.gu-mirror.multi-drag-preview {
+    border: 1px solid var(--color-primary) !important;
+    background-color: var(--interface-softest);
+    color: var(--color-primary) !important;
+    border-radius: 4px;
+    opacity: 0.7;
+    transform: rotate(-15deg);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 2;
+}
+
+.gu-transit.multi-hover-preview {
+    border: 1px solid var(--color-primary) !important;
+    background-color: var(--interface-softest);
+    color: var(--color-primary) !important;
+    border-radius: 4px;
+    opacity: 0.7;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    pointer-events: none;
+    z-index: 2;
+    min-height: 50px;
+}
+
+.multi-card-preview i {
+    font-size: 1.2rem;
+}
+
+.preview-stack-clone {
+    border: 1px solid var(--color-primary) !important;
+    position: absolute !important;
+    top: -6px !important;
+    left: -6px !important;
+    z-index: 0 !important;
+    opacity: 0.6 !important;
+}
+
+:deep(.panel-body) {
+    padding: 0;
+}
+
+.people-to-place-panel-body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    height: 100%;
+    background-color: var(--color-interface-softer);
+}
+
+.people-to-place-card-container {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+    padding-top: 0.5rem;
+    width: 100%;
+    padding: 0.5rem;
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.group-container {
+    background-color: var(--color-interface-softer);
+    overflow: hidden;
+    overflow-y: auto;
+}
+
+.source-person-label {
+    background-color: var(--color-interface-soft);
+    color: var(--color-interface-stronger);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.no-groups {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.hovered-card {
+    cursor: pointer;
+}
+
+.placement-drawer {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 0.25rem;
+    padding: 6px 12px;
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.dropdown-header {
+    padding: 5px 16px;
+    clear: both;
+    font-weight: var(--font-weight-semibold);
+    line-height: 1.5;
+    color: var(--color-interface-medium);
+    white-space: nowrap;
+}
+
+:deep(.highlight) {
+    background-color: var(--color-interface-soft) !important;
+}
+
+:deep(.is-drag-over) {
+    display: none;
+}
+</style>
+
+<script setup lang="ts">
+    import { useConfigurationValues, usePersonPreferences, useInvokeBlockAction, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { SourceAndDestinationEntityAttributesBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/sourceAndDestinationEntityAttributesBag";
+    import { RegistrationRegistrantUpdatedMessageBag } from "@Obsidian/ViewModels/Event/RegistrationEntry/registrationRegistrantUpdatedMessageBag";
+    import { PlacementConfigurationSettingsBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementConfigurationSettingsBag";
+    import { SourceAndDestinationEntityKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/sourceAndDestinationEntityKeysBag";
+    import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
+    import { RealTimeConnectionKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/realTimeConnectionKeysBag";
+    import { GroupMemberUpdatedMessageBag } from "@Obsidian/ViewModels/Group/GroupMember/groupMemberUpdatedMessageBag";
+    import { AttributeFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeFiltersBag";
+    import { AddGroupMembersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupMembersBag";
+    import { PlacementPeopleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementPeopleBag";
+    import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { DetachGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/detachGroupBag";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
+    import { PreferenceKey, SortTypes, NavigationUrlKey } from "./GroupPlacement/types.partial";
+    import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
+    import { onMounted, ref, nextTick, computed, watch, onBeforeUnmount, toRaw } from "vue";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { isNullOrWhiteSpace, safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { getTopic, ITopic, ServerFunctions } from "@Obsidian/Utility/realTime";
+    import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { Guid } from "@Obsidian/Types";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import PersonCard from "./GroupPlacement/personCard.partial.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AddGroupModal from "./GroupPlacement/addGroupModal.partial.obs";
+    import DestinationGroup from "./GroupPlacement/destinationGroup.partial.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import PlacementConfigurationModal from "./GroupPlacement/placementConfigurationModal.partial.obs";
+
+
+    type GroupPlacementTopic = ITopic<ServerFunctions<unknown>> & {
+        groupGuids: Guid[],
+        registrationInstanceGuid: Guid,
+        registrationTemplateGuid: Guid,
+    };
+
+    const box = useConfigurationValues<GroupPlacementInitializationBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const preferences = usePersonPreferences().blockPreferences;
+    const reloadBlock = useReloadBlock();
+    const populateAttributesDebounce = debounce(() => populateAttributes(), undefined, false);
+    var realTimeTopic: GroupPlacementTopic;
+
+    const personDragSourceOptions = getPersonDragSourceOptions();
+    const groupMemberDragSourceOptions = getGroupMemberDragSourceOptions();
+
+    const placementGroups = ref<PlacementGroupBag[]>([]);
+    const peopleToPlace = ref<PersonBag[]>([]);
+    const areGroupsLoading = ref<boolean>(true);
+    const arePeopleLoading = ref<boolean>(true);
+
+    // #region Realtime Values
+
+    // const realTimetopic = ref<GroupPlacementTopic | null>();
+    const pendingSourceRegistrants = ref<RegistrationRegistrantUpdatedMessageBag[]>([]);
+    const pendingSourceGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
+    const pendingDestinationGroupMembers = ref<GroupMemberUpdatedMessageBag[]>([]);
+
+    // #endregion
+
+    // #region Error Values
+
+    const initializationError = ref<string>(box.errorMessage ?? "");
+    const dataRetrievalError = ref<string>();
+    const groupErrors = ref<Record<string, string>>({});
+    const groupRoleErrors = ref<Record<string, Record<string, string>>>({});
+    const addGroupModalErrorText = ref<string>();
+
+    // #endregion
+
+    // #region UI Customization Values
+
+    const arePersonCardsExpanded = ref(false);
+    const areAllPeopleSelected = ref(false);
+    const selectedPersonIdKeys = ref<Set<string>>(new Set());
+    const selectionInfoElement = ref<HTMLElement | undefined>();
+    const isGroupMemberFilterDisplayed = ref<boolean>(false);
+    const isPersonSearchVisible = ref<boolean>(false);
+    const areGroupsExpanded = ref(false);
+    const isNoPeopleLabelHidden = ref(false);
+    const isGenderHighlighting = ref<boolean>(asBooleanOrNull(preferences.getValue(getIsGenderHighlightingKey())) ?? false);
+    const currentSortOrder = ref<SortTypes>(toNumberOrNull(preferences.getValue(getSortOrderKey())) as SortTypes ?? SortTypes.SortByLastName);
+    const isCtrlKeyHeld = ref<boolean>(false);
+    const isPersonCardHovered = ref<boolean>(false);
+    const isPersonFilterDrawerOpen = ref<boolean>(false);
+    const isGroupFilterDrawerOpen = ref<boolean>(false);
+
+    // #endregion
+
+    // #region Filter Values
+
+    const sourceAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
+    const registrantFeeItemsForFilter = ref<ListItemBag[]>([]);
+    const destinationGroupAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
+    const destinationGroupMemberAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
+    const sourceAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getPersonAttributeFilterKey())) ?? {});
+    const registrantFeeItemValuesForFilter = ref<string[]>(safeParseJson(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) ?? []);
+    const destinationAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getGroupAttributeFilterKey())) ?? {});
+    const destinationMemberAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getGroupMemberAttributeFilterKey())) ?? {});
+    const pendingSourceAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getPersonAttributeFilterKey())) ?? {});
+    const pendingRegistrantFeeItemValuesForFilter = ref<string[]>(safeParseJson(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) ?? []);
+    const pendingDestinationGroupAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getGroupAttributeFilterKey())) ?? {});
+    const pendingDestinationGroupMemberAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getGroupMemberAttributeFilterKey())) ?? {});
+    const sourcePerson = ref<PersonBag | null | undefined>(box.sourcePerson);
+    const personSearchText = ref<string>("");
+    const personSearchContainerElement = ref<HTMLElement>();
+
+    // #endregion
+
+    // #region Configuration Values
+
+    const addGroupModalElement = ref<InstanceType<typeof AddGroupModal>>();
+    const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(safeParseJson(preferences.getValue(getPlacementConfigurationSettingsKey())) ?? {} as PlacementConfigurationSettingsBag);
+    const isPlacementConfigModalVisible = ref(false);
+    const isAddGroupModalVisible = ref(false);
+    const fallbackRegistrationTemplatePlacement = ref(preferences.getValue(PreferenceKey.FallbackRegistrationTemplatePlacement));
+
+    // #endregion
+
+    const sortOptions: Array<[SortTypes, string]> = [
+        [SortTypes.SortByLastName, "Last Name, First Name (Default)"],
+        [SortTypes.SortByFirstName, "First Name Last Name"],
+        [SortTypes.SortByDateAddedAsc, "Date Added (Oldest First)"],
+        [SortTypes.SortByDateAddedDesc, "Date Added (Newest First)"]
+    ];
+
+    // #region Computed Values
+
+    const showPointer = computed(() => isCtrlKeyHeld.value && isPersonCardHovered.value);
+
+    const selectedPeopleCount = computed(() => selectedPersonIdKeys.value.size);
+
+    const isCardTransitionEnabled = computed(() => filteredAndSortedPeopleToPlace.value.length <= 50);
+
+    const groupMemberFilterIcon = computed((): string => {
+        return isGroupMemberFilterDisplayed.value ? "fa fa-chevron-up" : "fa fa-chevron-down";
+    });
+
+    /**
+     * Computed property used to filter and sort the values in the peopleToPlace ref
+     * based on the selected filters and the current sort order.
+     */
+    const filteredAndSortedPeopleToPlace = computed(() => {
+        const filteredPeople = peopleToPlace.value.filter(p => {
+            if (sourcePerson.value && p.personIdKey !== sourcePerson.value.personIdKey) {
+                return false;
+            }
+
+            const matchesSearchText = personSearchText.value
+                ? p.nickName?.toLowerCase().includes(personSearchText.value.toLowerCase())
+                || p.lastName?.toLowerCase().includes(personSearchText.value.toLowerCase())
+                : true;
+
+            if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+                const matchesAttributeAndFeeFilters = p.registrants?.some(r => {
+                    const hasMatchingAttributes = !sourceAttributesForFilter.value || !r.attributeValues
+                        || areAttributeFiltersMet(sourceAttributesForFilter.value, sourceAttributeValuesForFilter.value, r.attributeValues);
+
+                    const hasMatchingFees = !registrantFeeItemValuesForFilter.value.length
+                        || Object.keys(r.fees || {}).some(feeItemId =>
+                            registrantFeeItemValuesForFilter.value.includes(feeItemId)
+                        );
+
+                    return hasMatchingAttributes && hasMatchingFees;
+                });
+                return matchesSearchText && matchesAttributeAndFeeFilters;
+            }
+            else if (box.placementMode === PlacementMode.GroupMode) {
+                const hasMatchingAttributes = p.sourceGroupMembers?.some(s => !s?.attributeValues
+                    || areAttributeFiltersMet(sourceAttributesForFilter.value, sourceAttributeValuesForFilter.value, s.attributeValues));
+
+                return hasMatchingAttributes && matchesSearchText;
+            }
+            else {
+                return matchesSearchText;
+            }
+        });
+
+        return getSortedPeople(filteredPeople);
+    });
+
+    /**
+     * Computed property used to filter and sort the values in the placementGroups ref
+     * based on the selected filters and the current sort order.
+     */
+    const filteredAndSortedGroups = computed(() => {
+        const filteredPlacementGroups = placementGroups.value.filter(g => {
+            if (placementConfigurationSettings.value.areFullGroupsHidden && g.groupCapacity && g.groupMembers && g.groupMembers.length >= g.groupCapacity) {
+                return false;
+            }
+
+            if (!destinationGroupAttributesForFilter.value || !g.attributeValues) {
+                return true;
+            }
+            return areAttributeFiltersMet(destinationGroupAttributesForFilter.value, destinationAttributeValuesForFilter.value, g.attributeValues);
+        });
+
+        return filteredPlacementGroups.map(group => {
+            if (!group.groupMembers) {
+                group.groupMembers = [];
+            }
+
+            // Filter out invalid group members.
+            const validGroupMembers = group.groupMembers.filter(m => {
+                if (!m.person) {
+                    return false;
+                }
+
+                // If no filter is applied or no attribute values exist, include the member.
+                if (!destinationGroupMemberAttributesForFilter.value || !m.attributeValues) {
+                    return true;
+                }
+
+                // Otherwise, apply attribute-based filtering logic.
+                return areAttributeFiltersMet(destinationGroupMemberAttributesForFilter.value, destinationMemberAttributeValuesForFilter.value, m.attributeValues);
+            });
+
+            // Sort people associated with the filtered group members.
+            const sortedPeople = getSortedPeople(validGroupMembers.map(m => m.person!));
+
+            // Map each personIdKey to their associated group members.
+            const memberMap = new Map<string, GroupMemberBag[]>();
+
+            for (const m of validGroupMembers) {
+                const key = m.person?.personIdKey;
+                if (!key || !m.groupMemberIdKey) continue;
+
+                // Initialize the list if this is the first time seeing the personIdKey.
+                if (!memberMap.has(key)) {
+                    memberMap.set(key, []);
+                }
+
+                // Add the group member to the corresponding person's list.
+                memberMap.get(key)!.push(m);
+            }
+
+            // Keep track of already included group member IDs to avoid duplicates.
+            const seenGroupMemberIds = new Set<string>();
+
+            // Flatten the list of group members by following the sorted people order
+            // and ensure each group member is only included once.
+            const sortedGroupMembers = sortedPeople.flatMap(p => {
+                const members = memberMap.get(p.personIdKey ?? "") ?? [];
+                return members.filter(m => {
+                    if (!m.groupMemberIdKey) return false;
+                    if (seenGroupMemberIds.has(m.groupMemberIdKey)) return false;
+                    seenGroupMemberIds.add(m.groupMemberIdKey);
+                    return true;
+                });
+            });
+
+            // Return the updated group object with its sorted and filtered group members.
+            return {
+                ...group,
+                groupMembers: sortedGroupMembers
+            };
+        });
+    });
+
+    /**
+     * Computed property used to get a list of placement group guids along with the source group guid if provided.
+     */
+    const computedGroupGuids = computed(() => {
+        const groupGuids = placementGroups.value.map(g => g.groupGuid);
+
+        if (box.groupPlacementKeys?.sourceGroupGuid) {
+            groupGuids.push(box.groupPlacementKeys.sourceGroupGuid);
+        }
+
+        return groupGuids;
+    });
+
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Checks if all attribute filters match the entity's values.
+     *
+     * @param attributes Attribute definitions.
+     * @param attributeValuesFromFilter Filter values.
+     * @param attributeValuesFromEntity Entity values to check.
+     * @returns True if all filters are matched.
+     */
+    function areAttributeFiltersMet(attributes: Record<string, PublicAttributeBag>, attributeValuesFromFilter: Record<string, string>, attributeValuesFromEntity: Record<string, string>): boolean {
+        return Object.keys(attributeValuesFromFilter).every(attributeKey => {
+            // If we can't find the key in attributes, then it is not being displayed and the filter should not be triggered.
+            if (!attributes[attributeKey]) {
+                return true;
+            }
+
+            const fieldType = getFieldType(attributes[attributeKey].fieldTypeGuid);
+
+            if (!fieldType) {
+                return false;
+            }
+
+            if (!attributeValuesFromFilter[attributeKey]) {
+                return true;
+            }
+
+            const comparisonValue: ComparisonValue = {
+                value: attributeValuesFromFilter[attributeKey],
+                comparisonType: ComparisonType.EqualTo
+            };
+
+            var result = fieldType.doesValueMatchFilter(attributeValuesFromEntity[attributeKey], comparisonValue, attributes[attributeKey].configurationValues ?? {});
+            return result;
+        });
+    }
+
+    /**
+     * Returns a sorted copy of the people list based on the current sort order.
+     *
+     * @param people The list of people to sort.
+     * @returns The sorted list of people.
+     */
+    function getSortedPeople(people: PersonBag[]): PersonBag[] {
+        return [...people].sort((a, b) => {
+            switch (currentSortOrder.value) {
+                case SortTypes.SortByFirstName: {
+                    const firstNameComparison = (a.firstName ?? "").localeCompare(b.firstName ?? "");
+                    if (firstNameComparison !== 0) {
+                        return firstNameComparison;
+                    }
+                    return (a.lastName ?? "").localeCompare(b.lastName ?? "");
+                }
+
+                case SortTypes.SortByLastName: {
+                    const lastNameComparison = (a.lastName ?? "").localeCompare(b.lastName ?? "");
+                    if (lastNameComparison !== 0) {
+                        return lastNameComparison;
+                    }
+                    return (a.firstName ?? "").localeCompare(b.firstName ?? "");
+                }
+
+                case SortTypes.SortByDateAddedAsc: {
+                    let entityDateTimeA;
+                    let entityDateTimeB;
+                    if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+                        entityDateTimeA = a.registrants?.[0]?.createdDateTime;
+                        entityDateTimeB = b.registrants?.[0]?.createdDateTime;
+                    }
+                    else if (box.placementMode === PlacementMode.GroupMode) {
+                        entityDateTimeA = a.sourceGroupMembers?.[0]?.createdDateTime;
+                        entityDateTimeB = b.sourceGroupMembers?.[0]?.createdDateTime;
+                    }
+                    else {
+                        return 0;
+                    }
+
+                    const dateA = RockDateTime.parseISO(entityDateTimeA ?? "");
+                    const dateB = RockDateTime.parseISO(entityDateTimeB ?? "");
+
+                    if (dateA && dateB) {
+                        return dateA.toMilliseconds() - dateB.toMilliseconds();
+                    }
+                    else if (dateA && !dateB) {
+                        return -1;
+                    }
+                    else if (!dateA && dateB) {
+                        return 1;
+                    }
+
+                    return 0;
+                }
+
+                case SortTypes.SortByDateAddedDesc: {
+                    let entityDateTimeA;
+                    let entityDateTimeB;
+                    if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+                        entityDateTimeA = a.registrants?.[0]?.createdDateTime;
+                        entityDateTimeB = b.registrants?.[0]?.createdDateTime;
+                    }
+                    else if (box.placementMode === PlacementMode.GroupMode) {
+                        entityDateTimeA = a.sourceGroupMembers?.[0]?.createdDateTime;
+                        entityDateTimeB = b.sourceGroupMembers?.[0]?.createdDateTime;
+                    }
+                    else {
+                        return 0;
+                    }
+
+                    const dateA = RockDateTime.parseISO(entityDateTimeA ?? "");
+                    const dateB = RockDateTime.parseISO(entityDateTimeB ?? "");
+
+                    if (dateA && dateB) {
+                        return dateB.toMilliseconds() - dateA.toMilliseconds();
+                    }
+                    else if (dateA && !dateB) {
+                        return -1;
+                    }
+                    else if (!dateA && dateB) {
+                        return 1;
+                    }
+
+                    return 0;
+                }
+
+                default:
+                    return 0;
+            }
+        });
+    }
+
+    /**
+     * Sets a validation error message for a specific group.
+     *
+     * @param groupIdKey The group ID key.
+     * @param message The error message to set.
+     */
+    function setGroupError(groupIdKey: string, message: string): void {
+        groupErrors.value[groupIdKey] = message;
+    }
+
+    /**
+     * Sets a validation error message for a specific group role.
+     *
+     * @param groupIdKey The group ID key.
+     * @param roleIdKey The role ID key.
+     * @param message The error message to set.
+     */
+    function setGroupRoleError(groupIdKey: string, roleIdKey: string, message: string): void {
+        if (!groupRoleErrors.value[groupIdKey]) {
+            groupRoleErrors.value[groupIdKey] = {};
+        }
+
+        groupRoleErrors.value[groupIdKey][roleIdKey] = message;
+    }
+
+    /**
+    * Clears the error message for a specific group.
+    *
+    * @param groupIdKey The group ID key.
+    */
+    function clearGroupError(groupIdKey: string): void {
+        delete groupErrors.value[groupIdKey];
+    }
+
+    /**
+    * Clears the error message for a specific group role.
+    *
+    * @param groupIdKey The group ID key.
+    * @param roleIdKey The role ID key.
+    */
+    function clearGroupRoleError(groupIdKey: string, roleIdKey: string): void {
+        const roleMap = groupRoleErrors.value[groupIdKey];
+
+        if (roleMap) {
+            delete roleMap[roleIdKey];
+
+            // Clean up empty role maps
+            if (Object.keys(roleMap).length === 0) {
+                delete groupRoleErrors.value[groupIdKey];
+            }
+        }
+    }
+
+    /**
+     * Gets the error message for a specific group.
+     *
+     * @param groupIdKey The group ID key.
+     * @returns The error message, or null if none exists.
+     */
+    function getGroupError(groupIdKey: string): string | null {
+        return groupErrors.value[groupIdKey] ?? null;
+    }
+
+    /**
+     * Gets the error message for a specific group role.
+     *
+     * @param groupIdKey The group ID key.
+     * @param roleIdKey The role ID key.
+     * @returns The error message, or null if none exists.
+     */
+    function getGroupRoleError(groupIdKey: string, roleIdKey: string): string | null {
+        return groupRoleErrors.value[groupIdKey]?.[roleIdKey] ?? null;
+    }
+
+    /**
+     * Returns drag-and-drop options for person cards, including custom previews and placement logic.
+     *
+     * @returns Drag source configuration for group placement.
+     */
+    function getPersonDragSourceOptions(): IDragSourceOptions {
+        return {
+            id: newGuid(),
+            copyElement: true,
+            dragBegin() {
+                if (selectedPersonIdKeys.value.size > 1) {
+                    nextTick(() => {
+                        const mirror = document.querySelector(".gu-mirror") as HTMLElement;
+                        if (!mirror) return;
+
+                        mirror.innerHTML = "";
+                        // Clone the current content before we touch it
+                        const clone = mirror.cloneNode(true) as HTMLElement;
+
+                        // Clean the original mirror and restyle it
+                        mirror.classList.add("multi-drag-preview");
+                        mirror.style.position = "relative";
+
+                        mirror.innerHTML = `
+                            <div class="multi-card-preview">
+                                <i class="fa fa-user-friends"></i>
+                            </div>
+                        `;
+
+                        clone.classList.add("preview-stack-clone");
+
+                        const inner = document.createElement("div");
+                        inner.style.position = "relative";
+                        inner.style.zIndex = "1";
+
+                        while (mirror.firstChild) {
+                            inner.appendChild(mirror.firstChild);
+                        }
+
+                        mirror.appendChild(clone);
+                        mirror.appendChild(inner);
+                    });
+                }
+            },
+            dragOver(operation) {
+                if (isGenderHighlighting.value) {
+                    nextTick(() => {
+                        const transit = document.querySelector(".gu-transit") as HTMLElement;
+                        if (!transit) return;
+
+                        transit.style.display = "none";
+                    });
+                }
+                else if (selectedPersonIdKeys.value.size > 1) {
+                    nextTick(() => {
+                        const transit = document.querySelector(".gu-transit") as HTMLElement;
+                        if (!transit) return;
+
+                        transit.innerHTML = "";
+
+                        transit.classList.add("multi-hover-preview");
+
+                        transit.innerHTML = `
+                            <div class="multi-card-preview">
+                                <i class="fa fa-user-friends"></i>
+                            </div>
+                        `;
+                    });
+                }
+                if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
+                    operation.targetContainer.closest(".group-role-wrapper")?.classList.add("highlight");
+
+                    const emptyDropZone = operation.targetContainer.querySelector(".empty-drop-zone");
+
+                    if (emptyDropZone && !isGenderHighlighting.value) {
+                        emptyDropZone.classList.add("is-drag-over");
+                    }
+                }
+
+            },
+            dragOut(operation) {
+                if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
+                    operation.targetContainer.closest(".group-role-wrapper")?.classList.remove("highlight");
+
+                    const emptyDropZone = operation.targetContainer.querySelector(".empty-drop-zone");
+
+                    if (emptyDropZone) {
+                        emptyDropZone.classList.remove("is-drag-over");
+                    }
+                }
+
+            },
+            async dragDrop(operation) {
+                operation.element.remove();
+
+                var rawGroupSectionId = (operation.targetContainer as HTMLElement)?.dataset.groupSectionId;
+                const [groupIdKey, groupRoleIdKey] = (rawGroupSectionId ?? "").split("|");
+                if (!groupIdKey) {
+                    return;
+                }
+                const placementGroup = placementGroups.value.find(g => g.groupIdKey === groupIdKey);
+                if (!placementGroup) {
+                    return;
+                }
+                var pendingGroupMembers: GroupMemberBag[] = [];
+
+                if (selectedPersonIdKeys.value.size > 1) {
+                    const selectedPeopleToPlace = peopleToPlace.value.filter(p => p.personIdKey && selectedPersonIdKeys.value.has(p.personIdKey));
+
+                    if (selectedPeopleToPlace && groupRoleIdKey && operation.targetIndex !== undefined) {
+                        selectedPeopleToPlace.forEach((person) => {
+                            pendingGroupMembers.push({
+                                groupMemberId: 0,
+                                groupRoleIdKey: groupRoleIdKey,
+                                person: person,
+                                groupMemberIdKey: null
+                            });
+                        });
+                    }
+                }
+                else {
+                    const personIdKey = (operation.element as HTMLElement).dataset.personIdKey;
+                    const person = peopleToPlace.value.find(p => p.personIdKey === personIdKey);
+
+                    if (person && groupRoleIdKey && operation.targetIndex !== undefined) {
+                        pendingGroupMembers.push({
+                            groupMemberId: 0,
+                            groupRoleIdKey: groupRoleIdKey,
+                            person: person,
+                            groupMemberIdKey: null
+                        });
+                    }
+                }
+
+                if (!placementGroup.groupMembers) {
+                    placementGroup.groupMembers = [];
+                }
+
+                await addGroupMembersToGroup(pendingGroupMembers, placementGroup);
+
+                selectedPersonIdKeys.value.clear();
+            }
+        };
+    }
+
+    /**
+     * Returns drag-and-drop options for group member cards, including visual highlights and removal logic.
+     *
+     * @returns Drag source configuration for removing group members.
+     */
+    function getGroupMemberDragSourceOptions(): IDragSourceOptions {
+        return {
+            id: newGuid(),
+            copyElement: true,
+            dragOver(operation) {
+                if (peopleToPlace.value.length === 0) {
+                    isNoPeopleLabelHidden.value = true;
+                }
+                if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
+                    operation.targetContainer.closest(".people-to-place-card-container")?.classList.add("highlight");
+                }
+            },
+            dragOut(operation) {
+                if (operation.targetContainer && operation.targetContainer instanceof HTMLElement) {
+                    operation.targetContainer.closest(".people-to-place-card-container")?.classList.remove("highlight");
+                }
+            },
+            dragCancel() {
+                isNoPeopleLabelHidden.value = false;
+            },
+            async dragDrop(operation) {
+                operation.element.remove();
+                isNoPeopleLabelHidden.value = false;
+
+                const groupIdKey = (operation.element as HTMLElement).dataset.groupIdKey;
+                const groupMemberIdKey = (operation.element as HTMLElement).dataset.groupMemberIdKey;
+
+                removeGroupMember(groupIdKey, groupMemberIdKey);
+            }
+        };
+    }
+
+    /**
+     * Removes a group member from the specified group.
+     *
+     * @param groupIdKey The group ID key.
+     * @param groupMemberIdKey The group member ID key.
+     */
+    async function removeGroupMember(groupIdKey: string | undefined, groupMemberIdKey: string | undefined): Promise<void> {
+        const placementGroup = placementGroups.value.find(g => g.groupIdKey === groupIdKey);
+        if (!placementGroup?.groupMembers || !groupMemberIdKey || !placementGroup.groupIdKey) {
+            return;
+        }
+
+        const groupMember = placementGroup.groupMembers?.find(gm => gm.groupMemberIdKey === groupMemberIdKey);
+
+        if (groupMember && groupMember.person) {
+            if (!peopleToPlace.value) {
+                peopleToPlace.value = [];
+            }
+
+            await removeGroupMemberFromGroup(groupMemberIdKey, placementGroup.groupIdKey, groupMember.groupRoleIdKey ?? "");
+        }
+    }
+
+    /**
+     * Navigates to the group detail page for the given group key.
+     *
+     * @param key The group ID key.
+     */
+    function editGroup(key: string): void {
+        if (box.navigationUrls?.[NavigationUrlKey.GroupDetailPage]) {
+            window.location.href = box.navigationUrls[NavigationUrlKey.GroupDetailPage].replace("((Key))", key.toString());
+        }
+    }
+
+    /**
+     * Navigates to the group member detail page for the given group key.
+     *
+     * @param key The group member ID key.
+     */
+    function editGroupMember(key: string): void {
+        if (box.navigationUrls?.[NavigationUrlKey.GroupMemberDetailPage]) {
+            window.location.href = box.navigationUrls[NavigationUrlKey.GroupMemberDetailPage].replace("((Key))", key.toString());
+        }
+    }
+
+    /**
+     * Determines if a person should be shown in the people-to-place list.
+     *
+     * @param groupMember The group member to evaluate.
+     * @returns True if the person should be displayed.
+     */
+    const shouldPersonBeDisplayed = (groupMember: GroupMemberBag): boolean => {
+        let shouldBeDisplayed: boolean = true;
+
+        if (box.placementMode === PlacementMode.TemplateMode) {
+            if (!placementConfigurationSettings.value.includedRegistrationInstanceIds || placementConfigurationSettings.value.includedRegistrationInstanceIds?.length === 0) {
+                return true;
+            }
+
+            // Default to true if person or registrants were not found for some reason.
+            shouldBeDisplayed = groupMember!.person?.registrants?.some(r => {
+                return placementConfigurationSettings.value.includedRegistrationInstanceIds!.includes(r.registrationInstanceIdKey ?? "");
+            }) ?? true;
+        }
+
+        if (!box.isPlacementAllowingMultiple) {
+            // If there is another group member present with the same person idkey then the person should not be displayed in people to place.
+            shouldBeDisplayed = !placementGroups.value.some(group =>
+                group.groupMembers?.some(gm =>
+                    gm.groupMemberIdKey !== groupMember.groupMemberIdKey &&
+                    gm.person?.personIdKey === groupMember.person?.personIdKey
+                )
+            );
+        }
+        else {
+            // If the group placement is allowing multiple then all people are already displayed.
+            // So there is no need to display the newly removed group member.
+            shouldBeDisplayed = false;
+        }
+
+        if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+            // If the group member being removed is not a registrant than they should not be displayed.
+            if (groupMember.person?.registrants?.length === 0) {
+                shouldBeDisplayed = false;
+            }
+        }
+        else if (box.placementMode === PlacementMode.GroupMode) {
+            // If the group member being removed is not part of the source group than they should not be displayed.
+            if (groupMember.person?.sourceGroupMembers?.length === 0) {
+                shouldBeDisplayed = false;
+            }
+        }
+
+        return shouldBeDisplayed;
+    };
+
+    /**
+     * Clears selected person IDs if the click occurred outside a person card.
+     *
+     * @param event The mouse click event.
+     */
+    function handleOutsideClick(event: MouseEvent): void {
+        const clickedEl = event.target as HTMLElement;
+
+        // Only clear if clicked outside a .person-card
+        if (!clickedEl.closest(".person-card") && !clickedEl.closest(".prevent-clear")) {
+            selectedPersonIdKeys.value.clear();
+        }
+    }
+
+    /**
+     * Sets whether a person card is currently hovered.
+     *
+     * @param value True if hovered; otherwise, false.
+     */
+    function togglePersonCardHovered(value: boolean): void {
+        isPersonCardHovered.value = value;
+    }
+
+    /**
+     * Toggles the selection state of a person by ID key.
+     *
+     * @param personIdKey The person's ID key.
+     */
+    function toggleSelection(personIdKey: string): void {
+        if (selectedPersonIdKeys.value.has(personIdKey)) {
+            selectedPersonIdKeys.value.delete(personIdKey);
+        }
+        else {
+            selectedPersonIdKeys.value.add(personIdKey);
+        }
+    }
+
+    /**
+     * Checks if a person is currently selected.
+     *
+     * @param personIdKey The person's ID key.
+     * @returns True if selected; otherwise, false.
+     */
+    function isSelected(personIdKey: string): boolean {
+        return selectedPersonIdKeys.value.has(personIdKey);
+    }
+
+
+    /**
+     * Toggles selection of all people in the filtered list.
+     */
+    function toggleSelectAllCheckbox(): void {
+        if (areAllPeopleSelected.value) {
+            selectedPersonIdKeys.value.clear();
+        }
+        else {
+            for (const person of filteredAndSortedPeopleToPlace.value) {
+                if (person.personIdKey) {
+                    selectedPersonIdKeys.value.add(person.personIdKey);
+                }
+            }
+        }
+    }
+
+    /**
+     * Navigates to the back page URL
+     */
+    function onBack(): void {
+        if (box.backPageUrl) {
+            window.location.href = box.backPageUrl;
+        }
+    }
+
+    /**
+     * Updates the current sort order.
+     *
+     * @param sortType The selected sort type.
+     */
+    function changeSort(sortType: SortTypes): void {
+        currentSortOrder.value = sortType;
+    }
+
+    /**
+     * Toggles gender-based highlighting.
+     */
+    function toggleHighlightGender(): void {
+        isGenderHighlighting.value = !isGenderHighlighting.value;
+    }
+
+    /**
+     * Opens the placement configuration settings modal.
+     */
+    function openPlacementConfigSettings(): void {
+        isPlacementConfigModalVisible.value = true;
+    }
+
+    /**
+     * Toggles the person search input visibility and focuses the input if shown.
+     */
+    function toggleIsPersonSearchVisible(): void {
+        isPersonSearchVisible.value = !isPersonSearchVisible.value;
+        if (isPersonSearchVisible.value) {
+            nextTick(() => {
+                const searchInput = personSearchContainerElement.value?.querySelector("input") as HTMLInputElement | null;
+                searchInput?.focus();
+            });
+        }
+        else {
+            personSearchText.value = "";
+        }
+    }
+
+    /**
+     * Opens the modal to add a new group.
+     */
+    function openAddGroupModal(): void {
+        isAddGroupModalVisible.value = true;
+    }
+
+    /**
+     * Toggles the expansion state of all person cards.
+     */
+    function toggleCardExpansion(): void {
+        arePersonCardsExpanded.value = !arePersonCardsExpanded.value;
+    }
+
+    /**
+     * Toggles the expansion state of all groups.
+     */
+    function toggleGroupExpansion(): void {
+        areGroupsExpanded.value = !areGroupsExpanded.value;
+    }
+
+    /**
+     * Applies pending filters to the people list.
+     */
+    function applyPeopleFilter(): void {
+        sourceAttributeValuesForFilter.value = pendingSourceAttributeValuesForFilter.value;
+        registrantFeeItemValuesForFilter.value = pendingRegistrantFeeItemValuesForFilter.value;
+    }
+
+    /**
+     * Clears all people-related filters.
+     */
+    function clearPeopleFilters(): void {
+        pendingSourceAttributeValuesForFilter.value = {};
+        sourceAttributeValuesForFilter.value = {};
+        pendingRegistrantFeeItemValuesForFilter.value = [];
+        registrantFeeItemValuesForFilter.value = [];
+    }
+
+    /**
+     * Applies pending filters to the group list.
+     */
+    function applyGroupFilter(): void {
+        destinationAttributeValuesForFilter.value = pendingDestinationGroupAttributeValuesForFilter.value;
+        destinationMemberAttributeValuesForFilter.value = pendingDestinationGroupMemberAttributeValuesForFilter.value;
+    }
+
+    /**
+     * Clears all group-related filters.
+     */
+    function clearGroupFilters(): void {
+        pendingDestinationGroupAttributeValuesForFilter.value = {};
+        pendingDestinationGroupMemberAttributeValuesForFilter.value = {};
+        destinationAttributeValuesForFilter.value = {};
+        destinationMemberAttributeValuesForFilter.value = {};
+    }
+
+    /**
+     * Toggles the visibility of the group member filter section.
+     */
+    function toggleIsGroupMemberFilterDisplayed(): void {
+        isGroupMemberFilterDisplayed.value = !isGroupMemberFilterDisplayed.value;
+    }
+
+    /**
+     * Removes the selected source person.
+     */
+    function removeSourcePerson(): void {
+        sourcePerson.value = null;
+    }
+
+    /**
+     * Gets the preference key for sort order based on placement context.
+     *
+     * @returns The sort order preference key.
+     */
+    function getSortOrderKey(): string {
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.SortOrderRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.SortOrderRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
+            return PreferenceKey.SortOrderSourceGroupIdKey.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.EntitySetMode && box.groupPlacementKeys?.entitySetIdKey) {
+            return PreferenceKey.SortOrderEntitySetIdKey.replace("{0}", box.groupPlacementKeys.entitySetIdKey.toString());
+        }
+        return "";
+    }
+
+    /**
+     * Gets the preference key for gender highlighting based on placement context.
+     *
+     * @returns The gender highlighting preference key.
+     */
+    function getIsGenderHighlightingKey(): string {
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.IsGenderHighlightingRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.IsGenderHighlightingRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
+            return PreferenceKey.IsGenderHighlightingSourceGroupIdKey.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.EntitySetMode && box.groupPlacementKeys?.entitySetIdKey) {
+            return PreferenceKey.IsGenderHighlightingEntitySetIdKey.replace("{0}", box.groupPlacementKeys.entitySetIdKey.toString());
+        }
+        return "";
+    }
+
+    /**
+     * Gets the preference key for person attribute filters.
+     *
+     * @returns The person attribute filter preference key.
+     */
+    function getPersonAttributeFilterKey(): string {
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.PersonAttributeFilterRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.PersonAttributeFilterRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
+            return PreferenceKey.PersonAttributeFilterSourceGroupIdKey.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+        }
+        return "";
+    }
+
+    /**
+     * Gets the preference key for placement configuration settings.
+     *
+     * @returns The placement configuration preference key.
+     */
+    function getPlacementConfigurationSettingsKey(): string {
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.GroupMode && box.groupPlacementKeys?.sourceGroupIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONSourceGroupIdKey.replace("{0}", box.groupPlacementKeys.sourceGroupIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.EntitySetMode && box.groupPlacementKeys?.entitySetIdKey) {
+            return PreferenceKey.PlacementConfigurationJSONEntitySetIdKey.replace("{0}", box.groupPlacementKeys.entitySetIdKey.toString());
+        }
+        return "";
+    }
+
+    /**
+     * Gets the preference key for registrant fee item filter values.
+     *
+     * @returns The registrant fee item filter preference key.
+     */
+    function getRegistrantFeeItemValuesFilterKey(): string {
+        if (box.placementMode === PlacementMode.InstanceMode && box.groupPlacementKeys?.registrationInstanceIdKey) {
+            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationInstanceIdKey.replace("{0}", box.groupPlacementKeys.registrationInstanceIdKey.toString());
+        }
+        else if (box.placementMode === PlacementMode.TemplateMode && box.groupPlacementKeys?.registrationTemplateIdKey) {
+            return PreferenceKey.RegistrantFeeItemValuesForFiltersJSONRegistrationTemplateIdKey.replace("{0}", box.groupPlacementKeys.registrationTemplateIdKey.toString());
+        }
+        return "";
+    }
+
+    /**
+     * Gets the preference key for group attribute filters.
+     *
+     * @returns The group attribute filter preference key.
+     */
+    function getGroupAttributeFilterKey(): string {
+        if (box.groupPlacementKeys?.destinationGroupTypeIdKey) {
+            return PreferenceKey.GroupAttributeFilterGroupTypeIdKey.replace("{0}", box.groupPlacementKeys.destinationGroupTypeIdKey.toString());
+        }
+        return "";
+    }
+
+    /**
+     * Gets the preference key for group member attribute filters.
+     *
+     * @returns The group member attribute filter preference key.
+     */
+    function getGroupMemberAttributeFilterKey(): string {
+        if (box.groupPlacementKeys?.destinationGroupTypeIdKey) {
+            return PreferenceKey.GroupMemberAttributeFilterGroupTypeIdKey.replace("{0}", box.groupPlacementKeys.destinationGroupTypeIdKey.toString());
+        }
+        return "";
+    }
+
+    /**
+     * Gets the placement group and person associated with the given group member update.
+     *
+     * @param groupMember The updated group member message.
+     * @returns The placement group and the matching person, if found.
+     */
+    function getPlacementContext(groupMember: GroupMemberUpdatedMessageBag): {
+        placementGroup: PlacementGroupBag | undefined;
+        existingPerson: PersonBag | undefined;
+    } {
+        const placementGroup = placementGroups.value.find(
+            g => g.groupIdKey === groupMember.groupIdKey
+        );
+
+        if (!placementGroup) {
+            return { placementGroup: undefined, existingPerson: undefined };
+        }
+
+        if (!placementGroup.groupMembers) {
+            placementGroup.groupMembers = [];
+        }
+
+        let existingPerson: PersonBag | undefined;
+        const personIdKey = groupMember?.person?.personIdKey;
+
+        if (!isNullOrWhiteSpace(personIdKey)) {
+            existingPerson = getExistingPerson(personIdKey!);
+        }
+
+        return { placementGroup, existingPerson };
+    }
+
+    /**
+     * Finds an existing person by ID key from people to place or from other placement groups.
+     *
+     * @param personIdKey The person's ID key.
+     * @returns The matching person, if found.
+     */
+    function getExistingPerson(personIdKey: string): PersonBag | undefined {
+        // Try to find the person from peopleToPlace
+        let existingPerson = peopleToPlace.value.find(
+            p => p.personIdKey === personIdKey
+        );
+
+        // If not found, try to find the person from other placement groups
+        if (!existingPerson) {
+            for (const pg of placementGroups.value) {
+                const groupMemberWithMatchingPerson = pg.groupMembers?.find(
+                    gm => gm.person?.personIdKey === personIdKey
+                );
+
+                if (groupMemberWithMatchingPerson?.person) {
+                    existingPerson = groupMemberWithMatchingPerson.person;
+                    break;
+                }
+            }
+        }
+
+        return existingPerson;
+    }
+
+    /**
+     * Adds a source group member to the person, initializing the list if needed.
+     *
+     * @param person The person to update.
+     * @param groupMember The group member to add.
+     */
+    function addSourceGroupMemberForPerson(person: PersonBag, groupMember: GroupMemberBag): void {
+        var newSourceGroupMember = {
+            groupMemberIdKey: groupMember.groupMemberIdKey,
+        } as GroupMemberBag;
+
+        if (!person.sourceGroupMembers) {
+            person.sourceGroupMembers = [];
+        }
+
+        person.sourceGroupMembers.push(newSourceGroupMember);
+    }
+
+    /**
+     * Adds a registrant to the person's list of registrants.
+     *
+     * @param person The person to update.
+     * @param registrant The registrant to add.
+     */
+    function addRegistrantForPerson(person: PersonBag, registrant: RegistrantBag): void {
+        var newRegistrant = {
+            registrantIdKey: registrant.registrantIdKey,
+            registrationInstanceIdKey: registrant.registrationInstanceIdKey,
+            registrationInstanceName: registrant.registrationInstanceName,
+            fees: registrant.fees
+        } as RegistrantBag;
+
+        if (!person.registrants) {
+            person.registrants = [];
+        }
+
+        person.registrants.push(newRegistrant);
+    }
+
+    /**
+     * Loads and initializes placement data, including attribute filters, destination groups, and people to place.
+     */
+    async function loadPlacementData(): Promise<void> {
+        // If there was an initilization error than skip.
+        if (!isNullOrWhiteSpace(initializationError.value)) {
+            return;
+        }
+
+        // Start all requests in parallel
+        const attributeFiltersPromise = populateAttributeFilters();
+        const groupsPromise = getDestinationGroups();
+        const placementPeoplePromise = getPlacementPeople();
+
+        // Wait for attribute filters
+        const attributeFilters = await attributeFiltersPromise;
+
+        sourceAttributesForFilter.value = attributeFilters.sourceAttributesForFilter ?? {};
+        registrantFeeItemsForFilter.value = attributeFilters.registrantFeeItemsForFilter ?? [];
+        destinationGroupAttributesForFilter.value = attributeFilters.destinationGroupAttributesForFilter ?? {};
+        destinationGroupMemberAttributesForFilter.value = attributeFilters.destinationGroupMemberAttributesForFilter ?? {};
+
+        // Wait for destination groups
+        const groups = await groupsPromise;
+
+        placementGroups.value = groups.map(g => ({
+            ...g,
+            groupMembers: []
+        }));
+
+        areGroupsLoading.value = false;
+        areGroupsExpanded.value = groups.length <= 3;
+
+        // Wait for placement people
+        const placementPeople = await placementPeoplePromise;
+
+        if (placementPeople.peopleToPlace) {
+            peopleToPlace.value = placementPeople.peopleToPlace;
+        }
+
+        if (placementPeople.tempGroups) {
+            placementPeople.tempGroups.forEach(g => {
+                const placementGroup = placementGroups.value.find(pg => pg.groupIdKey === g.groupIdKey);
+                if (placementGroup?.groupMembers && g.groupMembers?.length) {
+                    placementGroup.groupMembers.push(...g.groupMembers);
+                }
+            });
+        }
+
+        arePeopleLoading.value = false;
+    }
+
+
+    /**
+     * Saves placement configuration settings and reloads placement data.
+     *
+     * @param bag The settings to save.
+     */
+    async function savePlacementCofigSettings(bag: PlacementConfigurationSettingsBag): Promise<void> {
+        preferences.setValue(getPlacementConfigurationSettingsKey(), JSON.stringify(bag));
+
+        isPlacementConfigModalVisible.value = false;
+
+        await preferences.save();
+        placementConfigurationSettings.value = bag;
+
+        loadPlacementData();
+    }
+
+    /**
+     * Subscribes to the real-time GroupPlacementTopic and returns it.
+     */
+    async function getGroupPlacementTopic(groupGuids: Guid[], registrationInstanceGuid: Guid | null | undefined, registrationTemplateGuid: Guid | null | undefined): Promise<GroupPlacementTopic> {
+        const topic = await getTopic("Rock.RealTime.Topics.GroupPlacementTopic");
+
+        const request: RealTimeConnectionKeysBag = {
+            connectionId: topic.connectionId,
+            groupGuids: groupGuids,
+            registrationInstanceGuid: registrationInstanceGuid,
+            registrationTemplateGuid: registrationTemplateGuid
+        };
+
+        await invokeBlockAction("SubscribeToRealTime", {
+            realTimeConnectionKeysBag: request
+        });
+
+        Object.defineProperty(topic, "registrationInstanceGuid", {
+            value: registrationInstanceGuid,
+            writable: false
+        });
+
+        Object.defineProperty(topic, "registrationTemplateGuid", {
+            value: registrationTemplateGuid,
+            writable: false
+        });
+
+        Object.defineProperty(topic, "groupGuids", {
+            value: toRaw(groupGuids),
+            writable: true
+        });
+
+        return topic as GroupPlacementTopic;
+    }
+
+    /**
+     * Subscribes to the topic using the current Group and AttendanceOccurrence unique identifiers.
+     */
+    async function startRealTime(): Promise<void> {
+        const registrationInstanceGuid = box.groupPlacementKeys?.registrationInstanceGuid;
+        const registrationTemplateGuid = box.groupPlacementKeys?.registrationTemplateGuid;
+
+        if (!computedGroupGuids.value && !registrationTemplateGuid && !registrationInstanceGuid) {
+            throw "Unable to start real-time";
+        }
+
+        realTimeTopic = await getGroupPlacementTopic(computedGroupGuids.value, registrationInstanceGuid, registrationTemplateGuid);
+        realTimeTopic.onDisconnected(async () => {
+            await startRealTime();
+        });
+
+        realTimeTopic.on("groupMemberUpdated", onGroupMemberUpdatedFromServer);
+        realTimeTopic.on("groupMemberDeleted", onGroupMemberDeletedFromServer);
+        realTimeTopic.on("registrantUpdated", onRegistrantUpdatedFromServer);
+        realTimeTopic.on("registrantDeleted", onRegistrantDeletedFromServer);
+
+        realTimeTopic;
+    }
+
+    /**
+     * Handles a real-time update when a group member is added.
+     *
+     * @param groupMember The updated group member message.
+     */
+    function onGroupMemberUpdatedFromServer(groupMember: GroupMemberUpdatedMessageBag): void {
+        // If a group member was added to the source group then we add to peopleToPlace
+        if (groupMember.groupIdKey === box.groupPlacementKeys?.sourceGroupIdKey) {
+            if (isNullOrWhiteSpace(groupMember.person?.personIdKey)) {
+                return;
+            }
+
+            pendingSourceGroupMembers.value.push(groupMember);
+
+            let isPersonInPeopleToPlace = false;
+            let isPersonInDestinationGroup = false;
+
+            peopleToPlace.value.forEach(p => {
+                if (p.personIdKey === groupMember.person?.personIdKey) {
+                    addSourceGroupMemberForPerson(p, groupMember);
+                    isPersonInPeopleToPlace = true;
+                }
+            });
+
+            placementGroups.value.forEach(pg => {
+                if (pg.groupMembers) {
+                    pg.groupMembers.forEach(gm => {
+                        if (gm.person && gm.person.personIdKey === groupMember.person?.personIdKey) {
+                            addSourceGroupMemberForPerson(gm.person, groupMember);
+                            isPersonInDestinationGroup = true;
+                        }
+                    });
+                }
+            });
+
+            if (!isPersonInPeopleToPlace && (!isPersonInDestinationGroup || box.isPlacementAllowingMultiple)) {
+                var newPerson = groupMember.person! as PersonBag;
+                newPerson.sourceGroupMembers = [{
+                    groupMemberIdKey: groupMember.groupMemberIdKey
+                } as GroupMemberBag];
+
+                peopleToPlace.value.push(newPerson);
+            }
+        }
+        else {
+            const { placementGroup, existingPerson } = getPlacementContext(groupMember);
+
+            if (!placementGroup) {
+                return;
+            }
+
+            pendingDestinationGroupMembers.value.push(groupMember);
+
+            const personToUse = existingPerson || groupMember.person;
+
+            placementGroup.groupMembers!.push({
+                groupMemberId: groupMember.groupMemberId,
+                groupRoleIdKey: groupMember.groupRoleIdKey,
+                person: personToUse,
+                groupMemberIdKey: groupMember.groupMemberIdKey
+            });
+
+            if (!box.isPlacementAllowingMultiple) {
+                peopleToPlace.value = peopleToPlace.value.filter(
+                    p => groupMember.person?.personIdKey !== p.personIdKey
+                );
+            }
+        }
+
+        populateAttributesDebounce();
+    }
+
+    /**
+     * Handles a real-time removal of a group member from either source or destination groups.
+     *
+     * @param _groupMemberGuid The GUID of the removed group member (unused).
+     * @param groupMember The group member details.
+     */
+    function onGroupMemberDeletedFromServer(_groupMemberGuid: Guid, groupMember: GroupMemberUpdatedMessageBag): void {
+        if (groupMember.groupIdKey === box.groupPlacementKeys?.sourceGroupIdKey) {
+            const personInPeopleToPlace = peopleToPlace.value.find(p => p.personIdKey === groupMember.person?.personIdKey);
+            if (personInPeopleToPlace && personInPeopleToPlace.sourceGroupMembers) {
+                personInPeopleToPlace.sourceGroupMembers = personInPeopleToPlace.sourceGroupMembers.filter(
+                    r => r.groupMemberIdKey !== groupMember.groupMemberIdKey
+                );
+
+                // Remove person if they have no sourceGroupMembers left
+                if (personInPeopleToPlace.sourceGroupMembers.length === 0) {
+                    peopleToPlace.value = peopleToPlace.value.filter(
+                        p => p.personIdKey !== personInPeopleToPlace.personIdKey
+                    );
+                }
+            }
+
+            // Update in all placement groups
+            for (const group of placementGroups.value) {
+                for (const gm of group.groupMembers ?? []) {
+                    if (gm.person?.personIdKey === groupMember.person?.personIdKey && gm.person?.sourceGroupMembers) {
+                        gm.person.sourceGroupMembers = gm.person.sourceGroupMembers.filter(
+                            r => r.groupMemberIdKey !== groupMember.groupMemberIdKey
+                        );
+                    }
+                }
+            }
+        }
+        else {
+            const { placementGroup, existingPerson } = getPlacementContext(groupMember);
+            if (!placementGroup) {
+                return;
+            }
+
+            groupMember.person = existingPerson || groupMember.person;
+
+            // If the person does not have a Registrant in any of the included Registration Instances, then they should not be shown in the People To Place Panel.
+            // This matches with functionality from the old Webforms Block.
+            if (shouldPersonBeDisplayed(groupMember) && groupMember.person) {
+                peopleToPlace.value.push({ ...groupMember.person });
+            }
+
+            placementGroup.groupMembers = placementGroup.groupMembers?.filter(gm => gm.groupMemberIdKey !== groupMember.groupMemberIdKey);
+        }
+    }
+
+    /**
+     * Handles a real-time update of a registrant and updates or adds them to people to place.
+     *
+     * @param registrant The updated registrant message.
+     */
+    function onRegistrantUpdatedFromServer(registrant: RegistrationRegistrantUpdatedMessageBag): void {
+        if (isNullOrWhiteSpace(registrant.person?.personIdKey)) {
+            return;
+        }
+
+        pendingSourceRegistrants.value.push(registrant);
+
+        let isPersonInPeopleToPlace = false;
+        let isPersonInDestinationGroup = false;
+
+        peopleToPlace.value.forEach(p => {
+            if (p.personIdKey === registrant.person?.personIdKey) {
+                addRegistrantForPerson(p, registrant);
+                isPersonInPeopleToPlace = true;
+            }
+        });
+
+        placementGroups.value.forEach(pg => {
+            if (pg.groupMembers) {
+                pg.groupMembers.forEach(gm => {
+                    if (gm.person && gm.person.personIdKey === registrant.person?.personIdKey) {
+                        addRegistrantForPerson(gm.person, registrant);
+                        isPersonInDestinationGroup = true;
+                    }
+                });
+            }
+        });
+
+        if (!isPersonInPeopleToPlace && (!isPersonInDestinationGroup || box.isPlacementAllowingMultiple)) {
+            var newPerson = registrant.person! as PersonBag;
+            newPerson.registrants = [{
+                registrantIdKey: registrant.registrantIdKey,
+                registrationInstanceIdKey: registrant.registrationInstanceIdKey,
+                registrationInstanceName: registrant.registrationInstanceName,
+                fees: registrant.fees
+            } as RegistrantBag];
+
+            peopleToPlace.value.push(newPerson);
+        }
+
+        populateAttributesDebounce();
+    }
+
+    /**
+     * Handles a real-time deletion of a registrant and removes them from people and groups.
+     *
+     * @param _registrantGuid The GUID of the deleted registrant (unused).
+     * @param registrant The registrant details.
+     */
+    function onRegistrantDeletedFromServer(_registrantGuid: Guid, registrant: RegistrationRegistrantUpdatedMessageBag): void {
+        const personInPeopleToPlace = peopleToPlace.value.find(p => p.personIdKey === registrant.person?.personIdKey);
+        if (personInPeopleToPlace && personInPeopleToPlace.registrants) {
+            personInPeopleToPlace.registrants = personInPeopleToPlace.registrants.filter(
+                r => r.registrantIdKey !== registrant.registrantIdKey
+            );
+
+            // Remove person if they have no registrants left
+            if (personInPeopleToPlace.registrants.length === 0) {
+                peopleToPlace.value = peopleToPlace.value.filter(
+                    p => p.personIdKey !== personInPeopleToPlace.personIdKey
+                );
+            }
+        }
+
+        // Update in all placement groups
+        for (const group of placementGroups.value) {
+            for (const gm of group.groupMembers ?? []) {
+                if (gm.person?.personIdKey === registrant.person?.personIdKey && gm.person?.registrants) {
+                    gm.person.registrants = gm.person.registrants.filter(
+                        r => r.registrantIdKey !== registrant.registrantIdKey
+                    );
+                }
+            }
+        }
+    }
+
+    /**
+     * Sets the control key state when a key is pressed.
+     *
+     * @param e The keyboard event.
+     */
+    function handleKeyDown(e: KeyboardEvent): void {
+        if (e.ctrlKey || e.metaKey) {
+            isCtrlKeyHeld.value = true;
+        }
+    }
+
+    /**
+     * Clears the control key state when a key is released.
+     *
+     * @param e The keyboard event.
+     */
+    function handleKeyUp(e: KeyboardEvent): void {
+        if (!e.ctrlKey && !e.metaKey) {
+            isCtrlKeyHeld.value = false;
+        }
+    }
+
+    // #endregion
+
+    // #region Block Actions
+
+    /**
+     * Retrieves placement people data from the server.
+     *
+     * @returns A promise resolving to a PlacementPeopleBag.
+     */
+    async function getPlacementPeople(): Promise<PlacementPeopleBag> {
+        arePeopleLoading.value = true;
+
+        const result = await invokeBlockAction<PlacementPeopleBag>("GetPlacementPeople", {
+            groupPlacementKeys: box.groupPlacementKeys,
+            isPlacementAllowingMultiple: box.isPlacementAllowingMultiple,
+            placementMode: box.placementMode
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            dataRetrievalError.value = result.errorMessage ?? "An error occurred while retrieving Placement People";
+        }
+        return {};
+    }
+
+    /**
+     * Retrieves destination groups from the server.
+     *
+     * @returns A promise resolving to a list of PlacementGroupBag items.
+     */
+    async function getDestinationGroups(): Promise<PlacementGroupBag[]> {
+        areGroupsLoading.value = true;
+
+        const result = await invokeBlockAction<PlacementGroupBag[]>("GetDestinationGroups", {
+            groupPlacementKeys: box.groupPlacementKeys,
+            PlacementMode: box.placementMode
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            dataRetrievalError.value = result.errorMessage ?? "An error occurred while retrieving Destination Groups";
+        }
+        return [];
+    }
+
+    /**
+     * Retrieves attribute filters from the server for placement filtering.
+     *
+     * @returns A promise resolving to an AttributeFiltersBag.
+     */
+    async function populateAttributeFilters(): Promise<AttributeFiltersBag> {
+        areGroupsLoading.value = true;
+
+        const result = await invokeBlockAction<AttributeFiltersBag>("PopulateAttributeFilters", {
+            groupPlacementKeys: box.groupPlacementKeys
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            dataRetrievalError.value = result.errorMessage ?? "An error occurred while retrieving Attribute Filters";
+        }
+        return {};
+    }
+
+    /**
+     * Adds pending group members to the specified placement group.
+     *
+     * @param pendingGroupMembers The group members to add.
+     * @param placementGroup The target placement group.
+     * @returns A promise resolving to the added group members.
+     */
+    async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], placementGroup: PlacementGroupBag): Promise<GroupMemberBag[]> {
+        const result = await invokeBlockAction<GroupMemberBag[]>("AddGroupMembersToGroup", {
+            addGroupMembersBag: {
+                pendingGroupMembers,
+                targetGroup: placementGroup,
+                placementMode: box.placementMode,
+                groupPlacementKeys: box.groupPlacementKeys
+            } as AddGroupMembersBag
+        });
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+        else {
+            if (pendingGroupMembers[0].groupRoleIdKey) {
+                setGroupRoleError(placementGroup.groupIdKey!, pendingGroupMembers[0].groupRoleIdKey, result.errorMessage ?? "An unknown error occurred while trying to add a group member.");
+            }
+        }
+        return [];
+    }
+
+    /**
+     * Removes a group member from the specified group.
+     *
+     * @param groupMemberIdKey The ID key of the group member to remove.
+     * @param groupIdKey The ID key of the group.
+     * @param groupRoleIdKey The ID key of the group role (used for error reporting).
+     * @returns A promise resolving to true if successful, false otherwise.
+     */
+    async function removeGroupMemberFromGroup(groupMemberIdKey: string, groupIdKey: string, groupRoleIdKey: string): Promise<boolean> {
+        const result = await invokeBlockAction<GroupMemberBag[]>("RemoveGroupMemberFromGroup", {
+            groupMemberIdKey: groupMemberIdKey,
+            groupIdKey: groupIdKey
+        });
+
+        if (result.isSuccess) {
+            return true;
+        }
+        else {
+            setGroupRoleError(groupIdKey, groupRoleIdKey, result.errorMessage ?? "An unknown error occurred while trying to remove a group member.");
+        }
+        return false;
+    }
+
+    /**
+     * Adds a new placement group and refreshes placement data if successful.
+     *
+     * @param addGroupBag The data for the group to be added.
+     */
+    async function addGroup(addGroupBag: AddGroupBag): Promise<void> {
+        if (!box.groupPlacementKeys?.destinationGroupTypeIdKey) {
+            addGroupModalErrorText.value = "A Destination Group Type is required to add a group.";
+            return;
+        }
+
+        addGroupBag.groupPlacementKeys = box.groupPlacementKeys;
+        addGroupBag.groupTypeIdKey = box.groupPlacementKeys.destinationGroupTypeIdKey;
+        addGroupBag.connectionId = realTimeTopic?.connectionId;
+
+        const result = await invokeBlockAction<Guid[]>("AddPlacementGroup", {
+            addGroupBag
+        });
+
+        if (result.isSuccess) {
+            addGroupModalElement.value?.resetForm();
+            isAddGroupModalVisible.value = false;
+            loadPlacementData();
+        }
+        else {
+            addGroupModalErrorText.value = result.errorMessage ?? "An unknown error occurred while adding a group.";
+        }
+    }
+
+    /**
+     * Detaches a group from the placement context and updates the UI.
+     *
+     * @param groupIdKey The ID key of the group to detach.
+     */
+    async function detachPlacementGroup(groupIdKey: string): Promise<void> {
+        var groupPlacementKeysCopy = JSON.parse(JSON.stringify(box.groupPlacementKeys));
+
+        // If we are detaching a group in template mode than we will need the registration instance idkey on that group.
+        if (box.placementMode === PlacementMode.TemplateMode && groupPlacementKeysCopy) {
+            var pendingGroup = placementGroups.value.find(g => g.groupIdKey === groupIdKey);
+            groupPlacementKeysCopy.registrationInstanceIdKey = pendingGroup?.registrationInstanceIdKey;
+        }
+
+        const result = await invokeBlockAction<Guid>("DetachPlacementGroup", {
+            detachGroupBag: {
+                groupIdKey: groupIdKey,
+                groupPlacementKeys: groupPlacementKeysCopy,
+                placementMode: box.placementMode,
+                connectionId: realTimeTopic?.connectionId
+            } as DetachGroupBag
+        });
+
+        if (result.isSuccess) {
+            loadPlacementData();
+        }
+        else {
+            // TODO - This should be converted to a Toast message when we add Toast messages to Rock.
+            setGroupError(groupIdKey, result.errorMessage ?? "An unknown error occurred while trying to detach a group.");
+        }
+    }
+
+    /**
+     * Deletes a placement group and reloads placement data.
+     *
+     * @param groupIdKey The ID key of the group to delete.
+     */
+    async function deletePlacementGroup(groupIdKey: string): Promise<void> {
+        const result = await invokeBlockAction("DeletePlacementGroup", {
+            groupIdKey: groupIdKey
+        });
+
+        if (result.isSuccess) {
+            loadPlacementData();
+        }
+        else {
+            // TODO - This should be converted to a Toast message when we add Toast messages to Rock.
+            setGroupError(groupIdKey, result.errorMessage ?? "An unknown error occurred while trying to delete a group.");
+        }
+    }
+
+    /**
+     * Loads and assigns attribute data for source and destination entities based on placement mode.
+     */
+    async function populateAttributes(): Promise<void> {
+        if (pendingSourceRegistrants.value.length === 0 && pendingSourceGroupMembers.value.length === 0 && pendingDestinationGroupMembers.value.length === 0) {
+            return;
+        }
+
+        const request: SourceAndDestinationEntityKeysBag = {
+            placementMode: box.placementMode,
+            groupPlacementKeysBag: box.groupPlacementKeys ?? null,
+            sourceRegistrants: [...pendingSourceRegistrants.value],
+            sourceGroupMembers: [...pendingSourceGroupMembers.value],
+            destinationGroupMembers: [...pendingDestinationGroupMembers.value]
+        };
+
+        const result = await invokeBlockAction<SourceAndDestinationEntityAttributesBag>("PopulateAttributes", {
+            sourceAndDestinationEntityKeys: request
+        });
+
+        if (result.isSuccess && result.data) {
+            const sourceAttributesMap = result.data.sourceEntityAttributes;
+            const destinationAttributesMap = result.data.destinationEntityAttributes;
+
+            if (box.placementMode === PlacementMode.GroupMode && (sourceAttributesMap || destinationAttributesMap)) {
+                // If we have data in sourceAttributesMap then loop through peopleToPlace and assign accordingly
+                if (sourceAttributesMap && Object.keys(sourceAttributesMap).length > 0) {
+                    peopleToPlace.value.forEach(person => {
+                        const matchingGroupMember = person.sourceGroupMembers?.find(gm =>
+                            gm.groupMemberIdKey && sourceAttributesMap[gm.groupMemberIdKey]
+                        );
+
+                        if (matchingGroupMember?.groupMemberIdKey) {
+                            const attributeData = sourceAttributesMap[matchingGroupMember.groupMemberIdKey];
+                            matchingGroupMember.attributes = attributeData.attributes;
+                            matchingGroupMember.attributeValues = attributeData.attributeValues;
+                        }
+                    });
+                }
+
+                // Loop through placementGroups and assign source attributes and destination attributes accordingly.
+                placementGroups.value.forEach(pg => {
+                    pg.groupMembers?.forEach(groupMember => {
+                        if (!groupMember.groupMemberIdKey) {
+                            return;
+                        }
+
+                        if (destinationAttributesMap && Object.keys(destinationAttributesMap).length > 0) {
+                            const data = destinationAttributesMap[groupMember.groupMemberIdKey];
+                            if (data) {
+                                groupMember.attributes = data.attributes;
+                                groupMember.attributeValues = data.attributeValues;
+                            }
+                        }
+
+                        if (sourceAttributesMap && Object.keys(sourceAttributesMap).length > 0 && groupMember.person?.sourceGroupMembers) {
+                            const matchingSourceGroupMember = groupMember.person.sourceGroupMembers?.find(gm =>
+                                gm.groupMemberIdKey && sourceAttributesMap[gm.groupMemberIdKey]
+                            );
+
+                            if (matchingSourceGroupMember?.groupMemberIdKey) {
+                                const attributeData = sourceAttributesMap[matchingSourceGroupMember.groupMemberIdKey];
+                                matchingSourceGroupMember.attributes = attributeData.attributes;
+                                matchingSourceGroupMember.attributeValues = attributeData.attributeValues;
+                            }
+                        }
+                    });
+                });
+            }
+            else if (box.placementMode === PlacementMode.TemplateMode || box.placementMode === PlacementMode.InstanceMode) {
+                // If we have data in sourceAttributesMap then loop through peopleToPlace and assign accordingly
+                if (sourceAttributesMap && Object.keys(sourceAttributesMap).length > 0) {
+                    peopleToPlace.value.forEach(person => {
+                        const matchingRegistrant = person.registrants?.find(r =>
+                            r.registrantIdKey && sourceAttributesMap[r.registrantIdKey]
+                        );
+
+                        if (matchingRegistrant?.registrantIdKey) {
+                            const attributeData = sourceAttributesMap[matchingRegistrant.registrantIdKey];
+                            matchingRegistrant.attributes = attributeData.attributes;
+                            matchingRegistrant.attributeValues = attributeData.attributeValues;
+                        }
+                    });
+                }
+
+                // Loop through placementGroups and assign source attributes and destination attributes accordingly.
+                placementGroups.value.forEach(pg => {
+                    pg.groupMembers?.forEach(groupMember => {
+                        if (!groupMember.groupMemberIdKey) {
+                            return;
+                        }
+
+                        if (destinationAttributesMap && Object.keys(destinationAttributesMap).length > 0) {
+                            const data = destinationAttributesMap[groupMember.groupMemberIdKey];
+                            if (data) {
+                                groupMember.attributes = data.attributes;
+                                groupMember.attributeValues = data.attributeValues;
+                            }
+                        }
+
+                        if (sourceAttributesMap && Object.keys(sourceAttributesMap).length > 0 && groupMember.person?.registrants) {
+                            const matchingRegistrant = groupMember.person.registrants?.find(gm =>
+                                gm.registrantIdKey && sourceAttributesMap[gm.registrantIdKey]
+                            );
+
+                            if (matchingRegistrant?.registrantIdKey) {
+                                const attributeData = sourceAttributesMap[matchingRegistrant.registrantIdKey];
+                                matchingRegistrant.attributes = attributeData.attributes;
+                                matchingRegistrant.attributeValues = attributeData.attributeValues;
+                            }
+                        }
+                    });
+                });
+            }
+            else if (destinationAttributesMap && Object.keys(destinationAttributesMap).length > 0) {
+                // Assign group member attributes for Entity Set Mode
+                placementGroups.value.forEach(pg => {
+                    pg.groupMembers?.forEach(groupMember => {
+                        if (!groupMember.groupMemberIdKey) {
+                            return;
+                        }
+
+                        const data = destinationAttributesMap[groupMember.groupMemberIdKey];
+                        if (data) {
+                            groupMember.attributes = data.attributes;
+                            groupMember.attributeValues = data.attributeValues;
+                        }
+                    });
+                });
+            }
+        }
+        else {
+            console.error(result.errorMessage ?? "An unknown error occurred while trying to populate attributes.");
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+
+    watch(selectionInfoElement, element => {
+        if (element) {
+            tooltip(element);
+        }
+    });
+
+    watch(fallbackRegistrationTemplatePlacement, async () => {
+        preferences.setValue(PreferenceKey.FallbackRegistrationTemplatePlacement, fallbackRegistrationTemplatePlacement.value);
+
+        await preferences.save();
+
+        reloadBlock();
+    });
+
+    watch([currentSortOrder, isGenderHighlighting, sourceAttributeValuesForFilter, registrantFeeItemValuesForFilter, destinationAttributeValuesForFilter, destinationMemberAttributeValuesForFilter], async () => {
+        preferences.setValue(getSortOrderKey(), currentSortOrder.value.toString());
+        preferences.setValue(getIsGenderHighlightingKey(), isGenderHighlighting.value.toString());
+        preferences.setValue(getPersonAttributeFilterKey(), JSON.stringify(sourceAttributeValuesForFilter.value));
+        preferences.setValue(getRegistrantFeeItemValuesFilterKey(), JSON.stringify(registrantFeeItemValuesForFilter.value));
+        preferences.setValue(getGroupAttributeFilterKey(), JSON.stringify(destinationAttributeValuesForFilter.value));
+        preferences.setValue(getGroupMemberAttributeFilterKey(), JSON.stringify(destinationMemberAttributeValuesForFilter.value));
+
+        await preferences.save();
+    });
+
+    watch([selectedPersonIdKeys, filteredAndSortedPeopleToPlace], () => {
+        if (filteredAndSortedPeopleToPlace.value.length === 0) {
+            areAllPeopleSelected.value = false;
+        }
+        else {
+            areAllPeopleSelected.value = filteredAndSortedPeopleToPlace.value.every(person => {
+                if (person.personIdKey) {
+                    return selectedPersonIdKeys.value.has(person.personIdKey);
+                }
+            });
+        }
+
+    }, { deep: true });
+
+    // #endregion
+
+    onMounted(async () => {
+        document.addEventListener("click", handleOutsideClick);
+        window.addEventListener("keydown", handleKeyDown);
+        window.addEventListener("keyup", handleKeyUp);
+
+        await loadPlacementData();
+
+        // Wait for placement data to load before starting real time so that we have group guids.
+        if (computedGroupGuids.value || box.groupPlacementKeys?.registrationTemplateGuid || box.groupPlacementKeys?.registrationInstanceGuid) {
+            startRealTime();
+        }
+    });
+
+    onBeforeUnmount(() => {
+        document.removeEventListener("click", handleOutsideClick);
+        window.removeEventListener("keydown", handleKeyDown);
+        window.removeEventListener("keyup", handleKeyUp);
+    });
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>
