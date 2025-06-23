@@ -156,7 +156,6 @@ namespace RockWebCore
             app.UseRockBundles();
 
             Rock.Lava.LavaService.SetCurrentEngine( new Rock.Lava.Fluid.FluidEngine() );
-            Rock.Lava.LavaService.RockLiquidIsEnabled = false;
         }
     }
 }
