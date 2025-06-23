@@ -22,7 +22,7 @@ import { isNullish } from "@Obsidian/Utility/util";
 import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
 
 export const enum NavigationUrlKey {
-    MessagePerformancePage = "MessagePerformancePage",
+    MessageMetricsPage = "MessageMetricsPage",
     ParentPage = "ParentPage"
 }
 

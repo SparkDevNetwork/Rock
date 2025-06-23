@@ -45,9 +45,9 @@ namespace Rock.Blocks.Communication
 
     #region Block Attributes
 
-    [LinkedPage( "Message Performance Page",
-        Description = "The page that will show the communication flow message performance.",
-        Key = AttributeKey.MessagePerformancePage )]
+    [LinkedPage( "Message Metrics Page",
+        Description = "The page that will show the communication flow instance message metrics.",
+        Key = AttributeKey.MessageMetricsPage )]
 
     #endregion
     
@@ -59,7 +59,7 @@ namespace Rock.Blocks.Communication
 
         private static class AttributeKey
         {
-            public const string MessagePerformancePage = "MessagePerformancePage";
+            public const string MessageMetricsPage = "MessageMetricsPage";
         }
 
         private static class PageParameterKey
@@ -70,7 +70,7 @@ namespace Rock.Blocks.Communication
         private static class NavigationUrlKey
         {
             public const string ParentPage = "ParentPage";
-            public const string MessagePerformancePage = "MessagePerformancePage";
+            public const string MessageMetricsPage = "MessageMetricsPage";
             public const string PersonProfilePage = "PersonProfilePage";
         }
 
@@ -108,7 +108,7 @@ namespace Rock.Blocks.Communication
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.ParentPage] = this.GetParentPageUrl(),
-                [NavigationUrlKey.MessagePerformancePage] = this.GetLinkedPageUrl( AttributeKey.MessagePerformancePage, new Dictionary<string, string>
+                [NavigationUrlKey.MessageMetricsPage] = this.GetLinkedPageUrl( AttributeKey.MessageMetricsPage, new Dictionary<string, string>
                 {
                     { "CommunicationFlow", PageParameter( PageParameterKey.CommunicationFlow ) },
                     { "CommunicationFlowInstance", "((CommunicationFlowInstanceKey))" },

@@ -1,7 +1,7 @@
 <template>
     <Grid :data="gridDataSource"
           itemTerm="Recipient"
-          :keyField="getField('idKey')"
+          :keyField="getField('personAliasIdKey')"
           :showExport="false"
           title="Recipient Log">
         <PersonColumn :field="getField('person')"
@@ -34,20 +34,20 @@
     import { computed, PropType } from "vue";
     import Grid, { PersonColumn, ButtonColumn, DateTimeColumn } from "@Obsidian/Controls/grid";
     import { useGetTypeMemberName } from "@Obsidian/Utility/objectUtils";
-    import { CommunicationFlowMessagePerformanceRecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowMessagePerformance/communicationFlowMessagePerformanceRecipientMetricsBag";
+    import { CommunicationFlowInstanceMessageMetricsRecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsRecipientMetricsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
-    const getField = useGetTypeMemberName<CommunicationFlowMessagePerformanceRecipientMetricsBag>();
+    const getField = useGetTypeMemberName<CommunicationFlowInstanceMessageMetricsRecipientMetricsBag>();
 
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<CommunicationFlowMessagePerformanceRecipientMetricsBag[] | null | undefined>,
+            type: Array as PropType<CommunicationFlowInstanceMessageMetricsRecipientMetricsBag[] | null | undefined>,
             required: true
         }
     });
 
     const emit = defineEmits<{
-        (e: "viewPerson", row: CommunicationFlowMessagePerformanceRecipientMetricsBag): void;
+        (e: "viewPerson", row: CommunicationFlowInstanceMessageMetricsRecipientMetricsBag): void;
     }>();
 
     // #region Computed Values
@@ -63,7 +63,7 @@
     // #region Event Handlers
 
     function onPersonClicked(rowKey: string): void {
-        const row = props.modelValue?.find(r => r.idKey === rowKey);
+        const row = props.modelValue?.find(r => r.personAliasIdKey === rowKey);
 
         if (row) {
             emit("viewPerson", row);

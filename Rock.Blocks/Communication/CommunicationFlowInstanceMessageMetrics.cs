@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Model;
 using Rock.Utility;
-using Rock.ViewModels.Blocks.Communication.CommunicationFlowMessagePerformance;
+using Rock.ViewModels.Blocks.Communication.CommunicationFlowInstanceMessageMetrics;
 using Rock.ViewModels.Core.Grid;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -31,18 +31,18 @@ using Rock.Web.Cache;
 namespace Rock.Blocks.Communication
 {
     /// <summary>
-    /// Displays the performance of a particular communication flow message.
+    /// Displays the metrics of each message that the flow instance sends out.
     /// </summary>
 
-    [DisplayName( "Communication Flow Message Performance" )]
+    [DisplayName( "Communication Flow Instance Message Metrics" )]
     [Category( "Communication" )]
-    [Description( "Displays the performance of a particular communication flow message." )]
+    [Description( "Displays the metrics of each message that the flow instance sends out." )]
     [IconCssClass( "fa fa-line-chart" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
     
-    [Rock.SystemGuid.EntityTypeGuid( "9361C0B3-84C5-4789-8E97-92F1BF613C3B" )]
+    [Rock.SystemGuid.EntityTypeGuid( "91D70135-87DA-4748-B459-CCE7F60F3D67" )]
     [Rock.SystemGuid.BlockTypeGuid( "039ADBBE-4158-47C8-AE05-181DF42E990C" )]
-    public class CommunicationFlowMessagePerformance : RockBlockType, IBreadCrumbBlock
+    public class CommunicationFlowInstanceMessageMetrics : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -61,9 +61,9 @@ namespace Rock.Blocks.Communication
             var arePredictableIdsEnabled = !this.PageCache.Layout.Site.DisablePredictableIds;
             var title = new CommunicationFlowInstanceCommunicationService( this.RockContext )
                 .GetSelect( instanceCommunicationKey, c => c.CommunicationFlowCommunication.Name, arePredictableIdsEnabled );
-            this.ResponseContext.SetPageTitle( title.ToStringOrDefault( "Communication Flow Message Performance" ) );
+            this.ResponseContext.SetPageTitle( title.ToStringOrDefault( "Communication Flow Instance Message Metrics" ) );
 
-            var box = new CommunicationFlowMessagePerformanceInitializationBox();
+            var box = new CommunicationFlowInstanceMessageMetricsInitializationBox();
 
             var interactionChannelId = InteractionChannelCache
                     .Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() )?.Id ?? 0;
@@ -128,19 +128,19 @@ namespace Rock.Blocks.Communication
                     )
                     .ToList(); // Execute the query.
 
-                box.FlowCommunication = new CommunicationFlowMessagePerformanceFlowCommunicationBag
+                box.FlowCommunication = new CommunicationFlowInstanceMessageMetricsFlowCommunicationBag
                 {
-                    IdKey = IdHasher.Instance.GetHash( communicationFlowCommunication.CommunicationFlowCommunicationId ),
+                    FlowCommunicationIdKey = IdHasher.Instance.GetHash( communicationFlowCommunication.CommunicationFlowCommunicationId ),
                     FlowCommunicationName = communicationFlowCommunication.Name,
                     FlowInstanceCommunications = recipientMetrics
                         .GroupBy( r => r.FlowInstanceCommunicationId )
-                        .Select( g => new CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag
+                        .Select( g => new CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag
                         {
-                            IdKey = IdHasher.Instance.GetHash( g.Key ),
+                            FlowInstanceCommunicationIdKey = IdHasher.Instance.GetHash( g.Key ),
                             RecipientMetrics = g
-                                .Select( r => new CommunicationFlowMessagePerformanceRecipientMetricsBag
+                                .Select( r => new CommunicationFlowInstanceMessageMetricsRecipientMetricsBag
                                 {
-                                    IdKey = r.Person.IdKey,
+                                    PersonAliasIdKey = r.Person.IdKey,
                                     ClickedDate = r.ClickedDate,
                                     ConversionDate = r.ConversionDate,
                                     FlowInstanceCommunicationIdKey = IdHasher.Instance.GetHash( r.FlowInstanceCommunicationId ),
@@ -167,6 +167,8 @@ namespace Rock.Blocks.Communication
 
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
+            // Get the message name from the communication blueprint (CommunicationFlowCommunication)
+            // since the instance communication doesn't have a separate name.
             var instanceCommunicationKey = pageReference.GetPageParameter( PageParameterKey.CommunicationFlowInstanceCommunication );
             var arePredictableIdsEnabled = !this.PageCache.Layout.Site.DisablePredictableIds;
             var title = new CommunicationFlowInstanceCommunicationService( this.RockContext )
@@ -176,7 +178,7 @@ namespace Rock.Blocks.Communication
             {
                 BreadCrumbs = new List<IBreadCrumb>
                 {
-                    new BreadCrumbLink( title ?? "Flow Communication Performance", pageReference )
+                    new BreadCrumbLink( title ?? "Flow Communication Instance Message Metrics", pageReference )
                 }
             };
         }

@@ -60,33 +60,33 @@
 
 <script setup lang="ts">
     import { computed } from "vue";
-    import ClickThroughRateKpi from "./CommunicationFlowMessagePerformance/clickThroughRateKpi.partial.obs";
-    import ConversionRateKpi from "./CommunicationFlowMessagePerformance/conversionRateKpi.partial.obs";
-    import MessageInstanceVsFlowAverage from "./CommunicationFlowMessagePerformance/messageInstanceVsFlowAverage.partial.obs";
-    import MessagePerformanceOverTime from "./CommunicationFlowMessagePerformance/messagePerformanceOverTime.partial.obs";
-    import OpenRateKpi from "./CommunicationFlowMessagePerformance/openRateKpi.partial.obs";
-    import RecipientLogGrid from "./CommunicationFlowMessagePerformance/recipientLogGrid.partial.obs";
-    import UnsubscribeRateKpi from "./CommunicationFlowMessagePerformance/unsubscribeRateKpi.partial.obs";
-    import { RockDateTimeFormatter, provideRockDateTimeParser } from "./CommunicationFlowMessagePerformance/utils.partial";
+    import ClickThroughRateKpi from "./CommunicationFlowInstanceMessageMetrics/clickThroughRateKpi.partial.obs";
+    import ConversionRateKpi from "./CommunicationFlowInstanceMessageMetrics/conversionRateKpi.partial.obs";
+    import MessageInstanceVsFlowAverage from "./CommunicationFlowInstanceMessageMetrics/messageInstanceVsFlowAverage.partial.obs";
+    import MessagePerformanceOverTime from "./CommunicationFlowInstanceMessageMetrics/messagePerformanceOverTime.partial.obs";
+    import OpenRateKpi from "./CommunicationFlowInstanceMessageMetrics/openRateKpi.partial.obs";
+    import RecipientLogGrid from "./CommunicationFlowInstanceMessageMetrics/recipientLogGrid.partial.obs";
+    import UnsubscribeRateKpi from "./CommunicationFlowInstanceMessageMetrics/unsubscribeRateKpi.partial.obs";
+    import { RockDateTimeFormatter, provideRockDateTimeParser } from "./CommunicationFlowInstanceMessageMetrics/utils.partial";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { useStore } from "@Obsidian/PageState";
     import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowMessagePerformance/communicationFlowMessagePerformanceFlowInstanceCommunicationBag";
-    import { CommunicationFlowMessagePerformanceInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowMessagePerformance/communicationFlowMessagePerformanceInitializationBox";
-    import { CommunicationFlowMessagePerformanceRecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowMessagePerformance/communicationFlowMessagePerformanceRecipientMetricsBag";
+    import { CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag";
+    import { CommunicationFlowInstanceMessageMetricsInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsInitializationBox";
+    import { CommunicationFlowInstanceMessageMetricsRecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsRecipientMetricsBag";
 
-    const config = useConfigurationValues<CommunicationFlowMessagePerformanceInitializationBox>();
+    const config = useConfigurationValues<CommunicationFlowInstanceMessageMetricsInitializationBox>();
     const { getPageParameter } = useStore();
     provideRockDateTimeParser();
 
     // #region Computed Values
 
-    const selectedFlowInstanceCommunication = computed<CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag | null | undefined>(() => {
+    const selectedFlowInstanceCommunication = computed<CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag | null | undefined>(() => {
         // Always select the instance communication that matches the page parameter.
         const selectedInstanceCommunicationKey = getPageParameter("CommunicationFlowInstanceCommunication");
 
-        return config.flowCommunication?.flowInstanceCommunications?.find(ic => ic.idKey === selectedInstanceCommunicationKey);
+        return config.flowCommunication?.flowInstanceCommunications?.find(ic => ic.flowInstanceCommunicationIdKey === selectedInstanceCommunicationKey);
     });
 
     const dataLastUpdatedMessage = computed<string>(() => {
@@ -97,7 +97,7 @@
 
     // #region Event Handlers
 
-    function onViewPerson(selectedRow: CommunicationFlowMessagePerformanceRecipientMetricsBag): void {
+    function onViewPerson(selectedRow: CommunicationFlowInstanceMessageMetricsRecipientMetricsBag): void {
         if (selectedRow.person?.idKey) {
             window.location.href = `/Person/${selectedRow.person.idKey}`;
         }

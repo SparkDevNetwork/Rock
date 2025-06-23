@@ -21,13 +21,13 @@
 // </copyright>
 //
 
-import { CommunicationFlowMessagePerformanceRecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowMessagePerformance/communicationFlowMessagePerformanceRecipientMetricsBag";
+import { CommunicationFlowInstanceMessageMetricsRecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsRecipientMetricsBag";
 
-/** Bag containing information about a communication flow instance communication for the Communication Flow Message Performance block. */
-export type CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag = {
+/** Bag containing information about a communication flow instance communication for the Communication Flow Instance Message Metrics block. */
+export type CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag = {
     /** Gets or sets the unique identifier key for the communication flow instance communication. */
-    idKey?: string | null;
+    flowInstanceCommunicationIdKey?: string | null;
 
     /** Gets or sets the list of recipient metrics associated with this communication flow instance communication. */
-    recipientMetrics?: CommunicationFlowMessagePerformanceRecipientMetricsBag[] | null;
+    recipientMetrics?: CommunicationFlowInstanceMessageMetricsRecipientMetricsBag[] | null;
 };

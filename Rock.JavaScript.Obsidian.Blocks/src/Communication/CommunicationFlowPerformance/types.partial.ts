@@ -15,14 +15,14 @@
 // </copyright>
 //
 
-import { ChartData, ChartDataset, ChartOptions, Point } from "@Obsidian/Libs/chart";
+import { _adapters, ChartData, ChartDataset, ChartOptions, Point } from "@Obsidian/Libs/chart";
 import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { isNullish } from "@Obsidian/Utility/util";
 import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
 
 export const enum NavigationUrlKey {
-    MessagePerformancePage = "MessagePerformancePage",
+    MessageMetricsPage = "MessageMetricsPage",
     ParentPage = "ParentPage"
 }
 
@@ -180,10 +180,26 @@ export class BarChartOptionsBuilder {
     }
 }
 
-export class LineChartDataBuilder {
-    private constructor(private dataPoints: ChartNumericDataPointBag[]) { }
+export type ChartNumericDateTimeDataPoint = {
+    rockDateTime: RockDateTime;
 
-    public static createFromData(dataPoints: ChartNumericDataPointBag[]): LineChartDataBuilder {
+    /** Gets or sets the color for this data point. */
+    color?: string | null;
+
+    /** Gets or sets the label for this data point. */
+    label?: string | null;
+
+    /** Gets or sets the name of the series for this data point. */
+    seriesName?: string | null;
+
+    /** Gets or sets the value for this data point. */
+    value: number | null;
+};
+
+export class LineChartDataBuilder {
+    private constructor(private dataPoints: ChartNumericDateTimeDataPoint[]) { }
+
+    public static createFromData(dataPoints: ChartNumericDateTimeDataPoint[]): LineChartDataBuilder {
         return new LineChartDataBuilder(dataPoints);
     }
 
@@ -198,7 +214,7 @@ export class LineChartDataBuilder {
         const groupedBySeries = Enumerable
             .from(this.dataPoints)
             .groupBy(d => d.seriesName)
-            .ofType((group): group is GroupedEnumerable<string, ChartNumericDataPointBag> => {
+            .ofType((group): group is GroupedEnumerable<string, ChartNumericDateTimeDataPoint> => {
                 return !isNullish(group.key);
             })
             .orderBy(group => group.key); // Order by series name alphabetically.

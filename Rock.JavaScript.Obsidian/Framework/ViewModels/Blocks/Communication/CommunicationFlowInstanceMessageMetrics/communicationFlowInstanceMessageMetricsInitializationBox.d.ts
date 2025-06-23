@@ -21,16 +21,10 @@
 // </copyright>
 //
 
-import { CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowMessagePerformance/communicationFlowMessagePerformanceFlowInstanceCommunicationBag";
+import { CommunicationFlowInstanceMessageMetricsFlowCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsFlowCommunicationBag";
 
-/** Bag containing the high-level flow communication (blueprint) information needed for the Communication Flow Message Performance block. */
-export type CommunicationFlowMessagePerformanceFlowCommunicationBag = {
-    /** Gets or sets the name of the flow communication (blueprint). */
-    flowCommunicationName?: string | null;
-
-    /** Gets or sets the collection of flow instance communications that are associated with this high-level flow communication (blueprint). */
-    flowInstanceCommunications?: CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag[] | null;
-
-    /** Gets or sets the identifier key for this high-level flow communication. */
-    idKey?: string | null;
+/** Box containing the data needed to initialize the Communication Flow Instance Message Metrics block. */
+export type CommunicationFlowInstanceMessageMetricsInitializationBox = {
+    /** Gets or sets the high-level flow communication details. */
+    flowCommunication?: CommunicationFlowInstanceMessageMetricsFlowCommunicationBag | null;
 };

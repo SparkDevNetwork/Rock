@@ -2,17 +2,17 @@
 
 using Rock.ViewModels.Core.Grid;
 
-namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowMessagePerformance
+namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowInstanceMessageMetrics
 {
     /// <summary>
-    /// Bag containing the metrics for a recipient of a communication flow message.
+    /// Bag containing the recipient metrics of a communication flow message for the Communication Flow Instance Message Metrics block.
     /// </summary>
-    public class CommunicationFlowMessagePerformanceRecipientMetricsBag
+    public class CommunicationFlowInstanceMessageMetricsRecipientMetricsBag
     {
         /// <summary>
         /// Gets or sets the unique identifier key for the recipient person.
         /// </summary>
-        public string IdKey { get; set; }
+        public string PersonAliasIdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the unique identifier key for the parent Communication Flow Instance Communication.

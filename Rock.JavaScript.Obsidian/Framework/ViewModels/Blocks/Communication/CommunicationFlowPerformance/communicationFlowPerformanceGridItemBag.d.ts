@@ -30,7 +30,7 @@ export type CommunicationFlowPerformanceGridItemBag = {
 
     conversions?: number | null;
 
-    idKey?: unknown;
+    idKey?: string | null;
 
     messageName?: string | null;
 

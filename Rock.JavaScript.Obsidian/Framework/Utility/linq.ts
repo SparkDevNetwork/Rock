@@ -531,6 +531,7 @@ export class Enumerable<T> {
     aggregate<U>(accumulator: (acc: U, item: T, index: number) => U, seed: U): U {
         let result = seed;
         let index = 0;
+
         for (const item of this) {
             result = accumulator(result, item, index++);
         }

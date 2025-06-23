@@ -24,16 +24,16 @@
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
-    import { CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowMessagePerformance/communicationFlowMessagePerformanceFlowInstanceCommunicationBag";
+    import { CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag | null | undefined>,
+            type: Object as PropType<CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag | null | undefined>,
             required: true
         },
 
         flowInstanceCommunications: {
-            type: Array as PropType<CommunicationFlowMessagePerformanceFlowInstanceCommunicationBag[] | null | undefined>,
+            type: Array as PropType<CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag[] | null | undefined>,
             required: true
         }
     });

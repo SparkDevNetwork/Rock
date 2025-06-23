@@ -20,8 +20,8 @@
     /* eslint-disable @typescript-eslint/naming-convention */
     import { computed, PropType } from "vue";
     import NothingToShow from "./nothingToShow.partial.obs";
-    import { LineChartDataBuilder, LineChartOptionsBuilder } from "./types.partial";
-    import { RockDateTimeFormatter, useRockDateTimeParser } from "./utils.partial";
+    import { ChartNumericDateTimeDataPoint, LineChartDataBuilder, LineChartOptionsBuilder } from "./types.partial";
+    import { isRockDateTime, RockDateTimeFormatter, useRockDateTimeParser } from "./utils.partial";
     import Chart from "@Obsidian/Controls/chart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
@@ -29,7 +29,6 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { isNullish } from "@Obsidian/Utility/util";
     import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
-    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
 
     const {
         format_Jan_1,
@@ -59,41 +58,23 @@
     // #region Computed Values
 
     const totalFlowPerformanceOverTimeData = computed<ChartData<"line">>(() => {
-        return LineChartDataBuilder
-            .createFromData(dataPoints.value)
-            .build();
+        let builder = LineChartDataBuilder
+            .createFromData(dataPoints.value);
+
+        return builder.build();
     });
 
     const totalFlowPerformanceOverTimeOptions = computed<ChartOptions<"line">>(() => {
-        return LineChartOptionsBuilder
+        let builder = LineChartOptionsBuilder
             .create()
             .withValueFormattedAsPercentage()
-            .withResponsiveSizing()
-            .build();
+            .withResponsiveSizing();
+
+        return builder.build();
     });
 
-    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
-        const dataPoints: ChartNumericDataPointBag[] = [];
-        const selectedInstanceEnumerable = Enumerable.from(props.modelValue ?? []);
-        const selectedInstancesTotalRecipientCount = selectedInstanceEnumerable.sum(i => i.recipients?.length ?? 0);
-
-        if (selectedInstancesTotalRecipientCount <= 0) {
-            return dataPoints;
-        }
-
-        const transformDate: (d: RockDateTime) => RockDateTime = (d: RockDateTime) => {
-            switch (props.dateUnit) {
-                case "week":
-                    return d.startOfWeek();
-                case "month":
-                    return d.startOfMonth();
-                case "day":
-                default:
-                    return d;
-            }
-        };
-
-        const formatDate: (d: RockDateTime) => string = (d: RockDateTime) => {
+    const dateFormatter = computed<(d: RockDateTime) => string>(() => {
+        return (d: RockDateTime) => {
             switch (props.dateUnit) {
                 case "month":
                     // January 24
@@ -115,77 +96,98 @@
                     return format_1_1_1970(d);
             }
         };
+    });
 
-        let conversionRateAccumulator = 0;
-        const selectedInstanceConversionRateData =
-            selectedInstanceEnumerable
-                .selectMany(i => i.conversions ?? [])
-                .select(c => parseRockDateTime(c.date)?.date)
-                .ofType((convertedRockDateTime): convertedRockDateTime is RockDateTime => !isNullish(convertedRockDateTime))
-                .select(r => {
-                    const transformedDate = transformDate(r);
+    const dateBucketTransformer = computed<(d: RockDateTime) => RockDateTime>(() => {
+        return (d: RockDateTime) => {
+            switch (props.dateUnit) {
+                case "week":
+                    return d.startOfWeek();
+                case "month":
+                    return d.startOfMonth();
+                case "day":
+                default:
+                    return d;
+            }
+        };
+    });
 
-                    return {
-                        seriesName: "Conversion Rate",
-                        color: "#68D391",
-                        label: formatDate(transformedDate),
-                        // Needed for sorting later when the two data series are combined.
-                        timestamp: transformedDate.toMilliseconds()
-                    };
-                })
-                .groupBy(r => r.label)
-                .orderBy(r => r.first().timestamp)
-                .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
-                    const firstDataPoint = g.first();
-                    conversionRateAccumulator += g.count();
+    const dataPoints = computed<ChartNumericDateTimeDataPoint[]>(() => {
+        const dataPoints: ChartNumericDateTimeDataPoint[] = [];
+        const selectedInstanceEnumerable = Enumerable.from(props.modelValue ?? []);
+        const selectedInstancesTotalRecipientCount = selectedInstanceEnumerable.sum(i => i.recipients?.length ?? 0);
 
-                    return {
-                        seriesName: firstDataPoint.seriesName,
-                        label: firstDataPoint.label,
-                        value: conversionRateAccumulator / selectedInstancesTotalRecipientCount * 100,
-                        color: firstDataPoint.color,
-                        timestamp: firstDataPoint.timestamp
-                    };
-                });
+        if (selectedInstancesTotalRecipientCount <= 0) {
+            return dataPoints;
+        }
 
-        let unsubscribeRateAccumulator = 0;
-        const selectInstanceUnubscribeRateData =
-            selectedInstanceEnumerable
-                .selectMany(i => i.recipients ?? [])
-                .where(r => r.causedUnsubscribe)
-                .select(r => parseRockDateTime(r.unsubscribeDateTime))
-                .ofType((unsubscribeRockDateTime): unsubscribeRockDateTime is RockDateTime => !isNullish(unsubscribeRockDateTime))
-                .select(r => {
-                    const transformedDate = transformDate(r);
+        const selectedInstanceConversionRateData = buildCumulativeChartSeries(
+            selectedInstanceEnumerable,
+            i => i.conversions ?? [],
+            c => c.date,
+            {
+                seriesName: "Conversion Rate",
+                color: "#68D391",
+                totalCount: selectedInstancesTotalRecipientCount
+            }
+        );
 
-                    return {
-                        seriesName: "Unsubscribe Rate",
-                        color: "#FC8181",
-                        label: formatDate(transformedDate),
-                        // Needed for sorting later when the two data series are combined.
-                        timestamp: transformedDate.toMilliseconds()
-                    };
-                })
-                .groupBy(r => r.label)
-                .orderBy(r => r.first().timestamp)
-                .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
-                    const firstDataPoint = g.first();
-                    unsubscribeRateAccumulator += g.count();
+        const selectInstanceUnubscribeRateData = buildCumulativeChartSeries(
+            selectedInstanceEnumerable,
+            i => i.recipients?.filter(r => r.causedUnsubscribe) ?? [],
+            r => r.unsubscribeDateTime,
+            {
+                seriesName: "Unsubscribe Rate",
+                color: "#FC8181",
+                totalCount: selectedInstancesTotalRecipientCount
+            });
 
-                    return {
-                        seriesName: firstDataPoint.seriesName,
-                        label: firstDataPoint.label,
-                        value: unsubscribeRateAccumulator / selectedInstancesTotalRecipientCount * 100,
-                        color: firstDataPoint.color,
-                        timestamp: firstDataPoint.timestamp
-                    };
-                });
-
-        return selectedInstanceConversionRateData
-            .concat(selectInstanceUnubscribeRateData)
-            .orderBy(dp => dp.timestamp) // Re-order so the data are all in chronological order.
+        return Enumerable
+            .from([...selectedInstanceConversionRateData, ...selectInstanceUnubscribeRateData])
+            .orderBy(dp => dp.rockDateTime.toMilliseconds()) // Re-order so the data are all in chronological order.
             .toArray();
     });
 
     // #endregion Computed Values
+
+    // #region Functions
+
+    function buildCumulativeChartSeries<T, U>(
+        source: Enumerable<T>,
+        extractEvents: (item: T) => U[],
+        extractISODateString: (event: U) => string | null | undefined,
+        options: {
+            seriesName: string;
+            color: string;
+            totalCount: number;
+        }
+    ): ChartNumericDateTimeDataPoint[] {
+        return source.selectMany(extractEvents)
+            .select(e => parseRockDateTime(extractISODateString(e)))
+            .ofType(isRockDateTime)
+            .select(dateBucketTransformer.value)
+            .groupBy(date => date.toMilliseconds())
+            .orderBy(group => group.key)
+            .aggregate(
+                (state, group) => {
+                    const date = group.first();
+                    state.count += group.count();
+
+                    state.dataPoints.push({
+                        seriesName: options.seriesName,
+                        color: options.color,
+                        label: dateFormatter.value(date),
+                        value: (state.count / options.totalCount) * 100,
+                        rockDateTime: date
+                    });
+
+                    return state;
+                },
+                // Initial aggregator state.
+                { count: 0, dataPoints: [] as ChartNumericDateTimeDataPoint[] }
+            )
+            .dataPoints;
+    }
+
+    // #endregion Functions
 </script>

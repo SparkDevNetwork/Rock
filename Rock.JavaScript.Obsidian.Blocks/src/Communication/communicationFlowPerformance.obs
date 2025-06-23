@@ -282,7 +282,7 @@
     });
 
     const onViewMessage = computed<((key: string) => void) | undefined>(() => {
-        const messagePerformanceUrl = config.navigationUrls?.[NavigationUrlKey.MessagePerformancePage];
+        const messagePerformanceUrl = config.navigationUrls?.[NavigationUrlKey.MessageMetricsPage];
 
         if (isNullish(messagePerformanceUrl)) {
             // The message performance page URL is not configured.

@@ -23,8 +23,8 @@
 
 import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
-/** Bag containing the metrics for a recipient of a communication flow message. */
-export type CommunicationFlowMessagePerformanceRecipientMetricsBag = {
+/** Bag containing the recipient metrics of a communication flow message for the Communication Flow Instance Message Metrics block. */
+export type CommunicationFlowInstanceMessageMetricsRecipientMetricsBag = {
     /** Gets or sets the latest date the recipient clicked on a link in the communication. */
     clickedDate?: string | null;
 
@@ -34,14 +34,14 @@ export type CommunicationFlowMessagePerformanceRecipientMetricsBag = {
     /** Gets or sets the unique identifier key for the parent Communication Flow Instance Communication. */
     flowInstanceCommunicationIdKey?: string | null;
 
-    /** Gets or sets the unique identifier key for the recipient person. */
-    idKey?: string | null;
-
     /** Gets or sets the latest date the communication was opened by the recipient. */
     openedDate?: string | null;
 
     /** Gets or sets the person associated with the recipient metrics. */
     person?: PersonFieldBag | null;
+
+    /** Gets or sets the unique identifier key for the recipient person. */
+    personAliasIdKey?: string | null;
 
     /** Gets or sets the date the communication was sent to the recipient. */
     sentDate?: string | null;

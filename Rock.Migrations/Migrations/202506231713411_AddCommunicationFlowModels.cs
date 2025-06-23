@@ -353,18 +353,18 @@ namespace Rock.Migrations
             this.RockMigrationHelper.UpdatePageBreadcrumb( "6595A8D0-94D5-442A-87AA-1E79F1D9B67A", false );
 
             // Add Page 
-            //  Internal Name: Communication Flow Message Performance
+            //  Internal Name: Communication Flow Instance Message Metrics
             //  Site: Rock RMS
-            RockMigrationHelper.AddPage( true, "6595A8D0-94D5-442A-87AA-1E79F1D9B67A", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Communication Flow Message Performance", "", "C70E547B-F058-4CDD-9A97-55A2D1F8650A", "" );
+            RockMigrationHelper.AddPage( true, "6595A8D0-94D5-442A-87AA-1E79F1D9B67A", "D65F783D-87A9-4CC9-8110-E83466A0EADB", "Communication Flow Instance Message Metrics", "", "C70E547B-F058-4CDD-9A97-55A2D1F8650A", "" );
 
             // Add Page Route
-            //   Page:Communication Flow Message Performance
-            //   Route:CommunicationFlows/{CommunicationFlow}/Instances/{CommunicationFlowInstance}/Messages/{CommunicationFlowInstanceCommunication}/Performance
-            RockMigrationHelper.AddOrUpdatePageRoute( "C70E547B-F058-4CDD-9A97-55A2D1F8650A", "CommunicationFlows/{CommunicationFlow}/Messages/{CommunicationFlowCommunication}/Performance", "F031EAFE-959B-4CCC-897B-290784689FD1" );
+            //   Page:Communication Flow Instance Message Metrics
+            //   Route:CommunicationFlows/{CommunicationFlow}/Instances/{CommunicationFlowInstance}/Messages/{CommunicationFlowInstanceCommunication}/Metrics
+            RockMigrationHelper.AddOrUpdatePageRoute( "C70E547B-F058-4CDD-9A97-55A2D1F8650A", "CommunicationFlows/{CommunicationFlow}/Instances/{CommunicationFlowInstance}/Messages/{CommunicationFlowInstanceCommunication}/Metrics", "F031EAFE-959B-4CCC-897B-290784689FD1" );
 
             // Remove Page Name From Breadcrumbs
-            //   Page:Communication Flow Message Performance
-            //   Breadcrumb: "Home > Communication Flows > Communication Flow Name > Message Name > Performance"
+            //   Page:Communication Flow Instance Message Metrics
+            //   Breadcrumb: "Home > Communication Flows > Communication Flow Name > Message Name > Metrics"
             this.RockMigrationHelper.UpdatePageBreadcrumb( "C70E547B-F058-4CDD-9A97-55A2D1F8650A", false );
 
             // Add/Update Obsidian Block Entity Type
@@ -380,8 +380,8 @@ namespace Rock.Migrations
             RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Communication.CommunicationFlowList", "Communication Flow List", "Rock.Blocks.Communication.CommunicationFlowList, Rock.Blocks, Version=18.0.4.0, Culture=neutral, PublicKeyToken=null", false, false, "BE37510E-BB86-4B3B-A634-98E6F095059B" );
 
             // Add/Update Obsidian Block Entity Type
-            //   EntityType:Rock.Blocks.Communication.CommunicationFlowMessagePerformance
-            RockMigrationHelper.UpdateEntityType("Rock.Blocks.Communication.CommunicationFlowMessagePerformance", "Communication Flow Message Performance", "Rock.Blocks.Communication.CommunicationFlowMessagePerformance, Rock.Blocks, Version=18.0.7.0, Culture=neutral, PublicKeyToken=null", false, false, "9361C0B3-84C5-4789-8E97-92F1BF613C3B");
+            //   EntityType:Rock.Blocks.Communication.CommunicationFlowInstanceMessageMetrics
+            RockMigrationHelper.UpdateEntityType("Rock.Blocks.Communication.CommunicationFlowInstanceMessageMetrics", "Communication Flow Instance Message Metrics", "Rock.Blocks.Communication.CommunicationFlowInstanceMessageMetrics, Rock.Blocks, Version=18.0.7.0, Culture=neutral, PublicKeyToken=null", false, false, "91D70135-87DA-4748-B459-CCE7F60F3D67");
 
             // Add/Update Obsidian Block Type
             //   Name:Communication Flow Performance
@@ -402,10 +402,10 @@ namespace Rock.Migrations
             RockMigrationHelper.AddOrUpdateEntityBlockType( "Communication Flow List", "", "Rock.Blocks.Communication.CommunicationFlowList", "Communication", "08233FC4-3E15-42F9-97BF-1BFF89A7A0D0" );
             
             // Add/Update Obsidian Block Type
-            //   Name:Communication Flow Message Performance
+            //   Name:Communication Flow Instance Message Metrics
             //   Category:Communication
-            //   EntityType:Rock.Blocks.Communication.CommunicationFlowMessagePerformance
-            RockMigrationHelper.AddOrUpdateEntityBlockType("Communication Flow Message Performance", "Displays the performance of a particular communication flow message.", "Rock.Blocks.Communication.CommunicationFlowMessagePerformance", "Communication", "039ADBBE-4158-47C8-AE05-181DF42E990C");
+            //   EntityType:Rock.Blocks.Communication.CommunicationFlowInstanceMessageMetrics
+            RockMigrationHelper.AddOrUpdateEntityBlockType("Communication Flow Instance Message Metrics", "Displays the performance of a particular communication flow instance message.", "Rock.Blocks.Communication.CommunicationFlowInstanceMessageMetrics", "Communication", "039ADBBE-4158-47C8-AE05-181DF42E990C");
 
             // Add Block 
             //  Block Name: Communication Flow List
@@ -429,11 +429,11 @@ namespace Rock.Migrations
             RockMigrationHelper.AddBlock( true, "6595A8D0-94D5-442A-87AA-1E79F1D9B67A".AsGuid(), null, "C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(), "72B92AA4-2AA7-4FDD-9CD7-7DD84018B21E".AsGuid(), "Communication Flow Performance", "Main", @"", @"", 0, "337770AE-6D2B-4C05-B8C1-125896CEB06A" );
             
             // Add Block 
-            //  Block Name: Communication Flow Message Performance
-            //  Page Name: Communication Flow Message Performance
+            //  Block Name: Communication Flow Instance Message Metrics
+            //  Page Name: Communication Flow Instance Message Metrics
             //  Layout: -
             //  Site: Rock RMS
-            RockMigrationHelper.AddBlock( true, "C70E547B-F058-4CDD-9A97-55A2D1F8650A".AsGuid(),null,"C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(),"039ADBBE-4158-47C8-AE05-181DF42E990C".AsGuid(), "Communication Flow Message Performance","Main",@"",@"",0,"F55FE6F1-4C93-4A37-A6DB-38A840E46637"); 
+            RockMigrationHelper.AddBlock( true, "C70E547B-F058-4CDD-9A97-55A2D1F8650A".AsGuid(),null,"C2D29296-6A87-47A9-A753-EE4E9159C4C4".AsGuid(),"039ADBBE-4158-47C8-AE05-181DF42E990C".AsGuid(), "Communication Flow Instance Message Metrics","Main",@"",@"",0,"F55FE6F1-4C93-4A37-A6DB-38A840E46637"); 
 
             // Attribute for BlockType
             //   BlockType: Communication Flow List
@@ -456,8 +456,8 @@ namespace Rock.Migrations
             // Attribute for BlockType
             //   BlockType: Communication Flow Performance
             //   Category: Communication
-            //   Attribute: Message Performance Page
-            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "72B92AA4-2AA7-4FDD-9CD7-7DD84018B21E", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Message Performance Page", "MessagePerformancePage", "Message Performance Page", @"The page that will show the communication flow message performance.", 0, @"", "F466A748-9917-4A61-9B45-42821E2DCA6C" );
+            //   Attribute: Message Metrics Page
+            RockMigrationHelper.AddOrUpdateBlockTypeAttribute( "72B92AA4-2AA7-4FDD-9CD7-7DD84018B21E", "BD53F9C9-EBA9-4D3F-82EA-DE5DD34A8108", "Message Metrics Page", "MessageMetricsPage", "Message Metrics Page", @"The page that will show the communication flow instance message metrics.", 0, @"", "F466A748-9917-4A61-9B45-42821E2DCA6C" );
 
             // Add Block Attribute Value
             //   Block: Communication Flow List
@@ -484,7 +484,7 @@ namespace Rock.Migrations
             //   BlockType: Communication Flow Performance
             //   Category: Communication
             //   Block Location: Page=Communication Flow Performance, Site=Rock RMS
-            //   Attribute: Message Performance Page
+            //   Attribute: Message Metrics Page
             /*   Attribute Value: c70e547b-f058-4cdd-9a97-55a2d1f8650a,f031eafe-959b-4ccc-897b-290784689fd1 */
             //   Skip If Already Exists: true
             RockMigrationHelper.AddBlockAttributeValue( true ,"337770AE-6D2B-4C05-B8C1-125896CEB06A","F466A748-9917-4A61-9B45-42821E2DCA6C",@"c70e547b-f058-4cdd-9a97-55a2d1f8650a,f031eafe-959b-4ccc-897b-290784689fd1");
@@ -517,8 +517,8 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteAttribute( "36B8E89B-E7BC-4060-BFEB-7B42B93B3921" );
             
             // Remove Block
-            //  Name: Communication Flow Message Performance, from Page: Communication Flow Message Performance, Site: Rock RMS
-            //  from Page: Communication Flow Message Performance, Site: Rock RMS
+            //  Name: Communication Flow Instance Message Metrics, from Page: Communication Flow Instance Message Metrics, Site: Rock RMS
+            //  from Page: Communication Flow Instance Message Metrics, Site: Rock RMS
             RockMigrationHelper.DeleteBlock("F55FE6F1-4C93-4A37-A6DB-38A840E46637");
 
             // Remove Block
@@ -537,10 +537,10 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlock( "4E637F21-5B5A-4CF0-A06B-B54020B4485A" );
             
             // Delete BlockType 
-            //   Name: Communication Flow Message Performance
+            //   Name: Communication Flow Instance Message Metrics
             //   Category: Communication
             //   Path: -
-            //   EntityType: Communication Flow Message Performance
+            //   EntityType: Communication Flow Instance Message Metrics
             RockMigrationHelper.DeleteBlockType("039ADBBE-4158-47C8-AE05-181DF42E990C");
 
             // Delete BlockType 
@@ -565,7 +565,7 @@ namespace Rock.Migrations
             RockMigrationHelper.DeleteBlockType( "08233FC4-3E15-42F9-97BF-1BFF89A7A0D0" );
 
             // Delete Page 
-            //  Internal Name: Communication Flow Message Performance
+            //  Internal Name: Communication Flow Instance Message Metrics
             //  Site: Rock RMS
             //  Layout: Full Width
             RockMigrationHelper.DeletePage( "C70E547B-F058-4CDD-9A97-55A2D1F8650A" );
