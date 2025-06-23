@@ -57,7 +57,7 @@
                 :name="getField('clicks')"
                 title="Click Rate">
             <template #format="{ row }">
-                {{ `${getRow(row).sent ? 0 : Math.round(getRow(row).clicks / getRow(row).sent * 100)}%` }}
+                {{ `${getRow(row).sent === 0 ? 0 : Math.round(getRow(row).clicks / getRow(row).sent * 100)}%` }}
             </template>
         </Column>
     </Grid>
