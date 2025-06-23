@@ -331,7 +331,7 @@ namespace Rock.Model
     /// <summary>
     /// Statement of Progress for an Achievement Type
     /// </summary>
-    public class ProgressStatement : ILiquidizable, ILavaDataDictionary
+    public class ProgressStatement : ILavaDataDictionary
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="ProgressStatement" /> class.
@@ -417,7 +417,31 @@ namespace Rock.Model
         /// <returns></returns>
         public object GetValue( string key )
         {
-            return this[key];
+            var propInfo = GetType().GetProperty( key );
+
+            try
+            {
+                object propValue = null;
+                if ( propInfo != null && LiquidizableProperty( propInfo ) )
+                {
+                    propValue = propInfo.GetValue( this, null );
+                }
+
+                if ( propValue is Guid )
+                {
+                    return ( ( Guid ) propValue ).ToString();
+                }
+                else
+                {
+                    return propValue;
+                }
+            }
+            catch
+            {
+                // intentionally ignore
+            }
+
+            return null;
         }
 
         #region ILiquidizable
@@ -426,6 +450,8 @@ namespace Rock.Model
         /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
         /// </summary>
         /// <returns>DotLiquid compatible dictionary.</returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return this;
@@ -464,6 +490,8 @@ namespace Rock.Model
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object GetValue( object key )
         {
             return this[key];
@@ -495,6 +523,8 @@ namespace Rock.Model
         /// <param name="key">The key.</param>
         /// <returns></returns>
         [LavaHidden]
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public virtual object this[object key]
         {
             get
@@ -533,6 +563,8 @@ namespace Rock.Model
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public virtual bool ContainsKey( object key )
         {
             string propertyKey = key.ToStringSafe();

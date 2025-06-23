@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 #if REVIEW_NET5_0_OR_GREATER
@@ -29,11 +30,7 @@ namespace Rock.Model
     /// </summary>
     [Table( "GroupTypeLocationType" )]
     [DataContract]
-#if REVIEW_NET5_0_OR_GREATER
-    public class GroupTypeLocationType : ILavaDataDictionarySource
-#else
-    public class GroupTypeLocationType: DotLiquid.ILiquidizable, ILavaDataDictionarySource
-#endif
+    public class GroupTypeLocationType: ILavaDataDictionarySource
     {
         /// <summary>
         /// Gets or sets the Id of the <see cref="Rock.Model.GroupType"/>. This property is required, and is part of the key.
@@ -90,6 +87,8 @@ namespace Rock.Model
         /// To the liquid.
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return LocationTypeValue;

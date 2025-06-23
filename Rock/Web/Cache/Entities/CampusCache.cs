@@ -457,9 +457,6 @@ namespace Rock.Web.Cache
 		[Serializable]
         [DataContract]
         [LavaType( "Day", "Time" )]
-#if REVIEW_WEBFORMS
-        [DotLiquid.LiquidType( "Day", "Time" )]
-#endif
         public class ServiceTime
         {
             /// <summary>
@@ -487,9 +484,6 @@ namespace Rock.Web.Cache
         [Serializable]
         [DataContract]
         [LavaType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude", "ImageUrl" )]
-#if REVIEW_WEBFORMS
-        [DotLiquid.LiquidType( "Street1", "Street2", "City", "State", "PostalCode", "Country", "Latitude", "Longitude", "ImageUrl" )]
-#endif
         public class CampusLocation
         {
             /// <summary>

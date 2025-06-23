@@ -24,6 +24,7 @@ namespace Rock.Lava
     /// This is a Rock-specific superset of the same-named DotLiquid interface.
     /// </summary>
     [RockObsolete( "1.13.0" )] // "Implement the Rock.Lava.ILavaDataDictionary interface instead."
+    [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
 #if REVIEW_NET5_0_OR_GREATER
     public interface ILiquidizable
 #else

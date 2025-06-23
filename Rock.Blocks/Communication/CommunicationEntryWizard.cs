@@ -394,15 +394,9 @@ namespace Rock.Blocks.Communication
                 box.ShortLinkSites = GetShortLinkEnabledSites();
                 box.SmsFromNumbers = GetSmsFromNumberBags( currentPerson );
                 // The Twilio transport was used by the old block to validate SMS attachments.
-#if REVIEW_WEBFORMS
-                box.SmsAcceptedMimeTypes = Twilio.AcceptedMimeTypes.ToList();
-                box.SmsMediaSizeLimitBytes = Twilio.MediaSizeLimitBytes;
-                box.SmsSupportedMimeTypes = Twilio.SupportedMimeTypes.ToList();
-#else
                 box.SmsAcceptedMimeTypes = Rock.Communication.Transport.Twilio.AcceptedMimeTypes.ToList();
                 box.SmsMediaSizeLimitBytes = Rock.Communication.Transport.Twilio.MediaSizeLimitBytes;
                 box.SmsSupportedMimeTypes = Rock.Communication.Transport.Twilio.SupportedMimeTypes.ToList();
-#endif
                 box.Templates = ConvertToTemplateBags( communicationTemplateInfoList );
                 box.VideoProviderNames = Rock.Communication.VideoEmbed.VideoEmbedContainer.Instance.Dictionary.Select( c => c.Value.Key ).ToList();
 

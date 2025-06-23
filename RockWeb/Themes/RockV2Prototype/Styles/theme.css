@@ -63,14 +63,64 @@ body.navbar-side-open {
   font-weight: 700;
   margin: 0;
 }
-@media (max-width: 991px) {
+@media (max-width: 1200px) {
   .header-content .page-title-display {
     display: none;
   }
 }
 
 .main-content {
-  padding: var(--spacing-medium) var(--spacing-medium) var(--spacing-xsmall) var(--spacing-medium);
+  margin: var(--spacing-medium) var(--spacing-medium);
+}
+.main-content #page-content {
+  min-height: 600px;
+}
+
+.main-content .page-header.fullwidth {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  color: var(--color-interface-strong);
+  background-color: var(--color-interface-softest);
+  border-radius: var(--rounded-medium);
+  border: 1px solid var(--color-interface-soft);
+  padding: var(--spacing-medium) var(--spacing-large);
+  margin: 0 0 var(--spacing-medium) 0;
+}
+.main-content .page-header.fullwidth .title {
+  margin: 0;
+  font-size: 24px;
+  font-weight: var(--font-weight-bold);
+}
+.main-content .page-header.fullwidth .page-icon {
+  display: none;
+}
+.main-content .page-header.fullwidth .breadcrumb {
+  padding: 0;
+  margin-top: var(--spacing-tiny);
+  font-size: var(--font-size-xsmall);
+}
+.main-content .page-header.fullwidth .breadcrumb a:hover {
+  text-decoration: underline;
+}
+.main-content .page-header.fullwidth .breadcrumb i {
+  display: none;
+}
+.main-content .page-header.fullwidth .breadcrumb > li + li::before {
+  font-family: FontAwesome;
+  font-size: 80%;
+  font-weight: 900;
+  content: "\f054";
+}
+@media (min-width: 1200px) {
+  .main-content .page-header.fullwidth {
+    display: none;
+  }
+}
+@media (min-width: 992px) {
+  .main-content {
+    padding: 0;
+  }
 }
 
 .main-footer:has(.html-content) {
@@ -339,6 +389,7 @@ body.navbar-side-open {
   align-items: center;
   padding: 0 0;
   color: var(--color-interface-strong);
+  gap: 0;
 }
 @media (max-width: 991px) {
   .rock-top-header .loginstatus > li > a {
@@ -414,7 +465,6 @@ body.navbar-side-open {
 .nav-pills > li > a {
   color: var(--color-interface-strong);
   background-color: var(--color-interface-softer);
-  border: 1px solid var(--color-interface-soft);
 }
 
 .navbar-static-side {
@@ -908,6 +958,16 @@ a.rock-bookmark {
 }
 .panel-body .actions:last-of-type > * {
   margin: 4px 8px 4px 0;
+}
+.panel-body .actions:last-of-type .footer-actions,
+.panel-body .actions:last-of-type .footer-secondary-actions {
+  margin: 0;
+}
+.panel-body .actions:last-of-type .footer-actions > * {
+  margin: 4px 8px 4px 0;
+}
+.panel-body .actions:last-of-type .footer-secondary-actions > * {
+  margin: 0 0 0 4px;
 }
 
 .panel-analytics .panel-body > .row > * {

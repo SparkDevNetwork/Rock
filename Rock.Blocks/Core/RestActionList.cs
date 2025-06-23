@@ -43,10 +43,6 @@ namespace Rock.Blocks.Core
     [IconCssClass( "fa fa-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
-    [LinkedPage( "Detail Page",
-        Description = "The page that will show the rest action details.",
-        Key = AttributeKey.DetailPage )]
-
     [Rock.SystemGuid.EntityTypeGuid( "c8ee0e9b-7f66-488c-b3a6-357ebc62b174" )]
     [Rock.SystemGuid.BlockTypeGuid( "2eafa987-79c6-4477-a181-63392aa24d20" )]
     [CustomizedGrid]
@@ -55,12 +51,10 @@ namespace Rock.Blocks.Core
         #region Keys
         private static class AttributeKey
         {
-            public const string DetailPage = "DetailPage";
         }
 
         private static class NavigationUrlKey
         {
-            public const string DetailPage = "DetailPage";
         }
 
         private static class PageParameterKey
@@ -128,8 +122,7 @@ namespace Rock.Blocks.Core
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
             return new Dictionary<string, string>
-            {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "Controller", "((Key))" )
+            {  
             };
         }
 

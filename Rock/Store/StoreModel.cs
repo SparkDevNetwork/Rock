@@ -23,11 +23,7 @@ namespace Rock.Store
     /// <summary>
     /// Base model class for the store 
     /// </summary>
-#if REVIEW_NET5_0_OR_GREATER
     public class StoreModel : ILavaDataDictionarySource
-#else
-    public class StoreModel : DotLiquid.ILiquidizable, ILavaDataDictionarySource
-#endif
     {
         /// <summary>
         /// Initializes a new instance of the <see cref="StoreModel"/> class.
@@ -45,6 +41,8 @@ namespace Rock.Store
         /// Creates a DotLiquid compatible dictionary that represents the current entity object. 
         /// </summary>
         /// <returns>DotLiquid compatible dictionary.</returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return this.ToLiquid( false );

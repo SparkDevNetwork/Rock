@@ -444,6 +444,10 @@ namespace Rock.Jobs
                 {
                     rebuildFillFactorOption = "FILLFACTOR = 100";
                 }
+                else if ( indexInfo.FillFactor == 0 )
+                {
+                    rebuildFillFactorOption = "FILLFACTOR = 100";
+                }
 
                 var shouldExecuteRebuild = ( indexInfo.FragmentationPercent > minimumFragmentationPercentage ) || isFillFactorEighty;
                 if ( shouldExecuteRebuild )

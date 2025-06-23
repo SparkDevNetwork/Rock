@@ -17,12 +17,13 @@
 
 using System.Collections.Generic;
 
+using Rock.Enums.Communication;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationSaturationReport
 {
     /// <summary>
-    /// The additional configuration options for the Communication Recipient List block.
+    /// The filter options for the Communication Saturation Report block.
     /// </summary>
     public class CommunicationSaturationReportFiltersBag
     {
@@ -46,7 +47,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationSaturationReport
         /// <summary>
         /// The communication medium(s) to filter results of the report by.
         /// </summary>
-        public List<string> Medium { get; set; } = new List<string> { "1" };
+        public List<string> Medium { get; set; } = new List<string> { CommunicationType.Email.ToString() };
 
         /// <summary>
         /// Whether or not to include only bulk communications or all communications in the report.

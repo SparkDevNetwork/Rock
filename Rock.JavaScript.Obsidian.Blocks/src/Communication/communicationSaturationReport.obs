@@ -23,7 +23,6 @@
                                         label="Connection Status"
                                         help="Filter the report by the level of recipients’ involvement."
                                         showBlankItem />
-
                 </div>
             </div>
             <div class="row">
@@ -105,10 +104,16 @@
 
     // #region Top Filter
 
-    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(config.filters?.dateRangeDelimitedString ?? "Last|1|Month||"));
+    type CommunicationTypeString = `${typeof CommunicationType[keyof typeof CommunicationType]}`;
+
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(config.filters?.dateRangeDelimitedString ?? "") ?? {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 1
+    });
     const dataView = ref<ListItemBag>(config.filters?.dataView ?? {});
     const connectionStatus = ref<ListItemBag | null | undefined>(config.filters?.connectionStatus);
-    const medium = ref<string[]>(config.filters?.medium ?? []);
+    const medium = ref<CommunicationTypeString[]>((config.filters?.medium ?? []) as CommunicationTypeString[]);
     const bulkOnly = ref<boolean>(config.filters?.bulkOnly ?? true);
 
     const communicationTypes = clone(CommunicationTypeDescription);

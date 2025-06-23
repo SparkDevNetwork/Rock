@@ -95,7 +95,7 @@ namespace Rock.Blocks.Core
         {
             var options = new ServiceJobDetailOptionsBag
             {
-                JobTypeOptions = ServiceJobService.GetJobTypes(),
+                JobTypeOptions = ServiceJobService.GetJobTypeOptions(),
                 NotificationStatusOptions = GetNotificationStatusOptions()
             };
 

@@ -6,29 +6,29 @@
                 <HighlightLabel labelType="info">Hello</HighlightLabel>
             </div>
 
-            <ConnectedListButton aside="hello@triumph.tech"
-                                 asideIconCssClass="fa fa-user"
-                                 badgeText="Step 1"
-                                 iconCssClass="fa fa-chart-line"
-                                 description="This step calculates weekly growth based on new signups."
-                                 :primaryActions="primaryActions"
-                                 :secondaryActions="secondaryActions"
-                                 title="Growth Metrics"
-                                 @click="onClick" />
+            <ConnectedListItem aside="hello@triumph.tech"
+                               asideIconCssClass="fa fa-user"
+                               badgeText="Step 1"
+                               iconCssClass="fa fa-chart-line"
+                               description="This step calculates weekly growth based on new signups."
+                               :primaryActions="primaryActions"
+                               :secondaryActions="secondaryActions"
+                               title="Growth Metrics"
+                               @click="onClick" />
 
             <div v-if="showCustomElements" style="text-align: center;">
                 <HighlightLabel labelType="info">World</HighlightLabel>
             </div>
 
-            <ConnectedListButton aside="hello@triumph.tech"
-                                 asideIconCssClass="fa fa-user"
-                                 badgeText="Step 2"
-                                 iconCssClass="fa fa-chart-line"
-                                 description="This step calculates weekly growth based on new signups."
-                                 :primaryActions="primaryActions"
-                                 :secondaryActions="secondaryActions"
-                                 title="Growth Metrics"
-                                 @click="onClick" />
+            <ConnectedListItem aside="hello@triumph.tech"
+                               asideIconCssClass="fa fa-user"
+                               badgeText="Step 2"
+                               iconCssClass="fa fa-chart-line"
+                               description="This step calculates weekly growth based on new signups."
+                               :primaryActions="primaryActions"
+                               :secondaryActions="secondaryActions"
+                               title="Growth Metrics"
+                               @click="onClick" />
 
             <ConnectedListAddButton @click="onClick" />
         </ConnectedList>
@@ -47,12 +47,12 @@
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import ConnectedList from "@Obsidian/Controls/connectedList.obs";
     import ConnectedListAddButton from "@Obsidian/Controls/connectedListAddButton.obs";
-    import ConnectedListButton from "@Obsidian/Controls/connectedListButton.obs";
+    import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
 
-    const importCode = `import ConnectedListButton from "@Obsidian/Controls/connectedListButton.obs";`;
+    const importCode = `import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";`;
 
     const hideConnectors = ref<boolean>(false);
     const showCustomElements = ref<boolean>(false);
@@ -87,29 +87,29 @@
         <HighlightLabel labelType="info">Hello</HighlightLabel>
     </div>
 ` : ""}
-    <ConnectedListButton aside="hello@triumph.tech"
-                         asideIconCssClass="fa fa-user"
-                         badgeText="Step 1"
-                         iconCssClass="fa fa-chart-line"
-                         description="This step calculates weekly growth based on new signups."
-                         :primaryActions="${JSON.stringify(primaryActions, null, 2).replace(/\n/g, "\n                         ").replace(/"/g, "'")}"
-                         :secondaryActions="${JSON.stringify(secondaryActions, null, 2).replace(/\n/g, "\n                         ").replace(/"/g, "'")}"
-                         title="Growth Metrics"
-                         @click="onClick" />${showCustomElements.value ? `
+    <ConnectedListItem aside="hello@triumph.tech"
+                       asideIconCssClass="fa fa-user"
+                       badgeText="Step 1"
+                       iconCssClass="fa fa-chart-line"
+                       description="This step calculates weekly growth based on new signups."
+                       :primaryActions="${JSON.stringify(primaryActions, null, 2).replace(/\n/g, "\n                       ").replace(/"/g, "'")}"
+                       :secondaryActions="${JSON.stringify(secondaryActions, null, 2).replace(/\n/g, "\n                       ").replace(/"/g, "'")}"
+                       title="Growth Metrics"
+                       @click="onClick" />${showCustomElements.value ? `
 
     <div style="text-align: center;">
         <HighlightLabel labelType="info">World</HighlightLabel>
     </div>` : ""}
 
-    <ConnectedListButton aside="hello@triumph.tech"
-                         asideIconCssClass="fa fa-user"
-                         badgeText="Step 2"
-                         iconCssClass="fa fa-chart-line"
-                         description="This step calculates weekly growth based on new signups."
-                         :primaryActions="${JSON.stringify(primaryActions, null, 2).replace(/\n/g, "\n                         ").replace(/"/g, "'")}"
-                         :secondaryActions="${JSON.stringify(secondaryActions, null, 2).replace(/\n/g, "\n                         ").replace(/"/g, "'")}"
-                         title="Growth Metrics"
-                         @click="onClick" />
+    <ConnectedListItem aside="hello@triumph.tech"
+                       asideIconCssClass="fa fa-user"
+                       badgeText="Step 2"
+                       iconCssClass="fa fa-chart-line"
+                       description="This step calculates weekly growth based on new signups."
+                       :primaryActions="${JSON.stringify(primaryActions, null, 2).replace(/\n/g, "\n                       ").replace(/"/g, "'")}"
+                       :secondaryActions="${JSON.stringify(secondaryActions, null, 2).replace(/\n/g, "\n                       ").replace(/"/g, "'")}"
+                       title="Growth Metrics"
+                       @click="onClick" />
 
     <ConnectedListAddButton @click="onClick" />
 </ConnectedList>`;

@@ -81,13 +81,11 @@
     const hasResults = ref(true);
 
     watch(() => props.gridData, async () => {
-        console.log("Grid data changed", props.gridData);
         if (isPromise(props.gridData)) {
             isLoading.value = true;
             hasResults.value = false;
-            await props.gridData;
-            isLoading.value = false;
-            hasResults.value = ((props.gridData as GridDataBag)?.rows?.length ?? 0) > 0;
+            // Don't need to await here. The loadGridData function in the parent component never resolves the promise.
+            // Rather, it just reassigns the prop to the value.
         }
         else {
             isLoading.value = false;

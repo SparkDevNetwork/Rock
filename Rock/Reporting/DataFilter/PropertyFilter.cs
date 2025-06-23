@@ -286,6 +286,11 @@ namespace Rock.Reporting.DataFilter
                 filterValue = entityField.FieldType.Field.GetPrivateFilterValue( comparisonValue, entityField.FieldConfig.ToDictionary( c => c.Key, c => c.Value.Value ) ).FromJsonOrNull<List<string>>();
             }
 
+            if ( filterValue.Count >= 2 && filterValue[0] == "0" )
+            {
+                filterValue = filterValue.Skip( 1 ).ToList();
+            }
+
             selectionValues.Add( entityField.UniqueName );
             selectionValues = selectionValues.Concat( filterValue ).ToList();
 

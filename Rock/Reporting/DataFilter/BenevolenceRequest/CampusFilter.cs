@@ -33,7 +33,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Benevolence Request Campus Filter" )]
     [Rock.SystemGuid.EntityTypeGuid( "567E2CE5-002A-4DD1-86BF-B21269E81A63" )]
-    public class CampusFilter : BaseCampusFilter, IUpdateSelectionFromPageParameters
+    public class CampusFilter : BaseCampusFilter, IUpdateSelectionFromRockRequestContext
     {
         #region Properties
 
@@ -85,7 +85,7 @@ namespace Rock.Reporting.DataFilter.BenevolenceRequest
         /// <value>
         /// The client format script.
         /// </value>
-        public override string GetClientFormatSelection(Type entityType)
+        public override string GetClientFormatSelection( Type entityType )
         {
             return $@"
 function() {{
@@ -121,20 +121,21 @@ function() {{
 
 #if REVIEW_WEBFORMS
         /// <summary>
-        /// Updates the selection from page parameters.
+        /// Updates the selection from parameters on the request.
         /// </summary>
         /// <param name="selection">The selection.</param>
-        /// <param name="rockBlock">The rock block.</param>
+        /// <param name="requestContext">The rock request context.</param>
+        /// <param name="rockContext">The rock database context.</param>
         /// <returns></returns>
-        public string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        public string UpdateSelectionFromRockRequestContext( string selection, Rock.Net.RockRequestContext requestContext, RockContext rockContext )
         {
             string[] selectionValues = selection?.Split( '|' ) ?? new string[] { "" };
             if ( selectionValues.Length >= 1 )
             {
-                var campusId = rockBlock.PageParameter( "CampusId" ).AsIntegerOrNull();
+                var campusId = requestContext.GetPageParameter( "CampusId" ).AsIntegerOrNull();
                 if ( campusId == null )
                 {
-                    var campusEntity = rockBlock.ContextEntity<Campus>();
+                    var campusEntity = requestContext.GetContextEntity<Campus>();
                     if ( campusEntity != null )
                     {
                         campusId = campusEntity.Id;

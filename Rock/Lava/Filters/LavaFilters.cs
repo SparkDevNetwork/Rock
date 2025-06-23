@@ -3534,11 +3534,19 @@ namespace Rock.Lava
             {
                 case "Title":
                     {
+                        if (page != null)
+                        {
+                            return page.PageTitle;
+                        }
                         return pageCache.PageTitle;
                     }
 
                 case "BrowserTitle":
                     {
+                        if (page != null)
+                        {
+                            return page.BrowserTitle;
+                        }
                         return pageCache.BrowserTitle;
                     }
 
@@ -4048,8 +4056,10 @@ namespace Rock.Lava
         /// <param name="siteId">The site identifier.</param>
         /// <param name="overwrite">if set to <c>true</c> [overwrite].</param>
         /// <param name="randomLength">The random length.</param>
+        /// <param name="categoryId">The category identifier.</param>
+        /// <param name="isPinned">The isPinned indicator.</param>
         /// <returns></returns>
-        public static string CreateShortLink( ILavaRenderContext context, object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10 )
+        public static string CreateShortLink( ILavaRenderContext context, object input, string token = "", int? siteId = null, bool overwrite = false, int randomLength = 10, int? categoryId = null, bool isPinned = false )
         {
             // Notes: This filter attempts to return a valid shortlink at all costs
             //        this means that if the configuration passed to it is invalid
@@ -4112,9 +4122,20 @@ namespace Rock.Lava
                 shortLinkService.Add( shortLink );
             }
 
+            if ( categoryId.HasValue )
+            {
+                var category = CategoryCache.Get( categoryId.Value );
+                if ( category == null || category.EntityTypeId != EntityTypeCache.GetId<PageShortLink>() )
+                {
+                    categoryId = null;
+                }
+            }
+
             shortLink.Token = token;
             shortLink.SiteId = siteId.Value;
             shortLink.Url = input.ToString();
+            shortLink.CategoryId = categoryId;
+            shortLink.IsPinned = isPinned;
             rockContext.SaveChanges();
 
             return shortLink.ShortLinkUrl;

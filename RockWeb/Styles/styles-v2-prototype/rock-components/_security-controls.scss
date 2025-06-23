@@ -41,6 +41,13 @@
   }
 }
 
+.dropdown-toggle.navbar-link {
+  display: flex;
+  align-items: center;
+  justify-content: end;
+  gap: var(--spacing-xsmall);
+}
+
 .loginstatus {
   margin: 0;
 

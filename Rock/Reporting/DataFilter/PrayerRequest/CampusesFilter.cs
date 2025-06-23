@@ -24,7 +24,6 @@ using System.Linq.Expressions;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 
 namespace Rock.Reporting.DataFilter.PrayerRequest
 {
@@ -35,7 +34,7 @@ namespace Rock.Reporting.DataFilter.PrayerRequest
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Prayer Request Campuses Filter" )]
     [Rock.SystemGuid.EntityTypeGuid( "E693B7FC-FB8C-4422-8A8B-0E49C592F5A5" )]
-    public class CampusesFilter : BaseCampusesFilter, IUpdateSelectionFromPageParameters
+    public class CampusesFilter : BaseCampusesFilter, IUpdateSelectionFromRockRequestContext
     {
         #region Properties
 
@@ -180,19 +179,20 @@ function() {{
 
 #if REVIEW_WEBFORMS
         /// <summary>
-        /// Updates the selection from page parameters.
+        /// Updates the selection from parameters on the request.
         /// </summary>
         /// <param name="selection">The selection.</param>
-        /// <param name="rockBlock">The rock block.</param>
+        /// <param name="requestContext">The rock request context.</param>
+        /// <param name="rockContext">The rock database context.</param>
         /// <returns></returns>
-        public string UpdateSelectionFromPageParameters( string selection, RockBlock rockBlock )
+        public string UpdateSelectionFromRockRequestContext( string selection, Rock.Net.RockRequestContext requestContext, RockContext rockContext )
         {
             string[] selectionValues = selection?.Split( '|' ) ?? new string[] { "" };
             if ( selectionValues.Length >= 1 )
             {
                 // check for either a CampusId or CampusIds parameter
-                var campusIds = rockBlock.PageParameter( "CampusId" )?.SplitDelimitedValues().AsIntegerList();
-                campusIds = campusIds ?? rockBlock.PageParameter( "CampusIds" )?.SplitDelimitedValues().AsIntegerList() ?? new List<int>();
+                var campusIds = requestContext.GetPageParameter( "CampusId" )?.SplitDelimitedValues().AsIntegerList();
+                campusIds = campusIds ?? requestContext.GetPageParameter( "CampusIds" )?.SplitDelimitedValues().AsIntegerList() ?? new List<int>();
 
                 if ( campusIds.Any() )
                 {

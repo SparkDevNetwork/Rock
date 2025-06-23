@@ -290,11 +290,7 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             }
         }
 
-#if REVIEW_NET5_0_OR_GREATER
         private class LavaDataDictionaryExtension : ILavaDataDictionary
-#else
-        private class LavaDataDictionaryExtension : ILavaDataDictionary, DotLiquid.ILiquidizable, DotLiquid.IIndexable
-#endif
         {
             private readonly ILavaDataDictionary _baseObject;
             private readonly Dictionary<string, PropertyInfo> _additionalKeys;
@@ -354,28 +350,6 @@ namespace Rock.Blocks.Event.InteractiveExperiences
             }
 
             #endregion
-
-#if REVIEW_WEBFORMS
-            #region ILiquidizable
-
-            object DotLiquid.ILiquidizable.ToLiquid()
-            {
-                return this;
-            }
-
-            #endregion
-
-            #region IIndexable
-
-            object DotLiquid.IIndexable.this[object key] => GetValue( key.ToString() );
-
-            bool DotLiquid.IIndexable.ContainsKey( object key )
-            {
-                return GetAllAvailableKeys().Contains( key );
-            }
-
-            #endregion
-#endif
         }
 
         #endregion

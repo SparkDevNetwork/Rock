@@ -430,5 +430,10 @@ namespace Rock.Mobile
         /// The entra authentication component.
         /// </summary>
         public Guid? EntraAuthenticationComponent { get; set; }
+
+        /// <summary>
+        /// Gets or sets the dark theme CSS style.
+        /// </summary>
+        public int? DarkFavIconBinaryFileId { get; set; }
     }
 }

@@ -5,10 +5,10 @@
             <div class="connected-list-item">
                 <div v-if="index > 0"
                      :class="[
-                        'connected-list-connector',
-                        entry.showConnectorTip ? 'connected-list-connector-tip' : '',
-                        hideConnectors ? 'connected-list-connector-transparent' : ''
-                    ]"></div>
+                         'connected-list-connector',
+                         entry.showConnectorTip ? 'connected-list-connector-tip' : '',
+                         hideConnectors ? 'connected-list-connector-transparent' : ''
+                     ]"></div>
 
                 <component :is="entry.vnode" />
             </div>
@@ -47,7 +47,7 @@
 
 <script setup lang="ts">
     import { computed, PropType, useSlots, VNode, VNodeTypes } from "vue";
-    import ConnectedListButton from "./connectedListButton.obs";
+    import ConnectedListItem from "./connectedListItem.obs";
     import ConnectedListAddButton from "./connectedListAddButton.obs";
 
     type DecoratedChild = {
@@ -56,7 +56,7 @@
     };
 
     const slots = useSlots();
-    const baseTippableConnectorTargets: VNodeTypes[] = [ConnectedListButton, ConnectedListAddButton];
+    const baseTippableConnectorTargets: VNodeTypes[] = [ConnectedListItem, ConnectedListAddButton];
 
     const props = defineProps({
         tippableConnectorTargets: {

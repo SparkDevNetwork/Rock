@@ -772,7 +772,7 @@ namespace Rock.Lava.Blocks
         {
             // If the database is not connected, we do not have access to entity definitions.
             // This can occur when the Lava engine is started without an attached database.
-            if ( !RockApp.Current.GetDatabaseConfiguration().IsDatabaseAvailable )
+            if ( RockApp.Current == null || !RockApp.Current.GetDatabaseConfiguration().IsDatabaseAvailable )
             {
                 return;
             }

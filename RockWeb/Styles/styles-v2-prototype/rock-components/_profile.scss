@@ -1,4 +1,8 @@
-
+.main-content:has(.profile-content) {
+  max-width: 100%;
+  padding: 0 !important;
+  margin: 0 !important;
+}
 
 .profile-nav {
   display: flex;
@@ -11,7 +15,7 @@
 
   @media (min-width: $screen-small) {
     flex-wrap: nowrap;
-    border: 1px solid var(--color-interface-soft);
+    border-bottom: 1px solid var(--color-interface-soft);
     justify-content: space-between;
   }
 
