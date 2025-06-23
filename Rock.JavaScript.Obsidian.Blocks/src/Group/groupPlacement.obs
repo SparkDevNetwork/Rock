@@ -22,7 +22,7 @@
         </template>
 
         <template #headerActions>
-            <div class="d-flex gap-1 mr-3">
+            <div class="d-flex gap-1">
                 <DropDownList v-model="fallbackRegistrationTemplatePlacement"
                               v-if="box.registrationTemplatePlacements"
                               :items="box.registrationTemplatePlacements"
@@ -89,7 +89,7 @@
                                     :btnSize="BtnSize.Small"
                                     :isSquare="true"
                                     title="Search People"
-                                    :class="['mr-3', { 'active': isPersonSearchVisible }]"
+                                    :class="{ 'active': isPersonSearchVisible }"
                                     @click="toggleIsPersonSearchVisible">
                             <i class="fa fa-search"></i>
                         </RockButton>
@@ -201,7 +201,7 @@
                        :isDrawerOpen="isGroupFilterDrawerOpen"
                        @update:isDrawerOpen="isGroupFilterDrawerOpen = !isGroupFilterDrawerOpen">
                     <template #headerActions>
-                        <div class="d-flex gap-1 mr-3">
+                        <div class="d-flex gap-1">
                             <RockButton :btnType="BtnType.Default"
                                         :btnSize="BtnSize.Small"
                                         title="Add Group"
@@ -336,7 +336,7 @@
 :deep(.panel-default>.panel-heading) {
     background-color: var(--color-interface-softest);
     border-color: var(--color-interface-softer);
-    color: #2d2e31;
+    color: var(--color-interface-stronger);
 }
 
 /* Work-around to allow the height to descend (through the fullscreen div) all the way down to panel-body */
@@ -365,7 +365,7 @@
 }
 
 .dropdown-menu li.selected {
-    background-color: #e6f7ff;
+    background-color: var(--color-interface-soft);
 }
 
 .dropdown-menu li.selected > a {
@@ -517,7 +517,6 @@
     import { GroupPlacementInitializationBox } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupPlacementInitializationBox";
     import { DragSource as vDragSource, DragTarget as vDragTarget, IDragSourceOptions } from "@Obsidian/Directives/dragDrop";
     import { RealTimeConnectionKeysBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/realTimeConnectionKeysBag";
-    import { PreferenceKey, SortTypes, NavigationUrlKey } from "./GroupPlacement/types.partial";
     import { GroupMemberUpdatedMessageBag } from "@Obsidian/ViewModels/Group/GroupMember/groupMemberUpdatedMessageBag";
     import { AttributeFiltersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/attributeFiltersBag";
     import { AddGroupMembersBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupMembersBag";
@@ -526,25 +525,26 @@
     import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
     import { DetachGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/detachGroupBag";
     import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
+    import { PreferenceKey, SortTypes, NavigationUrlKey } from "./GroupPlacement/types.partial";
     import { AddGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/addGroupBag";
     import { onMounted, ref, nextTick, computed, watch, onBeforeUnmount, toRaw } from "vue";
     import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { isNullOrWhiteSpace, safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { getTopic, ITopic, ServerFunctions } from "@Obsidian/Utility/realTime";
     import { ComparisonValue } from "@Obsidian/Types/Reporting/comparisonValue";
     import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
-    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
     import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { getFieldType } from "@Obsidian/Utility/fieldTypes";
-    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { debounce } from "@Obsidian/Utility/util";
+    import { newGuid } from "@Obsidian/Utility/guid";
     import { Guid } from "@Obsidian/Types";
     import Panel from "@Obsidian/Controls/panel.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -628,14 +628,14 @@
     const registrantFeeItemsForFilter = ref<ListItemBag[]>([]);
     const destinationGroupAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
     const destinationGroupMemberAttributesForFilter = ref<Record<string, PublicAttributeBag>>({});
-    const sourceAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
-    const registrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
-    const destinationAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
-    const destinationMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
-    const pendingSourceAttributeValuesForFilter = ref(preferences.getValue(getPersonAttributeFilterKey()) ? JSON.parse(preferences.getValue(getPersonAttributeFilterKey())) : {});
-    const pendingRegistrantFeeItemValuesForFilter = ref(preferences.getValue(getRegistrantFeeItemValuesFilterKey()) ? JSON.parse(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) : {});
-    const pendingDestinationGroupAttributeValuesForFilter = ref(preferences.getValue(getGroupAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupAttributeFilterKey())) : {});
-    const pendingDestinationGroupMemberAttributeValuesForFilter = ref(preferences.getValue(getGroupMemberAttributeFilterKey()) ? JSON.parse(preferences.getValue(getGroupMemberAttributeFilterKey())) : {});
+    const sourceAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getPersonAttributeFilterKey())) ?? {});
+    const registrantFeeItemValuesForFilter = ref<string[]>(safeParseJson(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) ?? []);
+    const destinationAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getGroupAttributeFilterKey())) ?? {});
+    const destinationMemberAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getGroupMemberAttributeFilterKey())) ?? {});
+    const pendingSourceAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getPersonAttributeFilterKey())) ?? {});
+    const pendingRegistrantFeeItemValuesForFilter = ref<string[]>(safeParseJson(preferences.getValue(getRegistrantFeeItemValuesFilterKey())) ?? []);
+    const pendingDestinationGroupAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getGroupAttributeFilterKey())) ?? {});
+    const pendingDestinationGroupMemberAttributeValuesForFilter = ref<Record<string, string>>(safeParseJson(preferences.getValue(getGroupMemberAttributeFilterKey())) ?? {});
     const sourcePerson = ref<PersonBag | null | undefined>(box.sourcePerson);
     const personSearchText = ref<string>("");
     const personSearchContainerElement = ref<HTMLElement>();
@@ -645,7 +645,7 @@
     // #region Configuration Values
 
     const addGroupModalElement = ref<InstanceType<typeof AddGroupModal>>();
-    const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(preferences.getValue(getPlacementConfigurationSettingsKey()) ? JSON.parse(preferences.getValue(getPlacementConfigurationSettingsKey())) : {} as PlacementConfigurationSettingsBag);
+    const placementConfigurationSettings = ref<PlacementConfigurationSettingsBag>(safeParseJson(preferences.getValue(getPlacementConfigurationSettingsKey())) ?? {} as PlacementConfigurationSettingsBag);
     const isPlacementConfigModalVisible = ref(false);
     const isAddGroupModalVisible = ref(false);
     const fallbackRegistrationTemplatePlacement = ref(preferences.getValue(PreferenceKey.FallbackRegistrationTemplatePlacement));
@@ -1086,7 +1086,7 @@
 
                     const emptyDropZone = operation.targetContainer.querySelector(".empty-drop-zone");
 
-                    if (emptyDropZone) {
+                    if (emptyDropZone && !isGenderHighlighting.value) {
                         emptyDropZone.classList.add("is-drag-over");
                     }
                 }
