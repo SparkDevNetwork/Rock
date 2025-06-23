@@ -15,7 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Linq;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -317,6 +320,31 @@ namespace Rock.Reporting
                 return $"{_message} [ReportFieldId: {_reportField?.Id}, ReportId: {_report?.Id}]";
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Exception" />
+    public sealed class RockCircularReferenceException : RockReportingException
+    {
+        private readonly string _message;
+
+        public RockCircularReferenceException( string message, List<int> trail, int otherDataViewId, RockContext rockContext )
+            : base( message )
+        {
+            var dataViewService = new DataViewService( rockContext );
+
+            var dataViewNames = trail.Select( id => dataViewService.Get( id )?.Name ?? $"ID:{id}" ).ToList();
+            var otherDataViewName = dataViewService.Get( otherDataViewId )?.Name ?? $"ID:{otherDataViewId}";
+
+            dataViewNames.Add( otherDataViewName );
+            var circularTrail = dataViewNames.AsDelimited( " -> " );
+
+            _message = $"{message}: {circularTrail}";
+        }
+
+        public override string Message => _message;
     }
 
     /// <summary>
