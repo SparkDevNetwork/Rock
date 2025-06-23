@@ -34,9 +34,9 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const listFormatOptions = safeParseJson<ListItemBag[]>(props.modelValue.listFormatOptions);
-    const roleTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.roleTypeOptions);
-    const groupMemberStatusOptions = safeParseJson<ListItemBag[]>(props.modelValue.groupMemberStatusOptions);
+    const listFormatOptions = safeParseJson<ListItemBag[]>(props.options.listFormatOptions);
+    const roleTypeOptions = safeParseJson<ListItemBag[]>(props.options.roleTypeOptions);
+    const groupMemberStatusOptions = safeParseJson<ListItemBag[]>(props.options.groupMemberStatusOptions);
 
     const listFormat = ref(props.modelValue.listFormat ?? "");
     const dataView = ref(safeParseJson<ListItemBag>(props.modelValue.dataView));
