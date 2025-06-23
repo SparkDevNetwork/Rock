@@ -38,7 +38,7 @@ namespace RockWeb.Blocks.AI
     [Category( "Core" )]
     [Description( "Displays the details of an AI Provider." )]
 
-    [Rock.SystemGuid.BlockTypeGuid( "3CE25D9D-0F91-49BE-9616-FF4664A26F96" )]
+    [Rock.SystemGuid.BlockTypeGuid( "88820905-1B5A-4B82-8E56-F9A0736A0E98" )]
     public partial class AiProviderDetail : RockBlock
     {
         #region Page Parameter Keys
