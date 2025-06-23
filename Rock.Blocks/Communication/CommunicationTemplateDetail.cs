@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+#if REVIEW_WEBFORMS
 using System.Web.Http.Results;
+#endif
 
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;

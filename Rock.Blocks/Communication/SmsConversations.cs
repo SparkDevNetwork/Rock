@@ -386,7 +386,11 @@ namespace Rock.Blocks.Communication
             {
                 using ( var rockContext = new RockContext() )
                 {
+#if REVIEW_WEBFORMS
                     rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+#else
+                    rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
+#endif
 
                     var communicationResponseService = new CommunicationResponseService( rockContext );
 
@@ -692,7 +696,11 @@ namespace Rock.Blocks.Communication
             {
                 using ( var rockContext = new RockContext() )
                 {
+#if REVIEW_WEBFORMS
                     rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
+#else
+                    rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
+#endif
                     var communicationResponseService = new CommunicationResponseService( rockContext );
                     List<CommunicationRecipientResponse> responses = communicationResponseService.GetCommunicationConversationForPerson( recipientPerson.Id, smsSystemPhoneNumber );
 

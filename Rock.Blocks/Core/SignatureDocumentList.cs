@@ -161,7 +161,11 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<SignatureDocument> GetListQueryable( RockContext rockContext )
         {
+#if REVIEW_WEBFORMS
             var qry = base.GetListQueryable( rockContext )
+#else
+            IQueryable<SignatureDocument> qry = base.GetListQueryable( rockContext )
+#endif
                 .Include( a => a.AppliesToPersonAlias )
                 .Include( a => a.AssignedToPersonAlias )
                 .Include( a => a.SignedByPersonAlias )

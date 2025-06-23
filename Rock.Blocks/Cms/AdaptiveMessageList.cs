@@ -156,7 +156,11 @@ namespace Rock.Blocks.Cms
         /// <returns>A queryable for <see cref="FinancialBatch"/>.</returns>
         private IQueryable<AdaptiveMessageCategory> GetAdaptiveMessageCategoryQueryable( RockContext rockContext )
         {
+#if REVIEW_WEBFORMS
             var qry = new AdaptiveMessageCategoryService( rockContext )
+#else
+            IQueryable<AdaptiveMessageCategory> qry = new AdaptiveMessageCategoryService( rockContext )
+#endif
                 .Queryable()
                 .Include( a => a.AdaptiveMessage );
 

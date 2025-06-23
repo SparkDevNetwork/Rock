@@ -366,12 +366,14 @@ namespace Rock.Communication.Transport
 
             if ( callbackUrl.IsNotNullOrWhiteSpace() )
             {
+#if REVIEW_WEBFORMS
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment
                     && !callbackUrl.Contains( ".ngrok.io" ) )
                 {
                     createMessageOptions.StatusCallback = null;
                 }
                 else
+#endif
                 {
                     createMessageOptions.StatusCallback = new Uri( callbackUrl );
                 }

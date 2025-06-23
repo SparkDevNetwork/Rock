@@ -88,9 +88,6 @@
     <Compile Remove="CheckIn\CheckInSearchBlock.cs" />
     <Compile Remove="CheckIn\LocalDeviceConfiguration.cs" />
     <Compile Remove="Communication\CommunicationTemplateHelper.cs" />
-    <Compile Remove="Communication\Transport\Firebase.cs" />
-    <Compile Remove="Communication\Transport\RockMobilePush.cs" />
-    <Compile Remove="Communication\Transport\Twilio.cs" />
     <Compile Remove="Configuration\WebFormsInitializationSettings.cs" />
     <Compile Remove="Data\BoundFieldTypeAttribute.cs" />
     <Compile Remove="Data\DecimalPrecisionAttributeConvention.cs" />
@@ -223,6 +220,8 @@
     <PackageReference Include="CommonMark.NET" Version="0.15.1" />
     <PackageReference Include="CronExpressionDescriptor" Version="2.16.0" />
     <PackageReference Include="EPPlus" Version="7.4.2" />
+    <PackageReference Include="FCM.Net.Standard" Version="1.0.1" />
+    <PackageReference Include="FirebaseAdmin" Version="2.4.0" />
     <PackageReference Include="Hashids.net" Version="1.6.1" />
     <PackageReference Include="HtmlAgilityPack" Version="1.11.33" />
     <PackageReference Include="Humanizer" Version="2.1.0" />
@@ -270,6 +269,7 @@
     <PackageReference Include="System.IO.Hashing" Version="8.0.0" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.10" />
     <PackageReference Include="System.Runtime.Caching" Version="5.0.0" />
+    <PackageReference Include="Twilio" Version="5.1.0" />
     <PackageReference Include="UAParser" Version="3.1.47" />
     <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.1.37" />
   </ItemGroup>

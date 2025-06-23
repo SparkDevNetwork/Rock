@@ -19,8 +19,10 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+#if REVIEW_WEBFORMS
 using System.Web;
 using System.Web.Routing;
+#endif
 
 using Rock.Attribute;
 using Rock.Model;
@@ -729,11 +731,13 @@ namespace Rock.Blocks.Reporting
 
                 Reason: Ensure page parameter overrides are accurately applied upon initial page load.
              */
+#if REVIEW_WEBFORMS
             RouteValueDictionary legacyRouteValueDictionary = null;
             if ( HttpContext.Current?.Handler is RockPage rockPage )
             {
                 legacyRouteValueDictionary = rockPage.Page?.RouteData?.Values;
             }
+#endif
 
             // This collection represents the Obsidian page parameters.
             var pageParameters = this.RequestContext.GetPageParameters();
@@ -744,12 +748,14 @@ namespace Rock.Blocks.Reporting
 
                 if ( overrideValue.IsNullOrWhiteSpace() )
                 {
+#if REVIEW_WEBFORMS
                     // Remove existing parameters whose override value is empty.
                     // Legacy page parameters.
                     if ( legacyRouteValueDictionary?.ContainsKey( overrideKey ) == true )
                     {
                         legacyRouteValueDictionary.Remove( overrideKey );
                     }
+#endif
 
                     // Obsidian page parameters.
                     if ( pageParameters.ContainsKey( overrideKey ) )
@@ -760,12 +766,14 @@ namespace Rock.Blocks.Reporting
                     continue;
                 }
 
+#if REVIEW_WEBFORMS
                 // Add the new value (which might override an existing value).
                 // Legacy page parameters.
                 if ( legacyRouteValueDictionary != null )
                 {
                     legacyRouteValueDictionary[overrideKey] = overrideValue;
                 }
+#endif
 
                 // Obsidian page parameters.
                 pageParameters[overrideKey] = overrideValue;
