@@ -66,6 +66,7 @@
 <script setup lang="ts">
     import { PropType } from "vue";
     import Grid, { TextColumn, Column } from "@Obsidian/Controls/grid";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { useGetTypeMemberName } from "@Obsidian/Utility/objectUtils";
