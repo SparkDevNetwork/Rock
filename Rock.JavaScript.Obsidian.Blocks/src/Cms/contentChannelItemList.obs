@@ -49,7 +49,7 @@
 
         <DateColumn v-if="config?.options?.showExpireDateTimeColumn && !config?.options?.includeTime" itemClass="justify-content-end text-right" name="expireDateTime" title="Expire" field="expireDateTime" :filter="config?.options?.showFilters ? dateValueFilter : undefined" width="250" />
 
-        <NumberColumn v-if="config?.options?.showPriorityColumn" itemClass="justify-content-end text-right" name="priority" title="Priority" field="priority" :filter="config?.options?.showFilters ? numberValueFilter : undefined" width="125" />
+        <NumberColumn v-if="config?.options?.showPriorityColumn" name="priority" title="Priority" field="priority" :filter="config?.options?.showFilters ? numberValueFilter : undefined" width="125" />
 
         <BooleanColumn v-if="showOccurrencesColumn" itemClass="justify-content-center text-center" name="occurrences" title="Event Occurrences" field="occurrences" :filter="config?.options?.showFilters ? booleanValueFilter : undefined" width="120" />
 

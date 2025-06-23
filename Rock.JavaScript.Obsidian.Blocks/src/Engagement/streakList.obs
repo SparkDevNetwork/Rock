@@ -26,14 +26,7 @@
                 visiblePriority="xs"
                 width="15%">
             <template #format="{ row }">
-                <div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm"
-                     :ref="initializePopover"
-                     :personid="`${row.personId}`"
-                     :data-original="`${photoUrl(row)}&w=50`"
-                     :style="`background-image: url( ${photoUrl(row)} );
-                        background-size: cover;
-                        background-repeat: no-repeat;`">
-                </div>
+                <PersonAvatar :personIdKey="row.personId" :photoUrl="photoUrl(row)" photoSize="xs" marginRight="sm" enableHoverInfo />
                 <span class="mr-1">{{ `${row.fullName ?? ""}` }}</span>
                 <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
             </template>
@@ -55,8 +48,6 @@
         <NumberColumn name="currentStreakCount"
                       title="Current Streak"
                       field="currentStreakCount"
-                      headerClass="title-right"
-                      itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
                       width="5%" />
@@ -64,8 +55,6 @@
         <NumberColumn name="longestStreakCount"
                       title="Longest Streak"
                       field="longestStreakCount"
-                      headerClass="title-right"
-                      itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
                       width="5%" />
@@ -73,8 +62,6 @@
         <NumberColumn name="engagementCount"
                       title="Engagements"
                       field="engagementCount"
-                      headerClass="title-right"
-                      itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
                       width="5%" />
@@ -107,6 +94,7 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import Grid, { NumberColumn, numberValueFilter, ButtonColumn, pickExistingValueFilter, dateValueFilter, DeleteColumn, DateColumn, Column } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
@@ -114,14 +102,12 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./StreakList/types.partial";
     import { computed, reactive, ref } from "vue";
-    import { useHttp } from "@Obsidian/Utility/http";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { asBoolean } from "@Obsidian/Utility/booleanUtils";
     import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<StreakListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const http = useHttp();
 
     // #region Values
 
@@ -250,47 +236,6 @@
     }
 
     // #endregion
-
-    function initializePopover(element): void {
-        var $ = window["$"];
-        if (element) {
-            $(element).popover({
-                placement: "right",
-                trigger: "manual",
-                delay: 500,
-                html: true,
-                content: function () {
-                    let personId = $(this).attr("personid");
-                    let dataUrl = "/api/People/PopupHtml/" + personId + "/false";
-
-                    let content = document.getElementById(personId) ?? document.createElement("div");
-                    content.setAttribute("id", personId);
-                    content.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
-
-                    http.get<any>(dataUrl).then(response => {
-                        content.style.display = "block";
-                        content.innerHTML = response.data.PickerItemDetailsHtml;
-                    });
-
-                    // Return empty div to be updated whrn response from server is received.
-                    return content;
-                }
-            }).on("mouseenter", (e: Event) => {
-                var target = e.target;
-                $(target).popover("show");
-                $(target).siblings(".popover").on("mouseleave", () => {
-                    $(target).popover("hide");
-                });
-            }).on("mouseleave", (e: Event) => {
-                var target = e.target;
-                setTimeout(() => {
-                    if (!$(".popover:hover").length) {
-                        $(target).popover("hide");
-                    }
-                }, 100);
-            });
-        }
-    }
 
     gridDataSource.value = loadGridData();
 </script>

@@ -134,6 +134,17 @@ var Rock;
                     plyrOptions.controls = control;
                 }
                 this.player = new Plyr(mediaElement, plyrOptions);
+                let storageData = {};
+                this.player.storage = {
+                    enabled: true,
+                    key: "plyr",
+                    get(key) {
+                        return storageData[key];
+                    },
+                    set(data) {
+                        storageData = Object.assign(Object.assign({}, storageData), data);
+                    }
+                };
                 if (this.isYouTubeEmbed(this.options.mediaUrl)) {
                     let listenrsready = false;
                     this.player.on("statechange", () => {
@@ -199,16 +210,11 @@ var Rock;
             translateWellKnownUrls(url) {
                 const youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
                 const vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
-                const vimeoHLSPattern = /https?:\/\/player\.vimeo\.com\/external\/([0-9]+)\.m3u8(\?.*)?/i;
                 let match = youTubePattern.exec(url);
                 if (match !== null) {
                     return `https://www.youtube.com/embed/${match[1]}`;
                 }
                 match = vimeoPattern.exec(url);
-                if (match !== null) {
-                    return `https://player.vimeo.com/video/${match[1]}`;
-                }
-                match = vimeoHLSPattern.exec(url);
                 if (match !== null) {
                     return `https://player.vimeo.com/video/${match[1]}`;
                 }
@@ -252,8 +258,6 @@ var Rock;
                     }
                 }
                 if (startPosition < this.watchBits.length) {
-                    // Setting the currentTime sometimes results on the audio of a video not playing (issue with plyr library(https://github.com/sampotts/plyr/issues/1527))
-                    // only set the value when absolutely necessary.
                     if (this.player.currentTime !== startPosition) {
                         this.player.currentTime = startPosition;
                     }

@@ -23,7 +23,7 @@
                  @edit="onEdit"
                  @save="onSave">
         <template #view>
-            <ViewPanel :modelValue="streakViewBag" :options="options" :rebuildActionSuccessMessage="rebuildActionSuccessMessage"/>
+            <ViewPanel :modelValue="streakViewBag" :options="options" :rebuildActionSuccessMessage="rebuildActionSuccessMessage" />
         </template>
 
         <template #edit>
@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref, onMounted } from "vue";
+    import { computed, ref, onMounted, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { confirm } from "@Obsidian/Utility/dialogs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -47,6 +47,7 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StreakBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakDetail/streakBag";
     import { StreakDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StreakDetail/streakDetailOptionsBag";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<StreakBag, StreakDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -60,6 +61,7 @@
 
     const streakViewBag = ref(config.entity);
     const streakEditBag = ref<StreakBag>({} as StreakBag);
+    const store = useStore();
 
     const entityTypeGuid = EntityType.Streak;
 
@@ -130,19 +132,19 @@
     });
 
     const footerActions = computed((): PanelAction[] => {
-        if(panelMode.value != DetailPanelMode.View) {
+        if (panelMode.value != DetailPanelMode.View) {
             return [];
         }
         return [
-                {
-                    iconCssClass: "fa fa-refresh",
-                    title: "Rebuild",
-                    type: "danger",
-                    handler: () => {
-                        onRebuild();
-                    }
+            {
+                iconCssClass: "fa fa-refresh",
+                title: "Rebuild",
+                type: "danger",
+                handler: () => {
+                    onRebuild();
                 }
-            ];
+            }
+        ];
     });
 
     // #endregion
@@ -175,7 +177,6 @@
 
             }
         }).on("mouseenter", (e: Event) => {
-            console.log(e);
             var target = e.target;
             $(target).popover("show");
             $(target).siblings(".popover").on("mouseleave", () => {
@@ -241,7 +242,7 @@
      *
      * @returns false if it should stay on the page; or a string containing a redirect URL.
      */
-     async function onRebuild(): Promise<boolean> {
+    async function onRebuild(): Promise<boolean> {
         errorMessage.value = "";
         rebuildActionSuccessMessage.value = "";
         if (!await confirm("Are you sure you want to delete this data? Enrollment map data belonging to this person for this streak type will be deleted and rebuilt from attendance records! This process occurs real-time (not in a job).")) {
@@ -290,7 +291,7 @@
      *
      * @param propertyName The name of the C# property that was changed.
      */
-    function onPropertyChanged(propertyName: string): void {
+    function onPropertyChanged(): void {
         return;
     }
 
@@ -310,7 +311,7 @@
         };
 
         // if the streak Type is not present, do not save
-        if(!streakEditBag.value.streakType) {
+        if (!streakEditBag.value.streakType) {
             return "";
         }
 
@@ -321,7 +322,6 @@
         if (result.isSuccess && result.data) {
             if (result.statusCode === 200 && typeof result.data === "object") {
                 streakViewBag.value = result.data;
-
                 return true;
             }
             else if (result.statusCode === 201 && typeof result.data === "string") {
@@ -349,4 +349,16 @@
         streakEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
+
+    // This is a workaround to ensure the "Secondary Blocks" (ISecondaryBlocks) are shown when the panel is in view mode and not in edit mode.
+    // We will want to remove this once we have a better solution for showing/hiding secondary block.
+    // See: https://app.asana.com/1/20866866924293/project/1198840255983422/task/1205960087046095?focus=true
+    watch(panelMode, () => {
+        if (panelMode.value === DetailPanelMode.View) {
+            store.setAreSecondaryBlocksShown(true);
+        }
+        else {
+            store.setAreSecondaryBlocksShown(false);
+        }
+    }, { immediate: true });
 </script>

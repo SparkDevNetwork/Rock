@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="side-panel">
-        <div class="side-panel-menu">
+        <div v-if="ltr" class="side-panel-menu">
             <div v-for="sidePanelMenuItem in sidePanelMenuItems"
                  :key="sidePanelMenuItem.type"
                  :class="[
@@ -107,7 +107,8 @@
                                     {{ emailSection.name }}
                                 </h5>
 
-                                <DropDownMenu anchorButtonCssClass="btn-xs email-section-menu-button"
+                                <DropDownMenu align="right"
+                                              anchorButtonCssClass="btn-xs email-section-menu-button"
                                               :items="getEmailSectionMenuItems(emailSection)"
                                               @mousedown.stop />
                             </header>
@@ -137,6 +138,19 @@
                                      :communicationTemplates="communicationTemplates"
                                      :hasScrollableBody="true" />
             </template>
+        </div>
+
+        <div v-if="!ltr" class="side-panel-menu">
+            <div v-for="sidePanelMenuItem in sidePanelMenuItems"
+                 :key="sidePanelMenuItem.type"
+                 :class="[
+                    'side-panel-menu-item',
+                    selectedSidePanelMenuItem === sidePanelMenuItem.type ? 'selected' : ''
+                ]"
+                 @click="onSidePanelButtonClicked(sidePanelMenuItem.type)">
+                <i :class="sidePanelMenuItem.iconCssClass"></i>
+                <span class="side-panel-menu-item-text">{{ sidePanelMenuItem.title }}</span>
+            </div>
         </div>
     </div>
 
@@ -191,7 +205,7 @@
     flex-grow: 1;
     display: flex;
     flex-direction: column;
-    min-width: 320px;
+    min-width: 340px;
     max-width: 620px;
     border-right: 1px solid var(--color-interface-soft);
 }
@@ -254,7 +268,7 @@
 }
 
 .email-section {
-    width: 290px;
+    width: 300px;
     border: 1px solid var(--color-interface-soft);
     border-radius: var(--border-radius-base);
 }
@@ -310,7 +324,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import ComponentPropertyPanel from "./componentPropertyPanel.partial.obs";
     import EmailSectionModal from "./emailSectionModal.partial.obs";
     import FlatPanel from "./flatPanel.partial.obs";
@@ -332,7 +346,7 @@
     import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { destroyTooltip, showTooltip } from "@Obsidian/Utility/tooltip";
-    import { createEmailSection, createStarterSections, deleteEmailSection, getAllEmailSections } from "./api";
+    import { useApi } from "./api";
     import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
 
     // #region Types
@@ -372,6 +386,11 @@
         imageComponentBinaryFileTypeGuid: {
             type: String as PropType<Guid>,
             required: true
+        },
+
+        ltr: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         mergeFields: {
@@ -466,6 +485,8 @@
     // #endregion Constants
 
     // #region Values
+
+    const api = useApi();
 
     const selectedSidePanelMenuItem = ref<SidePanelMenuItemType>("blocks");
     const internalCommunicationTemplateGuid = useVModelPassthrough(props, "communicationTemplateGuid", emit);
@@ -673,7 +694,7 @@
     }
 
     async function loadEmailSections(): Promise<void> {
-        const result = await getAllEmailSections();
+        const result = await api.getAllEmailSections();
 
         if (result.isSuccess && result.data) {
             emailSections.value = result.data;
@@ -883,7 +904,7 @@
             sourceMarkup: emailSection.sourceMarkup?.replace(emailSection.guid, guid)
         };
 
-        const result = await createEmailSection(bag);
+        const result = await api.createEmailSection(bag);
 
         if (result?.isSuccess && result.data) {
             addEmailSectionToList(result.data, { after: emailSection });
@@ -912,7 +933,7 @@
                 emailSectionGuid: emailSectionToDelete.value.guid
             };
 
-            const result = await deleteEmailSection(bag);
+            const result = await api.deleteEmailSection(bag);
 
             if (result?.isSuccess) {
                 removeEmailSectionFromList(emailSectionToDelete.value);
@@ -986,26 +1007,35 @@
         }
     });
 
-    watch(() => props.emailDocument, async (newValue) => {
-        if (newValue) {
-            if (emailSections.value.length === 0) {
-                await loadEmailSections();
+    async function loadEmailSectionsIfNotLoaded(document: Document): Promise<void> {
+        // Load the email sections if they are not already loaded.
+        if (emailSections.value.length === 0) {
+            await loadEmailSections();
 
-                if (emailSections.value.length === 0) {
-                    // Generate starter sections.
-                    const document = props.emailDocument ?? props.selectedComponentElement?.ownerDocument;
-                    if (document) {
-                        const result = await createStarterSections(document);
-                        if (result.isSuccess && result.data) {
-                            result.data.forEach(emailSection => {
-                                addEmailSectionToList(emailSection);
-                            });
-                        }
+            // If no email sections are loaded, then create starter sections.
+            if (emailSections.value.length === 0) {
+                api.createStarterSections(document).then(result => {
+                    if (result.isSuccess && result.data) {
+                        result.data.forEach(emailSection => {
+                            addEmailSectionToList(emailSection);
+                        });
                     }
-                }
+                });
             }
+        }
+    }
+
+    watch(() => props.emailDocument, async (doc) => {
+        if (doc) {
+            await loadEmailSectionsIfNotLoaded(doc);
         }
     });
 
     // #endregion Watchers
+
+    onMounted(() => {
+        if (props.emailDocument) {
+            loadEmailSectionsIfNotLoaded(props.emailDocument);
+        }
+    });
 </script>

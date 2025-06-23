@@ -27,13 +27,14 @@ using System.Web.Caching;
 using System.Web.Http;
 using System.Web.Optimization;
 using System.Web.Routing;
-
+using Microsoft.Extensions.Logging;
 using Rock;
 using Rock.Blocks;
 using Rock.Communication;
 using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Cms;
+using Rock.Logging;
 using Rock.Model;
 using Rock.Observability;
 using Rock.Security;
@@ -43,6 +44,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.WebStartup;
 
+[assembly: Rock.Logging.RockLoggingCategory( "RockWeb.Global" )]
 namespace RockWeb
 {
     /// <summary>
@@ -123,7 +125,19 @@ namespace RockWeb
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void Application_Start( object sender, EventArgs e )
         {
-            RockApplicationStartupHelper.ShowDebugTimingMessage( "Application Start" );
+            using ( ObservabilityHelper.StartActivity( "Startup: Application Startup Stage 2" ) )
+            {
+                ApplicationStartupStage2();
+            }
+        }
+
+        /// <summary>
+        /// The second stage of the application startup. This is executed after the
+        /// first stage in <see cref="RockApplicationStartupHelper"/>.
+        /// </summary>
+        private void ApplicationStartupStage2()
+        {
+            RockApplicationStartupHelper.ShowDebugTimingMessage( $"Application Start: (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})" );
 
             Rock.Bus.RockMessageBus.IsRockStarted = false;
             QueueInUse = false;
@@ -191,7 +205,7 @@ namespace RockWeb
 
                 RockApplicationStartupHelper.ShowDebugTimingMessage( "Register Types" );
 
-                RockApplicationStartupHelper.LogStartupMessage( "Application Started Successfully" );
+                RockApplicationStartupHelper.LogStartupMessage( $"Application Started Successfully (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})" );
                 if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
                 {
                     System.Diagnostics.Debug.WriteLine( string.Format( "[{0,5:#} ms] Total Startup Time", ( RockDateTime.Now - RockApp.Current.HostingSettings.ApplicationStartDateTime ).TotalMilliseconds ) );
@@ -223,7 +237,7 @@ namespace RockWeb
 
                 SetError66();
                 var startupException = new RockStartupException( "Error occurred during application startup", ex );
-                LogError( startupException, null );
+                LogException( startupException, null );
                 throw startupException;
             }
 
@@ -246,25 +260,30 @@ namespace RockWeb
         /// </summary>
         private static void WarmupCache()
         {
-            var sw = Stopwatch.StartNew();
+            Activity.Current = null;
 
-            // These have probably already been loaded, but make sure they are still hot.
-            EntityTypeCache.All();
-            FieldTypeCache.All();
+            using ( var activity = ObservabilityHelper.StartActivity( "Startup: Warmup Cache" ) )
+            {
+                var sw = Stopwatch.StartNew();
 
-            // Load additional cache items that are most likely going to be required for
-            // normal operation.
-            AttributeCache.All();
-            GroupTypeCache.All();
-            BlockTypeCache.All();
-            BlockCache.All();
-            DefinedTypeCache.All();
-            DefinedValueCache.All();
-            CategoryCache.All();
+                // These have probably already been loaded, but make sure they are still hot.
+                EntityTypeCache.All();
+                FieldTypeCache.All();
 
-            sw.Stop();
+                // Load additional cache items that are most likely going to be required for
+                // normal operation.
+                AttributeCache.All();
+                GroupTypeCache.All();
+                BlockTypeCache.All();
+                BlockCache.All();
+                DefinedTypeCache.All();
+                DefinedValueCache.All();
+                CategoryCache.All();
 
-            RockApplicationStartupHelper.ShowDebugTimingMessage( "Warmup Cache", sw.Elapsed.TotalMilliseconds );
+                sw.Stop();
+
+                RockApplicationStartupHelper.ShowDebugTimingMessage( "Warmup Cache", sw.Elapsed.TotalMilliseconds );
+            }
         }
 
         // This is used to cancel our CompileThemesThread and BlockTypeCompilationThread if they aren't done when Rock shuts down
@@ -341,7 +360,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    LogError( ex, null );
+                    LogException( ex, null );
                 }
             } ).Start();
         }
@@ -369,28 +388,35 @@ namespace RockWeb
         {
             BlockTypeCompilationThread = new Thread( () =>
             {
-                // Set to background thread so that this thread doesn't prevent Rock from shutting down.
-                Thread.CurrentThread.IsBackground = true;
+                Activity.Current = null;
 
-                // Set priority to Below Normal. This was origninally set to Lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority.
-                Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
+                using ( ObservabilityHelper.StartActivity( "Startup: Block Type Compilation" ) )
+                {
+                    // This is used to cancel our BlockTypeCompilationThread if it isn't done when Rock shuts down
+                    _threadCancellationTokenSource = new CancellationTokenSource();
+                    // Set to background thread so that this thread doesn't prevent Rock from shutting down.
+                    Thread.CurrentThread.IsBackground = true;
 
-                Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();
+                    // Set priority to Below Normal. This was origninally set to Lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority.
+                    Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
-                // get a list of all block types that are used by blocks
-                var allUsedBlockTypeIds = new BlockTypeService( new RockContext() ).Queryable()
-                    .Where( a => a.Blocks.Any() )
-                    .OrderBy( a => a.Category )
-                    .Select( a => a.Id ).ToArray();
+                    Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();
 
-                // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
-                BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
+                    // get a list of all block types that are used by blocks
+                    var allUsedBlockTypeIds = new BlockTypeService( new RockContext() ).Queryable()
+                        .Where( a => a.Blocks.Any() )
+                        .OrderBy( a => a.Category )
+                        .Select( a => a.Id ).ToArray();
 
-                // This methods updates the SiteTypeFlags property on the BlockType Table for each block. This logic was introduce to improve performance.
-                // The SiteTypeFlags column stores the flags related to the SiteTypes associated with the Block Types which otherwise needs to be fetched using Reflection.
-                UpdateSiteTypeFlagsOnBlockTypes();
+                    // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
+                    BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
 
-                Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
+                    // This methods updates the SiteTypeFlags property on the BlockType Table for each block. This logic was introduce to improve performance.
+                    // The SiteTypeFlags column stores the flags related to the SiteTypes associated with the Block Types which otherwise needs to be fetched using Reflection.
+                    UpdateSiteTypeFlagsOnBlockTypes();
+
+                    Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
+                }
             } );
 
             BlockTypeCompilationThread.Start();
@@ -411,12 +437,30 @@ namespace RockWeb
             foreach ( var blockTypeWithSiteType in blockTypesWithSiteTypes )
             {
                 var type = blockTypeWithSiteType.compiledType;
-                SiteTypeFlags? siteTypes = SiteTypeFlags.None;
+                var siteTypes = SiteTypeFlags.None;
+
                 if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
                 {
-                    siteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>()?.SiteTypes
-                        .Select( s => s.ToString().ConvertToEnum<SiteTypeFlags>() )
-                        .Aggregate( SiteTypeFlags.None, ( a, s ) => a | s );
+                    var blockSiteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>();
+
+                    if ( blockSiteTypes != null )
+                    {
+                        foreach ( var blockSiteType in blockSiteTypes.SiteTypes )
+                        {
+                            if ( blockSiteType == SiteType.Web )
+                            {
+                                siteTypes |= SiteTypeFlags.Web;
+                            }
+                            else if ( blockSiteType == SiteType.Mobile )
+                            {
+                                siteTypes |= SiteTypeFlags.Mobile;
+                            }
+                            else if ( blockSiteType == SiteType.Tv )
+                            {
+                                siteTypes |= SiteTypeFlags.Tv;
+                            }
+                        }
+                    }
                 }
                 else if ( typeof( IRockObsidianBlockType ).IsAssignableFrom( type ) )
                 {
@@ -439,7 +483,7 @@ namespace RockWeb
                         {
                             continue;
                         }
-                        blockType.SiteTypeFlags = siteTypes ?? SiteTypeFlags.None;
+                        blockType.SiteTypeFlags = siteTypes;
                         rockContext.SaveChanges();
                     }
                 }
@@ -496,7 +540,12 @@ namespace RockWeb
                 {
                     HttpContext.Current = thisContext;
                     var currentUserName = UserLogin.GetCurrentUserName();
-                    UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = currentUserName } );
+                    UserLoginService.UpdateLastLogin(
+                        new UpdateLastLoginArgs {
+                            UserName = currentUserName,
+                            ShouldSkipWritingHistoryLog = true
+                        }
+                    );
                 } );
             }
             catch
@@ -717,6 +766,13 @@ namespace RockWeb
         {
             try
             {
+                // Close out jobs infrastructure if running under IIS
+                bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
+                if ( runJobsInContext )
+                {
+                    ServiceJobService.ShutdownQuartzScheduler();
+                }
+
                 // Log the reason that the application end was fired
                 var shutdownReason = System.Web.Hosting.HostingEnvironment.ShutdownReason;
 
@@ -731,17 +787,11 @@ namespace RockWeb
                 }
 
                 // Send debug info to debug window
-                System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason:{0}", shutdownReason ) );
+                System.Diagnostics.Debug.WriteLine( string.Format( "shutdownReason: {0}", shutdownReason ) );
 
-                var shutdownMessage = string.Format( "Application Ended: {0} (Process ID: {1})", shutdownReason, Rock.WebFarm.RockWebFarm.ProcessId );
+                var shutdownMessage = $"Application Ended: {shutdownReason} (App PID: {Rock.WebFarm.RockWebFarm.ProcessId}-{AppDomain.CurrentDomain.Id})";
+                RockApplicationStartupHelper.ShowDebugTimingMessage( shutdownMessage );
                 RockApplicationStartupHelper.LogShutdownMessage( shutdownMessage );
-
-                // Close out jobs infrastructure if running under IIS
-                bool runJobsInContext = Convert.ToBoolean( ConfigurationManager.AppSettings["RunJobsInIISContext"] );
-                if ( runJobsInContext )
-                {
-                    ServiceJobService.ShutdownQuartzScheduler();
-                }
 
                 // Process the transaction queue
                 DrainTransactionQueue();
@@ -1146,8 +1196,33 @@ namespace RockWeb
             if ( !Global.QueueInUse )
             {
                 Global.QueueInUse = true;
-                RockQueue.Drain( ( ex ) => LogError( ex, null ) );
+                RockQueue.Drain( ( ex ) => WriteErrorToRockLog( ex, "Rock.Transactions", null ) );
                 Global.QueueInUse = false;
+            }
+        }
+
+        /// <summary>
+        /// A handler for Rock Logging exception messages via Rock Logger.
+        /// If a message is provided, it will log that message otherwise
+        /// it will log the exception message.
+        /// </summary>
+        /// <param name="ex"></param>
+        private static void WriteErrorToRockLog( Exception ex, string loggerCategory, string message )
+        {
+            if ( string.IsNullOrWhiteSpace( loggerCategory ) )
+            {
+                loggerCategory = "RockWeb.Global";
+            }
+
+            var logger = RockLogger.LoggerFactory.CreateLogger( loggerCategory );
+
+            if ( !string.IsNullOrWhiteSpace( message ) )
+            {
+                logger.LogError( ex, message );
+            }
+            else
+            {
+                logger.LogError( ex.Message );
             }
         }
 
@@ -1156,7 +1231,7 @@ namespace RockWeb
         /// </summary>
         /// <param name="ex">The ex.</param>
         /// <param name="context">The context.</param>
-        private static void LogError( Exception ex, HttpContext context )
+        private static void LogException( Exception ex, HttpContext context )
         {
             int? pageId;
             int? siteId;
@@ -1230,7 +1305,7 @@ namespace RockWeb
             }
             catch ( Exception ex )
             {
-                LogError( ex, null );
+                LogException( ex, null );
             }
         }
 
@@ -1260,7 +1335,7 @@ namespace RockWeb
                 }
                 catch ( Exception ex )
                 {
-                    LogError( new Exception( "Error doing KeepAlive request.", ex ), null );
+                    LogException( new Exception( "Error doing KeepAlive request.", ex ), null );
                 }
             }
         }

@@ -2,19 +2,23 @@
 <template>
     <RockButton
                 class="btn-copy-to-clipboard"
-                isSquare
+                :isSquare="!$slots.default || !!props.isSquare"
+                :btnSize="btnSize"
                 :onClick="copy"
                 data-toggle="tooltip"
                 :data-placement="tooltipPlacement"
                 data-container="body"
                 :data-original-title="tooltipTitle"
                 @mouseleave="resetTooltip"
-                ref="el"><i class="fa fa-clipboard"></i></RockButton>
+                ref="el">
+        <slot><i class="fa fa-clipboard"></i></slot>
+    </RockButton>
 </template>
 
 <script setup lang="ts">
     import { ComponentPublicInstance, onMounted, PropType, ref } from "vue";
     import RockButton from "./rockButton.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
 
     const props = defineProps({
         value: {
@@ -33,6 +37,14 @@
         tooltipPlacement: {
             type: String as PropType<"auto" | "top" | "right" | "bottom" | "left">,
             default: "auto"
+        },
+
+        isSquare: {
+            type: Boolean as PropType<boolean | null | undefined>
+        },
+
+        btnSize: {
+            type: String as PropType<BtnSize | undefined>
         }
     });
 

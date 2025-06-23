@@ -1,11 +1,11 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="workflow-entry-panel">
-        <PrePost :pre="headerHtml"
-                 :post="footerHtml">
-            <RockForm ref="form"
-                      :formResetKey="formResetKey"
-                      @submit="onFormSubmit">
+        <RockForm ref="form"
+                  :formResetKey="formResetKey"
+                  @submit="onFormSubmit">
+            <PrePost :pre="headerHtml"
+                     :post="footerHtml">
                 <EntryFormPersonEntry v-if="personEntry"
                                       v-model="personEntryValues"
                                       :configuration="personEntry" />
@@ -22,10 +22,10 @@
                                   :fieldValues="fieldValues"
                                   :filterContext="filterContext"
                                   @updateFieldValue="onUpdateFieldValue" />
+            </PrePost>
 
-                <div class="actions" v-content="actionNodes"></div>
-            </RockForm>
-        </PrePost>
+            <div class="actions" v-content="actionNodes"></div>
+        </RockForm>
     </div>
 </template>
 

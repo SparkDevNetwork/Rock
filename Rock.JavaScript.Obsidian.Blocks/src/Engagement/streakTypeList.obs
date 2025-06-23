@@ -45,11 +45,9 @@
                       title="Enrollments"
                       field="enrollmentCount"
                       :filter="numberValueFilter"
-                      headerClass="title-right"
-                      itemClass="justify-content-end text-right"
                       visiblePriority="md" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

@@ -161,9 +161,7 @@
                         width="165"
                         visiblePriority="md">
             <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
-                </div>
+                {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
             </template>
         </CurrencyColumn>
 
@@ -179,7 +177,7 @@
                       @click="onDeleteClick" />
 
         <template #gridFooterAppend>
-            <div v-if="accountSummaries.length > 0" class="d-flex" style="background-color: #faf7f5; padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
+            <div v-if="accountSummaries.length > 0" class="d-flex" style="background-color: var(--color-interface-softest); padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
                 <div class="flex-grow-1"></div>
                 <div>
                     <SectionHeader title="Totals">

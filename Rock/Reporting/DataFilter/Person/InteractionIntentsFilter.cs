@@ -16,6 +16,9 @@
 //
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -116,7 +119,74 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
-        #endregion Properties
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/interactionIntentsFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            if ( config == null )
+            {
+                return new Dictionary<string, string>();
+            }
+
+            var intents = DefinedValueCache.GetMany( config.InteractionIntentValueIds ).Select( dv => dv.ToListItemBag() );
+
+            var activityTypeOptions = new ConnectionActivityTypeService( new RockContext() ).Queryable( "ConnectionType" )
+                .AsNoTracking()
+                .Where( a => a.IsActive )
+                .OrderBy( a => a.ConnectionTypeId.HasValue )
+                .ThenBy( a => a.Name )
+                .ToList()
+                .Select( a => a.ToListItemBag() )
+                .ToList();
+
+            return new Dictionary<string, string>
+            {
+                { "intents", intents.ToCamelCaseJson( false, true ) },
+                { "comparisonType", config.InteractionCountComparisonType },
+                { "count", config.InteractionCount.ToString() },
+                { "dateRange", config.DelimitedDateRangeValues },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var count = data.GetValueOrNull( "count" );
+            if ( count.IsNullOrWhiteSpace() )
+            {
+                count = "1";
+            }
+
+            var intentBags = data.GetValueOrNull( "intents" ).FromJsonOrNull<List<ListItemBag>>() ?? new List<ListItemBag>();
+            var intentGuids = intentBags.Select( i => i.Value.AsGuid() ).ToList();
+            var intentIds = DefinedValueCache.GetMany( intentGuids ).Select( dv => dv.Id ).ToList();
+
+            var selectionConfig = new SelectionConfig
+            {
+                InteractionIntentValueIds = intentIds,
+                InteractionCountComparisonType = data.GetValueOrDefault( "comparisonType", ComparisonType.EqualTo.ConvertToInt().ToString() ),
+                InteractionCount = count.AsInteger(),
+                DelimitedDateRangeValues = data.GetValueOrDefault( "dateRange", "All||||" ),
+            };
+
+            return selectionConfig.ToJson();
+        }
+
+        #endregion
 
         #region Public Methods
 
@@ -203,6 +273,8 @@ function() {
 
             return resultSb.ToString();
         }
+
+#if WEBFORMS
 
         /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
@@ -355,6 +427,8 @@ function() {
             dvpInteractionIntents.SetValues( selectionConfig.InteractionIntentValueIds );
             sdrpDateRange.DelimitedValues = selectionConfig.DelimitedDateRangeValues;
         }
+
+#endif
 
         /// <inheritdoc/>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )

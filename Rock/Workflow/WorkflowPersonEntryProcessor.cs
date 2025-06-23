@@ -18,6 +18,7 @@ using System;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Rest.Controls;
@@ -370,11 +371,16 @@ namespace Rock.Workflow
                 maritalStatusId = DefinedValueCache.Get( personEntryValues.MaritalStatusGuid.Value, _rockContext )?.Id;
             }
 
+            var recordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? form.PersonEntryRecordSourceValueId
+                ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW.AsGuid() )?.Id;
+
             var personEntryPerson = CreateOrUpdatePersonFromEntryValues( existingPerson?.Id, null, personEntryValues.Person );
             if ( personEntryPerson.Id == 0 )
             {
                 personEntryPerson.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
                 personEntryPerson.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+                personEntryPerson.RecordSourceValueId = recordSourceValueId;
                 PersonService.SaveNewPerson( personEntryPerson, _rockContext, campusId );
             }
 
@@ -409,6 +415,7 @@ namespace Rock.Workflow
                 {
                     personEntryPersonSpouse.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
                     personEntryPersonSpouse.RecordStatusValueId = form.PersonEntryRecordStatusValueId;
+                    personEntryPersonSpouse.RecordSourceValueId = recordSourceValueId;
 
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 

@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -1485,11 +1485,6 @@ namespace Rock.SystemGuid
         public const string GROUP_LOCATION_HISTORICAL = "03128778-5E7D-4FE4-9C7A-929936E06F90";
 
         /// <summary>
-        /// The EntityType Guid for <see cref="Rock.Model.GroupLocationHistoricalSchedule"/> 
-        /// </summary>
-        public const string GROUP_LOCATION_HISTORICAL_SCHEDULE = "3BC646E4-CA5E-47D6-BC6D-4BBFAAEDAD8B";
-
-        /// <summary>
         /// The EntityType Guid for <see cref="Rock.Model.GroupMemberAssignment"/> 
         /// </summary>
         public const string GROUP_MEMBER_ASSIGNMENT = "22BF14ED-E882-4BB0-9328-D12545BF5F61";
@@ -2045,5 +2040,25 @@ namespace Rock.SystemGuid
         /// The EntityType Guid for <see cref="Rock.Model.EmailSection"/> 
         /// </summary>
         public const string EMAIL_SECTION = "86B2CE94-9DC3-463C-B2B1-DEECAB70474E";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LavaApplication"/> 
+        /// </summary>
+        public const string LAVA_APPLICATION = "FFFE0DE1-B410-435E-9AA8-3A0B18AAF0F7";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.LavaEndpoint"/> 
+        /// </summary>
+        public const string LAVA_ENDPOINT = "F1BBF7D4-CAFD-450D-A89A-B3312C9738A2";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AutomationEvent"/> 
+        /// </summary>
+        public const string AUTOMATION_EVENT = "905DE2D9-1EA8-4E59-B0CF-E2BAC8383927";
+
+        /// <summary>
+        /// The EntityType Guid for <see cref="Rock.Model.AutomationTrigger"/> 
+        /// </summary>
+        public const string AUTOMATION_TRIGGER = "89ABFA37-68E5-41B7-B43C-A0CF823DEA61";
     }
 }

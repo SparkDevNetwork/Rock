@@ -25,6 +25,12 @@ namespace Rock.ViewModels.Workflow
     /// </summary>
     public class EntryFormFieldBag
     {
+        /// <summary>
+        /// Gets or sets the attribute associated with this field.
+        /// </summary>
+        /// <value>
+        /// The attribute associated with this field.
+        /// </value>
         public PublicAttributeBag Attribute { get; set; }
 
         /// <summary>

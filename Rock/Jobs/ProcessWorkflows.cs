@@ -59,15 +59,18 @@ namespace Rock.Jobs
             //
             // NOTE: Be sure to use RockDateTime.Now otherwise DateTime.Now will use SysDateTime()
             //       which would be the time on the SQL server!
-            foreach ( var workflowId in new WorkflowService( new RockContext() )
+
+            var workflowIdsToProcess = new WorkflowService( new RockContext() )
                 .GetActive()
                 .Where( wf => ( wf.WorkflowType.IsActive == true || !wf.WorkflowType.IsActive.HasValue ) )
                 .Where( wf =>
-                    !wf.LastProcessedDateTime.HasValue
-                    ||
-                    ( DbFunctions.AddSeconds( wf.LastProcessedDateTime.Value, wf.WorkflowType.ProcessingIntervalSeconds ?? 0 ) <= RockDateTime.Now ) )
+                    !wf.IsProcessing // Don't attempt to process workflows that are already being processed, as this can cause workflow actions to execute twice.
+                    && ( !wf.LastProcessedDateTime.HasValue
+                        || ( DbFunctions.AddSeconds( wf.LastProcessedDateTime.Value, wf.WorkflowType.ProcessingIntervalSeconds ?? 0 ) <= RockDateTime.Now ) ) )
                 .Select( w => w.Id )
-                .ToList() )
+                .ToList();
+
+            foreach ( var workflowId in workflowIdsToProcess )
             {
                 try
                 {

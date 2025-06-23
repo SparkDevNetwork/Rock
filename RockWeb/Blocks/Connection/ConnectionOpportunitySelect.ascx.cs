@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -138,7 +138,7 @@ namespace RockWeb.Blocks.Connection
     <span class='badge badge-info badge-circle js-legend-badge'>Assigned To You</span>
     <span class='badge badge-warning badge-circle js-legend-badge'>Unassigned Item</span>
     <span class='badge badge-critical badge-circle js-legend-badge'>Critical Status</span>
-    <span class='badge badge-danger badge-circle js-legend-badge'>{{ IdleTooltip }}</span>
+    <span class='badge badge-danger badge-circle js-legend-badge' data-toggle='tooltip' data-html='true' title='{{IdleTooltipList}}'>{{ IdleTooltip }}</span>
 </div>";
 
         private const string OpportunitySummaryTemplateDefaultValue = @"
@@ -648,15 +648,17 @@ namespace RockWeb.Blocks.Connection
             }
 
             //Set the Idle tooltip
-            var connectionTypes = opportunities.Where( o => allOpportunities.Contains( o.Id ) ).Select( o => o.ConnectionType ).Distinct().ToList();
+            var connectionTypes = opportunities.Where( o => allOpportunities.Contains( o.Id ) ).Select( o => o.ConnectionType ).DistinctBy( c => c.Id ).ToList();
+            string idleTooltip = string.Empty;
             StringBuilder sb = new StringBuilder();
             if ( connectionTypes.Select( t => t.DaysUntilRequestIdle ).Distinct().Count() == 1 )
             {
-                sb.Append( String.Format( "Idle (no activity in {0} days)", connectionTypes.Select( t => t.DaysUntilRequestIdle ).Distinct().First() ) );
+                idleTooltip = String.Format( "Idle (no activity in {0} days)", connectionTypes.Select( t => t.DaysUntilRequestIdle ).Distinct().First() );
             }
             else
             {
-                sb.Append( "Idle (no activity in several days)<br/><ul class='list-unstyled'>" );
+                idleTooltip = "Idle (no activity in several days)";
+                sb.Append( @"<ul class=""list-unstyled mb-0"">" );
                 foreach ( var connectionType in connectionTypes )
                 {
                     sb.Append( String.Format( "<li>{0}: {1} days</li>", connectionType.Name, connectionType.DaysUntilRequestIdle ) );
@@ -668,7 +670,8 @@ namespace RockWeb.Blocks.Connection
             var statusMergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage );
             statusMergeFields.Add( "ConnectionOpportunities", allOpportunities );
             statusMergeFields.Add( "ConnectionTypes", connectionTypes );
-            statusMergeFields.Add( "IdleTooltip", sb.ToString().EncodeHtml() );
+            statusMergeFields.Add( "IdleTooltip", idleTooltip );
+            statusMergeFields.Add( "IdleTooltipList", sb );
             lStatusBarContent.Text = statusTemplate.ResolveMergeFields( statusMergeFields );
             BindSummaryData();
         }

@@ -186,6 +186,7 @@ namespace Rock.Model
             target.SMSMessage = source.SMSMessage;
             target.Status = source.Status;
             target.Subject = source.Subject;
+            target.Summary = source.Summary;
             target.SystemCommunicationId = source.SystemCommunicationId;
             target.UrlReferrer = source.UrlReferrer;
             target.CreatedDateTime = source.CreatedDateTime;

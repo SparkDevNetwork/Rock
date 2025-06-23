@@ -21,6 +21,7 @@ using System.Runtime.Serialization;
 
 using Rock.CheckIn.v2;
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Model;
 using Rock.Utility.Enums;
@@ -211,30 +212,39 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="Group.IsChatEnabledOverride"/>
         [DataMember]
-        public bool? IsChatEnabledOverride { get; set; }
+        public bool? IsChatEnabledOverride { get; private set; }
 
         /// <inheritdoc cref="Group.IsLeavingChatChannelAllowedOverride"/>
         [DataMember]
-        public bool? IsLeavingChatChannelAllowedOverride { get; set; }
+        public bool? IsLeavingChatChannelAllowedOverride { get; private set; }
 
         /// <inheritdoc cref="Group.IsChatChannelPublicOverride"/>
         [DataMember]
-        public bool? IsChatChannelPublicOverride { get; set; }
+        public bool? IsChatChannelPublicOverride { get; private set; }
 
         /// <inheritdoc cref="Group.IsChatChannelAlwaysShownOverride"/>
         [DataMember]
-        public bool? IsChatChannelAlwaysShownOverride { get; set; }
+        public bool? IsChatChannelAlwaysShownOverride { get; private set; }
+
+        /// <inheritdoc cref="Group.ChatPushNotificationModeOverride"/>
+        [DataMember]
+        public ChatNotificationMode? ChatPushNotificationModeOverride { get; private set; }
 
         /// <inheritdoc cref="Group.ChatChannelKey"/>
         [MaxLength( 100 )]
         [DataMember]
-        public string ChatChannelKey { get; set; }
+        public string ChatChannelKey { get; private set; }
 
-        /// <inheritdoc cref="Group.GetIsChatEnabled"/>
+        /// <summary>
+        /// Gets whether chat is enabled for this group. <see cref="GroupTypeCache.IsChatAllowed"/> will be checked
+        /// first; if <see langword="false"/>, chat cannot be enabled for this group. <see cref="IsChatEnabledOverride"/>
+        /// will be checked next; if <see langword="null"/>, then the value from
+        /// <see cref="GroupTypeCache.IsChatEnabledForAllGroups"/> will be used.
+        /// </summary>
+        /// <returns>Whether chat is enabled for this group.</returns>
         internal bool GetIsChatEnabled()
         {
-            var groupTypeCache = GroupTypeCache.Get( this.GroupTypeId );
-            if ( groupTypeCache?.IsChatAllowed != true )
+            if ( this.GroupType?.IsChatAllowed != true )
             {
                 return false;
             }
@@ -244,10 +254,15 @@ namespace Rock.Web.Cache
                 return this.IsChatEnabledOverride.Value;
             }
 
-            return groupTypeCache.IsChatEnabledForAllGroups;
+            return this.GroupType?.IsChatEnabledForAllGroups ?? false;
         }
 
-        /// <inheritdoc cref="Group.GetIsLeavingChatChannelAllowed"/>
+        /// <summary>
+        /// Gets whether individuals are allowed to leave this chat channel. Otherwise, they will only be allowed to
+        /// mute the channel. If <see cref="IsLeavingChatChannelAllowedOverride"/> is set to <see langword="null"/>,
+        /// then the value of <see cref="GroupTypeCache.IsLeavingChatChannelAllowed"/> will be used.
+        /// </summary>
+        /// <returns>Whether individuals are allowed to leave this chat channel.</returns>
         internal bool GetIsLeavingChatChannelAllowed()
         {
             if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
@@ -255,10 +270,16 @@ namespace Rock.Web.Cache
                 return this.IsLeavingChatChannelAllowedOverride.Value;
             }
 
-            return GroupTypeCache.Get( this.GroupTypeId )?.IsLeavingChatChannelAllowed ?? false;
+            return this.GroupType?.IsLeavingChatChannelAllowed ?? false;
         }
 
-        /// <inheritdoc cref="Group.GetIsChatChannelPublic"/>
+        /// <summary>
+        /// Gets whether this chat channel is public and visible to everyone when performing a search. This also implies
+        /// that the channel may be joined by any person via the chat application. If
+        /// <see cref="IsChatChannelPublicOverride"/> is set to <see langword="null"/>, then the value of
+        /// <see cref="GroupTypeCache.IsChatChannelPublic"/> will be used.
+        /// </summary>
+        /// <returns>Whether this chat channel is public, and may be joined by any person.</returns>
         internal bool GetIsChatChannelPublic()
         {
             if ( this.IsChatChannelPublicOverride.HasValue )
@@ -266,10 +287,16 @@ namespace Rock.Web.Cache
                 return this.IsChatChannelPublicOverride.Value;
             }
 
-            return GroupTypeCache.Get( this.GroupTypeId )?.IsChatChannelPublic ?? false;
+            return this.GroupType?.IsChatChannelPublic ?? false;
         }
 
-        /// <inheritdoc cref="Group.GetIsChatChannelAlwaysShown"/>
+        /// <summary>
+        /// Gets whether this chat channel is always shown in the channel list even if the person has not joined
+        /// the channel. This also implies that the channel may be joined by any person via the chat application. If
+        /// <see cref="IsChatChannelAlwaysShownOverride"/> is set to <see langword="null"/>, then the value of
+        /// <see cref="GroupTypeCache.IsChatChannelAlwaysShown"/> will be used.
+        /// </summary>
+        /// <returns>Whether this chat channel is always shown in the channel list, and may be joined by any person.</returns>
         internal bool GetIsChatChannelAlwaysShown()
         {
             if ( this.IsChatChannelAlwaysShownOverride.HasValue )
@@ -277,14 +304,76 @@ namespace Rock.Web.Cache
                 return this.IsChatChannelAlwaysShownOverride.Value;
             }
 
-            return GroupTypeCache.Get( this.GroupTypeId )?.IsChatChannelAlwaysShown ?? false;
+            return this.GroupType?.IsChatChannelAlwaysShown ?? false;
         }
 
-        /// <inheritdoc cref="Group.GetIsChatChannelActive"/>
+        /// <summary>
+        /// Gets the <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat channel.
+        /// If <see cref="ChatPushNotificationModeOverride"/> set to <see langword="null"/>, then the value of
+        /// <see cref="GroupTypeCache.ChatPushNotificationMode"/> will be used.
+        /// </summary>
+        /// <returns>The <see cref="ChatNotificationMode"/> to control how push notifications are sent for this chat channel.</returns>
+        internal ChatNotificationMode GetChatPushNotificationMode()
+        {
+            return GetChatPushNotificationMode( ChatPushNotificationModeOverride, GroupTypeId );
+        }
+
+        /// <summary>
+        /// Determines the <see cref="ChatNotificationMode"/> for a chat channel, using an optional override or falling back to the group type's default.
+        /// </summary>
+        /// <param name="chatPushNotificationModeOverride">
+        /// Optional override value. If provided, this value will be returned instead of the default.
+        /// </param>
+        /// <param name="groupTypeId">
+        /// The identifier of the group type used to fetch the default <see cref="ChatNotificationMode"/> from the cache.
+        /// </param>
+        /// <returns>
+        /// The resolved <see cref="ChatNotificationMode"/> to be used for push notifications.
+        /// </returns>
+        /// <remarks>
+        /// If no override is provided and the group type is not found in the cache, defaults to <see cref="ChatNotificationMode.AllMessages"/>.
+        /// </remarks>
+        internal static ChatNotificationMode GetChatPushNotificationMode( ChatNotificationMode? chatPushNotificationModeOverride, int groupTypeId )
+        {
+            if ( chatPushNotificationModeOverride.HasValue )
+            {
+                return chatPushNotificationModeOverride.Value;
+            }
+
+            var groupTypeCache = GroupTypeCache.Get( groupTypeId );
+            if ( groupTypeCache != null )
+            {
+                return groupTypeCache.ChatPushNotificationMode;
+            }
+
+            return ChatNotificationMode.AllMessages;
+        }
+
+        /// <summary>
+        /// Gets whether this chat channel is active.
+        /// </summary>
+        /// <returns>
+        /// <see langword="true"/> if <see cref="GetIsChatEnabled"/>, <see cref="IsActive"/> and NOT <see cref="IsArchived"/>;
+        /// otherwise, <see langword="false"/>.
+        /// </returns>
         internal bool GetIsChatChannelActive()
         {
             return this.GetIsChatEnabled() && this.IsActive && !this.IsArchived;
         }
+
+        /// <summary>
+        /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
+        /// the source of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/>
+        /// (or if <see cref="GroupTypeCache.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the
+        /// value of <see cref="GroupTypeCache.GroupMemberRecordSourceValueId"/> will be used. Call the
+        /// <see cref="GetGroupMemberRecordSourceValueId"/> method instead to get the value, as that method will also
+        /// check the <see cref="GroupTypeCache.GroupMemberRecordSourceValueId"/> property.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        [DataMember]
+        public int? GroupMemberRecordSourceValueId { get; private set; }
 
         #endregion
 
@@ -353,6 +442,62 @@ namespace Rock.Web.Cache
             return _checkInData;
         }
 
+        /// <summary>
+        /// Finds all root group types of this group. This uses the group
+        /// type association tree which allows multiple parents.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>An enumeration of the root group types found for this group.</returns>
+        internal IEnumerable<GroupTypeCache> GetRootGroupTypes( RockContext rockContext )
+        {
+            var groupType = GroupTypeCache.Get( GroupTypeId, rockContext );
+
+            if ( groupType == null )
+            {
+                return Array.Empty<GroupTypeCache>();
+            }
+
+            return groupType.GetRootGroupTypes( rockContext );
+        }
+
+        /// <summary>
+        /// Gets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source
+        /// of <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupTypeCache.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value
+        /// of <see cref="GroupTypeCache.GroupMemberRecordSourceValueId"/> will be used.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        internal int? GetGroupMemberRecordSourceValueId()
+        {
+            if ( this.GroupMemberRecordSourceValueId.HasValue && this.GroupType?.AllowGroupSpecificRecordSource == true  )
+            {
+                return this.GroupMemberRecordSourceValueId.Value;
+            }
+
+            return this.GroupType?.GroupMemberRecordSourceValueId;
+        }
+
+        /// <summary>
+        /// Gets the default Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing the source of
+        /// <see cref="GroupMember"/>s added to this <see cref="Group"/>. If set to <see langword="null"/> (or if
+        /// <see cref="GroupTypeCache.AllowGroupSpecificRecordSource"/> is not <see langword="true"/>), then the value
+        /// of <see cref="GroupTypeCache.GroupMemberRecordSourceValue"/> will be used.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type.
+        /// </value>
+        internal DefinedValueCache GetGroupMemberRecordSourceValue()
+        {
+            if ( this.GroupMemberRecordSourceValueId.HasValue && this.GroupType?.AllowGroupSpecificRecordSource == true )
+            {
+                return DefinedValueCache.Get( this.GroupMemberRecordSourceValueId.Value );
+            }
+
+            return this.GroupType?.GroupMemberRecordSourceValue;
+        }
+
         /// <inheritdoc/>
         public override void SetFromEntity( IEntity entity )
         {
@@ -406,7 +551,9 @@ namespace Rock.Web.Cache
             IsLeavingChatChannelAllowedOverride = group.IsLeavingChatChannelAllowedOverride;
             IsChatChannelPublicOverride = group.IsChatChannelPublicOverride;
             IsChatChannelAlwaysShownOverride = group.IsChatChannelAlwaysShownOverride;
+            ChatPushNotificationModeOverride = group.ChatPushNotificationModeOverride;
             ChatChannelKey = group.ChatChannelKey;
+            GroupMemberRecordSourceValueId = group.GroupMemberRecordSourceValueId;
         }
 
         /// <inheritdoc/>

@@ -325,7 +325,16 @@ namespace Rock.Model
             // if the GroupMember is getting Added (or if Person or Role is different), and if this Group has requirements that must be met before the person is added, check those
             if ( this.IsNewOrChangedGroupMember( rockContext ) )
             {
-                if ( !this.IsSkipRequirementsCheckingDuringValidationCheck && group.GetGroupRequirements( rockContext ).Any( a => a.MustMeetRequirementToAddMember ) )
+                var isPersonRecord = true;
+                if ( this.Person != null )
+                {
+                    // if it's Business or REST user, then it's NOT a 'person' type record
+                    var isBusiness = this.Person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+                    var isRestUser = this.Person.RecordTypeValueId == DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER.AsGuid() ).Id;
+                    isPersonRecord = !( isBusiness || isRestUser );
+                }
+
+                if ( isPersonRecord && !this.IsSkipRequirementsCheckingDuringValidationCheck && group.GetGroupRequirements( rockContext ).Any( a => a.MustMeetRequirementToAddMember ) )
                 {
                     var requirementStatusesRequiredForAdd = group.PersonMeetsGroupRequirements( rockContext, this.PersonId, this.GroupRoleId )
                         .Where( a => a.MeetsGroupRequirement == MeetsGroupRequirement.NotMet

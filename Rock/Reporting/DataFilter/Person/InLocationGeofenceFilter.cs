@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,6 +26,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -37,7 +40,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people on whether any of their family's map locations are within the geofenced boundary of the specified location" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person In Location Geofence Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "ADA55E72-CA6D-44AB-9AA4-939A164F8480")]
+    [Rock.SystemGuid.EntityTypeGuid( "ADA55E72-CA6D-44AB-9AA4-939A164F8480" )]
     public class InLocationGeofenceFilter : DataFilterComponent
     {
         #region Properties
@@ -62,6 +65,102 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/inLocationGeofenceFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            string[] selectionValues = selection.Split( '|' );
+
+            var locationTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                .DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value );
+
+            data.AddOrReplace( "locationTypeOptions", locationTypes.ToListItemBagList().ToCamelCaseJson( false, true ) );
+
+            if ( selectionValues.Length >= 2 )
+            {
+                var selectedLocation = new LocationService( rockContext ).Get( selectionValues[0].AsGuid() );
+
+                if ( selectedLocation != null )
+                {
+                    if ( selectedLocation.IsNamedLocation )
+                    {
+                        var locationBag = selectedLocation.ToListItemBag();
+                        data.AddOrReplace( "location", locationBag.ToCamelCaseJson( false, true ) );
+                    }
+                    else if ( selectedLocation.GeoFence != null )
+                    {
+                        data.AddOrReplace( "location", selectedLocation.GeoFence.AsText().ToJson() );
+                    }
+                }
+
+                var selectedLocationTypeId = selectionValues[1].AsIntegerOrNull();
+
+                var locationType = locationTypes.Where( lt => lt.Id == selectedLocationTypeId ).FirstOrDefault();
+
+                data.AddOrReplace( "locationTypeGuid", locationType?.Guid.ToString() );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            Guid? locationGuid = null;
+            var locationRaw = data.GetValueOrNull( "location" );
+
+            if ( locationRaw.IsNotNullOrWhiteSpace() )
+            {
+                // ListItemBag for named location
+                if ( locationRaw.StartsWith( "{" ) )
+                {
+                    var locationBag = locationRaw.FromJsonOrNull<ListItemBag>();
+
+                    if ( locationBag != null && locationBag.Value.IsNotNullOrWhiteSpace() )
+                    {
+                        locationGuid = locationBag.Value.AsGuidOrNull();
+                    }
+                }
+                else
+                {
+                    // GeoFence
+                    var geoString = locationRaw.FromJsonOrNull<string>();
+                    var locationService = new LocationService( rockContext );
+
+                    if ( geoString.IsNotNullOrWhiteSpace() && geoString.StartsWith( "POLYGON" ) )
+                    {
+                        var location = locationService.GetByGeoFence( DbGeography.PolygonFromText( geoString, DbGeography.DefaultCoordinateSystemId ) );
+                        locationGuid = location.Guid;
+                    }
+                }
+            }
+
+            locationGuid = locationGuid ?? Guid.Empty;
+
+            var locationTypeGuid = data.GetValueOrNull( "locationTypeGuid" )?.AsGuidOrNull();
+            var locationType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                    .DefinedValues
+                    .Where( lt => lt.Guid == locationTypeGuid )
+                    .FirstOrDefault();
+
+            return $"{locationGuid.ToString()}|{locationType?.Id.ToString() ?? ""}";
         }
 
         #endregion
@@ -120,6 +219,8 @@ function() {
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -210,6 +311,8 @@ function() {
                 ( controls[1] as RockDropDownList ).SetValue( selections[1] );
             }
         }
+
+#endif
 
         /// <summary>
         /// Gets the expression.

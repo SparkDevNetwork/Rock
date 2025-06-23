@@ -8,83 +8,103 @@
             </div>
             <div class="modal-body">
                 <NotificationBox v-if="errorMessage"
-                    v-text="errorMessage"
-                    alertType="danger" />
-                <div class="row">
-                    <div class="col">
-                        <div class="clearfix">
-                            <span class="pull-right">
-                                {{linkText}}
-                                <CopyButton :value="linkText" tooltip="Copy" btnSize="xs" />
-                            </span>
-                        </div>
-                    </div>
-                </div>
+                                 v-text="errorMessage"
+                                 alertType="danger" />
                 <div class="row">
                     <div class="col-sm-6">
                         <DropDownList v-model="siteGuid"
-                                    :showBlankItem="false"
-                                    label="Shortening Link Site"
-                                    rules="required"
-                                    help="The site to use for the short link."
-                                    :items="siteOptions" />
+                                      :showBlankItem="false"
+                                      label="Shortening Link Site"
+                                      rules="required"
+                                      help="The site to use for the short link."
+                                      :items="siteOptions" />
                     </div>
                     <div class="col-sm-6">
                         <TextBox v-model="token"
-                                label="Token"
-                                rules="required"
-                                help="The token to use for the short link. Must be unique." />
+                                 label="Token"
+                                 rules="required"
+                                 help="The token to use for the short link. Must be unique." />
                     </div>
                 </div>
                 <div class="row">
                     <div class="col-sm-12">
                         <TextBox v-model="url"
-                                label="URL"
-                                rules="required"
-                                help="The URL that short link will direct users to." />
+                                 label="URL"
+                                 rules="required"
+                                 help="The URL that short link will direct users to." />
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CategoryPicker v-model="category"
+                                        label="Category"
+                                        :entityTypeGuid="EntityType.PageShortLink"
+                                        :multiple="false" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <TextBox v-model="linkText"
+                                 label="Short Link"
+                                 :isReadOnly="true"
+                                 @click="selectShortLink">
+                            <template #inputGroupAppend>
+                                <div ref="copyShortLinkRef"
+                                     class="input-group-addon cursor-pointer"
+                                     title="Copy"
+                                     @click="copyShortLink">
+                                    <i class="ti ti-clipboard"></i>
+                                </div>
+                            </template>
+                        </TextBox>
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <CheckBox v-model="isPinned" label="Pinned" />
                     </div>
                 </div>
                 <Panel title="Advanced Settings" hasCollapse>
                     <div class="row">
                         <div class="col-md-6">
                             <DefinedValuePicker
-                                v-model="utmSource"
-                                label="UTM Source"
-                                :definedTypeGuid="DefinedType.UtmSource"
-                                help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
-                                showBlankItem
-                                allowAdd />
+                                                v-model="utmSource"
+                                                label="UTM Source"
+                                                :definedTypeGuid="DefinedType.UtmSource"
+                                                help="The UTM source parameter identifies the origin of your traffic, like a search engine, newsletter, or specific website, helping to pinpoint which platforms are directing visitors to your site."
+                                                showBlankItem
+                                                allowAdd />
                             <DefinedValuePicker
-                                v-model="utmCampaign"
-                                label="UTM Campaign"
-                                :definedTypeGuid="DefinedType.UtmCampaign"
-                                help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
-                                showBlankItem
-                                allowAdd />
+                                                v-model="utmCampaign"
+                                                label="UTM Campaign"
+                                                :definedTypeGuid="DefinedType.UtmCampaign"
+                                                help="The UTM campaign parameter tags your traffic with specific campaign names, enabling you to measure the performance of individual marketing campaigns and understand their impact on your traffic."
+                                                showBlankItem
+                                                allowAdd />
                         </div>
 
                         <div class="col-md-6">
                             <DefinedValuePicker
-                                v-model="utmMedium"
-                                label="UTM Medium"
-                                :definedTypeGuid="DefinedType.UtmMedium"
-                                help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
-                                showBlankItem
-                                allowAdd />
+                                                v-model="utmMedium"
+                                                label="UTM Medium"
+                                                :definedTypeGuid="DefinedType.UtmMedium"
+                                                help='The UTM medium parameter is used to identify the marketing or advertising medium that directed a user to your site. Examples include "email", "social", "cpc" (cost per click), or "organic" for non-paid search engine traffic.'
+                                                showBlankItem
+                                                allowAdd />
                         </div>
                     </div>
                     <div class="row">
                         <div class="col-md-6">
                             <TextBox
-                                v-model="utmTerm"
-                                label="UTM Term"
-                                help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website."/>
+                                     v-model="utmTerm"
+                                     label="UTM Term"
+                                     help="The UTM term parameter is used to track the keywords or terms in a paid search campaign, providing insights into which specific words or phrases are most effective in driving traffic to your website." />
                         </div>
                         <div class="col-md-6">
                             <TextBox
-                                v-model="utmContent"
-                                label="UTM Content"
-                                help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts."/>
+                                     v-model="utmContent"
+                                     label="UTM Content"
+                                     help="The UTM content parameter helps differentiate between links that point to the same URL within the same ad or campaign, allowing you to test the effectiveness of various content elements, like text or images, in your marketing efforts." />
                         </div>
                     </div>
                 </Panel>
@@ -98,7 +118,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, onMounted } from "vue";
     import { propertyRef } from "@Obsidian/Utility/component";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
@@ -109,52 +129,56 @@
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, provideSecurityGrant, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { PageShortLinkBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkBag";
     import { PageShortLinkDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkDetail/pageShortLinkDetailOptionsBag";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { showTooltip, tooltip } from "@Obsidian/Utility/tooltip";
 
     const invokeBlockAction = useInvokeBlockAction();
     const config = useConfigurationValues<DetailBlockBox<PageShortLinkBag, PageShortLinkDetailOptionsBag>>();
 
+    provideSecurityGrant(getSecurityGrant(config.securityGrantToken));
+
     // #region Values
 
     const siteGuid = propertyRef(config?.entity?.site?.value ?? "", "SiteId");
-    const defaultDomainURL = propertyRef(config?.entity?.defaultDomainURL ?? "", "SiteId");
+    const defaultDomainUrls = propertyRef(config?.options?.defaultDomainUrls ?? [], "DefaultDomainUrls");
     const url = propertyRef(config?.entity?.url ?? "", "Url");
     const token = propertyRef(config?.entity?.token ?? "", "Token");
+    const category = propertyRef(config?.entity?.category ?? {}, "Category");
+    const isPinned = propertyRef(config?.entity?.isPinned ?? true, "IsPinned");
     const utmSource = ref(config?.entity?.utmSettings?.utmSource ?? {});
     const utmMedium = ref(config?.entity?.utmSettings?.utmMedium ?? {});
     const utmCampaign = ref(config?.entity?.utmSettings?.utmCampaign ?? {});
     const utmTerm = ref(config?.entity?.utmSettings?.utmTerm ?? "");
     const utmContent = ref(config?.entity?.utmSettings?.utmContent ?? "");
     const errorMessage = ref("");
+    const copyShortLinkRef = ref<HTMLElement | null>(null);
 
     // #region Computed Values
 
     const linkText = computed((): string => defaultDomainURL.value + token.value);
+
+    const defaultDomainURL = computed(() => {
+        return defaultDomainUrls.value.find(d => d.value === selectedSite.value.value)?.text;
+    });
 
     const siteOptions = computed((): ListItemBag[] => {
         return config?.options?.siteOptions ?? [];
     });
 
     const selectedSite = computed((): ListItemBag => {
-        if(!siteGuid) {
+        if (!siteGuid) {
             return {};
         }
         return config?.options?.siteOptions?.find(s => s.value === siteGuid.value) ?? {};
     });
     // #endregion
-
-    const onClick = (event: Event): void => {
-        navigator.clipboard.writeText(linkText.value);
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        const jquery = <any>window[<any>"$"];
-        const jEl = jquery(event.target).tooltip();
-        jEl.attr("data-original-title", "Copied");
-    };
 
     const closeModal = (): void => {
         window.parent.document.getElementById("shortlink-modal-popup_backDrop")?.remove();
@@ -167,13 +191,15 @@
      *
      * @returns false if it should stay on the page; or a string containing a redirect URL.
      */
-     const onSave = async (): Promise<void> => {
+    const onSave = async (): Promise<void> => {
         const box: ValidPropertiesBox<PageShortLinkBag> = {
             bag: { ...config.entity } as PageShortLinkBag
         };
         setPropertiesBoxValue(box, "site", selectedSite.value);
         setPropertiesBoxValue(box, "token", token.value);
-        setPropertiesBoxValue(box, "url",url.value);
+        setPropertiesBoxValue(box, "url", url.value);
+        setPropertiesBoxValue(box, "category", category.value);
+        setPropertiesBoxValue(box, "isPinned", isPinned.value);
         setPropertiesBoxValue(box, "utmSettings", {
             utmSource: utmSource.value,
             utmMedium: utmMedium.value,
@@ -193,4 +219,29 @@
             errorMessage.value = result.errorMessage ?? "Failed";
         }
     };
+
+    function selectShortLink(e: MouseEvent): void {
+        const target = e.target;
+        if (target instanceof HTMLInputElement || target instanceof HTMLTextAreaElement) {
+            target.select();
+        }
+    }
+
+    function copyShortLink(): void {
+        navigator.clipboard.writeText(linkText.value).then(() => {
+            if (!copyShortLinkRef.value) {
+                return;
+            }
+            copyShortLinkRef.value.setAttribute("data-original-title", "Copied");
+            showTooltip(copyShortLinkRef.value);
+
+            copyShortLinkRef.value.setAttribute("data-original-title", "Copy");
+        });
+    }
+
+    onMounted(() => {
+        if (copyShortLinkRef.value) {
+            tooltip(copyShortLinkRef.value);
+        }
+    });
 </script>

@@ -45,13 +45,13 @@
                         width="10%" />
 
         <ButtonColumn name="refresh"
-                      title="Refresh"
+                      tooltip="Refresh"
                       iconClass="fa fa-sync-alt"
                       :excludeFromExport="true"
                       @click="onRefreshClick" />
 
         <ButtonColumn name="preview"
-                      title="Preview"
+                      tooltip="Preview"
                       iconClass="fa fa-search"
                       :excludeFromExport="true"
                       @click="onPreviewClick" />

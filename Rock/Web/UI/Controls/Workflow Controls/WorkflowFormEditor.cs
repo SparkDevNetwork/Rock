@@ -75,6 +75,7 @@ namespace Rock.Web.UI.Controls
         private RockTextBox _tbPersonEntrySpouseLabel;
         private DefinedValuePicker _dvpPersonEntryConnectionStatus;
         private DefinedValuePicker _dvpPersonEntryRecordStatus;
+        private DefinedValuePicker _dvpPersonEntryRecordSource;
         private DefinedValuePicker _dvpPersonEntryGroupLocationType;
         private DefinedValuePicker _dvpPersonEntryCampusStatus;
         private DefinedValuePicker _dvpPersonEntryCampusType;
@@ -188,6 +189,7 @@ namespace Rock.Web.UI.Controls
             form.PersonEntrySpouseLabel = _tbPersonEntrySpouseLabel.Text;
             form.PersonEntryConnectionStatusValueId = _dvpPersonEntryConnectionStatus.SelectedDefinedValueId;
             form.PersonEntryRecordStatusValueId = _dvpPersonEntryRecordStatus.SelectedDefinedValueId;
+            form.PersonEntryRecordSourceValueId = _dvpPersonEntryRecordSource.SelectedDefinedValueId;
             form.PersonEntryGroupLocationTypeValueId = _dvpPersonEntryGroupLocationType.SelectedDefinedValueId;
             form.PersonEntryCampusStatusValueId = _dvpPersonEntryCampusStatus.SelectedDefinedValueId;
             form.PersonEntryCampusTypeValueId = _dvpPersonEntryCampusType.SelectedDefinedValueId;
@@ -276,6 +278,7 @@ namespace Rock.Web.UI.Controls
             _tbPersonEntrySpouseLabel.Text = workflowActionForm.PersonEntrySpouseLabel;
             _dvpPersonEntryConnectionStatus.SetValue( workflowActionForm.PersonEntryConnectionStatusValueId );
             _dvpPersonEntryRecordStatus.SetValue( workflowActionForm.PersonEntryRecordStatusValueId );
+            _dvpPersonEntryRecordSource.SetValue( workflowActionForm.PersonEntryRecordSourceValueId );
             _dvpPersonEntryGroupLocationType.SetValue( workflowActionForm.PersonEntryGroupLocationTypeValueId );
 
             _dvpPersonEntryCampusStatus.Visible = workflowActionForm.PersonEntryCampusIsVisible;
@@ -409,6 +412,7 @@ namespace Rock.Web.UI.Controls
             target.PersonEntrySpouseLabel = source.PersonEntrySpouseLabel;
             target.PersonEntryConnectionStatusValueId = source.PersonEntryConnectionStatusValueId;
             target.PersonEntryRecordStatusValueId = source.PersonEntryRecordStatusValueId;
+            target.PersonEntryRecordSourceValueId = source.PersonEntryRecordSourceValueId;
             target.PersonEntryGroupLocationTypeValueId = source.PersonEntryGroupLocationTypeValueId;
             target.PersonEntryRaceEntryOption = source.PersonEntryRaceEntryOption;
             target.PersonEntryEthnicityEntryOption = source.PersonEntryEthnicityEntryOption;
@@ -723,6 +727,14 @@ namespace Rock.Web.UI.Controls
                 DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() )
             };
 
+            _dvpPersonEntryRecordSource = new DefinedValuePicker
+            {
+                ID = "_dvpPersonEntryRecordSource",
+                Label = "Record Source",
+                Required = true,
+                DefinedTypeId = DefinedTypeCache.GetId( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )
+            };
+
             _dvpPersonEntryGroupLocationType = new DefinedValuePicker
             {
                 ID = "_dvpPersonEntryGroupLocationType",
@@ -834,8 +846,9 @@ namespace Rock.Web.UI.Controls
             pnlPersonEntryRow1.Controls.Add( pnlPersonEntryRow1Col3 );
             pnlPersonEntryRow1.Controls.Add( pnlPersonEntryRow1Col4 );
             pnlPersonEntryRow1Col1.Controls.Add( _cbPersonEntryAutofillCurrentPerson );
-            pnlPersonEntryRow1Col2.Controls.Add( _cbPersonEntryHideIfCurrentPersonKnown );
-            pnlPersonEntryRow1Col3.Controls.Add( _dvpPersonEntryRecordStatus );
+            pnlPersonEntryRow1Col1.Controls.Add( _cbPersonEntryHideIfCurrentPersonKnown );
+            pnlPersonEntryRow1Col2.Controls.Add( _dvpPersonEntryRecordStatus );
+            pnlPersonEntryRow1Col3.Controls.Add( _dvpPersonEntryRecordSource );
             pnlPersonEntryRow1Col4.Controls.Add( _dvpPersonEntryConnectionStatus );
 
             /* Person Entry - Row 2*/

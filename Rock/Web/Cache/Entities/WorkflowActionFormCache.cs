@@ -150,6 +150,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public int? PersonEntryRecordStatusValueId { get; private set; }
 
+        /// <inheritdoc cref="WorkflowActionForm.PersonEntryRecordSourceValueId"/>
+        [DataMember]
+        public int? PersonEntryRecordSourceValueId { get; private set; }
+
         /// <inheritdoc cref="WorkflowActionForm.PersonEntryGroupLocationTypeValueId"/>
         [DataMember]
         public int? PersonEntryGroupLocationTypeValueId { get; private set; }
@@ -357,6 +361,7 @@ namespace Rock.Web.Cache
                     MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption,
                     SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption,
                     RecordStatusValueId = actionForm.PersonEntryRecordStatusValueId,
+                    RecordSourceValueId = actionForm.PersonEntryRecordSourceValueId,
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     IncludeInactiveCampus = actionForm._personEntryAdditionalSettings?.IncludeInactiveCampus ?? true,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption,
@@ -480,6 +485,7 @@ namespace Rock.Web.Cache
             this.PersonEntryPostHtml = workflowActionForm.PersonEntryPostHtml;
             this.PersonEntryPreHtml = workflowActionForm.PersonEntryPreHtml;
             this.PersonEntryRecordStatusValueId = workflowActionForm.PersonEntryRecordStatusValueId;
+            this.PersonEntryRecordSourceValueId = workflowActionForm.PersonEntryRecordSourceValueId;
             this.PersonEntrySpouseAttributeGuid = workflowActionForm.PersonEntrySpouseAttributeGuid;
             this.PersonEntrySpouseEntryOption = workflowActionForm.PersonEntrySpouseEntryOption;
             this.PersonEntrySpouseLabel = workflowActionForm.PersonEntrySpouseLabel;

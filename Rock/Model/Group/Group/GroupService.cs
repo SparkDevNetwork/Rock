@@ -175,42 +175,6 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets the complete list of <see cref="RockChatGroup"/>s - lightweight objects which represent all
-        /// <see cref="Group"/>s that correspond to <see cref="ChatChannel"/>s in the external chat system, regardless
-        /// of whether they're currently chat-enabled.
-        /// </summary>
-        /// <returns>
-        /// A list of <see cref="RockChatGroup"/>s.
-        /// </returns>
-        /// <remarks>This will include archived, chat-specific <see cref="Group"/>s.</remarks>
-        internal List<RockChatGroup> GetRockChatGroups()
-        {
-            return GetChatChannelGroupsQuery()
-                .AsEnumerable() // Materialize the query.
-                .Select( g =>
-                {
-                    var chatChannelKey = ChatHelper.GetChatChannelKey( g.Id, g.ChatChannelKey );
-
-                    return new RockChatGroup
-                    {
-                        GroupTypeId = g.GroupTypeId,
-                        GroupId = g.Id,
-                        ChatChannelTypeKey = ChatHelper.GetChatChannelTypeKey( g.GroupTypeId ),
-                        ChatChannelKey = chatChannelKey,
-                        ShouldSaveChatChannelKeyInRock = g.ChatChannelKey != chatChannelKey,
-                        Name = g.Name,
-                        CampusId = g.CampusId,
-                        IsLeavingAllowed = g.GetIsLeavingChatChannelAllowed(),
-                        IsPublic = g.GetIsChatChannelPublic(),
-                        IsAlwaysShown = g.GetIsChatChannelAlwaysShown(),
-                        IsChatEnabled = g.GetIsChatEnabled(),
-                        IsChatChannelActive = g.GetIsChatChannelActive()
-                    };
-                } )
-                .ToList();
-        }
-
-        /// <summary>
         /// Gets a Queryable of all <see cref="Group"/>s that are currently chat-enabled.
         /// </summary>
         /// <param name="groupTypeId">The optional identifier of the <see cref="GroupType"/> for the <see cref="Group"/>s to query.</param>
@@ -435,6 +399,59 @@ namespace Rock.Model
                 {
                     return groupLocation.Group;
                 }
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Get's a list of the nearest groups to the person.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="groupTypeId"></param>
+        /// <param name="maxResults"></param>
+        /// <param name="returnOnlyClosestLocationPerGroup"></param>
+        /// <param name="maxDistance"></param>
+        /// <returns></returns>
+        public IQueryable<GroupLocation> GetNearestGroups( DbGeography point, int groupTypeId, int maxResults = 10, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
+        {
+            var rockContext = ( RockContext ) this.Context;
+            var personService = new PersonService( rockContext );
+            
+            if ( point != null )
+            {
+                var groupLocation = this.Queryable()
+                    .Where( g =>
+                        g.GroupTypeId.Equals( groupTypeId ) )
+                    .SelectMany( g =>
+                        g.GroupLocations
+                            .Where( gl =>
+                                gl.Location != null &&
+                                gl.Location.GeoPoint != null
+                            )
+                    );
+
+                if  (maxDistance.HasValue )
+                {
+                    groupLocation = groupLocation.Where( gl => gl.Location.GeoPoint.Distance( point ) <= maxDistance );
+                }
+
+                // Return all locations
+                if( returnOnlyClosestLocationPerGroup == false )
+                { 
+                    return groupLocation
+                            .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) )
+                            .Take( maxResults );
+                }
+
+                // Return just the closest location
+                var closestLocationPerGroup = groupLocation
+                    .GroupBy( x => x.GroupId )
+                    .Select( g => g.OrderBy( x => x.Location.GeoPoint.Distance( point ) ).FirstOrDefault() );
+
+                return closestLocationPerGroup
+                        .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) )
+                        .Take( maxResults );
             }
 
             return null;

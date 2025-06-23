@@ -13,13 +13,14 @@
         <TextColumn name="method"
                     title="Method"
                     field="method"
-                    width="100px"
+                    width="20%"
                     :filter="pickExistingValueFilter"
                     visiblePriority="xs" />
 
         <TextColumn name="path"
                     title="Relative Path"
                     field="path"
+                    width="80%"
                     :filter="textValueFilter"
                     visiblePriority="xs" />
 
@@ -32,7 +33,7 @@
             </template>
         </Column>
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'method'" />
     </Grid>
 
     <GridSettingsModal v-model:visible="showActionSettingsModal" :actionTitle="selectedActionPath" :actionCacheSettings="selectedActionCacheSettings" @save="saveActionSettings" />
@@ -84,7 +85,7 @@
             gridDataSource.value = loadGridData();
         }
         else {
-            console.error("Error saving action settings", result.errorMessage);
+            throw new Error(result.errorMessage ?? "Unknown error while trying to save action settings.");
         }
     }
 
@@ -125,7 +126,6 @@
                 parsedSettings = JSON.parse(action.cacheControlHeaderSettings as string);
             }
             catch (e) {
-                console.log("No cache settings found or invalid JSON", e);
                 parsedSettings = null;
             }
 

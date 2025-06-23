@@ -32,6 +32,7 @@ using Rock.SystemKey;
 using Rock.ViewModels.Blocks.WorkFlow.FormBuilder;
 using Rock.ViewModels.Reporting;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Workflow.FormBuilder;
 
@@ -62,6 +63,12 @@ namespace Rock.Blocks.Workflow.FormBuilder
         Key = AttributeKey.AnalyticsPage,
         Order = 1 )]
 
+    [LinkedPage( "Default Preview Page",
+        Description = "The default page to use when previewing this form in the builder. The page must include a Workflow Entry block with 'Enable for Form Sharing' enabled. If not set, the first eligible page will be used.",
+        IsRequired = false,
+        Key = AttributeKey.DefaultPreviewPage,
+        Order = 2 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.OBSIDIAN_FORM_BUILDER_DETAIL_BLOCK_TYPE )]
@@ -78,6 +85,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
             public const string SubmissionsPage = "SubmissionsPage";
 
             public const string AnalyticsPage = "AnalyticsPage";
+
+            public const string DefaultPreviewPage = "DefaultPreviewPage";
         }
 
         #region Methods
@@ -87,14 +96,25 @@ namespace Rock.Blocks.Workflow.FormBuilder
         {
             var workflowTypeId = RequestContext.GetPageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
 
-            // Build the basic view model information required to edit a
-            // form.
+            // Build the basic view model information required to edit a form.
             var viewModel = new FormBuilderDetailViewModel
             {
                 SubmissionsPageUrl = this.GetLinkedPageUrl( AttributeKey.SubmissionsPage, RequestContext.GetPageParameters() ),
                 AnalyticsPageUrl = this.GetLinkedPageUrl( AttributeKey.AnalyticsPage, RequestContext.GetPageParameters() ),
-                Sources = GetOptionSources( RockContext )
+                Sources = GetOptionSources( RockContext, workflowTypeId )
             };
+
+            // Set the default preview page.
+            var queryParams = this.RequestContext.GetPageParameters();
+            var defaultPreviewPageReference = new PageReference( GetAttributeValue( AttributeKey.DefaultPreviewPage ), queryParams != null ? new Dictionary<string, string>( queryParams ) : null );
+            var defaultPreviewPageGuid = PageCache.GetGuid( defaultPreviewPageReference.PageId );
+
+            if ( defaultPreviewPageGuid.HasValue )
+            {
+                var defaultPreviewPage = viewModel.Sources?.LinkToFormOptions?.FirstOrDefault( b => b.FormPageGuid == defaultPreviewPageGuid.Value );
+
+                viewModel.DefaultPreviewPage = defaultPreviewPage;
+            }
 
             // If we have a workflow type specified in the query string then
             // load the information from it to populate the form.
@@ -151,6 +171,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 actionForm.PersonEntryMobilePhoneEntryOption = formSettings.PersonEntry.MobilePhone.ToPersonEntryOption();
                 actionForm.PersonEntrySmsOptInEntryOption = formSettings.PersonEntry.SmsOptIn.ToShowHideOption();
                 actionForm.PersonEntryRecordStatusValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.RecordStatus );
+                actionForm.PersonEntryRecordSourceValueId = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueId( formSettings.PersonEntry.RecordSource );
                 actionForm.PersonEntryCampusIsVisible = formSettings.PersonEntry.ShowCampus;
                 actionForm.PersonEntrySpouseEntryOption = formSettings.PersonEntry.SpouseEntry.ToPersonEntryOption();
                 actionForm.PersonEntrySpouseLabel = formSettings.PersonEntry.SpouseLabel;
@@ -173,6 +194,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
             workflowType.FormEndDateTime = formSettings.General.EntryEnds?.DateTime;
             workflowType.IsLoginRequired = formSettings.General.IsLoginRequired;
             workflowType.CategoryId = CategoryCache.GetId( formSettings.General.Category.Value.AsGuid() ).Value;
+            workflowType.Slug = formSettings.General.Slug;
 
             // Update the workflow type form template.
             if ( formSettings.General.Template.HasValue )
@@ -473,6 +495,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     MobilePhone = actionForm.PersonEntryMobilePhoneEntryOption.ToFormFieldVisibility(),
                     SmsOptIn = actionForm.PersonEntrySmsOptInEntryOption.ToFormFieldShowHide(),
                     RecordStatus = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordStatusValueId ),
+                    RecordSource = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetDefinedValueGuid( actionForm.PersonEntryRecordSourceValueId ),
                     ShowCampus = actionForm.PersonEntryCampusIsVisible,
                     IncludeInactiveCampus = personEntryAdditionalSettings?.IncludeInactiveCampus ?? true,
                     SpouseEntry = actionForm.PersonEntrySpouseEntryOption.ToFormFieldVisibility(),
@@ -501,7 +524,8 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 EntryStarts = workflowType.FormStartDateTime,
                 IsLoginRequired = workflowType.IsLoginRequired,
                 Name = workflowType.Name,
-                Template = workflowType.FormBuilderTemplate?.Guid
+                Template = workflowType.FormBuilderTemplate?.Guid,
+                Slug = workflowType.Slug
             };
 
             if ( workflowType.Category != null )
@@ -640,7 +664,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
         /// </summary>
         /// <param name="rockContext">The database context to use for data lookups.</param>
         /// <returns>A view model that represents all the options.</returns>
-        private FormValueSourcesViewModel GetOptionSources( RockContext rockContext )
+        private FormValueSourcesViewModel GetOptionSources( RockContext rockContext, int? workflowTypeId )
         {
             var definedValueClientService = new DefinedValueClientService( rockContext, RequestContext.CurrentPerson );
 
@@ -653,6 +677,7 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 AddressTypeOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() ),
                 ConnectionStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ),
                 RecordStatusOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.PERSON_RECORD_STATUS.AsGuid() ),
+                RecordSourceOptions = definedValueClientService.GetDefinedValuesAsListItems( SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() ),
                 EmailTemplateOptions = Rock.Blocks.WorkFlow.FormBuilder.Utility.GetEmailTemplateOptions( rockContext, RequestContext ),
                 FormTemplateOptions = GetFormTemplateOptions( rockContext ),
 
@@ -670,7 +695,9 @@ namespace Rock.Blocks.Workflow.FormBuilder
                     .ToList(),
 
                 // Default section type is the "No Style" value.
-                DefaultSectionType = "85CA07EE-6888-43FD-B8BF-24E4DD35C725".AsGuid()
+                DefaultSectionType = "85CA07EE-6888-43FD-B8BF-24E4DD35C725".AsGuid(),
+
+                LinkToFormOptions = workflowTypeId.HasValue ? GetLinkToFormOptions( rockContext, WorkflowTypeCache.Get( workflowTypeId.Value )?.Slug ) : null
             };
         }
 
@@ -700,6 +727,70 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 .ToList();
         }
 
+        private List<FormBuilderDetailLinkToFormBag> GetLinkToFormOptions( RockContext rockContext, string workflowTypeSlug )
+        {
+            if ( workflowTypeSlug.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var currentPerson = GetCurrentPerson();
+            var workflowEntryBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.WORKFLOW_ENTRY );
+            var obsidianWorkflowEntryBlockType = BlockTypeCache.Get( Rock.SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY );
+            var pagesWithAWorkflowEntryBlock = PageCache.All()
+                .Where( p => p.Blocks.Any( b => b.BlockTypeId == workflowEntryBlockType.Id || b.BlockTypeId == obsidianWorkflowEntryBlockType.Id ) )
+                .Where( p => p.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .ToList();
+
+            var filteredPages = new List<FormBuilderDetailLinkToFormBag>();
+
+            foreach ( var page in pagesWithAWorkflowEntryBlock )
+            {
+                var workflowEntryBlocks = page.Blocks.Where( b => b.BlockTypeId == workflowEntryBlockType.Id || b.BlockTypeId == obsidianWorkflowEntryBlockType.Id ).ToList();
+
+                foreach ( var block in workflowEntryBlocks )
+                {
+                    block.LoadAttributes();
+
+                    // Add page if the Workflow Entry block's workflowType block setting
+                    // is not configured to show a single specific workflow type
+                    // and if the block is configured for form sharing.
+                    if ( block.GetAttributeValue( "WorkflowType" ).IsNullOrWhiteSpace()
+                        && block.GetAttributeValue( "EnableForFormSharing" ).AsBoolean() )
+                    {
+                        filteredPages.Add( new FormBuilderDetailLinkToFormBag
+                        {
+                            FormPageGuid = page.Guid,
+                            FormPageName = $"{page.Site} > {page.InternalName}",
+                            FormPageUrl = BuildRouteURL( page )
+                        } );
+
+                        break;
+                    }
+                }
+            }
+
+            string BuildRouteURL( PageCache page )
+            {
+                var parameters = new Dictionary<string, string>
+                {
+                    { "WorkflowTypeSlug", workflowTypeSlug }
+                };
+
+                var pageReference = PageReference.GetBestMatchForParameters( page.Id, parameters );
+
+                // Use the site's domain and append the page's relative URL.
+                // If the page is a fully formed URL (with scheme, domain, and port),
+                // then it will override the site domain.
+                var site = SiteCache.Get( page.SiteId );
+                var uri = new Uri( site.DefaultDomainUri, pageReference.BuildUrl() );
+
+                return uri.AbsoluteUri;
+            }
+
+            return filteredPages;
+        }
+
         #endregion
 
         #region Block Action
@@ -726,6 +817,13 @@ namespace Rock.Blocks.Workflow.FormBuilder
                 return ActionBadRequest( "Specified workflow type is not a form builder." );
             }
 
+            // Ensure the slug is unique.
+            var uniqueSlug = new WorkflowTypeService( this.RockContext ).GetUniqueSlug( formSettings.General.Slug, workflowType.Id );
+            if ( uniqueSlug != formSettings.General.Slug )
+            {
+                return ActionBadRequest( "Specified slug is not unique." );
+            }
+
             // Find the action type that represents the form.
             var actionForm = workflowType.ActivityTypes
                 .SelectMany( a => a.ActionTypes )
@@ -741,7 +839,13 @@ namespace Rock.Blocks.Workflow.FormBuilder
 
             RockContext.SaveChanges();
 
-            return ActionOk();
+            // Update the link-to-form options.
+            var linkToFormOptions = GetLinkToFormOptions( this.RockContext, workflowType.Slug );
+
+            return ActionOk( new
+            {
+                LinkToFormOptions = linkToFormOptions
+            } );
         }
 
         /// <summary>
@@ -830,6 +934,46 @@ namespace Rock.Blocks.Workflow.FormBuilder
             return ActionOk( publicEditConfigurationValues );
         }
 
+        /// <summary>
+        /// Gets a unique slug value using the provided <paramref name="slug"/>.
+        /// </summary>
+        /// <param name="formGuid">The workflow type unique identifier.</param>
+        /// <param name="slug">The desired slug value.</param>
+        /// <returns>A unique slug.</returns>
+        [BlockAction]
+        public BlockActionResult GetUniqueSlug( Guid formGuid, string slug )
+        {
+            if ( formGuid.IsEmpty() )
+            {
+                return ActionBadRequest( "Invalid parameters provided." );
+            }
+
+            var workflowType = new WorkflowTypeService( this.RockContext )
+                .Queryable()
+                .Where( w => w.Guid == formGuid && w.IsFormBuilder )
+                .Select( w => new
+                {
+                    w.Id,
+                    w.Name
+                } )
+                .FirstOrDefault();
+            
+            if ( workflowType == null )
+            {
+                return ActionBadRequest( "Specified workflow type is not a form builder." );
+            }
+
+            // Check the provided slug or default to the workflow type's name.
+            if ( slug.IsNullOrWhiteSpace() )
+            {
+                slug = workflowType.Name;
+            }
+
+            var uniqueSlug = new WorkflowTypeService( this.RockContext ).GetUniqueSlug( slug, workflowType.Id );
+
+            return ActionOk( uniqueSlug );
+        }
+        
         #endregion
     }
 }

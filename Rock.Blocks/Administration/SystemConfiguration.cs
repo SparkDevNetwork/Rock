@@ -23,6 +23,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Web;
 using System.Xml.Linq;
 using Rock.Attribute;
 using Rock.Configuration;
@@ -32,6 +33,7 @@ using Rock.Observability;
 using Rock.SystemKey;
 using Rock.ViewModels.Blocks.Administration.SystemConfiguration;
 using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
 using Rock.Web.Cache.NonEntities;
 using Rock.Web.UI.Controls;
 
@@ -118,7 +120,8 @@ namespace Rock.Blocks.Administration
                 UiSettingsConfigurationBag = InitializeUiSettingsConfigurationBag(),
                 WebConfigConfigurationBag = InitializeWebConfigConfigurationBag(),
                 ObservabilityEndpointProtocols = ObservabilityHelper.GetOpenTelemetryExporterProtocolsAsListItemBag(),
-                TimeZones = GetTimeZones()
+                TimeZones = GetTimeZones(),
+                Countries = DefinedTypeCache.GetLocationCountryListItemBagList( true )
             };
 
             return box;
@@ -191,6 +194,10 @@ namespace Rock.Blocks.Administration
         /// <returns></returns>
         private GeneralConfigurationBag InitializeGeneralConfigurationBag()
         {
+            var countriesRestrictedFromAccessing = Rock.Web.SystemSettings.GetValue( SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING )
+                .SplitDelimitedValues( "|", StringSplitOptions.RemoveEmptyEntries )
+                .AsGuidList();
+
             return new GeneralConfigurationBag()
             {
                 EnableKeepAlive = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_KEEP_ALIVE ).AsBoolean(),
@@ -198,7 +205,8 @@ namespace Rock.Blocks.Administration
                 IsMultipleTimeZoneSupportEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean(),
                 PDFExternalRenderEndpoint = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT ),
                 PersonalizationCookieCacheLengthMinutes = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES ).AsIntegerOrNull() ?? SettingDefault.PersonalizationCookieCacheLengthMinutes,
-                VisitorCookiePersistenceLengthDays = Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays
+                VisitorCookiePersistenceLengthDays = Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays,
+                CountriesRestrictedFromAccessing = countriesRestrictedFromAccessing
             };
         }
 
@@ -459,7 +467,7 @@ namespace Rock.Blocks.Administration
         /// <summary>
         /// Gets the time zones.
         /// </summary>
-        /// <returns></returns>
+        /// <returns>A <see cref="ListItemBag"/> list of time zone.</returns>
         private List<ListItemBag> GetTimeZones()
         {
             return TimeZoneInfo.GetSystemTimeZones().Select( tz => new ListItemBag() { Text = tz.DisplayName, Value = tz.Id } ).ToList();
@@ -579,6 +587,7 @@ namespace Rock.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT, bag.PDFExternalRenderEndpoint );
             Rock.Web.SystemSettings.SetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS, bag.VisitorCookiePersistenceLengthDays?.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES, bag.PersonalizationCookieCacheLengthMinutes?.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING, string.Join( "|", bag.CountriesRestrictedFromAccessing.Distinct() ) );
 
             return ActionOk( GetSuccessResponseBag( "Settings saved successfully." ) );
         }

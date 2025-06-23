@@ -16,8 +16,13 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
+
+using Microsoft.Extensions.Logging;
 
 using Rock.CheckIn;
+
+[assembly: Rock.Logging.RockLoggingCategory( "Rock.Workflow.Action.CheckIn" )]
 
 namespace Rock.Workflow.Action.CheckIn
 {
@@ -36,10 +41,39 @@ namespace Rock.Workflow.Action.CheckIn
         {
             errorMessages = new List<string>();
 
-            if ( entity is CheckInState )
+            var logger = Rock.Logging.RockLogger.LoggerFactory.CreateLogger( GetType().FullName );
+
+            if ( entity is CheckInState state )
             {
-                return ( CheckInState ) entity;
+                if ( logger.IsEnabled( LogLevel.Trace ) )
+                {
+                    logger.LogTrace( "GetCheckInState: FamilyId={familyId}, Family={family}",
+                        state.CheckIn.CurrentFamily?.Group?.Id,
+                        state.CheckIn.CurrentFamily?.Group?.Name );
+
+                    if ( state.CheckIn.CurrentFamily?.People != null )
+                    {
+                        for ( var i = 0; i < state.CheckIn.CurrentFamily.People.Count; i++ )
+                        {
+                            var person = state.CheckIn.CurrentFamily.People[i];
+
+                            logger.LogTrace( "GetCheckInState: Person[{index}]: Id={id}, Name={name}, Age={age}, Grade={grade}, Excluded={excluded}, IncludedGroupTypeIds={includedGroupTypeIds}, IncludedGroupIds={includedGroupIds}",
+                                i,
+                                person.Person.Id,
+                                person.Person.NickName,
+                                person.Person.AgePrecise,
+                                person.Person.GradeFormatted,
+                                person.ExcludedByFilter,
+                                string.Join( ",", person.GroupTypes.Where( gt => !gt.ExcludedByFilter ).Select( gt => gt.GroupType.Id ) ),
+                                string.Join( ",", person.GroupTypes.Where( gt => !gt.ExcludedByFilter ).SelectMany( gt => gt.Groups ).Where( g => !g.ExcludedByFilter ).Select( gt => gt.Group.Id ) ) );
+                        }
+                    }
+                }
+
+                return state;
             }
+
+            logger.LogError( "GetCheckInState Not Found" );
 
             errorMessages.Add( "Could not get CheckInState object" );
             return null;

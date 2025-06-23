@@ -28,11 +28,6 @@ namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
     public class PageShortLinkBag : EntityBagBase
     {
         /// <summary>
-        /// Get the Default Domain URL of the site to be passed to the front end.
-        /// </summary>
-        public string DefaultDomainURL { get; set; }
-
-        /// <summary>
         /// Gets or sets the Rock.Model.Site that is associated with this PageShortLink.
         /// </summary>
         public ListItemBag Site { get; set; }
@@ -52,6 +47,16 @@ namespace Rock.ViewModels.Blocks.Cms.PageShortLinkDetail
         /// </summary>
         /// <value>The link to be copied.</value>
         public string CopyLink { get; set; }
+
+        /// <summary>
+        /// Gets or sets the selected Category
+        /// </summary>
+        public ListItemBag Category { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating if the Short Link is Pinned.
+        /// </summary>
+        public bool IsPinned { get; set; }
 
         /// <summary>
         /// The UTM settings to apply to this short link.

@@ -15,19 +15,19 @@
 // </copyright>
 //
 
+using System;
+using System.Collections;
+using System.Collections.Generic;
+using System.Diagnostics;
+using System.Dynamic;
+using System.Linq;
+
+using Rock;
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
-using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Dynamic;
-using System.Linq;
-using Rock;
-using System.Diagnostics;
-using System.ComponentModel.Composition.Primitives;
 
 namespace Rock.Lava.Helpers
 {
@@ -393,11 +393,17 @@ namespace Rock.Lava.Helpers
             media.HasWatched = true;
             media.WatchInteractionGuid = watch.InteractionGuid;
             media.WatchInteractionDateTime = watch.InteractionDateTime;
-
             try
             {
                 var watchData = ( dynamic ) watch.InteractionData.FromJsonDynamic();
                 media.WatchMap = watchData.WatchMap;
+
+                if ( watchData.WatchMap?.ToString() is string watchMap )
+                {
+                    var (resumePercentage, resumeLocationInSeconds) = GetResumeInformation( watchMap );
+                    media.ResumePercentage = resumePercentage;
+                    media.ResumeLocationInSeconds = resumeLocationInSeconds;
+                }
             }
             catch ( Exception ) { }
 
@@ -438,6 +444,13 @@ namespace Rock.Lava.Helpers
             {
                 var watchData = ( dynamic ) watch.InteractionData.FromJsonDynamic();
                 media.AddOrReplace( "WatchMap", (object) watchData.WatchMap );
+
+                if ( watchData.WatchMap?.ToString() is string watchMap )
+                {
+                    var (resumePercentage, resumeLocationInSeconds) = GetResumeInformation( watchMap );
+                    media.AddOrReplace( "ResumePercentage", resumePercentage );
+                    media.AddOrReplace( "ResumeLocationInSeconds", resumeLocationInSeconds );
+                }
             }
             catch ( Exception ) { }
 
@@ -512,6 +525,67 @@ namespace Rock.Lava.Helpers
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the resume information from the watch map. If the watch map is
+        /// invalid then it will return 0% and 0 seconds. If the watch map indicates
+        /// that the entire video has been watched then it will return 100% and 0
+        /// resume seconds.
+        /// </summary>
+        /// <param name="watchMap">The string that contains the watch map data.</param>
+        /// <returns>The resume percentage as a value between 0 and 100, and the resume location in seconds.</returns>
+        internal static (double ResumePercentage, int ResumeLocationInSeconds) GetResumeInformation( string watchMap )
+        {
+            if ( string.IsNullOrWhiteSpace( watchMap ) )
+            {
+                return (0, 0);
+            }
+
+            var watchMapParts = watchMap.Split( ',' );
+            int totalLength = 0;
+            int resumeLocation = 0;
+
+            for (int i = 0; i < watchMapParts.Length; i++ )
+            {
+                var part = watchMapParts[i];
+
+                if ( part.Length == 0 )
+                {
+                    continue;
+                }
+
+                // The last character is the count of times watched, the rest
+                // of the preceeding characters is the length of the segment
+                // in seconds.
+                var seconds = part.Substring( 0, part.Length - 1 ).AsIntegerOrNull();
+                var count = part.Substring( part.Length - 1, 1 ).AsIntegerOrNull();
+
+                if ( !seconds.HasValue || !count.HasValue )
+                {
+                    continue;
+                }
+
+                totalLength += seconds.Value;
+
+                // We want to resume at the end of the last segment that was
+                // watched. So we update the resume location if it is not the
+                // last segment or if the segment was watched. Basically we
+                // only skip if the last segment was not watched.
+                if ( i < watchMapParts.Length - 1 || count.Value > 0 )
+                {
+                    resumeLocation = totalLength;
+                }
+            }
+
+            // If they have watched the entire video, return 100% watched but
+            // resume at the beginning.
+            if ( resumeLocation == totalLength )
+            {
+                return (100, 0);
+            }
+
+            return (resumeLocation / ( double ) totalLength * 100.0, resumeLocation);
         }
 
         /// <summary>

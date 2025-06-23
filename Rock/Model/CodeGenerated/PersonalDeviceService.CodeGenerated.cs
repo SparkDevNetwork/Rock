@@ -148,8 +148,12 @@ namespace Rock.Model
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
             target.IsActive = source.IsActive;
+            target.IsBeaconMonitoringEnabled = source.IsBeaconMonitoringEnabled;
+            target.IsPreciseLocationEnabled = source.IsPreciseLocationEnabled;
             target.LastSeenDateTime = source.LastSeenDateTime;
             target.LastVerifiedDateTime = source.LastVerifiedDateTime;
+            target.LocationPermissionDisabledDateTime = source.LocationPermissionDisabledDateTime;
+            target.LocationPermissionStatus = source.LocationPermissionStatus;
             target.MACAddress = source.MACAddress;
             target.Manufacturer = source.Manufacturer;
             target.Model = source.Model;

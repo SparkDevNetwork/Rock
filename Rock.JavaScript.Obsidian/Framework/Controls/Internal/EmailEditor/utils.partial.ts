@@ -780,69 +780,28 @@ export function createComponentElement(document: Document, componentTypeName: Ed
     //  - Global style defaults are maintained in the emailIFrame.partial.obs file.
     switch (componentTypeName) {
         case "title": {
-            const { latestVersion } = getTitleComponentHelper();
-            const componentElements = createComponent(
-                "title",
-                latestVersion,
-                `<h1 class="${RockCssClassContentEditable}" style="margin: 0;">Title</h1>`
-            );
-            // Initialize the component with the correct classes.
-            componentElements.marginWrapper.table.classList.add(getMarginWrapperTableCssClass("title", "-h1"));
-            componentElements.marginWrapper.borderWrapper.table.classList.add(getBorderWrapperTableCssClass("title", "-h1"));
-            componentElements.marginWrapper.borderWrapper.paddingWrapper.table.classList.add(getPaddingWrapperTableCssClass("title", "-h1"));
-            return componentElements.marginWrapper.table;
+            const { createComponentElement } = getTitleComponentHelper();
+            return createComponentElement();
         }
 
         case "video": {
-            const componentElements = createComponent(
-                "video",
-                "v2-alpha",
-                `<a href=""><img src="/Assets/Images/video-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></a>`
-            );
-            // Image component needs a line-height of 0 to remove extra space under image.
-            componentElements.marginWrapper.borderWrapper.paddingWrapper.td.style.lineHeight = "0";
-            return componentElements.marginWrapper.table;
+            const { createComponentElement } = getVideoComponentHelper();
+            return createComponentElement();
         }
 
         case "button": {
-            const componentElements = createComponent(
-                "button",
-                "v2.1-alpha",
-                `<a class="button-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Click Me" style="text-align: center; display: block;">Click Me</a>`
-            );
-
-            componentElements.marginWrapper.table.classList.add("button-outerwrap");
-            componentElements.marginWrapper.table.style.minWidth = "100%";
-            componentElements.marginWrapper.td.classList.add("button-innerwrap");
-            componentElements.marginWrapper.td.setAttribute("align", "center");
-            componentElements.marginWrapper.td.setAttribute("valign", "top");
-            componentElements.marginWrapper.borderWrapper.table.removeAttribute("width");
-            componentElements.marginWrapper.borderWrapper.table.classList.add("button-shell");
-            componentElements.marginWrapper.borderWrapper.td.classList.add("button-content");
-            componentElements.marginWrapper.borderWrapper.td.setAttribute("align", "center");
-            componentElements.marginWrapper.borderWrapper.td.setAttribute("valign", "middle");
-            return componentElements.marginWrapper.table;
+            const { createComponentElement } = getButtonComponentHelper();
+            return createComponentElement();
         }
 
         case "text": {
-            const { latestVersion } = getTextComponentHelper();
-            const componentElements = createComponent(
-                "text",
-                latestVersion,
-                // Wrap component in a content-wrapper so the wrapper can be styled.
-                // It's important that no whitespace is left around the editable area.
-                `<div class="content-wrapper content-wrapper-for-text ${RockCssClassContentEditable}"><p style="margin: 0;">Let's see what you have to say!</p></div>`
-            );
-            return componentElements.marginWrapper.table;
+            const { createComponentElement } = getTextComponentHelper();
+            return createComponentElement();
         }
 
         case "divider": {
-            const { latestVersion } = getDividerComponentHelper();
-            const componentElements = createComponent(
-                "divider",
-                latestVersion
-            );
-            return componentElements.marginWrapper.table;
+            const { createComponentElement } = getDividerComponentHelper();
+            return createComponentElement();
         }
 
         case "message": {
@@ -855,73 +814,18 @@ export function createComponentElement(document: Document, componentTypeName: Ed
         }
 
         case "image": {
-            const componentElements = createComponent(
-                "image",
-                "v2-alpha",
-                // Use box-sizing: border-box to ensure border is included in image width calculations.
-                `<img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%; box-sizing: border-box;">`
-            );
-            // Image component needs a line-height of 0 to remove extra space under image.
-            componentElements.marginWrapper.borderWrapper.paddingWrapper.td.style.lineHeight = "0";
-            return componentElements.marginWrapper.table;
-
+            const { createComponentElement } = getImageComponentHelper();
+            return createComponentElement();
         }
 
         case "code": {
-            const componentElements = createComponent(
-                "code",
-                "v2-alpha",
-                // Wrap component in a content-wrapper so the wrapper can be styled.
-                // It's important that no whitespace is left around the editable area.
-                `<div class="content-wrapper content-wrapper-for-code ${RockCssClassContentEditable}">Add your code here...</div>`
-            );
-            return componentElements.marginWrapper.table;
+            const { createComponentElement } = getCodeComponentHelper();
+            return createComponentElement();
         }
 
         case "rsvp": {
-            const div = document.createElement("div");
-            div.classList.add("component", "component-rsvp");
-            div.dataset.state = "component";
-            div.innerHTML =
-                `<table class="rsvp-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
-                    <tbody>
-                        <tr>
-                            <td class="rsvp-innerwrap" align="center" valign="top" style="padding: 0;">
-                                <table border="0" cellpadding="0" cellspacing="0" role="presentation">
-                                    <tbody>
-                                        <tr>
-                                            <td>
-                                                <table class="accept-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #16C98D; border-collapse: separate; border-radius: 3px; display: inline-table;">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td class="rsvp-accept-content" align="center" valign="middle">
-                                                                <a class="rsvp-accept-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Accept" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Accept</a>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                            <td style="padding-left: 10px;">
-                                                <table class="decline-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #D4442E; border-collapse: separate; border-radius: 3px; display: inline-table;">
-                                                    <tbody>
-                                                        <tr>
-                                                            <td class="rsvp-decline-content" align="center" valign="middle">
-                                                                <a class="rsvp-decline-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Decline" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Decline</a>
-                                                            </td>
-                                                        </tr>
-                                                    </tbody>
-                                                </table>
-                                            </td>
-                                        </tr>
-                                    </tbody>
-                                </table>
-                            </td>
-                        </tr>
-                    </tbody>
-                </table>
-                <input type="hidden" class="rsvp-group-id">
-                <input type="hidden" class="rsvp-occurrence-value">`;
-            return div;
+            const { createComponentElement } = getRsvpComponentHelper();
+            return createComponentElement();
         }
 
         // Section Components
@@ -932,59 +836,16 @@ export function createComponentElement(document: Document, componentTypeName: Ed
         case "four-column-section":
         case "right-sidebar-section":
         case "left-sidebar-section": {
-            const { latestVersion } = getSectionComponentHelper();
-            const componentElements = createComponent(
-                "section",
-                latestVersion,
-                `<table class="row section-row" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%;">
-                    <tbody>
-                        <tr>
-                            ${getSectionColumns(componentTypeName)}
-                        </tr>
-                    </tbody>
-                </table>`
-            );
-            return componentElements.marginWrapper.table;
+            const { createComponentElement } = getSectionComponentHelper();
+            return createComponentElement(componentTypeName);
         }
 
         case "row": {
-            const componentElements = createComponent(
-                "row",
-                "v2-alpha",
-                `<div class="dropzone"></div>`
-            );
-            return componentElements.marginWrapper.table;
+            const { createComponentElement } = getRowComponentHelper();
+            return createComponentElement();
         }
         default:
             throw new Error(`Unknown typeName: ${componentTypeName}`);
-    }
-}
-
-function getSectionColumns(componentTypeName: EditorComponentTypeName): string {
-    const wrappers = createElementWrappers(`<div class="dropzone"></div>`);
-    const wrapperHtml = wrappers.marginWrapper.table.outerHTML;
-    switch (componentTypeName) {
-        case "right-sidebar-section":
-            return `<td class="section-column columns small-12 start large-8" valign="top" width="66.666666%">${wrapperHtml}</td>
-                    <td class="section-column columns small-12 last large-4" valign="top" width="33.333333%">${wrapperHtml}</td>`;
-        case "left-sidebar-section":
-            return `<td class="section-column columns small-12 start large-4" valign="top" width="33.333333%">${wrapperHtml}</td>
-                    <td class="section-column columns small-12 last large-8" valign="top" width="66.666666%">${wrapperHtml}</td>`;
-        case "two-column-section":
-            return `<td class="section-column columns small-12 start large-6" valign="top" width="50%">${wrapperHtml}</td>
-                    <td class="section-column columns small-12 last large-6" valign="top" width="50%">${wrapperHtml}</td>`;
-        case "three-column-section":
-            return `<td class="section-column columns small-12 start large-4" valign="top" width="33.333333%">${wrapperHtml}</td>
-                    <td class="section-column columns small-12 large-4" valign="top" width="33.333333%">${wrapperHtml}</td>
-                    <td class="section-column columns small-12 last large-4" valign="top" width="33.333333%">${wrapperHtml}</td>`;
-        case "four-column-section":
-            return `<td class="section-column columns small-12 start large-3" valign="top" width="25%">${wrapperHtml}</td>
-                    <td class="section-column columns small-12 large-3" valign="top" width="25%">${wrapperHtml}</td>
-                    <td class="section-column columns small-12 large-3" valign="top" width="25%">${wrapperHtml}</td>
-                    <td class="section-column columns small-12 last large-3" valign="top" width="25%">${wrapperHtml}</td>`;
-        case "one-column-section":
-        default:
-            return `<td class="section-column columns small-12 start last large-12" valign="top" width="100%">${wrapperHtml}</td>`;
     }
 }
 
@@ -1052,7 +913,7 @@ export function findDescendantContentAreaElements(element: HTMLElement): Partial
     searchResult.outerTable = Enumerable
         .from(element.querySelectorAll(":scope table.container"))
         .where(filterTableMatches)
-        .ofType(isHTMLElement)
+        .select(el => el as HTMLTableElement)
         .firstOrDefault();
 
     // Look for any table that is a direct descendant of the root element.
@@ -1060,7 +921,7 @@ export function findDescendantContentAreaElements(element: HTMLElement): Partial
         searchResult.outerTable = Enumerable
             .from(element.querySelectorAll(":scope > table"))
             .where(filterTableMatches)
-            .ofType(isHTMLElement)
+            .select(el => el as HTMLTableElement)
             .firstOrDefault();
     }
 
@@ -1644,33 +1505,23 @@ export function checkDropzoneSize(rect: DOMRectReadOnly, element: Element): void
 }
 
 export function getComponentVersionNumber(componentElement: Element): string | null | undefined {
-    if (!isHTMLElement(componentElement)) {
-        return null;
+    const version = (componentElement as HTMLElement).dataset.version ?? "";
+
+    if (isComponentVersionNumber(version)) {
+        return version;
     }
     else {
-        const version = componentElement.dataset.version ?? "";
-
-        if (isComponentVersionNumber(version)) {
-            return version;
-        }
-        else {
-            return null;
-        }
+        return null;
     }
 }
 
 export function setComponentVersionNumber(componentElement: Element, version: string): void {
-    if (!isHTMLElement(componentElement)) {
-        console.warn("Unable to set version number on non-HTMLElement");
-        return;
-    }
-
     if (!isComponentVersionNumber(version)) {
         console.warn(`Invalid version number: ${version}`);
         return;
     }
 
-    componentElement.dataset.version = version;
+    (componentElement as HTMLElement).dataset.version = version;
 }
 
 export function isComponentVersionNumber(str: string): boolean {
@@ -1741,12 +1592,150 @@ export function compareComponentVersions(v1: string, v2: string): number {
 
 // #region Components
 
-export function getTitleComponentHelper(): ComponentMigrationHelper & {
-    getElements(componentElement: Element): ComponentStructure & { readonly headingEl: HTMLHeadElement | null; } | null;
+export function getVideoComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure | null;
+    createComponentElement(): HTMLElement;
 } {
     const latestVersion = "v2-alpha" as const;
 
     return {
+        getElements(componentElement: Element): ComponentStructure | null {
+            if (!componentElement.classList.contains("component-video")) {
+                throw new Error(`Element is not a video component element: ${componentElement.outerHTML}`);
+            }
+
+            return findComponentInnerWrappers(componentElement);
+        },
+
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "video",
+                "v2-alpha",
+                `<a href=""><img src="/Assets/Images/video-placeholder.jpg" data-imgcsswidth="full" style="width: 100%;"></a>`
+            );
+            // Image component needs a line-height of 0 to remove extra space under image.
+            componentElements.marginWrapper.borderWrapper.paddingWrapper.td.style.lineHeight = "0";
+            return componentElements.marginWrapper.table;
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-video")) {
+                throw new Error(`Element is not a video component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-video")) {
+                throw new Error(`Element is not a video component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    const anchor = componentElement.querySelector("a");
+                    const img = anchor?.querySelector("img");
+
+                    if (!anchor || !img) {
+                        throw new Error("Invalid video component structure: missing <a> or <img>.");
+                    }
+
+                    const href = anchor.getAttribute("href") ?? "";
+                    const src = img.getAttribute("src") ?? "";
+                    const style = img.getAttribute("style") ?? "";
+                    const dataImgCssWidth = img.getAttribute("data-imgcsswidth") ?? "";
+
+                    // Prepare the new component
+                    const newComponent = document.createElement("table");
+                    newComponent.setAttribute("border", "0");
+                    newComponent.setAttribute("cellpadding", "0");
+                    newComponent.setAttribute("cellspacing", "0");
+                    newComponent.setAttribute("width", "100%");
+                    newComponent.setAttribute("role", "presentation");
+                    newComponent.className = "margin-wrapper margin-wrapper-for-video component component-video";
+                    newComponent.setAttribute("data-state", "component");
+
+                    setComponentVersionNumber(newComponent, "v2-alpha");
+
+                    // Preserve any known metadata (no parsing, just forwarding)
+                    const filename = img.getAttribute("data-image-filename");
+                    const guid = img.getAttribute("data-image-guid");
+                    const sourceUrl = componentElement.getAttribute("data-image-source-video-url");
+
+                    if (filename) newComponent.setAttribute("data-image-filename", filename);
+                    if (guid) newComponent.setAttribute("data-image-guid", guid);
+                    if (sourceUrl) newComponent.setAttribute("data-image-source-video-url", sourceUrl);
+
+                    // Create the v2-alpha structure
+                    newComponent.innerHTML = `
+            <tbody>
+                <tr>
+                    <td>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-video" style="border-collapse: separate !important;">
+                            <tbody>
+                                <tr>
+                                    <td style="overflow: hidden;">
+                                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-video">
+                                            <tbody>
+                                                <tr>
+                                                    <td style="line-height: 0;">
+                                                        <a href="${href}">
+                                                            <img src="${src}" ${dataImgCssWidth ? `data-imgcsswidth="${dataImgCssWidth}"` : ""} style="${style}">
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    </td>
+                </tr>
+            </tbody>
+        `;
+
+                    return newComponent;
+                }
+            ];
+
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getTitleComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure & { readonly headingEl: HTMLHeadElement | null; } | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "title",
+                latestVersion,
+                `<h1 class="${RockCssClassContentEditable}" style="margin: 0;">Title</h1>`
+            );
+            // Initialize the component with the correct classes.
+            componentElements.marginWrapper.table.classList.add(getMarginWrapperTableCssClass("title", "-h1"));
+            componentElements.marginWrapper.borderWrapper.table.classList.add(getBorderWrapperTableCssClass("title", "-h1"));
+            componentElements.marginWrapper.borderWrapper.paddingWrapper.table.classList.add(getPaddingWrapperTableCssClass("title", "-h1"));
+            return componentElements.marginWrapper.table;
+        },
+
         getElements(componentElement: Element): ComponentStructure & { headingEl: HTMLHeadElement | null; } | null {
             if (!componentElement.classList.contains("component-title")) {
                 throw new Error(`Element is not a title component element: ${componentElement.outerHTML}`);
@@ -1772,7 +1761,18 @@ export function getTitleComponentHelper(): ComponentMigrationHelper & {
                 throw new Error(`Element is not a title component element: ${componentElement.outerHTML}`);
             }
 
-            // Title is a new component; no need to migrate.
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            if (!versionNumber) {
+                return true;
+            }
+
+            const comparison = compareComponentVersions(versionNumber, latestVersion);
+
+            if (comparison < 0) {
+                return true;
+            }
+
             return false;
         },
 
@@ -1781,8 +1781,77 @@ export function getTitleComponentHelper(): ComponentMigrationHelper & {
                 throw new Error(`Element is not a title component element: ${oldComponentElement.outerHTML}`);
             }
 
-            // Title is a new component; no need to migrate.
-            return oldComponentElement;
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    if (getComponentVersionNumber(componentElement)) {
+                        return componentElement; // Already migrated
+                    }
+
+                    const heading = (componentElement.querySelector("h1, h2, h3, h4, h5, h6") ?? null) as HTMLHeadingElement | null;
+                    if (!heading) {
+                        throw new Error("Heading tag not found in title component.");
+                    }
+
+                    const headingTag = heading.tagName.toLowerCase();
+                    const headingText = heading.textContent || "";
+                    const style = heading.style;
+
+                    // Extract and remove margin/padding
+                    const simulatedMargin = style.margin || "";
+                    const contentPadding = style.padding || "";
+
+                    // Remove margin and padding from style to preserve the rest
+                    const cleanStyle: string[] = [];
+                    for (const prop of heading.style) {
+                        if (prop !== "margin" && prop !== "padding") {
+                            cleanStyle.push(`${prop}: ${style.getPropertyValue(prop)};`);
+                        }
+                    }
+                    // Always override margin to 0 on heading
+                    cleanStyle.push("margin: 0px;");
+
+                    const version = "v2-alpha";
+
+                    const wrapper = document.createElement("table");
+                    wrapper.setAttribute("border", "0");
+                    wrapper.setAttribute("cellpadding", "0");
+                    wrapper.setAttribute("cellspacing", "0");
+                    wrapper.setAttribute("width", "100%");
+                    wrapper.setAttribute("role", "presentation");
+                    wrapper.className = `margin-wrapper margin-wrapper-for-title component component-title margin-wrapper-for-title-${headingTag}`;
+                    wrapper.setAttribute("data-state", "component");
+                    setComponentVersionNumber(wrapper, version); // Ensure version tracking
+
+                    const wrapperPaddingAttr = simulatedMargin ? ` style="padding: ${simulatedMargin};"` : "";
+                    const innerTdPaddingAttr = contentPadding ? ` style="padding: ${contentPadding};"` : "";
+
+                    wrapper.innerHTML = `
+                        <tbody><tr><td${wrapperPaddingAttr}>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+                                class="border-wrapper border-wrapper-for-title border-wrapper-for-title-${headingTag}"
+                                style="border-collapse: separate !important;">
+                                <tbody><tr><td style="overflow: hidden;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+                                        class="padding-wrapper padding-wrapper-for-title padding-wrapper-for-title-${headingTag}">
+                                        <tbody><tr><td${innerTdPaddingAttr}>
+                                            <${headingTag} class="rock-content-editable" style="${cleanStyle.join(" ")}">${headingText}</${headingTag}>
+                                        </td></tr></tbody>
+                                    </table>
+                                </td></tr></tbody>
+                            </table>
+                        </td></tr></tbody>
+                    `;
+
+                    return wrapper;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
         },
 
         get latestVersion(): string {
@@ -1793,10 +1862,23 @@ export function getTitleComponentHelper(): ComponentMigrationHelper & {
 
 export function getTextComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null;
+    createComponentElement(): HTMLElement;
 } {
     const latestVersion = "v2-alpha" as const;
 
     return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "text",
+                latestVersion,
+                // Wrap component in a content-wrapper so the wrapper can be styled.
+                // It's important that no whitespace is left around the editable area.
+                `<div class="content-wrapper content-wrapper-for-text ${RockCssClassContentEditable}"><p style="margin: 0;">Let's see what you have to say!</p></div>`
+            );
+
+            return componentElements.marginWrapper.table;
+        },
+
         getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null {
             if (!componentElement.classList.contains("component-text")) {
                 throw new Error(`Element is not a text component element: ${componentElement.outerHTML}`);
@@ -1829,7 +1911,7 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
         },
 
         migrate(oldComponentElement: Element): Element {
-            if (!oldComponentElement.classList.contains("component-text") || !isHTMLElement(oldComponentElement)) {
+            if (!oldComponentElement.classList.contains("component-text")) {
                 throw new Error(`Element is not a text component element: ${oldComponentElement.outerHTML}`);
             }
 
@@ -1838,7 +1920,7 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
             }
 
             const migrations = [
-                function v0ToV2Alpha(componentElement: HTMLElement): HTMLElement {
+                function v0ToV2Alpha(componentElement: Element): Element {
                     if (getComponentVersionNumber(componentElement)) {
                         return componentElement; // Already migrated
                     }
@@ -1855,7 +1937,7 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
                     setComponentVersionNumber(newRoot, "v2-alpha"); // Ensure version tracking
 
                     // Check for `.js-component-text-wrapper`
-                    const oldWrapper = componentElement.querySelector(".js-component-text-wrapper") as HTMLElement;
+                    const oldWrapper = (componentElement.querySelector(".js-component-text-wrapper") ?? null) as HTMLElement | null;
 
                     // Start building the inner structure
                     let innerStructure = `
@@ -1866,7 +1948,7 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
                     let padding = "";
                     if (oldWrapper) {
                         // Extract styles from `.js-component-text-wrapper`
-                        const backgroundColor = componentElement.style.backgroundColor || "";
+                        const backgroundColor = (componentElement as HTMLElement).style.backgroundColor || "";
                         const borderWidth = oldWrapper.style.borderWidth || "";
                         const borderColor = oldWrapper.style.borderColor || "";
                         const borderStyle = oldWrapper.style.borderStyle || "";
@@ -1892,7 +1974,7 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
                     }
 
                     innerStructure += `>
-                                            <div class="rock-content-editable"></div>
+                                            <div class="content-wrapper content-wrapper-for-text rock-content-editable"></div>
                                         </td></tr></tbody>
                                     </table>
                                 </td></tr></tbody>
@@ -1928,10 +2010,33 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
     };
 }
 
-export function getButtonComponentHelper(): {
+export function getButtonComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure & { readonly linkButton: HTMLAnchorElement | null; } | null;
+    createComponentElement(): HTMLElement;
 } {
+    const latestVersion = "v2.1-alpha" as const;
+
     return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "button",
+                latestVersion,
+                `<a class="button-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Click Me" style="text-align: center; display: block;">Click Me</a>`
+            );
+
+            componentElements.marginWrapper.table.classList.add("button-outerwrap");
+            componentElements.marginWrapper.table.style.minWidth = "100%";
+            componentElements.marginWrapper.td.classList.add("button-innerwrap");
+            componentElements.marginWrapper.td.setAttribute("align", "center");
+            componentElements.marginWrapper.td.setAttribute("valign", "top");
+            componentElements.marginWrapper.borderWrapper.table.removeAttribute("width");
+            componentElements.marginWrapper.borderWrapper.table.classList.add("button-shell");
+            componentElements.marginWrapper.borderWrapper.td.classList.add("button-content");
+            componentElements.marginWrapper.borderWrapper.td.setAttribute("align", "center");
+            componentElements.marginWrapper.borderWrapper.td.setAttribute("valign", "middle");
+            return componentElements.marginWrapper.table;
+        },
+
         getElements(componentElement: Element): ComponentStructure & { readonly linkButton: HTMLAnchorElement | null; } | null {
             if (!componentElement.classList.contains("component-button")) {
                 throw new Error(`Element is not a button component element: ${componentElement.outerHTML}`);
@@ -1952,14 +2057,160 @@ export function getButtonComponentHelper(): {
                     return (searchFrom.querySelector("a.button-link") ?? null) as HTMLAnchorElement | null;
                 }
             };
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-button")) {
+                throw new Error(`Element is not a button component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-button")) {
+                throw new Error(`Element is not a button component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2o1oAlpha(componentElement: Element): Element {
+                    if (getComponentVersionNumber(componentElement)) {
+                        return componentElement; // Already migrated
+                    }
+
+                    const outerWrapper = document.createElement("table");
+                    outerWrapper.setAttribute("border", "0");
+                    outerWrapper.setAttribute("cellpadding", "0");
+                    outerWrapper.setAttribute("cellspacing", "0");
+                    outerWrapper.setAttribute("width", "100%");
+                    outerWrapper.setAttribute("role", "presentation");
+                    outerWrapper.className = "margin-wrapper margin-wrapper-for-button component component-button button-outerwrap";
+                    outerWrapper.setAttribute("data-state", "component");
+                    outerWrapper.setAttribute("data-version", "v2.1-alpha");
+                    outerWrapper.style.minWidth = "100%";
+                    outerWrapper.setAttribute("data-component-background-color", "true");
+                    outerWrapper.setAttribute("data-component-button-width", "true");
+
+                    const buttonShell = componentElement.querySelector(".button-shell") as HTMLElement;
+                    const buttonContent = componentElement.querySelector(".button-content") as HTMLElement;
+                    const buttonLink = componentElement.querySelector("a.button-link") as HTMLElement;
+
+                    const text = buttonLink.textContent?.trim() ?? "";
+                    const href = (buttonLink as HTMLAnchorElement).href || "#";
+                    const title = buttonLink.getAttribute("title") || "";
+
+                    const backgroundColor = buttonLink.style.backgroundColor || "";
+                    const color = buttonLink.style.color || "";
+
+                    const fontFamily = buttonLink.style.fontFamily || "";
+                    const fontSize = buttonLink.style.fontSize || "";
+                    const fontWeight = buttonLink.style.fontWeight || "";
+                    const padding = buttonLink.style.padding || "";
+                    const borderRadius = buttonContent?.style.borderRadius || "";
+                    const align = componentElement.querySelector(".button-innerwrap")?.getAttribute("align") || "left";
+
+                    const widthAttr = buttonShell?.getAttribute("width") || "";
+                    const widthStyle = buttonShell?.style.width || buttonLink.style.width || "";
+                    const isFullWidth = widthAttr === "100%" || widthStyle === "100%";
+                    const isFixedWidth = !!widthStyle && /\d+px/.test(widthStyle);
+                    const fixedWidthValue = isFixedWidth ? widthStyle : "";
+
+                    // Build inner structure
+                    outerWrapper.innerHTML = `
+                        <tbody><tr><td class="button-innerwrap" align="${align}" valign="top">
+                            <table border="0" cellpadding="0" cellspacing="0" role="presentation" class="border-wrapper border-wrapper-for-button button-shell" style="border-collapse: separate !important;">
+                                <tbody><tr><td class="button-content" align="center" valign="middle" style="overflow: hidden;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-button" ${backgroundColor ? `bgcolor="${backgroundColor}"` : ""}>
+                                        <tbody><tr><td ${backgroundColor ? `style="background-color: ${backgroundColor};"` : ""}>
+                                            <a class="button-link rock-content-editable" href="${href}" rel="noopener noreferrer" title="${title}" style="display: block; text-align: center;">${text}</a>
+                                        </td></tr></tbody>
+                                    </table>
+                                </td></tr></tbody>
+                            </table>
+                        </td></tr></tbody>
+                    `;
+
+                    // Apply width logic
+                    const shell = outerWrapper.querySelector(".button-shell") as HTMLElement;
+                    const link = outerWrapper.querySelector(".button-link") as HTMLElement;
+                    const content = outerWrapper.querySelector(".button-content") as HTMLElement;
+
+                    if (isFullWidth) {
+                        shell.setAttribute("width", "100%");
+                        shell.style.width = "100%";
+                        shell.style.maxWidth = "100%";
+                    }
+                    else if (isFixedWidth) {
+                        shell.setAttribute("width", fixedWidthValue);
+                        shell.style.width = fixedWidthValue;
+                        link.style.width = fixedWidthValue;
+                    }
+                    else {
+                        shell.style.maxWidth = "100%";
+                    }
+
+                    // Apply style properties
+                    if (borderRadius) {
+                        content.style.borderRadius = borderRadius;
+                    }
+
+                    if (color) {
+                        link.style.color = color;
+                    }
+
+                    if (fontFamily) {
+                        link.style.fontFamily = fontFamily;
+                    }
+
+                    if (fontSize) {
+                        link.style.fontSize = fontSize;
+                    }
+
+                    if (fontWeight) {
+                        link.style.fontWeight = fontWeight;
+                    }
+
+                    if (padding) {
+                        link.style.padding = padding;
+                    }
+
+                    return outerWrapper;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement as Element);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
         }
     };
 }
 
-export function getCodeComponentHelper(): {
+export function getCodeComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null
+    createComponentElement(): HTMLElement;
 } {
+    const latestVersion = "v2-alpha" as const;
+
     return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "code",
+                latestVersion,
+                // Wrap component in a content-wrapper so the wrapper can be styled.
+                // It's important that no whitespace is left around the editable area.
+                `<div class="content-wrapper content-wrapper-for-code ${RockCssClassContentEditable}">Add your code here...</div>`
+            );
+            return componentElements.marginWrapper.table;
+        },
+
         getElements(componentElement: Element): ComponentStructure & { readonly contentWrapper: HTMLElement | null; } | null {
             if (!componentElement.classList.contains("component-code")) {
                 throw new Error(`Element is not a code component element: ${componentElement.outerHTML}`);
@@ -1979,16 +2230,93 @@ export function getCodeComponentHelper(): {
             }
 
             return wrappers;
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-code")) {
+                throw new Error(`Element is not a code component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-code")) {
+                throw new Error(`Element is not a code component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    if (!componentElement.classList.contains("component-code")) {
+                        throw new Error("Element is not a code component.");
+                    }
+
+                    const newComponentElement = document.createElement("table");
+                    newComponentElement.setAttribute("border", "0");
+                    newComponentElement.setAttribute("cellpadding", "0");
+                    newComponentElement.setAttribute("cellspacing", "0");
+                    newComponentElement.setAttribute("width", "100%");
+                    newComponentElement.setAttribute("role", "presentation");
+                    newComponentElement.className = "margin-wrapper margin-wrapper-for-code component component-code";
+                    newComponentElement.setAttribute("data-state", "component");
+
+                    // Ensure version tracking.
+                    setComponentVersionNumber(newComponentElement, "v2-alpha");
+
+                    const margin = (componentElement as HTMLElement).style.margin || "";
+
+                    newComponentElement.innerHTML = `
+                    <tbody><tr><td${margin ? ` style="padding: ${margin};"` : ""}>
+                        <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-code" style="border-collapse: separate !important;">
+                            <tbody><tr><td style="overflow: hidden;">
+                                <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-code">
+                                    <tbody><tr><td>
+                                        <div class="content-wrapper content-wrapper-for-code rock-content-editable"></div>
+                                    </td></tr></tbody>
+                                </table>
+                            </td></tr></tbody>
+                        </table>
+                    </td></tr></tbody>
+                `;
+
+                    const contentContainer = newComponentElement.querySelector(".rock-content-editable") as HTMLElement;
+                    contentContainer.innerHTML = componentElement.innerHTML;
+
+                    return newComponentElement;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement as Element);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
         }
     };
 }
 
 export function getDividerComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure | null;
+    createComponentElement(): HTMLElement;
 } {
     const latestVersion = "v2-alpha" as const;
 
     return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "divider",
+                latestVersion
+            );
+            return componentElements.marginWrapper.table;
+        },
+
         getElements(componentElement: Element): ComponentStructure | null {
             if (!componentElement.classList.contains("component-divider")) {
                 throw new Error(`Element is not a divider component element: ${componentElement.outerHTML}`);
@@ -2006,14 +2334,14 @@ export function getDividerComponentHelper(): ComponentMigrationHelper & {
             return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
         },
 
-        migrate(componentElement: Element): Element {
-            if (!componentElement.classList.contains("component-divider")) {
-                throw new Error(`Element is not a divider component element: ${componentElement.outerHTML}`);
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-divider")) {
+                throw new Error(`Element is not a divider component element: ${oldComponentElement.outerHTML}`);
             }
 
-            if (!this.isMigrationRequired(componentElement)) {
+            if (!this.isMigrationRequired(oldComponentElement)) {
                 // The component is already at the latest version.
-                return componentElement;
+                return oldComponentElement;
             }
 
             const migrations = [
@@ -2077,7 +2405,7 @@ export function getDividerComponentHelper(): ComponentMigrationHelper & {
                 }
             ];
 
-            return migrations.reduce((component, migrate) => migrate(component), componentElement);
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
         },
 
         get latestVersion(): string {
@@ -2086,8 +2414,224 @@ export function getDividerComponentHelper(): ComponentMigrationHelper & {
     };
 }
 
-export function getRowComponentHelper(): { getElements(componentElement: Element): ComponentStructure | null } {
+export function getRsvpComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
     return {
+        createComponentElement(): HTMLElement {
+            const div = document.createElement("div");
+            div.classList.add("component", "component-rsvp");
+            setComponentVersionNumber(div, latestVersion); // Ensure version tracking
+            div.dataset.state = "component";
+            div.innerHTML =
+                `<table class="rsvp-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
+                    <tbody>
+                        <tr>
+                            <td class="rsvp-innerwrap" align="center" valign="top" style="padding: 0;">
+                                <table border="0" cellpadding="0" cellspacing="0" role="presentation">
+                                    <tbody>
+                                        <tr>
+                                            <td>
+                                                <table class="accept-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #16C98D; border-collapse: separate; border-radius: 3px; display: inline-table;">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="rsvp-accept-content" align="center" valign="middle">
+                                                                <a class="rsvp-accept-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Accept" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Accept</a>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                            <td style="padding-left: 10px;">
+                                                <table class="decline-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation" style="background-color: #D4442E; border-collapse: separate; border-radius: 3px; display: inline-table;">
+                                                    <tbody>
+                                                        <tr>
+                                                            <td class="rsvp-decline-content" align="center" valign="middle">
+                                                                <a class="rsvp-decline-link ${RockCssClassContentEditable}" href="https://" rel="noopener noreferrer" title="Decline" style="color: #FFFFFF; display: inline-block; font-family: Arial; font-size: 16px; font-weight: bold; letter-spacing: normal; padding: 15px; text-align: center; text-decoration: none; border-bottom-width: 0;">Decline</a>
+                                                            </td>
+                                                        </tr>
+                                                    </tbody>
+                                                </table>
+                                            </td>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <input type="hidden" class="rsvp-group-id">
+                <input type="hidden" class="rsvp-occurrence-value">`;
+            return div;
+        },
+
+        getElements(componentElement: Element): ComponentStructure | null {
+            if (!componentElement.classList.contains("component-rsvp")) {
+                throw new Error(`Element is not an RSVP component element: ${componentElement.outerHTML}`);
+            }
+
+            return findComponentInnerWrappers(componentElement);
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-rsvp")) {
+                throw new Error(`Element is not an RSVP component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+            return !versionNumber || compareComponentVersions(versionNumber, latestVersion) < 0;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-rsvp")) {
+                throw new Error(`Element is not an RSVP component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                // The component is already at the latest version.
+                return oldComponentElement;
+            }
+
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    if (!componentElement.classList.contains("component-rsvp")) {
+                        throw new Error("Element is not a valid RSVP component.");
+                    }
+
+                    const newComponent = document.createElement("div");
+                    newComponent.className = "component component-rsvp";
+                    newComponent.setAttribute("data-state", "component");
+                    setComponentVersionNumber(newComponent, "v2-alpha");
+
+                    const groupInput = componentElement.querySelector(".rsvp-group-id");
+                    const occurrenceInput = componentElement.querySelector(".rsvp-occurrence-value");
+
+                    const anchorAccept = componentElement.querySelector("a.rsvp-accept-link") as HTMLAnchorElement | null;
+                    const anchorDecline = componentElement.querySelector("a.rsvp-decline-link") as HTMLAnchorElement | null;
+
+                    const acceptText = anchorAccept?.textContent ?? "";
+                    const declineText = anchorDecline?.textContent ?? "";
+                    const acceptHref = anchorAccept?.getAttribute("href") ?? "";
+                    const declineHref = anchorDecline?.getAttribute("href") ?? "";
+
+                    const acceptStyle = anchorAccept?.style;
+                    const declineStyle = anchorDecline?.style;
+
+                    const acceptBgColor = (anchorAccept?.closest("table") as HTMLElement)?.style.backgroundColor || "";
+                    const declineBgColor = (anchorDecline?.closest("table") as HTMLElement)?.style.backgroundColor || "";
+                    const declineDisplay = (anchorDecline?.closest("table") as HTMLElement)?.style.display || "";
+
+                    const fontFamily = acceptStyle?.fontFamily.replace(/"/g, "&quot;") || "";
+                    const fontWeight = acceptStyle?.fontWeight || "";
+                    const fontSize = acceptStyle?.fontSize || "";
+                    const padding = acceptStyle?.padding || "";
+                    const align = (componentElement.querySelector(".rsvp-innerwrap") as HTMLElement)?.getAttribute("align") || "left";
+
+                    const acceptColor = acceptStyle?.color || "";
+                    const declineColor = declineStyle?.color || "";
+
+                    newComponent.innerHTML = `
+                        <table class="rsvp-outerwrap" border="0" cellpadding="0" cellspacing="0" role="presentation" width="100%" style="min-width: 100%;">
+                            <tbody>
+                                <tr>
+                                    <td class="rsvp-innerwrap" align="${align}" valign="top" style="padding: 0;">
+                                        <table border="0" cellpadding="0" cellspacing="0" role="presentation">
+                                            <tbody>
+                                                <tr>
+                                                    <td>
+                                                        <table class="accept-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation"
+                                                            style="background-color: ${acceptBgColor}; border-collapse: separate; border-radius: 3px; display: inline-table;">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td class="rsvp-accept-content" align="center" valign="middle">
+                                                                        <a class="rsvp-accept-link rock-content-editable"
+                                                                           href="${acceptHref}"
+                                                                           title="${acceptText}"
+                                                                           rel="noopener noreferrer"
+                                                                           style="color: ${acceptColor};
+                                                                                  display: inline-block;
+                                                                                  font-size: ${fontSize};
+                                                                                  font-weight: ${fontWeight};
+                                                                                  letter-spacing: normal;
+                                                                                  padding: ${padding};
+                                                                                  text-align: center;
+                                                                                  text-decoration: none;
+                                                                                  border-bottom-width: 0px;
+                                                                                  font-family: ${fontFamily};">${acceptText}</a>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                    <td style="padding-left: 10px;">
+                                                        <table class="decline-button-shell" border="0" cellpadding="0" cellspacing="0" role="presentation"
+                                                            style="background-color: ${declineBgColor}; border-collapse: separate; border-radius: 3px; display: ${declineDisplay || "inline-table"};">
+                                                            <tbody>
+                                                                <tr>
+                                                                    <td class="rsvp-decline-content" align="center" valign="middle">
+                                                                        <a class="rsvp-decline-link rock-content-editable"
+                                                                           href="${declineHref}"
+                                                                           title="${declineText}"
+                                                                           rel="noopener noreferrer"
+                                                                           style="color: ${declineColor};
+                                                                                  display: inline-block;
+                                                                                  font-size: ${fontSize};
+                                                                                  font-weight: ${fontWeight};
+                                                                                  letter-spacing: normal;
+                                                                                  padding: ${padding};
+                                                                                  text-align: center;
+                                                                                  text-decoration: none;
+                                                                                  border-bottom-width: 0px;
+                                                                                  font-family: ${fontFamily};">${declineText}</a>
+                                                                    </td>
+                                                                </tr>
+                                                            </tbody>
+                                                        </table>
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </td>
+                                </tr>
+                            </tbody>
+                        </table>
+                    `;
+
+                    if (groupInput) newComponent.appendChild(groupInput.cloneNode(true));
+                    if (occurrenceInput) newComponent.appendChild(occurrenceInput.cloneNode(true));
+
+                    return newComponent;
+                }
+            ];
+
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
+}
+
+export function getRowComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure | null;
+    createComponentElement(): HTMLElement;
+} {
+    const latestVersion = "v2-alpha" as const;
+
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "row",
+                "v2-alpha",
+                `<div class="dropzone"></div>`
+            );
+            return componentElements.marginWrapper.table;
+        },
+
         getElements(componentElement: Element): ComponentStructure | null {
             if (!componentElement.classList.contains("component-row")) {
                 throw new Error(`Element is not a row component element: ${componentElement.outerHTML}`);
@@ -2100,21 +2644,145 @@ export function getRowComponentHelper(): { getElements(componentElement: Element
             }
 
             return wrappers;
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-row")) {
+                throw new Error(`Element is not a row component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            if (!versionNumber) {
+                return true;
+            }
+
+            const comparison = compareComponentVersions(versionNumber, latestVersion);
+
+            if (comparison < 0) {
+                return true;
+            }
+
+            // Are there any child components that need migration?
+            if (Enumerable
+                .from(componentElement.children)
+                .where(c => {
+                    try {
+                        const helper = getComponentHelper(getComponentTypeName(c));
+                        return helper?.isMigrationRequired(c) ?? false;
+                    }
+                    catch (e) {
+                        // Log error and continue
+                        console.error(`Error checking migration for row component child: ${e}`);
+                        return false;
+                    }
+                })
+            ) {
+                return true;
+            }
+
+            return false;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-row")) {
+                throw new Error(`Element is not a row component element: ${oldComponentElement.outerHTML}`);
+            }
+
+            if (!this.isMigrationRequired(oldComponentElement)) {
+                // The component is already at the latest version.
+                return oldComponentElement;
+            }
+
+            // These are in order from oldest to newest; new migrations should be added at the end.
+            const migrations = [
+                function v0ToV2Alpha(componentElement: Element): Element {
+                    // This component doesn't need a migration itself,
+                    // but a child component might need to be migrated.
+                    const childComponents = componentElement.querySelectorAll(".component");
+
+                    childComponents.forEach(childComponent => {
+                        const helper = getComponentHelper(getComponentTypeName(childComponent));
+                        if (helper?.isMigrationRequired(childComponent)) {
+                            const migratedChild = helper.migrate(childComponent);
+                            if (migratedChild !== childComponent) {
+                                childComponent.replaceWith(migratedChild);
+                            }
+                        }
+                    });
+
+                    return componentElement;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
         }
     };
 }
 
-type SectionComponentVersion = "v0" | "v2-alpha";
+type SectionComponentTypeName = Extract<EditorComponentTypeName,
+    "section"
+    | "one-column-section"
+    | "two-column-section"
+    | "three-column-section"
+    | "four-column-section"
+    | "right-sidebar-section"
+    | "left-sidebar-section">;
 export function getSectionComponentHelper(): ComponentMigrationHelper & {
     getElements(componentElement: Element): ComponentStructure & { readonly rowWrapper: HTMLTableElement | null; } | null;
+    createComponentElement(componentTypeName: SectionComponentTypeName): HTMLElement;
 } {
-    const latestVersion: SectionComponentVersion = "v2-alpha" as const;
-
-    function getVersion(version: SectionComponentVersion): SectionComponentVersion {
-        return version;
-    }
+    const latestVersion = "v2-alpha" as const;
 
     return {
+        createComponentElement(componentTypeName: SectionComponentTypeName): HTMLElement {
+            function getSectionColumns(componentTypeName: EditorComponentTypeName): string {
+                const wrappers = createElementWrappers(`<div class="dropzone"></div>`);
+                const wrapperHtml = wrappers.marginWrapper.table.outerHTML;
+                switch (componentTypeName) {
+                    case "right-sidebar-section":
+                        return `<td class="section-column columns small-12 start large-8" valign="top" width="66.666666%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-4" valign="top" width="33.333333%">${wrapperHtml}</td>`;
+                    case "left-sidebar-section":
+                        return `<td class="section-column columns small-12 start large-4" valign="top" width="33.333333%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-8" valign="top" width="66.666666%">${wrapperHtml}</td>`;
+                    case "two-column-section":
+                        return `<td class="section-column columns small-12 start large-6" valign="top" width="50%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-6" valign="top" width="50%">${wrapperHtml}</td>`;
+                    case "three-column-section":
+                        return `<td class="section-column columns small-12 start large-4" valign="top" width="33.333333%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 large-4" valign="top" width="33.333333%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-4" valign="top" width="33.333333%">${wrapperHtml}</td>`;
+                    case "four-column-section":
+                        return `<td class="section-column columns small-12 start large-3" valign="top" width="25%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 large-3" valign="top" width="25%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 large-3" valign="top" width="25%">${wrapperHtml}</td>
+                                <td class="section-column columns small-12 last large-3" valign="top" width="25%">${wrapperHtml}</td>`;
+                    case "one-column-section":
+                    default:
+                        return `<td class="section-column columns small-12 start last large-12" valign="top" width="100%">${wrapperHtml}</td>`;
+                }
+            }
+
+            const componentElements = createComponent(
+                "section",
+                latestVersion,
+                `<table class="row section-row" cellpadding="0" cellspacing="0" border="0" role="presentation" style="width: 100%;">
+                    <tbody>
+                        <tr>
+                            ${getSectionColumns(componentTypeName)}
+                        </tr>
+                    </tbody>
+                </table>`
+            );
+            return componentElements.marginWrapper.table;
+        },
+
         getElements(componentElement: Element): ComponentStructure & { readonly rowWrapper: HTMLTableElement | null; } | null {
             if (!componentElement.classList.contains("component-section")) {
                 throw new Error(`Element is not a section component element: ${componentElement.outerHTML}`);
@@ -2166,7 +2834,7 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
             // These are in order from oldest to newest; new migrations should be added at the end.
             const migrations = [
                 function v0ToV2Alpha(componentElement: Element): Element {
-                    if (getComponentVersionNumber(componentElement) || !isHTMLElement(componentElement)) {
+                    if (getComponentVersionNumber(componentElement)) {
                         // The old component element didn't have a version number
                         // so if there is any version number at all, it's already migrated.
                         return componentElement;
@@ -2183,15 +2851,16 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
                     newRoot.setAttribute("data-state", "component");
 
                     // Ensure version tracking.
-                    setComponentVersionNumber(newRoot, getVersion("v2-alpha"));
+                    setComponentVersionNumber(newRoot, "v2-alpha");
 
                     // Extract inline styles from the old component.
-                    const backgroundColor = componentElement.style.backgroundColor || "";
-                    const padding = componentElement.style.padding || "";
-                    const borderRadius = componentElement.style.borderRadius || "";
-                    const borderStyle = componentElement.style.borderStyle || "";
-                    const borderWidth = componentElement.style.borderWidth || "";
-                    const borderColor = componentElement.style.borderColor || "";
+                    const componentElementStyle = (componentElement as HTMLElement).style;
+                    const backgroundColor = componentElementStyle.backgroundColor || "";
+                    const padding = componentElementStyle.padding || "";
+                    const borderRadius = componentElementStyle.borderRadius || "";
+                    const borderStyle = componentElementStyle.borderStyle || "";
+                    const borderWidth = componentElementStyle.borderWidth || "";
+                    const borderColor = componentElementStyle.borderColor || "";
 
                     // Create the inner structure.
                     newRoot.innerHTML = `
@@ -2256,6 +2925,8 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
                             const dropzoneBorderWidth = oldColumnElement.style.borderWidth || "";
                             const dropzoneBorderColor = oldColumnElement.style.borderColor || "";
                             const dropzonePadding = oldColumnElement.style.padding || "";
+                            const textAlign = oldColumnElement.style.textAlign;
+                            const alignAttribute = oldColumnElement.style.textAlign ? `align="${oldColumnElement.style.textAlign}"` : "";
 
                             // Create new column
                             const newColumn = document.createElement("td");
@@ -2274,7 +2945,7 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
                                 ${dropzoneBorderWidth ? `border-width: ${dropzoneBorderWidth};` : ""}
                                 ${dropzoneBorderColor ? `border-color: ${dropzoneBorderColor};` : ""}">
                     <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper">
-                        <tbody><tr><td ${dropzonePadding ? `style="padding: ${dropzonePadding};"` : ""}>
+                        <tbody><tr><td style="${dropzonePadding ? `padding: ${dropzonePadding};` : ""} ${textAlign ? `text-align: ${textAlign};` : ""}" ${alignAttribute}>
                             <div class="dropzone"></div>
                         </td></tr></tbody>
                     </table>
@@ -2293,6 +2964,18 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
                         }
                     });
 
+                    // Before returning the section, migrate all descendant components.
+                    const childComponents = newRoot.querySelectorAll(".component");
+                    childComponents.forEach(childComponent => {
+                        const helper = getComponentHelper(getComponentTypeName(childComponent));
+                        if (helper?.isMigrationRequired(childComponent)) {
+                            const migratedChild = helper.migrate(childComponent);
+                            if (migratedChild !== childComponent) {
+                                childComponent.replaceWith(migratedChild);
+                            }
+                        }
+                    });
+
                     return newRoot;
                 }
             ];
@@ -2307,20 +2990,181 @@ export function getSectionComponentHelper(): ComponentMigrationHelper & {
     };
 }
 
-export function getImageComponentHelper(componentElement: Element): ComponentStructure | null {
-    if (!componentElement.classList.contains("component-image")) {
-        throw new Error(`Element is not a image component element: ${componentElement.outerHTML}`);
-    }
+export function getImageComponentHelper(): ComponentMigrationHelper & {
+    getElements(componentElement: Element): ComponentStructure | null,
+    createComponentElement(): HTMLElement
+} {
+    const latestVersion = "v2-alpha" as const;
 
-    return findComponentInnerWrappers(componentElement);
+    return {
+        createComponentElement(): HTMLElement {
+            const componentElements = createComponent(
+                "image",
+                "v2-alpha",
+                // Use box-sizing: border-box to ensure border is included in image width calculations.
+                `<img alt="" src="/Assets/Images/image-placeholder.jpg" data-imgcsswidth="full" style="width: 100%; box-sizing: border-box;">`
+            );
+            // Image component needs a line-height of 0 to remove extra space under image.
+            componentElements.marginWrapper.borderWrapper.paddingWrapper.td.style.lineHeight = "0";
+            return componentElements.marginWrapper.table;
+        },
+
+        getElements(componentElement: Element): ComponentStructure | null {
+            if (!componentElement.classList.contains("component-image")) {
+                throw new Error(`Element is not an image component element: ${componentElement.outerHTML}`);
+            }
+
+            return findComponentInnerWrappers(componentElement);
+        },
+
+        isMigrationRequired(componentElement: Element): boolean {
+            if (!componentElement.classList.contains("component-image")) {
+                throw new Error(`Element is not a image component element: ${componentElement.outerHTML}`);
+            }
+
+            const versionNumber = getComponentVersionNumber(componentElement);
+
+            if (!versionNumber) {
+                return true;
+            }
+
+            const comparison = compareComponentVersions(versionNumber, latestVersion);
+
+            if (comparison < 0) {
+                return true;
+            }
+
+            return false;
+        },
+
+        migrate(oldComponentElement: Element): Element {
+            if (!oldComponentElement.classList.contains("component-image")) {
+                throw new Error("Element is not a valid image component.");
+            }
+
+            const componentVersion = getComponentVersionNumber(oldComponentElement);
+
+            // Check if the component is already at the latest version.
+            if (componentVersion && compareComponentVersions(componentVersion, latestVersion) === 0) {
+                return oldComponentElement;
+            }
+
+            // These are in order from oldest to newest; new migrations should be added at the end.
+            const migrations = [
+                function v0ToV2Alpha(oldComponent: Element): Element {
+                    const image = oldComponent.querySelector("img");
+                    if (!image) {
+                        throw new Error("No <img> found in the image component.");
+                    }
+
+                    const anchor = oldComponent.querySelector("a");
+                    const imgSrc = image.getAttribute("src") ?? "";
+                    const alt = image.getAttribute("alt") ?? "";
+
+                    const imageGuid = oldComponent.getAttribute("data-image-guid") ?? "";
+                    const imageFilename = oldComponent.getAttribute("data-image-filename") ?? "";
+                    const imageWidth = oldComponent.getAttribute("data-image-width") ?? "";
+                    const imageHeight = oldComponent.getAttribute("data-image-height") ?? "";
+                    const imageResizeMode = oldComponent.getAttribute("data-image-resizemode") ?? "";
+
+                    const hasMargin = (oldComponent as HTMLElement).style.margin;
+                    const margin = hasMargin || "";
+
+                    const align = (oldComponent as HTMLElement).style.textAlign || "";
+
+                    const tdAlignAttr = align ? ` align="${align}"` : "";
+
+                    const widthAttr = imageWidth ? ` width="${imageWidth}"` : "";
+                    const heightAttr = imageHeight ? ` height="${imageHeight}"` : "";
+                    const heightStyle = imageHeight ? ` height: ${imageHeight};` : "";
+
+                    const tdPadding = margin ? ` style="padding: ${margin};"` : "";
+
+                    const wrapper = document.createElement("table");
+                    wrapper.setAttribute("border", "0");
+                    wrapper.setAttribute("cellpadding", "0");
+                    wrapper.setAttribute("cellspacing", "0");
+                    wrapper.setAttribute("width", "100%");
+                    wrapper.setAttribute("role", "presentation");
+                    wrapper.className = "margin-wrapper margin-wrapper-for-image component component-image";
+                    wrapper.setAttribute("data-state", "component");
+                    setComponentVersionNumber(wrapper, "v2-alpha");
+
+                    if (imageGuid) {
+                        wrapper.setAttribute("data-image-guid", imageGuid);
+                    }
+                    if (imageFilename) {
+                        wrapper.setAttribute("data-image-filename", imageFilename);
+                    }
+                    if (imageWidth) {
+                        wrapper.setAttribute("data-image-width", imageWidth);
+                    }
+                    if (imageHeight) {
+                        wrapper.setAttribute("data-image-height", imageHeight);
+                    }
+                    if (imageResizeMode) {
+                        wrapper.setAttribute("data-image-resizemode", imageResizeMode);
+                    }
+
+                    wrapper.innerHTML = `
+                        <tbody><tr><td${tdPadding}>
+                            <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+                                   class="border-wrapper border-wrapper-for-image" style="border-collapse: separate !important;">
+                                <tbody><tr><td style="overflow: hidden;">
+                                    <table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation"
+                                           class="padding-wrapper padding-wrapper-for-image">
+                                        <tbody><tr><td${tdAlignAttr} style="line-height: 0;">
+                                            ${anchor
+                            ? `<a href="${anchor.getAttribute("href") ?? ""}"><img alt="${alt}" src="${imgSrc}" style="box-sizing: border-box;${heightStyle}"${widthAttr}${heightAttr}></a>`
+                            : `<img alt="${alt}" src="${imgSrc}" style="box-sizing: border-box;${heightStyle}"${widthAttr}${heightAttr}>`}
+                                        </td></tr></tbody>
+                                    </table>
+                                </td></tr></tbody>
+                            </table>
+                        </td></tr></tbody>
+                    `;
+
+                    return wrapper;
+                }
+            ];
+
+            // Run migrations.
+            return migrations.reduce((component, migrate) => migrate(component), oldComponentElement);
+        },
+
+        get latestVersion(): string {
+            return latestVersion;
+        }
+    };
 }
 
-export function getVideoComponentHelper(componentElement: Element): ComponentStructure | null {
-    if (!componentElement.classList.contains("component-video")) {
-        throw new Error(`Element is not a video component element: ${componentElement.outerHTML}`);
+// eslint-disable-next-line @typescript-eslint/explicit-function-return-type
+export function getComponentHelper(componentTypeName: ComponentTypeName) {
+    switch (componentTypeName) {
+        case "title":
+            return getTitleComponentHelper();
+        case "text":
+            return getTextComponentHelper();
+        case "image":
+            return getImageComponentHelper();
+        case "button":
+            return getButtonComponentHelper();
+        case "video":
+            return getVideoComponentHelper();
+        case "divider":
+            return getDividerComponentHelper();
+        case "row":
+            return getRowComponentHelper();
+        case "rsvp":
+            return getRsvpComponentHelper();
+        case "code":
+            return getCodeComponentHelper();
+        case "section":
+            return getSectionComponentHelper();
+        default:
+            console.error(`Unknown component type: ${componentTypeName}`);
+            return null;
     }
-
-    return findComponentInnerWrappers(componentElement);
 }
 
 // #endregion Components

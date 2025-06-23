@@ -23,4 +23,6 @@
 
 /** The additional configuration options for the Step Program List block. */
 export type StepProgramListOptionsBag = {
+    /** Gets or sets a value indicating whether the reorder column should be visible. */
+    isReOrderColumnVisible: boolean;
 };

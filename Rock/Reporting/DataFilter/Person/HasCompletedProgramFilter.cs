@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -25,6 +26,8 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -45,6 +48,54 @@ namespace Rock.Reporting.DataFilter.Person
         public override string AppliesToEntityType
         {
             get { return typeof( Rock.Model.Person ).FullName; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasCompletedProgramFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var learningProgramOptions = new LearningProgramService( rockContext )
+                .Queryable()
+                .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
+                .OrderBy( lp => lp.Name )
+                .ToList()
+                .Select( lp => lp.ToListItemBag() )
+                .ToList();
+
+            var data = new Dictionary<string, string>
+            {
+                { "learningProgramOptions", learningProgramOptions.ToCamelCaseJson(false, true) },
+                { "learningProgram", config?.LearningProgramGuid?.ToString() },
+                { "dateRange", config?.SlidingDateRangeDelimitedValues },
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig
+            {
+                LearningProgramGuid = data.GetValueOrNull( "learningProgram" )?.AsGuidOrNull(),
+                SlidingDateRangeDelimitedValues = data.GetValueOrNull( "dateRange" ),
+            };
+
+            return selectionConfig.ToJson();
         }
 
         #endregion
@@ -82,6 +133,8 @@ namespace Rock.Reporting.DataFilter.Person
 
             return "Completed Program";
         }
+
+#if WEBFORMS
 
         /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
@@ -187,6 +240,8 @@ namespace Rock.Reporting.DataFilter.Person
             slidingDateRangePicker.DelimitedValues = selectionConfig.SlidingDateRangeDelimitedValues;
             ddlProgram.SetValue( selectionConfig.LearningProgramGuid );
         }
+
+#endif
 
         /// <inheritdoc/>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )

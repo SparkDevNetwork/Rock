@@ -3,7 +3,7 @@
     <div ref="wizardStartStepElement" class="wizard-start-step">
         <Panel :title="title" type="block" panelBodyCssClass="panel-body-wizard">
             <template #headerActions>
-                <div class="mr-3">
+                <div>
                     <HighlightLabel labelType="info">
                         <template v-if="isFetchingRecipients"><i class="fas fa-spinner fa-pulse"></i> Recipients</template>
                         <template v-else>{{ recipientsLabel }}</template>
@@ -105,6 +105,7 @@
                                     <div class="col-sm-5">
                                         <ConditionalWell class="segments-section">
                                             <DropDownList v-model="personalizationSegmentIdsAsStrings"
+                                                          enhanceForLongLists
                                                           :items="personalizationSegments"
                                                           label="Select Segments"
                                                           :multiple="true" />
@@ -213,15 +214,15 @@
                                     <div class="col-sm-5">
                                         <RadioButtonList v-model="selectedSendTimePreference"
                                                          :items="[
-                                                             {
-                                                                 value: 'now',
-                                                                 text: 'Now'
-                                                             },
-                                                             {
-                                                                 value: 'later',
-                                                                 text: 'Later'
-                                                             }
-                                                         ]"
+                                                            {
+                                                                value: 'now',
+                                                                text: 'Now'
+                                                            },
+                                                            {
+                                                                value: 'later',
+                                                                text: 'Later'
+                                                            }
+                                                        ]"
                                                          :horizontal="true"
                                                          label="When to Send"
                                                          rules="required"
@@ -348,7 +349,7 @@
 <script setup lang="ts">
     import { computed, nextTick, PropType, Ref, ref, watch } from "vue";
     import RecipientModal from "./recipientModal.partial.obs";
-    import { get, useBreakpointHelper } from "./utils.partial";
+    import { get } from "./utils.partial";
     import { SendTimePreference } from "./types.partial";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
@@ -364,7 +365,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import { vShortcut } from "@Obsidian/Directives/shortcut";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { SegmentCriteria, SegmentCriteriaDescription } from "@Obsidian/Enums/Communication/segmentCriteria";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -569,7 +570,6 @@
         }
     ];
 
-    const breakpointHelper = useBreakpointHelper();
     const manualRecipientList = "manual" as const;
 
     // #region Values
@@ -782,6 +782,12 @@
 
         if (isNullish(internalIndividualRecipientPersonAliasGuids.value) && selectedCommunicationListGuidOrManualOrEmptyString.value !== value) {
             selectedCommunicationListGuidOrManualOrEmptyString.value = value;
+        }
+    });
+
+    watch(() => props.recipientCount, value => {
+        if (value > 0) {
+            isNoRecipientsNotificationShown.value = false;
         }
     });
 

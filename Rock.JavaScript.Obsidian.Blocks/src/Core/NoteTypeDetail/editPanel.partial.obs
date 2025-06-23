@@ -38,6 +38,16 @@
                               :items="formatTypeItems"
                               :showBlankItem="true" />
 
+
+                <div v-else class="form-group static-control ">
+                    <label class="control-label">Content Format</label>
+                    <div class="control-wrapper">
+                        <div class="form-control-static">
+                            Structured
+                        </div>
+                    </div>
+                </div>
+
                 <NotificationBox v-if="isChangingToStructuredFormat" alertType="warning">
                     Once you change a note type to the Structured format, it cannot be changed back. Be sure this is what you want to do.
                 </NotificationBox>
@@ -46,28 +56,28 @@
                     <div class="row">
                         <div class="col-md-6">
                             <CheckBox v-model="requiresApprovals"
-                                    label="Enabled Approvals"
-                                    @click="toggleRequiresApprovals()" />
+                                      label="Enabled Approvals"
+                                      @click="toggleRequiresApprovals()" />
                         </div>
                         <div class="col-md-6" v-if="requiresApprovals">
                             <CheckBox v-model="enabledAIApprovals"
-                                    label="Enabled AI Approvals"
-                                    help="Determines if AI should be used to automatically approve notes of this type. Ensure to provide guidelines on what constitutes an appropriate note." />
+                                      label="Enabled AI Approvals"
+                                      help="Determines if AI should be used to automatically approve notes of this type. Ensure to provide guidelines on what constitutes an appropriate note." />
 
                         </div>
                     </div>
 
                     <TextBox
-                            v-if="enabledAIApprovals"
-                            v-model="aiApprovalGuidelines"
-                            rules="required"
-                            label="AI Approval Guidelines"
-                            :help="aiApprovalGuidelineHelpText"
-                            textMode="multiline" />
+                             v-if="enabledAIApprovals"
+                             v-model="aiApprovalGuidelines"
+                             rules="required"
+                             label="AI Approval Guidelines"
+                             :help="aiApprovalGuidelineHelpText"
+                             textMode="multiline" />
 
                     <AIProviderPicker
-                                    v-if="enabledAIApprovals"
-                                    v-model="aiProvider" label="AI Provider" help="The AI provider to use for the approval. If no provider is selected the default provider will be used." />
+                                      v-if="enabledAIApprovals"
+                                      v-model="aiProvider" label="AI Provider" help="The AI provider to use for the approval. If no provider is selected the default provider will be used." />
                 </template>
             </div>
 
@@ -213,8 +223,7 @@
      * Asana Ticket with more Details from Daniel H: https://app.asana.com/0/1208364266328691/1209885795399789/f
      */
     const showEnableMentions = computed((): boolean => {
-        return false;
-        // return showContentFormatDropdown.value && (formatType.value === NoteFormatType.Structured.toString() || formatType.value === NoteFormatType.Unknown.toString());
+        return formatType.value === NoteFormatType.Structured.toString();
     });
 
     function validateMaxReplyDepth(value: unknown): string | boolean {

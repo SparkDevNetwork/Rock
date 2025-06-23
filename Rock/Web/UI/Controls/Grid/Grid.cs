@@ -2350,7 +2350,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             gridViewRow.DataItem = dataItem;
                             this.OnRowDataBound( args );
                             columnCounter = 0;
-                            var gridViewRowCellLookup = gridViewRow.Cells.OfType<DataControlFieldCell>().ToDictionary( k => k.ContainingField, v => v );
+
+                            /*
+                                6/11/2025 - NA
+
+                                Updated grid logic to reference columns by index (gridColumn index) rather than
+                                by field instance, which may not be reliably preserved across RebindGrid() calls.
+
+                                Reason: Ensures grid consistency during rebinding. (Fixes ISSUE #6288)
+                            */
                             foreach ( var col in gridColumns )
                             {
                                 // Processing cell of data in row.
@@ -2358,14 +2366,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                 columnCounter++;
 
                                 object exportValue = null;
-                                if ( col.Value is RockBoundField )
+
+                                if ( col.Value is RockBoundField rockBound )
                                 {
-                                    exportValue = ( col.Value as RockBoundField ).GetExportValue( gridViewRow );
+                                    exportValue = rockBound.GetExportValue( gridViewRow );
                                 }
-                                else if ( col.Value is RockTemplateField )
+                                else if ( col.Value is RockTemplateField rockTemplate )
                                 {
-                                    var fieldCell = gridViewRowCellLookup[col.Value];
-                                    exportValue = ( col.Value as RockTemplateField ).GetExportValue( gridViewRow, fieldCell );
+                                    var fieldCell = gridViewRow.Cells[col.Key] as DataControlFieldCell;
+                                    exportValue = rockTemplate.GetExportValue( gridViewRow, fieldCell );
                                 }
 
                                 ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnCounter], exportValue );
@@ -2903,40 +2912,22 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
         {
             additionalMergeProperties = additionalMergeProperties ?? new List<PropertyInfo>();
 
-            if ( LavaService.RockLiquidIsEnabled )
+            // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
+            Type excludeType = null;
+
+            if ( typeof( LavaDataObject ).IsAssignableFrom( dataSourceObjectType ) )
             {
-                // If this is a DotLiquid.Drop class, don't include any of the properties that are inherited from DotLiquid.Drop
-                if ( typeof( DotLiquid.Drop ).IsAssignableFrom( dataSourceObjectType ) )
-                {
-                    var dropProperties = typeof( DotLiquid.Drop ).GetProperties().Select( a => a.Name );
-                    additionalMergeProperties = additionalMergeProperties.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
-                }
-                // If this is a RockDynamic class, don't include any of the properties that are inherited from RockDynamic
-                else if ( typeof( RockDynamic ).IsAssignableFrom( dataSourceObjectType ) )
-                {
-                    var dropProperties = typeof( RockDynamic ).GetProperties().Select( a => a.Name );
-                    additionalMergeProperties = additionalMergeProperties.Where( a => !dropProperties.Contains( a.Name ) ).ToList();
-                }
+                excludeType = typeof( LavaDataObject );
             }
-            else
+            else if ( typeof( RockDynamic ).IsAssignableFrom( dataSourceObjectType ) )
             {
-                // If this is a dynamic class, don't include any of the properties that are inherited from the base class.
-                Type excludeType = null;
+                excludeType = typeof( RockDynamic );
+            }
 
-                if ( typeof( LavaDataObject ).IsAssignableFrom( dataSourceObjectType ) )
-                {
-                    excludeType = typeof( LavaDataObject );
-                }
-                else if ( typeof( RockDynamic ).IsAssignableFrom( dataSourceObjectType ) )
-                {
-                    excludeType = typeof( RockDynamic );
-                }
-
-                if ( excludeType != null )
-                {
-                    var excludeProperties = excludeType.GetProperties().Select( a => a.Name );
-                    additionalMergeProperties = additionalMergeProperties.Where( a => !excludeProperties.Contains( a.Name ) ).ToList();
-                }
+            if ( excludeType != null )
+            {
+                var excludeProperties = excludeType.GetProperties().Select( a => a.Name );
+                additionalMergeProperties = additionalMergeProperties.Where( a => !excludeProperties.Contains( a.Name ) ).ToList();
             }
 
             return additionalMergeProperties;

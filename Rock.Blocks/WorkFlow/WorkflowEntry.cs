@@ -174,10 +174,24 @@ namespace Rock.Blocks.Workflow
         Key = AttributeKey.ScanAttribute,
         Order = 14 )]
 
+    [BooleanField(
+        "Enable for Form Sharing",
+        Description = "When enabled and Workflow Type is blank, the Form Builder will be able to generate a shareable link to this page so the chosen form can be filled out using this block instance.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.EnableForFormSharing,
+        Order = 15 )]
+
+    [BooleanField(
+        "Use Form Name for Page Title",
+        Description = "When enabled, the page title will be overridden with the name of the form associated with this workflow.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.UseFormNameForPageTitle,
+        Order = 16 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "02D2DBA8-5300-4367-B15B-E37DFB3F7D1E" )]
-    [Rock.SystemGuid.BlockTypeGuid( "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED" )]
+    [Rock.SystemGuid.BlockTypeGuid( SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY )]
     public class WorkflowEntry : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
@@ -206,6 +220,8 @@ namespace Rock.Blocks.Workflow
             public const string DisablePassingWorkflowTypeId = "DisablePassingWorkflowTypeId";
             public const string LogInteractionOnView = "LogInteractionOnView";
             public const string LogInteractionOnCompletion = "LogInteractionOnCompletion";
+            public const string EnableForFormSharing = "EnableForFormSharing";
+            public const string UseFormNameForPageTitle = "UseFormNameForPageTitle";
 
             // Web only attribute keys.
             public const string ShowSummaryView = "ShowSummaryView";
@@ -230,10 +246,20 @@ namespace Rock.Blocks.Workflow
             public const string WorkflowId = "WorkflowId";
             public const string WorkflowGuid = "WorkflowGuid";
             public const string WorkflowName = "WorkflowName";
+
             public const string ActionId = "ActionId";
+
+            /// <summary>
+            /// "WorkflowType" supports integer IDs, unique IDs, ID keys, and slugs.
+            /// It is used to load the workflow type associated with the workflow.
+            /// </summary>
+            public const string WorkflowType = "WorkflowType";
             public const string WorkflowTypeId = "WorkflowTypeId";
             public const string WorkflowTypeGuid = "WorkflowTypeGuid";
+            public const string WorkflowTypeSlug = "WorkflowTypeSlug";
+
             public const string Command = "Command";
+
             public const string GroupId = "GroupId";
             public const string PersonId = "PersonId";
             public const string InteractionStartDateTime = "InteractionStartDateTime";
@@ -269,9 +295,27 @@ namespace Rock.Blocks.Workflow
         /// <value>
         /// The workflow type unique identifier block setting.
         /// </value>
-        protected Guid? WorkflowType => GetAttributeValue( AttributeKey.WorkflowType ).AsGuidOrNull();
+        protected Guid? WorkflowTypeGuid => GetAttributeValue( AttributeKey.WorkflowType ).AsGuidOrNull();
 
-        #endregion
+        private bool UseFormNameForPageTitle => GetAttributeValue( AttributeKey.UseFormNameForPageTitle ).AsBoolean();
+
+        #endregion Block Attributes
+
+        #region Page Parameters
+
+        private string WorkflowTypePageParameter => PageParameter( PageParameterKey.WorkflowType );
+
+        private int? WorkflowTypeIdPageParameter =>
+            PageParameter( PageParameterKey.WorkflowType ).AsIntegerOrNull()
+            ?? PageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
+
+        private Guid? WorkflowTypeGuidPageParameter =>
+            PageParameter( PageParameterKey.WorkflowType ).AsGuidOrNull()
+            ?? PageParameter( PageParameterKey.WorkflowTypeGuid ).AsGuidOrNull();
+
+        private string WorkflowTypeSlugPageParameter => PageParameter( PageParameterKey.WorkflowTypeSlug );
+
+        #endregion Page Parameters
 
         #region IRockMobileBlockType Implementation
 
@@ -316,11 +360,13 @@ namespace Rock.Blocks.Workflow
                 return null;
             }
 
-            // If the workflow type was not configured by block setting then
-            // update the page title to match the workflow type name.
-            if ( !GetAttributeValue( AttributeKey.WorkflowType ).AsGuidOrNull().HasValue )
+            // If the workflow type was not configured by block setting
+            // or if the block is configured to always use the form name for the page title and the workflow type uses a form,
+            // then update the page title to match the workflow type name.
+            if ( !GetAttributeValue( AttributeKey.WorkflowType ).AsGuidOrNull().HasValue
+                 || ( this.UseFormNameForPageTitle && workflow.WorkflowTypeCache.IsFormBuilder ) )
             {
-                RequestContext.Response.SetPageTitle( workflow.WorkflowTypeCache.Name );
+                this.RequestContext.Response.SetPageTitle( workflow.WorkflowTypeCache.Name );
             }
 
             var actionId = RequestContext.GetPageParameter( PageParameterKey.ActionId ).AsIntegerOrNull();
@@ -333,6 +379,43 @@ namespace Rock.Blocks.Workflow
             };
         }
 
+        private WorkflowTypeCache LoadWorkflowTypeCache()
+        {
+            var workflowTypeGuidBlockSetting = this.WorkflowTypeGuid;
+            var workflowTypeIdPageParam = this.WorkflowTypeIdPageParameter;
+            var workflowTypeGuidPageParam = this.WorkflowTypeGuidPageParameter;
+            var workflowTypeKeyOrSlugPageParam = this.WorkflowTypePageParameter;
+            var workflowTypeSlugPageParam = this.WorkflowTypeSlugPageParameter;
+            var allowPassingWorkflowTypeId = !GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean();
+
+            if ( workflowTypeGuidBlockSetting.HasValue )
+            {
+                return WorkflowTypeCache.Get( workflowTypeGuidBlockSetting.Value, this.RockContext );
+            }
+            else if ( workflowTypeGuidPageParam.HasValue )
+            {
+                return WorkflowTypeCache.Get( workflowTypeGuidPageParam.Value, this.RockContext );
+            }
+            else if ( workflowTypeIdPageParam.HasValue && allowPassingWorkflowTypeId )
+            {
+                return WorkflowTypeCache.Get( workflowTypeIdPageParam.Value, this.RockContext );
+            }
+            else if ( workflowTypeSlugPageParam.IsNotNullOrWhiteSpace() )
+            {
+                return WorkflowTypeCache.GetBySlug( workflowTypeSlugPageParam );
+            }
+            else if ( workflowTypeKeyOrSlugPageParam.IsNotNullOrWhiteSpace() )
+            {
+                return WorkflowTypeCache.Get( workflowTypeKeyOrSlugPageParam, allowPassingWorkflowTypeId )
+                    // Try loading it from a slug.
+                    ?? WorkflowTypeCache.GetBySlug( workflowTypeKeyOrSlugPageParam );
+            }
+            else
+            {
+                return null;
+            }
+        }
+
         /// <summary>
         /// Loads the workflow. This will either load an existing workflow or
         /// attempt to activate a new one.
@@ -342,20 +425,7 @@ namespace Rock.Blocks.Workflow
         /// <returns>An instance of <see cref="Model.Workflow"/> or <c>null</c>.</returns>
         private Model.Workflow LoadWorkflow( int? workflowId, Guid? workflowGuid, out InteractiveMessageBag errorMessage )
         {
-            WorkflowTypeCache workflowType = null;
-
-            if ( WorkflowType.HasValue )
-            {
-                workflowType = WorkflowTypeCache.Get( WorkflowType.Value, RockContext );
-            }
-            else if ( RequestContext.PageParameters.ContainsKey( "WorkflowTypeGuid" ) )
-            {
-                workflowType = WorkflowTypeCache.Get( RequestContext.PageParameters["WorkflowTypeGuid"].AsGuid(), RockContext );
-            }
-            else if ( RequestContext.PageParameters.ContainsKey( "WorkflowTypeId" ) && !GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean() )
-            {
-                workflowType = WorkflowTypeCache.Get( RequestContext.GetPageParameter( "WorkflowTypeId" ).AsInteger(), RockContext );
-            }
+            var workflowType = LoadWorkflowTypeCache();
 
             if ( workflowType == null )
             {
@@ -373,7 +443,7 @@ namespace Rock.Blocks.Workflow
 
                 return ValidateWorkflow( workflow, workflowType, out errorMessage );
             }
-            else if ( workflowId.HasValue && !GetAttributeValue( AttributeKey.DisablePassingWorkflowId ).AsBoolean() )
+            else if ( workflowId.HasValue && workflowId.Value != 0 && !GetAttributeValue( AttributeKey.DisablePassingWorkflowId ).AsBoolean() )
             {
                 var workflow = new WorkflowService( RockContext )
                     .Queryable()
@@ -645,6 +715,23 @@ namespace Rock.Blocks.Workflow
 
                 lastAction = action;
                 lastActionTypeGuid = action.ActionTypeCache.Guid;
+
+                // If the LastProcessedDateTime is equal to RockDateTime.Now
+                // then the processing of the activity will be skipped. In
+                // general terms, this means some actions might not be processed
+                // if the server is too fast. However, this can be difficult to
+                // track down if the workflow type is not set to persist
+                // automatically since one of the later actions that didn't run
+                // might be the persist action.
+                // 
+                // The resolution of System.DateTime.UTCNow is between .5 and 15
+                // ms. So we need to wait until the values are no longer equal.
+                // https://docs.microsoft.com/en-us/dotnet/api/system.datetime.utcnow?view=netframework-4.7#remarks
+                while ( workflow.LastProcessedDateTime == RockDateTime.Now )
+                {
+                    // TODO: In the future this should be an async Task.Delay.
+                    System.Threading.Thread.Sleep( 1 );
+                }
             }
 
             if ( workflow.IsPersisted )
@@ -1513,18 +1600,7 @@ namespace Rock.Blocks.Workflow
                 return result;
             }
 
-            var workflowTypeGuid = pageReference.GetPageParameter( PageParameterKey.WorkflowTypeGuid ).AsGuidOrNull();
-            var workflowTypeId = pageReference.GetPageParameter( PageParameterKey.WorkflowTypeId ).AsIntegerOrNull();
-            WorkflowTypeCache workflowType = null;
-
-            if ( workflowTypeGuid.HasValue )
-            {
-                workflowType = WorkflowTypeCache.Get( workflowTypeGuid.Value, RockContext );
-            }
-            else if ( workflowTypeId.HasValue && !GetAttributeValue( AttributeKey.DisablePassingWorkflowTypeId ).AsBoolean() )
-            {
-                workflowType = WorkflowTypeCache.Get( workflowTypeId.Value, RockContext );
-            }
+            var workflowType = LoadWorkflowTypeCache();
 
             if ( workflowType != null )
             {
@@ -1552,7 +1628,6 @@ namespace Rock.Blocks.Workflow
             if ( !IsCaptchaValid() )
             {
                 return ActionBadRequest( "Captcha was not valid." );
-
             }
 
             var workflow = LoadWorkflow( null, workflowGuid, out var errorMessage );

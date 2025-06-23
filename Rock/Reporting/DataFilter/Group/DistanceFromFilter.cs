@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,8 +15,10 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Data.Entity.Spatial;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
@@ -24,6 +26,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,7 +40,7 @@ namespace Rock.Reporting.DataFilter.Group
     [Description( "Filter group within a specified distance from a location" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Group Distance From Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "C3D102D5-2678-468F-8A6C-2118D94F43E8")]
+    [Rock.SystemGuid.EntityTypeGuid( "C3D102D5-2678-468F-8A6C-2118D94F43E8" )]
     public class DistanceFromFilter : DataFilterComponent
     {
         #region Properties
@@ -60,6 +65,149 @@ namespace Rock.Reporting.DataFilter.Group
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/distanceFromFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            string[] selectionValues = selection.Split( '|' );
+
+            var locationTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                .DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value );
+
+            var locationTypeBags = locationTypes.ToListItemBagList();
+
+            data.AddOrReplace( "locationTypes", locationTypeBags.ToCamelCaseJson( false, true ) );
+
+            if ( selectionValues.Length >= 3 )
+            {
+                data.AddOrReplace( "locationTypeGuid", selectionValues[0] );
+
+                var selectedLocation = new LocationService( rockContext ).Get( selectionValues[1].AsGuid() );
+
+                if ( selectedLocation != null )
+                {
+                    if ( selectedLocation.IsNamedLocation )
+                    {
+                        var locationBag = selectedLocation.ToListItemBag();
+                        data.AddOrReplace( "location", locationBag.ToCamelCaseJson( false, true ) );
+                    }
+                    else if ( !string.IsNullOrWhiteSpace( selectedLocation.GetFullStreetAddress().Replace( ",", string.Empty ) ) )
+                    {
+                        var address = new AddressControlBag
+                        {
+                            Street1 = selectedLocation.Street1,
+                            Street2 = selectedLocation.Street2,
+                            City = selectedLocation.City,
+                            Locality = selectedLocation.County,
+                            State = selectedLocation.State,
+                            PostalCode = selectedLocation.PostalCode,
+                            Country = selectedLocation.Country
+                        };
+                        data.AddOrReplace( "location", address.ToCamelCaseJson( false, true ) );
+                    }
+                    else if ( selectedLocation.GeoPoint != null )
+                    {
+                        data.AddOrReplace( "location", selectedLocation.GeoPoint.AsText().ToJson() );
+                    }
+                    else if ( selectedLocation.GeoFence != null )
+                    {
+                        data.AddOrReplace( "location", selectedLocation.GeoFence.AsText().ToJson() );
+                    }
+                }
+
+                var miles = selectionValues[2];
+                data.AddOrReplace( "miles", miles );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var locationGuid = "";
+            var locationRaw = data.GetValueOrNull( "location" );
+            var locationTypeGuid = data.GetValueOrNull( "locationTypeGuid" );
+            var miles = data.GetValueOrNull( "miles" );
+
+            if ( !string.IsNullOrWhiteSpace( locationRaw ) )
+            {
+                // ListItemBag or AddressControlBag
+                if ( locationRaw.StartsWith( "{" ) )
+                {
+                    var locationBag = locationRaw.FromJsonOrNull<ListItemBag>();
+                    var addressBag = locationRaw.FromJsonOrNull<AddressControlBag>();
+
+                    if ( locationBag != null && locationBag.Value.IsNotNullOrWhiteSpace() )
+                    {
+                        locationGuid = locationBag.Value;
+                    }
+                    else if ( addressBag != null && addressBag.Street1.IsNotNullOrWhiteSpace() )
+                    {
+                        var orgCountryCode = GlobalAttributesCache.Get().OrganizationCountry;
+                        var defaultCountryCode = string.IsNullOrWhiteSpace( orgCountryCode ) ? "US" : orgCountryCode;
+
+                        var location = new Location
+                        {
+                            Street1 = addressBag.Street1,
+                            Street2 = addressBag.Street2,
+                            City = addressBag.City,
+                            County = addressBag.Locality,
+                            State = addressBag.State,
+                            PostalCode = addressBag.PostalCode,
+                            Country = addressBag.Country.IsNotNullOrWhiteSpace() ? addressBag.Country : defaultCountryCode
+                        };
+
+                        string validationMessage;
+                        var isValid = LocationService.ValidateLocationAddressRequirements( location, out validationMessage );
+
+                        if ( isValid )
+                        {
+                            var locationService = new LocationService( rockContext );
+                            location = locationService.Get( location.Street1, location.Street2, location.City, location.State, location.County, location.PostalCode, location.Country, null );
+                            locationGuid = location.Guid.ToString();
+                        }
+                    }
+                }
+                else
+                {
+                    // GeoFence or GeoPoint
+                    var geoString = locationRaw.FromJsonOrNull<string>();
+                    var locationService = new LocationService( rockContext );
+
+                    if ( geoString.StartsWith( "POLYGON" ) )
+                    {
+                        // GeoFence
+                        var location = locationService.GetByGeoFence( DbGeography.PolygonFromText( geoString, DbGeography.DefaultCoordinateSystemId ) );
+                        locationGuid = location.Guid.ToString();
+                    }
+                    else if ( geoString.StartsWith( "POINT" ) )
+                    {
+                        // GeoPoint
+                        var location = locationService.GetByGeoPoint( DbGeography.FromText( geoString, DbGeography.DefaultCoordinateSystemId ) );
+                        locationGuid = location.Guid.ToString();
+                    }
+                }
+            }
+
+            return $"{locationTypeGuid}|{locationGuid}|{miles}";
         }
 
         #endregion
@@ -143,8 +291,8 @@ function() {
 
             groupLocationTypeList.ID = filterControl.ID + "_groupLocationTypeList";
             groupLocationTypeList.Label = "Location Type";
-            filterControl.Controls.Add( groupLocationTypeList );            
-            
+            filterControl.Controls.Add( groupLocationTypeList );
+
             LocationPicker locationPicker = new LocationPicker();
             locationPicker.ID = filterControl.ID + "_locationPicker";
             locationPicker.Label = "Location";
@@ -188,7 +336,7 @@ function() {
             {
                 groupLocationTypeGuid = dropDownList.SelectedValue.AsGuidOrNull();
             }
-            
+
             var location = ( controls[1] as LocationPicker ).Location;
             if ( location != null )
             {
@@ -212,13 +360,13 @@ function() {
             {
                 var groupLocationType = controls[0] as RockDropDownList;
                 Guid? groupLocationTypeGuid = selectionValues[0].AsGuidOrNull();
-                groupLocationType.SetValue( groupLocationTypeGuid.ToString()  );
+                groupLocationType.SetValue( groupLocationTypeGuid.ToString() );
 
                 var locationPicker = controls[1] as LocationPicker;
                 var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[1].AsGuid() );
                 locationPicker.SetBestPickerModeForLocation( selectedLocation );
                 locationPicker.Location = selectedLocation;
-                
+
                 var numberBox = controls[2] as NumberBox;
                 numberBox.Text = selectionValues[2];
             }
@@ -238,23 +386,23 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 Guid? groupLocationTypeValueGuid = selectionValues[0].AsGuidOrNull();
-                
-                Location location = new LocationService( (RockContext)serviceInstance.Context ).Get( selectionValues[1].AsGuid() );
+
+                Location location = new LocationService( ( RockContext ) serviceInstance.Context ).Get( selectionValues[1].AsGuid() );
 
                 if ( location == null )
                 {
                     return null;
                 }
-                
-                GroupService groupService = new GroupService( (RockContext)serviceInstance.Context );
+
+                GroupService groupService = new GroupService( ( RockContext ) serviceInstance.Context );
 
                 var qry = groupService.Queryable()
                     .Where( p => p.GroupLocations
                         .Where( l => l.GroupLocationTypeValue.Guid == groupLocationTypeValueGuid )
                         .Where( l => l.IsMappedLocation ).Any() );
-                
+
                 // if a specific point was selected (whether a marker, or an address), we'll do a radial search
-                if( location.GeoPoint != null )
+                if ( location.GeoPoint != null )
                 {
                     double miles = selectionValues[2].AsDoubleOrNull() ?? 0;
                     double meters = miles * Location.MetersPerMile;
@@ -267,9 +415,9 @@ function() {
                 else if ( location.GeoFence != null )
                 {
                     qry = qry
-                        .Where( p => p.GroupLocations.Any( l => l.Location.GeoPoint.Intersects( location.GeoFence )  ) );
+                        .Where( p => p.GroupLocations.Any( l => l.Location.GeoPoint.Intersects( location.GeoFence ) ) );
                 }
-                
+
                 Expression extractedFilterExpression = FilterExpressionExtractor.Extract<Rock.Model.Group>( qry, parameterExpression, "p" );
 
                 return extractedFilterExpression;

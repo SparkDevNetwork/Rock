@@ -131,6 +131,34 @@ namespace Rock.Tests.Model
         }
 
         /// <summary>
+        /// A schedule that specifies a single date with no recurrence pattern should have an effective end date that is the day after the start date.
+        /// This will happen if the start time is late in the day and the event duration is such that it would push the end time into the next day.
+        /// </summary>
+        [TestMethod]
+        public void Schedule_WithOneTimeSingleDayEvent_HasEffectiveEndDateDayAfterStartDate()
+        {
+            DateTimeTestHelper.ExecuteForTimeZones( ( tz ) =>
+            {
+                // Create an event that has a duration of more than 1 day.
+                var eventDate = GetFirstTestScheduleDate();
+
+                // Move Start time from 12am to 11pm
+                eventDate = eventDate.AddHours( 23 );
+
+                // And set duration such that it ends at 2am the next day.
+                var singleDayEvent = ScheduleTestHelper.GetCalendarEvent( eventDate, new TimeSpan( 3, 0, 0 ) );
+
+                var schedule = ScheduleTestHelper.GetSchedule( ScheduleTestHelper.GetCalendar( singleDayEvent ) );
+
+                var endDateExpected = eventDate.AddDays( 1 );
+                var endDateReturned = schedule.EffectiveEndDate;
+
+                Assert.That.IsNotNull( endDateReturned );
+                Assert.That.AreEqualDate( endDateExpected, endDateReturned.Value.Date, "Unexpected value for EffectiveEndDate." );
+            } );
+        }
+
+        /// <summary>
         /// A schedule that specifies a single date with no recurrence pattern should have an effective end date matching the start date.
         /// </summary>
         [TestMethod]

@@ -112,16 +112,8 @@ namespace Rock.Workflow.Action
 
     #region Campus
 
-    [BooleanField( "Use Account Campus Mapping Logic",
-        Description = "If enabled, the accounts will be determined as follows: <ul><li>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</li><li>If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the individual sees) will be returned.</li><li>If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)</li><ul>",
-        DefaultBooleanValue = false,
-        IsRequired = false,
-        Key = AttributeKey.UseAccountCampusMappingLogic,
-        Category = "Campus",
-        Order = 0 )]
-
     [BooleanField( "Show Campus Picker",
-        Description = "This is only used if the Campus Mapping Logic is enabled.",
+        Description = "This is only used if the Campus Mapping Logic is enabled for the selected account.",
         DefaultBooleanValue = false,
         IsRequired = false,
         Key = AttributeKey.ShowCampusPicker,
@@ -241,7 +233,6 @@ namespace Rock.Workflow.Action
             public const string Amount = "Amount";
             public const string AmountEntryLabel = "AmountEntryLabel";
             public const string AccountAttribute = "AccountAttribute";
-            public const string UseAccountCampusMappingLogic = "UseAccountCampusMappingLogic";
             public const string ShowCampusPicker = "ShowCampusPicker";
             public const string CampusTypes = "CampusTypes";
             public const string CampusStatuses = "CampusStatuses";
@@ -361,13 +352,12 @@ namespace Rock.Workflow.Action
                 ObsidianComponent = financialGateway?.GetGatewayComponent() as IObsidianHostedGatewayComponent,
                 EnableAch = GetAttributeValue( action, AttributeKey.EnableAch ).AsBoolean(),
                 EnableCreditCard = GetAttributeValue( action, AttributeKey.EnableCreditCard ).AsBoolean(),
-                EnabledSavedAccounts = authorizedPersonAlias.PersonId == requestContext.CurrentPerson?.Id,
+                EnabledSavedAccounts = authorizedPersonAlias != null && authorizedPersonAlias.PersonId == requestContext.CurrentPerson?.Id,
                 AuthorizedPersonAlias = authorizedPersonAlias,
                 PaymentInformationInstructionsTemplate = GetAttributeValue( action, AttributeKey.PaymentInformationInstructions ),
                 Amount = GetAttributeValue( action, AttributeKey.Amount, true ).AsDecimalOrNull(),
                 AmountEntryLabel = GetAttributeValue( action, AttributeKey.AmountEntryLabel, true ),
                 Account = account,
-                UseAccountCampusMappingLogic = GetAttributeValue( action, AttributeKey.UseAccountCampusMappingLogic ).AsBoolean(),
                 ShowCampusPicker = GetAttributeValue( action, AttributeKey.ShowCampusPicker ).AsBoolean(),
                 Campuses = campuses,
                 EntityType = entityTypeCache,
@@ -621,33 +611,11 @@ namespace Rock.Workflow.Action
         /// <returns>A <see cref="FinancialAccountCache"/> that represents the account to use for the transaction.</returns>
         private static FinancialAccountCache GetAccountForTransaction( PaymentConfiguration configuration, Guid? campusGuid, RockContext rockContext )
         {
-            var account = configuration.Account;
-
-            // If we are not using campus mapping logic or the configured account
-            // is associated with a specific campus then we use the configured
-            // account without any further filtering.
-            if ( !configuration.UseAccountCampusMappingLogic || account.CampusId.HasValue )
-            {
-                return account;
-            }
-
-            var campusId = campusGuid.HasValue
-                ? CampusCache.Get( campusGuid.Value, rockContext )?.Id
+            var campus = campusGuid.HasValue
+                ? CampusCache.Get( campusGuid.Value, rockContext )
                 : null;
 
-            // If no campus was selected then use the configured account.
-            if ( !campusId.HasValue )
-            {
-                return account;
-            }
-
-            var childAccount = account.ChildAccounts
-                .Where( a => a.IsActive && a.CampusId == campusId.Value )
-                .FirstOrDefault();
-
-            // Return either the matching child account or the configured account
-            // if no child account was found.
-            return childAccount ?? account;
+            return configuration.Account.GetMappedAccountForCampus( campus );
         }
 
         /// <summary>
@@ -1062,8 +1030,6 @@ namespace Rock.Workflow.Action
             public string AmountEntryLabel { get; set; }
 
             public FinancialAccountCache Account { get; set; }
-
-            public bool UseAccountCampusMappingLogic { get; set; }
 
             public bool ShowCampusPicker { get; set; }
 

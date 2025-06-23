@@ -20,7 +20,7 @@
                     field="description"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="40%"  />
+                    width="40%" />
 
         <TextColumn name="storageEntityType"
                     title="Storage Type"
@@ -32,13 +32,7 @@
                       title="File Count"
                       field="fileCount"
                       :filter="numberValueFilter"
-                      visiblePriority="sm">
-            <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ row.fileCount }}
-                </div>
-            </template>
-        </NumberColumn>
+                      visiblePriority="sm" />
 
         <BooleanColumn name="isSystem"
                        title="Is System"
@@ -57,7 +51,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

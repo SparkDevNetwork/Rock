@@ -1,0 +1,81 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      description="Displays a Key Performance Indicator or metric with optional label, icon, and tooltip. Can be accented with different colors and color shades.">
+
+        <Kpi :value="value" :label="label" :tooltip="tooltip" :iconCssClass="iconCssClass" :color="color || undefined" :colorShade="shadeAsShadeType" :isCard="isCard" />
+
+        <template #settings>
+            <div class="row">
+                <div class="col-md-4">
+                    <TextBox v-model="value" label="Emphasized Value" />
+                </div>
+                <div class="col-md-4">
+                    <TextBox v-model="label" label="Label Text" />
+                </div>
+                <div class="col-md-4">
+                    <TextBox v-model="tooltip" label="Tooltip Text" />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-md-3">
+                    <TextBox v-model="iconCssClass" label="Icon Class" help="CSS class used to show an icon. Generally a Font Awesome icon class." />
+                </div>
+                <div class="col-md-3">
+                    <DropDownList v-model="color" label="Accent Color" :items="colorOptions" showBlankItem />
+                </div>
+                <div class="col-md-3">
+                    <DropDownList v-model="colorShade" label="Accent Color Shade" :items="shadeOptions" showBlankItem />
+                </div>
+                <div class="col-md-3">
+                    <CheckBox v-model="isCard" label="Display as Card" />
+                </div>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { getSfcControlImportPath, buildExampleCode } from "./common/utils.partial";
+    import { type ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const colors = ["blue", "gray", "green", "indigo", "orange", "pink", "purple", "red", "teal", "yellow"] as const;
+    const shades = [100, 200, 300, 400, 500, 600, 700, 800, 900] as const;
+
+    type Color = typeof colors[number];
+    type Shade = typeof shades[number];
+
+    const colorOptions = colors.map(c => ({ text: c, value: c } as ListItemBag));
+    const shadeOptions = shades.map(s => ({ text: s.toString(), value: s.toString() } as ListItemBag));
+
+    const value = ref<string>("316");
+    const label = ref<string>("Active Members");
+    const tooltip = ref<string>("The fictional number of members of this church that attend regularly.");
+    const iconCssClass = ref<string>("fa fa-users");
+    const color = ref<Color | "">("");
+    const colorShade = ref<`${Shade}` | "">("");
+    const isCard = ref<boolean>(false);
+
+    const shadeAsShadeType = computed(() => {
+        return parseInt(colorShade.value, 10) as Shade || undefined;
+    });
+
+    const importCode = getSfcControlImportPath("kpi");
+    const exampleCode = computed(() => {
+        return buildExampleCode("Kpi", {
+            value: value.value ? value.value : undefined,
+            label: label.value ? label.value : undefined,
+            tooltip: tooltip.value ? tooltip.value : undefined,
+            iconCssClass: iconCssClass.value ? iconCssClass.value : undefined,
+            color: color.value ? color.value : undefined,
+            colorShade: colorShade.value ? color.value : undefined,
+            isCard: isCard.value
+        }, true);
+    });
+</script>

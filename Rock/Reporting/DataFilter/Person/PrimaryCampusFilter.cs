@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Data.Entity;
@@ -24,6 +25,9 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,8 +39,8 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people that are associated with a specific campus." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Primary Campus Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "C75D83A1-CC72-4A58-BB28-5025D30C1A1B")]
-    public class PrimaryCampusFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
+    [Rock.SystemGuid.EntityTypeGuid( "C75D83A1-CC72-4A58-BB28-5025D30C1A1B" )]
+    public class PrimaryCampusFilter : DataFilterComponent, IUpdateSelectionFromRockRequestContext
     {
         #region Properties
 
@@ -79,6 +83,43 @@ namespace Rock.Reporting.DataFilter.Person
         internal virtual bool IncludeInactive
         {
             get { return true; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/primaryCampusFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var result = new Dictionary<string, string>{
+                { "includeInactive", IncludeInactive.ToTrueFalse() },
+                { "multiple", "False" },
+                { "label", null }
+            };
+
+            var campus = CampusCache.Get( selection.AsGuidOrNull() ?? Guid.Empty );
+            result.Add( "campus", campus?.ToListItemBag()?.ToCamelCaseJson( false, true ) );
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var campusGuidString = data.GetValueOrNull( "campus" ).FromJsonOrNull<ListItemBag>()?.Value ?? "";
+            var campus = CampusCache.Get( campusGuidString.AsGuid() );
+
+            return campus?.Guid.ToString() ?? string.Empty;
         }
 
         #endregion
@@ -217,20 +258,21 @@ function() {{
         }
 
         /// <summary>
-        /// Updates the selection from page parameters.
+        /// Updates the selection from parameters on the request.
         /// </summary>
         /// <param name="selection">The selection.</param>
-        /// <param name="rockBlock">The rock block.</param>
+        /// <param name="requestContext">The rock request context.</param>
+        /// <param name="rockContext">The rock database context.</param>
         /// <returns></returns>
-        public string UpdateSelectionFromPageParameters( string selection, Rock.Web.UI.RockBlock rockBlock )
+        public string UpdateSelectionFromRockRequestContext( string selection, Rock.Net.RockRequestContext requestContext, RockContext rockContext )
         {
             string[] selectionValues = selection?.Split( '|' ) ?? new string[] { "" };
             if ( selectionValues.Length >= 1 )
             {
-                var campusId = rockBlock.PageParameter( "CampusId" ).AsIntegerOrNull();
+                var campusId = requestContext.GetPageParameter( "CampusId" ).AsIntegerOrNull();
                 if ( campusId == null )
                 {
-                    var campusEntity = rockBlock.ContextEntity<Campus>();
+                    var campusEntity = requestContext.GetContextEntity<Campus>();
                     if ( campusEntity != null )
                     {
                         campusId = campusEntity.Id;
@@ -261,7 +303,7 @@ function() {{
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var rockContext = (RockContext)serviceInstance.Context;
+            var rockContext = ( RockContext ) serviceInstance.Context;
 
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )

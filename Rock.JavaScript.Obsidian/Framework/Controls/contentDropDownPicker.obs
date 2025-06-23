@@ -8,7 +8,7 @@
                     <slot name="inputGroupPrepend" :isInputGroupSupported="true" />
                     <div class="picker picker-obsidian picker-select rollover-container" :class="additionalPickerClass">
                         <a class="picker-label" href="#" @click.prevent.stop="togglePickerMenu" :class="{ 'has-ig-prepend': $slots.inputGroupPrepend, 'text-gray-400': disabled }" v-bind="disabledBinding">
-                            <i :class="pickerIconClass"></i>
+                            <i v-if="iconCssClass" :class="pickerIconClass"></i>
                             <slot name="innerLabel"><span class="selected-names">{{ innerLabel }}</span></slot>
                             <button type="button" role="button" aria-label="Clear selection" class="btn picker-select-none" v-if="showClear && !disabled" @click.prevent.stop="onAction('clear')">
                                 <i class="fa fa-times"></i>
@@ -50,7 +50,7 @@
                             </div>
 
                             <!-- Actions Buttons -->
-                            <div class="picker-actions">
+                            <div class="picker-actions" v-if="!hideMainActionButtons || $slots.customPickerActions">
                                 <!-- Main Action Buttons: Overridable via `mainPickerActions` slot, or just configure with props -->
                                 <slot name="mainPickerActions" v-if="!hideMainActionButtons">
                                     <RockButton :btnSize="selectButton.size" :btnType="selectButton.type" class="picker-btn" @click.prevent.stop="onAction('primary')">

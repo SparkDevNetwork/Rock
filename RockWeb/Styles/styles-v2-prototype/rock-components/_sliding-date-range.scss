@@ -1,0 +1,49 @@
+
+
+// Sliding Date Range (Rock Component)
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style  
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.input-group-sm .slidingdaterange-daterange .form-control,
+.input-group-sm .slidingdaterange-daterange .input-group-addon {
+
+  height:         30px;
+  padding:        var(--spacing-tiny) var(--spacing-xsmall);
+  font-size:      var(--font-size-xsmall);
+  line-height:    var(--line-height-normal);
+  border-radius:  var(--rounded-tiny);
+
+  select & {
+    height:       30px;
+    padding:      var(--spacing-tiny) var(--spacing-large) var(--spacing-tiny) var(--spacing-xsmall); // Modified to BS5
+  }
+
+  textarea &,
+  select[multiple] & {
+    height:       auto;
+  }
+}
+
+// Moved from Rock Theme.less
+.slidingdaterange > .slidingdaterange-info {
+  padding: 1px 6px;
+}
+
+.form-control-group {
+  .picker-daterange.slidingdaterange-daterange {
+    > div {
+      display: flex;
+      align-items: center;
+      gap: var(--spacing-xsmall);
+    }
+  }
+}
+// ====================== END BASE STYLE ======================
+
+

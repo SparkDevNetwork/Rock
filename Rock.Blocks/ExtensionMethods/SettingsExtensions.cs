@@ -387,6 +387,81 @@ namespace Rock.Blocks
         #region SlidingDateRangeBag
 
         /// <summary>
+        /// Deserializes the delimited sliding date range string into a <see cref="SlidingDateRangeBag"/>, if possible.
+        /// </summary>
+        /// <param name="delimitedSlidingDateRange">The delimited sliding date range string.</param>
+        /// <returns>A <see cref="SlidingDateRangeBag"/> or <see langword="null"/> if unable to parse.</returns>
+        /// <remarks>
+        /// <para>
+        /// No validation will be performed on the deserialized <see cref="SlidingDateRangeBag"/>. Use the
+        /// <see cref="Validate(SlidingDateRangeBag, SlidingDateRangeBag)"/> method for this purpose.
+        /// </para>
+        /// <para>
+        /// The expected string format is "RangeType|TimeValue|TimeUnit|LowerDate|UpperDate".
+        /// </para>
+        /// </remarks>
+        public static SlidingDateRangeBag ToSlidingDateRangeBagOrNull( this string delimitedSlidingDateRange )
+        {
+            if ( delimitedSlidingDateRange.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            var slidingDateRangeParts = delimitedSlidingDateRange.SplitDelimitedValues( "|", StringSplitOptions.None );
+            if ( slidingDateRangeParts.Length != 5 )
+            {
+                return null;
+            }
+
+            var rangeType = slidingDateRangeParts[0].ConvertToEnumOrNull<SlidingDateRangeType>();
+            if ( !rangeType.HasValue )
+            {
+                return null;
+            }
+
+            return new SlidingDateRangeBag
+            {
+                RangeType = rangeType.Value,
+                TimeValue = slidingDateRangeParts[1].AsIntegerOrNull(),
+                TimeUnit = slidingDateRangeParts[2].ConvertToEnumOrNull<TimeUnitType>(),
+                LowerDate = slidingDateRangeParts[3].AsDateTime(),
+                UpperDate = slidingDateRangeParts[4].AsDateTime()
+            };
+        }
+
+        /// <summary>
+        /// Serializes the <see cref="SlidingDateRangeBag"/> as a delimited sliding date range string.
+        /// </summary>
+        /// <param name="slidingDateRangeBag">The <see cref="SlidingDateRangeBag"/> to serialize.</param>
+        /// <returns>The delimited sliding date range string in the format "RangeType|TimeValue|TimeUnit|LowerDate|UpperDate"
+        /// or <see langword="null"/> if unable to serialize.</returns>
+        public static string ToDelimitedSlidingDateRangeOrNull( this SlidingDateRangeBag slidingDateRangeBag )
+        {
+            if ( slidingDateRangeBag == null )
+            {
+                return null;
+            }
+
+            var rangeType = slidingDateRangeBag.RangeType.ToString();
+            var timeValue = slidingDateRangeBag.TimeValue.ToString();
+            var timeUnit = slidingDateRangeBag.TimeUnit.ToString();
+            var lowerDate = slidingDateRangeBag.LowerDate.ToString();
+            var upperDate = slidingDateRangeBag.UpperDate.ToString();
+
+            return $"{rangeType}|{timeValue}|{timeUnit}|{lowerDate}|{upperDate}";
+        }
+
+        /// <summary>
+        /// Gets the <see cref="DateRange"/> represented within the <see cref="SlidingDateRangeBag"/>.
+        /// </summary>
+        /// <param name="slidingDateRangeBag">The <see cref="SlidingDateRangeBag"/> for which to get the <see cref="DateRange"/>.</param>
+        /// <returns>The <see cref="DateRange"/> represented within the <see cref="SlidingDateRangeBag"/>, or <see langword="null"/>.</returns>
+        public static DateRange ToActualDateRange( this SlidingDateRangeBag slidingDateRangeBag )
+        {
+            return RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( slidingDateRangeBag.ToDelimitedSlidingDateRangeOrNull() );
+        }
+
+        /// <summary>
         /// Ensures this <see cref="SlidingDateRangeBag"/> passes basic validation checks.
         /// </summary>
         /// <param name="toValidate">The <see cref="SlidingDateRangeBag"/> to validate.</param>
@@ -405,26 +480,12 @@ namespace Rock.Blocks
             //      d) If neither start nor end date are selected, return the default.
             //  3) Allow any other valid selections (knowing they might represent an excessively-large range).
 
-            // A local function to assist with calculating the actual date range for a given sliding date range bag.
-            DateRange CalculateActualDateRange( SlidingDateRangeBag slidingDateRange )
-            {
-                var rangeType = slidingDateRange.RangeType.ToString();
-                var timeValue = slidingDateRange.TimeValue.ToString();
-                var timeUnit = slidingDateRange.TimeUnit.ToString();
-                var lowerDate = slidingDateRange.LowerDate.ToString();
-                var upperDate = slidingDateRange.UpperDate.ToString();
-
-                var delimitedValues = $"{rangeType}|{timeValue}|{timeUnit}|{lowerDate}|{upperDate}";
-
-                return RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( delimitedValues );
-            }
-
             if ( toValidate == null )
             {
                 return new ValidatedDateRange
                 {
                     SlidingDateRangeBag = defaultIfInvalid,
-                    ActualDateRange = CalculateActualDateRange( defaultIfInvalid )
+                    ActualDateRange = defaultIfInvalid.ToActualDateRange()
                 };
             }
 
@@ -457,19 +518,19 @@ namespace Rock.Blocks
                     return new ValidatedDateRange
                     {
                         SlidingDateRangeBag = defaultIfInvalid,
-                        ActualDateRange = CalculateActualDateRange( defaultIfInvalid )
+                        ActualDateRange = defaultIfInvalid.ToActualDateRange()
                     };
                 }
             }
 
-            var actualDateRange = CalculateActualDateRange( toValidate );
+            var actualDateRange = toValidate.ToActualDateRange();
             if ( actualDateRange?.Start == null || actualDateRange?.End == null )
             {
                 // If for some reason we don't have valid start and end dates at this point, return the default.
                 return new ValidatedDateRange
                 {
                     SlidingDateRangeBag = defaultIfInvalid,
-                    ActualDateRange = CalculateActualDateRange( defaultIfInvalid )
+                    ActualDateRange = defaultIfInvalid.ToActualDateRange()
                 };
             }
 

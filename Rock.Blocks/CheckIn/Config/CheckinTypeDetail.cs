@@ -107,6 +107,7 @@ namespace Rock.Blocks.CheckIn.Config
                 RelationshipTypeOptions = GetRelationshipTypeOptions(),
                 SearchTypeOptions = GetSearchTypeOptions(),
                 TemplateDisplayOptions = typeof( SuccessLavaTemplateDisplayMode ).ToEnumListItemBag(),
+                PromotionsContentChannelTypeOptions = GetPromotionsContentChannelTypeOptions(),
                 HidePanel = string.IsNullOrWhiteSpace( PageParameter( PageParameterKey.CheckinTypeId ) ),
                 NameSearch = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CHECKIN_SEARCH_TYPE_NAME.AsGuid() ).ToListItemBag(),
                 ValidProperties = GetValidProperties( new CheckinTypeBag() )
@@ -116,7 +117,20 @@ namespace Rock.Blocks.CheckIn.Config
         }
 
         /// <summary>
-        /// Gets the achievement type options.
+        /// Gets the promotions content channel type options.
+        /// </summary>
+        /// <returns></returns>
+        private static List<ListItemBag> GetPromotionsContentChannelTypeOptions()
+        {
+            return ContentChannelCache.All()
+                .Where( cc => cc.ContentChannelType.ShowInChannelList == true )
+                .OrderBy( cc => cc.Name )
+                .AsEnumerable()
+                .ToListItemBagList();
+        }
+
+        /// <summary>
+        /// Gets the content channels.
         /// </summary>
         /// <returns></returns>
         private static List<ListItemBag> GetAchievementTypeOptions()
@@ -475,7 +489,10 @@ namespace Rock.Blocks.CheckIn.Config
                 EnablePresence = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE ).AsBoolean(),
                 PreventDuplicateCheckin = groupType.GetAttributeValue( "core_checkin_PreventDuplicateCheckin" ).AsBoolean( true ),
                 PreventInactivePeople = groupType.GetAttributeValue( "core_checkin_PreventInactivePeople" ).AsBoolean( true ),
-                UseSameOptions = groupType.GetAttributeValue( "core_checkin_UseSameOptions" ).AsBoolean( false )
+                UseSameOptions = groupType.GetAttributeValue( "core_checkin_UseSameOptions" ).AsBoolean( false ),
+                PromotionsContentChannelTypes = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL ),
+                EnableRemoveFamilyKiosk = groupType.GetAttributeValue(Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK ).AsBoolean(),
+                EnableProximityCheckin = groupType.GetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN ).AsBoolean()
             };
         }
 
@@ -678,6 +695,15 @@ namespace Rock.Blocks.CheckIn.Config
 
             box.IfValidProperty( nameof( box.Bag.GeneralSettings.UseSameOptions ),
                 () => entity.SetAttributeValue( "core_checkin_UseSameOptions", box.Bag.GeneralSettings.UseSameOptions.ToString() ) );
+
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.PromotionsContentChannelTypes ),
+            () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL, box.Bag.GeneralSettings.PromotionsContentChannelTypes.ToString() ) );
+
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.EnableRemoveFamilyKiosk ),
+            () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK, box.Bag.GeneralSettings.EnableRemoveFamilyKiosk.ToString() ) );
+
+            box.IfValidProperty( nameof( box.Bag.GeneralSettings.EnableProximityCheckin ),
+            () => entity.SetAttributeValue( Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN, box.Bag.GeneralSettings.EnableProximityCheckin.ToString() ) );
 
             // Header Text
             box.IfValidProperty( nameof( box.Bag.HeaderText.AbilityLevelSelectHeaderTemplate ),
@@ -887,6 +913,7 @@ namespace Rock.Blocks.CheckIn.Config
                 "core_checkin_EnableManagerOption",
                 "core_checkin_EnableOverride",
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ACHIEVEMENT_TYPES,
+                Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_PROMOTIONS_CONTENT_CHANNEL,
                 "core_checkin_MaximumPhoneSearchLength",
                 "core_checkin_MaxSearchResults",
                 "core_checkin_MinimumPhoneSearchLength",
@@ -906,6 +933,8 @@ namespace Rock.Blocks.CheckIn.Config
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT,
 #pragma warning restore CS0618 // Type or member is obsolete
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER,
+                Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK,
+                Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN,
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK,
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE,
                 Rock.SystemKey.GroupTypeAttributeKey.CHECKIN_REGISTRATION_CANCHECKINKNOWNRELATIONSHIPTYPES,

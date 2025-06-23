@@ -1,0 +1,229 @@
+<template>
+    <Block panelHeadingCssClass="hidden"
+           style="overflow: hidden;"
+           panelBodyCssClass="overflow-hidden p-0">
+
+        <!-- Failed age verification -->
+        <div v-if="ageVerificationFailed" class="d-flex flex-column align-items-center justify-content-center text-center">
+
+            <div id="age-verification-template-content"
+                 class="mb-4"
+                 v-html="ageVerificationFailedTemplate">
+            </div>
+        </div>
+
+        <!-- Birthdate required -->
+        <div v-else-if="ageVerificationRequired"
+             class="d-flex flex-column align-items-center justify-content-center text-center">
+
+            <div id="age-verification-template-content"
+                 class="mb-4"
+                 v-html="ageVerificationTemplate"></div>
+
+            <RockForm>
+                <DatePartsPicker label="Birthdate"
+                                 disableLabel="true"
+                                 v-model="birthDate"
+                                 requireYear
+                                 :allowFutureDates="false"
+                                 :rules="birthdateRules" />
+
+                <RockButton title="Submit"
+                            type="submit"
+                            :isLoading="false"
+                            :btnType="BtnType.Primary"
+                            class="mt-3"
+                            @click="submitBirthdate">
+                    Submit
+                </RockButton>
+            </RockForm>
+        </div>
+
+
+        <!-- Chat component -->
+        <RockForm v-else style="height: 100%; padding:0;">
+            <div id="chat-container" class="rock-streamchat-embed"></div>
+        </RockForm>
+    </Block>
+</template>
+
+<script setup lang="ts">
+    import { ref, onMounted, onUnmounted, computed } from "vue";
+    import Block from "@Obsidian/Templates/block";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import DatePartsPicker from "@Obsidian/Controls/datePartsPicker.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { useConfigurationValues, useInvokeBlockAction, onConfigurationValuesChanged, useReloadBlock } from "@Obsidian/Utility/block";
+    import { loadJavaScriptAsync } from "@Obsidian/Utility/page";
+    import { useSuspense } from "@Obsidian/Utility/suspense";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import type { ChatViewInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatView/chatViewInitializationBox";
+    import type { ChatPersonDataBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatView/chatPersonDataBag";
+    import { ChatViewConfigurationBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatView/chatViewConfigurationBag";
+    import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const configurationValues = useConfigurationValues<ChatViewInitializationBox>();
+    const reloadBlock = useReloadBlock();
+    const suspense = useSuspense();
+
+    const ageVerificationFailed = ref(false);
+    const ageVerificationRequired = ref(false);
+    const ageVerificationTemplate = ref<string>("");
+    const ageVerificationFailedTemplate = ref<string>("");
+
+    const birthDate = ref<DatePartsPickerValueBag>();
+    let libraryObject: IRockStreamChatStatic | null = null;
+    let libraryPromise: Promise<boolean> | null = null;
+    let reactComponentInstance: any | null = null;
+    const mountGuid = newGuid();
+
+    const birthdateRules = computed((): string => {
+        return "required"
+    });
+
+    onConfigurationValuesChanged(reloadBlock);
+
+    onMounted(async () => {
+        suspense?.startAsyncOperation(mountGuid);
+
+        const cfg = configurationValues.chatViewConfigurationBag;
+        if (!cfg?.publicApiKey) {
+            console.error("Missing StreamChat API key");
+            suspense?.completeAsyncOperation(mountGuid);
+            return;
+        }
+
+        const streamChatLib = await getStreamChatObject();
+
+        const chatData = await getData();
+        if (!chatData) {
+            suspense?.completeAsyncOperation(mountGuid);
+            return;
+        }
+
+        ageVerificationFailed.value = chatData.hasFailedAgeVerification;
+        ageVerificationRequired.value = chatData.isAgeVerificationRequired;
+
+        // If age verification is required, show the HTML template for the header and the form.
+        if (ageVerificationRequired.value) {
+            if (chatData.ageVerificationTemplate) {
+                ageVerificationTemplate.value = chatData.ageVerificationTemplate;
+            }
+
+            suspense?.completeAsyncOperation(mountGuid);
+            return;
+        }
+        else if (ageVerificationFailed.value) {
+            if (chatData.ageRestrictionTemplate) {
+                ageVerificationFailedTemplate.value = chatData.ageRestrictionTemplate;
+            }
+
+            suspense?.completeAsyncOperation(mountGuid);
+            return;
+        }
+
+        // if everything's good, mount the chat
+        if (!ageVerificationFailed.value && !ageVerificationRequired.value) {
+            mountChat(streamChatLib, cfg, chatData);
+        } else {
+            suspense?.completeAsyncOperation(mountGuid);
+        }
+    });
+
+    onUnmounted(() => {
+        if (libraryObject && reactComponentInstance) {
+            libraryObject.unmount(reactComponentInstance);
+        }
+    });
+
+    async function submitBirthdate() {
+        if (!birthDate.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction("UpdatePersonBirthDate", {
+            birthDate: birthDate.value
+        });
+
+        if (!result.isSuccess) {
+            console.error("Error submitting birthdate:", result.errorMessage);
+            return;
+        }
+
+        reloadBlock();
+    }
+
+    async function getData(): Promise<ChatPersonDataBag | null> {
+        try {
+            const result = await invokeBlockAction<ChatPersonDataBag>("GetChatData");
+            if (!result.isSuccess) {
+                console.error("GetChatData failed:", result.errorMessage);
+                return null;
+            }
+            return result.data;
+        } catch (e) {
+            console.error("Error loading chat data:", e);
+            return null;
+        }
+    }
+
+    async function getStreamChatObject(): Promise<IRockStreamChatStatic> {
+        if (libraryObject) return libraryObject;
+        if (!libraryPromise) {
+            libraryPromise = loadJavaScriptAsync(
+                "/Scripts/Rock/streamchat.js",
+                () => !!window["Rock"]?.["StreamChat"]
+            );
+        }
+        if (!await libraryPromise) {
+            throw new Error("Unable to load StreamChat library.");
+        }
+        libraryObject = window["Rock"]?.["StreamChat"] as IRockStreamChatStatic;
+        return libraryObject;
+    }
+
+    function mountChat(
+        lib: IRockStreamChatStatic,
+        cfg: ChatViewConfigurationBag,
+        data: ChatPersonDataBag
+    ) {
+        console.log("selectedChannelId", cfg.selectedChannelId);
+        reactComponentInstance = lib.mount("chat-container", {
+            apiKey: cfg.publicApiKey!,
+            userId: data.userId!,
+            userToken: data.token!,
+            primaryColor: "#FF0000",
+            sharedChannelTypeKey: cfg.sharedChannelTypeKey ?? undefined,
+            directMessageChannelTypeKey: cfg.directMessageChannelTypeKey ?? undefined,
+            selectedChannelId: cfg.selectedChannelId ?? undefined,
+            channelId: cfg.channelId ?? undefined,
+            jumpToMessageId: cfg.jumpToMessageId ?? undefined
+        });
+        suspense?.completeAsyncOperation(mountGuid);
+    }
+
+    // types
+    interface IRockStreamChatStatic {
+        mount(elementId: string, config: ChatComponentProps): unknown;
+        unmount(rootInstance: unknown): void;
+    }
+    interface ChatComponentProps {
+        primaryColor: string;
+        apiKey: string;
+        userId: string;
+        userToken: string;
+        sharedChannelTypeKey?: string;
+        directMessageChannelTypeKey?: string;
+        channelId?: string;
+        selectedChannelId?: string;
+        jumpToMessageId?: string;
+    }
+</script>
+
+<style scoped>
+.rock-streamchat-embed {
+    height: 100%;
+}
+</style>

@@ -72,7 +72,7 @@
                        :filter="booleanValueFilter"
                        visiblePriority="sm" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'course'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

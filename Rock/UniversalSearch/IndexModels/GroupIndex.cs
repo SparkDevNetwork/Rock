@@ -21,9 +21,11 @@ using System.Text;
 
 using Microsoft.Extensions.Logging;
 
+using Rock.Data;
 using Rock.Logging;
 using Rock.Model;
 using Rock.UniversalSearch.IndexModels.Attributes;
+using Rock.Web.Cache;
 
 namespace Rock.UniversalSearch.IndexModels
 {
@@ -230,6 +232,14 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             return result;
+        }
+
+        /// <inheritdoc/>
+        public override bool IsViewAllowed( Person person, RockContext rockContext )
+        {
+            var group = GroupCache.Get( ( int ) this.Id, rockContext );
+
+            return group?.IsAuthorized( Security.Authorization.VIEW, person ) ?? false;
         }
     }
 }

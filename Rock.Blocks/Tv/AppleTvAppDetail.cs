@@ -261,6 +261,10 @@ namespace Rock.Blocks.Tv
                         bag.ApplicationJavascript = reader.ReadToEnd();
                     }
                 }
+                else
+                {
+                    throw new Exception( "Default TV Application JavaScript file not found." );
+                }
             }
 
             return bag;

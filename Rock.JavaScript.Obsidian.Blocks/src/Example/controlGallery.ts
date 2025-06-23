@@ -248,6 +248,13 @@ import ValueListGallery from "./ControlGallery/valueListGallery.partial.obs";
 import BlockTemplatePickerGallery from "./ControlGallery/blockTemplatePickerGallery.partial.obs";
 import AdaptiveMessagePickerGallery from "./ControlGallery/adaptiveMessagePickerGallery.partial.obs";
 import EmailEditorGallery from "./ControlGallery/emailEditorGallery.partial.obs";
+import KpiGallery from "./ControlGallery/kpiGallery.partial.obs";
+import LearningClassPickerGallery from "./ControlGallery/learningClassPickerGallery.partial.obs";
+import LearningClassActivityPickerGallery from "./ControlGallery/learningClassActivityPickerGallery.partial.obs";
+import ConnectedListAddButtonGallery from "./ControlGallery/connectedListAddButtonGallery.partial.obs";
+import ConnectedListItemGallery from "./ControlGallery/connectedListItemGallery.partial.obs";
+import ConnectedListGallery from "./ControlGallery/connectedListGallery.partial.obs";
+import IconPickerGallery from "./ControlGallery/iconPickerGallery.partial.obs";
 
 const controlGalleryComponents: Record<string, Component> = [
     NotificationBoxGallery,
@@ -435,7 +442,14 @@ const controlGalleryComponents: Record<string, Component> = [
     PageNavButtonsGallery,
     SearchFieldGallery,
     AdaptiveMessagePickerGallery,
-    EmailEditorGallery
+    EmailEditorGallery,
+    KpiGallery,
+    LearningClassPickerGallery,
+    LearningClassActivityPickerGallery,
+    ConnectedListAddButtonGallery,
+    ConnectedListItemGallery,
+    ConnectedListGallery,
+    IconPickerGallery,
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {
@@ -613,6 +627,10 @@ const detailBlockGallery = defineComponent({
                 }
             ],
             simulateHelp: computed((): boolean => simulateValues.value.includes("helpContent")),
+            delayedHandler: async () => {
+                await sleep(1000);
+                return true;
+            },
             importCode: getTemplateImportPath("detailBlock"),
             exampleCode: `<DetailBlock name="Sample Entity" :entityTypeGuid="entityTypeGuid" entityTypeName="Entity Type" entityKey="57dc00a3-ff88-4d4c-9878-30ae309117e2" />`
         };
@@ -636,7 +654,10 @@ const detailBlockGallery = defineComponent({
         :isFollowVisible="isFollowVisible"
         :isBadgesVisible="isBadgesVisible"
         :isSecurityHidden="isSecurityHidden"
-        :isTagsVisible="isTagsVisible">
+        :isTagsVisible="isTagsVisible"
+        @save="delayedHandler"
+        @edit="delayedHandler"
+        @delete="delayedHandler">
         <template v-if="simulateHelp" #helpContent>
             This is some help text.
         </template>

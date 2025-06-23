@@ -183,30 +183,27 @@ namespace Rock.Blocks.Reporting
                     interactionEntity = GetInteractionEntity( interaction );
                 }
 
-                if ( BlockCache.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) || interaction.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) )
+                var mergeFields = RequestContext.GetCommonMergeFields( GetCurrentPerson() );
+                mergeFields.TryAdd( MergeFieldKeys.Person, GetCurrentPerson() );
+                mergeFields.Add( MergeFieldKeys.InteractionDetailPage, LinkedPageRoute( MergeFieldKeys.InteractionDetailPage ) );
+                mergeFields.Add( MergeFieldKeys.InteractionChannel, interaction.InteractionComponent.InteractionChannel );
+                mergeFields.Add( MergeFieldKeys.InteractionComponent, interaction.InteractionComponent );
+                mergeFields.Add( MergeFieldKeys.InteractionEntity, interactionEntity );
+
+                if ( interactionEntity != null )
                 {
-                    var mergeFields = RequestContext.GetCommonMergeFields( GetCurrentPerson() );
-                    mergeFields.TryAdd( MergeFieldKeys.Person, GetCurrentPerson() );
-                    mergeFields.Add( MergeFieldKeys.InteractionDetailPage, LinkedPageRoute( MergeFieldKeys.InteractionDetailPage ) );
-                    mergeFields.Add( MergeFieldKeys.InteractionChannel, interaction.InteractionComponent.InteractionChannel );
-                    mergeFields.Add( MergeFieldKeys.InteractionComponent, interaction.InteractionComponent );
-                    mergeFields.Add( MergeFieldKeys.InteractionEntity, interactionEntity );
-
-                    if ( interactionEntity != null )
-                    {
-                        mergeFields.Add( MergeFieldKeys.InteractionEntityName, interactionEntity.ToString() );
-                    }
-                    else
-                    {
-                        mergeFields.Add( MergeFieldKeys.InteractionEntityName, string.Empty );
-                    }
-
-                    mergeFields.Add( MergeFieldKeys.Interaction, interaction );
-
-                    return interaction.InteractionComponent.InteractionChannel.InteractionDetailTemplate.IsNotNullOrWhiteSpace() ?
-                        interaction.InteractionComponent.InteractionChannel.InteractionDetailTemplate.ResolveMergeFields( mergeFields ) :
-                        GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields );
+                    mergeFields.Add( MergeFieldKeys.InteractionEntityName, interactionEntity.ToString() );
                 }
+                else
+                {
+                    mergeFields.Add( MergeFieldKeys.InteractionEntityName, string.Empty );
+                }
+
+                mergeFields.Add( MergeFieldKeys.Interaction, interaction );
+
+                return interaction.InteractionComponent.InteractionChannel.InteractionDetailTemplate.IsNotNullOrWhiteSpace() ?
+                    interaction.InteractionComponent.InteractionChannel.InteractionDetailTemplate.ResolveMergeFields( mergeFields ) :
+                    GetAttributeValue( AttributeKey.DefaultTemplate ).ResolveMergeFields( mergeFields );
             }
             return string.Empty;
         }

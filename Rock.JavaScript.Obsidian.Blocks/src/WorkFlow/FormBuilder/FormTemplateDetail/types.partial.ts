@@ -33,6 +33,9 @@ export type ValueSources = {
     /** The list of record status options that are available to pick from. */
     recordStatusOptions?: ListItemBag[] | null;
 
+    /** The list of record source options that are available to pick from. */
+    recordSourceOptions?: ListItemBag[] | null;
+
     /** The list of connection status options that are available to pick from. */
     connectionStatusOptions?: ListItemBag[] | null;
 

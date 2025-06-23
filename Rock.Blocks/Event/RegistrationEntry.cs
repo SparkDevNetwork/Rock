@@ -24,12 +24,11 @@ using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
-using DotLiquid.Util;
-
 using Rock.Attribute;
 using Rock.ClientService.Core.Campus;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount;
 using Rock.ClientService.Finance.FinancialPersonSavedAccount.Options;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.ElectronicSignature;
 using Rock.Field;
@@ -133,6 +132,20 @@ namespace Rock.Blocks.Event
         Order = 11 )]
 
     [BooleanField(
+        "Enable ACH",
+        Key = AttributeKey.EnableACH,
+        Description = "Enabling this will also control which type of Saved Accounts can be used during the payment process.  The payment gateway must still be configured to support ACH payments.",
+        DefaultBooleanValue = true,
+        Order = 12 )]
+
+    [BooleanField(
+        "Enable Credit Card",
+        Key = AttributeKey.EnableCreditCard,
+        Description = "Enabling this will also control which type of Saved Accounts can be used during the payment process.  The payment gateway must still be configured to support Credit Card payments.",
+        DefaultBooleanValue = true,
+        Order = 13 )]
+
+    [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
@@ -162,8 +175,9 @@ namespace Rock.Blocks.Event
             public const string ForceEmailUpdate = "ForceEmailUpdate";
             public const string ShowFieldDescriptions = "ShowFieldDescriptions";
             public const string EnableSavedAccount = "EnableSavedAccount";
+            public const string EnableACH = "EnableACH";
+            public const string EnableCreditCard = "EnableCreditCard";
             public const string DisableCaptchaSupport = "DisableCaptchaSupport";
-            public const string EnableACHForEvents = "Ach";
         }
 
         /// <summary>
@@ -2184,7 +2198,7 @@ namespace Rock.Blocks.Event
             switch ( field.PersonFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
-                    return person.NickName.IsNullOrWhiteSpace() ? person.FirstName : person.NickName;
+                    return person.FirstName;
 
                 case RegistrationPersonFieldType.LastName:
                     return person.LastName;
@@ -2371,6 +2385,16 @@ namespace Rock.Blocks.Event
             }
             else
             {
+                if ( !settings.ActualRecordSourceValueId.HasValue )
+                {
+                    settings.ActualRecordSourceValueId = RecordSourceHelper.GetSessionRecordSourceValueId()
+                        ?? settings.RecordSourceValueId
+                        ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_EVENT_REGISTRATION.AsGuid() )?.Id;
+                }
+
+                // Assign the record source for new people.
+                person.RecordSourceValueId = settings.ActualRecordSourceValueId;
+
                 // If we've created the family already for this registrant, add them to it
                 if (
                         ( settings.RegistrantsSameFamily == RegistrantsSameFamily.Ask && multipleFamilyGroupIds.ContainsKey( familyGuid ) ) ||
@@ -3991,7 +4015,11 @@ namespace Rock.Blocks.Event
                 GatewayControl = isRedirectGateway ? null : new GatewayControlBag
                 {
                     FileUrl = financialGatewayComponent?.GetObsidianControlFileUrl( financialGateway ) ?? string.Empty,
-                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, null ) ?? new object()
+                    Settings = financialGatewayComponent?.GetObsidianControlSettings( financialGateway, new HostedPaymentInfoControlOptions {
+                        EnableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean(),
+                        EnableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean(),
+                        EnableBillingAddressCollection = true
+                    } ) ?? new object()
                 },
                 IsRedirectGateway = isRedirectGateway,
                 SpotsRemaining = adjustedSpotsRemaining,
@@ -4763,22 +4791,34 @@ namespace Rock.Blocks.Event
         /// <returns>A list of <see cref="DefinedValueCache"/> objects that represent the currency types.</returns>
         private List<DefinedValueCache> GetAllowedCurrencyTypes( GatewayComponent gatewayComponent, FinancialGateway financialGateway )
         {
-            var enableACH = gatewayComponent.GetAttributeValue( financialGateway, AttributeKey.EnableACHForEvents ).AsBoolean();
-            var enableCreditCard = true;// this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
-            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
-            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
             var allowedCurrencyTypes = new List<DefinedValueCache>();
+            var enableACH = this.GetAttributeValue( AttributeKey.EnableACH ).AsBoolean();
+            var enableCreditCard = this.GetAttributeValue( AttributeKey.EnableCreditCard ).AsBoolean();
 
             // Conditionally enable credit card.
+            var creditCardCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_CREDIT_CARD.AsGuid() );
             if ( enableCreditCard && gatewayComponent.SupportsSavedAccount( creditCardCurrency ) )
             {
                 allowedCurrencyTypes.Add( creditCardCurrency );
             }
 
             // Conditionally enable ACH.
+            var achCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ACH.AsGuid() );
             if ( enableACH && gatewayComponent.SupportsSavedAccount( achCurrency ) )
             {
                 allowedCurrencyTypes.Add( achCurrency );
+            }
+
+            var applePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_APPLE_PAY.AsGuid() );
+            if ( gatewayComponent.SupportsSavedAccount( applePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( applePayCurrency );
+            }
+
+            var googlePayCurrency = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.CURRENCY_TYPE_ANDROID_PAY.AsGuid() );
+            if ( gatewayComponent.SupportsSavedAccount( googlePayCurrency ) )
+            {
+                allowedCurrencyTypes.Add( googlePayCurrency );
             }
 
             return allowedCurrencyTypes;

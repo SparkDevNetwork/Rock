@@ -37,6 +37,22 @@ namespace SqlServerTypes
         /// </param>
         public static void LoadNativeAssemblies(string rootApplicationPath)
         {
+            var isArm = RuntimeInformation.ProcessArchitecture == Architecture.Arm
+                || RuntimeInformation.ProcessArchitecture == Architecture.Arm64;
+
+            // Skip loading SqlServerTypes on ARM architecture. The native DLL
+            // does not support ARM. This is for development purposes only as
+            // Rock is not intended to run in production without full spatial
+            // support.
+            // Simple spatial features work, such as setting and reading a
+            // GeoPoint on a Location. More complex features, like setting or
+            // reading a GeoFence on a Location (and related "is in range"
+            // features) do not work and will throw DLL not found errors.
+            if ( isArm )
+            {
+                return;
+            }
+
             var nativeBinaryPath = IntPtr.Size > 4
                 ? Path.Combine(rootApplicationPath, @"SqlServerTypes\x64\")
                 : Path.Combine(rootApplicationPath, @"SqlServerTypes\x86\");

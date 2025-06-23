@@ -236,6 +236,7 @@ namespace Rock.Blocks.Core
                 Name = entity.Name,
                 ParentLocation = ToListItemBag( entity.ParentLocation ),
                 PrinterDevice = entity.PrinterDevice.ToListItemBag(),
+                BeaconId = entity.BeaconId,
                 SoftRoomThreshold = entity.SoftRoomThreshold.ToString(),
                 Guid = entity.Guid,
                 AddressFields = new AddressControlBag
@@ -394,6 +395,9 @@ namespace Rock.Blocks.Core
 
             box.IfValidProperty( nameof( box.Bag.PrinterDevice ),
                 () => entity.PrinterDeviceId = box.Bag.PrinterDevice.GetEntityId<Device>( RockContext ) );
+
+            box.IfValidProperty( nameof( box.Bag.BeaconId ),
+                () => entity.BeaconId = box.Bag.BeaconId );
 
             box.IfValidProperty( nameof( box.Bag.SoftRoomThreshold ),
                 () => entity.SoftRoomThreshold = box.Bag.SoftRoomThreshold.AsIntegerOrNull() );
@@ -707,6 +711,31 @@ namespace Rock.Blocks.Core
             qryParams[PageParameterKey.ExpandedIds] = PageParameter( PageParameterKey.ExpandedIds );
 
             return ActionOk( this.GetCurrentPageUrl( qryParams ) );
+        }
+
+        /// <summary>
+        /// Generates the next available beacon identifier for a named location.
+        /// This is done by finding the max number and incrementing it by one.
+        /// </summary>
+        /// <returns>An object that contains the beacon identifier to use.</returns>
+        [BlockAction]
+        public BlockActionResult GenerateNextAvailableBeaconId()
+        {
+            var locationService = new LocationService( RockContext );
+            var lastBeaconId = locationService.Queryable()
+                .Where( l => l.BeaconId.HasValue )
+                .Max( l => l.BeaconId )
+                ?? 0;
+
+            if ( lastBeaconId >= ushort.MaxValue )
+            {
+                return ActionBadRequest( "No more beacon identifiers are available, you must manually enter one." );
+            }
+
+            return ActionOk( new
+            {
+                BeaconId = lastBeaconId + 1
+            } );
         }
 
         #endregion

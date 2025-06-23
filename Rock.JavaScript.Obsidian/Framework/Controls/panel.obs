@@ -205,7 +205,7 @@
 
         /** The type of panel to render. */
         type: {
-            type: String as PropType<"default" | "block" | "primary" | "success" | "info" | "warning" | "danger">,
+            type: String as PropType<"default" | "block" | "primary" | "success" | "info" | "warning" | "danger" | "widget">,
             default: "default"
         },
 

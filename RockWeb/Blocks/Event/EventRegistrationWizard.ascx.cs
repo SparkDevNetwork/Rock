@@ -21,7 +21,9 @@ using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Constants;
@@ -615,6 +617,7 @@ namespace RockWeb.Blocks.Event
                 ContactPhone = PhoneNumber.FormattedNumber( PhoneNumber.DefaultCountryCode(), tbContactPhone.Number ),
                 ContactEmail = tbContactEmail.Text,
                 Name = tbRegistrationName.Text,
+                RegistrantRecordSourceValueId = dvpRecordSource.SelectedValueAsInt(),
                 RegistrationInstructions = htmlRegistrationInstructions.Text,
                 RegistrationTemplateId = GetSelectedTemplate().Id,
                 SendReminderDateTime = dtpReminderDate.SelectedDateTime,
@@ -795,6 +798,11 @@ namespace RockWeb.Blocks.Event
                     {
                         var eventItemService = new EventItemService( rockContext );
                         eventItem = eventItemService.Get( eipSelectedEvent.SelectedValueAsId().Value );
+                        result.EventItemId = eventItem?.Id.ToString();
+                        if ( eventItem?.EventCalendarItems.Any() == true )
+                        {
+                            result.FirstEventCalendarId = eventItem.EventCalendarItems.OrderBy( i => i.EventCalendarId ).First().EventCalendarId.ToString();
+                        }
                     }
                 }
 
@@ -890,6 +898,8 @@ namespace RockWeb.Blocks.Event
             {
                 var qryEventOccurrence = new Dictionary<string, string>();
                 qryEventOccurrence.Add( "EventItemOccurrenceId", result.EventOccurrenceId );
+                qryEventOccurrence.Add( "EventItemId", result.EventItemId );
+                qryEventOccurrence.Add( "EventCalendarId", result.FirstEventCalendarId );
                 hlEventOccurrence.NavigateUrl = GetPageUrl( Rock.SystemGuid.Page.EVENT_OCCURRENCE, qryEventOccurrence );
 
                 bool showEventDetailsLink = GetAttributeValue( AttributeKey.DisplayEventDetailsLink ).AsBoolean();
@@ -1040,6 +1050,7 @@ namespace RockWeb.Blocks.Event
                     Init_SetGroupRequired();
                     Init_SetCalendarEventRequired();
                     Init_SetURLSlugRequired();
+                    Init_SetRecordSourceSelector();
                 }
             }
 
@@ -1235,6 +1246,11 @@ namespace RockWeb.Blocks.Event
                 rtpRegistrationTemplate.Visible = true;
                 ddlTemplate.Visible = false;
             }
+        }
+
+        private void Init_SetRecordSourceSelector()
+        {
+            dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() )?.Id;
         }
 
         #endregion Control Initialization

@@ -648,6 +648,7 @@ namespace RockWeb.Blocks.Event
             gRegistrationAttributes.GridReorder += gRegistrationAttributes_GridReorder;
 
             dvpConnectionStatus.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS.AsGuid() ).Id;
+            dvpRecordSource.DefinedTypeId = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE.AsGuid() ).Id;
 
             var registrationAttributeSecurityField = gRegistrationAttributes.Columns.OfType<SecurityField>().FirstOrDefault();
             registrationAttributeSecurityField.EntityTypeId = EntityTypeCache.GetId<Attribute>() ?? 0;
@@ -1092,6 +1093,7 @@ The logged-in person's information will be used to complete the registrar inform
             registrationTemplate.GroupMemberRoleId = rpGroupTypeRole.GroupRoleId;
             registrationTemplate.GroupMemberStatus = ddlGroupMemberStatus.SelectedValueAsEnum<GroupMemberStatus>();
             registrationTemplate.ConnectionStatusValueId = dvpConnectionStatus.SelectedValueAsInt();
+            registrationTemplate.RegistrantRecordSourceValueId = dvpRecordSource.SelectedValueAsInt();
             registrationTemplate.RequiredSignatureDocumentTemplateId = ddlSignatureDocumentTemplate.SelectedValueAsInt();
             // Rock’s signature system is only in-line enabled so if a new (non-legacy) template is selected
             // RegistrationTemplate.SignatureDocumentAction should be embed, if not then defer to the user's choice.
@@ -2784,6 +2786,7 @@ The logged-in person's information will be used to complete the registrar inform
             rpGroupTypeRole.GroupRoleId = registrationTemplate.GroupMemberRoleId;
             ddlGroupMemberStatus.SetValue( registrationTemplate.GroupMemberStatus.ConvertToInt() );
             dvpConnectionStatus.SetValue( registrationTemplate.ConnectionStatusValueId );
+            dvpRecordSource.SetValue( registrationTemplate.RegistrantRecordSourceValueId );
             ddlSignatureDocumentTemplate.SetValue( registrationTemplate.RequiredSignatureDocumentTemplateId );
             cbDisplayInLine.Checked = registrationTemplate.SignatureDocumentAction == SignatureDocumentAction.Embed;
             cbDisplayInLine.Visible = isLegacySignatureSelected;

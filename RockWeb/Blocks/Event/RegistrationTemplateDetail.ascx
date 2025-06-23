@@ -67,6 +67,7 @@
                                     Help="The group member status that new registrants should be added to group with." />
                                 <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Connection Status"
                                     Help="The connection status to use for new individuals. Setting this here will override the setting on the Registration Entry block." />
+                                <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" Help="The record source to use for new individuals. If a 'RecordSource' page parameter is found at the time of registration, it will be used instead." />
                             </div>
                             <div class="col-md-8">
                                 <div class="row">

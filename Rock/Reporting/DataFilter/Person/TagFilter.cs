@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -24,6 +25,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -36,7 +40,7 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people based on a person tag" )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Has Tag Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "DD28F6C7-6571-4C6A-A021-13A5EB8BD216")]
+    [Rock.SystemGuid.EntityTypeGuid( "DD28F6C7-6571-4C6A-A021-13A5EB8BD216" )]
     public class TagFilter : DataFilterComponent
     {
         #region Properties
@@ -61,6 +65,102 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/tagFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+
+            int entityTypePersonId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) ) ?? 0;
+            var tagQry = new TagService( rockContext ).Queryable( "OwnerPersonAlias" ).Where( a => a.EntityTypeId == entityTypePersonId );
+            var personalTags = tagQry.Where( a => a.OwnerPersonAlias.PersonId == requestContext.CurrentPerson.Id )
+                .OrderBy( a => a.Name )
+                .Select( t => new ListItemBag { Text = t.Name, Value = t.Guid.ToString() } )
+                .ToList();
+            var orgTags = tagQry.Where( a => a.OwnerPersonAlias == null )
+                .OrderBy( a => a.Name )
+                .Select( t => new ListItemBag { Text = t.Name, Value = t.Guid.ToString() } )
+                .ToList();
+
+            string[] selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length < 2 )
+            {
+                data.Add( "tagType", "1" );
+                data.Add( "tag", null );
+            }
+            else
+            {
+                var tagType = selectionValues[0];
+                data.Add( "tagType", tagType );
+
+                var selectedTagGuid = selectionValues[1];
+
+                if ( tagType == "1" && !personalTags.Where( t => t.Value == selectedTagGuid ).Any() )
+                {
+                    // The selected tag belongs to someone else's list of personal tags, so we need to include it under a "Current" category
+                    // so it can still appear on the list and file all the others as under the "Personal" category to keep them separate.
+                    var selectedTag = new TagService( rockContext ).Get( selectedTagGuid.AsGuid() );
+
+                    if ( selectedTag == null )
+                    {
+                        // I guess this tag doesn't actually exist, so no need to categorize
+                        data.Add( "tag", null );
+                    }
+                    else
+                    {
+                        data.Add( "tag", selectedTagGuid );
+                        personalTags = personalTags.Select( t => new ListItemBag
+                        {
+                            Text = t.Text,
+                            Value = t.Value,
+                            Category = "Personal"
+                        } ).ToList();
+                        personalTags.Insert( 0, new ListItemBag
+                        {
+                            Text = string.Format( "{0} ( {1} )", selectedTag.Name, selectedTag.OwnerPersonAlias.Person ),
+                            Value = selectedTag.Guid.ToString(),
+                            Category = "Current"
+                        } );
+                    }
+                }
+                else
+                {
+                    data.Add( "tag", selectedTagGuid );
+                }
+            }
+
+            var tagsByType = new Dictionary<string, List<ListItemBag>>
+            {
+                { "1", personalTags },
+                { "2", orgTags },
+            };
+            data.Add( "tagOptionsByType", tagsByType.ToCamelCaseJson( false, true ) );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var tagType = data.GetValueOrDefault( "tagType", "" );
+            var tag = data.GetValueOrDefault( "tag", "" );
+
+            return $"{tagType}|{tag}";
         }
 
         #endregion
@@ -123,6 +223,8 @@ function() {
 
             return result;
         }
+
+#if WEBFORMS
 
         /// <summary>
         /// Creates the child controls.
@@ -269,6 +371,8 @@ function() {
             }
         }
 
+#endif
+
         /// <summary>
         /// Gets the expression.
         /// </summary>
@@ -283,10 +387,10 @@ function() {
             if ( selectionValues.Length >= 2 )
             {
                 Guid tagGuid = selectionValues[1].AsGuid();
-                var tagItemQry = new TaggedItemService( (RockContext)serviceInstance.Context ).Queryable()
+                var tagItemQry = new TaggedItemService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( x => x.Tag.Guid == tagGuid );
 
-                var qry = new PersonService( (RockContext)serviceInstance.Context ).Queryable()
+                var qry = new PersonService( ( RockContext ) serviceInstance.Context ).Queryable()
                     .Where( p => tagItemQry.Any( x => x.EntityGuid == p.Guid ) );
 
                 return FilterExpressionExtractor.Extract<Rock.Model.Person>( qry, parameterExpression, "p" );

@@ -91,3 +91,15 @@ export type InvokeBlockActionHelper = {
     saveAsCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag): Promise<HttpResult<CommunicationEntryWizardSaveCommunicationTemplateResponseBag>>;
     saveCommunicationTemplate(bag: CommunicationEntryWizardCommunicationTemplateDetailBag): Promise<HttpResult<CommunicationEntryWizardSaveCommunicationTemplateResponseBag>>;
 };
+
+export type Cache<T> = {
+    has(key: string): boolean;
+    get(key: string): T | undefined;
+    set(key: string, value: T): void;
+    remove(key: string): void;
+    clear(): void;
+};
+
+export type CacheOptions = {
+    maxSize: number;
+};

@@ -26,7 +26,8 @@ export const enum ConfigurationValueKey {
     UserSpecificRoot = "userspecificroot",
     CondensedHtml = "condensedHtml",
     EncryptedDocumentFolderRoot = "encrypteddocumentfolderroot",
-    EncryptedImageFolderRoot = "encryptedimagefolderroot"
+    EncryptedImageFolderRoot = "encryptedimagefolderroot",
+    EnableAssetManager = "enableassetmanager",
 }
 
 // The edit component can be quite large, so load it only as needed.

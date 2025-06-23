@@ -1,0 +1,70 @@
+<template>
+    <div class="row form-row">
+        <div class="col-md-4">
+            <DropDownList v-model="learningProgram"
+                          :items="learningProgramOptions"
+                          label="Program"
+                          rules="required"
+                          enhanceForLongLists
+                          showBlankItem />
+        </div>
+        <div class="col-md-4">
+            <DropDownList v-model="learningCourse"
+                          :items="learningCourseOptions"
+                          label="Course"
+                          rules="required"
+                          enhanceForLongLists
+                          showBlankItem />
+        </div>
+        <div class="col-md-4">
+            <CheckBoxList v-model="courseStatus"
+                          :items="courseStatusOptions"
+                          label="with Course Status (optional)" />
+        </div>
+    </div>
+    <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString, RangeType } from "@Obsidian/Utility/slidingDateRange";
+    import { Guid } from "@Obsidian/Types";
+    import { LearningCompletionStatus, LearningCompletionStatusDescription } from "@Obsidian/Enums/Lms/learningCompletionStatus";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const learningProgramOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.learningProgramOptions) ?? []);
+    const learningProgram = ref<Guid>(props.modelValue.learningProgram ?? "");
+    const learningCourseOptionsByProgram = ref<Record<Guid, ListItemBag[]>>(safeParseJson(props.modelValue.learningCourseOptions) ?? {});
+    const learningCourse = ref<Guid>(props.modelValue.learningCourse ?? "");
+    const courseStatus = ref<`${LearningCompletionStatus}`[]>(safeParseJson<LearningCompletionStatus[]>(props.modelValue.courseStatus)?.map(st => `${st}` as `${LearningCompletionStatus}`) ?? []);
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    const learningCourseOptions = computed(() => {
+        return learningCourseOptionsByProgram.value[learningProgram.value] ?? [];
+    });
+
+    const courseStatusOptions = [
+        { text: LearningCompletionStatusDescription[LearningCompletionStatus.Pass], value: LearningCompletionStatus.Pass.toString() },
+        { text: LearningCompletionStatusDescription[LearningCompletionStatus.Fail], value: LearningCompletionStatus.Fail.toString() },
+    ];
+
+    watch([learningCourse, courseStatus, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            learningCourse: learningCourse.value,
+            courseStatus: JSON.stringify(courseStatus.value.map(st => toNumber(st))),
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.All }),
+        });
+    });
+</script>

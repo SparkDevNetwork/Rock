@@ -1,0 +1,87 @@
+<template>
+    <div class="row form-row field-criteria">
+        <div class="col-md-3">
+            <DropDownList v-model="comparisonType" :items="comparisonItems" disableLabel :showBlankItem="false" />
+        </div>
+        <div class="col-md-1">
+            <NumberBox v-model="count" disableLabel />
+        </div>
+        <div class="col-md-2 mt-1">
+            page views on the
+        </div>
+        <div class="col-md-5">
+            <DropDownList v-model="sites" :items="siteOptions"
+                          disableLabel
+                          multiple
+                          enhanceForLongLists />
+        </div>
+        <div class="col-md-1 mt-1">
+            site(s)
+        </div>
+    </div>
+    <div class="row form-row mt-3">
+        <div class="col-md-3 mt-4">
+            in the following date range
+        </div>
+        <div class="col-md-9">
+            <SlidingDateRangePicker v-model="dateRange" label="Date Started" help="The date range within which the site page was viewed" />
+        </div>
+    </div>
+    <div class="row form-row mt-3">
+        <div class="col-md-4 mt-1">
+            optionally limited to the following pages
+        </div>
+        <div class="col-md-6">
+            <PagePicker v-model="pages" disableLabel multiple />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
+    import { getFilteredComparisonTypeOptions } from "@Obsidian/Core/Reporting/comparisonTypeOptions";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+    import type { Guid } from "@Obsidian/Types";
+    import type { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import type { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
+    const count = ref<number | null>(toNumberOrNull(props.modelValue.count));
+    const sites = ref<Guid[]>(safeParseJson(props.modelValue.sites) ?? []);
+    const siteOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.siteOptions) ?? []);
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+    const pages = ref<PageRouteValueBag[]>(safeParseJson(props.modelValue.pages) ?? []);
+
+    const comparisonItems = getFilteredComparisonTypeOptions(
+        ComparisonType.EqualTo,
+        ComparisonType.GreaterThan,
+        ComparisonType.GreaterThanOrEqualTo,
+        ComparisonType.LessThan,
+        ComparisonType.LessThanOrEqualTo
+    );
+
+    watch([comparisonType, count, sites, dateRange, pages], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            sites: JSON.stringify(sites.value),
+            comparisonType: comparisonType.value,
+            count: `${count.value ?? ""}`,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+            pages: JSON.stringify(pages.value),
+        });
+    });
+</script>

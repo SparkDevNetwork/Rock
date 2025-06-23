@@ -157,6 +157,7 @@ namespace Rock.Model
             target.MinimumInitialPayment = source.MinimumInitialPayment;
             target.Name = source.Name;
             target.PaymentDeadlineDate = source.PaymentDeadlineDate;
+            target.RegistrantRecordSourceValueId = source.RegistrantRecordSourceValueId;
             target.RegistrationInstructions = source.RegistrationInstructions;
             target.RegistrationMeteringThreshold = source.RegistrationMeteringThreshold;
             target.RegistrationTemplateId = source.RegistrationTemplateId;

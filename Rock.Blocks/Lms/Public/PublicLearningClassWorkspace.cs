@@ -302,7 +302,7 @@ namespace Rock.Blocks.Lms
                 var availableDate =
                     isPreviousMethodCalculation && isPreviousActivityCompleted ?
                     previousActivityCompletion?.CompletedDate :
-                    activity.AvailableDateTime;
+                    activity.AvailableDateTime?.ToRockDateTimeOffset();
 
                 var grade = activity.GetGrade( scales );
                 var hasPassingGrade = grade?.IsPassing ?? false;
@@ -317,7 +317,7 @@ namespace Rock.Blocks.Lms
                     CompletionValues = activityComponent.GetCompletionValues( activity, completionData, componentData, PresentedFor.Student, RockContext, RequestContext ),
                     AvailableDate = availableDate,
                     BinaryFile = binaryFile,
-                    CompletedDate = activity.CompletedDateTime,
+                    CompletedDate = activity.CompletedDateTime?.ToRockDateTimeOffset(),
                     DueDate = activity.DueDate,
                     FacilitatorComment = activity.FacilitatorComment,
                     GradedByPersonAlias = activity.GradedByPersonAlias.ToListItemBag(),
@@ -536,7 +536,7 @@ namespace Rock.Blocks.Lms
                 .Where( a => ( a.IsAvailable && !a.IsStudentCompleted && !a.IsFacilitatorCompleted ) )
                 .Select( a => new PublicLearningClassWorkspaceNotificationBag
                 {
-                    Content = a.IsDueSoon || a.IsLate ? $"Due {a.DueDate.ToElapsedString()}" : a.AvailableDate.HasValue ? $"Available {a.AvailableDate.ToElapsedString()}" : "Available",
+                    Content = a.IsDueSoon || a.IsLate ? $"Due {a.DueDate?.DateTime.ToElapsedString()}" : a.AvailableDate.HasValue ? $"Available {a.AvailableDate?.DateTime.ToElapsedString()}" : "Available",
                     LabelText = a.IsDueSoon ? "Due Soon" : a.IsLate ? "Late" : "Available",
                     LabelType = a.IsDueSoon ? "warning" : a.IsLate ? "danger" : "success",
                     NotificationDateTime = a.IsDueSoon || a.IsLate ? a.DueDate : a.AvailableDate,

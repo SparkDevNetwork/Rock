@@ -104,6 +104,15 @@ namespace Rock.Model
                 try
                 {
                     /*
+                        05/02/2025 - DSH
+
+                        Additional research shows that internally the BuildManager.GetCompiledType
+                        method uses a lock to prevent concurrent compilation. Meaning, only one
+                        .ascx file can be compiled at a time. So there isn't much we can do to
+                        speed that up. One optimization we could do is to split the work between
+                        Obsidian blocks and WebForms blocks and let those two processes run concurrently.
+                    */
+                    /*
                         02/09/2024 - JSC
 
                         During Rock startup this method is called to pre-compile

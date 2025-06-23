@@ -1540,5 +1540,74 @@ namespace Rock.SystemGuid
         public const string THEME_PURPOSE_WEBSITE_NEXTGEN = "B177E07F-7E07-4D7B-AFA7-9DE163797659";
 
         #endregion
+
+        #region Record Source
+
+        /// <summary>
+        /// The external website record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_EXTERNAL_WEBSITE = "8F2394AE-AFF1-4773-8BF8-E4B9C9D5E978";
+
+        /// <summary>
+        /// The prayer record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_PRAYER = "2B8DF7D7-FA3A-4A56-A72B-DB4CAAB2DF32";
+
+        /// <summary>
+        /// The event registration record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_EVENT_REGISTRATION = "8C461A53-160D-4693-A394-154673E83D17";
+
+        /// <summary>
+        /// The workflow record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_WORKFLOW = "42BA3F0C-00B5-4104-A9F8-C4C092BA2E0C";
+
+        /// <summary>
+        /// The group registration record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_GROUP_REGISTRATION = "A0F69572-B5C3-4195-8FD1-6FC72BB84FC8";
+
+        /// <summary>
+        /// The giving record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_GIVING = "A6677492-5AA5-4A09-9854-D9C54705C67D";
+
+        /// <summary>
+        /// The pledge record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_PLEDGE = "59EAB321-27D7-4D57-A1EE-38287416E840";
+
+        /// <summary>
+        /// The sign-up record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_SIGN_UP = "D0163E35-4065-4097-B018-D7D8092C86F7";
+
+        /// <summary>
+        /// The check-in record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_CHECK_IN = "12A138E7-6D93-4D84-B99A-545395694553";
+
+        /// <summary>
+        /// The family registration record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_FAMILY_REGISTRATION = "264C0969-55EA-4DF2-8FFD-2E3AAB311601";
+
+        /// <summary>
+        /// The mobile app record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_MOBILE_APP = "D465F0B7-4519-46B8-A4FF-11A207F9D86F";
+
+        /// <summary>
+        /// The Apple TV app record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_APPLE_TV_APP = "96884743-3C6B-41D9-A8FD-5DDEE65A7983";
+
+        /// <summary>
+        /// The Roku TV app record source.
+        /// </summary>
+        public const string RECORD_SOURCE_TYPE_ROKU_TV_APP = "1849A5FB-1434-45AA-AD78-D403A3C7685A";
+
+        #endregion
     }
 }

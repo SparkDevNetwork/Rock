@@ -1,0 +1,132 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+
+        <ValueDetailList :modelValue="topValues" />
+
+        <div class="row">
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="leftSideValues" />
+            </div>
+
+            <div class="col-md-6">
+                <ValueDetailList :modelValue="rightSideValues" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div v-for="detail in modelValue?.configurationDetails"
+                 :key="detail.value ?? undefined"
+                 class="col-md-6">
+                <dl>
+                    <dt>{{ detail.value }}</dt>
+                    <dd v-html="parse(detail.text ?? '')"></dd>
+                </dl>
+            </div>
+        </div>
+
+        <EditEventList v-if="modelValue?.idKey"
+                       v-model="events"
+                       :triggerKey="modelValue?.idKey"
+                       :eventTypeItems="options.eventTypeItems ?? []"
+                       :mergeFields="modelValue?.valueDefinitions ?? []" />
+
+    </fieldset>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import EditEventList from "./editEventList.partial.obs";
+    import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
+    import { ValueDetailListItemBuilder } from "@Obsidian/Core/Controls/valueDetailListItemBuilder";
+    import { parse } from "@Obsidian/Libs/marked";
+    import { ValueDetailListItem } from "@Obsidian/Types/Controls/valueDetailListItem";
+    import { AutomationTriggerBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerDetail/automationTriggerBag";
+    import { AutomationTriggerDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AutomationTriggerDetail/automationTriggerDetailOptionsBag";
+
+    const props = defineProps({
+        /**
+         * The automation trigger data that will be viewed.
+         */
+        modelValue: {
+            type: Object as PropType<AutomationTriggerBag | null>,
+            required: false
+        },
+
+        /**
+         * The options that provide any additional data we need.
+         */
+        options: {
+            type: Object as PropType<AutomationTriggerDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const events = ref(props.modelValue?.events ?? []);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The values to display full-width at the top of the block. */
+    const topValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.description) {
+            valueBuilder.addTextValue("Description", props.modelValue.description);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the left side of the block. */
+    const leftSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        if (props.modelValue.triggerType?.text) {
+            valueBuilder.addTextValue("Trigger Type", props.modelValue.triggerType.text);
+        }
+
+        return valueBuilder.build();
+    });
+
+    /** The values to display at half-width on the right side of the block. */
+    const rightSideValues = computed((): ValueDetailListItem[] => {
+        const valueBuilder = new ValueDetailListItemBuilder();
+
+        if (!props.modelValue) {
+            return valueBuilder.build();
+        }
+
+        return valueBuilder.build();
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    // #endregion
+
+    // #region Event Handlers
+
+    // #endregion
+
+    watch(events, () => {
+        if (props.modelValue) {
+            // This is a hack to get around the fact that if they edit the
+            // trigger and then cancel the edit, the events would be out of
+            // date.
+            props.modelValue.events = events.value;
+        }
+    });
+</script>

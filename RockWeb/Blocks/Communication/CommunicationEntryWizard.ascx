@@ -41,7 +41,7 @@
                         <div class="position-absolute inset-0 overflow-auto">
                             <div class="panel-body">
                                 <div>
-                                    <h1 class="step-title text-break">List Selection</h1>
+                                    <h4 class="step-title text-break">List Selection</h4>
 
                                     <Rock:NotificationBox ID="nbCommunicationNotWizardCompatible" runat="server" NotificationBoxType="Info">
                                         This communication uses a template that is not compatible with the email wizard. You can continue with the email wizard, but the main content of the email will be replaced when the Email Wizard compatible template is selected. To keep the content, click 'Use Simple Editor' to use the simple communication editor.
