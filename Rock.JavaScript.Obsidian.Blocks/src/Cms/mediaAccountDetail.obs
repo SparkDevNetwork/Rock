@@ -11,7 +11,7 @@
                  :entityKey="entityKey"
                  :entityTypeGuid="EntityType.MediaAccount"
                  :footerSecondaryActions="footerActions"
-                 entityTypeName="MediaAccount"
+                 entityTypeName="Media Account"
                  :isFullScreenVisible="false"
                  :isAuditHidden="true"
                  :isBadgesVisible="true"

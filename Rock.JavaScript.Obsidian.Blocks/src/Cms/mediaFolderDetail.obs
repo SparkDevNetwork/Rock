@@ -33,7 +33,7 @@
 </template>
 
 <script setup lang="ts">
-    import { computed, ref } from "vue";
+    import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import DetailBlock from "@Obsidian/Templates/detailBlock";
@@ -47,10 +47,12 @@
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { MediaFolderBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderDetail/mediaFolderBag";
     import { MediaFolderDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaFolderDetail/mediaFolderDetailOptionsBag";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<DetailBlockBox<MediaFolderBag, MediaFolderDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const store = useStore();
 
     // #region Values
 
@@ -261,4 +263,16 @@
         mediaFolderEditBag.value = config.entity;
         panelMode.value = DetailPanelMode.Add;
     }
+
+    // This is a workaround to ensure the "Secondary Blocks" (ISecondaryBlocks) are shown when the panel is in view mode and not in edit mode.
+    // We will want to remove this once we have a better solution for showing/hiding secondary block.
+    // See: https://app.asana.com/1/20866866924293/project/1198840255983422/task/1205960087046095?focus=true
+    watch(panelMode, () => {
+        if (panelMode.value === DetailPanelMode.View) {
+            store.setAreSecondaryBlocksShown(true);
+        }
+        else {
+            store.setAreSecondaryBlocksShown(false);
+        }
+    }, { immediate: true });
 </script>
