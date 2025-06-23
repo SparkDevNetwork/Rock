@@ -16,8 +16,6 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppFramework", "TestApp
 EndProject
 Project("{D954291E-2A0B-460D-934E-DC6B0785DB48}") = "TestApp.Shared", "TestApp.Shared\TestApp.Shared.shproj", "{01911862-ECB1-4F51-AF69-CEE52A11BBEE}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.DownhillCss.NG", "Rock.DownhillCss\Rock.DownhillCss.NG.csproj", "{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.Rest.NG", "Rock.Rest.NG\Rock.Rest.NG.csproj", "{24A85B39-83C7-4E3E-A657-AD6B2F56331C}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "RockWebCore", "RockWebCore\RockWebCore.csproj", "{3E04FE5C-F152-448F-8F3B-71BCF70F0415}"
@@ -48,6 +46,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava.Fluid", "Rock.Lav
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Lava", "Rock.Lava\Rock.Lava.csproj", "{8C415FB4-2AB1-DBA3-9B39-508B446508DF}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.DownhillCss", "Rock.DownhillCss\Rock.DownhillCss.csproj", "{7E5AB14F-37CA-CCDE-3FD2-53D05922C93F}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -66,10 +66,6 @@ Global
 		{92F92B58-2623-4DC3-B151-49ADF57EF7D7}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{92F92B58-2623-4DC3-B151-49ADF57EF7D7}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{92F92B58-2623-4DC3-B151-49ADF57EF7D7}.Release|Any CPU.Build.0 = Release|Any CPU
-		{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{40206D71-1D51-4EDC-BAAF-C7BAF567E93E}.Release|Any CPU.Build.0 = Release|Any CPU
 		{24A85B39-83C7-4E3E-A657-AD6B2F56331C}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{24A85B39-83C7-4E3E-A657-AD6B2F56331C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{24A85B39-83C7-4E3E-A657-AD6B2F56331C}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -126,6 +122,10 @@ Global
 		{8C415FB4-2AB1-DBA3-9B39-508B446508DF}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{8C415FB4-2AB1-DBA3-9B39-508B446508DF}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{8C415FB4-2AB1-DBA3-9B39-508B446508DF}.Release|Any CPU.Build.0 = Release|Any CPU
+		{7E5AB14F-37CA-CCDE-3FD2-53D05922C93F}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{7E5AB14F-37CA-CCDE-3FD2-53D05922C93F}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{7E5AB14F-37CA-CCDE-3FD2-53D05922C93F}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{7E5AB14F-37CA-CCDE-3FD2-53D05922C93F}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

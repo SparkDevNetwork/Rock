@@ -277,7 +277,7 @@
 
   <ItemGroup>
     <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
-    <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.NG.csproj" />
+    <ProjectReference Include="..\Rock.DownhillCss\Rock.DownhillCss.csproj" />
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.Lava\Rock.Lava.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
