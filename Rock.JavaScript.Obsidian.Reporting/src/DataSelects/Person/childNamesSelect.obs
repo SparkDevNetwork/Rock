@@ -1,0 +1,35 @@
+<template>
+    <CheckBox v-model="includeGender" text="Include Gender" disableLabel label="" />
+    <CheckBox v-model="includeAge" text="Include Age" disableLabel label="" />
+    <CheckBox v-model="includeGrade" text="Include Grade" disableLabel label="" />
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { ref, watch } from "vue";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+
+    const includeGender = ref(asBoolean(props.modelValue.includeGender));
+    const includeAge = ref(asBoolean(props.modelValue.includeAge));
+    const includeGrade = ref(asBoolean(props.modelValue.includeGrade));
+
+
+    watch([includeGender, includeAge, includeGrade], () => {
+        const newData = {
+            ...props.modelValue,
+            includeGender: asTrueOrFalseString(includeGender.value),
+            includeAge: asTrueOrFalseString(includeAge.value),
+            includeGrade: asTrueOrFalseString(includeGrade.value),
+        };
+
+        emit("update:modelValue", newData);
+    });
+</script>
