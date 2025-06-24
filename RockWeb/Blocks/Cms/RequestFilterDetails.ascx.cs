@@ -152,6 +152,22 @@ namespace RockWeb.Blocks.Cms
 
             if ( requestFilter == null )
             {
+                var paramRequestFilterId = PageParameter( PageParameterKey.RequestFilterId ).AsIntegerOrNull();
+
+                if ( !paramRequestFilterId.HasValue )
+                {
+                    var requestFilterIdKey = PageParameter( PageParameterKey.RequestFilterId );
+                    paramRequestFilterId = Rock.Utility.IdHasher.Instance.GetId( requestFilterIdKey );
+                }
+
+                if ( paramRequestFilterId.HasValue && paramRequestFilterId.Value > 0 )
+                {
+                    requestFilter = new RequestFilterService( rockContext ).Get( paramRequestFilterId.Value );
+                }
+            }
+
+            if ( requestFilter == null )
+            {
                 requestFilter = new RequestFilter();
             }
 
