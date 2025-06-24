@@ -20,12 +20,12 @@
         <div class="row">
             <div class="col-md-6">
                 <CheckBox v-model="excludeSystemTypes"
-                          label="Exclude 'System' Types?" />
+                          label="Exclude 'System' Types" />
             </div>
 
             <div class="col-md-6">
                 <CheckBox v-model="showOnlyObsidian"
-                          label="Show Obsidian only?" />
+                          label="Show Only Obsidian" />
             </div>
         </div>
     </Modal>
