@@ -122,7 +122,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             if ( selectionConfig.LearningCourseGuid.HasValue )
             {
-                var course = new LearningCourseService( new RockContext() ).Get( selectionConfig.LearningCourseGuid.Value );
+                var course = new LearningCourseService( rockContext ).Get( selectionConfig.LearningCourseGuid.Value );
 
                 data.Add( "course", course?.Guid.ToString() );
                 data.Add( "program", course?.LearningProgram?.Guid.ToString() );
