@@ -29,7 +29,17 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            Update_ufnUtility_CsvToTable();
+            /*
+                6/24/2025 - NA
+
+                Commented out the use of the TRIM() function in ufnUtility_CsvToTable
+                to preserve compatibility with SQL Server 2016, which does not support
+                TRIM(). 
+
+                Reason: Maintain backward compatibility with environments running
+                SQL Server 2016.
+            */
+            //Update_ufnUtility_CsvToTable();
             Update_spFinance_ContributionStatementQuery();
             Update_spFinance_GivingAnalyticsQuery_AccountTotals();
             Update_spFinance_GivingAnalyticsQuery_PersonSummary();
