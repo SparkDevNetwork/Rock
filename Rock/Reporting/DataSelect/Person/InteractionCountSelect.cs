@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -20,11 +20,15 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Text;
-using System.Threading.Tasks;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Security;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Rest.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +40,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Interaction count of a person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select the Interaction count of a person" )]
-    [Rock.SystemGuid.EntityTypeGuid( "78A6FDE9-5D88-45D8-9081-01A97290186B")]
+    [Rock.SystemGuid.EntityTypeGuid( "78A6FDE9-5D88-45D8-9081-01A97290186B" )]
     public class InteractionCountSelect : DataSelectComponent
     {
         #region Properties
@@ -122,6 +126,105 @@ namespace Rock.Reporting.DataSelect.Person
         {
             // disable sorting on this column since it is an IEnumerable
             return string.Empty;
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var interactionChannelOptions = new InteractionChannelService( rockContext ).Queryable()
+                .OrderBy( a => a.Name )
+                .Select( a => new ListItemBag { Value = a.Guid.ToString(), Text = a.Name } )
+                .ToList();
+
+            var groupRoleOptions = new List<ListItemBag>();
+            Guid groupTypeGuid = selection.Split( '|' ).FirstOrDefault().AsGuidOrNull() ?? Guid.Empty;
+            var groupType = GroupTypeCache.Get( groupTypeGuid );
+            if ( groupType != null )
+            {
+                groupRoleOptions = new GroupTypeRoleService( rockContext ).GetByGroupTypeId( groupType.Id )
+                    .OrderBy( r => r.Order )
+                    .ThenBy( r => r.Name )
+                    .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
+                    .ToList();
+            }
+
+            var groupMemberStatusOptions = new List<ListItemBag>
+            {
+                new ListItemBag { Text = "Inactive", Value = GroupMemberStatus.Inactive.ConvertToInt().ToString() },
+                new ListItemBag { Text = "Active", Value = GroupMemberStatus.Active.ConvertToInt().ToString() },
+                new ListItemBag { Text = "Pending", Value = GroupMemberStatus.Pending.ConvertToInt().ToString() },
+            };
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/interactionCountSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["interactionChannelOptions"] = interactionChannelOptions.ToCamelCaseJson( false, true ),
+                    ["groupRoleOptions"] = groupRoleOptions.ToCamelCaseJson( false, true ),
+                    ["groupMemberStatusOptions"] = groupMemberStatusOptions.ToCamelCaseJson( false, true ),
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            string[] selectionValues = selection.Split( '|' );
+
+            // Group Type
+            var groupTypeGuid = selectionValues.Length > 0 ? selectionValues[0].AsGuidOrNull() ?? Guid.Empty : Guid.Empty;
+            data.Add( "groupType", groupTypeGuid.ToString() );
+
+            // Group Roles
+            var selectedRoleGuids = selectionValues.Length > 1
+                ? selectionValues[1].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToList()
+                : new List<string>();
+            data.Add( "groupRoles", selectedRoleGuids.ToJson() );
+
+            // Group Member Status
+            data.Add( "groupMemberStatus", selectionValues.Length > 2 ? selectionValues[2] : string.Empty );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupTypeGuid = data.GetValueOrDefault( "groupType", string.Empty );
+            var groupRoles = data.GetValueOrNull( "groupRoles" )?.FromJsonOrNull<List<string>>() ?? new List<string>();
+            var groupMemberStatus = data.GetValueOrDefault( "groupMemberStatus", string.Empty );
+
+            return $"{groupTypeGuid}|{groupRoles.AsDelimited( "," )}|{groupMemberStatus}";
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var action = request.GetValueOrNull( "action" );
+            var options = request.GetValueOrNull( "options" )?.FromJsonOrNull<InGroupGroupTypeSelectGetRolesOptionsBag>();
+
+            if ( action == "GetRoles" && options != null && options.GroupTypeGuid != null )
+            {
+                var groupRoleOptions = new List<ListItemBag>();
+                var groupType = GroupTypeCache.Get( options.GroupTypeGuid );
+                if ( groupType != null )
+                {
+                    groupRoleOptions = new GroupTypeRoleService( rockContext ).GetByGroupTypeId( groupType.Id )
+                        .OrderBy( r => r.Order )
+                        .ThenBy( r => r.Name )
+                        .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
+                        .ToList();
+                }
+
+                return new Dictionary<string, string> { { "groupRoleOptions", groupRoleOptions.ToCamelCaseJson( false, true ) } };
+            }
+            return null;
         }
 
         #endregion
