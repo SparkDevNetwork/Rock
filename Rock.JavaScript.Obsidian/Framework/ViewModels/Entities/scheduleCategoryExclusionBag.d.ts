@@ -21,38 +21,40 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
-/**
- * Class MediaAccountBag.
- * Implements the Rock.ViewModels.Utility.EntityBagBase
- */
-export type MediaAccountBag = {
+/** ScheduleCategoryExclusion View Model */
+export type ScheduleCategoryExclusionBag = {
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
 
-    /** Gets or sets the type of the component entity. */
-    componentEntityType?: ListItemBag | null;
+    /** Gets or sets the category identifier. */
+    categoryId: number;
+
+    /** Gets or sets the created by person alias identifier. */
+    createdByPersonAliasId?: number | null;
+
+    /** Gets or sets the created date time. */
+    createdDateTime?: string | null;
+
+    /** Gets or sets the end date. */
+    endDate?: string | null;
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
-    /** Gets or sets a value indicating whether this instance is active. */
-    isActive: boolean;
+    /** Gets or sets the modified by person alias identifier. */
+    modifiedByPersonAliasId?: number | null;
 
-    /** Gets or sets the last refresh. */
-    lastRefresh?: string | null;
+    /** Gets or sets the modified date time. */
+    modifiedDateTime?: string | null;
 
-    /** Gets or sets the metric data. */
-    metricData?: string | null;
+    /** Gets or sets the start date. */
+    startDate?: string | null;
 
-    /** Gets or sets the Name of the MediaAccount. This property is required. */
-    name?: string | null;
-
-    /** Gets or sets the value indicating whether manual entry is allowed for this media account. */
-    showDownloadButton: boolean;
+    /** Gets or sets the title. */
+    title?: string | null;
 };

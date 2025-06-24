@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -58,6 +58,7 @@ namespace Rock.Blocks.BulkImport
         Order = 1 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "66f5882f-163c-4616-9b39-2f063611db22" )]
+    [Rock.SystemGuid.EntityTypeGuid( "5B41F45E-2E09-4F97-8BEA-683AFFE0EB62")]
     public class BulkImportTool : RockBlockType
     {
         #region Keys

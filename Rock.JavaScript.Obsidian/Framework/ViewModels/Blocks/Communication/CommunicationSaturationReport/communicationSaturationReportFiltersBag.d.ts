@@ -23,7 +23,7 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** The additional configuration options for the Communication Recipient List block. */
+/** The filter options for the Communication Saturation Report block. */
 export type CommunicationSaturationReportFiltersBag = {
     /** Whether or not to include only bulk communications or all communications in the report. */
     bulkOnly: boolean;

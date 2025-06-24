@@ -21,14 +21,23 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Registration Instance List block. */
-export type RegistrationInstanceListOptionsBag = {
-    /** The name of the registration instance. */
-    registrationInstanceName?: string | null;
+/**
+ * A description of the number of items flowing from a Node on
+ * one level to a node on the next level
+ */
+export type FlowNodeDiagramEdgeBag = {
+    /** Gets or sets the level */
+    level: number;
 
-    /** Whether to show the details list column. */
-    showDetailsColumn: boolean;
+    /** Gets or sets the source ID */
+    sourceId?: number | null;
 
-    /** Whether to show the wait list column. */
-    showWaitList: boolean;
+    /** Gets or sets the target ID */
+    targetId: number;
+
+    /** Gets or sets the tooltip */
+    tooltip?: string | null;
+
+    /** Gets or sets the units */
+    units: number;
 };

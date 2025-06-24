@@ -21,14 +21,20 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Registration Instance List block. */
-export type RegistrationInstanceListOptionsBag = {
-    /** The name of the registration instance. */
-    registrationInstanceName?: string | null;
+/**
+ * Type for a Flow Node Diagram's Node definitions.
+ * For Step Flow diagrams, this represents a Step
+ */
+export type FlowNodeDiagramNodeBag = {
+    /** Gets or sets the color */
+    color?: string | null;
 
-    /** Whether to show the details list column. */
-    showDetailsColumn: boolean;
+    /** Gets or sets the id */
+    id: number;
 
-    /** Whether to show the wait list column. */
-    showWaitList: boolean;
+    /** Gets or sets the name */
+    name?: string | null;
+
+    /** Gets or sets the order */
+    order: number;
 };

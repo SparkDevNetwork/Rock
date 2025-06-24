@@ -21,14 +21,20 @@
 // </copyright>
 //
 
-/** The additional configuration options for the Registration Instance List block. */
-export type RegistrationInstanceListOptionsBag = {
-    /** The name of the registration instance. */
-    registrationInstanceName?: string | null;
+/** Model of the settings for the Flow Node Diagram */
+export type FlowNodeDiagramSettingsBag = {
+    /** Gets or sets the chart height */
+    chartHeight?: number | null;
 
-    /** Whether to show the details list column. */
-    showDetailsColumn: boolean;
+    /** Gets or sets the chart width */
+    chartWidth?: number | null;
 
-    /** Whether to show the wait list column. */
-    showWaitList: boolean;
+    /** Gets or sets the legend HTML */
+    legendHtml?: string | null;
+
+    /** Gets or sets the Node vertical spacing */
+    nodeVerticalSpacing?: number | null;
+
+    /** Gets or sets the Node width */
+    nodeWidth?: number | null;
 };
