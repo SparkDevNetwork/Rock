@@ -276,20 +276,7 @@ namespace Rock.Data
             {
                 if ( HistoryItems.Any() )
                 {
-                    Task.Run( () =>
-                    {
-                        try
-                        {
-                            using ( var rockContext = new RockContext() )
-                            {
-                                rockContext.BulkInsert( HistoryItems );
-                            }
-                        }
-                        catch ( SystemException ex )
-                        {
-                            ExceptionLogService.LogException( ex, null );
-                        }
-                    } );
+                    new SaveHistoryTransaction( HistoryItems ).Enqueue();
                 }
             }
         }

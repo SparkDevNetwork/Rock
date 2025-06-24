@@ -39,7 +39,7 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Data.DbContext dbContext )
         {
-            var currentPersonAliasId = dbContext.GetCurrentPersonAlias()?.Id;
+            var currentPersonAliasId = dbContext.GetCurrentPersonAliasId();
             if ( this.PersonAliasId == currentPersonAliasId )
             {
                 // If the current person is the one modifying this (it probably is), update the Session

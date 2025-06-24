@@ -134,6 +134,7 @@ namespace Rock.Model
             target.CategoryId = source.CategoryId;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
+            target.IsPinned = source.IsPinned;
             target.SiteId = source.SiteId;
             target.Token = source.Token;
             target.Url = source.Url;

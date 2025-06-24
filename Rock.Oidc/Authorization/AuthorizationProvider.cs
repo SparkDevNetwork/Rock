@@ -31,6 +31,7 @@ using Rock.Data;
 using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 
 namespace Rock.Oidc.Authorization
 {
@@ -40,6 +41,17 @@ namespace Rock.Oidc.Authorization
     /// <seealso cref="OpenIdConnectServerProvider" />
     public class AuthorizationProvider : OpenIdConnectServerProvider
     {
+        #region Keys
+
+        private class TicketPropertyKey
+        {
+            public const string ClientIpAddress = "ClientIpAddress";
+        }
+
+        #endregion Keys
+
+        #region OpenIdConnectServerProvider Implementation
+
         /// <summary>
         /// Represents an event called for each validated token request
         /// to allow the user code to decide how the request should be handled.
@@ -206,6 +218,34 @@ namespace Rock.Oidc.Authorization
         }
 
         /// <summary>
+        /// Represents an event called when serializing an authorization code.
+        /// </summary>
+        /// <param name="context">The context instance associated with this event.</param>
+        public override Task SerializeAuthorizationCode( SerializeAuthorizationCodeContext context )
+        {
+            /*
+                6/18/2025 - JPH
+
+                The OIDC flows that are used by Rock involve a final, back-channel (server-to-server) code-for-token
+                exchange. With this in mind, we need to take this front-channel opportunity to set the individual's
+                actual IP address as a property on the ticket so we can retrieve and properly log it during that later
+                stage of the flow. Otherwise, we'll end up logging the OIDC client's server IP address, since it will be
+                responsible for making the final, back-channel request to get the token.
+
+                Reason: Ensure the individual's actual IP address is logged within their login history record.
+                https://github.com/SparkDevNetwork/Rock/issues/6340
+             */
+
+            var clientIpAddress = WebRequestHelper.GetClientIpAddress( context?.OwinContext );
+            if ( clientIpAddress.IsNotNullOrWhiteSpace() )
+            {
+                context.Ticket.SetProperty( TicketPropertyKey.ClientIpAddress, clientIpAddress );
+            }
+
+            return base.SerializeAuthorizationCode( context );
+        }
+
+        /// <summary>
         /// Represents an event called for each request to the token endpoint
         /// to determine if the request is valid and should continue.
         /// </summary>
@@ -365,6 +405,8 @@ namespace Rock.Oidc.Authorization
                     WasLoginSuccessful = false,
                     LoginFailureReason = GetLoginFailureReason( context.Response.Error ),
                     LoginFailureMessage = context.Response.ErrorDescription
+                        ?.ReplaceWhileExists( "User", "Individual" )
+                        ?.ReplaceWhileExists( "user", "individual" )
                 }.SaveAfterDelay();
             }
 
@@ -380,14 +422,20 @@ namespace Rock.Oidc.Authorization
         {
             if ( context != null )
             {
+                // Retrieve the front-channel IP address that was stored within the ticket.
+                var clientIpAddress = context.Ticket?.GetProperty( TicketPropertyKey.ClientIpAddress );
+
                 // Log all outcomes. It's unlikely that a failure would occur at this stage, but it is possible.
                 new HistoryLogin
                 {
                     UserName = context.Ticket?.Identity?.GetClaim( OpenIdConnectConstants.Claims.Username ),
+                    ClientIpAddress = clientIpAddress,
                     AuthClientClientId = context.Request?.ClientId,
                     WasLoginSuccessful = context.Ticket != null && context.Response?.Error.IsNullOrWhiteSpace() == true,
                     LoginFailureReason = GetLoginFailureReason( context.Response?.Error ),
                     LoginFailureMessage = context.Response?.ErrorDescription
+                        ?.ReplaceWhileExists( "User", "Individual" )
+                        ?.ReplaceWhileExists( "user", "individual" )
                 }.SaveAfterDelay();
             }
 
@@ -416,5 +464,7 @@ namespace Rock.Oidc.Authorization
         }
 
         #endregion Save Outcomes to HistoryLogin
+
+        #endregion OpenIdConnectServerProvider Implementation
     }
 }

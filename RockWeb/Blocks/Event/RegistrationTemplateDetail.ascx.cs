@@ -44,9 +44,10 @@ namespace RockWeb.Blocks.Event
     [Description( "Displays the details of the given registration template." )]
 
     [LinkedPage(
-        "Registration Template Placement Page",
-        Key = AttributeKey.RegistrationTemplatePlacementPage,
-        DefaultValue = Rock.SystemGuid.Page.REGISTRATION_TEMPLATE_PLACEMENT + "," + Rock.SystemGuid.PageRoute.REGISTRATION_TEMPLATE_PLACEMENT,
+        "Group Placement Page",
+        Key = AttributeKey.GroupPlacementPage,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_PLACEMENT + "," + Rock.SystemGuid.PageRoute.GROUP_PLACEMENT,
+        Description = "The page used for performing group placements.",
         Order = 0
         )]
 
@@ -443,7 +444,7 @@ namespace RockWeb.Blocks.Event
 
         private static class AttributeKey
         {
-            public const string RegistrationTemplatePlacementPage = "RegistrationTemplatePlacementPage";
+            public const string GroupPlacementPage = "GroupPlacementPage";
             public const string DefaultConfirmationEmail = "DefaultConfirmationEmail";
             public const string DefaultReminderEmail = "DefaultReminderEmail";
             public const string DefaultSuccessText = "DefaultSuccessText";
@@ -881,23 +882,6 @@ The logged-in person's information will be used to complete the registrar inform
             // reload page
             var qryParams = new Dictionary<string, string>();
             NavigateToPage( RockPage.Guid, qryParams );
-        }
-
-        /// <summary>
-        /// Handles the Click event of the btnPlacements control.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
-        protected void btnPlacements_Click( object sender, EventArgs e )
-        {
-            var queryParams = new Dictionary<string, string>();
-
-            if ( hfRegistrationTemplateId.Value.AsIntegerOrNull().HasValue )
-            {
-                queryParams.Add( PageParameterKey.RegistrationTemplateId, hfRegistrationTemplateId.Value );
-            }
-
-            NavigateToLinkedPage( AttributeKey.RegistrationTemplatePlacementPage, queryParams );
         }
 
         /// <summary>
@@ -2616,12 +2600,9 @@ The logged-in person's information will be used to complete the registrar inform
             }
 
             // Only show the placements button if a linked page is defined AND this template has any placement records
-            var showPlacementsButton = GetAttributeValue( AttributeKey.RegistrationTemplatePlacementPage ).IsNotNullOrWhiteSpace()
+            var showPlacementsButton = GetAttributeValue( AttributeKey.GroupPlacementPage ).IsNotNullOrWhiteSpace()
                 && registrationTemplate.Id > 0
                 && new RegistrationTemplateService( rockContext ).HasRegistrationTemplatePlacements( registrationTemplate.Id );
-
-            btnPlacements.ToolTip = registrationTemplate.Name + " Placement";
-            btnPlacements.Visible = showPlacementsButton;
 
             if ( readOnly )
             {
@@ -3019,6 +3000,38 @@ The logged-in person's information will be used to complete the registrar inform
                     : string.Empty;
             }
 
+
+            using ( var rockContext = new RockContext() )
+            {
+                var placementService = new RegistrationTemplatePlacementService( rockContext );
+
+                var rawPlacements = placementService
+                    .Queryable()
+                    .Where( p => p.RegistrationTemplateId == registrationTemplate.Id )
+                    .Select( p => new { p.Id, p.Name } )
+                    .ToList();
+
+                var templatePlacements = rawPlacements
+                .Select( p => new
+                {
+                    Name = p.Name,
+                    Url = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
+                    {
+                        { PageParameterKey.RegistrationTemplateId, registrationTemplate.Id.ToString() },
+                        { "RegistrationTemplatePlacementId", p.Id.ToString() },
+                        { "ReturnUrl", GetCurrentPageUrl() }
+                    } )
+                } )
+                .Where( p => !string.IsNullOrWhiteSpace( p.Url ) )
+                .ToList();
+
+                if ( templatePlacements.Count == 0 )
+                {
+                    lGroupPlacements.Visible = false;
+                }
+                rptGroupPlacements.DataSource = templatePlacements;
+                rptGroupPlacements.DataBind();
+            }
             rFees.DataSource = registrationTemplate.Fees.OrderBy( f => f.Order ).ToList();
             rFees.DataBind();
         }

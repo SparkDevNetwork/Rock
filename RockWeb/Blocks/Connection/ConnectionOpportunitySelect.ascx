@@ -68,7 +68,7 @@
 
                 <asp:Panel ID="pnlFavorites" runat="server">
                     <h4>
-                        <i class="far fa-star"></i>
+                        <i class="ti ti-star"></i>
                         Favorites
                     </h4>
                     <div class="list-as-blocks clearfix margin-b-lg">

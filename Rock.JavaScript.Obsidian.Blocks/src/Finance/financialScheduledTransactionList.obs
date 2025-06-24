@@ -29,9 +29,7 @@
                         width="100"
                         visiblePriority="md">
             <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
-                </div>
+                {{ toCurrencyOrNull(row.amount, config.options?.currencyInfo) }}
             </template>
         </CurrencyColumn>
 
@@ -172,8 +170,8 @@
 
     // #region Functions
 
-     /** `true` if the grid settings is performing any filtering. */
-     const hasSettingsFilters = computed((): boolean => {
+    /** `true` if the grid settings is performing any filtering. */
+    const hasSettingsFilters = computed((): boolean => {
         return !!gridSettings.value.startDate
             || !!gridSettings.value.endDate
             || !!gridSettings.value.amountRange
@@ -215,7 +213,7 @@
     /**
      * Called when the Add button has been clicked by the indivual.
      */
-     function onAddItem(): void {
+    function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.AddPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.AddPage].replace("((Key))", "0");
         }
@@ -234,7 +232,7 @@
      *
      * @param row The row to be filtered.
      */
-     function getRowAccountsFilterValue(row: Record<string, unknown>): string {
+    function getRowAccountsFilterValue(row: Record<string, unknown>): string {
         let filterValue = "";
         const accounts = row.accounts as AccountAmount[];
         for (const account of accounts) {

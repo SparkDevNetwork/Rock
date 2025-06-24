@@ -1,6 +1,7 @@
 <template>
     <DropDownList v-model="property"
                   label="Property"
+                  enhanceForLongLists
                   :items="propertyItems"
                   rules="required" />
 

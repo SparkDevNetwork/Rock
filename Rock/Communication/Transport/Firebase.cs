@@ -324,7 +324,10 @@ namespace Rock.Communication.Transport
                                         }
                                         else
                                         {
-                                            recipient.SendDateTime = RockDateTime.Now;
+                                            var now = RockDateTime.Now;
+
+                                            recipient.SendDateTime = now;
+                                            recipient.DeliveredDateTime = now;
                                         }
 
                                         recipient.Status = status;
@@ -663,7 +666,10 @@ namespace Rock.Communication.Transport
                                         }
                                         else
                                         {
-                                            recipient.SendDateTime = RockDateTime.Now;
+                                            var now = RockDateTime.Now;
+
+                                            recipient.SendDateTime = now;
+                                            recipient.DeliveredDateTime = now;
                                         }
 
                                         recipient.Status = status;

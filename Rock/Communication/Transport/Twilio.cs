@@ -497,8 +497,11 @@ namespace Rock.Communication.Transport
 
                         var response = await SendToTwilioAsync( fromPhone, callbackUrl, attachmentMediaUrls, message, twilioNumber ).ConfigureAwait( false );
 
+                        var now = RockDateTime.Now;
+
                         recipient.Status = CommunicationRecipientStatus.Delivered;
-                        recipient.SendDateTime = RockDateTime.Now;
+                        recipient.SendDateTime = now;
+                        recipient.DeliveredDateTime = now;
                         recipient.TransportEntityTypeName = this.GetType().FullName;
                         recipient.UniqueMessageId = response.Sid;
 

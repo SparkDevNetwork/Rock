@@ -185,6 +185,7 @@ namespace Rock.Blocks.Cms
                 ComponentEntityType = entity.ComponentEntityType.ToListItemBag(),
                 IsActive = entity.IsActive,
                 Name = entity.Name,
+                ShowDownloadButton = !( entity.GetMediaAccountComponent()?.AllowsManualEntry ?? true ),
                 MetricData = entity.GetMediaAccountComponent()?.GetAccountHtmlSummary( entity )
             };
 

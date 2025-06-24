@@ -161,9 +161,7 @@
                         width="165"
                         visiblePriority="md">
             <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
-                </div>
+                {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
             </template>
         </CurrencyColumn>
 

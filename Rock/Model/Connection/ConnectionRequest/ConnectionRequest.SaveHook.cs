@@ -61,9 +61,6 @@ namespace Rock.Model
             /// </summary>
             protected override void PreSave()
             {
-                // Get the current person's alias ID from the current context.
-                var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
-
                 HistoryChangeList = new History.HistoryChangeList();
                 PersonHistoryChangeList = new History.HistoryChangeList();
                 var connectionRequest = this.Entity as ConnectionRequest;
@@ -154,7 +151,7 @@ namespace Rock.Model
             protected override void PostSave()
             {
                 // Get the current person's alias ID from the current context.
-                var currentPersonAliasId = DbContext.GetCurrentPersonAlias()?.Id;
+                var currentPersonAliasId = DbContext.GetCurrentPersonAliasId();
                 var connectionRequest = this.Entity as ConnectionRequest;
 
                 // Create and send the change notification message now that the connection request has been saved.

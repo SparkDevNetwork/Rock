@@ -435,6 +435,14 @@ $badge-baptism-color: #23a5c5;
   }
 }
 
+.panel-body .activeusers .recent i {
+  color: var(--color-success-strong);
+}
+
+.panel-body .activeusers .not-recent i {
+  color: var(--color-warning-strong);
+}
+
 .badge-lastvisitonsite {
   .badge-content {
     position: relative;

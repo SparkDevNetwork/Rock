@@ -138,7 +138,7 @@ namespace Rock.Tests.Core.Automation.Triggers
         }
 
         [TestMethod]
-        public void HasSpecificValue_ReturnsTrueForMatchingOriginalValue()
+        public void HasSpecificValue_ReturnsFalseForMatchingOriginalValue()
         {
             var rule = new EntityChangeCriteriaRule( typeof( Group ), new EntityChangeSimpleCriteriaRuleBag
             {
@@ -158,7 +158,7 @@ namespace Rock.Tests.Core.Automation.Triggers
 
             var result = rule.IsMatch( entryMock.Object );
 
-            Assert.That.IsTrue( result );
+            Assert.That.IsFalse( result );
         }
 
         [TestMethod]

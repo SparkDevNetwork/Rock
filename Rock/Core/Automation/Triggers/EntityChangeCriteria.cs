@@ -110,6 +110,7 @@ namespace Rock.Core.Automation.Triggers
             {
                 if ( _filterMode == 1 )
                 {
+                    // In this case, no delegate means a parse error so don't match.
                     if ( _advancedDelegate == null )
                     {
                         return false;
@@ -119,9 +120,10 @@ namespace Rock.Core.Automation.Triggers
                 }
                 else
                 {
-                    if ( _simpleRules == null )
+                    // No rules means there is a match.
+                    if ( _simpleRules == null || _simpleRules.Count == 0 )
                     {
-                        return false;
+                        return true;
                     }
 
                     if ( _areAllSimpleRulesRequired)

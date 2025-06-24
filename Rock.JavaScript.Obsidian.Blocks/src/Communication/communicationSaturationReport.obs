@@ -1,0 +1,249 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+
+    <Panel title="Saturation Metrics" type="block">
+
+        <RockForm class="mb-4" @submit="onFilterChange">
+            <div class="row">
+                <div class="col-md-6">
+                    <SlidingDateRangePicker v-model="dateRange"
+                                            label="Select Date Range"
+                                            previewLocation="Top" />
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <DataViewPicker v-model="dataView"
+                                    label="Data View "
+                                    help="Choose a Data View to refine saturation metrics for your communications."
+                                    :entityTypeGuid="EntityType.Person"
+                                    displayPersistedOnly />
+                </div>
+                <div class="col-sm-6 col-md-3">
+                    <DefinedValuePicker v-model="connectionStatus"
+                                        :definedTypeGuid="DefinedType.PersonConnectionStatus"
+                                        label="Connection Status"
+                                        help="Filter the report by the level of recipients’ involvement."
+                                        showBlankItem />
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-6">
+                    <CheckBoxList v-model="medium"
+                                  :items="mediumOptions"
+                                  label="Medium"
+                                  horizontal />
+                </div>
+                <div class="col-sm-6">
+                    <Switch v-model="bulkOnly"
+                            label="Bulk Only"
+                            text="Yes"
+                            help="Show only bulk-marked communications. When off, all mass communication analytics are shown." />
+                </div>
+            </div>
+            <div class="d-flex justify-content-between mt-3">
+                <RockButton type="submit" :btnSize="BtnSize.Small" :btnType="BtnType.Primary" :isLoading="isLoading" loadingText="Loading Data">
+                    Apply Filters
+                </RockButton>
+
+                <ButtonGroup v-model="page" :items="pageOptions" :btnSize="BtnSize.Small" />
+            </div>
+        </RockForm>
+
+        <NotificationBox v-if="error" :alertType="AlertType.Danger" heading="Error loading data: " @dismiss="dismissError">
+            {{ error }}
+        </NotificationBox>
+
+        <CommunicationsChart v-if="page === 'Chart'" :data="chartData" :isLoading="isLoading" />
+        <RecipientsGrid v-else-if="page === 'Recipients'" :config="config.recipientsGridBox ?? undefined" :gridData="recipientsGridData" />
+        <CommunicationsGrid v-else-if="page === 'Communications'" :config="config.communicationsGridBox ?? undefined" :gridData="communicationsGridData" :navigationUrls="config.navigationUrls" />
+
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import CommunicationsChart from "./CommunicationSaturationReport/communicationsChart.partial.obs";
+    import RecipientsGrid from "./CommunicationSaturationReport/recipientsGrid.partial.obs";
+    import CommunicationsGrid from "./CommunicationSaturationReport/communicationsGrid.partial.obs";
+    import { PreferenceKey } from "./CommunicationSaturationReport/types.partial";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { CommunicationSaturationReportBlockBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationSaturationReport/communicationSaturationReportBlockBox";
+    import { CommunicationSaturationReportChartDataBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationSaturationReport/communicationSaturationReportChartDataBag";
+    import { CommunicationSaturationReportBlockDataBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationSaturationReport/communicationSaturationReportBlockDataBag";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { DefinedType } from "@Obsidian/SystemGuids/definedType";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { clone } from "@Obsidian/Utility/objectUtils";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    // #region Block Config
+
+    const config = useConfigurationValues<CommunicationSaturationReportBlockBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #endregion
+
+    // #region Top Filter
+
+    type CommunicationTypeString = `${typeof CommunicationType[keyof typeof CommunicationType]}`;
+
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(config.filters?.dateRangeDelimitedString ?? "") ?? {
+        rangeType: RangeType.Last,
+        timeUnit: TimeUnit.Month,
+        timeValue: 1
+    });
+    const dataView = ref<ListItemBag>(config.filters?.dataView ?? {});
+    const connectionStatus = ref<ListItemBag | null | undefined>(config.filters?.connectionStatus);
+    const medium = ref<CommunicationTypeString[]>((config.filters?.medium ?? []) as CommunicationTypeString[]);
+    const bulkOnly = ref<boolean>(config.filters?.bulkOnly ?? true);
+
+    const communicationTypes = clone(CommunicationTypeDescription);
+    delete communicationTypes[CommunicationType.RecipientPreference];
+    const mediumOptions: ListItemBag[] = enumToListItemBag(communicationTypes);
+
+    const dateRangeAsString = computed(() => slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.Last, timeValue: 1, timeUnit: TimeUnit.Month }));
+    const dataViewAsString = computed(() => dataView.value?.value ?? "");
+    const connectionStatusAsString = computed(() => connectionStatus.value?.value ?? "");
+    const mediumAsString = computed(() => medium.value.join(","));
+    const bulkOnlyAsString = computed(() => asTrueOrFalseString(bulkOnly.value));
+
+    async function onFilterChange(): Promise<void> {
+        await updatePersonPreferences();
+        await loadGridData();
+    }
+
+    async function updatePersonPreferences(): Promise<void> {
+        preferences.setValue(PreferenceKey.FilterDateRange, dateRangeAsString.value);
+        preferences.setValue(PreferenceKey.FilterDataView, dataViewAsString.value);
+        preferences.setValue(PreferenceKey.FilterConnectionStatus, connectionStatusAsString.value);
+        preferences.setValue(PreferenceKey.FilterMedium, mediumAsString.value);
+        preferences.setValue(PreferenceKey.FilterBulkOnly, bulkOnlyAsString.value);
+
+        return preferences.save();
+    }
+
+    // #endregion
+
+    // #region Tab/Page Switching
+
+    type Page = "Chart" | "Recipients" | "Communications";
+    const page = ref<Page>("Chart");
+    const pageOptions = [
+        { text: "Chart", value: "Chart" },
+        { text: "Recipients", value: "Recipients" },
+        { text: "Communications", value: "Communications" }
+    ];
+
+    function getTabFromHash(): void {
+        const hashComponent = new URL(document.URL).hash.replace("#", "");
+
+        switch (hashComponent) {
+            case "Chart":
+                page.value = "Chart";
+                break;
+            case "Recipients":
+                page.value = "Recipients";
+                break;
+            case "Communications":
+                page.value = "Communications";
+                break;
+            default:
+                page.value = "Chart";
+        }
+    }
+
+    getTabFromHash();
+
+    onMounted(() => {
+        window.addEventListener("hashchange", getTabFromHash);
+    });
+
+    onUnmounted(() => {
+        window.removeEventListener("hashchange", getTabFromHash);
+    });
+
+    watch(page, () => {
+        // Update the URL hash when the page changes.
+        // window.location.hash = newPage;
+        history.replaceState(undefined, "", `#${page.value}`);
+    });
+
+    // #endregion
+
+    // #region Data Loading
+
+    const chartData = ref<CommunicationSaturationReportChartDataBag[] | null | undefined>([]);
+    const recipientsGridData = ref<GridDataBag | Promise<GridDataBag> | null | undefined>(null);
+    const communicationsGridData = ref<GridDataBag | Promise<GridDataBag> | null | undefined>(null);
+    const isLoading = ref(false);
+    const error = ref<string | undefined>();
+
+    /**
+     * Dismisses the error message.
+     */
+    function dismissError(): void {
+        error.value = undefined;
+    }
+
+    /**
+     * Shows an error message based off an error object or just an unknown error if error object isn't available.
+     */
+    function showError(e: Error | unknown): void {
+        error.value = e instanceof Error ? e.message : "Unknown error.";
+        console.error("Error loading data:", e);
+    }
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<void> {
+        isLoading.value = true;
+        dismissError();
+        recipientsGridData.value = new Promise(() => { });
+        communicationsGridData.value = new Promise(() => { });
+
+        try {
+            const result = await invokeBlockAction<CommunicationSaturationReportBlockDataBag>("GetBlockData");
+
+            if (!result.isSuccess || !result.data) {
+                throw new Error(result.errorMessage ?? "Unknown error");
+            }
+
+            chartData.value = result.data.chartData;
+            recipientsGridData.value = result.data.recipientsGridData;
+            communicationsGridData.value = result.data.communicationsGridData;
+        }
+        catch (e) {
+            showError(e);
+            chartData.value = [];
+            recipientsGridData.value = null;
+            communicationsGridData.value = null;
+        }
+        finally {
+            isLoading.value = false;
+        }
+    }
+
+    // #endregion
+
+    loadGridData();
+</script>

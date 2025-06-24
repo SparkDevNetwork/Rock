@@ -4,12 +4,25 @@
            cancelText="Cancel"
            saveText="OK"
            title="Select Merge Field"
-           :onSave="onMergeFieldPicked">
+           :onSave="onMergeFieldPicked"
+           isNarrow>
         <MergeFieldPicker v-model="mergeFieldValue"
+                          label="Merge Field List"
                           :additionalFields="mergeFields ? mergeFields.join(',') : ''"
                           :multiple="false"
                           placeholder="Add Merge Field"
                           :enhanceForLongLists="true" />
+
+        <div class="form-group" v-if="commonMergeFieldOptions.length > 0">
+            <label class="control-label">Common Merge Fields</label>
+            <button class="btn btn-default btn-block text-left"
+                    v-for="field in commonMergeFieldOptions"
+                    :key="field?.value"
+                    @click="onCommonMergeFieldPicked(field?.value ?? '')">
+                <i v-if="field?.icon" :class="field?.icon"></i>&nbsp;
+                {{ field?.text }}
+            </button>
+        </div>
     </Modal>
 </template>
 
@@ -61,7 +74,7 @@
      *   });
      * (/script)
      */
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import { getToolbarButton, usePluginHelper } from "./utils.partial";
     import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
@@ -71,6 +84,15 @@
 
     const props = defineProps({
         mergeFields: {
+            type: Array as PropType<string[] | undefined>,
+            required: false
+        },
+        /**
+         * A list of common merge field to show below the picker for easy access. Should be an array of strings
+         * and the strings should be in the following format: "FieldName^Label|Icon", where the FieldName is the
+         * name of the merge field, Label is the text to display on the button, and Icon is the CSS class for icon.
+         */
+        commonMergeFields: {
             type: Array as PropType<string[] | undefined>,
             required: false
         },
@@ -101,6 +123,24 @@
     const toolbarButtonElement = ref<HTMLElement | undefined>();
     const mergeFieldValue = ref<ListItemBag | undefined>();
     const isShown = ref<boolean>(false);
+
+    const commonMergeFieldOptions = computed(() => {
+        return props.commonMergeFields?.map(value => {
+            let parts = value.split("^");
+
+            if (parts.length < 2) {
+                return null;
+            }
+
+            parts = [parts[0]].concat(parts[1].split("|"));
+
+            return {
+                value: parts[0],
+                text: parts[1],
+                icon: parts[2] ?? undefined
+            };
+        })?.filter(value => !!value) ?? [];
+    });
 
     //#endregion
 
@@ -175,6 +215,22 @@
                 // Insert the merge field value into the editor at the current position.
                 editorInstance.value.insertContent(formattedValue);
             }
+        }
+
+        // Clear the merge field and close the modal.
+        mergeFieldValue.value = undefined;
+        isShown.value = false;
+    }
+
+    async function onCommonMergeFieldPicked(field: string): Promise<void> {
+        if (editorInstance.value) {
+            // Split the field into parts.
+            const parts = field.split("|");
+            const mergeField = parts[0];
+            const formattedValue = await formatValue(mergeField);
+
+            // Insert the merge field value into the editor at the current position.
+            editorInstance.value.insertContent(formattedValue);
         }
 
         // Clear the merge field and close the modal.

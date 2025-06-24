@@ -47,27 +47,14 @@
                       field="views"
                       headerClass="header-text-right"
                       :filter="numberValueFilter"
-                      visiblePriority="sm">
-            <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ row.views }}
-                </div>
-            </template>
-        </NumberColumn>
+                      visiblePriority="sm" />
 
         <NumberColumn name="adaptations"
                       title="Adaptations"
                       field="adaptations"
                       headerClass="header-text-right"
                       :filter="numberValueFilter"
-                      visiblePriority="xs">
-            <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ row.adaptations }}
-                </div>
-            </template>
-
-        </NumberColumn>
+                      visiblePriority="xs" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

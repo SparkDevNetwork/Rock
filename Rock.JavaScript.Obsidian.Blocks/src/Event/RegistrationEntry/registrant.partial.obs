@@ -363,6 +363,14 @@
 
     /** The people that can be picked from because they are members of the same family. */
     const familyMemberOptions = computed<ListItemBag[]>(() => {
+        if (isCreatingNewFamily.value) {
+            return [
+                {
+                    text: "Guest",
+                    value: null
+                }
+            ];
+        }
 
         const usedFamilyMemberGuids = registrationEntryState.registrants
             .filter(r => r.personGuid && r.personGuid !== props.currentRegistrant.personGuid)
@@ -375,18 +383,12 @@
                 value: fm.guid
             })) ?? [];
 
-        let newPersonOptionText = "New Family Member";
-
-        if (isCreatingNewFamily.value) {
-            newPersonOptionText = "Guest";
-        }
-
-        let newPersonOptions = {
-            text: newPersonOptionText,
+        let newFamilyMemberOption = {
+            text: "New Family Member",
             value: null
         };
 
-        return [...familyMembers, newPersonOptions];
+        return [...familyMembers, newFamilyMemberOption];
     });
 
     const firstName = computed<string>(() => {
