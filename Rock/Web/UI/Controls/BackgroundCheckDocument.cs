@@ -254,7 +254,7 @@ namespace Rock.Web.UI.Controls
 
             _componentPicker = new ComponentPicker( IncludeInactive )
             {
-                ContainerType = "Rock.Security.BackgroundCheckContainer",
+                ContainerType = "Rock.Security.BackgroundCheckContainer"
             };
             _componentPicker.ID = this.ID + "_componentPicker";
             _componentPicker.AutoPostBack = true;

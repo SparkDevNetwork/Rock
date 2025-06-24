@@ -87,16 +87,19 @@ namespace Rock.Field.Types
         /// <inheritdoc />
         public override string GetPublicEditValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            // The value we'll return to the editor will include the:
-            //    {Provider EntityType's Guid},{Providers Name},{Remote Record Key|BinaryFileGuid}
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
+                // If the value is a single guid, the value we'll return to the editor will include the:
+                //    {Provider EntityType's Guid},{Providers Name},BinaryFileGuid,filename (if any)}
                 if ( Guid.TryParse( privateValue, out Guid binaryFileGuid ) )
                 {
                     var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid() );
                     return $"{entityType.Guid},{entityType.FriendlyName},{privateValue},{GetFileName( privateValue )}";
                 }
 
+                // If the value is a comma delimited string of <int>,<key|guid>, the value we'll return
+                // to the editor will include the:
+                //    {Provider EntityType's Guid},{Providers Name},{Remote Record Key|BinaryFileGuid}
                 var valueSplit = privateValue.Split( ',' );
                 if ( valueSplit?.Length == 2 )
                 {
@@ -126,7 +129,7 @@ namespace Rock.Field.Types
 
                     if ( entityType != null )
                     {
-                        // All providers except PMM must store a value that includes EntityTypeId
+                        // All providers except the legacy PMM must store a value that includes EntityTypeId
                         return $"{entityType.Id},{valueSplit[2]}";
                     }
                 }
@@ -368,8 +371,6 @@ namespace Rock.Field.Types
             {
                 return;
             }
-
-            var jsonValue = value.FromJsonOrNull<ListItemBag>();
 
             // Legacy PMM Background Check Documents are stored with only the Guid.
             Guid? binaryFileGuid = value.AsGuidOrNull();

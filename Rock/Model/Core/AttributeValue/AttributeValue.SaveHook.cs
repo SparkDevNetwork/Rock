@@ -173,6 +173,9 @@ new System.Data.SqlClient.SqlParameter( "@entityId", Entity.Id ) );
 
                 if ( State == EntityContextState.Added || State == EntityContextState.Modified )
                 {
+                    // The value is either a Guid or a comma separated string with the first part being the
+                    // BackgroundCheckFieldType's provider component EntityTypeId and the second part
+                    // is the binary file guid.
                     var parts = ( Entity.Value ?? "" ).Split( ',' );
                     newBinaryFileGuid = Entity.Value.AsGuidOrNull() ?? ( parts.Length > 1 ? parts[1].AsGuidOrNull() : null );
                 }

@@ -147,7 +147,6 @@ namespace Rock.Web.UI.Controls
         {
             Items.Clear();
             Items.Add( new ListItem() );
-
             var componentDictionary = GetComponentDictionary();
             if ( componentDictionary == null )
             {
