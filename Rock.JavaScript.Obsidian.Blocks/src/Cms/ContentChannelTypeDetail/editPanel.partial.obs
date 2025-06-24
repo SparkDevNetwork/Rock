@@ -70,7 +70,9 @@
                     </Grid>
                 </div>
                 <Modal v-model="isItemAttributeModalOpen" title="Item Attributes" saveText="Save" @save="onSaveItemAttribute">
-                    <AttributeEditor v-model="itemAttribute" :reservedKeyNames="itemAttributesReservedKeyNames" />
+                    <AttributeEditor v-model="itemAttribute"
+                                     :reservedKeyNames="itemAttributesReservedKeyNames"
+                                     :attributeEntityTypeGuid="EntityType.ContentChannelItem" />
                 </Modal>
             </Panel>
         </div>
@@ -96,6 +98,7 @@
     import { FieldType as FieldTypeGuids } from "@Obsidian/SystemGuids/fieldType";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { ContentChannelDateType } from "@Obsidian/Enums/Cms/contentChannelDateType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
 
     const props = defineProps({
         modelValue: {

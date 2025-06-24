@@ -44,6 +44,16 @@ namespace Rock.Plugin.HotFixes
             // Because we don't want to break existing instances of the block, we
             // need to enable all group types for existing blocks that don't have
             // a value for Allowed Group Types set.
+
+            /*
+                6/24/2025 - NA
+
+                Removed the use of the TRIM() function to preserve compatibility
+                with SQL Server 2016, which does not support TRIM().
+
+                Reason: Maintain backward compatibility with environments running
+                SQL Server 2016.
+            */
             Sql( @"
 DECLARE @BlockTypeId INT = (SELECT TOP 1 [Id] FROM [BlockType] WHERE [Guid] = '8A42E4FA-9FE1-493C-B6D8-7A766D96E912')
 DECLARE @BlockEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Name] = 'Rock.Model.Block')
@@ -54,7 +64,14 @@ DECLARE @AttributeId INT = (SELECT TOP 1 [Id] FROM [Attribute]
       AND [Key] = 'GroupTypes')
 
 -- Get all Group Type Guids as a comma separated list to store in the Attribute Values.
-DECLARE @GroupTypeGuids NVARCHAR(max) = TRIM(',' FROM (SELECT CAST([Guid] AS NVARCHAR(MAX)) + ',' FROM [GroupType] FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'))
+DECLARE @GroupTypeGuids NVARCHAR(MAX) = LEFT((
+    SELECT CAST([Guid] AS NVARCHAR(MAX)) + ',' 
+    FROM [GroupType] 
+    FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)'), 
+    LEN((
+    SELECT CAST([Guid] AS NVARCHAR(MAX)) + ',' 
+    FROM [GroupType] 
+    FOR XML PATH(''), TYPE).value('.', 'nvarchar(max)')) - 1)
 
 IF @BlockTypeId IS NOT NULL AND @AttributeId IS NOT NULL
 BEGIN

@@ -3901,7 +3901,7 @@ input[type=button].btn-block {
   text-align: center;
   white-space: nowrap;
   vertical-align: baseline;
-  border-radius: 0.25em;
+  border-radius: var(--rounded-small);
 }
 a .label:hover, a .label:focus {
   color: var(--color-interface-stronger);
@@ -4287,14 +4287,12 @@ pre code {
   color: var(--color-interface-strongest);
   filter: alpha(opacity=20);
   text-shadow: 0 1px 0 var(--color-interface-softest);
-  opacity: 0.2;
 }
 .close:hover, .close:focus {
   color: var(--color-interface-strongest);
   text-decoration: none;
   cursor: pointer;
   filter: alpha(opacity=20);
-  opacity: 0.2;
 }
 .system-error .close {
   color: inherit;
@@ -14200,7 +14198,7 @@ body.rock-modal .modal-content {
 .rock-modal .modal-content .modal-header .close {
   padding: 6px;
   text-decoration: none;
-  color: var(--color-interface-softest);
+  color: var(--base-interface-softest);
   text-shadow: none;
 }
 .modal-content.rock-modal .modal-header .label,
@@ -14315,6 +14313,9 @@ dl:not(.dl-horizontal) dd {
   margin-left: 0;
 }
 
+.connection-request-board .modal-title {
+  color: var(--color-interface-stronger);
+}
 .connection-request-board .modal-content.rock-modal .modal-header {
   color: var(--color-interface-stronger);
   background: var(--color-interface-softer);
@@ -14323,7 +14324,7 @@ dl:not(.dl-horizontal) dd {
   padding: var(--spacing-small) var(--spacing-medium);
 }
 .connection-request-board .modal-content.rock-modal .modal-header .close {
-  color: var(--color-interface-medium);
+  color: var(--color-interface-strong);
 }
 .connection-request-board .modal-content.rock-modal .modal-header small {
   margin-top: var(--spacing-tiny);

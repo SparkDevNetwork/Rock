@@ -178,6 +178,12 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = false,
         Order = 19 )]
 
+    [LinkedPage( "Group Placement Page",
+        Key = AttributeKey.GroupPlacementPage,
+        Description = "The page used for performing group placements.",
+        IsRequired = false,
+        Order = 20 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "582BEEA1-5B27-444D-BC0A-F60CEB053981" )]
@@ -216,6 +222,7 @@ namespace RockWeb.Blocks.Groups
             public const string EnableGroupTags = "EnableGroupTags";
             public const string AddAdministrateSecurityToGroupCreator = "AddAdministrateSecurityToGroupCreator";
             public const string IsScheduleTabVisible = "IsScheduleTabVisible";
+            public const string GroupPlacementPage = "GroupPlacementPage";
         }
 
         #endregion Attribute Keys
@@ -2741,6 +2748,30 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlGroupScheduler.Visible = false;
+            }
+
+            string groupPlacementUrl = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
+            {
+                { "SourceGroup", group.Id.ToString() },
+                { "AllowMultiplePlacements", "false" },
+                { "ReturnUrl", GetCurrentPageUrl() }
+            } );
+            if ( groupPlacementUrl.IsNotNullOrWhiteSpace() )
+            {
+                hlGroupPlacement.Visible = groupType != null;
+                if ( group.DisableScheduling )
+                {
+                    hlGroupPlacement.Enabled = false;
+                }
+                else
+                {
+                    hlGroupPlacement.NavigateUrl = groupPlacementUrl;
+                    hlGroupPlacement.Enabled = true;
+                }
+            }
+            else
+            {
+                hlGroupPlacement.Visible = false;
             }
 
             string groupHistoryUrl = LinkedPageUrl( AttributeKey.GroupHistoryPage, pageParams );

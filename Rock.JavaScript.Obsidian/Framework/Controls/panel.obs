@@ -88,7 +88,11 @@
                     </div>
                 </TransitionVerticalCollapse>
 
-                <div class="drawer-pull" @click="onDrawerPullClick">
+                <div v-if="$slots.drawerToggle" @click="onDrawerPullClick" class="cursor-pointer">
+                    <slot name="drawerToggle" />
+                </div>
+
+                <div v-else class="drawer-pull" @click="onDrawerPullClick">
                     <i :class="isDrawerOpen ? 'fa fa-chevron-up fa-xs' : 'fa fa-chevron-down fa-xs'"></i>
                 </div>
             </div>

@@ -90,25 +90,30 @@
                         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                         <div class="row">
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <Rock:RockLiteral ID="lName" runat="server" Label="Name" />
                                 <Rock:RockLiteral ID="lMaxAttendees" runat="server" Label="Maximum Attendees" />
                                 <Rock:RockLiteral ID="lWorkflowType" runat="server" Label="Registration Workflow" />
+                                <Rock:RockLiteral ID="lStartDate" runat="server" Label="Registration Starts" />
                             </div>
-                            <div class="col-md-6">
+                            <div class="col-md-4">
                                 <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                                 <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
                                 <Rock:RockLiteral ID="lDefaultPaymentAmount" runat="server" Label="Default Payment Amount" />
                                 <Rock:RockLiteral ID="lAccount" runat="server" Label="Account" />
-                            </div>
-                        </div>
-
-                        <div class="row">
-                            <div class="col-md-6">
-                                <Rock:RockLiteral ID="lStartDate" runat="server" Label="Registration Starts" />
-                            </div>
-                            <div class="col-md-6">
                                 <Rock:RockLiteral ID="lEndDate" runat="server" Label="Registration Ends" />
+                            </div>
+                            <div class="col-md-4">
+                                <div class="form-group static-control">
+                                    <asp:Label ID="lGroupPlacements" runat="server" CssClass="control-label" Text="Group Placements"></asp:Label>
+                                    <asp:Repeater ID="rptGroupPlacements" runat="server">
+                                        <ItemTemplate>
+                                            <li>
+                                                <asp:HyperLink ID="hlPlacement" runat="server" NavigateUrl='<%# Eval("Url") %>' Text='<%# Eval("Name") %>' />
+                                            </li>
+                                        </ItemTemplate>
+                                    </asp:Repeater>
+                                </div>
                             </div>
                         </div>
 

@@ -35,6 +35,7 @@
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.NCOA\Rock.NCOA.csproj" />
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
+    <ProjectReference Include="..\Rock.Slingshot\Rock.Slingshot.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj" />
     <ProjectReference Include="..\Rock\Rock.csproj" />

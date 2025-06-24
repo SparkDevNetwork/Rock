@@ -1,0 +1,329 @@
+<template>
+    <div v-if="(hasGroupMemberDetailsToDisplay || hasRegistrantDetailsToDisplay || hasSourceMemberDetailsToDisplay)"
+         class="details-container">
+        <template v-if="isGroupMemberCard && hasGroupMemberDetailsToDisplay">
+            <div class="header">
+                Group Member
+            </div>
+            <dl>
+                <template v-for="attribute in getDisplayAttributes(destinationGroupMemberAttributes, destinationGroupMemberAttributeValues)"
+                          :key="attribute.key">
+                    <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.name)">
+                        {{ attribute.name }}
+                    </dt>
+                    <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.value)">
+                        {{ attribute.value }}
+                    </dd>
+                </template>
+            </dl>
+        </template>
+        <template v-if="(!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers) && hasSourceMemberDetailsToDisplay">
+            <div class="header">
+                {{ sourceGroupMemberHeader }}
+            </div>
+            <template v-for="sourceGroupMember in person.sourceGroupMembers">
+                <dl v-if="sourceGroupMember.groupMemberIdKey && getDisplayAttributes(sourceGroupMember.attributes, sourceGroupMember.attributeValues).length > 0"
+                    :key="sourceGroupMember.groupMemberIdKey">
+                    <template v-for="attribute in getDisplayAttributes(sourceGroupMember.attributes, sourceGroupMember.attributeValues)"
+                              :key="attribute.key">
+                        <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.name)">
+                            {{ attribute.name }}
+                        </dt>
+                        <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.value)">
+                            {{ attribute.value }}
+                        </dd>
+                    </template>
+                </dl>
+            </template>
+        </template>
+        <template v-if="hasRegistrantDetailsToDisplay">
+            <div class="header">
+                {{ registrantHeader }}
+            </div>
+            <template v-for="registrant in person.registrants">
+                <dl v-if="registrant.registrantIdKey && registrantHasDetails(registrant)"
+                    :key="registrant.registrantIdKey">
+                    <template v-if="isInstanceDisplayed && !isNullOrWhiteSpace(registrant.registrationInstanceName)">
+                        <dt>
+                            Instance
+                        </dt>
+                        <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, registrant.registrationInstanceName!)">
+                            {{ registrant.registrationInstanceName }}
+                        </dd>
+                    </template>
+                    <template v-if="!isGroupMemberCard || areSourceAttributesDisplayedOnDestinationGroupMembers"
+                              v-for="attribute in getDisplayAttributes(registrant.attributes, registrant.attributeValues)"
+                              :key="attribute.key">
+                        <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.name)">
+                            {{ attribute.name }}
+                        </dt>
+                        <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, attribute.value)">
+                            {{ attribute.value }}
+                        </dd>
+                    </template>
+                    <template v-if="!isGroupMemberCard && areFeesDisplayed"
+                              v-for="[key, fee] in getValidFees(registrant.fees)"
+                              :key="key">
+                        <dt :ref="(el) => addTooltipIfOverflow(el as HTMLElement, fee.text!)">
+                            {{ fee.text }}
+                        </dt>
+                        <dd :ref="(el) => addTooltipIfOverflow(el as HTMLElement, fee.value!)">
+                            {{ fee.value }}
+                        </dd>
+                    </template>
+                </dl>
+            </template>
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.person-card .details-container {
+    padding: 0 0.5rem 0.5rem 0.5rem;
+    font-size: 14px;
+}
+
+.person-card .details-container .header {
+    font-weight: var(--font-weight-semibold);
+    margin-top: 0.5rem;
+}
+
+.person-card .details-container dl {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    justify-content: space-between;
+    margin: 0;
+    row-gap: 0.5rem;
+    padding: 10px 0;
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+.person-card .details-container dl:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+}
+
+.person-card .details-container dt {
+    color: var(--color-interface-medium);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.person-card .details-container dd {
+    text-align: right;
+    color: var(--color-interface-stronger);
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.person-card .details-container hr {
+    color: var(--color-interface-soft);
+    height: 1px;
+    width: 100%;
+}
+</style>
+
+<script setup lang="ts">
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { RegistrantBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/registrantBag";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { addTooltipIfOverflow } from "./types.partial";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { PropType, computed } from "vue";
+
+    const props = defineProps({
+        person: {
+            type: Object as PropType<PersonBag>,
+            required: true
+        },
+        isInstanceDisplayed: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        areFeesDisplayed: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        groupMember: {
+            type: Object as PropType<GroupMemberBag>,
+            required: false,
+        },
+        areSourceAttributesDisplayedOnDestinationGroupMembers: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        placementMode: {
+            type: Number as PropType<PlacementMode | null>,
+            required: false
+        },
+        isGroupMemberCard: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        }
+    });
+
+    type DisplayAttribute = {
+        key: string;
+        name: string;
+        value: string;
+    };
+
+    const isGroupOrEntityMode = props.placementMode === PlacementMode.GroupMode || props.placementMode === PlacementMode.EntitySetMode;
+
+    // #region Computed Values
+
+    const destinationGroupMemberAttributes = computed((): Record<string, PublicAttributeBag> => {
+        if (!props.groupMember?.attributes) {
+            return {};
+        }
+        return props.groupMember.attributes;
+    });
+
+    const destinationGroupMemberAttributeValues = computed((): Record<string, string> => {
+        if (!props.groupMember?.attributeValues) {
+            return {};
+        }
+        return props.groupMember.attributeValues;
+    });
+
+    const sourceGroupMemberHeader = computed(() => props.person.sourceGroupMembers
+        && props.person.sourceGroupMembers.length > 1
+        && props.person.sourceGroupMembers.filter(g => getDisplayAttributes(g.attributes, g.attributeValues).length > 0).length > 1
+        ? "Source Group Members"
+        : "Source Group Member");
+
+    const registrantHeader = computed(() => props.person.registrants
+        && props.person.registrants.length > 1
+        && props.person.registrants.filter(r => registrantHasDetails(r)).length > 1
+        ? "Registrants"
+        : "Registrant");
+
+    const hasGroupMemberDetailsToDisplay = computed((): boolean => getDisplayAttributes(props.groupMember?.attributes, props.groupMember?.attributeValues).length > 0);
+
+    const hasRegistrantDetailsToDisplay = computed((): boolean => {
+        if (!props.person.registrants || props.person.registrants.length === 0 || isGroupOrEntityMode) {
+            return false;
+        }
+
+        if (props.isGroupMemberCard && !props.areSourceAttributesDisplayedOnDestinationGroupMembers && !props.isInstanceDisplayed) {
+            return false;
+        }
+
+        return props.person.registrants.some(registrant => registrantHasDetails(registrant));
+    });
+
+    const hasSourceMemberDetailsToDisplay = computed((): boolean => {
+        if (!props.person.sourceGroupMembers || props.person.sourceGroupMembers.length === 0 || props.placementMode !== PlacementMode.GroupMode) {
+            return false;
+        }
+
+        return props.person.sourceGroupMembers.some(sourceGroupMember => {
+            const hasAttributes = (!props.isGroupMemberCard || props.areSourceAttributesDisplayedOnDestinationGroupMembers)
+                && getDisplayAttributes(sourceGroupMember.attributes, sourceGroupMember.attributeValues).length > 0;
+
+            return hasAttributes;
+        });
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function getAttributeValueText(attributeValues: Record<string, string> | null, attribute: PublicAttributeBag, key: string): string {
+        const fieldTypeGuid = toGuidOrNull(attribute.fieldTypeGuid);
+        const fieldType = getFieldType(fieldTypeGuid ?? FieldType.Text);
+
+        const rawValue = attributeValues?.[key] ?? "";
+        const configValues = attribute.configurationValues ?? {};
+
+        return fieldType?.getTextValue?.(rawValue, configValues) ?? rawValue;
+    }
+
+    function registrantHasDetails(registrant: RegistrantBag): boolean {
+        const hasInstance = props.isInstanceDisplayed && !!registrant.registrationInstanceName;
+        const hasFees = props.areFeesDisplayed && getValidFees(registrant.fees).length > 0;
+        const hasAttributes = (!props.isGroupMemberCard || props.areSourceAttributesDisplayedOnDestinationGroupMembers)
+            && getDisplayAttributes(registrant.attributes, registrant.attributeValues).length > 0;
+
+        return hasInstance || hasAttributes || hasFees;
+    }
+
+    function getDisplayAttributes(attributes: Record<string, PublicAttributeBag> | null | undefined, attributeValues: Record<string, string> | null | undefined): DisplayAttribute[] {
+        if (!attributes || !attributeValues) {
+            return [];
+        }
+
+        const result: DisplayAttribute[] = [];
+
+        for (const [key, attribute] of Object.entries(attributes)) {
+            // Skip if attribute name is empty
+            if (isNullOrWhiteSpace(attribute.name)) {
+                continue;
+            }
+
+            const rawValue = attributeValues[key];
+
+            // Skip if the raw value is empty
+            if (isNullOrWhiteSpace(rawValue)) {
+                continue;
+            }
+
+            const formatted = getAttributeValueText(attributeValues, attribute, key);
+
+            // Skip if formatted value is empty too
+            if (isNullOrWhiteSpace(formatted)) {
+                continue;
+            }
+
+            result.push({
+                key,
+                name: attribute.name!,
+                value: formatted
+            });
+        }
+
+        return result;
+    }
+
+    /**
+     * Returns a list of fees that have both a non-empty text and value.
+     * Filters out any fee entries that are missing or incomplete.
+     *
+     * @param fees The raw fee dictionary to filter.
+     * @returns An array of [key, fee] pairs with fully populated content.
+     */
+    function getValidFees(fees: Record<string, ListItemBag> | null | undefined): Array<[string, ListItemBag]> {
+        // Return an empty list if no fees are provided
+        if (!fees) {
+            return [];
+        }
+
+        const validFees: Array<[string, ListItemBag]> = [];
+
+        for (const [key, fee] of Object.entries(fees)) {
+            // Check if both text and value are present and non-empty
+            const hasTextAndValue = !isNullOrWhiteSpace(fee.text) && !isNullOrWhiteSpace(fee.value);
+
+            if (hasTextAndValue) {
+                validFees.push([key, fee]);
+            }
+        }
+
+        return validFees;
+    }
+
+    // #endregion
+</script>

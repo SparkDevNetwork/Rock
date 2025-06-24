@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           :itemTerm="config?.options?.mediaFolderName + ' Media Elements'"
@@ -54,10 +55,12 @@
     import { MediaElementListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementList/mediaElementListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./MediaElementList/types.partial";
-    import { reactive, ref } from "vue";
+    import { computed, reactive, ref } from "vue";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<MediaElementListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const store = useStore();
 
     // All blocks auto reload when changing block settings unless there is an
     // explicit reason not to (like using a custom reload function instead),
@@ -68,6 +71,14 @@
 
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return store.state.areSecondaryBlocksShown;
+    });
 
     // #endregion
 

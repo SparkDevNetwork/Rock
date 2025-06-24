@@ -52,7 +52,7 @@ namespace Rock.Lms
 
             public const string MultipleChoiceWeight = "multipleChoiceWeight";
 
-            public const string ShowMissedQuestionsOnResults = "shoeMissedQuestionsOnResults";
+            public const string ShowMissedQuestionsOnResults = "showMissedQuestionsOnResults";
 
             public const string ShowResultsOnCompletion = "showResultsOnCompletion";
         }

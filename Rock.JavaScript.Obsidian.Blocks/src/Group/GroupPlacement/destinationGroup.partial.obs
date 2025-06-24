@@ -1,0 +1,648 @@
+<template>
+    <Panel type="default"
+           v-if="destinationGroup.groupIdKey"
+           v-model="isGroupExpanded"
+           :hasCollapse="true"
+           :headerSecondaryActions="secondaryActions">
+        <template #title>
+            <div class="d-flex align-items-center gap-2">
+                {{ destinationGroup.groupName }}
+                <Badge :class="[capacityStatusClass]">
+                    {{ capacityText }}
+                </Badge>
+                <template v-for="role in groupTypeRoles"
+                          :key="role.idKey">
+                    <span v-if="role.idKey"
+                          :class="['role-count', getRoleCountOverUnderCapacityClass(role.idKey)]">
+                        {{ pluralize(role.name ?? "") }}: {{ getRoleCount(role.idKey) }}
+                    </span>
+                </template>
+            </div>
+        </template>
+        <template #headerActions v-if="isGenderHighlighting && !isGroupExpanded">
+            <div class="d-flex gap-1 mr-3">
+                <Badge class="unknown-badge">
+                    {{ genderCounts.unknown }}
+                </Badge>
+                <Badge class="male-badge">
+                    {{ genderCounts.males }}
+                </Badge>
+                <Badge class="female-badge">
+                    {{ genderCounts.females }}
+                </Badge>
+            </div>
+        </template>
+        <div v-if="destinationGroup.attributeValues && destinationGroup.attributes && hasNonEmptyGroupAttributeValue"
+             class="panel-inline">
+            <div class="panel-heading">
+                <AttributeValuesContainer v-model="destinationGroup.attributeValues"
+                                          :attributes="destinationGroup.attributes"
+                                          :numberOfColumns="4"
+                                          columnBreakpoint="lg"
+                                          :showCategoryLabel="false" />
+            </div>
+        </div>
+        <NotificationBox v-if="getGroupError(destinationGroup.groupIdKey)"
+                         alertType="danger"
+                         class="m-3"
+                         :dismissible="true"
+                         @dismiss="clearGroupError(destinationGroup.groupIdKey)">
+            {{ getGroupError(destinationGroup.groupIdKey) }}
+        </NotificationBox>
+        <template v-for="role in groupTypeRoles"
+                  :key=role.idKey>
+            <div v-if="role.idKey"
+                 class="panel-inline">
+                <div class="panel-heading">
+                    <h1 class="panel-title d-inline-block mr-2">
+                        {{ pluralize(role.name ?? "") }}
+                    </h1>
+                    <span :class="['role-count', getRoleCountOverUnderCapacityClass(role.idKey)]"
+                          :ref="(el) => addTooltip(el as Element)"
+                          data-toggle="tooltip"
+                          :data-html="true"
+                          :data-original-title="getRoleCountTooltipText(role.idKey)">
+                        {{ getRoleSubHeaderText(role.idKey) }}
+                    </span>
+                </div>
+                <NotificationBox v-if="getGroupRoleError(destinationGroup.groupIdKey, role.idKey)"
+                                 alertType="danger"
+                                 class="m-3"
+                                 :dismissible="true"
+                                 @dismiss="clearGroupRoleError(destinationGroup.groupIdKey, role.idKey)">
+                    {{ getGroupRoleError(destinationGroup.groupIdKey, role.idKey) }}
+                </NotificationBox>
+                <template v-if="isGenderHighlighting">
+                    <div class="group-role-wrapper"
+                         v-drag-target="dragTargetId"
+                         :data-group-section-id="`${destinationGroup.groupIdKey}|${role.idKey}`">
+                        <template v-if="getGroupMembersFilteredByRole(role.idKey).length">
+                            <div class="gender-section">
+                                <template v-for="section in genderSections"
+                                          :key="section.value">
+                                    <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, section.value).length > 0">
+                                        <HighlightLabel :customClass="`gender-highlight-label ${section.class}`"
+                                                        labelType="custom">
+                                            {{ section.label }} ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, section.value).length }})
+                                        </HighlightLabel>
+                                        <div class="group-role-wrapper"
+                                             v-drag-source="groupMemberDragOptions">
+                                            <template v-for="(groupMember, index) in getGroupMembersFilteredByRoleAndGender(role.idKey, section.value)"
+                                                      :key="groupMember.groupMemberIdKey">
+                                                <PersonCard v-if="groupMember.person"
+                                                            :isCardExpanded="arePersonCardsExpanded"
+                                                            :person="groupMember.person"
+                                                            :index="index"
+                                                            :isDetailHoverDisabled="true"
+                                                            :isTransitionEnabled="isTransitionEnabled"
+                                                            :data-group-id-key="destinationGroup.groupIdKey"
+                                                            :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                                            :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                                            :isGenderHighlighting="isGenderHighlighting"
+                                                            :isInstanceDisplayed="isInstanceDisplayed"
+                                                            :groupMember="groupMember"
+                                                            :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                                            :placementMode="props.placementMode"
+                                                            @editGroupMember="editGroupMember"
+                                                            @removeGroupMember="removeGroupMember" />
+                                            </template>
+                                        </div>
+                                    </div>
+                                </template>
+                            </div>
+                        </template>
+                        <div v-else-if="arePeopleLoading" class="loading-section">
+                            <Loading :isLoading="arePeopleLoading" />
+                        </div>
+                        <div v-else class="empty-drop-zone">
+                            Drag and Drop Here
+                        </div>
+                    </div>
+                </template>
+                <div v-else
+                     class="group-role-wrapper"
+                     v-drag-target="dragTargetId"
+                     :data-group-section-id="`${destinationGroup.groupIdKey}|${role.idKey}`"
+                     v-drag-source="groupMemberDragOptions">
+                    <template v-if="getGroupMembersFilteredByRole(role.idKey).length">
+                        <template v-for="(groupMember, index) in getGroupMembersFilteredByRole(role.idKey)"
+                                  :key="index">
+                            <PersonCard v-if="groupMember.person"
+                                        :isCardExpanded="arePersonCardsExpanded"
+                                        :person="groupMember.person"
+                                        :index="index"
+                                        :isDetailHoverDisabled="true"
+                                        :isTransitionEnabled="isTransitionEnabled"
+                                        :data-group-id-key="destinationGroup.groupIdKey"
+                                        :data-group-member-id-key="groupMember.groupMemberIdKey"
+                                        :isFirstNameLastName="currentSortOrder === SortTypes.SortByFirstName"
+                                        :isGenderHighlighting="isGenderHighlighting"
+                                        :isInstanceDisplayed="isInstanceDisplayed"
+                                        :groupMember="groupMember"
+                                        :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                                        :placementMode="props.placementMode"
+                                        @editGroupMember="editGroupMember"
+                                        @removeGroupMember="removeGroupMember" />
+                        </template>
+                    </template>
+                    <div v-else-if="arePeopleLoading" class="loading-section">
+                        <Loading :isLoading="arePeopleLoading" />
+                    </div>
+                    <div v-else class="empty-drop-zone">
+                        Drag and Drop Here
+                    </div>
+                </div>
+            </div>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.panel.panel-block) {
+    height: 100%;
+    margin-bottom: 24px;
+}
+
+.gender-section {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.loading-section {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gender-section .group-role-wrapper {
+    padding: 0;
+    padding-top: 12px;
+}
+
+.gender-highlight-label {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.male-label {
+    background-color: #E8F3FC;
+    color: #1A8AE5;
+}
+
+.female-label {
+    background-color: #FCE8FA;
+    color: #DE69C3;
+}
+
+.unknown-label {
+    background-color: var(--color-interface-soft);
+    color: var(--color-interface-strong);
+}
+
+.empty-drop-zone {
+    width: 100%;
+    grid-column: 1 / -1;
+    display: flex;
+    justify-content: center;
+    padding: 0.5rem;
+    border: 1px dashed var(--color-interface-soft);
+    color: var(--color-interface-soft);
+}
+
+.panel-inline {
+    margin-bottom: 0 !important;
+    border: none !important;
+    border-radius: 0 !important;
+    box-shadow: none !important;
+    -webkit-bot-shadow: none !important
+}
+
+.panel-inline .panel-heading {
+    padding: 8px 16px;
+    /* background-color: rgba(245, 245, 245, 0.8); */
+    background-color: var(--color-interface-softer);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: 0;
+}
+
+.panel-inline .panel-title {
+    font-size: 14px;
+    font-weight: 600
+}
+
+.panel-drawer + .group-role-members .panel-heading,
+.group-role-members:first-child .panel-heading {
+    border-top: 0
+}
+
+.placement-capacity-label {
+    border-radius: 100px;
+}
+
+.role-count {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-medium);
+}
+
+.role-count.over-under-role-capacity {
+    color: var(--color-danger);
+}
+
+.male-badge {
+    background-color: #1A8AE5 !important;
+}
+
+.female-badge {
+    background-color: #DE69CE !important;
+}
+
+.unknown-badge {
+    background-color: var(--color-interface-soft) !important;
+    color: var(--color-interface-stronger) !important;
+}
+
+.status-over {
+    background-color: #d4442e !important;
+}
+
+.status-at {
+    background-color: #ee7624 !important;
+}
+
+.status-near {
+    background-color: #ffc870 !important;
+    color: black;
+}
+
+.status-under {
+    background-color: #16c98d !important;
+}
+
+.group-role-wrapper {
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: 1fr;
+    padding: 16px;
+}
+
+@media (min-width: 1024px) {
+    .group-role-wrapper {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1440px) {
+    .group-role-wrapper {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1800px) {
+    .group-role-wrapper {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 2000px) {
+    .group-role-wrapper {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+</style>
+
+<script setup lang="ts">
+    import { DestinationGroupTypeRoleBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/destinationGroupTypeRoleBag";
+    import { DragSource as vDragSource, IDragSourceOptions, DragTarget as vDragTarget } from "@Obsidian/Directives/dragDrop";
+    import { PlacementGroupBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/placementGroupBag";
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { isNullOrWhiteSpace, pluralize } from "@Obsidian/Utility/stringUtils";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { PropType, ref, computed } from "vue";
+    import { SortTypes } from "./types.partial";
+    import { Guid } from "@Obsidian/Types";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import PersonCard from "./personCard.partial.obs";
+    import Loading from "@Obsidian/Controls/loading.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import { toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { getFieldType } from "@Obsidian/Utility/fieldTypes";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const props = defineProps({
+        destinationGroup: {
+            type: Object as PropType<PlacementGroupBag>,
+            required: true
+        },
+        groupTypeRoles: {
+            type: Array as PropType<DestinationGroupTypeRoleBag[]>,
+        },
+        arePersonCardsExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        isGroupExpanded: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        },
+        dragTargetId: {
+            type: String as PropType<Guid>,
+            required: true
+        },
+        groupMemberDragOptions: {
+            type: Object as PropType<IDragSourceOptions>,
+            required: true
+        },
+        getGroupError: {
+            type: Function as PropType<(groupIdKey: string) => string | null>,
+            required: true
+        },
+        getGroupRoleError: {
+            type: Function as PropType<(groupIdKey: string, roleIdKey: string) => string | null>,
+            required: true
+        },
+        clearGroupError: {
+            type: Function as PropType<(groupIdKey: string) => void>,
+            required: true
+        },
+        clearGroupRoleError: {
+            type: Function as PropType<(groupIdKey: string, roleIdKey: string) => void>,
+            required: true
+        },
+        currentSortOrder: {
+            type: Number as PropType<SortTypes>,
+            required: true
+        },
+        isGenderHighlighting: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
+        arePeopleLoading: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+        isInstanceDisplayed: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        areSourceAttributesDisplayedOnDestinationGroupMembers: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        placementMode: {
+            type: Number as PropType<PlacementMode | null>,
+            required: false
+        },
+        isTransitionEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:isGroupExpanded", value: boolean): void;
+        (e: "editGroup", value: string): void;
+        (e: "detachGroup", value: string): void;
+        (e: "deleteGroup", value: string): void;
+        (e: "editGroupMember", value: string): void;
+        (e: "removeGroupMember", groupIdKey: string, memberId: string): void;
+    }>();
+
+    const destinationGroup = computed(() => props.destinationGroup);
+    const groupTypeRoles = ref<DestinationGroupTypeRoleBag[]>(props.groupTypeRoles ?? []);
+    const isGroupExpanded = useVModelPassthrough(props, "isGroupExpanded", emit);
+
+    const genderSections = [
+        { label: "Males", value: Gender.Male, class: "male-label" },
+        { label: "Females", value: Gender.Female, class: "female-label" },
+        { label: "Unknown", value: Gender.Unknown, class: "unknown-label" }
+    ];
+
+    const hasNonEmptyGroupAttributeValue = computed(() => {
+        if (!props.destinationGroup.attributes || !props.destinationGroup.attributeValues) {
+            return false;
+        }
+
+        for (const [key, attribute] of Object.entries(props.destinationGroup.attributes)) {
+            // Skip if attribute name is empty
+            if (isNullOrWhiteSpace(attribute.name)) {
+                continue;
+            }
+
+            const rawValue = props.destinationGroup.attributeValues[key];
+
+            // Skip if the raw value is empty
+            if (isNullOrWhiteSpace(rawValue)) {
+                continue;
+            }
+
+            const formatted = getAttributeValueText(props.destinationGroup.attributeValues, attribute, key);
+
+            // Skip if formatted value is empty too
+            if (isNullOrWhiteSpace(formatted)) {
+                continue;
+            }
+
+            return true;
+        }
+
+        return false;
+    });
+
+    function getAttributeValueText(attributeValues: Record<string, string> | null, attribute: PublicAttributeBag, key: string): string {
+        const fieldTypeGuid = toGuidOrNull(attribute.fieldTypeGuid);
+        const fieldType = getFieldType(fieldTypeGuid ?? FieldType.Text);
+
+        const rawValue = attributeValues?.[key] ?? "";
+        const configValues = attribute.configurationValues ?? {};
+
+        return fieldType?.getTextValue?.(rawValue, configValues) ?? rawValue;
+    }
+
+    const capacityStatusClass = computed(() => {
+        if (!destinationGroup.value.groupCapacity) {
+            return "status-under";
+        }
+
+        const groupMemberCount = destinationGroup.value.groupMembers?.length ?? 0;
+        const groupCapacityPercent = (groupMemberCount / destinationGroup.value.groupCapacity) * 100;
+
+        if (groupCapacityPercent > 100) {
+            return "status-over";
+        }
+        else if (groupCapacityPercent === 100) {
+            return "status-at";
+        }
+        else if (groupCapacityPercent > 80) {
+            return "status-near";
+        }
+        else {
+            return "status-under";
+        }
+    });
+
+    const genderCounts = computed(() => {
+        const counts = {
+            males: 0,
+            females: 0,
+            unknown: 0
+        };
+
+        if (!destinationGroup.value.groupMembers) {
+            return counts;
+        }
+
+        for (const groupMember of destinationGroup.value.groupMembers) {
+            switch (groupMember.person?.gender) {
+                case Gender.Male:
+                    counts.males++;
+                    break;
+                case Gender.Female:
+                    counts.females++;
+                    break;
+                default:
+                    counts.unknown++;
+                    break;
+            }
+        }
+
+        return counts;
+    });
+
+    const capacityText = computed(() => {
+        const groupMemberCount = destinationGroup.value.groupMembers?.length ?? 0;
+
+        if (!destinationGroup.value.groupCapacity) {
+            return `${groupMemberCount}`;
+        }
+
+        return `${groupMemberCount} / ${destinationGroup.value.groupCapacity}`;
+    });
+
+
+    const secondaryActions = computed((): PanelAction[] | undefined => {
+        const actions: PanelAction[] = [];
+
+        actions.push({
+            type: "default",
+            title: "Edit",
+            handler: editGroup
+        });
+
+        if (!props.destinationGroup.isShared) {
+            actions.push(
+                {
+                    type: "default",
+                    title: "Detach",
+                    handler: detachGroup
+                },
+                {
+                    type: "danger", // TODO - The current panel.obs does not support this.
+                    title: "Delete",
+                    handler: deleteGroup
+                }
+            );
+        }
+
+        return actions;
+    });
+
+    function getRoleCount(roleIdKey: string): number {
+        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleIdKey === roleIdKey).length ?? 0;
+    }
+
+    function getRoleCountOverUnderCapacityClass(roleIdKey: string): string {
+        const role = groupTypeRoles.value.find(r => r.idKey === roleIdKey);
+        const roleMax = role?.maxCount;
+        const roleMin = role?.minCount;
+        const count = getRoleCount(roleIdKey);
+
+        if (count == null) {
+            return "";
+        }
+
+        const isOver = roleMax != null && count > roleMax;
+        const isUnder = roleMin != null && count < roleMin;
+
+        return (isOver || isUnder) ? "over-under-role-capacity" : "";
+    }
+
+    function getRoleSubHeaderText(roleIdKey: string): string {
+        const role = groupTypeRoles.value.find(r => r.idKey === roleIdKey);
+        return role?.maxCount ? `${getRoleCount(roleIdKey)}/${role.maxCount}` : `${getRoleCount(roleIdKey)}`;
+    }
+
+    function getGroupMembersFilteredByRole(roleIdKey: string): GroupMemberBag[] {
+        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleIdKey === roleIdKey) ?? [];
+    }
+
+    function getGroupMembersFilteredByRoleAndGender(roleIdKey: string, gender: Gender): GroupMemberBag[] {
+        return destinationGroup.value.groupMembers?.filter(gm => gm.groupRoleIdKey === roleIdKey && gm.person?.gender === gender) ?? [];
+    }
+
+    function getRoleCountTooltipText(roleIdKey: string): string {
+        const role = groupTypeRoles.value.find(r => r.idKey === roleIdKey);
+        if (!role) {
+            return "";
+        }
+
+        const parts: string[] = [];
+
+        if (role.maxCount != null) {
+            parts.push(`Maximum Total: ${role.maxCount}`);
+        }
+
+        if (role.minCount != null) {
+            parts.push(`Minimum Total: ${role.minCount}`);
+        }
+
+        return parts.join("<br>");
+    }
+
+    function editGroupMember(groupMemberIdKey: string): void {
+        emit("editGroupMember", groupMemberIdKey);
+    }
+
+    function removeGroupMember(groupMemberIdKey: string): void {
+        if (!isNullOrWhiteSpace(props.destinationGroup.groupIdKey)) {
+            emit("removeGroupMember", props.destinationGroup.groupIdKey!, groupMemberIdKey);
+        }
+    }
+
+    function editGroup(): void {
+        // TODO when Group Detail is converted to Obsidian use idKey
+        // emit("editGroup", props.destinationGroup.groupIdKey!);
+        emit("editGroup", props.destinationGroup.groupId.toString());
+    }
+
+    function detachGroup(): void {
+        if (!isNullOrWhiteSpace(props.destinationGroup.groupIdKey)) {
+            emit("detachGroup", props.destinationGroup.groupIdKey!);
+        }
+    }
+
+    function deleteGroup(): void {
+        if (!isNullOrWhiteSpace(props.destinationGroup.groupIdKey)) {
+            emit("deleteGroup", props.destinationGroup.groupIdKey!);
+        }
+    }
+
+    function addTooltip(element: Element | null): void {
+        if (element) {
+            tooltip(element);
+        }
+    }
+</script>

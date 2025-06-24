@@ -19,6 +19,9 @@ using Rock.ViewModels.Core.Grid;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationSaturationReport
 {
+    /// <summary>
+    /// 
+    /// </summary>
     public class CommunicationSaturationReportBlockBox : BlockBox
     {
         /// <summary>

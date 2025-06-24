@@ -30,7 +30,8 @@
                     :filter="dateValueFilter"
                     visiblePriority="xs" />
 
-        <TextColumn name="details"
+        <TextColumn v-if="shouldShowDetailsColumn()"
+                    name="details"
                     title="Details"
                     field="details"
                     :filter="textValueFilter"
@@ -83,6 +84,13 @@
      */
     function shouldShowWaitList(): boolean {
         return config.options?.showWaitList ?? false;
+    }
+
+    /**
+     * Gets whether the details column should be shown.
+     */
+    function shouldShowDetailsColumn(): boolean {
+        return config.options?.showDetailsColumn ?? false;
     }
 
     // All blocks auto reload when changing block settings unless there is an

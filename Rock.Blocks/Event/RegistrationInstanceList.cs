@@ -99,11 +99,13 @@ namespace Rock.Blocks.Event
                 {
                     options.RegistrationInstanceName = template.Name;
                     options.ShowWaitList = template.WaitListEnabled;
+                    options.ShowDetailsColumn = false;
                 }
             }
             else
             {
                 options.RegistrationInstanceName = "Active Registration";
+                options.ShowDetailsColumn = true;
             }
 
             return options;

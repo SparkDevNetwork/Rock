@@ -152,7 +152,7 @@ namespace RockWeb
                     var group = GroupCache.Get( groupId );
 
                     var iCalEvent = new CalendarEvent();
-                    iCalEvent.Summary = group.Name;
+                    iCalEvent.Summary = $"{group.Name} - {locationName} - {scheduleName}";
                     iCalEvent.Location = locationName;
                     iCalEvent.DtStart = new CalDateTime( attendance.StartDateTime, icalendar.TimeZones[0].TzId );
                     iCalEvent.Duration = duration;
@@ -171,30 +171,6 @@ namespace RockWeb
 
                     // classification: "PUBLIC", "PRIVATE", "CONFIDENTIAL"
                     iCalEvent.Class = "PUBLIC";
-
-                    //Add contact info for the group scheduler
-                    var schedulerAlias = new PersonAliasService( rockContext ).Get( group.ScheduleCoordinatorPersonAliasId ?? 0 );
-                    var scheduler = schedulerAlias?.Person;
-
-                    if ( scheduler == null )
-                    {
-                        // If no scheduler is assigned, fall back to the leader
-                        scheduler = new GroupMemberService( rockContext ).GetLeaders( groupId ).AsNoTracking().Select( m => m.Person ).FirstOrDefault() ?? null;
-                    }
-
-                    if ( scheduler != null )
-                    {
-                        iCalEvent.Organizer = new Organizer( string.Format( "MAILTO:{0}", scheduler.Email ) );
-                        iCalEvent.Organizer.CommonName = scheduler.FullName;
-
-                        // Outlook doesn't seem to use Contacts or Comments
-                        string contactName = !string.IsNullOrEmpty( scheduler.FullName ) ? "Name: " + scheduler.FullName : string.Empty;
-                        string contactEmail = !string.IsNullOrEmpty( scheduler.Email ) ? ", Email: " + scheduler.Email : string.Empty;
-                        string contactInfo = contactName + contactEmail;
-
-                        iCalEvent.Contacts.Add( contactInfo );
-                        iCalEvent.Comments.Add( contactInfo );
-                    }
 
                     icalendar.Events.Add( iCalEvent );
                 }
