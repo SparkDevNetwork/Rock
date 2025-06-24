@@ -19,12 +19,12 @@ using System;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// Options bag for the InGroupFilter's GetGroupRolesForGroups method.
+    /// Options bag for the HasCompletedCourseSelect's GetCourses method.
     /// </summary>
     public class HasCompletedCourseSelectGetCoursesOptionsBag
     {
         /// <summary>
-        /// Guids of the groups that are of the group types we wish to get roles for.
+        /// Guid of the LMS program we wish to get the courses for.
         /// </summary>
         public Guid ProgramGuid { get; set; }
     }

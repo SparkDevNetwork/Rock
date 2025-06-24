@@ -23,8 +23,8 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** Options bag for the InGroupFilter's GetGroupRolesForGroups method. */
+/** Options bag for the HasCompletedCourseSelect's GetCourses method. */
 export type HasCompletedCourseSelectGetCoursesOptionsBag = {
-    /** Guids of the groups that are of the group types we wish to get roles for. */
+    /** Guid of the LMS program we wish to get the courses for. */
     programGuid: Guid;
 };
