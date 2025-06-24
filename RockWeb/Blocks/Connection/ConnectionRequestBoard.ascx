@@ -194,7 +194,7 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-mega js-dropdown-menu-mega">
                                     <li runat="server" id="liFavoritesHeader" class="dropdown-header">
-                                        <i class="far fa-star"></i>
+                                        <i class="ti ti-star"></i>
                                         Favorites
                                     </li>
                                     <asp:Repeater ID="rptFavoriteConnectionOpportunities" runat="server" OnItemCommand="rptFavoriteConnectionOpportunities_ItemCommand">
@@ -711,13 +711,24 @@
 
 <div class="js-connection-board-loading" role="status" aria-hidden="true" style="display: none;">
     <div class="updateprogress-status">
-        <div class="spinner">
-            <div class="rect1"></div>
-            <div class="rect2"></div>
-            <div class="rect3"></div>
-            <div class="rect4"></div>
-            <div class="rect5"></div>
-        </div>
+                    <div class="grid-loader">
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                        <div class="dot"></div>
+                    </div>
     </div>
     <div class="updateprogress-bg modal-backdrop"></div>
 </div>
