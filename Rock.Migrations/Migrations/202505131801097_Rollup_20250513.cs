@@ -52,7 +52,7 @@ namespace Rock.Migrations
         private void ChopBlocksUp()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv18_0();
+            //ChopBlockTypesv18_0();
         }
 
         /// <summary>
