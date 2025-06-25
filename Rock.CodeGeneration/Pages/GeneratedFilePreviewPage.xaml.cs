@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
+using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
@@ -80,11 +83,18 @@ namespace Rock.CodeGeneration.Pages
 
             // Order the files so that those that need to be written are on top
             // and then order by the filename.
-            _exportFiles = _exportFiles.OrderByDescending( f => f.IsWriteNeeded )
-                .ThenBy( f => f.File.FileName )
-                .ToList();
+            var groupedByFolder = _exportFiles
+                .GroupBy( f => f.FolderPath )
+                .Select( g => new ExportFileGroup
+                {
+                    FolderPath = g.Key,
+                    Files = new ObservableCollection<ExportFile>( g.OrderBy( f => f.File.FileName ) ),
+                    IsExpanded = g.Any( f => f.IsWriteNeeded )
+                } )
+                .OrderByDescending( f => f.IsWriteNeeded )
+                .ThenBy( f => f.FolderPath );
 
-            FileListBox.ItemsSource = _exportFiles;
+            FileTreeView.ItemsSource = new ObservableCollection<ExportFileGroup>( groupedByFolder );
         }
 
         #endregion
@@ -296,15 +306,15 @@ namespace Rock.CodeGeneration.Pages
         }
 
         /// <summary>
-        /// Handles the SelectionChanged event of the FileListBox control.
+        /// Handles the SelectedItemChanged event of the FileTreeView control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
         /// <param name="e">The <see cref="SelectionChangedEventArgs"/> instance containing the event data.</param>
-        private void FileListBox_SelectionChanged( object sender, SelectionChangedEventArgs e )
+        private void FileTreeView_SelectedItemChanged( object sender, RoutedPropertyChangedEventArgs<object> e )
         {
             // If the selected item is an export file, then fill in all the
             // details so they can preview the file.
-            if ( FileListBox.SelectedItem is ExportFile exportFile )
+            if ( FileTreeView.SelectedItem is ExportFile exportFile )
             {
                 FilePreviewDiffView.OldText = exportFile.OldContent;
                 FilePreviewDiffView.NewText = exportFile.File.Content;
@@ -324,61 +334,6 @@ namespace Rock.CodeGeneration.Pages
         #endregion
 
         #region Support Classes
-
-        /// <summary>
-        /// Wraps the generated file in a class that can be used in the list box
-        /// to display more detailed information about the file.
-        /// </summary>
-        private class ExportFile
-        {
-            #region Properties
-
-            /// <summary>
-            /// Gets or sets a value indicating whether this file will be exported.
-            /// </summary>
-            /// <value><c>true</c> if this file will be exported; otherwise, <c>false</c>.</value>
-            public bool IsExporting { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether file needs to be written.
-            /// </summary>
-            /// <value><c>true</c> if this file needs to be written; otherwise, <c>false</c>.</value>
-            public bool IsWriteNeeded { get; set; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether this file is up to date.
-            /// </summary>
-            /// <value><c>true</c> if this file is up to date; otherwise, <c>false</c>.</value>
-            public bool IsUpToDate { get; set; }
-
-            /// <summary>
-            /// Gets or sets the file that was generated.
-            /// </summary>
-            /// <value>The file that was generated.</value>
-            public GeneratedFile File { get; set; }
-
-            /// <summary>
-            /// Gets or sets the old content of the existing file, if any.
-            /// </summary>
-            /// <value>The old content of the existing file, if any.</value>
-            public string OldContent { get; set; } = string.Empty;
-
-            #endregion
-
-            #region Constructors
-
-            /// <summary>
-            /// Initializes a new instance of the <see cref="ExportFile"/> class.
-            /// </summary>
-            /// <param name="file">The file that was generated.</param>
-            public ExportFile( GeneratedFile file )
-            {
-                IsExporting = true;
-                File = file;
-            }
-
-            #endregion
-        }
 
         /// <summary>
         /// Provides state context to post save actions.
@@ -440,4 +395,236 @@ namespace Rock.CodeGeneration.Pages
 
         #endregion
     }
+
+    #region Support Classes
+    
+    /// <summary>
+    /// Wraps the generated file in a class that can be used in the list box
+    /// to display more detailed information about the file.
+    /// </summary>
+    public class ExportFile : INotifyPropertyChanged
+    {
+        #region Events
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this file will be exported.
+        /// </summary>
+        /// <value><c>true</c> if this file will be exported; otherwise, <c>false</c>.</value>
+        public bool IsExporting
+        {
+            get => _isExporting;
+            set
+            {
+                if ( _isExporting != value )
+                {
+                    _isExporting = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+        private bool _isExporting;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether file needs to be written.
+        /// </summary>
+        /// <value><c>true</c> if this file needs to be written; otherwise, <c>false</c>.</value>
+        public bool IsWriteNeeded { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this file is up to date.
+        /// </summary>
+        /// <value><c>true</c> if this file is up to date; otherwise, <c>false</c>.</value>
+        public bool IsUpToDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the file that was generated.
+        /// </summary>
+        /// <value>The file that was generated.</value>
+        public GeneratedFile File { get; set; }
+
+        /// <summary>
+        /// Gets or sets the old content of the existing file, if any.
+        /// </summary>
+        /// <value>The old content of the existing file, if any.</value>
+        public string OldContent { get; set; } = string.Empty;
+
+        /// <summary>
+        /// Gets the folder path of the generated file to export.
+        /// </summary>
+        public string FolderPath
+        {
+            get
+            {
+                return Path.GetDirectoryName( this.File.SolutionRelativePath );
+            }
+        }
+
+        // This property only exists to support the tree view and has no effect.
+        public bool IsExpanded { get; set; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ExportFile"/> class.
+        /// </summary>
+        /// <param name="file">The file that was generated.</param>
+        public ExportFile( GeneratedFile file )
+        {
+            IsExporting = true;
+            File = file;
+        }
+
+        #endregion
+
+        #region Methods
+
+        protected void OnPropertyChanged( [CallerMemberName] string name = "" )
+        {
+            PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( name ) );
+        }
+
+        #endregion
+    }
+    
+    /// <summary>
+    /// Groups ExportFile instances by their folder path.
+    /// </summary>
+    public class ExportFileGroup : INotifyPropertyChanged
+    {
+        #region Events
+
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Properties
+        /// <summary>
+        /// Gets or sets the folder path of the export files.
+        /// </summary>
+        public string FolderPath { get; set; }
+
+        /// <summary>
+        /// Gets a value indicating whether any file in the group needs to be written.
+        /// </summary>
+        /// <value><c>true</c> if any file in the group needs to be written; otherwise, <c>false</c>.</value>
+        public bool IsWriteNeeded
+        {
+            get
+            {
+                return this.Files.Any( f => f.IsWriteNeeded );
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the grouped export files.
+        /// </summary>
+
+        private ObservableCollection<ExportFile> _files;
+        public ObservableCollection<ExportFile> Files
+        {
+            get => _files;
+            set
+            {
+                var oldValue = _files;
+
+                if ( _files != value )
+                {
+                    _files = value;
+
+                    if ( oldValue != null )
+                    {
+                        UnregisterFileIsExportChangeCallbacks( oldValue );
+                    }
+
+                    RegisterFileIsExportingChangeCallbacks( _files );
+
+                    _files.CollectionChanged += ( _, __ ) => RegisterFileIsExportingChangeCallbacks( _files );
+                }
+            }
+        }
+
+        private bool _isExpanded;
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if ( _isExpanded != value )
+                {
+                    _isExpanded = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        ///  true  = all children exporting<br/>
+        ///  false = none exporting<br/>
+        ///  null  = mixture
+        /// </summary>
+        public bool? IsExporting
+        {
+            get
+            {
+                var areAnyExporting = Files.Any(i =>  i.IsExporting);
+                var areAllExporting = Files.All(i => i.IsExporting);
+
+                return areAllExporting ? true : ( areAnyExporting ? ( bool? ) null : false );
+            }
+            set
+            {
+                foreach ( var file in Files )
+                {
+                    file.IsExporting = value ?? false;
+                }
+
+                OnPropertyChanged();
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        private void RegisterFileIsExportingChangeCallbacks( IEnumerable<ExportFile> files )
+        {
+            foreach ( var file in files )
+            {
+                file.PropertyChanged += File_PropertyChanged;
+            }
+        }
+
+        private void UnregisterFileIsExportChangeCallbacks( IEnumerable<ExportFile> files )
+        {
+            foreach ( var file in files )
+            {
+                file.PropertyChanged -= File_PropertyChanged;
+            }
+        }
+
+        private void File_PropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            if ( e.PropertyName == nameof( ExportFile.IsExporting ) )
+            {
+                OnPropertyChanged( nameof( IsExporting ) );
+            }
+        }
+
+        protected void OnPropertyChanged( [CallerMemberName] string name = "" )
+        {
+            PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( name ) );
+        }
+
+        #endregion
+    }
+
+    #endregion
 }

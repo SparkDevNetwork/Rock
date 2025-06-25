@@ -23,26 +23,42 @@
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
 
-        <ListBox Name="FileListBox"
-                 Grid.Row="0"
-                 Grid.Column="0"
-                 SelectionMode="Single"
-                 SelectionChanged="FileListBox_SelectionChanged">
-            <ListBox.ItemTemplate>
-                <DataTemplate>
+        <TreeView Name="FileTreeView"
+                  Grid.Row="0"
+                  Grid.Column="0"
+                  SelectedItemChanged="FileTreeView_SelectedItemChanged">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                </Style>
+            </TreeView.ItemContainerStyle>
+            
+            <TreeView.Resources>
+
+                <!-- ExportFileGroup Hierarchical Template -->
+                <HierarchicalDataTemplate DataType="{x:Type local:ExportFileGroup}"
+                                          ItemsSource="{Binding Files}">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsThreeState="True"
+                                  IsChecked="{Binding IsExporting, Mode=TwoWay}"
+                                  Margin="0,0,4,0"/>
+                        <TextBlock Text="{Binding FolderPath}" FontStyle="Italic" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+
+                <!-- ExportFile Template -->
+                <DataTemplate DataType="{x:Type local:ExportFile}">
                     <Grid>
                         <Grid.ColumnDefinitions>
                             <ColumnDefinition Width="Auto" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
 
-                        <CheckBox Grid.Row="0"
-                                  Grid.Column="0"
+                        <CheckBox Grid.Column="0"
                                   Visibility="{Binding IsWriteNeeded, Converter={StaticResource BoolToVis}}"
                                   IsChecked="{Binding IsExporting}" />
 
-                        <fa:IconBlock Grid.Row="0"
-                                      Grid.Column="0"
+                        <fa:IconBlock Grid.Column="0"
                                       Icon="Check"
                                       Foreground="Green"
                                       Visibility="{Binding IsUpToDate, Converter={StaticResource BoolToVis}}"
@@ -50,17 +66,18 @@
                                       Margin="0,0,4,0"/>
 
                         <StackPanel Orientation="Horizontal"
-                                            Grid.Row="0"
-                                            Grid.Column="1"
-                                            Margin="4,0,0,0">
+                                    Grid.Column="1"
+                                    Margin="4,0,0,0">
                             <TextBlock HorizontalAlignment="Stretch"
                                        IsEnabled="{Binding IsWriteNeeded}"
-                                       Text="{Binding File.FileName}" />
+                                       Text="{Binding File.FileName}"
+                                       FontWeight="Regular"/>
                         </StackPanel>
                     </Grid>
                 </DataTemplate>
-            </ListBox.ItemTemplate>
-        </ListBox>
+
+            </TreeView.Resources>
+        </TreeView>
 
         <Grid Grid.Row="0"
               Grid.Column="1">
