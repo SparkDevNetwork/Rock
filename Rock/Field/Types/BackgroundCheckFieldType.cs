@@ -32,7 +32,32 @@ namespace Rock.Field.Types
 {
     /// <summary>
     /// Field used to display or upload a new binary file of a specific type.
-    /// Stored as BinaryFile.Guid.
+    /// Stored as:
+    ///    * BinaryFile.Guid (for PMM)
+    ///    * EntityTypeId,RecordKey (for Checkr).
+    ///    * EntityTypeId,BinaryFile.Guid (for other providers).
+    ///
+    /// Rock's core <b>Background Check Document</b> person attribute—along with this
+    /// <b>Background Check FieldType</b>—was originally designed to support only Protect My Ministry
+    /// and Checkr. However, other providers can integrate with this system by following a specific
+    /// format when saving attribute values.
+    ///
+    /// To use the core attribute and field type with other third-party providers, the value saved into
+    /// the Background Check Document attribute must include:
+    /// <list type="bullet">
+    /// <item>
+    /// The <c>EntityTypeId</c> of the provider's <see cref="BackgroundCheckComponent"/> implementation.
+    /// </item>
+    /// <item>
+    /// The <c>BinaryFile.Guid</c> of the resulting background check document.
+    /// </item>
+    /// </list>
+    /// These two values should be comma-separated, e.g., <c>2240,61c0440a-3524-4528-9a56-327deaff5f4a</c>.
+    ///
+    /// <para>
+    /// The system will use the provided EntityTypeId to identify the correct provider when
+    /// accessing the stored document.
+    /// </para>
     /// </summary>
     [FieldTypeUsage( FieldTypeUsage.Administrative )]
     [RockPlatformSupport( Utility.RockPlatform.WebForms, Utility.RockPlatform.Obsidian )]
