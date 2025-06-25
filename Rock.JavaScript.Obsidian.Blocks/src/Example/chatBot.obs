@@ -26,7 +26,7 @@
                      class="message"
                      :class="getMessageClass(message)"
                      :title="getTokenCounts(message)">
-                    <span class="message-text">{{ message.message }}</span>
+                    <span class="message-text" v-html="parse(message.message)"></span>
                 </div>
             </div>
 
@@ -171,6 +171,7 @@
 <script setup lang="ts">
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { parse } from "@Obsidian/Libs/marked";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
