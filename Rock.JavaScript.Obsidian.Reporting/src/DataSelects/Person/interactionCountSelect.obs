@@ -1,60 +1,70 @@
 <template>
-    <DropDownList v-model="groupType" :items="groupTypeOptions" label="Group Type" showBlankItem />
-
-    <CheckBoxList v-if="groupRoleOptions.length > 0" v-model="groupRoles" :items="groupRoleOptions" label="with Group Role(s)" />
-
-    <DropDownList v-model="groupMemberStatus"
-                  :items="groupMemberStatusOptions"
-                  label="with Group Member Status"
-                  help="Select a specific group member status only include to only show true for group members with that status. Leaving this blank will return true for all members."
+    <DropDownList v-model="interactionChannel"
+                  :items="interactionChannelOptions"
+                  label="Interaction Channel"
+                  rules="required"
                   showBlankItem />
+
+    <DropDownList v-if="interactionComponentOptions.length > 0"
+                  v-model="interactionComponent"
+                  :items="interactionComponentOptions"
+                  label="Interaction Component"
+                  showBlankItem />
+
+    <TextBox v-model="operation" label="Operation" />
+
+    <SlidingDateRangePicker v-model="dateRange" label="Date Range" help="The date range of the interactions" />
 </template>
 
 <script setup lang="ts">
     import { ref, watch } from "vue";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
-    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
     import { dataViewFilterProps } from "@Obsidian/Utility/component";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
-    import { InGroupGroupTypeSelectGetRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/inGroupGroupTypeSelectGetRolesOptionsBag";
+    import { InteractionCountSelectGetComponentsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionCountSelectGetComponentsOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
 
     const props = defineProps(dataViewFilterProps);
     const emit = defineEmits<{
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const groupTypeOptions = safeParseJson<ListItemBag[]>(props.options.groupTypeOptions) ?? [];
-    const groupType = ref<string>(props.modelValue.groupType ?? "");
+    const interactionChannelOptions = safeParseJson<ListItemBag[]>(props.options.interactionChannelOptions) ?? [];
+    const interactionChannel = ref<string>(props.modelValue.interactionChannel ?? "");
 
-    const groupRoleOptions = ref(safeParseJson<ListItemBag[]>(props.options.groupRoleOptions) ?? []);
-    const groupRoles = ref<string[]>(safeParseJson(props.modelValue.groupRoles) ?? []);
+    const interactionComponentOptions = ref(safeParseJson<ListItemBag[]>(props.options.interactionComponentOptions) ?? []);
+    const interactionComponent = ref<string>(props.modelValue.interactionComponent ?? "");
 
-    const groupMemberStatusOptions = safeParseJson<ListItemBag[]>(props.options.groupMemberStatusOptions) ?? [];
-    const groupMemberStatus = ref<string>(props.modelValue.groupMemberStatus ?? "");
+    const operation = ref<string>(props.modelValue.operation ?? "");
 
-    watch(groupType, async () => {
-        groupRoleOptions.value = [];
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
 
-        if (groupType.value) {
-            groupRoleOptions.value = await loadGroupRoles();
+    watch(interactionChannel, async () => {
+        interactionComponentOptions.value = [];
+
+        if (interactionChannel.value) {
+            interactionComponentOptions.value = await loadInteractionComponents();
         }
     });
 
-    async function loadGroupRoles(): Promise<ListItemBag[]> {
-        const options: InGroupGroupTypeSelectGetRolesOptionsBag = {
-            groupTypeGuid: groupType.value,
+    async function loadInteractionComponents(): Promise<ListItemBag[]> {
+        const options: InteractionCountSelectGetComponentsOptionsBag = {
+            interactionChannelGuid: interactionChannel.value,
         };
 
         const response = await props.executeRequest({
-            action: "GetRoles",
+            action: "GetComponents",
             options: JSON.stringify(options)
         });
 
-        const groupRoleOptions = safeParseJson<ListItemBag[]>(response?.groupRoleOptions) ?? [];
+        const interactionComponentOptions = safeParseJson<ListItemBag[]>(response?.interactionComponentOptions) ?? [];
 
-        if (Array.isArray(groupRoleOptions)) {
-            return groupRoleOptions;
+        if (Array.isArray(interactionComponentOptions)) {
+            return interactionComponentOptions;
         }
         else {
             console.error("Error fetching items from server", response?.Message);
@@ -62,12 +72,13 @@
         }
     }
 
-    watch([groupType, groupRoles, groupMemberStatus], () => {
+    watch([interactionChannel, interactionComponent, operation, dateRange], () => {
         emit("update:modelValue", {
             ...props.modelValue,
-            groupType: groupType.value,
-            groupRoles: JSON.stringify(groupRoles.value),
-            groupMemberStatus: groupMemberStatus.value,
+            interactionChannel: interactionChannel.value,
+            interactionComponent: interactionComponent.value,
+            operation: operation.value,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
         });
     });
 </script>
