@@ -107,7 +107,7 @@ namespace Rock.Web.Cache.Entities
                 {
                     var functions = new AISkillFunctionService( rockContext )
                         .Queryable()
-                        .Where( f => f.AISkillId == agentSkill.Id )
+                        .Where( f => f.AISkillId == agentSkill.AISkillId )
                         .ToList();
 
                     var skillFunctions = new List<AgentFunction>();
