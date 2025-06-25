@@ -244,7 +244,7 @@ namespace Rock.Blocks.Communication
         {
             public const string CharacterLimit = "CharacterLimit";
         }
-        
+
         /// <summary>
         /// Keys to use for Page parameters.
         /// </summary>
@@ -1066,6 +1066,7 @@ namespace Rock.Blocks.Communication
             else if ( medium is Rock.Communication.Medium.Sms smsMedium )
             {
                 var currentPerson = GetCurrentPerson();
+                var currentPersonAliasIds = currentPerson?.Aliases?.Select( a => a.Id ).ToList() ?? new List<int>();
                 var allowedSmsFromNumberGuids = this.AllowedSmsNumbers;
                 return new CommunicationEntrySmsMediumOptionsBag
                 {
@@ -1077,7 +1078,8 @@ namespace Rock.Blocks.Communication
                     SmsFromNumbers = SystemPhoneNumberCache
                         .All( includeInactive: false )
                         .Where( spn => spn.IsAuthorized( Authorization.VIEW, currentPerson ) && allowedSmsFromNumberGuids.ContainsOrEmpty( spn.Guid ) )
-                        .OrderBy( spn => spn.Order )
+                        .OrderByDescending( spn => spn.AssignedToPersonAliasId.HasValue && currentPersonAliasIds.Contains( spn.AssignedToPersonAliasId.Value ) )
+                        .ThenBy( spn => spn.Order )
                         .ThenBy( spn => spn.Name )
                         .ThenBy( spn => spn.Id )
                         .ToListItemBagList(),
@@ -1326,7 +1328,7 @@ namespace Rock.Blocks.Communication
 
             SetInitialCommunicationTemplateValues( rockContext, communication, communicationBag, selectedMediumOptions );
             SetInitialCommunicationBulkValues( communication, communicationBag );
-            
+
             // Override the sender information to the logged in person since they are creating/editing the communication.
             communicationBag.FromAddress = currentPerson.Email;
             communicationBag.FromName = currentPerson.FullName;
@@ -1363,7 +1365,7 @@ namespace Rock.Blocks.Communication
                 communicationBag.IsBulkCommunication = true;
             }
         }
-        
+
         /// <summary>
         /// Sets the initial template values in the communication bag.
         /// </summary>
@@ -1403,7 +1405,7 @@ namespace Rock.Blocks.Communication
                 communicationBag.CommunicationTemplateGuid = null;
             }
         }
-        
+
         /// <summary>
         /// Sets the initial medium values in the communication bag.
         /// </summary>
@@ -1439,7 +1441,7 @@ namespace Rock.Blocks.Communication
                 communicationBag.MediumEntityTypeGuid = validMediumGuids.FirstOrDefault();
             }
         }
-        
+
         /// <summary>
         /// Sets the initial communication list values in the communication bag.
         /// </summary>
@@ -1494,7 +1496,7 @@ namespace Rock.Blocks.Communication
                 communicationBag.CommunicationListRecipientCount = null;
             }
         }
-        
+
         /// <summary>
         /// Sets the initial recipient values in the communication bag.
         /// </summary>
@@ -1866,7 +1868,7 @@ namespace Rock.Blocks.Communication
 
             return communication;
         }
-        
+
         /// <summary>
         /// Copies data from a communication to a communication bag.
         /// </summary>
@@ -2110,7 +2112,7 @@ namespace Rock.Blocks.Communication
                 return false;
             }
         }
-        
+
         /// <summary>
         /// Validates a save metrics reminder request.
         /// </summary>
@@ -2169,7 +2171,7 @@ namespace Rock.Blocks.Communication
             /// </summary>
             public bool? IsNamelessOnly { get; set; }
         }
-        
+
         private class CommunicationListRecipientQueryOptions
         {
             /// <summary>
