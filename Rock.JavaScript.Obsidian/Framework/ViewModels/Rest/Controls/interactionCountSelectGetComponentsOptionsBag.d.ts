@@ -23,8 +23,8 @@
 
 import { Guid } from "@Obsidian/Types";
 
-/** Options bag for the HasCompletedCourseSelect's GetCourses method. */
+/** Options bag for the InteractionCountSelectGetComponentsOptionsBag's GetComponents method. */
 export type InteractionCountSelectGetComponentsOptionsBag = {
-    /** Guid of the LMS program we wish to get the courses for. */
+    /** Guid of the Interaction Channel we wish to get the components for. */
     interactionChannelGuid: Guid;
 };

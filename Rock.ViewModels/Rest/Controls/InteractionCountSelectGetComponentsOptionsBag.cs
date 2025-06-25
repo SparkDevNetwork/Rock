@@ -19,12 +19,12 @@ using System;
 namespace Rock.ViewModels.Rest.Controls
 {
     /// <summary>
-    /// Options bag for the HasCompletedCourseSelect's GetCourses method.
+    /// Options bag for the InteractionCountSelectGetComponentsOptionsBag's GetComponents method.
     /// </summary>
     public class InteractionCountSelectGetComponentsOptionsBag
     {
         /// <summary>
-        /// Guid of the LMS program we wish to get the courses for.
+        /// Guid of the Interaction Channel we wish to get the components for.
         /// </summary>
         public Guid InteractionChannelGuid { get; set; }
     }
