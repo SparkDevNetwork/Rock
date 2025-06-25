@@ -129,7 +129,7 @@ namespace Rock.Model
         /// </summary>
         public AISkillConfiguration()
         {
-            this.HasRequired( a => a.CodeEntityType ).WithMany().HasForeignKey( a => a.CodeEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.CodeEntityType ).WithMany().HasForeignKey( a => a.CodeEntityTypeId ).WillCascadeOnDelete( false );
         }
     }
 
