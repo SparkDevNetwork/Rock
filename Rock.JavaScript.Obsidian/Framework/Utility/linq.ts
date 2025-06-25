@@ -524,6 +524,11 @@ export class Enumerable<T> {
 
     /**
      * Aggregates the elements of the sequence using a specified accumulator function and seed value.
+     *
+     * This method realizes the enumerable and iterates through each element immediately.
+     *
+     * Use `scan()` for a lazy version of this method.
+     *
      * @param accumulator - A function that accumulates each element.
      * @param seed - The initial value for the accumulation.
      * @returns The aggregated value.
@@ -929,6 +934,46 @@ export class Enumerable<T> {
     ): OrderedEnumerable<T> {
         const descendingComparer = (a: U, b: U): number => -comparer(a, b);
         return this.orderBy(keySelector, descendingComparer);
+    }
+
+    /**
+     * Applies an accumulator function over the sequence, yielding each intermediate result.
+     * The first yielded value is based on the seed provided.
+     *
+     * This behaves like a "scan" or "running total" operation in functional programming.
+     * It is the lazy counterpart to `aggregate()` that preserves intermediate state at each step.
+     *
+     * @template U The type of the accumulated value.
+     * @param seed The initial accumulator value.
+     * @param accumulator A function that takes the accumulated value, the current element, and the index,
+     *                    and returns the new accumulated value.
+     * @returns An Enumerable of the intermediate accumulated values.
+     *
+     * @example
+     * const values = Enumerable.from([1, 2, 3, 4])
+     *     .scan(0, (acc, val) => acc + val)
+     *     .toArray();
+     * // Output: [1, 3, 6, 10]
+     *
+     * @example
+     * const withIndex = Enumerable.from(["a", "b", "c"])
+     *     .scan([], (acc, item, index) => [...acc, `${index}:${item}`])
+     *     .toArray();
+     * // Output: [["0:a"], ["0:a", "1:b"], ["0:a", "1:b", "2:c"]]
+     */
+    scan<U>(seed: U, accumulator: (acc: U, item: T, index: number) => U): Enumerable<U> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        return new Enumerable(function* () {
+            let acc = seed;
+            let index = 0;
+
+            for (const item of self) {
+                acc = accumulator(acc, item, index++);
+                yield acc;
+            }
+        });
     }
 
     /**

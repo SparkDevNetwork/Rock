@@ -20,14 +20,19 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import NothingToShow from "./nothingToShow.partial.obs";
-    import { BarChartDataBuilder, BarChartOptionsBuilder } from "./types.partial";
-    import { BarDatasetLabelsPlugin, BarValueLabelsPlugin } from "./utils.partial";
+    import { BarDatasetLabelsPlugin, BarValueLabelsPlugin, BarChartDataBuilder, BarChartOptionsBuilder } from "@Obsidian/Utility/chartUtils";
     import Chart from "@Obsidian/Controls/chart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+
+    enum SeriesName {
+        Instance = "Instance",
+        Average = "Average"
+    }
 
     const props = defineProps({
         modelValue: {
@@ -51,6 +56,7 @@
     const instanceVsFlowPerformanceAverageData = computed<ChartData<"bar">>(() => {
         return BarChartDataBuilder
             .createFromDataPoints(dataPoints.value)
+            .withSeriesOrder([SeriesName.Instance, SeriesName.Average])
             .build();
     });
 
@@ -59,8 +65,13 @@
             .create()
             .withoutLegend()
             .withResponsiveSizing()
-            .withValueFormattedAsPercentage()
+            .withYAxisAsPercent({
+                maxDecimalPlaces: 2
+            })
             .withoutTooltips()
+            .withBarValueLabels({
+                isBackgroundDark: barColor => new RockColor(barColor).luminosity < .5
+            })
             .build();
     });
 
@@ -79,8 +90,8 @@
                 return {
                     instance: i,
                     rates: {
-                        conversionRate: recipientCount && conversionCount ? conversionCount / recipientCount * 100 : 0,
-                        unsubscribeRate: recipientCount && unsubscribeCount ? unsubscribeCount / recipientCount * 100 : 0
+                        conversionRate: recipientCount && conversionCount ? conversionCount / recipientCount : 0,
+                        unsubscribeRate: recipientCount && unsubscribeCount ? unsubscribeCount / recipientCount : 0
                     }
                 };
             })
@@ -102,14 +113,14 @@
         // Add data points for the average rates of selected instances.
         if (selectedInstanceRates.length > 0) {
             dataPoints.push({
-                seriesName: selectedInstanceRates.length > 1 ? "Instances" : "Instance",
+                seriesName: selectedInstanceRates.length > 1 ? `${SeriesName.Instance}s` : SeriesName.Instance,
                 label: "Conversion Rate",
                 value: Enumerable.from(selectedInstanceRates).average(r => r.conversionRate),
                 color: "#38A169"
             });
 
             dataPoints.push({
-                seriesName: selectedInstanceRates.length > 1 ? "Instances" : "Instance",
+                seriesName: selectedInstanceRates.length > 1 ? `${SeriesName.Instance}s` : SeriesName.Instance,
                 label: "Unsubscribe Rate",
                 value: Enumerable.from(selectedInstanceRates).average(r => r.unsubscribeRate),
                 color: "#E53E3E"
@@ -118,14 +129,14 @@
 
         // Add data points for the average rates of all instances.
         dataPoints.push({
-            seriesName: "Average",
+            seriesName: SeriesName.Average,
             label: "Conversion Rate",
             value: Enumerable.from(allInstanceRates.values()).average(i => i.conversionRate),
             color: "#CDEAE1"
         });
 
         dataPoints.push({
-            seriesName: "Average",
+            seriesName: SeriesName.Average,
             label: "Unsubscribe Rate",
             value: Enumerable.from(allInstanceRates.values()).average(i => i.unsubscribeRate),
             color: "#FAD8D8"

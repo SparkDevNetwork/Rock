@@ -22,96 +22,11 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { isHTMLElement } from "@Obsidian/Utility/dom";
 import { tooltip } from "@Obsidian/Utility/tooltip";
 import { isNullish } from "@Obsidian/Utility/util";
+import { ChartNumericDateTimeDataPoint } from "./types.partial";
+import { Enumerable } from "@Obsidian/Utility/linq";
 
 export function isEnumValue<T extends Record<string, number | string>>(enumObject: T, value: unknown): value is T[keyof T] {
     return Object.values(enumObject).includes(value as T[keyof T]);
-}
-
-export const BarDatasetLabelsPlugin: Plugin<"bar"> = {
-    id: "barDatasetLabels",
-    afterDatasetDraw(chart: Chart<"bar">, { index: datasetIndex, meta: _meta }: { index: number; meta: ChartMeta<"bar"> }) {
-        const { ctx, data } = chart;
-
-        ctx.save();
-        chart.getDatasetMeta(datasetIndex).data.forEach((datapoint, _datapointIndex) => {
-            ctx.font = "normal 14px sans-serif";
-            ctx.fillStyle = getCssValue("--color-interface-medium");
-            ctx.textAlign = "center";
-            const label = `${data.datasets[datasetIndex].label}`;
-            ctx.fillText(label, datapoint.x, datapoint.y - 7);
-        });
-    }
-};
-
-const contrastColors: Record<string, string> = {};
-
-// Define custom plugin options
-interface IBarValueLabelsPluginOptions {
-    formatter?: (value: string) => string;
-}
-
-// Extend the Chart.js type definitions
-declare module "@Obsidian/Libs/chart" {
-    // eslint-disable-next-line @typescript-eslint/naming-convention, @typescript-eslint/no-unused-vars
-    interface PluginOptionsByType<TType extends ChartType> {
-        barValueLabels?: IBarValueLabelsPluginOptions;
-    }
-}
-
-export const BarValueLabelsPlugin: Plugin<"bar"> = {
-    id: "barValueLabels",
-    afterDatasetDraw(chart: Chart<"bar">, { index: datasetIndex, meta }: { index: number; meta: ChartMeta<"bar"> }, options?: IBarValueLabelsPluginOptions) {
-        const { ctx, data } = chart;
-
-        ctx.save();
-        meta.data.forEach((dataElement, dataIndex) => {
-            if (dataElement instanceof BarElement === false) {
-                console.warn("BarValueLabelsPlugin can only be used with BarElement data elements.", dataElement);
-                return;
-            }
-
-            const barProps: (keyof BarProps)[] = ["base"];
-            const { base } = dataElement.getProps(barProps);
-
-            const fontSize = 12;
-            const minimumSpaceBetweenTextAndBorder = 4;
-            const desiredSpaceBetweenTextAndBar = 8;
-            ctx.font = `normal ${fontSize}px sans-serif`;
-            ctx.textAlign = "center";
-
-            // Because the value is printed on top of the bar,
-            // we need to figure out whether white or black text is more readable.
-            const barColor = data.datasets[datasetIndex].backgroundColor?.[dataIndex] || data.datasets[datasetIndex].borderColor?.[dataIndex] || "";
-
-            if (typeof barColor !== "string") {
-                console.warn("Bar color must be a string to determine contrast color to use the BarValueLabelsPlugin.", barColor);
-                return;
-            }
-
-            if (!contrastColors[barColor]) {
-                // Only calculate the contrast color once per bar color.
-                const color = new RockColor(barColor);
-                contrastColors[barColor] = color.luminosity >= .5 ? "black" : "white";
-            }
-
-            // Use the contrast color and fallback to the CSS contrast color if not defined.
-            ctx.fillStyle = contrastColors[barColor] || getCssValue("--color-interface-contrast");
-
-            const value = `${data.datasets[datasetIndex].data[dataIndex]}`;
-            const formatted = options?.formatter ? options.formatter(value) : value;
-
-            let textOffset = (fontSize / 2) + minimumSpaceBetweenTextAndBorder;
-            if (base - dataElement.y > (fontSize / 2) + desiredSpaceBetweenTextAndBar + minimumSpaceBetweenTextAndBorder) {
-                textOffset = (fontSize / 2) + desiredSpaceBetweenTextAndBar;
-            }
-
-            ctx.fillText(formatted, dataElement.x, dataElement.y + textOffset);
-        });
-    }
-};
-
-function getCssValue(variableName: string): string {
-    return getComputedStyle(document.documentElement).getPropertyValue(variableName).trim();
 }
 
 type RockDateTimeParser = {
@@ -462,4 +377,72 @@ export const RockDateTimeFormatter = {
 
 export function isRockDateTime(value: unknown): value is RockDateTime {
     return !isNullish(value) && value instanceof RockDateTime;
+}
+
+/**
+ * Builds a cumulative chart series from an enumerable of RockDateTime objects.
+ *
+ * @param dateEnumerable An enumerable of RockDateTime objects or null/undefined values.
+ * @param options An object containing options for the series.
+ * @returns An array of ChartNumericDateTimeDataPoint objects representing the cumulative series.
+ */
+export function buildCumulativeChartSeries(
+    dateEnumerable: Enumerable<RockDateTime>,
+    options: {
+        /**
+         * The name of the series to use in the chart.
+         */
+        seriesName: string;
+        /**
+         * The color to use for the series in the chart.
+         */
+        color: string;
+        /**
+         * The total count of recipients or messages to use for calculating the percentage.
+         */
+        totalCount: number;
+        /**
+         * Transforms the date after the ISO date string is parsed.
+         * This is useful for grouping dates into weeks or months.
+         */
+        dateTransformer?: ((d: RockDateTime) => RockDateTime) | null | undefined;
+        /**
+         * Formats the date for display in the chart.
+         * Defaults to outputting an ISO string if not provided.
+         */
+        dateFormatter?: ((d: RockDateTime) => string) | null | undefined;
+    }
+): Enumerable<ChartNumericDateTimeDataPoint> {
+    // Ensure the date transformer is defined, defaulting to the identity function if not provided.
+    const dateTransformer = options.dateTransformer ?? (d => d);
+
+    // Ensure the date formatter is defined, defaulting to outputting an ISO string if not provided.
+    const dateFormatter = options.dateFormatter ?? (d => d.toISOString());
+
+    return dateEnumerable
+        .select(dateTransformer)
+        .groupBy(date => date.toMilliseconds())
+        .orderBy(group => group.key)
+        .scan(
+            { count: 0, dataPoint: undefined as unknown as ChartNumericDateTimeDataPoint },
+            (state, group) => {
+                const date = group.first();
+                const groupCount = group.count();
+                const count = state.count + groupCount;
+
+                const dataPoint: ChartNumericDateTimeDataPoint = {
+                    seriesName: options.seriesName,
+                    color: options.color,
+                    label: dateFormatter(date),
+                    value: (count / options.totalCount) * 100,
+                    rockDateTime: date
+                };
+
+                return {
+                    count,
+                    dataPoint
+                };
+            },
+        )
+        .select(state => state.dataPoint);
 }

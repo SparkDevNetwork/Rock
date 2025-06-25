@@ -14,9 +14,9 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
-    import { LineChartDataBuilder, LineChartOptionsBuilder } from "./types.partial";
-    import { isRockDateTime, RockDateTimeFormatter, useRockDateTimeParser } from "./utils.partial";
+    import { computed, PropType, watch } from "vue";
+    import { buildCumulativeRates, LineChartDataBuilder, LineChartOptionsBuilder } from "@Obsidian/Utility/chartUtils";
+    import { isRockDateTime, useRockDateTimeParser } from "./utils.partial";
     import Chart from "@Obsidian/Controls/chart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
@@ -24,6 +24,14 @@
     import { isNullish } from "@Obsidian/Utility/util";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
     import { CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+
+    enum SeriesName {
+        ConversionRate = "Conversion Rate",
+        UnsubscribeRate = "Unsubscribe Rate",
+        OpenRate = "Open Rate",
+        ClickThroughRate = "Click-Through Rate"
+    }
 
     const props = defineProps({
         modelValue: {
@@ -39,13 +47,19 @@
     const data = computed<ChartData<"line">>(() => {
         return LineChartDataBuilder
             .createFromData(dataPoints.value)
+            .withSeriesOrder([SeriesName.ConversionRate, SeriesName.UnsubscribeRate])
             .build();
     });
 
     const options = computed<ChartOptions<"line">>(() => {
         return LineChartOptionsBuilder
             .create()
-            .withValueFormattedAsPercentage()
+            .withXAxisAsDate({
+                timeUnit: "day"
+            })
+            .withYAxisAsPercent({
+                maxDecimalPlaces: 2
+            })
             .withResponsiveSizing()
             .build();
     });
@@ -64,113 +78,82 @@
             return dataPoints;
         }
 
-        const formatDate = RockDateTimeFormatter.format_Jan_1_1970;
+        const formatDate = (d: RockDateTime): string => d.toASPString("yyyy-MM-dd");
+        const recipientMetricsEnumerable = Enumerable.from(recipientMetrics);
 
         // There are 4 data series: Conversion Rate, Open Rate, Click-Through Rate, and Unsubscribe Rate.
 
         // First let's process the Conversion Rates per day.
         // These contain timestamps so they can be sorted with the other data series below.
-        let conversionRateAccumulator = 0;
-        const conversionDataPoints = Enumerable
-            .from(recipientMetrics)
-            .where(rm => !isNullish(rm.conversionDate))
-            .select(rm => parseRockDateTime(rm.conversionDate))
-            .ofType(isRockDateTime)
-            .select(conversionRockDateTime => conversionRockDateTime)
-            .orderBy(d => d.toMilliseconds())
-            .groupBy(d => d.toMilliseconds())
-            .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
-                const firstDataPoint = g.first();
-                conversionRateAccumulator += g.count();
-
-                return {
-                    seriesName: "Conversion Rate",
-                    label: formatDate(firstDataPoint),
-                    value: conversionRateAccumulator / selectedInstancesTotalRecipientCount * 100,
-                    color: "#38A169",
-                    timestamp: firstDataPoint.toMilliseconds()
-                };
+        const conversionDataPoints = buildCumulativeRates(
+            recipientMetricsEnumerable
+                .select(rm => parseRockDateTime(rm.conversionDate))
+                .ofType(isRockDateTime),
+            {
+                seriesName: SeriesName.ConversionRate,
+                color: "#38A169",
+                totalCount: selectedInstancesTotalRecipientCount,
+                dateFormatter: formatDate
             });
 
         // Open Rates per day.
         // These contain timestamps so they can be sorted with the other data series.
-        let openRateAccumulator = 0;
-        const openDataPoints = Enumerable
-            .from(recipientMetrics)
-            .where(rm => !isNullish(rm.openedDate))
-            .select(rm => parseRockDateTime(rm.openedDate))
-            .ofType(isRockDateTime)
-            .select(openRockDateTime => openRockDateTime)
-            .orderBy(d => d.toMilliseconds())
-            .groupBy(d => d.toMilliseconds())
-            .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
-                const firstDataPoint = g.first();
-                openRateAccumulator += g.count();
-
-                return {
-                    seriesName: "Open Rate",
-                    label: formatDate(firstDataPoint),
-                    value: openRateAccumulator / selectedInstancesTotalRecipientCount * 100,
-                    color: "#68D391",
-                    timestamp: firstDataPoint.toMilliseconds()
-                };
+        const openDataPoints = buildCumulativeRates(
+            recipientMetricsEnumerable
+                .select(rm => parseRockDateTime(rm.openedDate))
+                .ofType(isRockDateTime),
+            {
+                seriesName: SeriesName.OpenRate,
+                color: "#68D391",
+                totalCount: selectedInstancesTotalRecipientCount,
+                dateFormatter: formatDate,
             });
 
         // Click-Through Rates per day.
         // These contain timestamps so they can be sorvted with the other data series.
-        let clickThroughRateAccumulator = 0;
-        const clickThroughDataPoints = Enumerable
-            .from(recipientMetrics)
-            .where(rm => !isNullish(rm.clickedDate))
-            .select(rm => parseRockDateTime(rm.clickedDate))
-            .ofType(isRockDateTime)
-            .select(clickedRockDateTime => clickedRockDateTime)
-            .orderBy(d => d.toMilliseconds())
-            .groupBy(d => d.toMilliseconds())
-            .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
-                const firstDataPoint = g.first();
-                clickThroughRateAccumulator += g.count();
-
-                return {
-                    seriesName: "Click-Through Rate",
-                    label: formatDate(firstDataPoint),
-                    value: clickThroughRateAccumulator / selectedInstancesTotalRecipientCount * 100,
-                    color: "#F6E05E",
-                    timestamp: firstDataPoint.toMilliseconds()
-                };
+        const clickThroughDataPoints = buildCumulativeRates(
+            recipientMetricsEnumerable
+                .select(rm => parseRockDateTime(rm.clickedDate))
+                .ofType(isRockDateTime),
+            {
+                seriesName: SeriesName.ClickThroughRate,
+                color: "#F6E05E",
+                totalCount: selectedInstancesTotalRecipientCount,
+                dateFormatter: formatDate,
             });
 
         // Unsubscribe Rates per day.
         // These contain timestamps so they can be sorted with the other data series.
-        let unsubscribeRateAccumulator = 0;
-        const unsubscribeDataPoints = Enumerable
-            .from(recipientMetrics)
-            .where(rm => !isNullish(rm.unsubscribeDate))
-            .select(rm => parseRockDateTime(rm.unsubscribeDate))
-            .ofType(isRockDateTime)
-            .select(unsubscribedRockDateTime => unsubscribedRockDateTime)
-            .orderBy(d => d.toMilliseconds())
-            .groupBy(d => d.toMilliseconds())
-            .select<ChartNumericDataPointBag & { timestamp: number; }>(g => {
-                const firstDataPoint = g.first();
-                unsubscribeRateAccumulator += g.count();
-
-                return {
-                    seriesName: "Unsubscribe Rate",
-                    label: formatDate(firstDataPoint),
-                    value: unsubscribeRateAccumulator / selectedInstancesTotalRecipientCount * 100,
-                    color: "#E53E3E",
-                    timestamp: firstDataPoint.toMilliseconds()
-                };
+        const unsubscribeDataPoints = buildCumulativeRates(
+            recipientMetricsEnumerable
+                .select(rm => parseRockDateTime(rm.unsubscribeDate))
+                .ofType(isRockDateTime),
+            {
+                seriesName: SeriesName.UnsubscribeRate,
+                color: "#E53E3E",
+                totalCount: selectedInstancesTotalRecipientCount,
+                dateFormatter: formatDate,
             });
 
         return conversionDataPoints
             .concat(openDataPoints)
             .concat(clickThroughDataPoints)
             .concat(unsubscribeDataPoints)
-            .orderBy(dp => dp.timestamp) // Re-order so the data are all in chronological order.
+            .orderBy(dp => dp.rockDateTime.toMilliseconds()) // Re-order so the data are all in chronological order.
             .toArray();
     });
 
     // #endregion Computed Values
+
+    // #region Watchers
+
+    watch(dataPoints, (newValue) => {
+        console.log("Data points updated:", newValue);
+    }, {
+        immediate: true
+    });
+
+    console.log("Initial data:", props.modelValue);
+
+    // #endregion Watchers
 </script>
