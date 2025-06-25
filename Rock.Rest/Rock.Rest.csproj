@@ -33,7 +33,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="Ical.Net" Version="4.2.0" />
     <PackageReference Include="ImageResizer" Version="4.0.5" />
     <PackageReference Include="Microsoft.AspNet.WebApi.Cors" Version="5.2.3" />
