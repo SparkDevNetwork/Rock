@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,12 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
 {
@@ -33,7 +38,7 @@ namespace Rock.Reporting.DataSelect.Person
 
     [BooleanField( "Show As Link", "", true )]
     [CustomRadioListField( "Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0" )]
-    [Rock.SystemGuid.EntityTypeGuid( "6301F6B4-B2EF-469A-8EC2-7D5F06B55C60")]
+    [Rock.SystemGuid.EntityTypeGuid( "6301F6B4-B2EF-469A-8EC2-7D5F06B55C60" )]
     public class PersonLinkSelect : DataSelectComponent
     {
         /// <summary>
@@ -119,6 +124,41 @@ namespace Rock.Reporting.DataSelect.Person
                 return "Common";
             }
         }
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/personLinkSelect.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = selection.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+            return new Dictionary<string, string>
+            {
+                ["showAsLink"] = settings.GetValueOrDefault( "ShowAsLink", string.Empty ),
+                ["displayOrder"] = settings.GetValueOrDefault( "DisplayOrder", string.Empty )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string>
+            {
+                ["ShowAsLink"] = data.GetValueOrDefault( "showAsLink", string.Empty ).AsBooleanOrNull().ToStringSafe(),
+                ["DisplayOrder"] = data.GetValueOrDefault( "displayOrder", string.Empty ).ToIntSafe().ToStringSafe()
+            }.ToJson();
+        }
+
+        #endregion
 
         /// <summary>
         /// Gets the grid field.
