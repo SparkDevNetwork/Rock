@@ -1,0 +1,27 @@
+<template>
+    <NumberBox v-model="width" label="Image Width" />
+    <NumberBox v-model="height" label="Image Height" />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const width = ref<number | null>(toNumberOrNull(props.modelValue.width));
+    const height = ref<number | null>(toNumberOrNull(props.modelValue.height));
+
+    watch([width, height], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            width: width.value?.toString() ?? "",
+            height: height.value?.toString() ?? ""
+        });
+    });
+</script>

@@ -15,19 +15,20 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Security;
-using Rock.Utility;
-using Rock.Web.Cache;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -113,6 +114,41 @@ namespace Rock.Reporting.DataSelect.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/photoSelect.obs" ),
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length >= 2 )
+            {
+                return new Dictionary<string, string>
+                {
+                    { "width", selectionValues[0].AsIntegerOrNull().ToString() },
+                    { "height", selectionValues[1].AsIntegerOrNull().ToString() }
+                };
+            }
+
+            return new Dictionary<string, string>();
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return $"{data.GetValueOrDefault( "width", "" )}|{data.GetValueOrDefault( "height", "" )}";
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -175,7 +211,7 @@ namespace Rock.Reporting.DataSelect.Person
 
             return selectPhotoExpression;
         }
-        
+
         /// <summary>
         /// Creates the child controls.
         /// </summary>
