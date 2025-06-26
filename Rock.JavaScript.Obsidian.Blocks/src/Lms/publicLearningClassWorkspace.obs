@@ -161,15 +161,15 @@
                                             </div>
                                         </div>
                                     </div>
-                                    <div class="d-flex flex-column gap-1">
-                                        <RockLabel>
-                                            Communication Preference
-                                        </RockLabel>
-                                        <ButtonGroup v-model="selectedCommunicationPreference"
-                                                     :btnSize="BtnSize.Small"
-                                                     :items="communicationPreferences" />
-                                    </div>
                                 </template>
+                                <div class="d-flex flex-column gap-1">
+                                    <RockLabel>
+                                        Communication Preference
+                                    </RockLabel>
+                                    <ButtonGroup v-model="selectedCommunicationPreference"
+                                                 :btnSize="BtnSize.Small"
+                                                 :items="communicationPreferences" />
+                                </div>
 
                                 <div class="view-all-button" :class="notificationsOverflowContainerClass" v-if="hasNotificationsOverflow">
                                     <RockButton
