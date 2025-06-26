@@ -25,7 +25,7 @@
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
-    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
 
@@ -36,12 +36,12 @@
 
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
+            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
             required: true
         },
 
         flowInstances: {
-            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
+            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
             required: true
         },
 

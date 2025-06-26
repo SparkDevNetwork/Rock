@@ -14,7 +14,7 @@
     import Kpi from "@Obsidian/Controls/kpi.obs";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
-    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
 
     enum UnsubscribeLevel {
         Flow = 1,
@@ -25,7 +25,7 @@
 
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
+            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
             required: true
         }
     });

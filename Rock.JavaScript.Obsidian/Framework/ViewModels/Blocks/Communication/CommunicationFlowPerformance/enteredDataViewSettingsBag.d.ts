@@ -21,12 +21,10 @@
 // </copyright>
 //
 
-import { UnsubscribeLevel } from "@Obsidian/Enums/Communication/unsubscribeLevel";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type CommunicationFlowPerformanceRecipientBag = {
-    causedUnsubscribe: boolean;
-
-    unsubscribeDateTime?: string | null;
-
-    unsubscribeLevel?: UnsubscribeLevel | null;
+/** The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Entered Data View". */
+export type EnteredDataViewSettingsBag = {
+    /** Gets or sets the Data View that needs to be entered for the conversion goal to be achieved. */
+    dataView?: ListItemBag | null;
 };

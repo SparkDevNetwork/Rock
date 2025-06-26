@@ -21,10 +21,8 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+export type CommunicationFlowInstanceCommunicationBag = {
+    communicationFlowCommunicationIdKey?: string | null;
 
-/** The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Entered Data View". */
-export type CommunicationFlowPerformanceEnteredDataViewSettingsBag = {
-    /** Gets or sets the Data View that needs to be entered for the conversion goal to be achieved. */
-    dataView?: ListItemBag | null;
+    idKey?: string | null;
 };

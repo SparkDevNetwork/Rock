@@ -23,11 +23,11 @@
 
 import { CommunicationFlowTriggerType } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
 import { ConversionGoalType } from "@Obsidian/Enums/Communication/conversionGoalType";
-import { CommunicationFlowPerformanceConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceConversionGoalSettingsBag";
-import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
+import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+import { ConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/conversionGoalSettingsBag";
 
-export type CommunicationFlowPerformanceFlowBag = {
-    conversionGoalSettings?: CommunicationFlowPerformanceConversionGoalSettingsBag | null;
+export type CommunicationFlowBag = {
+    conversionGoalSettings?: ConversionGoalSettingsBag | null;
 
     conversionGoalTargetPercent?: number | null;
 
@@ -37,7 +37,7 @@ export type CommunicationFlowPerformanceFlowBag = {
 
     idKey?: string | null;
 
-    instances?: CommunicationFlowPerformanceFlowInstanceBag[] | null;
+    instances?: CommunicationFlowInstanceBag[] | null;
 
     name?: string | null;
 

@@ -21,10 +21,12 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+import { UnsubscribeLevel } from "@Obsidian/Enums/Communication/unsubscribeLevel";
 
-/** The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Completed Form". */
-export type CommunicationFlowPerformanceCompletedFormSettingsBag = {
-    /** Gets or sets the form (Workflow Type) that needs to be completed in order for the conversion goal to be achieved. */
-    workflowType?: ListItemBag | null;
+export type CommunicationFlowInstanceRecipientBag = {
+    causedUnsubscribe: boolean;
+
+    unsubscribeDateTime?: string | null;
+
+    unsubscribeLevel?: UnsubscribeLevel | null;
 };

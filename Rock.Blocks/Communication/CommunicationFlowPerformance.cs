@@ -81,11 +81,12 @@ namespace Rock.Blocks.Communication
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            var box = new CommunicationFlowPerformanceInitializationBox();
+            var box = new InitializationBox();
 
             box.NavigationUrls = GetBoxNavigationUrls();
-            box.CommunicationFlow = GetFlow( this.RockContext );
+            box.CommunicationFlow = GetCommunicationFlow( this.RockContext );
             box.GridDefinition = GetGridBuilder().BuildDefinition();
+            box.MessageGridItems = GetMessageGridItems( box.CommunicationFlow );
             
             if ( box.CommunicationFlow != null )
             {
@@ -117,7 +118,7 @@ namespace Rock.Blocks.Communication
             };
         }
 
-        private CommunicationFlowPerformanceFlowBag GetFlow( RockContext rockContext )
+        private CommunicationFlowBag GetCommunicationFlow( RockContext rockContext )
         {
             var flowKey = PageParameter( PageParameterKey.CommunicationFlow );
             if ( flowKey.IsNullOrWhiteSpace() )
@@ -151,7 +152,7 @@ namespace Rock.Blocks.Communication
                     .Load();
             }
 
-            var bag = new CommunicationFlowPerformanceFlowBag
+            var bag = new CommunicationFlowBag
             {
                 IdKey = flow.IdKey,
                 ConversionGoalType = flow.ConversionGoalType,
@@ -166,19 +167,19 @@ namespace Rock.Blocks.Communication
             return bag;
         }
 
-        private List<CommunicationFlowPerformanceFlowInstanceBag> GetCommunicationFlowInstanceBags( IEnumerable<CommunicationFlowInstance> communicationFlowInstances )
+        private List<CommunicationFlowInstanceBag> GetCommunicationFlowInstanceBags( IEnumerable<CommunicationFlowInstance> communicationFlowInstances )
         {
-            var communicationFlowInstanceBags = new List<CommunicationFlowPerformanceFlowInstanceBag>();
+            var communicationFlowInstanceBags = new List<CommunicationFlowInstanceBag>();
 
             // Process instance data.
             foreach ( var communicationFlowInstance in communicationFlowInstances )
             {
-                var instanceBag = new CommunicationFlowPerformanceFlowInstanceBag
+                var instanceBag = new CommunicationFlowInstanceBag
                 {
-                    IdKey = communicationFlowInstance.IdKey,
+                    CommunicationFlowInstanceIdKey = communicationFlowInstance.IdKey,
                     StartDate = communicationFlowInstance.StartDate,
                     Conversions = GetCommunicationFlowInstanceConversionHistoryBags( communicationFlowInstance.CommunicationFlowInstanceConversionHistories ),
-                    Recipients = GetCommunicationFlowInstanceRecipientBags( communicationFlowInstance.CommunicationFlowInstanceRecipients ),
+                    InitialRecipients = GetCommunicationFlowInstanceRecipientBags( communicationFlowInstance.CommunicationFlowInstanceRecipients ),
                     Communications = GetCommunicationFlowInstanceCommunicationBags( communicationFlowInstance.CommunicationFlowInstanceCommunications ),
                     HasSentCommunications = communicationFlowInstance.CommunicationFlowInstanceCommunications.Any( c => c.Communication.SendDateTime.HasValue && RockDateTime.Now > c.Communication.SendDateTime.Value ),
                     HasUnsentCommunications = communicationFlowInstance.CommunicationFlowInstanceCommunications.Count < communicationFlowInstance.CommunicationFlow.CommunicationFlowCommunications.Count
@@ -190,15 +191,15 @@ namespace Rock.Blocks.Communication
             return communicationFlowInstanceBags;
         }
 
-        private List<CommunicationFlowPerformanceInstanceCommunicationBag> GetCommunicationFlowInstanceCommunicationBags( ICollection<CommunicationFlowInstanceCommunication> communicationFlowInstanceCommunications )
+        private List<CommunicationFlowInstanceCommunicationBag> GetCommunicationFlowInstanceCommunicationBags( ICollection<CommunicationFlowInstanceCommunication> communicationFlowInstanceCommunications )
         {
-            var communicationBags = new List<CommunicationFlowPerformanceInstanceCommunicationBag>();
+            var communicationBags = new List<CommunicationFlowInstanceCommunicationBag>();
 
             foreach ( var communicationFlowInstanceCommunication in communicationFlowInstanceCommunications )
             {
-                communicationBags.Add( new CommunicationFlowPerformanceInstanceCommunicationBag
+                communicationBags.Add( new CommunicationFlowInstanceCommunicationBag
                 {
-                    IdKey = communicationFlowInstanceCommunication.IdKey,
+                    CommunicationFlowInstanceCommunicationIdKey = communicationFlowInstanceCommunication.IdKey,
                     CommunicationFlowCommunicationIdKey = communicationFlowInstanceCommunication.CommunicationFlowCommunication.IdKey
                 } );
             }
@@ -206,13 +207,13 @@ namespace Rock.Blocks.Communication
             return communicationBags;
         }
 
-        private List<CommunicationFlowPerformanceRecipientBag> GetCommunicationFlowInstanceRecipientBags( ICollection<CommunicationFlowInstanceRecipient> communicationFlowInstanceRecipients )
+        private List<CommunicationFlowInstanceRecipientBag> GetCommunicationFlowInstanceRecipientBags( ICollection<CommunicationFlowInstanceRecipient> communicationFlowInstanceRecipients )
         {
-            var recipientBags = new List<CommunicationFlowPerformanceRecipientBag>();
+            var recipientBags = new List<CommunicationFlowInstanceRecipientBag>();
 
             foreach ( var communicationFlowInstanceRecipient in communicationFlowInstanceRecipients )
             {
-                var recipientBag = new CommunicationFlowPerformanceRecipientBag
+                var recipientBag = new CommunicationFlowInstanceRecipientBag
                 {
                     CausedUnsubscribe = communicationFlowInstanceRecipient.UnsubscribeCommunicationRecipientId.HasValue,
                     UnsubscribeDateTime = communicationFlowInstanceRecipient.UnsubscribeCommunicationRecipient?.UnsubscribeDateTime,
@@ -225,13 +226,13 @@ namespace Rock.Blocks.Communication
             return recipientBags;
         }
 
-        private List<CommunicationFlowPerformanceConversionHistoryBag> GetCommunicationFlowInstanceConversionHistoryBags( IEnumerable<CommunicationFlowInstanceConversionHistory> conversionHistories )
+        private List<CommunicationFlowInstanceConversionHistoryBag> GetCommunicationFlowInstanceConversionHistoryBags( IEnumerable<CommunicationFlowInstanceConversionHistory> conversionHistories )
         {
-            var conversionHistoryBags = new List<CommunicationFlowPerformanceConversionHistoryBag>();
+            var conversionHistoryBags = new List<CommunicationFlowInstanceConversionHistoryBag>();
 
             foreach ( var conversionHistory in conversionHistories )
             {
-                var conversionHistoryBag = new CommunicationFlowPerformanceConversionHistoryBag
+                var conversionHistoryBag = new CommunicationFlowInstanceConversionHistoryBag
                 {
                     Date = conversionHistory.Date
                 };
@@ -242,7 +243,7 @@ namespace Rock.Blocks.Communication
             return conversionHistoryBags;
         }
 
-        private CommunicationFlowPerformanceConversionGoalSettingsBag GetConversionGoalSettingsBag( CommunicationFlow entity )
+        private ConversionGoalSettingsBag GetConversionGoalSettingsBag( CommunicationFlow entity )
         {
             var settings = entity.GetConversionGoalSettings();
 
@@ -251,11 +252,11 @@ namespace Rock.Blocks.Communication
                 return null;
             }
 
-            var bag = new CommunicationFlowPerformanceConversionGoalSettingsBag();
+            var bag = new ConversionGoalSettingsBag();
 
             if ( settings.CompletedFormSettings != null )
             {
-                bag.CompletedFormSettings = new CommunicationFlowPerformanceCompletedFormSettingsBag
+                bag.CompletedFormSettings = new CompletedFormSettingsBag
                 {
                     WorkflowType = WorkflowTypeCache.Get( settings.CompletedFormSettings.WorkflowTypeGuid ).ToListItemBag(),
                 };
@@ -263,7 +264,7 @@ namespace Rock.Blocks.Communication
 
             if ( settings.JoinedGroupTypeSettings != null )
             {
-                bag.JoinedGroupTypeSettings = new CommunicationFlowPerformanceJoinedGroupTypeSettingsBag
+                bag.JoinedGroupTypeSettings = new JoinedGroupTypeSettingsBag
                 {
                     GroupType = GroupTypeCache.Get( settings.JoinedGroupTypeSettings.GroupTypeGuid ).ToListItemBag()
                 };
@@ -271,7 +272,7 @@ namespace Rock.Blocks.Communication
 
             if ( settings.JoinedGroupSettings != null )
             {
-                bag.JoinedGroupSettings = new CommunicationFlowPerformanceJoinedGroupSettingsBag
+                bag.JoinedGroupSettings = new JoinedGroupSettingsBag
                 {
                     Group = GroupCache.Get( settings.JoinedGroupSettings.GroupGuid ).ToListItemBag()
                 };
@@ -289,7 +290,7 @@ namespace Rock.Blocks.Communication
                     } )
                     .FirstOrDefault();
 
-                bag.RegisteredSettings = new CommunicationFlowPerformanceRegisteredSettingsBag
+                bag.RegisteredSettings = new RegisteredSettingsBag
                 {
                     RegistrationInstance = registrationInstance
                 };
@@ -297,7 +298,7 @@ namespace Rock.Blocks.Communication
 
             if ( settings.TookStepSettings != null )
             {
-                bag.TookStepSettings = new CommunicationFlowPerformanceTookStepSettingsBag
+                bag.TookStepSettings = new TookStepSettingsBag
                 {
                     StepType = StepTypeCache.Get( settings.TookStepSettings.StepTypeGuid ).ToListItemBag()
                 };
@@ -305,7 +306,7 @@ namespace Rock.Blocks.Communication
 
             if ( settings.EnteredDataViewSettings != null )
             {
-                bag.EnteredDataViewSettings = new CommunicationFlowPerformanceEnteredDataViewSettingsBag
+                bag.EnteredDataViewSettings = new EnteredDataViewSettingsBag
                 {
                     DataView = DataViewCache.Get( settings.EnteredDataViewSettings.DataViewGuid ).ToListItemBag()
                 };
@@ -329,116 +330,97 @@ namespace Rock.Blocks.Communication
             };
         }
 
-        private GridBuilder<CommunicationFlowPerformanceGridItemBag> GetGridBuilder()
+        private GridBuilder<MessageGridItemBag> GetGridBuilder()
         {
-            return new GridBuilder<CommunicationFlowPerformanceGridItemBag>()
+            return new GridBuilder<MessageGridItemBag>()
                 .WithBlock( this )
-                .AddField( "idKey", b => b.IdKey )
-                .AddTextField( "messageName", b => b.MessageName )
-                .AddField( "communicationType", b => b.CommunicationType )
-                .AddField( "sent", b => b.Sent )
-                .AddField( "conversions", b => b.Conversions )
-                .AddField( "unsubscribes", b => b.Unsubscribes )
-                .AddField( "opens", b => b.Opens )
-                .AddField( "clicks", b => b.Clicks );
+                .AddField( nameof( MessageGridItemBag.CommunicationFlowCommunicationIdKey ).ToCamelCase(), b => b.CommunicationFlowCommunicationIdKey )
+                .AddField( nameof( MessageGridItemBag.CommunicationFlowInstanceCommunicationIdKey ).ToCamelCase(), b => b.CommunicationFlowInstanceCommunicationIdKey )
+                .AddTextField( nameof( MessageGridItemBag.CommunicationName ).ToCamelCase(), b => b.CommunicationName )
+                .AddField( nameof( MessageGridItemBag.CommunicationType ).ToCamelCase(), b => b.CommunicationType )
+                .AddField( nameof( MessageGridItemBag.Sent ).ToCamelCase(), b => b.Sent )
+                .AddField( nameof( MessageGridItemBag.Conversions ).ToCamelCase(), b => b.Conversions )
+                .AddField( nameof( MessageGridItemBag.Unsubscribes ).ToCamelCase(), b => b.Unsubscribes )
+                .AddField( nameof( MessageGridItemBag.Opens ).ToCamelCase(), b => b.Opens )
+                .AddField( nameof( MessageGridItemBag.Clicks ).ToCamelCase(), b => b.Clicks );
         }
 
-        #endregion
-
-        #region Block Actions
-
-        [BlockAction]
-        public BlockActionResult GetRowData()
+        private List<MessageGridItemBag> GetMessageGridItems( CommunicationFlow communicationFlow )
         {
-            var flowKey = PageParameter( PageParameterKey.CommunicationFlow );
-            if ( flowKey.IsNullOrWhiteSpace() )
-            {
-                return null;
-            }
-
             var interactionChannelId = InteractionChannelCache.GetId( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() ) ?? 0;
             var interactionQuery = new InteractionService( this.RockContext ).Queryable();
 
-            var data = new CommunicationFlowService( this.RockContext )
-                .GetQueryableByKey( flowKey, !this.PageCache.Layout.Site.DisablePredictableIds )
+            return new CommunicationFlowService( this.RockContext )
+                .GetQueryableByKey( communicationFlow.IdKey, !this.PageCache.Layout.Site.DisablePredictableIds )
                 .SelectMany( f => f.CommunicationFlowCommunications )
-                .Select( fc => new
+                .SelectMany( fc => fc.CommunicationFlowInstanceCommunications )
+                .Select( fic => new
                 {
-                    Id = fc.Id,
-                    MessageName = fc.Name,
-                    CommunicationType = ( Enums.Communication.CommunicationType ) ( int ) fc.CommunicationType,
+                    CommunicationFlowInstanceCommunicationId = fic.Id,
+                    CommunicationFlowCommunicationId = fic.Communication.Id,
+                    MessageName = fic.CommunicationFlowCommunication.Name,
+                    CommunicationType = ( Enums.Communication.CommunicationType ) ( int ) fic.CommunicationFlowCommunication.CommunicationType,
 
                     // Sent = distinct CommunicationRecipients underneath this blueprint message.
-                    Sent = fc.CommunicationFlowInstanceCommunications
-                        .SelectMany( ic => ic.Communication.Recipients )
+                    Sent = fic.Communication.Recipients
                         .Select( cr => cr.Id )
                         .Distinct()
                         .Count(),
 
                     // Conversions = distinct ConversionHistory rows tied to any instance that contains this message.
-                    Conversions = fc.CommunicationFlowInstanceCommunications
-                        .SelectMany( ic => ic.CommunicationFlowInstance.CommunicationFlowInstanceConversionHistories )
+                    Conversions = fic.CommunicationFlowInstance.CommunicationFlowInstanceConversionHistories
                         .Select( ch => ch.Id )
                         .Distinct()
                         .Count(),
 
                     // Unsubscribes = instance recipients that actually unsubscribed.
-                    Unsubscribes = fc.CommunicationFlowInstanceCommunications
-                        .SelectMany( ic =>
-                            ic.CommunicationFlowInstance
-                                .CommunicationFlowInstanceRecipients
-                                .Where( r => r.UnsubscribeCommunicationRecipientId != null )
-                        )
+                    Unsubscribes = fic.CommunicationFlowInstance.CommunicationFlowInstanceRecipients
+                        .Where( r => r.UnsubscribeCommunicationRecipient.CommunicationId == fic.CommunicationId )
                         .Select( r => r.Id )
                         .Distinct()
                         .Count(),
 
                     // Opens = open interactions
-                    Opens = fc.CommunicationFlowInstanceCommunications
-                        .SelectMany( ic =>
-                            // "Real" opens
+                    Opens =
+                        // "Real" opens
+                        interactionQuery
+                            .Where( ix =>
+                                ix.InteractionComponent.InteractionChannelId == interactionChannelId
+                                && ix.InteractionComponent.EntityId == fic.Communication.Id
+                                && ix.Operation == "Opened"
+                                && ix.EntityId != null
+                            )
+                            .Select( ix => ix.EntityId.Value )
+                        // "Inferred" opens - communication recipients with "Click" but no "Open" interactions.
+                        .Union(
                             interactionQuery
                                 .Where( ix =>
-                                    ix.InteractionComponent.InteractionChannelId == interactionChannelId
-                                    && ix.InteractionComponent.EntityId == ic.Communication.Id
-                                    && ix.Operation == "Opened"
-                                    && ix.EntityId != null
+                                        ix.InteractionComponent.InteractionChannelId == interactionChannelId
+                                        && ix.InteractionComponent.EntityId == fic.CommunicationId
+                                        && ix.Operation == "Click"
+                                        && ix.EntityId != null
+                                        // No matching "Opened" for the same communication recipient.
+                                        && !interactionQuery.Any( ox =>
+                                            ox.InteractionComponent.InteractionChannelId == interactionChannelId
+                                            && ox.InteractionComponent.EntityId == ix.InteractionComponent.EntityId
+                                            && ox.Operation == "Opened"
+                                            && ox.EntityId == ix.EntityId
+                                        )
                                 )
                                 .Select( ix => ix.EntityId.Value )
-                            // "Inferred" opens - communication recipients with "Click" but no "Open" interactions.
-                            .Union(
-                                interactionQuery
-                                    .Where( ix =>
-                                            ix.InteractionComponent.InteractionChannelId == interactionChannelId
-                                            && ix.InteractionComponent.EntityId == ic.CommunicationId
-                                            && ix.Operation == "Click"
-                                            && ix.EntityId != null
-                                            // No matching "Opened" for the same communication recipient.
-                                            && !interactionQuery.Any( ox =>
-                                                ox.InteractionComponent.InteractionChannelId == interactionChannelId
-                                                && ox.InteractionComponent.EntityId == ix.InteractionComponent.EntityId
-                                                && ox.Operation == "Opened"
-                                                && ox.EntityId == ix.EntityId
-                                            )
-                                    )
-                                    .Select( ix => ix.EntityId.Value )
-                            )
                         )
                         .Distinct()
                         .Count(),
 
                     // Clicks = click interactions
-                    Clicks = fc.CommunicationFlowInstanceCommunications
-                        .SelectMany( ic =>
-                            interactionQuery
-                                .Where( ix =>
-                                    ix.InteractionComponent.InteractionChannelId == interactionChannelId
-                                    && ix.InteractionComponent.EntityId == ic.Communication.Id
-                                    && ix.Operation == "Click"
-                                    && ix.EntityId != null
-                                )
-                                .Select( ix => ix.EntityId.Value )
+                    Clicks = interactionQuery
+                        .Where( ix =>
+                            ix.InteractionComponent.InteractionChannelId == interactionChannelId
+                            && ix.InteractionComponent.EntityId == fic.Communication.Id
+                            && ix.Operation == "Click"
+                            && ix.EntityId != null
                         )
+                        .Select( ix => ix.EntityId.Value )
                         .Distinct()
                         .Count()
                 } )
@@ -446,24 +428,20 @@ namespace Rock.Blocks.Communication
                 .ToList()
                 .Select( d =>
                 {
-                    return new CommunicationFlowPerformanceGridItemBag
+                    return new MessageGridItemBag
                     {
                         Clicks = d.Clicks,
                         CommunicationType = d.CommunicationType,
                         Conversions = d.Conversions,
-                        IdKey = d.Id != 0 ? IdHasher.Instance.GetHash( d.Id ) : string.Empty,
-                        MessageName = d.MessageName,
+                        CommunicationFlowCommunicationIdKey = d.CommunicationFlowCommunicationId != 0 ? IdHasher.Instance.GetHash( d.CommunicationFlowCommunicationId ) : string.Empty,
+                        CommunicationFlowInstanceCommunicationIdKey = d.CommunicationFlowInstanceCommunicationId != 0 ? IdHasher.Instance.GetHash( d.CommunicationFlowInstanceCommunicationId ) : string.Empty,
+                        CommunicationName = d.MessageName,
                         Opens = d.Opens,
                         Sent = d.Sent,
                         Unsubscribes = d.Unsubscribes
                     };
                 } )
                 .ToList();
-
-            var builder = GetGridBuilder();
-            var gridDataBag = builder.Build( data );
-        
-            return ActionOk( gridDataBag );
         }
 
         #endregion

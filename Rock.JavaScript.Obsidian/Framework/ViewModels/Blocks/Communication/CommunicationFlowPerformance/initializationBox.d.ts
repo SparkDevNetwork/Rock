@@ -21,8 +21,23 @@
 // </copyright>
 //
 
-export type CommunicationFlowPerformanceInstanceCommunicationBag = {
-    communicationFlowCommunicationIdKey?: string | null;
+import { CommunicationFlowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowBag";
+import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
-    idKey?: string | null;
+export type InitializationBox = {
+    communicationFlow?: CommunicationFlowBag | null;
+
+    /**
+     * Gets or sets the error message. A non-empty value indicates that
+     * an error is preventing the block from being displayed.
+     */
+    errorMessage?: string | null;
+
+    gridDefinition?: GridDefinitionBag | null;
+
+    /** Gets or sets the navigation urls. */
+    navigationUrls?: Record<string, string> | null;
+
+    /** Gets or sets the security grant token. */
+    securityGrantToken?: string | null;
 };

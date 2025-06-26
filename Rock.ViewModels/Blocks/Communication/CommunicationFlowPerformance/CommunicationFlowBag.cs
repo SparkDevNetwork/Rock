@@ -5,7 +5,7 @@ using Rock.Enums.Communication;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
-    public class CommunicationFlowPerformanceFlowBag
+    public class CommunicationFlowBag
     {
         public ConversionGoalType? ConversionGoalType { get; set; }
 
@@ -13,11 +13,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 
         public int? ConversionGoalTimeframeInDays { get; set; }
 
-        public CommunicationFlowPerformanceConversionGoalSettingsBag ConversionGoalSettings { get; set; }
+        public ConversionGoalSettingsBag ConversionGoalSettings { get; set; }
 
         public CommunicationFlowTriggerType TriggerType { get; set; }
 
-        public List<CommunicationFlowPerformanceFlowInstanceBag> Instances { get; set; }
+        public List<CommunicationFlowInstanceBag> Instances { get; set; }
 
         public string Name { get; set; }
 

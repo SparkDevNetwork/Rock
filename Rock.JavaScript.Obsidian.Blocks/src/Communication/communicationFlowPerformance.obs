@@ -95,7 +95,8 @@
         </template>
     </Panel>
 
-    <MessageListGrid :gridDefinition="config.gridDefinition"
+    <MessageListGrid :modelValue="selectedFlowInstances"
+                     :gridDefinition="config.gridDefinition"
                      :gridDataSource="gridDataSource"
                      @viewMessage="onViewMessage" />
 </template>
@@ -134,9 +135,9 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { calculateSlidingDateRange, RangeType, SlidingDateRange, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
     import { isNullish } from "@Obsidian/Utility/util";
-    import { CommunicationFlowPerformanceGridItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceGridItemBag";
-    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
-    import { CommunicationFlowPerformanceInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceInitializationBox";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+    import { InitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/initializationBox";
+    import { MessageGridItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageGridItemBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { NavigationUrlKey } from "./CommunicationFlowPerformance/types.partial";
     import UnsubscribesKpi from "./CommunicationFlowPerformance/unsubscribesKpi.partial.obs";
@@ -148,7 +149,7 @@
         instanceCommunicationIdKey: string;
     };
 
-    const config = useConfigurationValues<CommunicationFlowPerformanceInitializationBox>();
+    const config = useConfigurationValues<InitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
     const {
         format_1_1_1970,
@@ -182,7 +183,7 @@
                 startDateTime: i.startDate ? RockDateTime.parseISO(i.startDate) : null
             }))
             .ofType((x): x is {
-                instance: CommunicationFlowPerformanceFlowInstanceBag;
+                instance: CommunicationFlowInstanceBag;
                 startDateTime: RockDateTime;
             } => {
                 return !isNullish(x.startDateTime);
@@ -198,7 +199,7 @@
             .toArray();
     });
 
-    const selectedFlowInstances = computed<CommunicationFlowPerformanceFlowInstanceBag[]>(() => {
+    const selectedFlowInstances = computed<CommunicationFlowInstanceBag[]>(() => {
         const allInstances = config.communicationFlow?.instances ?? [];
 
         if (config.communicationFlow?.triggerType === CommunicationFlowTriggerType.OnDemand) {
@@ -345,8 +346,8 @@
 
     // #region Functions
 
-    function getRow(value: unknown): CommunicationFlowPerformanceGridItemBag {
-        return value as CommunicationFlowPerformanceGridItemBag;
+    function getRow(value: unknown): MessageGridItemBag {
+        return value as MessageGridItemBag;
     }
 
     async function loadGridData(): Promise<GridDataBag> {
@@ -373,7 +374,7 @@
 
             firstCommunicationIdKey.value = Enumerable
                 .from(data.rows ?? [])
-                .select(r => getRow(r).idKey)
+                .select(r => getRow(r).communicationFlowCommunicationIdKey)
                 .ofType((k): k is string => typeof k === "string")
                 .firstOrDefault("");
         }

@@ -4,7 +4,7 @@ using Rock.Model;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
-    public class CommunicationFlowPerformanceRecipientBag
+    public class CommunicationFlowInstanceRecipientBag
     {
         public bool CausedUnsubscribe { get; set; }
 

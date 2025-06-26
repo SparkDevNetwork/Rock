@@ -1,13 +1,13 @@
 <template>
     <Grid :definition="gridDefinition ?? undefined"
-          :data="gridDataSource ?? undefined"
+          :data="filteredGridData"
           :entityTypeGuid="EntityType.CommunicationFlowCommunication"
-          :keyField="getField('idKey')"
+          :keyField="keyField"
           itemTerm="Message"
           stickyHeader
           @selectItem="onViewMessage">
-        <TextColumn :field="getField('messageName')"
-                    :name="getField('messageName')"
+        <TextColumn :field="getField('communicationName')"
+                    :name="getField('communicationName')"
                     title="Message Name" />
 
         <Column :field="getField('communicationType')"
@@ -64,7 +64,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType } from "vue";
+    import { computed, PropType } from "vue";
     import Grid, { TextColumn, Column } from "@Obsidian/Controls/grid";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
@@ -73,12 +73,20 @@
     import { isNullish } from "@Obsidian/Utility/util";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
-    import { CommunicationFlowPerformanceGridItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceGridItemBag";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+    import { MessageGridItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageGridItemBag";
+    import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { Enumerable } from "@Obsidian/Utility/linq";
 
-    const getField = useGetTypeMemberName<CommunicationFlowPerformanceGridItemBag>();
-    const getRow = (v: unknown): CommunicationFlowPerformanceGridItemBag => v as CommunicationFlowPerformanceGridItemBag;
+    const getField = useGetTypeMemberName<MessageGridItemBag>();
+    const getRow = (v: unknown): MessageGridItemBag => v as MessageGridItemBag;
 
-    defineProps({
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
+            required: true
+        },
+
         gridDefinition: {
             type: Object as PropType<GridDefinitionBag | null | undefined>,
             required: true
@@ -91,6 +99,44 @@
 
         onViewMessage: {
             type: Function as PropType<((communicationFlowCommunicationIdKey: string) => void) | undefined>
+        }
+    });
+
+    const keyField = getField("communicationFlowCommunicationIdKey");
+
+    const filteredGridData = computed((): GridDataBag | Promise<GridDataBag> | undefined => {
+        if (isNullish(props.gridDataSource)) {
+            return;
+        }
+
+        const selectedInstances = props.modelValue ?? [];
+        const selectedCommunicationFlowInstanceCommunicationIdKeys = new Set(
+            Enumerable
+                .from(selectedInstances)
+                .selectMany(i => i.communications ?? [])
+                .select(ic => ic.idKey)
+                .ofType((i): i is string => !isNullish(i))
+        );
+
+        function filterGridData(data: GridDataBag): GridDataBag {
+            const rows = data.rows as MessageGridItemBag[] | null | undefined;
+
+            if (isNullish(rows)) {
+                return {
+                    rows
+                };
+            }
+
+            return {
+                rows: rows.filter(row => selectedCommunicationFlowInstanceCommunicationIdKeys.has(row.communicationFlowInstanceCommunicationIdKey ?? ""))
+            };
+        }
+
+        if (isPromise(props.gridDataSource)) {
+            return props.gridDataSource.then(filterGridData);
+        }
+        else {
+            return filterGridData(props.gridDataSource);
         }
     });
 </script>

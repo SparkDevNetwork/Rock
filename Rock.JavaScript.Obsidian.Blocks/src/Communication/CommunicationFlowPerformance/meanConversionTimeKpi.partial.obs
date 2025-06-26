@@ -14,11 +14,11 @@
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
-    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
 
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[] | null | undefined>,
+            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
             required: true
         }
     });

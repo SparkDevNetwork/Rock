@@ -109,17 +109,17 @@
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { prependSingularIndefiniteArticle } from "@Obsidian/Utility/stringUtils";
-    import { CommunicationFlowPerformanceFlowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowBag";
-    import { CommunicationFlowPerformanceFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowInstanceBag";
+    import { CommunicationFlowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowBag";
+    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<CommunicationFlowPerformanceFlowBag | null | undefined>,
+            type: Object as PropType<CommunicationFlowBag | null | undefined>,
             required: true
         },
 
         selectedFlowInstances: {
-            type: Array as PropType<CommunicationFlowPerformanceFlowInstanceBag[]>,
+            type: Array as PropType<CommunicationFlowInstanceBag[]>,
             required: true
         }
     });

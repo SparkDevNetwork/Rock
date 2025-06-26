@@ -2,7 +2,7 @@
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
-    public class CommunicationFlowPerformanceConversionHistoryBag
+    public class CommunicationFlowInstanceConversionHistoryBag
     {
         public DateTime? Date { get; set; }
     }

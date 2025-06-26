@@ -23,8 +23,8 @@
 
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Completed Step". */
-export type CommunicationFlowPerformanceTookStepSettingsBag = {
-    /** Gets or sets the Step Type that needs to be taken for the conversion goal to be achieved. */
-    stepType?: ListItemBag | null;
+/** The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Joined Specific Group". */
+export type JoinedGroupSettingsBag = {
+    /** Gets or sets the Group that needs to be joined for the conversion goal to be achieved. */
+    group?: ListItemBag | null;
 };

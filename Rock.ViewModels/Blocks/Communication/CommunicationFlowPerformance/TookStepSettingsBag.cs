@@ -20,13 +20,13 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
     /// <summary>
-    /// The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Joined Specific Group".
+    /// The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Completed Step".
     /// </summary>
-    public class CommunicationFlowPerformanceJoinedGroupSettingsBag
+    public class TookStepSettingsBag
     {
         /// <summary>
-        /// Gets or sets the Group that needs to be joined for the conversion goal to be achieved.
+        /// Gets or sets the Step Type that needs to be taken for the conversion goal to be achieved.
         /// </summary>
-        public ListItemBag Group { get; set; }
+        public ListItemBag StepType { get; set; }
     }
 }

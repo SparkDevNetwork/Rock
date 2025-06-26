@@ -20,36 +20,36 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
     /// <summary>
     /// The conversion goal settings for the Communication Flow Performance block.
     /// </summary>
-    public class CommunicationFlowPerformanceConversionGoalSettingsBag
+    public class ConversionGoalSettingsBag
     {
         /// <summary>
         /// Gets or sets the conversion goal settings when the conversion goal type is "Completed Form".
         /// </summary>
-        public CommunicationFlowPerformanceCompletedFormSettingsBag CompletedFormSettings { get; set; }
+        public CompletedFormSettingsBag CompletedFormSettings { get; set; }
 
         /// <summary>
         /// Gets or sets the conversion goal settings when the conversion goal type is "Joined Group Of Type".
         /// </summary>
-        public CommunicationFlowPerformanceJoinedGroupTypeSettingsBag JoinedGroupTypeSettings { get; set; }
+        public JoinedGroupTypeSettingsBag JoinedGroupTypeSettings { get; set; }
 
         /// <summary>
         /// Gets or sets the conversion goal settings when the conversion goal type is "Joined Specific Group".
         /// </summary>
-        public CommunicationFlowPerformanceJoinedGroupSettingsBag JoinedGroupSettings { get; set; }
+        public JoinedGroupSettingsBag JoinedGroupSettings { get; set; }
 
         /// <summary>
         /// Gets or sets the conversion goal settings when the conversion goal type is "Registered".
         /// </summary>
-        public CommunicationFlowPerformanceRegisteredSettingsBag RegisteredSettings { get; set; }
+        public RegisteredSettingsBag RegisteredSettings { get; set; }
 
         /// <summary>
         /// Gets or sets the conversion goal settings when the conversion goal type is "Completed Step".
         /// </summary>
-        public CommunicationFlowPerformanceTookStepSettingsBag TookStepSettings { get; set; }
+        public TookStepSettingsBag TookStepSettings { get; set; }
 
         /// <summary>
         /// Gets or sets the conversion goal settings when the conversion goal type is "Entered Data View".
         /// </summary>
-        public CommunicationFlowPerformanceEnteredDataViewSettingsBag EnteredDataViewSettings { get; set; }
+        public EnteredDataViewSettingsBag EnteredDataViewSettings { get; set; }
     }
 }

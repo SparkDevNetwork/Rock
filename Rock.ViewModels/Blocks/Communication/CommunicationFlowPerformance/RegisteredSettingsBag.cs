@@ -22,7 +22,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
     /// <summary>
     /// The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Registered".
     /// </summary>
-    public class CommunicationFlowPerformanceRegisteredSettingsBag
+    public class RegisteredSettingsBag
     {
         /// <summary>
         /// Gets or sets the Registration Instance that needs to be joined for the conversion goal to be achieved.

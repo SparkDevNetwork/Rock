@@ -21,14 +21,14 @@
 // </copyright>
 //
 
-import { CommunicationFlowPerformanceConversionHistoryBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceConversionHistoryBag";
-import { CommunicationFlowPerformanceInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceInstanceCommunicationBag";
-import { CommunicationFlowPerformanceRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceRecipientBag";
+import { CommunicationFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceCommunicationBag";
+import { CommunicationFlowInstanceRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceRecipientBag";
+import { ConversionHistoryBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/conversionHistoryBag";
 
-export type CommunicationFlowPerformanceFlowInstanceBag = {
-    communications?: CommunicationFlowPerformanceInstanceCommunicationBag[] | null;
+export type CommunicationFlowInstanceBag = {
+    communications?: CommunicationFlowInstanceCommunicationBag[] | null;
 
-    conversions?: CommunicationFlowPerformanceConversionHistoryBag[] | null;
+    conversions?: ConversionHistoryBag[] | null;
 
     hasSentCommunications: boolean;
 
@@ -36,7 +36,7 @@ export type CommunicationFlowPerformanceFlowInstanceBag = {
 
     idKey?: string | null;
 
-    recipients?: CommunicationFlowPerformanceRecipientBag[] | null;
+    recipients?: CommunicationFlowInstanceRecipientBag[] | null;
 
     startDate?: string | null;
 };

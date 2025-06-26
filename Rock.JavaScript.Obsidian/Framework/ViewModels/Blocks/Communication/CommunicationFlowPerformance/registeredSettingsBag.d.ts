@@ -21,23 +21,10 @@
 // </copyright>
 //
 
-import { CommunicationFlowPerformanceFlowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowPerformanceFlowBag";
-import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-export type CommunicationFlowPerformanceInitializationBox = {
-    communicationFlow?: CommunicationFlowPerformanceFlowBag | null;
-
-    /**
-     * Gets or sets the error message. A non-empty value indicates that
-     * an error is preventing the block from being displayed.
-     */
-    errorMessage?: string | null;
-
-    gridDefinition?: GridDefinitionBag | null;
-
-    /** Gets or sets the navigation urls. */
-    navigationUrls?: Record<string, string> | null;
-
-    /** Gets or sets the security grant token. */
-    securityGrantToken?: string | null;
+/** The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Registered". */
+export type RegisteredSettingsBag = {
+    /** Gets or sets the Registration Instance that needs to be joined for the conversion goal to be achieved. */
+    registrationInstance?: ListItemBag | null;
 };

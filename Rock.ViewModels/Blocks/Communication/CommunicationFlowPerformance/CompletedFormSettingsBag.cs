@@ -20,13 +20,13 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
     /// <summary>
-    /// The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Completed Step".
+    /// The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Completed Form".
     /// </summary>
-    public class CommunicationFlowPerformanceTookStepSettingsBag
+    public class CompletedFormSettingsBag
     {
         /// <summary>
-        /// Gets or sets the Step Type that needs to be taken for the conversion goal to be achieved.
+        /// Gets or sets the form (Workflow Type) that needs to be completed in order for the conversion goal to be achieved.
         /// </summary>
-        public ListItemBag StepType { get; set; }
+        public ListItemBag WorkflowType { get; set; }
     }
 }

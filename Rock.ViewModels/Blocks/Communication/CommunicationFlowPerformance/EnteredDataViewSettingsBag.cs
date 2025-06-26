@@ -20,13 +20,13 @@ using Rock.ViewModels.Utility;
 namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
     /// <summary>
-    /// The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Joined Group Of Type".
+    /// The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Entered Data View".
     /// </summary>
-    public class CommunicationFlowPerformanceJoinedGroupTypeSettingsBag
+    public class EnteredDataViewSettingsBag
     {
         /// <summary>
-        /// Gets or sets the Group Type that needs to be joined for the conversion goal to be achieved.
+        /// Gets or sets the Data View that needs to be entered for the conversion goal to be achieved.
         /// </summary>
-        public ListItemBag GroupType { get; set; }
+        public ListItemBag DataView { get; set; }
     }
 }
