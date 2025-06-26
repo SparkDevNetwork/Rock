@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Data.Entity.SqlServer;
 using System.Linq;
 using Rock.Data;
@@ -91,6 +92,39 @@ namespace Rock.Model
             .ThenByDescending( l => l.Id )
             .Select( l => l.Location )
             .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets the home locations, indexed by person identifier.
+        /// </summary>
+        /// <param name="personQuery">The person query.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static Dictionary<int, Location> GetHomeLocations( this IQueryable<Person> personQuery, RockContext rockContext )
+        {
+            var homeAddressGuid = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuidOrNull();
+            if ( !homeAddressGuid.HasValue )
+            {
+                return null;
+            }
+
+            var homeAddressDv = DefinedValueCache.Get( homeAddressGuid.Value );
+            if ( homeAddressDv == null )
+            {
+                return null;
+            }
+
+            var primaryFamilyLookup = personQuery.ToDictionary( p => p.Id, p => p.PrimaryFamilyId );
+            var primaryFamilyIds = primaryFamilyLookup.Where( p => p.Value != null ).Select( p => p.Value.Value ).Distinct().ToList();
+
+            // Get the most recent location for the primary family, preferring a mapped location if it exists.
+            var homeLocations = new GroupLocationService( rockContext ).Queryable().AsNoTracking()
+                .Where( gl => primaryFamilyIds.Contains( gl.GroupId ) && gl.GroupLocationTypeValueId == homeAddressDv.Id )
+                .OrderByDescending( gl => gl.IsMappedLocation ? 1 : 0 )
+                .ThenByDescending( gl => gl.Id )
+                .GroupBy( gl => gl.GroupId ).ToDictionary( a => a.Key, a => a.FirstOrDefault()?.Location );
+
+            return homeLocations;
         }
 
         /// <summary>
@@ -264,6 +298,21 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets any previous last names for people sorted alphabetically by LastName and indexed by person identifier.
+        /// </summary>
+        /// <param name="personQuery">The person query.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static Dictionary<int, List<PersonPreviousName>> GetPreviousNames( this IQueryable<Person> personQuery, RockContext rockContext )
+        {
+            var previousNamesLookup = new PersonService( rockContext ).GetPreviousNames( personQuery )
+                .GroupBy( pn => pn.PersonAlias.PersonId )
+                .ToDictionary( a => a.Key, a => a.ToList() );
+
+            return previousNamesLookup;
+        }
+
+        /// <summary>
         /// Gets any search keys for this person
         /// </summary>
         /// <param name="person">The person.</param>
@@ -285,6 +334,17 @@ namespace Rock.Model
         public static Person GetSpouse( this Person person, RockContext rockContext = null )
         {
             return new PersonService( rockContext ?? new RockContext() ).GetSpouse( person );
+        }
+
+        /// <summary>
+        /// Gets the <see cref="Person" /> entity of the spouse for the provided people, indexed by the person identifier.
+        /// </summary>
+        /// <param name="personQuery">The person query.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static Dictionary<int, Person> GetSpouses( this IQueryable<Person> personQuery, RockContext rockContext )
+        {
+            return new PersonService( rockContext ).GetSpouses( personQuery );
         }
 
         /// <summary>

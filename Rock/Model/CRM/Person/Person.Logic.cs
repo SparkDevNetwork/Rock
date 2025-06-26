@@ -24,6 +24,7 @@ using System.Linq;
 using System.Net;
 using System.Runtime.Serialization;
 using System.Text;
+using System.Threading.Tasks;
 
 using Rock.Communication.Chat;
 using Rock.Data;
@@ -1937,58 +1938,128 @@ namespace Rock.Model
         /// </summary>
         public void BulkIndexDocuments()
         {
-            List<PersonIndex> indexablePersonList = new List<PersonIndex>();
+            IndexPeopleThreaded();
+            IndexPeopleThreaded( true );
+        }
 
+        private IOrderedQueryable<Person> GetPersonIndexQuery( PersonService personService )
+        {
             var recordTypePersonId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
+            return personService.Queryable().AsNoTracking().Where( p => p.RecordTypeValueId == recordTypePersonId ).OrderBy( p => p.Id );
+        }
+
+        private IOrderedQueryable<Person> GetBusinessIndexQuery( PersonService personService )
+        {
             var recordTypeBusinessId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_BUSINESS.AsGuid() ).Id;
+            return personService.Queryable().AsNoTracking().Where( p => p.IsSystem == false && p.RecordTypeValueId == recordTypeBusinessId ).OrderBy( p => p.Id );
+        }
 
+        /// <summary>
+        /// Indexes People utilizing multiple threads to process the indexed documents and send them to the IndexContainer.
+        /// </summary>
+        /// <param name="isBusiness">Flag indicating whether the records in the query should be indexed as businesses.</param>
+        private void IndexPeopleThreaded( bool isBusiness = false )
+        {
             RockContext rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
 
-            // return people
-            var people = new PersonService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p => p.RecordTypeValueId == recordTypePersonId );
-
-            int recordCounter = 0;
-
-            foreach ( var person in people )
+            IOrderedQueryable<Person> personQuery;
+            if ( isBusiness )
             {
-                recordCounter++;
-
-                var indexablePerson = PersonIndex.LoadByModel( person );
-                indexablePersonList.Add( indexablePerson );
-
-                if ( recordCounter > 100 )
-                {
-                    IndexContainer.IndexDocuments( indexablePersonList );
-                    indexablePersonList = new List<PersonIndex>();
-                    recordCounter = 0;
-                }
+                personQuery = GetBusinessIndexQuery( personService );
+            }
+            else
+            {
+                personQuery = GetPersonIndexQuery( personService );
             }
 
-            IndexContainer.IndexDocuments( indexablePersonList );
+            var bulkChunkSize = 1000;
+            var threadCount = 4;
+            var peopleCount = personQuery.Count();
 
-            // return businesses
-            var businesses = new PersonService( rockContext ).Queryable().AsNoTracking()
-                                .Where( p =>
-                                     p.IsSystem == false
-                                     && p.RecordTypeValueId == recordTypeBusinessId );
-
-            List<BusinessIndex> indexableBusinessList = new List<BusinessIndex>();
-
-            foreach ( var business in businesses )
+            if ( peopleCount < bulkChunkSize * threadCount )
             {
-                var indexableBusiness = BusinessIndex.LoadByModel( business );
-                indexableBusinessList.Add( indexableBusiness );
-
-                if ( recordCounter > 100 )
-                {
-                    IndexContainer.IndexDocuments( indexableBusinessList );
-                    indexableBusinessList = new List<BusinessIndex>();
-                    recordCounter = 0;
-                }
+                threadCount = 1; // Don't bother threading a query this small.
             }
 
-            IndexContainer.IndexDocuments( indexableBusinessList );
+            var peoplePerThread = peopleCount / threadCount;
+            var peopleRemainder = peopleCount % threadCount;
+            var peopleProcessed = 0;
+
+            // Split query into evenly sized chunks and dispatch a new task/thread for each chunk.
+            var indexTasks = new List<Task>();
+            for ( int i = 1; i <= threadCount; i++ )
+            {
+                var peopleOffset = peopleProcessed;
+                var peopleToProcess = peoplePerThread;
+                if ( i == threadCount )
+                {
+                    peopleToProcess += peopleRemainder;
+                }
+
+                indexTasks.Add( Task.Factory.StartNew( () => IndexChunkedQuery( peopleOffset, peopleToProcess, bulkChunkSize, isBusiness ) ) );
+
+                peopleProcessed += peopleToProcess;
+            }
+
+            // Wait for all the threads to complete.
+            Task.WaitAll( indexTasks.ToArray() );
+        }
+
+        /// <summary>
+        /// Called by <see cref="IndexPeopleThreaded( bool )"/> to process individual chunks of a query in a single thread.
+        /// </summary>
+        /// <param name="peopleProcessed">The number of people processed (used as the offest for the beggining of the query chunk for this thread).</param>
+        /// <param name="peopleToProcess">The number of people to process (the size of the chunk).</param>
+        /// <param name="bulkChunkSize">The number of documents to send to the IndexContainer at a time.</param>
+        /// <param name="isBusiness">Flag indicating whether the records in the query should be indexed as businesses.</param>
+        private void IndexChunkedQuery( int peopleProcessed, int peopleToProcess, int bulkChunkSize, bool isBusiness )
+        {
+            var rockContext = new RockContext();
+            var personService = new PersonService( rockContext );
+
+            if ( isBusiness )
+            {
+                var businessQuery = GetBusinessIndexQuery( personService );
+                var chunkedBusinessQuery = businessQuery.Skip( peopleProcessed ).Take( peopleToProcess );
+
+                var recordCounter = 0;
+                var businessIndexes = new List<IndexModelBase>();
+
+                foreach ( var business in chunkedBusinessQuery )
+                {
+                    recordCounter++;
+
+                    businessIndexes.Add( BusinessIndex.LoadByModel( business ) );
+
+                    if ( recordCounter >= bulkChunkSize )
+                    {
+                        IndexContainer.IndexDocuments( businessIndexes );
+                        businessIndexes = new List<IndexModelBase>();
+                        recordCounter = 0;
+                    }
+                }
+
+                if ( businessIndexes.Any() )
+                {
+                    IndexContainer.IndexDocuments( businessIndexes );
+                }
+            }
+            else
+            {
+                var personQuery = GetPersonIndexQuery( personService );
+                var chunkedPersonQuery = personQuery.Skip( peopleProcessed ).Take( peopleToProcess );
+
+                var personIndexes = PersonIndex.LoadByModelBulk( chunkedPersonQuery, rockContext );
+                var indexOperationCount = ( personIndexes.Count + bulkChunkSize - 1 ) / bulkChunkSize;
+                for ( int i = 0; i < indexOperationCount; i++ )
+                {
+                    var startIndex = ( i * bulkChunkSize );
+                    var limit = Math.Min( bulkChunkSize, personIndexes.Count - startIndex );
+                    var bulkIndexes = personIndexes.GetRange( startIndex, limit );
+                    IndexContainer.IndexDocuments( bulkIndexes );
+                }
+            }
         }
 
         /// <summary>

@@ -16,6 +16,7 @@
 //
 using System;
 using System.Collections.Generic;
+using System.Linq;
 
 using Rock.Extension;
 using Rock.UniversalSearch.IndexModels;
@@ -50,14 +51,107 @@ namespace Rock.UniversalSearch
         /// <param name="document">The document.</param>
         /// <param name="indexName">Name of the index.</param>
         /// <param name="mappingType">Type of the mapping.</param>
-        public abstract void IndexDocument<T>( T document, string indexName = null, string mappingType = null ) where T : class, new();
+        [Obsolete( "Use the method that takes only the document parameter, instead." )]
+        [RockObsolete( "17.1" )]
+        public void IndexDocument<T>( T document, string indexName = null, string mappingType = null ) where T : class, new()
+        {
+            if ( document != null )
+            {
+                if ( !string.IsNullOrEmpty( indexName ) )
+                {
+                    if ( indexName.ToLower() != document.GetType().Name.ToLower() )
+                    {
+                        throw new ArgumentOutOfRangeException( "indexName", "Index Name must be the type name." );
+                    }
+                }
+
+                if ( !string.IsNullOrEmpty( mappingType ) )
+                {
+                    if ( mappingType.ToLower() != document.GetType().Name.ToLower() )
+                    {
+                        throw new ArgumentOutOfRangeException( "mappingType", "Mapping Type must be the type name." );
+                    }
+                }
+            }
+
+            IndexDocument( document );
+        }
+
+        /// <summary>
+        /// Indexes multiple documents.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="documents">The documents.</param>
+        /// <param name="indexName">Name of the index.</param>
+        /// <param name="mappingType">Type of the mapping.</param>
+        [Obsolete( "Use the method that takes only the documents parameter, instead." )]
+        [RockObsolete( "17.1" )]
+        public void IndexDocuments<T>( IEnumerable<T> documents, string indexName = null, string mappingType = null ) where T : class, new()
+        {
+            if ( !string.IsNullOrEmpty( indexName ) && documents != null && documents.Any() )
+            {
+                if ( indexName.ToLower() != documents.First().GetType().Name.ToLower() )
+                {
+                    throw new ArgumentOutOfRangeException( "indexName", "Index Name must be the type name." );
+                }
+            }
+
+            if ( !string.IsNullOrEmpty( mappingType ) && documents != null && documents.Any() )
+            {
+                if ( mappingType.ToLower() != documents.First().GetType().Name.ToLower() )
+                {
+                    throw new ArgumentOutOfRangeException( "mappingType", "Mapping Type must be the type name." );
+                }
+            }
+
+            IndexDocuments( documents );
+        }
+
+        /// <summary>
+        /// Indexes the document.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="document">The document.</param>
+        public abstract void IndexDocument<T>( T document ) where T : class, new();
+
+        /// <summary>
+        /// Indexes multiple documents.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="documents">The documents.</param>
+        public virtual void IndexDocuments<T>( IEnumerable<T> documents ) where T : class, new()
+        {
+            foreach ( var document in documents )
+            {
+                IndexDocument( document );
+            }
+        }
 
         /// <summary>
         /// Deletes the type of the documents by.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="indexName">Name of the index.</param>
-        public abstract void DeleteDocumentsByType<T>( string indexName = null ) where T : class, new();
+        [Obsolete( "Use the method that does not take a parameter, instead." )]
+        [RockObsolete( "17.1" )]
+        public void DeleteDocumentsByType<T>( string indexName = null ) where T : class, new()
+        {
+            if ( !string.IsNullOrEmpty( indexName ) )
+            {
+                if ( indexName.ToLower() != typeof( T ).Name.ToLower() )
+                {
+                    throw new ArgumentOutOfRangeException( "indexName", "Index Name must be the type name." );
+                }
+            }
+
+            DeleteDocumentsByType<T>();
+        }
+
+        /// <summary>
+        /// Deletes the type of the documents by.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public abstract void DeleteDocumentsByType<T>() where T : class, new();
 
         /// <summary>
         /// Creates the index.
@@ -78,7 +172,27 @@ namespace Rock.UniversalSearch
         /// <typeparam name="T"></typeparam>
         /// <param name="document">The document.</param>
         /// <param name="indexName">Name of the index.</param>
-        public abstract void DeleteDocument<T>( T document, string indexName = null ) where T : class, new();
+        [Obsolete( "Use the method that does not take a parameter, instead." )]
+        [RockObsolete( "17.1" )]
+        public void DeleteDocument<T>( T document, string indexName = null ) where T : class, new()
+        {
+            if ( !string.IsNullOrEmpty( indexName ) )
+            {
+                if ( indexName.ToLower() != document.GetType().Name.ToLower() )
+                {
+                    throw new ArgumentOutOfRangeException( "indexName", "Index Name must be the type name." );
+                }
+            }
+
+            DeleteDocument<T>( document );
+        }
+
+        /// <summary>
+        /// Deletes the document.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="document">The document.</param>
+        public abstract void DeleteDocument<T>( T document ) where T : class, new();
 
         /// <summary>
         /// Deletes the document by identifier.
@@ -121,7 +235,7 @@ namespace Rock.UniversalSearch
         /// <param name="size">The size.</param>
         /// <param name="from">From.</param>
         /// <returns></returns>
-        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria criteria = null, int? size = null, int? from = null  );
+        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria criteria = null, int? size = null, int? from = null );
 
         /// <summary>
         /// Searches the specified query.
