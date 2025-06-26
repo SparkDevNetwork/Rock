@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -26,8 +26,11 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Utility;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -40,7 +43,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Shows a list of people who have a specified type of relationship with a person." )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Related People" )]
-    [EntityTypeGuid( "7D2CB16A-9391-4D5A-A4B4-4DA34FD3E96E")]
+    [EntityTypeGuid( "7D2CB16A-9391-4D5A-A4B4-4DA34FD3E96E" )]
     public class RelatedPeopleSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Support Classes
@@ -192,6 +195,78 @@ namespace Rock.Reporting.DataSelect.Person
         public override string ColumnHeaderText
         {
             get { return "Related People"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var familyRelationshipOptions = new List<ListItemBag>
+            {
+                new ListItemBag{ Text = "Parent", Value = FamilyRelationshipParentGuid },
+                new ListItemBag{ Text = "Child", Value = FamilyRelationshipChildGuid },
+                new ListItemBag{ Text = "Sibling", Value = FamilyRelationshipSiblingGuid },
+                new ListItemBag{ Text = "Spouse", Value = FamilyRelationshipSpouseGuid },
+            };
+
+            var groupType = GroupTypeCache.Get( SystemGuid.GroupType.GROUPTYPE_KNOWN_RELATIONSHIPS.AsGuid(), rockContext );
+            var knownRelationshipOptions = new List<ListItemBag>();
+
+            if ( groupType != null )
+            {
+                // Exclude the Owner Role from the list of selectable Roles because a Person cannot be related to themselves.
+                var ownerGuid = GroupRole.GROUPROLE_KNOWN_RELATIONSHIPS_OWNER.AsGuid();
+
+                knownRelationshipOptions = new GroupTypeRoleService( rockContext )
+                    .GetByGroupTypeId( groupType.Id )
+                    .Where( r => r.Guid != ownerGuid )
+                    .Select( r => new ListItemBag { Text = r.Name, Value = r.Guid.ToString() } )
+                    .ToList();
+            }
+
+            var listFormatOptions = new List<ListItemBag> {
+                new ListItemBag { Text = "Person Name and Relationship", Value = ListFormatSpecifier.NameAndRelationship.ToString() },
+                new ListItemBag { Text = "Person Name", Value = ListFormatSpecifier.NameOnly.ToString() },
+            };
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/relatedPeopleSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["familyRelationshipOptions"] = familyRelationshipOptions.ToCamelCaseJson( false, true ),
+                    ["knownRelationshipOptions"] = knownRelationshipOptions.ToCamelCaseJson( false, true ),
+                    ["listFormatOptions"] = listFormatOptions.ToCamelCaseJson( false, true ),
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            var settings = new RelatedPeopleSelectSettings( selection );
+
+            data.Add( "familyRelationships", settings.FamilyRelationshipTypeGuids.Select( g => g.ToString() ).ToList().ToJson() );
+            data.Add( "knownRelationships", settings.KnownRelationshipTypeGuids.Select( g => g.ToString() ).ToList().ToJson() );
+            data.Add( "listFormat", settings.ListFormat.ToString() );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new RelatedPeopleSelectSettings();
+
+            settings.FamilyRelationshipTypeGuids.AddRange( data.GetValueOrDefault( "familyRelationships", "[]" ).FromJsonOrNull<List<Guid>>() ?? new List<Guid>() );
+            settings.KnownRelationshipTypeGuids.AddRange( data.GetValueOrDefault( "knownRelationships", "[]" ).FromJsonOrNull<List<Guid>>() ?? new List<Guid>() );
+            settings.ListFormat = data.GetValueOrDefault( "listFormat", string.Empty ).ConvertToEnum<ListFormatSpecifier>( ListFormatSpecifier.NameAndRelationship );
+
+            return settings.ToSelectionString();
         }
 
         #endregion
@@ -623,7 +698,7 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 var settings = new List<string>();
 
-                settings.Add( ( (int)ListFormat ).ToString() );
+                settings.Add( ( ( int ) ListFormat ).ToString() );
 
                 settings.Add( FamilyRelationshipTypeGuids == null ? string.Empty : FamilyRelationshipTypeGuids.AsDelimited( "," ) );
                 settings.Add( KnownRelationshipTypeGuids == null ? string.Empty : KnownRelationshipTypeGuids.AsDelimited( "," ) );
