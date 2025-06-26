@@ -717,6 +717,8 @@
     <Compile Include="Attribute\DeviceFieldAttribute.cs" />
     <Compile Include="Attribute\ImageFieldAttribute.cs" />
     <Compile Include="Attribute\QueryableAttributeWrapper.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\FinancialBatchDetail.cs" />
+    <Compile Include="Blocks\Types\Mobile\Finance\FinancialBatchList.cs" />
     <Compile Include="CheckIn\v2\Labels\Renderers\Zebra64.cs" />
     <Compile Include="CheckIn\v2\ProximityDirector.cs" />
     <Compile Include="ClientService\Core\Note\NoteClientService.cs" />

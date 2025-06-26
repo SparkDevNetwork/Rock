@@ -710,6 +710,16 @@ namespace Rock.SystemGuid
         public const string MOBILE_FINANCE_SCHEDULED_TRANSACTION_LIST_BLOCK_TYPE = "7698E529-6834-46B0-BC5A-D466A6BCE4F6";
 
         /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchList.
+        /// </summary>
+        public const string MOBILE_FINANCE_FINANCIAL_BATCH_LIST_BLOCK_TYPE = "E7E18663-7EF9-454C-9C6E-F4A839DB60C8";
+
+        /// <summary>
+        /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchDetail.
+        /// </summary>
+        public const string MOBILE_FINANCE_FINANCIAL_BATCH_DETAIL_BLOCK_TYPE = "14FE11A8-A4AA-43EF-9F36-354CE60240CA";
+
+        /// <summary>
         /// The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionDetail.
         /// </summary>
         public const string MOBILE_FINANCE_TRANSACTION_DETAIL_BLOCK_TYPE = "3355006B-4C1F-4F85-8390-7C83C26D5C4A";
