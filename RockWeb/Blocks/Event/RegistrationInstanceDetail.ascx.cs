@@ -416,6 +416,9 @@ namespace RockWeb.Blocks.Event
                     newRegistrationInstance.Account = null;
                     newRegistrationInstance.AccountId = 0;
                 }
+                
+                newRegistrationInstance.ReminderSent = false;
+                newRegistrationInstance.SendReminderDateTime = null;
 
                 hfRegistrationInstanceId.Value = newRegistrationInstance.Id.ToString();
                 hfRegistrationTemplateId.Value = newRegistrationInstance.RegistrationTemplateId.ToString();
@@ -478,6 +481,14 @@ namespace RockWeb.Blocks.Event
                 if ( registrationInstanceId.HasValue )
                 {
                     registrationInstance = GetRegistrationInstance( registrationInstanceId.Value, rockContext );
+                }
+
+                if ( registrationInstance == null && registrationInstanceId.HasValue )
+                {
+                    nbEntityNotFound.Text = "The specified Registration Instance could not be found.";
+                    nbEntityNotFound.Visible = true;
+                    pnlMainContent.Visible = false;
+                    return;
                 }
 
                 if ( registrationInstance == null )
