@@ -1,0 +1,26 @@
+<template>
+    <DropDownList v-model="phoneNumberType" :items="phoneNumberTypeOptions" label="Phone Type" :showBlankItem="false" />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const phoneNumberTypeOptions = safeParseJson<ListItemBag[]>(props.options.phoneNumberTypeOptions) ?? [];
+    const phoneNumberType = ref<string>(props.modelValue.phoneNumberType ?? "");
+
+    watch([phoneNumberType], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            phoneNumberType: phoneNumberType.value,
+        });
+    });
+</script>
