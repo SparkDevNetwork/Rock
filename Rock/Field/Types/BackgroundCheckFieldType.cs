@@ -115,7 +115,7 @@ namespace Rock.Field.Types
             if ( !string.IsNullOrWhiteSpace( privateValue ) )
             {
                 // If the value is a single guid, the value we'll return to the editor will include the:
-                //    {Provider EntityType's Guid},{Providers Name},BinaryFileGuid,filename (if any)}
+                //    {Provider EntityType's Guid},{Providers Name},{BinaryFileGuid},{filename (if any)}
                 if ( Guid.TryParse( privateValue, out Guid binaryFileGuid ) )
                 {
                     var entityType = EntityTypeCache.Get( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid() );
@@ -124,16 +124,17 @@ namespace Rock.Field.Types
 
                 // If the value is a comma delimited string of <int>,<key|guid>, the value we'll return
                 // to the editor will include the:
-                //    {Provider EntityType's Guid},{Providers Name},{Remote Record Key|BinaryFileGuid}
+                //    {Provider EntityType's Guid},{Providers Name},{Remote Record Key|BinaryFileGuid},{filename (if any)}
                 var valueSplit = privateValue.Split( ',' );
                 if ( valueSplit?.Length == 2 )
                 {
                     var entityTypeId = valueSplit[0];
+                    var recordKeyOrGuid = valueSplit[1];
                     var entityType = EntityTypeCache.Get( entityTypeId.AsInteger() );
 
                     if ( entityType != null )
                     {
-                        return $"{entityType.Guid},{entityType.FriendlyName},{valueSplit[1]}";
+                        return $"{entityType.Guid},{entityType.FriendlyName},{recordKeyOrGuid},{GetFileName( privateValue )}";
                     }
                 }
             }

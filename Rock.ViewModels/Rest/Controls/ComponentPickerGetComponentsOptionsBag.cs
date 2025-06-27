@@ -29,5 +29,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// Type of the container the components are within
         /// </summary>
         public string ContainerType { get; set; }
+
+        /// <summary>
+        ///  Gets or sets a value indicating whether inactive components are included. (Defaults to false.)
+        /// </summary>
+        public bool IncludeInactive { get; set; } = false;
     }
 }

@@ -145,17 +145,15 @@ namespace Rock.Model
 
                 rockContext.Database.ExecuteSqlCommand( @"
 UPDATE [AttributeValue] SET ValueAsDateTime = 
-    CASE WHEN 
-	    LEN(value) < 50 and 
-	    ISNULL(value,'') != '' and 
-	    ISNUMERIC([value]) = 0 THEN
-		    CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
-			    ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
-		    ELSE
-			    TRY_CAST( [value] as datetime )
-		    END
-    END
-WHERE [Id] = @entityId 
+	CASE WHEN [value] LIKE '____-__-__T%__:__:%' THEN 
+		ISNULL( TRY_CAST( TRY_CAST( LEFT([value],19) AS datetimeoffset ) as datetime) , TRY_CAST( value as datetime ))
+	ELSE
+		TRY_CAST( [value] as datetime )
+	END
+WHERE [Id] = @entityId
+  AND LEN([value]) < 50
+  AND ISNULL([value], '') != ''
+  AND ISNUMERIC([value]) = 0;
 ",
 new System.Data.SqlClient.SqlParameter( "@entityId", Entity.Id ) );
 
