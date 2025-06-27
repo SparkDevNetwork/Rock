@@ -1,0 +1,134 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Power BI Account Register" class="panel panel-block">
+        <div class="panel-body">
+            <div v-if="!isAuthenticated">
+                <h4 class="mt-0">Step 1: Register Your Application</h4>
+                <ol>
+                    <li>Register your application at the <a href="https://dev.powerbi.com/apps?type=web" target="_blank">Power BI Developer site</a>.</li>
+                    <li>Provide a friendly application name.</li>
+                    <li>Select the application type of 'Server-side Web app'.</li>
+                    <li>Provide a redirect URL. Recommended: {{ config.options?.redirectUrl ? config.options.redirectUrl : "" }}</li>
+                    <li>Enter in the homepage for your Rock server (this is only displayed during the application setup process). Recommended: {{ config.options?.homepageUrl ? config.options.homepageUrl : "" }}</li>
+                    <li>Select all of the APIs.</li>
+                    <li>Register the application and note the returned Client ID and Client Secret.</li>
+                </ol>
+
+                <h4>Step 2: Authenticate</h4>
+                <p>Select a name for your account and optional description</p>
+
+                <TextBox v-model="accountName"
+                         label="Account Name"
+                         :rules="['required']"
+                         help="A name to assign to this account registration. This name will be used when selecting which BI account should be used." />
+
+                <TextBox v-model="accountDescription"
+                         label="Account Description"
+                         textMode="multiline"
+                         help="A brief description of the account and how it will be used." />
+
+                <hr />
+
+                <TextBox v-model="redirectUrl"
+                         label="Redirect URL"
+                         :rules="['required']"
+                         :defaultValue="config.options?.redirectUrl ?? ''"
+                         help="Must match the redirect URL you registered your app with." />
+
+                <p>Provide the Client ID and Client Secret that you got from Step 1</p>
+
+                <TextBox v-model="clientId"
+                         label="Client ID"
+                         :rules="['required']" />
+
+                <TextBox v-model="clientSecret"
+                         label="Client Secret"
+                         :rules="['required']" />
+
+                <NotificationBox alertType="warning">
+                    <p>Note: If you get an error when registering, wait a minute and try again. It sometimes takes a few extra seconds for the Power BI Website to know about a newly added app.</p>
+                </NotificationBox>
+
+                <div class="actions">
+                    <RockButton :btnType="BtnType.Primary"
+                                :disabled="isRegistering"
+                                @click="onRegister">
+                        {{ isRegistering ? 'Registering...' : 'Register' }}
+                    </RockButton>
+                </div>
+            </div>
+
+            <NotificationBox v-if="responseMessage"
+                             :alertType="responseType"
+                             :text="responseMessage" />
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { PowerBiAccountRegisterBox } from "@Obsidian/ViewModels/Blocks/Reporting/powerBiAccountRegisterBox";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+
+    const config = useConfigurationValues<PowerBiAccountRegisterBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+    const accountName = ref("");
+    const accountDescription = ref("");
+    const redirectUrl = ref(config.options?.redirectUrl ?? "");
+    const clientId = ref("");
+    const clientSecret = ref("");
+    const isRegistering = ref(false);
+    const isAuthenticated = ref(false);
+    const responseMessage = ref("");
+    const responseType = ref<AlertType>(AlertType.Info);
+
+    // #endregion
+
+    // #region Functions
+    async function onRegister(): Promise<void> {
+        if (!accountName.value || !clientId.value || !clientSecret.value || !redirectUrl.value) {
+            responseMessage.value = "Please fill in all required fields.";
+            responseType.value = AlertType.Danger;
+            return;
+        }
+
+        isRegistering.value = true;
+        responseMessage.value = "";
+
+        try {
+            const result = await invokeBlockAction("RegisterAccount", {
+                accountName: accountName.value,
+                accountDescription: accountDescription.value,
+                clientId: clientId.value,
+                clientSecret: clientSecret.value,
+                redirectUrl: redirectUrl.value
+            });
+
+            if (result.isSuccess) {
+                responseType.value = AlertType.Success;
+                responseMessage.value = "The Power BI account has been successfully created. You can manage all Power BI accounts under 'Admin Tools > General Settings > Defined Types > Power BI Accounts'.";
+                isAuthenticated.value = true;
+            }
+            else {
+                responseType.value = AlertType.Danger;
+                responseMessage.value = result.errorMessage ?? "Authentication Failed.";
+            }
+        }
+        catch (error) {
+            responseType.value = AlertType.Danger;
+            responseMessage.value = "An error occurred while registering the account.";
+        }
+        finally {
+            isRegistering.value = false;
+        }
+    }
+    // #endregion
+</script>

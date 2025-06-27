@@ -23,7 +23,29 @@ using Rock.Web.Cache;
 namespace Rock.Security
 {
     /// <summary>
-    /// The base class for all background check requests
+    /// Base class for all background check provider components.
+    ///
+    /// Rock's core <b>Background Check Document</b> person attribute—along with its associated
+    /// <b>Background Check FieldType</b>—was originally designed to support only Protect My Ministry
+    /// and Checkr. However, other providers can integrate with this system by following a specific
+    /// format when saving attribute values.
+    ///
+    /// To use the core attribute and field type with other third-party providers, the value saved into
+    /// the Background Check Document attribute must include:
+    /// <list type="bullet">
+    /// <item>
+    /// The <c>EntityTypeId</c> of the provider's <see cref="BackgroundCheckComponent"/> implementation.
+    /// </item>
+    /// <item>
+    /// The <c>BinaryFile.Guid</c> of the resulting background check document.
+    /// </item>
+    /// </list>
+    /// These two values should be comma-separated, e.g., <c>2240,61c0440a-3524-4528-9a56-327deaff5f4a</c>.
+    ///
+    /// <para>
+    /// The system will use the provided EntityTypeId to identify the correct provider when
+    /// accessing the stored document.
+    /// </para>
     /// </summary>
     public abstract class BackgroundCheckComponent : Component
     {

@@ -333,6 +333,7 @@ namespace RockWeb.Blocks.Connection
                         connectionRequest.PersonAliasId = person.PrimaryAliasId.Value;
                         connectionRequest.Comments = tbComments.Text.Trim();
                         connectionRequest.ConnectionOpportunityId = opportunity.Id;
+                        connectionRequest.ConnectionTypeId = opportunity.ConnectionTypeId; // necessary for inherited attributes
                         connectionRequest.ConnectionState = ConnectionState.Active;
                         connectionRequest.ConnectionStatusId = defaultStatusId;
                         connectionRequest.CampusId = campusId;
@@ -515,8 +516,9 @@ namespace RockWeb.Blocks.Connection
 
                 // Load Attributes
                 var connectionRequest = new ConnectionRequest { Id = 0 };
-
+                // Both of these properties are needed in order for the new v17 attribute "inheritance" to work:
                 connectionRequest.ConnectionOpportunityId = opportunityId;
+                connectionRequest.ConnectionTypeId = opportunity.ConnectionTypeId;
 
                 var categoryService = new CategoryService( rockContext );
 

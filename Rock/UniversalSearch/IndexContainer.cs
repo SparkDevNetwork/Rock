@@ -142,10 +142,7 @@ namespace Rock.UniversalSearch
                 var component = indexType.Value.Value;
                 if ( component.IsActive && component.IsConnected )
                 {
-                    foreach( var document in documents )
-                    {
-                        component.IndexDocument( document );
-                    }
+                    component.IndexDocuments( documents );
                 }
             }
         }

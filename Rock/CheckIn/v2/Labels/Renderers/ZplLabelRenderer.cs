@@ -321,7 +321,7 @@ namespace Rock.CheckIn.v2.Labels.Renderers
 
             if ( config.IsFilled )
             {
-                writer.Write( $",{ToDots( field.Field.Height )}" );
+                writer.Write( $",{ToDots( Math.Min( field.Field.Width, field.Field.Height ) )}" );
             }
             else
             {

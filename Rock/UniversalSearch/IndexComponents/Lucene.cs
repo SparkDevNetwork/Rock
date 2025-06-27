@@ -90,12 +90,12 @@ namespace Rock.UniversalSearch.IndexComponents
         /// Note: Changing the formula result in the data not being able to be deleted / updated. When changing the formula, delete the files from the LuceneSearchIndex folder and then re-index.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="mappingType">Type of the mapping.</param>
+        /// <param name="indexName">The index name.</param>
         /// <param name="id">The entity identifier.</param>
         /// <returns>Lucene Id</returns>
-        private string LuceneID<T>( string mappingType, T id )
+        private string LuceneID<T>( string indexName, T id )
         {
-            return $"{mappingType}_{id.ToString().PadLeft( 7, '0' )}";
+            return $"{indexName}_{id.ToString().PadLeft( 7, '0' )}";
         }
 
         /// <summary>
@@ -234,15 +234,15 @@ namespace Rock.UniversalSearch.IndexComponents
             Dictionary<string, bool> combinedTagsDictionary = new Dictionary<string, bool>();
             combinedFieldAnalyzers = new Dictionary<string, Analyzer>();
 
-            foreach ( var mappingType in entityTypes )
+            foreach ( var entityType in entityTypes )
             {
-                string mappingTypeName = mappingType.Name.ToLower();
-                if ( !_indexes.ContainsKey( mappingTypeName ) )
+                string indexName = entityType.Name.ToLower();
+                if ( !_indexes.ContainsKey( indexName ) )
                 {
-                    CreateIndex( mappingType );
+                    CreateIndex( entityType );
                 }
 
-                var index = _indexes[mappingTypeName];
+                var index = _indexes[indexName];
 
                 foreach ( var typeMappingProperty in index.MappingProperties.Values )
                 {
@@ -368,20 +368,16 @@ namespace Rock.UniversalSearch.IndexComponents
         /// Deletes the type of the documents by.
         /// </summary>
         /// <typeparam name="T">IndexModelBase</typeparam>
-        /// <param name="indexName">Name of the index.</param>
-        public override void DeleteDocumentsByType<T>( string indexName = null )
+        public override void DeleteDocumentsByType<T>()
         {
-            if ( indexName == null )
-            {
-                indexName = typeof( T ).Name.ToLower();
-            }
+            var indexName = typeof( T ).Name.ToLower();
 
             OpenWriter();
             lock ( _lockWriter )
             {
                 if ( _writer != null )
                 {
-                    _writer.DeleteDocuments( new Term( "type", typeof( T ).Name.ToLower() ) );
+                    _writer.DeleteDocuments( new Term( "type", indexName ) );
                 }
             }
         }
@@ -391,13 +387,9 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         /// <typeparam name="T">IndexModelBase</typeparam>
         /// <param name="document">The document.</param>
-        /// <param name="indexName">Name of the index.</param>
-        public override void DeleteDocument<T>( T document, string indexName = null )
+        public override void DeleteDocument<T>( T document )
         {
-            if ( indexName == null )
-            {
-                indexName = document.GetType().Name.ToLower();
-            }
+            var indexName = typeof( T ).Name.ToLower();
 
             IndexModelBase docIndexModelBase = document as IndexModelBase;
             OpenWriter();
@@ -405,7 +397,7 @@ namespace Rock.UniversalSearch.IndexComponents
             {
                 if ( _writer != null )
                 {
-                    _writer.DeleteDocuments( new Term( "index", LuceneID( document.GetType().Name.ToLower(), docIndexModelBase.Id ) ) );
+                    _writer.DeleteDocuments( new Term( "index", LuceneID( indexName, docIndexModelBase.Id ) ) );
                 }
             }
         }
@@ -491,8 +483,8 @@ namespace Rock.UniversalSearch.IndexComponents
         public override IndexModelBase GetDocumentById( Type documentType, string id )
         {
             OpenReader();
-            string mappingType = documentType.Name.ToLower();
-            var query = new TermQuery( new Term( "index", LuceneID( mappingType, id ) ) );
+            var indexName = documentType.Name.ToLower();
+            var query = new TermQuery( new Term( "index", LuceneID( indexName, id ) ) );
             var docs = _indexSearcher.Search( query, 1 );
 
             if ( docs.TotalHits >= 1 )
@@ -924,29 +916,18 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="document">The document.</param>
-        /// <param name="indexName">Name of the index.</param>
-        /// <param name="mappingType">Type of the mapping.</param>
-        public override void IndexDocument<T>( T document, string indexName = null, string mappingType = null )
+        public override void IndexDocument<T>( T document )
         {
             try
             {
-                Type documentType = document.GetType();
-                if ( indexName == null )
+                var indexName = document.GetType().Name.ToLower();
+
+                if ( !_indexes.ContainsKey( indexName ) )
                 {
-                    indexName = documentType.Name.ToLower();
+                    CreateIndex( document.GetType() );
                 }
 
-                if ( mappingType == null )
-                {
-                    mappingType = documentType.Name.ToLower();
-                }
-
-                if ( !_indexes.ContainsKey( mappingType ) )
-                {
-                    CreateIndex( documentType );
-                }
-
-                var index = _indexes[mappingType];
+                var index = _indexes[indexName];
                 var docIndexModelBase = document as IndexModelBase;
 
                 // Verify that the index contains TypeMappingProperties for the dynamic properties.
@@ -971,8 +952,8 @@ namespace Rock.UniversalSearch.IndexComponents
                     doc.Add( textField );
                 }
 
-                string indexValue = LuceneID( mappingType, docIndexModelBase.Id );
-                doc.AddStringField( "type", mappingType, global::Lucene.Net.Documents.Field.Store.YES );
+                string indexValue = LuceneID( indexName, docIndexModelBase.Id );
+                doc.AddStringField( "type", indexName, global::Lucene.Net.Documents.Field.Store.YES );
                 doc.AddStringField( "id", docIndexModelBase.Id.ToString(), global::Lucene.Net.Documents.Field.Store.YES );
                 doc.AddStringField( "index", indexValue, global::Lucene.Net.Documents.Field.Store.YES );
 

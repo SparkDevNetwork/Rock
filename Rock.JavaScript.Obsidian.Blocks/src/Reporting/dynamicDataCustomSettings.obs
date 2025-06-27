@@ -126,6 +126,7 @@
 
                             <Switch v-model="enableStickyHeader"
                                     text="Enable Sticky Header"
+                                    help="Note: If too many fields are selected in the query and cause the component to overflow, the sticky header property will not be applied to the table columns."
                                     :disabled="isDisabled" />
                         </div>
 
