@@ -23,23 +23,32 @@
 
 import { CommunicationFlowTriggerType } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
 import { ConversionGoalType } from "@Obsidian/Enums/Communication/conversionGoalType";
-import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
 import { ConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/conversionGoalSettingsBag";
+import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
-export type CommunicationFlowBag = {
+/** Bag containing information about the performance of a communication flow. */
+export type PerformanceBag = {
+    /** Gets or sets the communication flow identifier key. */
+    communicationFlowIdKey?: string | null;
+
+    /** Gets or sets the name of the communication flow. */
+    communicationFlowName?: string | null;
+
+    /** Gets or sets the conversion goal settings. */
     conversionGoalSettings?: ConversionGoalSettingsBag | null;
 
+    /** Gets or sets the conversion goal target percent. */
     conversionGoalTargetPercent?: number | null;
 
+    /** Gets or sets the conversion goal timeframe in days. */
     conversionGoalTimeframeInDays?: number | null;
 
+    /** Gets or sets the type of the conversion goal. */
     conversionGoalType?: ConversionGoalType | null;
 
-    idKey?: string | null;
+    /** Gets or sets the messages that are part of this communication flow's instances. */
+    messages?: MessageBag[] | null;
 
-    instances?: CommunicationFlowInstanceBag[] | null;
-
-    name?: string | null;
-
+    /** Gets or sets the type of the trigger that kicks off new communication flow instances. */
     triggerType: CommunicationFlowTriggerType;
 };

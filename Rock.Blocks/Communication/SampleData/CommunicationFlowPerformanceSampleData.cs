@@ -407,7 +407,8 @@ namespace Rock.Blocks.Communication
                         {
                             PersonAlias = r.RecipientPersonAlias,
                             UnsubscribeDateTime = unsubDate,
-                            UnsubscribeLevel = unsubLevel
+                            UnsubscribeLevel = unsubLevel,
+                            SendDateTime = comm.SendDateTime
                         };
                         comm.Recipients.Add( commRecip );
 

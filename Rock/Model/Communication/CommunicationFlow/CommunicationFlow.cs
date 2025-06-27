@@ -133,7 +133,7 @@ namespace Rock.Model
         /// Gets or sets the percentage of recipients expected to complete the conversion goal.
         /// </summary>
         /// <value>
-        /// The target conversion percent which should be a value between 0 and 100.
+        /// The target conversion percent which should be a value between 0 and 100, inclusively.
         /// </value>
         [DataMember]
         public decimal? ConversionGoalTargetPercent { get; set; }

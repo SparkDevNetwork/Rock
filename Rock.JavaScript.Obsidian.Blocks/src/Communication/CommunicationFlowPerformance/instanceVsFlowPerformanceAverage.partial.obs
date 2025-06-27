@@ -24,10 +24,10 @@
     import Chart from "@Obsidian/Controls/chart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
-    import { Enumerable } from "@Obsidian/Utility/linq";
-    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+    import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
     enum SeriesName {
         Instance = "Instance",
@@ -36,22 +36,22 @@
 
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
+            type: Array as PropType<MessageBag[] | null | undefined>,
             required: true
         },
 
-        flowInstances: {
-            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
+        allMessages: {
+            type: Array as PropType<MessageBag[] | null | undefined>,
             required: true
         },
-
-        hasSentCommunications: {
-            type: Boolean as PropType<boolean>,
-            required: true
-        }
     });
 
     // #region Computed Values
+
+    const hasSentCommunications = computed<boolean>(() => {
+        // Check if there are any recipients with a sent date.
+        return Enumerable.from(props.modelValue ?? []).any(r => !!r.sentDateTime);
+    });
 
     const instanceVsFlowPerformanceAverageData = computed<ChartData<"bar">>(() => {
         return BarChartDataBuilder
@@ -75,27 +75,31 @@
             .build();
     });
 
-    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
-        // NOT SPECIFIC TO SELECTED INSTANCE(S) AND ONLY VISIBLE FOR RECURRING AND ON-DEMAND FLOWS
-        const instances = props.flowInstances ?? [];
+    const recipientsPerInstanceAll = computed<GroupedEnumerable<string | null | undefined, MessageBag>[]>(() => {
+        // Group recipients by their instance ID.
+        return Enumerable.from(props.allMessages ?? [])
+            .groupBy(r => r.communicationFlowInstanceCommunicationIdKey)
+            .toArray();
+    });
 
+    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
         // Calculate conversion and unsubscribe rates for each instance.
         const allInstanceRates = Enumerable
-            .from(instances)
-            .select(i => {
-                const recipientCount = i.recipients?.length ?? 0;
-                const conversionCount = i.conversions?.length ?? 0;
-                const unsubscribeCount = i.recipients ? Enumerable.from(i.recipients).where(r => r.causedUnsubscribe).count() : 0;
+            .from(recipientsPerInstanceAll.value)
+            .select(instanceRecipients => {
+                const sentCount = instanceRecipients.count(r => !!r.sentDateTime);
+                const conversionCount = instanceRecipients.count(r => !!r.convertedDateTime);
+                const unsubscribeCount = instanceRecipients.count(r => !!r.unsubscribedDateTime);
 
                 return {
-                    instance: i,
+                    communicationFlowInstanceCommunicationIdKey: instanceRecipients.key,
                     rates: {
-                        conversionRate: recipientCount && conversionCount ? conversionCount / recipientCount : 0,
-                        unsubscribeRate: recipientCount && unsubscribeCount ? unsubscribeCount / recipientCount : 0
+                        conversionRate: sentCount && conversionCount ? conversionCount / sentCount : 0,
+                        unsubscribeRate: sentCount && unsubscribeCount ? unsubscribeCount / sentCount : 0
                     }
                 };
             })
-            .toDictionary(ir => ir.instance, ir => ir.rates);
+            .toDictionary(ir => ir.communicationFlowInstanceCommunicationIdKey, ir => ir.rates);
 
         // If there are no instances, return an empty array.
         if (allInstanceRates.size === 0) {
@@ -104,8 +108,8 @@
 
         const selectedInstanceRates = Enumerable
             .from(props.modelValue ?? [])
-            .where(i => allInstanceRates.has(i))
-            .select(i => allInstanceRates.get(i)!)
+            .where(i => allInstanceRates.has(i.communicationFlowInstanceCommunicationIdKey))
+            .select(i => allInstanceRates.get(i.communicationFlowInstanceCommunicationIdKey)!)
             .toArray();
 
         const dataPoints: ChartNumericDataPointBag[] = [];

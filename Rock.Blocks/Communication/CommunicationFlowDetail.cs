@@ -1445,6 +1445,26 @@ namespace Rock.Blocks.Communication
             return settings;
         }
 
+        private decimal? WithinBoundary( decimal? source, decimal minInclusive, decimal maxInclusive )
+        {
+            if ( !source.HasValue )
+            {
+                return null;
+            }
+
+            if ( source.Value < minInclusive )
+            {
+                return minInclusive;
+            }
+
+            if (source.Value > maxInclusive)
+            {
+                return maxInclusive;
+            }
+
+            return source;
+        }
+
         /// <inheritdoc/>
         private bool UpdateEntityFromBag( RockContext rockContext, CommunicationFlow entity, CommunicationFlowBag bag )
         {
@@ -1453,7 +1473,7 @@ namespace Rock.Blocks.Communication
 
             entity.SetConversionGoalSettings( GetConversionGoalSettings( bag.ConversionGoalSettings ) );
             entity.CategoryId = bag.Category.GetEntityId<Category>( RockContext );
-            entity.ConversionGoalTargetPercent = bag.ConversionGoalTargetPercent;
+            entity.ConversionGoalTargetPercent = WithinBoundary( bag.ConversionGoalTargetPercent, 0m, 100m );
             entity.ConversionGoalTimeframeInDays = bag.ConversionGoalTimeframeInDays;
             entity.ConversionGoalType = bag.ConversionGoalType;
             entity.Description = bag.Description;

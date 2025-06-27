@@ -11,11 +11,11 @@
     import { computed, PropType } from "vue";
     import Kpi from "@Obsidian/Controls/kpi.obs";
     import { Enumerable } from "@Obsidian/Utility/linq";
-    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
+            type: Array as PropType<MessageBag[] | null | undefined>,
             required: true
         }
     });
@@ -25,11 +25,11 @@
     const conversionCount = computed<string>(() => {
         const enumerable = Enumerable.from(props.modelValue ?? []);
 
-        if (!enumerable.any(i => i.hasSentCommunications)) {
+        if (!enumerable.any()) {
             return "N/A";
         }
         else {
-            return `${enumerable.sum(i => i.conversions?.length ?? 0)}`;
+            return `${enumerable.sum(i => i.convertedDateTime ? 1 : 0)}`;
         }
     });
 

@@ -1,13 +1,13 @@
 <template>
     <Grid :definition="gridDefinition ?? undefined"
-          :data="filteredGridData"
+          :data="messageRows"
           :entityTypeGuid="EntityType.CommunicationFlowCommunication"
           :keyField="keyField"
           itemTerm="Message"
           stickyHeader
           @selectItem="onViewMessage">
-        <TextColumn :field="getField('communicationName')"
-                    :name="getField('communicationName')"
+        <TextColumn :field="getField('communicationFlowCommunicationName')"
+                    :name="getField('communicationFlowCommunicationName')"
                     title="Message Name" />
 
         <Column :field="getField('communicationType')"
@@ -69,21 +69,20 @@
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
     import { useGetTypeMemberName } from "@Obsidian/Utility/objectUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
-    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
-    import { MessageGridItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageGridItemBag";
-    import { isPromise } from "@Obsidian/Utility/promiseUtils";
-    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { GridRowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/gridRowBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
-    const getField = useGetTypeMemberName<MessageGridItemBag>();
-    const getRow = (v: unknown): MessageGridItemBag => v as MessageGridItemBag;
+    const getField = useGetTypeMemberName<GridRowBag>();
+    const getRow = (v: unknown): GridRowBag => v as GridRowBag;
 
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
+            type: Array as PropType<MessageBag[] | null | undefined>,
             required: true
         },
 
@@ -92,51 +91,43 @@
             required: true
         },
 
-        gridDataSource: {
-            type: Object as PropType<GridDataBag | Promise<GridDataBag> | null | undefined>,
-            required: true
-        },
-
         onViewMessage: {
-            type: Function as PropType<((communicationFlowCommunicationIdKey: string) => void) | undefined>
+            type: Function as PropType<((communicationFlowInstanceCommunicationIdKey: string) => void) | undefined>
         }
     });
 
-    const keyField = getField("communicationFlowCommunicationIdKey");
+    const keyField = getField("communicationFlowInstanceCommunicationIdKey");
 
-    const filteredGridData = computed((): GridDataBag | Promise<GridDataBag> | undefined => {
-        if (isNullish(props.gridDataSource)) {
+    const messageRows = computed((): GridDataBag | undefined => {
+        if (isNullish(props.modelValue)) {
             return;
         }
 
-        const selectedInstances = props.modelValue ?? [];
-        const selectedCommunicationFlowInstanceCommunicationIdKeys = new Set(
-            Enumerable
-                .from(selectedInstances)
-                .selectMany(i => i.communications ?? [])
-                .select(ic => ic.idKey)
-                .ofType((i): i is string => !isNullish(i))
-        );
+        const messages = Enumerable.from(props.modelValue ?? []);
 
-        function filterGridData(data: GridDataBag): GridDataBag {
-            const rows = data.rows as MessageGridItemBag[] | null | undefined;
+        const groupedStats = messages
+            .groupBy(m => m.communicationFlowInstanceCommunicationIdKey)
+            .ofType((g): g is GroupedEnumerable<string, MessageBag> => !!g.key)
+            .select<GridRowBag>(group => {
+                const key = group.key;
+                const representative = group.first();
 
-            if (isNullish(rows)) {
                 return {
-                    rows
+                    communicationFlowCommunicationIdKey: key,
+                    communicationFlowInstanceCommunicationIdKey: representative.communicationFlowInstanceCommunicationIdKey,
+                    communicationFlowCommunicationName: representative.communicationFlowCommunicationName,
+                    communicationType: representative.communicationType,
+                    clicks: group.count(m => !!m.clickedDateTime),
+                    opens: group.count(m => !!m.openedDateTime),
+                    sent: group.count(m => !!m.sentDateTime),
+                    conversions: group.count(m => !!m.convertedDateTime),
+                    unsubscribes: group.count(m => !!m.unsubscribedDateTime)
                 };
-            }
+            })
+            .toArray();
 
-            return {
-                rows: rows.filter(row => selectedCommunicationFlowInstanceCommunicationIdKeys.has(row.communicationFlowInstanceCommunicationIdKey ?? ""))
-            };
-        }
-
-        if (isPromise(props.gridDataSource)) {
-            return props.gridDataSource.then(filterGridData);
-        }
-        else {
-            return filterGridData(props.gridDataSource);
-        }
+        return {
+            rows: groupedStats
+        };
     });
 </script>

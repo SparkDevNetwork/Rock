@@ -27,8 +27,8 @@
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
     const { parseRockDateTime } = useRockDateTimeParser();
 
@@ -38,13 +38,11 @@
     }
 
     const props = defineProps({
+        /**
+         * The communication recipients for the selected communication flow instances.
+         */
         modelValue: {
-            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
-            required: true
-        },
-
-        hasSentCommunications: {
-            type: Boolean as PropType<boolean>,
+            type: Array as PropType<MessageBag[] | null | undefined>,
             required: true
         },
 
@@ -55,6 +53,11 @@
     });
 
     // #region Computed Values
+
+    const hasSentCommunications = computed<boolean>(() => {
+        // Check if there are any recipients with a sent date.
+        return Enumerable.from(props.modelValue ?? []).any(r => !!r.sentDateTime);
+    });
 
     const totalFlowPerformanceOverTimeData = computed<ChartData<"line">>(() => {
         return LineChartDataBuilder
@@ -98,61 +101,60 @@
 
     const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
         const dataPoints: ChartNumericDataPointBag[] = [];
-        const selectedInstanceEnumerable = Enumerable.from(props.modelValue ?? []);
-        const selectedInstancesTotalRecipientCount = selectedInstanceEnumerable.sum(i => i.recipients?.length ?? 0);
+        const sentMessagesEnumerable = Enumerable.from(props.modelValue ?? [])
+            .where(r => !!r.sentDateTime); // Only consider recipients who have actually received communications.
+        const totalSentMessages = sentMessagesEnumerable.count();
 
-        if (selectedInstancesTotalRecipientCount <= 0) {
+        if (totalSentMessages <= 0) {
             return dataPoints;
         }
 
-        const selectedInstanceConversionRateData = buildCumulativeRates(
+        const conversionRateData = buildCumulativeRates(
             // Conversion dates.
-            selectedInstanceEnumerable
-                .selectMany(i => i.conversions ?? [])
-                .select(c => parseRockDateTime(c.date))
+            sentMessagesEnumerable
+                .select(r => parseRockDateTime(r.convertedDateTime))
                 .ofType(isRockDateTime),
             {
                 seriesName: SeriesName.ConversionRate,
                 color: "#68D391",
-                totalCount: selectedInstancesTotalRecipientCount,
+                totalCount: totalSentMessages,
                 dateTransformer: dateTransformer.value,
                 dateFormatter: dateFormatter.value
             }
         );
 
-        const selectInstanceUnubscribeRateData = buildCumulativeRates(
+        const unsubscribeRateData = buildCumulativeRates(
             // Unsubscribe dates.
-            selectedInstanceEnumerable
-                .selectMany(i => i.recipients ?? [])
-                .where(r => r.causedUnsubscribe)
-                .select(r => parseRockDateTime(r.unsubscribeDateTime))
+            sentMessagesEnumerable
+                .select(r => parseRockDateTime(r.unsubscribedDateTime))
                 .ofType(isRockDateTime),
             {
                 seriesName: SeriesName.UnsubscribeRate,
                 color: "#FC8181",
-                totalCount: selectedInstancesTotalRecipientCount,
+                totalCount: totalSentMessages,
                 dateTransformer: dateTransformer.value,
                 dateFormatter: dateFormatter.value
             });
 
-        const data = selectedInstanceConversionRateData
-            .concat(selectInstanceUnubscribeRateData)
+        const data = conversionRateData
+            .concat(unsubscribeRateData)
             .orderBy(dp => dp.rockDateTime.toMilliseconds()) // Re-order so the data are all in chronological order.
             .toArray();
 
-        const instanceStartDate = selectedInstanceEnumerable
-            .select(i => parseRockDateTime(i.startDate))
+        // Ensure the earliest instance starting date is included in the data.
+        const earliestInstanceSentDate = sentMessagesEnumerable
+            .select(i => parseRockDateTime(i.instanceStartDate))
             .ofType(isRockDateTime)
             .orderBy(dp => dp.toMilliseconds())
             .firstOrDefault();
 
-        if (instanceStartDate && !data.some(d => d.rockDateTime.isEarlierThan(instanceStartDate))) {
+        if (earliestInstanceSentDate && !data.some(d => d.rockDateTime.isEarlierThan(earliestInstanceSentDate))) {
             data.unshift({
-                rockDateTime: instanceStartDate,
+                rockDateTime: earliestInstanceSentDate,
                 seriesName: SeriesName.ConversionRate,
                 color: "#68D391",
                 value: 0,
-                label: dateFormatter.value(instanceStartDate)
+                label: dateFormatter.value(earliestInstanceSentDate)
             });
         }
 

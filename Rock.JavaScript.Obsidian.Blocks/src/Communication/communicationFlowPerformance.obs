@@ -1,14 +1,15 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    Hello
     <Panel title="Flow Performance" type="block">
-        <template #headerActions v-if="config.communicationFlow && CommunicationFlowTriggerTypeDescription[config.communicationFlow.triggerType]">
+        <template #headerActions v-if="config.flowPerformance && CommunicationFlowTriggerTypeDescription[config.flowPerformance.triggerType]">
             <div>
-                <HighlightLabel>{{ CommunicationFlowTriggerTypeDescription[config.communicationFlow.triggerType] }}</HighlightLabel>
+                <HighlightLabel>{{ CommunicationFlowTriggerTypeDescription[config.flowPerformance.triggerType] }}</HighlightLabel>
             </div>
         </template>
 
         <template #default>
-            <div v-if="config.communicationFlow?.triggerType === CommunicationFlowTriggerType.Recurring"
+            <div v-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.Recurring"
                  class="row">
                 <div class="col-md-3">
                     <DropDownList v-model="selectedRecurringFlowInstanceIdKeyOrEmptyString"
@@ -19,7 +20,7 @@
                 </div>
             </div>
 
-            <div v-else-if="config.communicationFlow?.triggerType === CommunicationFlowTriggerType.OnDemand"
+            <div v-else-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OnDemand"
                  class="row">
                 <div class="col-md-6">
                     <SlidingDateRangePicker v-model="selectedOnDemandSlidingDateRange"
@@ -29,47 +30,49 @@
                 </div>
             </div>
 
-            <div v-else-if="config.communicationFlow?.triggerType === CommunicationFlowTriggerType.OneTime"
+            <div v-else-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OneTime"
                  class="row">
                 <div class="col-md-3">
-                    <StaticFormControl :modelValue="format_Thursday_JanDot_1_1970(parseRockDateTime(config.communicationFlow?.instances?.[0]?.startDate))"
+                    <StaticFormControl :modelValue="format_Thursday_JanDot_1_1970(parseRockDateTime(config.flowPerformance?.messages?.[0]?.instanceStartDate))"
                                        help="For One-time flows, this is the start date and time of the initial message."
                                        label="Flow Instance" />
                 </div>
             </div>
 
-            <ConversionGoalProgress :modelValue="config.communicationFlow"
-                                    :selectedFlowInstances="selectedFlowInstances" />
+            <ConversionGoalProgress :conversionGoalSettings="config.flowPerformance?.conversionGoalSettings"
+                                    :conversionGoalTargetPercent="config.flowPerformance?.conversionGoalTargetPercent"
+                                    :conversionGoalTimeframeInDays="config.flowPerformance?.conversionGoalTimeframeInDays"
+                                    :conversionGoalType="config.flowPerformance?.conversionGoalType"
+                                    :modelValue="selectedMessages" />
 
-            <template v-if="!isNullish(config.communicationFlow?.conversionGoalType)">
-                <template v-if="config.communicationFlow?.triggerType === CommunicationFlowTriggerType.OneTime">
+            <template v-if="!isNullish(config.flowPerformance?.conversionGoalType)">
+                <template v-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OneTime">
                     <div class="row">
                         <div class="col-md-4">
-                            <FlowKeyMetrics :modelValue="selectedFlowInstances"
+                            <FlowKeyMetrics :modelValue="selectedMessages"
+                                            :flowPerformance="config.flowPerformance"
                                             vertical />
                         </div>
 
                         <div class="col-md-8">
-                            <TotalFlowPerformanceOverTime :modelValue="selectedFlowInstances"
-                                                          :dateUnit="dateUnit"
-                                                          :hasSentCommunications="selectedFlowInstances.some(i => i.hasSentCommunications)" />
+                            <TotalFlowPerformanceOverTime :modelValue="selectedMessages"
+                                                          :flowPerformance="config.flowPerformance"
+                                                          :dateUnit="dateUnit" />
                         </div>
                     </div>
                 </template>
 
                 <template v-else>
-                    <FlowKeyMetrics :modelValue="selectedFlowInstances" />
+                    <FlowKeyMetrics :modelValue="selectedMessages" />
 
                     <div class="row">
                         <div class="col-md-6">
-                            <TotalFlowPerformanceOverTime :modelValue="selectedFlowInstances"
-                                                          :dateUnit="dateUnit"
-                                                          :hasSentCommunications="selectedFlowInstances.some(i => i.hasSentCommunications)" />
+                            <TotalFlowPerformanceOverTime :modelValue="selectedMessages"
+                                                          :dateUnit="dateUnit" />
                         </div>
                         <div class="col-md-6">
-                            <InstanceVsFlowPerformanceAverage :modelValue="selectedFlowInstances"
-                                                              :flowInstances="config.communicationFlow?.instances"
-                                                              :hasSentCommunications="selectedFlowInstances.some(i => i.hasSentCommunications)" />
+                            <InstanceVsFlowPerformanceAverage :modelValue="selectedMessages"
+                                                              :allMessages="config.flowPerformance?.messages ?? []" />
                         </div>
                     </div>
                 </template>
@@ -78,7 +81,7 @@
             <template v-else>
                 <div class="row">
                     <div class="col-md-4">
-                        <UnsubscribesKpi :modelValue="selectedFlowInstances" />
+                        <UnsubscribesKpi :modelValue="selectedMessages" />
                     </div>
                 </div>
             </template>
@@ -95,9 +98,9 @@
         </template>
     </Panel>
 
-    <MessageListGrid :modelValue="selectedFlowInstances"
+    <MessageListGrid :modelValue="selectedMessages"
+                     :messages="config.flowPerformance?.messages"
                      :gridDefinition="config.gridDefinition"
-                     :gridDataSource="gridDataSource"
                      @viewMessage="onViewMessage" />
 </template>
 
@@ -116,7 +119,7 @@
 
 <script setup lang="ts">
     /* eslint-disable @typescript-eslint/naming-convention */
-    import { computed, ref, watch } from "vue";
+    import { computed, ref } from "vue";
     import ConversionGoalProgress from "./CommunicationFlowPerformance/conversionGoalProgress.partial.obs";
     import FlowKeyMetrics from "./CommunicationFlowPerformance/flowKeyMetrics.partial.obs";
     import MessageListGrid from "./CommunicationFlowPerformance/messageListGrid.partial.obs";
@@ -130,19 +133,17 @@
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { CommunicationFlowTriggerType, CommunicationFlowTriggerTypeDescription } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
     import { TimeUnitType } from "@Obsidian/Enums/Controls/timeUnitType";
-    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { calculateSlidingDateRange, RangeType, SlidingDateRange, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
     import { isNullish } from "@Obsidian/Utility/util";
-    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
     import { InitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/initializationBox";
-    import { MessageGridItemBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageGridItemBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { NavigationUrlKey } from "./CommunicationFlowPerformance/types.partial";
     import UnsubscribesKpi from "./CommunicationFlowPerformance/unsubscribesKpi.partial.obs";
-    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { useStore } from "@Obsidian/PageState";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
     type ViewMessageIdKeys = {
         instanceIdKey: string;
@@ -150,7 +151,6 @@
     };
 
     const config = useConfigurationValues<InitializationBox>();
-    const invokeBlockAction = useInvokeBlockAction();
     const {
         format_1_1_1970,
         format_Thursday_JanDot_1_1970
@@ -167,7 +167,6 @@
 
     const selectedRecurringFlowInstanceIdKeyOrEmptyString = ref<string>(getPageParameter("CommunicationFlowInstance") as string ?? "");
     const selectedOnDemandSlidingDateRange = ref<SlidingDateRange | null>({ rangeType: RangeType.Last, timeValue: 1, timeUnit: TimeUnit.Month });
-    const gridDataSource = ref<Promise<GridDataBag>>();
     const firstCommunicationIdKey = ref<string | null | undefined>();
 
     // #endregion Values
@@ -175,49 +174,50 @@
     // #region Computed Values
 
     const recurringFlowInstances = computed<ListItemBag[]>(() => {
-        const instances = config.communicationFlow?.instances ?? [];
+        const messages = config.flowPerformance?.messages ?? [];
 
-        return Enumerable.from(instances)
-            .select(i => ({
-                instance: i,
-                startDateTime: i.startDate ? RockDateTime.parseISO(i.startDate) : null
+        return Enumerable.from(messages)
+            .distinctBy(x => x.communicationFlowInstanceIdKey)
+            .select(m => ({
+                instanceIdKey: m.communicationFlowInstanceIdKey,
+                instanceStartDateTime: parseRockDateTime(m.instanceStartDate)
             }))
-            .ofType((x): x is {
-                instance: CommunicationFlowInstanceBag;
-                startDateTime: RockDateTime;
+            .ofType((m): m is {
+                instanceIdKey: string;
+                instanceStartDateTime: RockDateTime;
             } => {
-                return !isNullish(x.startDateTime);
+                return !isNullish(m.instanceIdKey) && !isNullish(m.instanceStartDateTime);
             })
-            .orderByDescending(x => x.startDateTime.toMilliseconds())
+            .orderByDescending(x => x.instanceStartDateTime.toMilliseconds())
             .select<ListItemBag>(x => {
                 return {
-                    value: x.instance.idKey,
+                    value: x.instanceIdKey,
                     // Format the date as "Tuesday, Jun. 3, 2024"
-                    text: format_Thursday_JanDot_1_1970(x.startDateTime)
+                    text: format_Thursday_JanDot_1_1970(x.instanceStartDateTime)
                 };
             })
             .toArray();
     });
 
-    const selectedFlowInstances = computed<CommunicationFlowInstanceBag[]>(() => {
-        const allInstances = config.communicationFlow?.instances ?? [];
+    const selectedMessages = computed<MessageBag[]>(() => {
+        const allMessages = config.flowPerformance?.messages ?? [];
 
-        if (config.communicationFlow?.triggerType === CommunicationFlowTriggerType.OnDemand) {
+        if (config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OnDemand) {
             // For on-demand flows, filter instances by the selected date range.
             if (!selectedOnDemandSlidingDateRange.value) {
-                return allInstances;
+                return allMessages;
             }
 
             const { start: startDate, end: endDate } = calculateSlidingDateRange(selectedOnDemandSlidingDateRange.value);
 
             if (!startDate && !endDate) {
-                return allInstances;
+                return allMessages;
             }
             else {
                 return Enumerable
-                    .from(allInstances)
-                    .where(i => {
-                        const instanceStartDate = parseRockDateTime(i.startDate);
+                    .from(allMessages)
+                    .where(m => {
+                        const instanceStartDate = parseRockDateTime(m.instanceStartDate);
 
                         if (!instanceStartDate) {
                             return false;
@@ -240,21 +240,24 @@
                     .toArray();
             }
         }
-        else if (config.communicationFlow?.triggerType === CommunicationFlowTriggerType.Recurring) {
+        else if (config.flowPerformance?.triggerType === CommunicationFlowTriggerType.Recurring) {
             if (!selectedRecurringFlowInstanceIdKeyOrEmptyString.value) {
                 return [];
             }
             else {
-                return config.communicationFlow?.instances?.filter(i => i.idKey === selectedRecurringFlowInstanceIdKeyOrEmptyString.value) ?? [];
+                return Enumerable
+                    .from(allMessages)
+                    .where(m => m.communicationFlowInstanceIdKey === selectedRecurringFlowInstanceIdKeyOrEmptyString.value)
+                    .toArray();
             }
         }
         else {
-            return allInstances;
+            return allMessages;
         }
     });
 
     const dateUnit = computed<"day" | "month" | "week">(() => {
-        switch (config.communicationFlow?.triggerType) {
+        switch (config.flowPerformance?.triggerType) {
             case CommunicationFlowTriggerType.OnDemand: {
                 // For On-Demand flows, determine the date unit based on the selected date range.
                 const timeUnit = selectedOnDemandSlidingDateRange.value?.timeUnit;
@@ -322,16 +325,13 @@
 
     // #region Functions
 
-    function getViewMessageIdKeys(communicationFlowCommunicationIdKey: string): ViewMessageIdKeys {
+    function getViewMessageIdKeys(communicationFlowInstanceCommunicationIdKey: string): ViewMessageIdKeys {
         return Enumerable
-            .from(selectedFlowInstances.value)
+            .from(selectedMessages.value)
+            .where(m => m.communicationFlowInstanceCommunicationIdKey === communicationFlowInstanceCommunicationIdKey)
             .select(i => ({
-                instanceIdKey: i.idKey,
-                instanceCommunicationIdKey: Enumerable
-                    .from(i.communications ?? [])
-                    .where(c => c.communicationFlowCommunicationIdKey === communicationFlowCommunicationIdKey)
-                    .select(c => c.idKey)
-                    .firstOrDefault()
+                instanceIdKey: i.communicationFlowInstanceIdKey,
+                instanceCommunicationIdKey: i.communicationFlowInstanceCommunicationIdKey
             }))
             .ofType((k): k is ViewMessageIdKeys => {
                 return !isNullish(k.instanceIdKey) && !isNullish(k.instanceCommunicationIdKey);
@@ -343,44 +343,4 @@
     }
 
     // #endregion Computed Values
-
-    // #region Functions
-
-    function getRow(value: unknown): MessageGridItemBag {
-        return value as MessageGridItemBag;
-    }
-
-    async function loadGridData(): Promise<GridDataBag> {
-        const result = await invokeBlockAction<GridDataBag>("GetRowData");
-
-        if (result.isSuccess && result.data) {
-            return result.data;
-        }
-        else {
-            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
-        }
-    }
-
-    // #endregion Functions
-
-    // #region Watchers
-
-    watch(gridDataSource, async newValue => {
-        if (newValue) {
-            // Load the new grid data so we can get the first communication ID key.
-            // This is needed to determine if we can create a "view message" handler
-            // for the grid rows.
-            const data = await newValue;
-
-            firstCommunicationIdKey.value = Enumerable
-                .from(data.rows ?? [])
-                .select(r => getRow(r).communicationFlowCommunicationIdKey)
-                .ofType((k): k is string => typeof k === "string")
-                .firstOrDefault("");
-        }
-    });
-
-    // #endregion Watchers
-
-    gridDataSource.value = loadGridData();
 </script>

@@ -32,11 +32,11 @@
     import MeanConversionTimeKpi from "./meanConversionTimeKpi.partial.obs";
     import UnsubscribesKpi from "./unsubscribesKpi.partial.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
     defineProps({
         modelValue: {
-            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
+            type: Array as PropType<MessageBag[] | null | undefined>,
             required: true
         },
 

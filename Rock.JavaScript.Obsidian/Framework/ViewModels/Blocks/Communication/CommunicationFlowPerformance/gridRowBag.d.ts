@@ -23,32 +23,32 @@
 
 import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
 
-/** Bag containing information for a message grid item in the Communication Flow Performance block. */
-export type MessageGridItemBag = {
-    /** Gets or sets the number of times this Communication Flow Instance Communication was clicked. */
+/** Bag containing a row of data for the grid in the Communication Flow Performance block. */
+export type GridRowBag = {
+    /** Gets or sets the number of clicks. */
     clicks: number;
 
-    /** Gets or sets the unique identifier key for the Communication Flow Communication. */
+    /** Gets or sets the communication flow instance identifier key. */
     communicationFlowCommunicationIdKey?: string | null;
 
-    /** Gets or sets the unique identifier key for the Communication Flow Instance Communication. */
+    /** Gets or sets the name of the communication flow communication. */
+    communicationFlowCommunicationName?: string | null;
+
+    /** Gets or sets the communication flow instance communication identifier key. */
     communicationFlowInstanceCommunicationIdKey?: string | null;
 
-    /** Gets or sets the communication name. */
-    communicationName?: string | null;
-
-    /** Gets or sets the communication type for the message. */
+    /** Gets or sets the type of the communication. */
     communicationType: CommunicationType;
 
-    /** Gets or sets the number of recipient conversions for this Communication Flow Instance Communication. */
-    conversions?: number | null;
+    /** Gets or sets the number of conversions. */
+    conversions: number;
 
-    /** Gets or sets the number of times this Communication Flow Instance Communication was opened. */
+    /** Gets or sets the number of opens. */
     opens: number;
 
-    /** Gets or sets the number of sent communications for this Communication Flow Instance Communication. */
+    /** Gets or sets the number of messages sent. */
     sent: number;
 
-    /** Gets or sets the number of recipient unsubscribes for this Communication Flow Instance Communication. */
+    /** Gets or sets the number of unsubscribes. */
     unsubscribes: number;
 };

@@ -21,18 +21,21 @@
 // </copyright>
 //
 
-import { CommunicationFlowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowBag";
+import { PerformanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/performanceBag";
 import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
 
+/** Initialization box for the Communication Flow Performance block. */
 export type InitializationBox = {
-    communicationFlow?: CommunicationFlowBag | null;
-
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.
      */
     errorMessage?: string | null;
 
+    /** Gets or sets the flow performance. */
+    flowPerformance?: PerformanceBag | null;
+
+    /** Gets or sets the grid definition. */
     gridDefinition?: GridDefinitionBag | null;
 
     /** Gets or sets the navigation urls. */

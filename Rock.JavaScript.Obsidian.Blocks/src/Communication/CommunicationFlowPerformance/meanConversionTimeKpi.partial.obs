@@ -9,16 +9,15 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import { isRockDateTime, useRockDateTimeParser } from "./utils.partial";
+    import { useRockDateTimeParser } from "./utils.partial";
     import Kpi from "@Obsidian/Controls/kpi.obs";
     import { Enumerable } from "@Obsidian/Utility/linq";
-    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
-    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
     const props = defineProps({
         modelValue: {
-            type: Array as PropType<CommunicationFlowInstanceBag[] | null | undefined>,
+            type: Array as PropType<MessageBag[] | null | undefined>,
             required: true
         }
     });
@@ -30,35 +29,26 @@
     const averageTimeBeforeConversion = computed<string>(() => {
         const enumerable = Enumerable.from(props.modelValue ?? []);
 
-        if (!enumerable.any()
-            || enumerable.sum(i => (i.recipients ?? []).length) === 0) {
-            // There are no selected flow instances
-            // or there are no recipients in the selected flow instances,
+        if (!enumerable.any()) {
+            // There are no recipients for the selected flow instances,
             // so there is no average conversion time to calculate.
             return "N/A";
         }
 
         const conversionTimesInMilliseconds = enumerable
-            .selectMany(instance => {
-                // For each instance, return a collection of conversion times.
-                const instanceStartDate = instance.startDate ? RockDateTime.parseISO(instance.startDate) : null;
+            .select(recipient => {
+                const recipientSentDate = parseRockDateTime(recipient.sentDateTime);
+                const recipientConvertedDate = parseRockDateTime(recipient.convertedDateTime);
 
-                if (instanceStartDate === null || !instance.conversions || instance.conversions.length === 0) {
-                    return [];
+                if (recipientSentDate && recipientConvertedDate) {
+                    return recipientConvertedDate.toMilliseconds() - recipientSentDate.toMilliseconds();
                 }
                 else {
-                    const conversionDateTimes = Enumerable
-                        .from(instance.conversions)
-                        .select(conversion => parseRockDateTime(conversion.date))
-                        .ofType(isRockDateTime);
-
-                    // Return the collection of conversion times for this instance in milliseconds.
-                    // This will be averaged at the end.
-                    return conversionDateTimes
-                        .select(conversionDateTime => conversionDateTime.toMilliseconds() - instanceStartDate.toMilliseconds())
-                        .toArray();
+                    // No conversion time for this recipient.
+                    return 0;
                 }
             })
+            .where(conversionTime => conversionTime > 0)
             .toArray();
 
         if (conversionTimesInMilliseconds.length === 0) {
@@ -67,8 +57,7 @@
             return "N/A";
         }
 
-
-        const meanConversionTime = Enumerable.from(conversionTimesInMilliseconds).average(conversionTimeSpanMilliseconds => conversionTimeSpanMilliseconds);
+        const meanConversionTime = Enumerable.from(conversionTimesInMilliseconds).average(c => c);
 
         return RockTimeSpan.fromMilliseconds(meanConversionTime).toElapsedString();
     });

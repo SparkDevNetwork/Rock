@@ -33,11 +33,17 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowDetail
         /// </summary>
         public ListItemBag Category { get; set; }
 
+        /// <summary>
+        /// Gets or sets the communications for this communication flow.
+        /// </summary>
         public List<CommunicationFlowCommunicationBag> Communications { get; set; }
 
         /// <summary>
         /// Gets or sets the percentage of recipients expected to complete the conversion goal.
         /// </summary>
+        /// <value>
+        /// The target conversion percent which should be a value between 0 and 100, inclusively.
+        /// </value>
         public decimal? ConversionGoalTargetPercent { get; set; }
 
         /// <summary>

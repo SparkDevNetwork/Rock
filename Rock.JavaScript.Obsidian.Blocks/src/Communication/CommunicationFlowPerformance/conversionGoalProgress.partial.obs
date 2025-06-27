@@ -10,10 +10,10 @@
                     <HighlightLabel labelType="success"><i class="ti ti-target"></i></HighlightLabel> <span v-html="conversionGoalSummaryHtml"></span>
                 </div>
 
-                <EnhancedProgressBar :indicators="[modelValue?.conversionGoalTargetPercent ?? 0]"
+                <EnhancedProgressBar :indicators="[conversionGoalTargetPercent ?? 0]"
                                      :modelValue="{
-                                        value: conversionPercent,
-                                        text: roundedConversionPercent ? `${roundedConversionPercent}%` : null
+                                        value: averageInstanceConversionPercent * 100,
+                                        text: averageInstanceConversionPercent.toLocaleString(undefined, { style: 'percent' })
                                     }"
                                      :progressType="progressBarType"
                                      :indicatorType="progressBarType" />
@@ -24,7 +24,7 @@
                     <HighlightLabel labelType="default"><i class="ti ti-target"></i></HighlightLabel> <span>No data available yet.</span>
                 </div>
 
-                <EnhancedProgressBar :indicators="[modelValue?.conversionGoalTargetPercent ?? 0]"
+                <EnhancedProgressBar :indicators="[conversionGoalTargetPercent ?? 0]"
                                      :modelValue="null" />
             </template>
         </div>
@@ -109,32 +109,43 @@
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { prependSingularIndefiniteArticle } from "@Obsidian/Utility/stringUtils";
-    import { CommunicationFlowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowBag";
-    import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+    import { ConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/conversionGoalSettingsBag";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<CommunicationFlowBag | null | undefined>,
+            type: Array as PropType<MessageBag[]>,
             required: true
         },
 
-        selectedFlowInstances: {
-            type: Array as PropType<CommunicationFlowInstanceBag[]>,
+        conversionGoalType: {
+            type: Object as PropType<ConversionGoalType | null | undefined>,
+            required: true
+        },
+
+        conversionGoalTargetPercent: {
+            type: Object as PropType<number | null | undefined>,
+            required: true
+        },
+
+        conversionGoalTimeframeInDays: {
+            type: Object as PropType<number | null | undefined>,
+            required: true
+        },
+
+        conversionGoalSettings: {
+            type: Object as PropType<ConversionGoalSettingsBag | null | undefined>,
             required: true
         }
     });
 
     // #region Computed Properties
 
-    const roundedConversionPercent = computed((): number => {
-        return Math.round(conversionPercent.value);
-    });
-
     const conversionGoalSummaryHtml = computed<string | null>(() => {
-        const conversionGoalType = props.modelValue?.conversionGoalType;
-        const conversionGoalTargetPercent = props.modelValue?.conversionGoalTargetPercent;
-        const conversionGoalTimeframeInDays = props.modelValue?.conversionGoalTimeframeInDays;
-        const conversionGoalSettings = props.modelValue?.conversionGoalSettings;
+        const conversionGoalType = props.conversionGoalType;
+        const conversionGoalTargetPercent = (props.conversionGoalTargetPercent ?? 0) / 100;
+        const conversionGoalTimeframeInDays = props.conversionGoalTimeframeInDays;
+        const conversionGoalSettings = props.conversionGoalSettings;
 
         if (isNullish(conversionGoalType)
             || !conversionGoalSettings
@@ -145,7 +156,7 @@
             return null;
         }
 
-        const who = `At least ${strongify(`${conversionGoalTargetPercent}%`)} of recipients`;
+        const who = `At least ${strongify(conversionGoalTargetPercent.toLocaleString(undefined, { style: "percent" }))} of recipients`;
         const when = conversionGoalTimeframeInDays === 1
             ? `within ${strongify("1 day")} of the flow's launch`
             : `within ${strongify(`${conversionGoalTimeframeInDays} days`)} of the flow's launch`;
@@ -258,27 +269,26 @@
     });
 
     const conversionGoalStatus = computed<ConversionGoalStatus>(() => {
-        if (props.selectedFlowInstances.length === 0
-            || Enumerable.from(props.selectedFlowInstances).all(i => !i.hasSentCommunications)
-        ) {
+        if (props.modelValue.length === 0) {
             // No instance selected or no messages have been sent for the selected flow instances.
             return "Not Tracked";
         }
         else {
-            const goalNotMetInstances = Enumerable.from(props.selectedFlowInstances)
-                .where(i => {
-                    const recipientCount = i.recipients?.length ?? 0;
-                    const conversionCount = i.conversions?.length ?? 0;
+            const goalNotMetInstances = Enumerable
+                .from(recipientsByInstance.value)
+                .where(instanceRecipients => {
+                    const sentCount = instanceRecipients.count(r => !!r.sentDateTime);
+                    const conversionCount = instanceRecipients.count(r => !!r.convertedDateTime);
 
-                    const conversionPercent = recipientCount <= 0 ? 0 : (conversionCount / recipientCount) * 100;
-                    const conversionGoalTargetPercent = props.modelValue?.conversionGoalTargetPercent ?? 0;
+                    const conversionPercent = sentCount <= 0 ? 0 : (conversionCount / sentCount) * 100;
+                    const conversionGoalTargetPercent = props.conversionGoalTargetPercent ?? 0;
 
                     return conversionPercent < conversionGoalTargetPercent;
                 })
                 .toArray();
 
             if (Enumerable.from(goalNotMetInstances).any()) {
-                if (Enumerable.from(goalNotMetInstances).any(i => i.hasUnsentCommunications)) {
+                if (Enumerable.from(goalNotMetInstances).any(instanceRecipients => instanceRecipients.any(ix => !ix.sentDateTime))) {
                     // At least one instance has unsent communications
                     // and the conversion percent is below the target.
                     return "Pending";
@@ -310,22 +320,44 @@
         }
     });
 
-    const hasSentMessages = computed<boolean>(() => {
-        return props.selectedFlowInstances.some(i => i.hasSentCommunications);
+    const recipientsByInstance = computed(() => {
+        return Enumerable
+            .from(props.modelValue)
+            .groupBy(r => r.communicationFlowInstanceIdKey)
+            .toArray();
     });
 
-    const conversionPercent = computed<number>(() => {
-        return Enumerable.from(props.selectedFlowInstances)
-            .average(i => {
-                const recipientCount = i.recipients?.length ?? 0;
-                const conversionCount = i.conversions?.length ?? 0;
-                if (recipientCount <= 0) {
-                    return 0;
+    const instanceConversionPercentages = computed(() => {
+        return Enumerable
+            .from(recipientsByInstance.value)
+            .select(instanceRecipients => {
+                const sentCount = instanceRecipients.count(r => !!r.sentDateTime);
+                const conversionCount = instanceRecipients.count(r => !!r.convertedDateTime);
+
+                if (sentCount <= 0) {
+                    return {
+                        instanceIdKey: instanceRecipients.key,
+                        conversionPercent: 0
+                    };
                 }
                 else {
-                    return conversionCount / recipientCount;
+                    return {
+                        instanceIdKey: instanceRecipients.key,
+                        conversionPercent: conversionCount / sentCount
+                    };
                 }
-            }) * 100;
+            })
+            .toArray();
+    });
+
+    const hasSentMessages = computed<boolean>(() => {
+        return props.modelValue.some(r => r.sentDateTime);
+    });
+
+    const averageInstanceConversionPercent = computed<number>(() => {
+        return Enumerable
+            .from(instanceConversionPercentages.value)
+            .average(instance => instance.conversionPercent);
     });
 
     // #endregion Computed Properties
