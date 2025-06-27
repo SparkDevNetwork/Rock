@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,9 +21,14 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
+
 using Expression = System.Linq.Expressions.Expression;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -31,10 +36,10 @@ namespace Rock.Reporting.DataSelect.Person
     /// <summary>
     /// 
     /// </summary>
-    [Description("Select the email addresses of the parents of a person")]
-    [Export(typeof(DataSelectComponent))]
-    [ExportMetadata("ComponentName", "Select Person's Parent's Email Address")]
-    [Rock.SystemGuid.EntityTypeGuid( "2DAB411C-281B-498A-9164-8E3C9BA06E08")]
+    [Description( "Select the email addresses of the parents of a person" )]
+    [Export( typeof( DataSelectComponent ) )]
+    [ExportMetadata( "ComponentName", "Select Person's Parent's Email Address" )]
+    [Rock.SystemGuid.EntityTypeGuid( "2DAB411C-281B-498A-9164-8E3C9BA06E08" )]
     public class ParentsEmailSelect : DataSelectComponent
     {
         #region Properties
@@ -50,7 +55,7 @@ namespace Rock.Reporting.DataSelect.Person
         {
             get
             {
-                return typeof(Rock.Model.Person).FullName;
+                return typeof( Rock.Model.Person ).FullName;
             }
         }
 
@@ -121,6 +126,41 @@ namespace Rock.Reporting.DataSelect.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var emailPreferenceOptions = new List<ListItemBag>();
+            foreach ( var preference in Enum.GetValues( typeof( EmailPreference ) ) )
+            {
+                emailPreferenceOptions.Add( new ListItemBag { Text = preference.ToString().SplitCase(), Value = ( ( int ) preference ).ToString() } );
+            }
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/parentEmailSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["emailPreferenceOptions"] = emailPreferenceOptions.ToCamelCaseJson( false, true ),
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string> { ["emailPreferences"] = selection.Split( ',' ).ToList().ToJson() };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "emailPreferences", "[]" ).FromJsonOrNull<List<string>>().JoinStrings( "," );
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -151,44 +191,44 @@ namespace Rock.Reporting.DataSelect.Person
 
             //Contains an array of the int representation of EmailPreferences selected
             int[] selectedPreferences = null;
-            if (!string.IsNullOrEmpty(selection))
+            if ( !string.IsNullOrEmpty( selection ) )
             {
-                selectedPreferences = Array.ConvertAll(selection.Split(','), s => int.Parse(s));
+                selectedPreferences = Array.ConvertAll( selection.Split( ',' ), s => int.Parse( s ) );
             }
 
-            var familyGroupMembers = new GroupMemberService(context).Queryable()
-                .Where(m => m.Group.GroupType.Guid == familyGuid);
+            var familyGroupMembers = new GroupMemberService( context ).Queryable()
+                .Where( m => m.Group.GroupType.Guid == familyGuid );
 
             IQueryable<IEnumerable<string>> personParentsEmailQuery;
             //Done as an if statement because:
             // 1) If you try and check selectedPreferences for null in LINQ it throws an exception
             // 2) If all preferences are selected it's quicker to disregard the preference entirely
-            if (selectedPreferences == null || selectedPreferences.Length == 3)
+            if ( selectedPreferences == null || selectedPreferences.Length == 3 )
             {
                 // this returns Enumerable of Email addresses for Parents per row. The Grid then uses ListDelimiterField to convert the list into Parent's Phone Numbers
-                personParentsEmailQuery = new PersonService(context).Queryable()
-                    .Select(p => familyGroupMembers.Where(s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid)
-                        .SelectMany(gm => gm.Group.Members)
-                        .Where(m => m.GroupRole.Guid == adultGuid)
-                        .Where(m => !string.IsNullOrEmpty(m.Person.Email) && m.Person.IsEmailActive)
+                personParentsEmailQuery = new PersonService( context ).Queryable()
+                    .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
+                        .SelectMany( gm => gm.Group.Members )
+                        .Where( m => m.GroupRole.Guid == adultGuid )
+                        .Where( m => !string.IsNullOrEmpty( m.Person.Email ) && m.Person.IsEmailActive )
                         .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
-                    .Select(q => q.Person.Email).AsEnumerable());
+                    .Select( q => q.Person.Email ).AsEnumerable() );
             }
             else
             {
                 // this returns Enumerable of Email addresses for Parents per row. The Grid then uses ListDelimiterField to convert the list into Parent's Phone Numbers
-                personParentsEmailQuery = new PersonService(context).Queryable()
-                    .Select(p => familyGroupMembers.Where(s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid)
-                        .SelectMany(gm => gm.Group.Members)
-                        .Where(m => m.GroupRole.Guid == adultGuid )
-                        .Where(m => selectedPreferences.Contains((int)m.Person.EmailPreference))
-                        .Where(m => !string.IsNullOrEmpty(m.Person.Email) && m.Person.IsEmailActive)
+                personParentsEmailQuery = new PersonService( context ).Queryable()
+                    .Select( p => familyGroupMembers.Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
+                        .SelectMany( gm => gm.Group.Members )
+                        .Where( m => m.GroupRole.Guid == adultGuid )
+                        .Where( m => selectedPreferences.Contains( ( int ) m.Person.EmailPreference ) )
+                        .Where( m => !string.IsNullOrEmpty( m.Person.Email ) && m.Person.IsEmailActive )
                         .OrderBy( m => m.Group.Members.FirstOrDefault( x => x.PersonId == p.Id ).GroupOrder ?? int.MaxValue )
-                    .Select(q => q.Person.Email).AsEnumerable());
+                    .Select( q => q.Person.Email ).AsEnumerable() );
             }
 
-            var selectEmail = SelectExpressionExtractor.Extract( personParentsEmailQuery, entityIdProperty, "p" );            
-            
+            var selectEmail = SelectExpressionExtractor.Extract( personParentsEmailQuery, entityIdProperty, "p" );
+
             return selectEmail;
         }
 
@@ -201,15 +241,15 @@ namespace Rock.Reporting.DataSelect.Person
         {
             RockCheckBoxList emailPreferenceTypeList = new RockCheckBoxList();
             emailPreferenceTypeList.Items.Clear();
-            foreach (var preference in Enum.GetValues(typeof(EmailPreference)))
+            foreach ( var preference in Enum.GetValues( typeof( EmailPreference ) ) )
             {
-                emailPreferenceTypeList.Items.Add(new ListItem(preference.ToString().SplitCase(), ((int)preference).ToString()));
+                emailPreferenceTypeList.Items.Add( new ListItem( preference.ToString().SplitCase(), ( ( int ) preference ).ToString() ) );
             }
 
             emailPreferenceTypeList.ID = parentControl.ID + "_emailPreferenceList";
             emailPreferenceTypeList.Label = "Email Preference";
             emailPreferenceTypeList.Help = "Only include a parent's email address if their email preference is one of these selected values.";
-            parentControl.Controls.Add(emailPreferenceTypeList);
+            parentControl.Controls.Add( emailPreferenceTypeList );
 
             return new System.Web.UI.Control[] { emailPreferenceTypeList };
         }
@@ -221,12 +261,12 @@ namespace Rock.Reporting.DataSelect.Person
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
-            if (controls.Count() == 1)
+            if ( controls.Count() == 1 )
             {
                 RockCheckBoxList checkBoxList = controls[0] as RockCheckBoxList;
-                if (checkBoxList != null)
+                if ( checkBoxList != null )
                 {
-                    return string.Join(",", checkBoxList.SelectedValues);
+                    return string.Join( ",", checkBoxList.SelectedValues );
                 }
             }
 
@@ -240,13 +280,13 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            if (controls.Count() == 1)
+            if ( controls.Count() == 1 )
             {
                 RockCheckBoxList checkBoxList = controls[0] as RockCheckBoxList;
-                if (checkBoxList != null && !string.IsNullOrEmpty(selection))
+                if ( checkBoxList != null && !string.IsNullOrEmpty( selection ) )
                 {
-                    string[] values = selection.Split(',');
-                    checkBoxList.SetValues(values);
+                    string[] values = selection.Split( ',' );
+                    checkBoxList.SetValues( values );
                 }
             }
         }
