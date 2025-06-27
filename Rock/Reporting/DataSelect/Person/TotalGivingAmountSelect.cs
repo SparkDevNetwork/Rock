@@ -171,14 +171,14 @@ namespace Rock.Reporting.DataSelect.Person
         public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
         {
 
-            var comparisonType = data.GetValueOrDefault( "comparisonType", ComparisonType.EqualTo.ToString() );
+            var comparison = data.GetValueOrDefault( "comparison", ComparisonType.EqualTo.ToString() );
             var amount = data.GetValueOrDefault( "amount", "0.00" );
             var accounts = data.GetValueOrDefault( "accounts", "[]" ).FromJsonOrNull<List<ListItemBag>>()?.Select( a => a.Value ).ToList().AsDelimited( "," );
             var dateRange = data.GetValueOrDefault( "dateRange", "All||||" ).Replace( "|", "," );
             var combineGiving = data.GetValueOrDefault( "combineGiving", "false" ).AsBoolean().ToTrueFalse();
             var useAnalytics = data.GetValueOrDefault( "useAnalytics", "false" ).AsBoolean().ToTrueFalse();
 
-            return $"{comparisonType}|{amount}|||{accounts}|{combineGiving}|{dateRange}|{useAnalytics}";
+            return $"{comparison}|{amount}|||{accounts}|{combineGiving}|{dateRange}|{useAnalytics}";
         }
 
         #endregion
