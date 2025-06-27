@@ -494,7 +494,7 @@ namespace RockWeb.Blocks.Event
                     registrationInstance = GetRegistrationInstance( registrationInstanceId.Value, rockContext );
                 }
 
-                if ( registrationInstance == null && registrationInstanceId.HasValue )
+                if ( registrationInstance == null && registrationInstanceId.HasValue && registrationInstanceId.Value > 0 )
                 {
                     nbEntityNotFound.Text = "The specified Registration Instance could not be found.";
                     nbEntityNotFound.Visible = true;
