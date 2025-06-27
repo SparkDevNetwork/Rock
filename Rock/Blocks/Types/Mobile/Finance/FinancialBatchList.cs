@@ -5,9 +5,10 @@ using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile;
+using Rock.Common.Mobile.Blocks.Finance.FinancialBatchList;
+using Rock.Common.Mobile.ViewModel;
 using Rock.Model;
 using Rock.Security;
-using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Types.Mobile.Finance
@@ -28,7 +29,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
         Description = "The template to display the financial batch results.",
         IsRequired = false,
         DefaultValue = @"
-<Rock:StyledBorder StyleClass=""border, border-interface-soft, rounded, bg-interface-softest, p-16"">
+<Rock:StyledBorder StyleClass=""border, border-interface-soft, rounded, bg-interface-softest, p-16, mb-8"">
     <Grid ColumnDefinitions=""Auto, Auto, *, Auto"" 
         RowDefinitions=""Auto, Auto, Auto""
         StyleClass=""gap-column-8"" >
@@ -111,13 +112,19 @@ namespace Rock.Blocks.Types.Mobile.Finance
         Key = AttributeKeys.DisplayCampusStatuses,
         Order = 7 )]
 
+    [IntegerField( "Page Load Size",
+        Description = "Determines the amount of batches to show in the initial page load and when scrolling to load more.",
+        IsRequired = true,
+        DefaultIntegerValue = 100,
+        Key = AttributeKeys.PageLoadSize,
+        Order = 8 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_FINANCE_FINANCIAL_BATCH_LIST_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_FINANCE_FINANCIAL_BATCH_LIST )]
     public class FinancialBatchList : RockBlockType
     {
-
         #region Fields
 
         /// <summary>
@@ -151,6 +158,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
             public const string DetailPage = "DetailPage";
             public const string DisplayCampusTypes = "DisplayCampusTypes";
             public const string DisplayCampusStatuses = "DisplayCampusStatuses";
+            public const string PageLoadSize = "PageLoadSize";
         }
 
         #endregion
@@ -203,27 +211,29 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 .ToList();
         }
 
-        #endregion
-
-        #region Block Actions
-
-        /// <summary>
-        /// Gets the financial batch list.
-        /// </summary>
-        /// <returns></returns>
-        [BlockAction( "GetFinancialBatchList" )]
-        public BlockActionResult GetFinancialBatchList()
+        private List<ListItemViewModel> GetBatches( int startIndex, int count, string CampusFilterGuid = null )
         {
             var qry = new FinancialBatchService( RockContext )
                 .Queryable()
                 .Where( b => b.BatchStartDateTime.HasValue );
+
+            // Filter the batch by campus if the CampusFilterGuid is provided.
+            if ( CampusFilterGuid.IsNotNullOrWhiteSpace() )
+            {
+                var campusGuid = CampusFilterGuid.AsGuid();
+                qry = qry.Where( b => b.Campus.Guid == campusGuid );
+            }
 
             // Filter the batch by status.
             var filterStatus = GetAttributeValue( AttributeKeys.BatchStatus ).ConvertToEnum<BatchStatus>();
             qry = qry.Where( b => b.Status == filterStatus );
 
             var detailPageGuid = GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull();
-            var financialBatches = qry.ToList();
+            var financialBatches = qry
+                .OrderByDescending( fb => fb.BatchStartDateTime )
+                .Skip( startIndex )
+                .Take( count )
+                .ToList();
 
             var templates = financialBatches.Select( ( bag ) =>
             {
@@ -232,13 +242,42 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 mergeFiled.Add( "FinancialBatchIdKey", bag.IdKey );
                 mergeFiled.Add( "DetailPage", detailPageGuid );
 
-                return new ListItemBag
+                return new ListItemViewModel
                 {
                     Text = bag.Guid.ToString(),
                     Value = FinancialBatchListTemplate.ResolveMergeFields( mergeFiled ),
                 };
             } );
-            return ActionOk( templates );
+
+            return templates.ToList();
+        }
+
+        #endregion
+
+        #region Block Actions
+
+        /// <summary>
+        /// Get initial Data
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction( "GetInitialData" )]
+        public BlockActionResult GetInitialData( MobileFinancialBatchListOptionsBag options )
+        {
+            return ActionOk( new InitialDataResultBag
+            {
+                AllowAdd = GetIsAddEnabled() && GetAttributeValue( AttributeKeys.AllowAdd ).AsBoolean(),
+                Batches = GetBatches( 0, options.Count, options.CampusFilterGuid )
+            } );
+        }
+
+        /// <summary>
+        /// Gets the financial batch list.
+        /// </summary>
+        /// <returns></returns>
+        [BlockAction( "GetFinancialBatches" )]
+        public BlockActionResult GetFinancialBatches( GetBatchesOptionsBag options )
+        {
+            return ActionOk( GetBatches( options.StartIndex, options.Count, options.CampusFilterGuid ) );
         }
 
         #endregion
@@ -250,10 +289,10 @@ namespace Rock.Blocks.Types.Mobile.Finance
         {
             return new Rock.Common.Mobile.Blocks.Finance.FinancialBatchList.Configuration
             {
-                AllowAdd = GetIsAddEnabled() && GetAttributeValue( AttributeKeys.AllowAdd ).AsBoolean(),
                 DetailPage = GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull(),
                 AllowFilterByCampus = GetAttributeValue( AttributeKeys.AllowAdd ).AsBoolean(),
                 Campuses = GetDisplayCampuses(),
+                PageLoadSize = GetAttributeValue( AttributeKeys.PageLoadSize ).AsInteger(),
             };
         }
 
