@@ -376,7 +376,7 @@ namespace Rock.Blocks.Communication
                 .Select( c => new CommunicationGridDataBag
                 {
                     Id = c.Communication.Id,
-                    Name = c.Communication.Name,
+                    Name = c.Communication.Name.IsNullOrWhiteSpace() ? c.Communication.Subject : c.Communication.Name,
                     SentBy = c.SentBy,
                     ReviewedBy = c.ReviewedBy,
                     MessageCount = c.MessageCount,

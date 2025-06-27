@@ -8,7 +8,9 @@
                 <div class="col-md-6">
                     <SlidingDateRangePicker v-model="dateRange"
                                             label="Select Date Range"
-                                            previewLocation="Top" />
+                                            :enabledTimeUnits="enabledTimeUnits"
+                                            previewLocation="Top"
+                                            :rules="validateDateRange" />
                 </div>
                 <div class="col-sm-6 col-md-3">
                     <DataViewPicker v-model="dataView"
@@ -91,6 +93,7 @@
     import { asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import type { ValidationResult } from "@Obsidian/Types/validationRules";
 
     // #region Block Config
 
@@ -120,15 +123,18 @@
     delete communicationTypes[CommunicationType.RecipientPreference];
     const mediumOptions: ListItemBag[] = enumToListItemBag(communicationTypes);
 
+    const enabledTimeUnits = [TimeUnit.Day, TimeUnit.Week, TimeUnit.Month, TimeUnit.Year];
     const dateRangeAsString = computed(() => slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.Last, timeValue: 1, timeUnit: TimeUnit.Month }));
     const dataViewAsString = computed(() => dataView.value?.value ?? "");
     const connectionStatusAsString = computed(() => connectionStatus.value?.value ?? "");
-    const mediumAsString = computed(() => medium.value.join(","));
+    const mediumAsString = computed(() => medium.value.length > 0 ? medium.value.join(",") : mediumOptions.map(m => m.value).join(","));
     const bulkOnlyAsString = computed(() => asTrueOrFalseString(bulkOnly.value));
 
     async function onFilterChange(): Promise<void> {
+        isLoading.value = true;
         await updatePersonPreferences();
         await loadGridData();
+        isLoading.value = false;
     }
 
     async function updatePersonPreferences(): Promise<void> {
@@ -139,6 +145,22 @@
         preferences.setValue(PreferenceKey.FilterBulkOnly, bulkOnlyAsString.value);
 
         return preferences.save();
+    }
+
+    function validateDateRange(value: SlidingDateRange): ValidationResult {
+        // Ensure that the date range is large enough
+        if (
+            // Nullish value
+            !value
+            // Less than 7 Days or is Current Day
+            || (value.timeUnit === TimeUnit.Day && (value.timeValue < 7 || value.rangeType === RangeType.Current))
+            // Date Range that is less than 7 days (calculated with <6 because Jan 7 minus Jan 1 is 6 days)
+            || (value.rangeType === RangeType.DateRange && ((new Date(value.upperDate) - new Date(value.lowerDate)) / (1000 * 60 * 60 * 24)) < 6)
+        ) {
+            return "Please select a time span of at least 7 days";
+        }
+
+        return true;
     }
 
     // #endregion
