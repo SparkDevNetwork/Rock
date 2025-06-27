@@ -15,6 +15,7 @@
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+import { asLocaleString } from "./utils.partial";
 
     enum UnsubscribeLevel {
         Flow = 1,
@@ -40,7 +41,7 @@
         const totalUnsubscribes = (unsubscribeInfo.value?.unsubscribesFromFlow ?? 0)
             + (unsubscribeInfo.value?.unsubscribesFromAll ?? 0)
             + (unsubscribeInfo.value?.unsubscribesFromOther ?? 0);
-        return `${totalUnsubscribes}`;
+        return asLocaleString(totalUnsubscribes);
     });
 
     const tooltip = computed<string | undefined>(() => {
@@ -48,9 +49,9 @@
             return;
         }
 
-        return `Unsubscribes from Flows: ${unsubscribeInfo.value?.unsubscribesFromFlow ?? 0}\n` +
-            `Unsubscribes from All: ${unsubscribeInfo.value?.unsubscribesFromAll ?? 0}\n` +
-            `Unsubscribes from Other: ${unsubscribeInfo.value?.unsubscribesFromOther ?? 0}`;
+        return `Unsubscribes from Flows: ${asLocaleString(unsubscribeInfo.value?.unsubscribesFromFlow ?? 0)}\n` +
+            `Unsubscribes from All: ${asLocaleString(unsubscribeInfo.value?.unsubscribesFromAll ?? 0)}\n` +
+            `Unsubscribes from Other: ${asLocaleString(unsubscribeInfo.value?.unsubscribesFromOther ?? 0)}`;
     });
 
     const unsubscribeInfo = computed<UnsubscribeInfo | null | undefined>(() => {

@@ -107,56 +107,56 @@ export class RockTimeSpan {
 
         if (totalHours < 24) {
             if (totalSeconds < 1) {
-                return "0 Seconds";
+                return `${(0).toLocaleString(undefined)} Seconds`;
             }
 
             if (totalSeconds < 2) {
-                return "1 Second";
+                return `${(1).toLocaleString(undefined)} Second`;
             }
 
             if (totalSeconds < 60) {
-                return `${Math.floor(totalSeconds)} Seconds`;
+                return `${Math.floor(totalSeconds).toLocaleString(undefined)} Seconds`;
             }
 
             if (totalMinutes < 2) {
-                return "1 Minute";
+                return `${(1).toLocaleString(undefined)} Minute`;
             }
 
             if (totalMinutes < 60) {
-                return `${Math.floor(totalMinutes)} Minutes`;
+                return `${Math.floor(totalMinutes).toLocaleString(undefined)} Minutes`;
             }
 
             if (totalHours < 2) {
-                return "1 Hour";
+                return `${(1).toLocaleString(undefined)} Hour`;
             }
 
             if (totalHours < 60) {
-                return `${Math.floor(totalHours)} Hours`;
+                return `${Math.floor(totalHours).toLocaleString(undefined)} Hours`;
             }
         }
 
         if (totalDays < 2) {
-            return "1 Day";
+            return `${(1).toLocaleString(undefined)} Day`;
         }
 
         if (totalDays < 31) {
-            return `${Math.floor(totalDays)} Days`;
+            return `${Math.floor(totalDays).toLocaleString(undefined)} Days`;
         }
 
         if (approximatedTotalMonths <= 1) {
-            return "1 Month";
+            return `${(1).toLocaleString(undefined)} Month`;
         }
 
         if (approximatedTotalMonths <= 18) {
-            return `${Math.round(approximatedTotalMonths)} Months`;
+            return `${Math.round(approximatedTotalMonths).toLocaleString(undefined)} Months`;
         }
 
         const totalYears = Math.floor(totalDays / daysPerYear);
 
         if (totalYears <= 1) {
-            return "1 Year";
+            return `${(1).toLocaleString(undefined)} Year`;
         }
 
-        return `${Math.round(totalYears)} Years`;
+        return `${Math.round(totalYears).toLocaleString(undefined)} Years`;
     }
 }

@@ -101,11 +101,10 @@
 
     const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
         const dataPoints: ChartNumericDataPointBag[] = [];
-        const sentMessagesEnumerable = Enumerable.from(props.modelValue ?? [])
-            .where(r => !!r.sentDateTime); // Only consider recipients who have actually received communications.
-        const totalSentMessages = sentMessagesEnumerable.count();
+        const sentMessagesEnumerable = Enumerable.from(props.modelValue ?? []);
+        const totalMessages = sentMessagesEnumerable.count();
 
-        if (totalSentMessages <= 0) {
+        if (totalMessages <= 0) {
             return dataPoints;
         }
 
@@ -117,7 +116,7 @@
             {
                 seriesName: SeriesName.ConversionRate,
                 color: "#68D391",
-                totalCount: totalSentMessages,
+                totalCount: totalMessages,
                 dateTransformer: dateTransformer.value,
                 dateFormatter: dateFormatter.value
             }
@@ -131,7 +130,7 @@
             {
                 seriesName: SeriesName.UnsubscribeRate,
                 color: "#FC8181",
-                totalCount: totalSentMessages,
+                totalCount: totalMessages,
                 dateTransformer: dateTransformer.value,
                 dateFormatter: dateFormatter.value
             });

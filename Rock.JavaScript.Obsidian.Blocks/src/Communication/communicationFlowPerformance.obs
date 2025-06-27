@@ -1,6 +1,5 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    Hello
     <Panel title="Flow Performance" type="block">
         <template #headerActions v-if="config.flowPerformance && CommunicationFlowTriggerTypeDescription[config.flowPerformance.triggerType]">
             <div>
@@ -133,7 +132,7 @@
     import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
     import { CommunicationFlowTriggerType, CommunicationFlowTriggerTypeDescription } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
     import { TimeUnitType } from "@Obsidian/Enums/Controls/timeUnitType";
-    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { calculateSlidingDateRange, RangeType, SlidingDateRange, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
@@ -160,14 +159,13 @@
     // so we can preselect the flow instance in the dropdown
     // if the page was loaded with a specific instance.
     const { getPageParameter } = useStore();
-
+    const reloadBlock = useReloadBlock();
     const { parseRockDateTime } = provideRockDateTimeParser();
 
     // #region Values
 
     const selectedRecurringFlowInstanceIdKeyOrEmptyString = ref<string>(getPageParameter("CommunicationFlowInstance") as string ?? "");
     const selectedOnDemandSlidingDateRange = ref<SlidingDateRange | null>({ rangeType: RangeType.Last, timeValue: 1, timeUnit: TimeUnit.Month });
-    const firstCommunicationIdKey = ref<string | null | undefined>();
 
     // #endregion Values
 
@@ -293,7 +291,13 @@
             return;
         }
 
-        if (isNullish(firstCommunicationIdKey.value)) {
+        const firstCommunicationFlowInstanceCommunicationIdKey = Enumerable
+            .from(selectedMessages.value)
+            .select(m => m.communicationFlowInstanceCommunicationIdKey)
+            .where(k => !isNullish(k))
+            .firstOrDefault();
+
+        if (isNullish(firstCommunicationFlowInstanceCommunicationIdKey)) {
             // Grid data has not been loaded yet or
             // there are no flow communications to select from.
             return;
@@ -302,7 +306,7 @@
         // Check if the necessary ID keys can be retrieved for the first communication.
         // If so, then we can create a "view message" handler for all of the communications.
         // If not, then we cannot create a "view message" handler.
-        const { instanceIdKey, instanceCommunicationIdKey } = getViewMessageIdKeys(firstCommunicationIdKey.value);
+        const { instanceIdKey, instanceCommunicationIdKey } = getViewMessageIdKeys(firstCommunicationFlowInstanceCommunicationIdKey);
 
         if (!instanceIdKey || !instanceCommunicationIdKey) {
             return;
@@ -321,7 +325,7 @@
         };
     });
 
-    // #endregion Event Handlers
+    // #endregion Computed Values
 
     // #region Functions
 
@@ -342,5 +346,7 @@
             });
     }
 
-    // #endregion Computed Values
+    // #endregion Functions
+
+    onConfigurationValuesChanged(reloadBlock);
 </script>

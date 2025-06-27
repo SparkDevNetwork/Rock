@@ -111,6 +111,7 @@
     import { prependSingularIndefiniteArticle } from "@Obsidian/Utility/stringUtils";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
     import { ConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/conversionGoalSettingsBag";
+    import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
 
     const props = defineProps({
         modelValue: {
@@ -156,10 +157,9 @@
             return null;
         }
 
+        const timeSpan = RockTimeSpan.fromDays(conversionGoalTimeframeInDays);
         const who = `At least ${strongify(conversionGoalTargetPercent.toLocaleString(undefined, { style: "percent" }))} of recipients`;
-        const when = conversionGoalTimeframeInDays === 1
-            ? `within ${strongify("1 day")} of the flow's launch`
-            : `within ${strongify(`${conversionGoalTimeframeInDays} days`)} of the flow's launch`;
+        const when = `within ${strongify(timeSpan.toElapsedString().toLocaleLowerCase())} of the flow's launch`;
 
         switch (conversionGoalType) {
             case ConversionGoalType.CompletedForm: {

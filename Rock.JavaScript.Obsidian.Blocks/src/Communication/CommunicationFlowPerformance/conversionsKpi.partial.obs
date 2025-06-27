@@ -9,6 +9,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import { asLocaleString } from "./utils.partial";
     import Kpi from "@Obsidian/Controls/kpi.obs";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
@@ -29,7 +30,7 @@
             return "N/A";
         }
         else {
-            return `${enumerable.sum(i => i.convertedDateTime ? 1 : 0)}`;
+            return asLocaleString(enumerable.sum(i => i.convertedDateTime ? 1 : 0));
         }
     });
 

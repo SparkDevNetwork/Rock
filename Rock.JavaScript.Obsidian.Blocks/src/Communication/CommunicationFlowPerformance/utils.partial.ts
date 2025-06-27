@@ -16,8 +16,6 @@
 //
 
 import { inject, InjectionKey, provide } from "vue";
-import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
-import { Chart, BarElement, ChartMeta, ChartType, Plugin, BarProps } from "@Obsidian/Libs/chart";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { isHTMLElement } from "@Obsidian/Utility/dom";
 import { tooltip } from "@Obsidian/Utility/tooltip";
@@ -445,4 +443,12 @@ export function buildCumulativeChartSeries(
             },
         )
         .select(state => state.dataPoint);
+}
+
+export function asLocalePercent(fractionalPercentage: number, options?: Intl.NumberFormatOptions | undefined): string {
+    return asLocaleString(fractionalPercentage, { ...options, style: "percent" });
+}
+
+export function asLocaleString(value: number, options?: Intl.NumberFormatOptions | undefined): string {
+    return value.toLocaleString(undefined, options);
 }

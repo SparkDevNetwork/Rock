@@ -22,9 +22,15 @@
             </template>
         </Column>
 
-        <TextColumn :field="getField('sent')"
-                    :name="getField('sent')"
-                    title="Sent" />
+        <Column :field="getField('sent')"
+                :name="getField('sent')"
+                title="Sent">
+            <template #format="{ row }">
+                <span>
+                    {{ asLocaleString(getRow(row).sent) }}
+                </span>
+            </template>
+        </Column>
 
         <Column :field="getField('conversions')"
                 :name="getField('conversions')"
@@ -32,24 +38,30 @@
             <template #format="{ row }">
                 <template v-if="!isNullish(getRow(row).conversions)">
                     <span>
-                        {{ getRow(row).conversions }}
+                        {{ asLocaleString(getRow(row).conversions) }}
                     </span>
                     <span>
-                        {{ `&nbsp;(${getRow(row).sent === 0 ? 0 : Math.round(getRow(row).conversions! / getRow(row).sent * 100)}%)` }}
+                        {{ `&nbsp;(${asLocalePercent(getRow(row).sent === 0 ? 0 : getRow(row).conversions / getRow(row).sent)})` }}
                     </span>
                 </template>
             </template>
         </Column>
 
-        <TextColumn :field="getField('unsubscribes')"
-                    :name="getField('unsubscribes')"
-                    title="Unsubscribes" />
+        <Column :field="getField('unsubscribes')"
+                :name="getField('unsubscribes')"
+                title="Unsubscribes">
+            <template #format="{ row }">
+                <span>
+                    {{ asLocaleString(getRow(row).unsubscribes) }}
+                </span>
+            </template>
+        </Column>
 
         <Column :field="getField('opens')"
                 :name="getField('opens')"
                 title="Open Rate">
             <template #format="{ row }">
-                {{ `${getRow(row).sent === 0 ? 0 : Math.round(getRow(row).opens / getRow(row).sent * 100)}%` }}
+                {{ asLocalePercent(getRow(row).sent === 0 ? 0 : getRow(row).opens / getRow(row).sent) }}
             </template>
         </Column>
 
@@ -57,7 +69,7 @@
                 :name="getField('clicks')"
                 title="Click Rate">
             <template #format="{ row }">
-                {{ `${getRow(row).sent === 0 ? 0 : Math.round(getRow(row).clicks / getRow(row).sent * 100)}%` }}
+                {{ asLocalePercent(getRow(row).sent === 0 ? 0 : getRow(row).clicks / getRow(row).sent) }}
             </template>
         </Column>
     </Grid>
@@ -65,6 +77,7 @@
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
+    import { asLocalePercent, asLocaleString } from "./utils.partial";
     import Grid, { TextColumn, Column } from "@Obsidian/Controls/grid";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
