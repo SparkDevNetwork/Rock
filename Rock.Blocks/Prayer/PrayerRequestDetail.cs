@@ -479,9 +479,17 @@ namespace Rock.Blocks.Prayer
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var qryParams = new Dictionary<string, string>();
+            var personId = PageParameter( PageParameterKey.PersonId );
+
+            if ( !string.IsNullOrWhiteSpace( personId ) )
+            {
+                qryParams.Add( PageParameterKey.PersonId, personId );
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( qryParams )
             };
         }
 
@@ -649,12 +657,20 @@ namespace Rock.Blocks.Prayer
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-                if ( isNew )
+                var qryParams = new Dictionary<string, string>();
+                var personId = PageParameter( PageParameterKey.PersonId );
+
+                if ( !string.IsNullOrWhiteSpace( personId ) )
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
+                    qryParams.Add( PageParameterKey.PersonId, personId );
                 }
 
-                return ActionContent( System.Net.HttpStatusCode.OK, this.GetParentPageUrl() );
+                if ( isNew )
+                {
+                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( qryParams ) );
+                }
+
+                return ActionContent( System.Net.HttpStatusCode.OK, this.GetParentPageUrl( qryParams ) );
             }
         }
 
@@ -684,7 +700,15 @@ namespace Rock.Blocks.Prayer
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                var qryParams = new Dictionary<string, string>();
+                var personId = PageParameter( PageParameterKey.PersonId );
+
+                if ( !string.IsNullOrWhiteSpace( personId ) )
+                {
+                    qryParams.Add( PageParameterKey.PersonId, personId );
+                }
+
+                return ActionOk( this.GetParentPageUrl( qryParams ) );
             }
         }
 
