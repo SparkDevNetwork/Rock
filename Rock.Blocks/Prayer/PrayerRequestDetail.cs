@@ -119,6 +119,7 @@ namespace Rock.Blocks.Prayer
         private static class PageParameterKey
         {
             public const string PrayerRequestId = "PrayerRequestId";
+            public const string PersonId = "PersonId";
         }
 
         private static class NavigationUrlKey
@@ -245,13 +246,30 @@ namespace Rock.Blocks.Prayer
                     box.Entity.AllowComments = GetAttributeValue( AttributeKey.DefaultAllowCommentsChecked ).AsBooleanOrNull() ?? true;
                     box.Entity.IsPublic = GetAttributeValue( AttributeKey.DefaultToPublic ).AsBoolean();
 
-                    // if default the requester to the current person based on the block attribute
-                    var CurrentPerson = this.GetCurrentPerson();
-                    if ( CurrentPerson != null && GetAttributeValue( AttributeKey.SetCurrentPersonToRequester ).AsBoolean() )
+                    // Check for PersonId page 
+                    var personId = RequestContext.PageParameterAsId( PageParameterKey.PersonId );
+                    if ( personId > 0 )
                     {
-                        box.Entity.RequestedByPersonAlias = CurrentPerson.PrimaryAlias.ToListItemBag();
-                        box.Entity.FirstName = CurrentPerson.NickName;
-                        box.Entity.LastName = CurrentPerson.LastName;
+                        var person = new PersonService( rockContext ).Get( personId );
+                        if ( person != null )
+                        {
+                            box.Entity.RequestedByPersonAlias = person.PrimaryAlias.ToListItemBag();
+                            box.Entity.FirstName = person.NickName;
+                            box.Entity.LastName = person.LastName;
+                            box.Entity.Email = person.Email;
+                        }
+                    }
+                    else
+                    {
+                        // if no PersonId is specified, then set the current person as the requester if the block setting is enabled
+                        var CurrentPerson = this.GetCurrentPerson();
+                        if ( CurrentPerson != null && GetAttributeValue( AttributeKey.SetCurrentPersonToRequester ).AsBoolean() )
+                        {
+                            box.Entity.RequestedByPersonAlias = CurrentPerson.PrimaryAlias.ToListItemBag();
+                            box.Entity.FirstName = CurrentPerson.NickName;
+                            box.Entity.LastName = CurrentPerson.LastName;
+                            box.Entity.Email = CurrentPerson.Email;
+                        }
                     }
 
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
