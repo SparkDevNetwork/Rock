@@ -60,7 +60,8 @@
                 :filter="booleanValueFilter"
                 :filterValue="getWasDeliveredBooleanValue">
             <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasDeliveredBooleanValue(row)" />
+                <BooleanWithTooltipCell :isTrue="getWasDeliveredBooleanValue(row)"
+                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).deliveredDateTime)" />
             </template>
         </Column>
 
@@ -73,7 +74,8 @@
                 :filter="booleanValueFilter"
                 :filterValue="getWasOpenedBooleanValue">
             <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasOpenedBooleanValue(row)" />
+                <BooleanWithTooltipCell :isTrue="getWasOpenedBooleanValue(row)"
+                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).lastOpenedDateTime)" />
             </template>
         </Column>
 
@@ -86,7 +88,8 @@
                 :filter="booleanValueFilter"
                 :filterValue="getWasClickedBooleanValue">
             <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasClickedBooleanValue(row)" />
+                <BooleanWithTooltipCell :isTrue="getWasClickedBooleanValue(row)"
+                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).lastClickedDateTime)" />
             </template>
         </Column>
 
@@ -99,7 +102,8 @@
                 :filter="booleanValueFilter"
                 :filterValue="getWasUnsubscribedBooleanValue">
             <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasUnsubscribedBooleanValue(row)" />
+                <BooleanWithTooltipCell :isTrue="getWasUnsubscribedBooleanValue(row)"
+                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).unsubscribeDateTime)" />
             </template>
         </Column>
 
@@ -112,7 +116,8 @@
                 :filter="booleanValueFilter"
                 :filterValue="getWasMarkedAsSpamBooleanValue">
             <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasMarkedAsSpamBooleanValue(row)" />
+                <BooleanWithTooltipCell :isTrue="getWasMarkedAsSpamBooleanValue(row)"
+                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).spamComplaintDateTime)" />
             </template>
         </Column>
 
@@ -248,6 +253,8 @@
     import { CommunicationRecipientGridOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationRecipientGridOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
     import { isNullish } from "@Obsidian/Utility/util";
 
     const invokeBlockAction = useInvokeBlockAction();
@@ -463,6 +470,35 @@
         return isNullish(gender)
             ? ""
             : GenderDescription[gender];
+    }
+
+    /**
+     * Gets the provided datetime string value as a formatted string.
+     *
+     * @param dateTime The datetime string value.
+     */
+    function getFormattedDateTime(dateTime: string | null | undefined): string {
+        const rockDateTime = RockDateTime.parseISO(dateTime ?? "");
+        if (!rockDateTime) {
+            return "";
+        }
+
+        const formatted = rockDateTime.toASPString("g");
+
+        return formatted;
+    }
+
+    /**
+     * Applies a tooltip to an element. The element should have an
+     * `data-original-title` attribute containing the tooltip text.
+     *
+     * Typical use, `:ref="applyTooltip"`
+     */
+    function applyTooltip(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
     }
 
     // #endregion Functions

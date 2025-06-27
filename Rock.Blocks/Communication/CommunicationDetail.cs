@@ -457,7 +457,7 @@ namespace Rock.Blocks.Communication
             response.Kpis = GetCommunicationKpis(
                 deliveryBreakdown.DeliveredCount,
                 groupedInteractions,
-                communicationInfo.UnsubscribeEvents
+                communicationInfo.RecipientActivities
             );
 
             response.UniqueInteractionsOverTime = GetUniqueInteractionsOverTime(
@@ -1077,15 +1077,28 @@ namespace Rock.Blocks.Communication
                             Count = g.Count()
                         } ),
 
-                    UnsubscribeEvents = c.Recipients
-                        // TODO (Jason): "Marked as spam" is separate from an unsubscribe.
-                        .Where( r => r.UnsubscribeDateTime.HasValue )
-                        .Select( r => new RecipientUnsubscribeEvent
+                    SpamComplaints = c.Recipients
+                        .Where( r =>
+                            r.SpamComplaintDateTime.HasValue
+                        )
+                        .Select( r => new RecipientActivity
                         {
                             CommunicationRecipientId = r.Id,
                             MediumEntityTypeId = r.MediumEntityTypeId,
-                            UnsubscribeDateTime = r.UnsubscribeDateTime,
-                            IsSpamComplaint = false
+                            ActivityType = RecipientActivityType.SpamComplaint,
+                            ActivityDateTime = r.SpamComplaintDateTime
+                        } ),
+
+                    Unsubscribes = c.Recipients
+                        .Where( r =>
+                            r.UnsubscribeDateTime.HasValue
+                        )
+                        .Select( r => new RecipientActivity
+                        {
+                            CommunicationRecipientId = r.Id,
+                            MediumEntityTypeId = r.MediumEntityTypeId,
+                            ActivityType = RecipientActivityType.Unsubscribe,
+                            ActivityDateTime = r.UnsubscribeDateTime
                         } )
                 } )
                 .AsEnumerable() // Materialize the query; we'll perform the remaining aggregations in-memory.
@@ -1164,12 +1177,21 @@ namespace Rock.Blocks.Communication
                         CancelledCount = GetCount( CommunicationRecipientStatus.Cancelled )
                     };
 
-                    communicationInfo.UnsubscribeEvents = a.UnsubscribeEvents
-                        .Where( e =>
+                    communicationInfo.RecipientActivities = new List<RecipientActivity>();
+
+                    communicationInfo.RecipientActivities.AddRange(
+                        a.SpamComplaints.Where( c =>
                             !mediumEntityTypeFilterId.HasValue
-                            || e.MediumEntityTypeId == mediumEntityTypeFilterId
+                            || c.MediumEntityTypeId == mediumEntityTypeFilterId
                         )
-                        .ToList();
+                    );
+
+                    communicationInfo.RecipientActivities.AddRange(
+                        a.Unsubscribes.Where( u =>
+                            !mediumEntityTypeFilterId.HasValue
+                            || u.MediumEntityTypeId == mediumEntityTypeFilterId
+                        )
+                    );
 
                     return communicationInfo;
                 } )
@@ -1346,12 +1368,17 @@ namespace Rock.Blocks.Communication
         /// </summary>
         /// <param name="deliveredRecipientCount">The count of recipients to whom this communication was successfully delivered.</param>
         /// <param name="groupedInteractions">The grouped interaction data from which to derive KPIs.</param> 
-        /// <param name="unsubscribeEvents">The list of unsubscribe events from which to derive KPIs.</param>
+        /// <param name="recipientActivities">The list of (non-interaction) recipient activities from which to derive KPIs.</param>
         /// <returns>A <see cref="CommunicationKpisBag"/> containing the KPIs for this communication.</returns>
-        private CommunicationKpisBag GetCommunicationKpis( int deliveredRecipientCount, GroupedInteractions groupedInteractions, List<RecipientUnsubscribeEvent> unsubscribeEvents )
+        private CommunicationKpisBag GetCommunicationKpis( int deliveredRecipientCount, GroupedInteractions groupedInteractions, List<RecipientActivity> recipientActivities )
         {
-            var markedAsSpamCount = unsubscribeEvents.Where( e => e.IsSpamComplaint ).Count();
-            var unsubscribedCount = unsubscribeEvents.Count;
+            var markedAsSpamCount = recipientActivities
+                .Where( a => a.ActivityType == RecipientActivityType.SpamComplaint )
+                .Count();
+
+            var unsubscribedCount = recipientActivities
+                .Where( a => a.ActivityType == RecipientActivityType.Unsubscribe )
+                .Count();
 
             var kpis = new CommunicationKpisBag
             {
@@ -1421,23 +1448,35 @@ namespace Rock.Blocks.Communication
                     .ToDictionary( g => g.Key, g => g.Count() )
                 : new Dictionary<DateTime, int>();
 
-            // TODO (Jason): Figure out how we're determining the "marked as spam" date.
+            var spamComplaintsByDate = isEmail
+                ? communicationInfo.RecipientActivities
+                    .Where( a =>
+                        a.ActivityDateTime.HasValue
+                        && a.ActivityType == RecipientActivityType.SpamComplaint
+                    )
+                    .GroupBy( a => a.ActivityDateTime.Value.Date )
+                    .ToDictionary( g => g.Key, g => g.Count() )
+                : new Dictionary<DateTime, int>();
 
             var unsubscribeCountsByDate = isEmail
-                ? communicationInfo.UnsubscribeEvents
-                    .Where( e => e.UnsubscribeDateTime.HasValue )
-                    .GroupBy( e => e.UnsubscribeDateTime.Value.Date )
+                ? communicationInfo.RecipientActivities
+                    .Where( a =>
+                        a.ActivityDateTime.HasValue
+                        && a.ActivityType == RecipientActivityType.Unsubscribe
+                    )
+                    .GroupBy( a => a.ActivityDateTime.Value.Date )
                     .ToDictionary( g => g.Key, g => g.Count() )
                 : new Dictionary<DateTime, int>();
 
             // The start date for this data should always be the date the communication was sent.
             var startDate = sendDateTime.Value.Date;
 
-            // The end date - however - should be driven by the last interaction (or unsubscribe / marked as spam event).
+            // The end date - however - should be driven by the last interaction (or spam complaint / unsubscribe).
             var endDates = openCountsByDate.Keys
                 .Union( clickCountsByDate.Keys )
+                .Union( spamComplaintsByDate.Keys )
                 .Union( unsubscribeCountsByDate.Keys )
-                .ToList();
+                .ToHashSet();
 
             if ( !endDates.Any() )
             {
@@ -1461,7 +1500,7 @@ namespace Rock.Blocks.Communication
             var currentDate = startDate;
             var openCount = 0;
             var clickCount = 0;
-            var markedAsSpamCount = 0;
+            var spamComplaintCount = 0;
             var unsubscribeCount = 0;
 
             decimal GetPercentage( int count, int divisor )
@@ -1498,12 +1537,12 @@ namespace Rock.Blocks.Communication
                         Color = "#2F855A"
                     } );
 
-                    // TODO (Jason): Figure out how we're determining the "marked as spam" rate.
+                    spamComplaintCount += spamComplaintsByDate.GetValueOrDefault( currentDate, 0 );
                     uniqueInteractionsOverTime.Add( new ChartNumericDataPointBag
                     {
                         SeriesName = "Spam Rate",
                         Label = label,
-                        Value = 0,
+                        Value = GetPercentage( spamComplaintCount, deliveredRecipientCount ),
                         Color = "#DD6B20"
                     } );
 
@@ -1648,20 +1687,25 @@ namespace Rock.Blocks.Communication
                 // Keep track of assigned recipient IDs, so we only assign them to a single bucket.
                 var level3AssignedRecipientIds = new HashSet<int>();
 
+                // Gather recipients who marked as spam.
+                var spamComplaintRecipientIds = new HashSet<int>(
+                    communicationInfo.RecipientActivities
+                        .Where( a => a.ActivityType == RecipientActivityType.SpamComplaint )
+                        .Select( a => a.CommunicationRecipientId )
+                        .Distinct()
+                );
+
+                level3AssignedRecipientIds.UnionWith( spamComplaintRecipientIds );
+
                 // Gather recipients who unsubscribed.
                 var unsubscribedRecipientIds = new HashSet<int>(
-                    communicationInfo.UnsubscribeEvents
-                        .Select( e => e.CommunicationRecipientId )
+                    communicationInfo.RecipientActivities
+                        .Where( a => a.ActivityType == RecipientActivityType.Unsubscribe )
+                        .Select( a => a.CommunicationRecipientId )
                         .Distinct()
                 );
 
                 level3AssignedRecipientIds.UnionWith( unsubscribedRecipientIds );
-
-                // Gather recipients who marked as spam.
-                // TODO (Jason): Figure out how we're determining the "marked as spam" recipients.
-                var markedAsSpamRecipientIds = new HashSet<int>();
-
-                level3AssignedRecipientIds.UnionWith( markedAsSpamRecipientIds );
 
                 // Gather recipients who clicked.
                 var clickedRecipientIds = new HashSet<int>(
@@ -1725,7 +1769,7 @@ namespace Rock.Blocks.Communication
                 }
 
                 // Followed by those who marked as spam.
-                unitCount = markedAsSpamRecipientIds.Count;
+                unitCount = spamComplaintRecipientIds.Count;
                 if ( unitCount > 0 )
                 {
                     var markedAsSpamNode = SankeyNode.MarkedAsSpam;
@@ -2462,9 +2506,9 @@ namespace Rock.Blocks.Communication
             public RecipientCountBreakdown RecipientCountBreakdown { get; set; }
 
             /// <summary>
-            /// Gets or sets the list of <see cref="RecipientUnsubscribeEvent"/>s tied to this communication.
+            /// Gets or sets the list of (non-interaction) <see cref="RecipientActivity"/>s tied to this communication.
             /// </summary>
-            public List<RecipientUnsubscribeEvent> UnsubscribeEvents { get; set; }
+            public List<RecipientActivity> RecipientActivities { get; set; }
 
             /// <summary>
             /// Gets or sets the identifier of the medium <see cref="EntityType"/> filter that should be applied to
@@ -2510,26 +2554,44 @@ namespace Rock.Blocks.Communication
         }
 
         /// <summary>
-        /// A POCO to represent a <see cref="CommunicationRecipient"/> who unsubscribed as a result of receiving this
+        /// The types of (non-interaction) activities a <see cref="CommunicationRecipient"> can perform against a
         /// <see cref="Rock.Model.Communication"/>.
         /// </summary>
-        private class RecipientUnsubscribeEvent
+        private enum RecipientActivityType
         {
             /// <summary>
-            /// Gets or sets the identifier of the <see cref="Rock.Model.CommunicationRecipient"/> who was unsubscribed.
+            /// Marked the communication as spam.
+            /// </summary>
+            SpamComplaint = 1,
+
+            /// <summary>
+            /// Unsubscribed as a result of receiving the communication.
+            /// </summary>
+            Unsubscribe = 2
+        }
+
+        /// <summary>
+        /// A POCO to represent a (non-interaction) activity performed by a <see cref="CommunicationRecipient"/>.
+        /// </summary>
+        private class RecipientActivity
+        {
+            /// <summary>
+            /// Gets or sets the identifier of the <see cref="Rock.Model.CommunicationRecipient"/> who performed this activity.
             /// </summary>
             public int CommunicationRecipientId { get; set; }
 
             /// <inheritdoc cref="CommunicationRecipient.MediumEntityTypeId"/>
             public int? MediumEntityTypeId { get; set; }
 
-            /// <inheritdoc cref="CommunicationRecipient.UnsubscribeLevel"/>
-            public DateTime? UnsubscribeDateTime { get; set; }
+            /// <summary>
+            /// Gets or sets the type of activity that was performed.
+            /// </summary>
+            public RecipientActivityType ActivityType { get; set; }
 
             /// <summary>
-            /// TODO (Jason): inheritdoc CommunicationRecipient.IsSpamComplaint
+            /// Gets or sets the datetime this activity was performed.
             /// </summary>
-            public bool IsSpamComplaint { get; set; }
+            public DateTime? ActivityDateTime { get; set; }
         }
 
         /// <summary>
