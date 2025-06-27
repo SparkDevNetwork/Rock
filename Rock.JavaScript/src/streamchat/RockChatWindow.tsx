@@ -2,13 +2,14 @@ import React from 'react';
 import {
     MessageList,
     Thread,
+    ThreadList,
     Window
 } from 'stream-chat-react';
 
 import { RockChannelHeader } from './ChannelHeader/RockChannelHeader';
 import { SafeMessageInput } from './MessageInput/SafeMessageInput';
 import { ChannelRightPane } from './ChannelRightPane/ChannelRightPane';
-import { useChannelRightPane } from './ChannelRightPane/PanelContext';
+import { useChannelRightPane } from './ChannelRightPane/ChannelRightPaneContext';
 
 /**
  * Encapsulates the full chat window view, including header, message list, input, thread, and right-side pane.
@@ -41,7 +42,7 @@ export const RockChatWindow: React.FC = () => {
                     </div>
                     <div className="rock-chat-window-content-right">
                         {activePane && <ChannelRightPane />}
-                        <Thread />
+                        {/* <Thread /> */}
                     </div>
                 </div>
             </div>

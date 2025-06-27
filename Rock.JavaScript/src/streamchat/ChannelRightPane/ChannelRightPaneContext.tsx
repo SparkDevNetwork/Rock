@@ -1,5 +1,7 @@
 // ChannelRightPaneContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
+import { LocalMessage } from 'stream-chat';
+import { useChannelActionContext } from 'stream-chat-react';
 
 type ChannelPaneView = 'info' | 'threads' | 'search' | 'mentions' | 'members' | 'more' | null;
 
@@ -21,13 +23,21 @@ export const ChannelRightPaneProvider: React.FC<{ children: ReactNode }> = ({ ch
     const [activePane, setPane] = useState<ChannelPaneView>(null);
 
     const setActivePane = (view: ChannelPaneView) => {
-        setPane(prev => (prev === view ? null : view));
+        setPane(prev => (prev === view && view !== 'threads' ? null : view));
     };
 
-    const closePane = () => setPane(null);
+    const closePane = () => {
+        setPane(null);
+    };
 
     return (
-        <ChannelRightPaneContext.Provider value={{ activePane: activePane, setActivePane, closePane }}>
+        <ChannelRightPaneContext.Provider
+            value={{
+                activePane,
+                setActivePane,
+                closePane,
+            }}
+        >
             {children}
         </ChannelRightPaneContext.Provider>
     );

@@ -1,13 +1,20 @@
 import React, { ReactNode, useEffect, useState } from "react";
 import {
     Channel,
+    CloseIcon,
+    ThreadHeaderProps,
     useChannelActionContext,
+    useChannelPreviewInfo,
+    useChannelStateContext,
     useChatContext,
+    useTranslationContext,
 } from "stream-chat-react";
 // import { RockMessageSimple } from "../Message/RockMessage";
 import { RockMessageActionList } from "./RockMessageActionList";
 import { RockDateSeperator } from "../DateSeperator/DateSeperator";
 import { RockMessage } from "../Message/RockMessage";
+import { ChannelPaneHeader } from "../ChannelRightPane/ChannelPaneHeader";
+import { useChannelRightPane } from "../ChannelRightPane/ChannelRightPaneContext";
 
 interface WrappedChannelProps {
     children: ReactNode;
@@ -45,13 +52,29 @@ export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children, channe
     if (!channelReady) return null;
 
     return (
-        <Channel CustomMessageActionsList={RockMessageActionList} Message={RockMessage} DateSeparator={RockDateSeperator}>
+        <Channel CustomMessageActionsList={RockMessageActionList}
+            Message={RockMessage}
+            DateSeparator={RockDateSeperator}
+            AttachmentSelectorInitiationButtonContents={CustomAttachmentSelectorInitiationButtonContents}
+            ThreadHeader={CustomThreadHeader}>
             {children}
             {/* if there is a jumpToMessageId, we need to jump to it. this has to be done in the channel context which is why we have a nested component */}
             {jumpToMessageId && <JumpToMessage messageId={jumpToMessageId} />}
         </Channel>
     );
 };
+
+export const CustomThreadHeader = () => {
+    return (
+        <></>
+    );
+};
+
+const CustomAttachmentSelectorInitiationButtonContents: React.FC = () => {
+    return (
+        <i className="fas fa-upload rock-message-composer-action"></i>
+    );
+}
 
 const JumpToMessage: React.FC<{ messageId: string }> = ({ messageId }) => {
     const { jumpToMessage } = useChannelActionContext();

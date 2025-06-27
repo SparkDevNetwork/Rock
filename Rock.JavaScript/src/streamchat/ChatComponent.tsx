@@ -1,9 +1,7 @@
 import React, { useState } from "react";
 import {
     Chat,
-    MessageList,
     Thread,
-    Window,
 } from "stream-chat-react";
 import { ChannelSort, ChannelFilters } from "stream-chat";
 import { useCreateChatClient } from "stream-chat-react";
@@ -13,18 +11,16 @@ import "./chatComponent.css";
 import type { ChatComponentProps } from "./ChatComponentProps";
 import { RockChannelPreview } from "./ChannelPreview/RockChannelPreview";
 import { ChatConfigContext } from "./Chat/ChatConfigContext";
-import { SafeMessageInput } from "./MessageInput/SafeMessageInput";
 import ChannelListHeader from "./ChannelListHeader/ChannelListHeader";
 import CreateChannelModal from "./CreateChannel/CreateChannelModal";
-import { RockChannelHeader } from "./ChannelHeader/RockChannelHeader";
 import { WrappedChannel } from "./MessageAction/WrappedChannel";
 import { WrappedChannelList } from "./ChannelList/WrappedChannelList";
 import { getRenderChannelsFn } from "./ChatUtils";
 import { ChannelListControllerContext } from "./ChannelList/ChannelListControllerContext";
 import { ChatViewStyle } from "./ChatViewStyle";
-import { ChannelRightPaneProvider } from "./ChannelRightPane/PanelContext";
-import { ChannelRightPane } from "./ChannelRightPane/ChannelRightPane";
+import { ChannelRightPaneProvider } from "./ChannelRightPane/ChannelRightPaneContext";
 import { RockChatWindow } from "./RockChatWindow";
+import { ModalProvider } from "./Modal/ModalContext";
 
 /**
  * The ChatComponent sets up and renders the Stream Chat UI
@@ -44,9 +40,9 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     chatViewStyle
 }) => {
 
-    const [showModal, setShowModal] = useState(false);
-    const handleNewMessage = () => setShowModal(true);
-    const handleCloseModal = () => setShowModal(false);
+    // const [showCreateDMModal, setShowCreateDMModal] = useState(false);
+    // const handleNewMessage = () => setShowCreateDMModal(true);
+    // const handleCloseModal = () => setShowCreateDMModal(false);
 
     const handleSearch = () => {
         // Implement search functionality here
@@ -58,7 +54,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     const refreshChannelList = () => {
         setTimeout(() => {
             setChannelListKey(prev => prev + 1);
-        }, 200); // delay in milliseconds
+        }, 200);
     };
 
 
@@ -128,41 +124,44 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                     directMessageChannelTypeKey,
                     chatViewStyle: chatViewStyle || ChatViewStyle.Conversational,
                 }}>
-                <ChannelListControllerContext.Provider value={{ refresh: refreshChannelList }}>
-                    <div style={chatContentStyle} className={`${theme}`}>
-                        {/* If a channel is passed in, hide the channel list and show the channel directly. */}
-                        {!channelId && (
-                            <>
-                                <div className={`rock-channel-list`}>
-                                    <ChannelListHeader onNewMessage={handleNewMessage} onSearch={handleSearch} />
-                                    <WrappedChannelList
-                                        selectedChannelId={selectedChannelId}
-                                        filters={finalFilter}
-                                        sort={sort}
-                                        options={options}
-                                        Preview={RockChannelPreview}
-                                        renderChannels={getRenderChannelsFn(chatViewStyle!, directMessageChannelTypeKey!, sharedChannelTypeKey!)}
-                                        // if there is a passed in selectedChannelId, we need to set it as the active channel
-                                        setActiveChannelOnMount={selectedChannelId == undefined || selectedChannelId == null || selectedChannelId == ""}
-                                    />
-                                </div>
-                            </>
-                        )}
 
-                        <ChannelRightPaneProvider>
-                            <WrappedChannel channelId={channelId} jumpToMessageId={jumpToMessageId}>
-                                <RockChatWindow />
-                            </WrappedChannel>
-                        </ChannelRightPaneProvider>
+                <ModalProvider>
+                    <ChannelListControllerContext.Provider value={{ refresh: refreshChannelList }}>
+                        <div style={chatContentStyle} className={`${theme}`}>
+                            {/* If a channel is passed in, hide the channel list and show the channel directly. */}
+                            {!channelId && (
+                                <>
+                                    <div className={`rock-channel-list`}>
+                                        <ChannelListHeader onSearch={handleSearch} />
+                                        <WrappedChannelList
+                                            selectedChannelId={selectedChannelId}
+                                            filters={finalFilter}
+                                            sort={sort}
+                                            options={options}
+                                            Preview={RockChannelPreview}
+                                            renderChannels={getRenderChannelsFn(chatViewStyle!, directMessageChannelTypeKey!, sharedChannelTypeKey!)}
+                                            // if there is a passed in selectedChannelId, we need to set it as the active channel
+                                            setActiveChannelOnMount={selectedChannelId == undefined || selectedChannelId == null || selectedChannelId == ""}
+                                        />
+                                    </div>
+                                </>
+                            )}
 
-                        {/* Create DM modal */}
-                        {showModal && (
-                            <CreateChannelModal
-                                onClose={handleCloseModal}
-                            />
-                        )}
-                    </div>
-                </ChannelListControllerContext.Provider>
+                            <ChannelRightPaneProvider>
+                                <WrappedChannel channelId={channelId} jumpToMessageId={jumpToMessageId}>
+                                    <RockChatWindow />
+                                </WrappedChannel>
+                            </ChannelRightPaneProvider>
+
+                            {/* Create DM modal
+                            {showCreateDMModal && (
+                                <CreateChannelModal
+                                    onClose={handleCloseModal}
+                                />
+                            )} */}
+                        </div>
+                    </ChannelListControllerContext.Provider>
+                </ModalProvider>
             </ChatConfigContext.Provider>
         </Chat>
     );

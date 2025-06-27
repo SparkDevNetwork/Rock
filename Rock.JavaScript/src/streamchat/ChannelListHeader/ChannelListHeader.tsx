@@ -3,18 +3,24 @@ import { useChatConfig } from "../Chat/ChatConfigContext";
 import { ChatViewStyle } from "../ChatViewStyle";
 import { useChatContext } from "stream-chat-react";
 import { Avatar } from "stream-chat-react";
-import { profile } from "console";
+import { useModal } from "../Modal/ModalContext";
+import CreateChannelModal from "../CreateChannel/CreateChannelModal";
 export interface ChannelListHeaderProps {
-    onNewMessage: () => void;
     onSearch?: () => void;
 }
 
 const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
-    onNewMessage,
     onSearch,
 }) => {
     const { chatViewStyle } = useChatConfig();
+    const { showModal, hideModal } = useModal();
 
+    const onNewMessage = () => {
+        showModal({
+            content: <CreateChannelModal />,
+            title: "New Direct Message",
+        })
+    }
     const iconActions =
         chatViewStyle === ChatViewStyle.Community
             ? [

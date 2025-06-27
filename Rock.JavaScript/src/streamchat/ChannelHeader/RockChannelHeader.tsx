@@ -4,7 +4,7 @@ import { DefaultChatChannelNamer } from '../ChannelNamer/DefaultChannelNamer';
 import { useChatConfig } from '../Chat/ChatConfigContext';
 import { ChatViewStyle } from '../ChatViewStyle';
 import { useChannelListController } from '../ChannelList/ChannelListControllerContext';
-import { useChannelRightPane } from '../ChannelRightPane/PanelContext';
+import { useChannelRightPane } from '../ChannelRightPane/ChannelRightPaneContext';
 
 /**
  * Overrides the built-in ChannelHeader to use the DefaultChatChannelNamer
