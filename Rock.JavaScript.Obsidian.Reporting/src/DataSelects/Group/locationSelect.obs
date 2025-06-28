@@ -1,0 +1,27 @@
+<template>
+    <DropDownList v-model="locationType" :items="locationTypes" label="Location Type" showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const locationTypes = safeParseJson<ListItemBag[]>(props.options.locationTypes) ?? [];
+
+    const locationType = ref<string>(props.modelValue.locationType ?? "");
+
+    watch([locationType], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            locationType: locationType.value,
+        });
+    });
+</script>

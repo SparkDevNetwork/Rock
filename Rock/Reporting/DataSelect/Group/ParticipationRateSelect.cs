@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,8 +21,12 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +38,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Shows the number of Group Members that are participating from a set of candidates defined by a Person Data View" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Participation Rate" )]
-    [Rock.SystemGuid.EntityTypeGuid( "A09DEA74-82ED-41F7-8A1E-AAC771DEC692")]
+    [Rock.SystemGuid.EntityTypeGuid( "A09DEA74-82ED-41F7-8A1E-AAC771DEC692" )]
     public class ParticipationRateSelect : DataSelectComponent
     {
         #region Properties
@@ -109,6 +113,64 @@ namespace Rock.Reporting.DataSelect.Group
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var options = new Dictionary<string, string>();
+
+            var measureTypeOptions = new List<ListItemBag>
+            {
+                new ListItemBag{ Text = "Number of Participants in Group", Value = MeasureTypeSpecifier.NumberOfParticipants.ToString() },
+                new ListItemBag{ Text = "Participation Rate of Group", Value = MeasureTypeSpecifier.ParticipationRateOfGroup.ToString() },
+                new ListItemBag{ Text = "Participation Rate of Candidates", Value = MeasureTypeSpecifier.ParticipationRateOfCandidates.ToString() },
+            };
+
+            options.AddOrReplace( "measureTypeOptions", measureTypeOptions.ToCamelCaseJson( false, true ) );
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Group/participationRateSelect.obs" ),
+                Options = options,
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionSettings = new ParticipationRateSelectSettings( selection );
+
+            var dataViewGuid = selectionSettings.DataViewGuid;
+            var dataView = new ListItemBag();
+
+            if ( dataViewGuid.HasValue )
+            {
+                dataView = DataViewCache.Get( dataViewGuid.Value )?.ToListItemBag();
+            }
+
+            var data = new Dictionary<string, string>
+            {
+                ["dataView"] = dataView?.ToCamelCaseJson( false, true ),
+                ["measureType"] = selectionSettings.MeasureType.ToString()
+            };
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionSettings = new ParticipationRateSelectSettings();
+
+            selectionSettings.DataViewGuid = data.GetValueOrNull( "dataView" )?.FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
+            selectionSettings.ParseMeasureType( data.GetValueOrNull( "measureType" ) );
+
+            return selectionSettings.ToSelectionString();
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -138,9 +200,9 @@ namespace Rock.Reporting.DataSelect.Group
         /// </exception>
         public override Expression GetExpression( RockContext context, MemberExpression entityIdProperty, string selection )
         {
-            var settings = new ParticipationRateSelectSettings(selection);
+            var settings = new ParticipationRateSelectSettings( selection );
 
-            if (!settings.IsValid())
+            if ( !settings.IsValid() )
             {
                 return this.GetDefaultSelectExpression( context, entityIdProperty );
             }
@@ -189,7 +251,7 @@ namespace Rock.Reporting.DataSelect.Group
                     {
                         // Percentage of Group Members that are also in the candidate population.
                         resultQuery = new GroupService( context ).Queryable()
-                                                                 .Select( p => ( p.Members.Count == 0 ) ? 0 : ( (decimal)p.Members.Count( a => ( populationIds.Contains( a.PersonId ) ) ) / (decimal)p.Members.Count ) * 100 );                         
+                                                                 .Select( p => ( p.Members.Count == 0 ) ? 0 : ( ( decimal ) p.Members.Count( a => ( populationIds.Contains( a.PersonId ) ) ) / ( decimal ) p.Members.Count ) * 100 );
                     }
                     break;
                 case MeasureTypeSpecifier.ParticipationRateOfCandidates:
@@ -198,7 +260,7 @@ namespace Rock.Reporting.DataSelect.Group
                         decimal populationCount = populationIds.Count();
 
                         resultQuery = new GroupService( context ).Queryable()
-                                                                 .Select( p => ( p.Members.Count == 0 ) ? 0 : ( (decimal)p.Members.Count( a => ( populationIds.Contains( a.PersonId ) ) ) / populationCount ) * 100 );
+                                                                 .Select( p => ( p.Members.Count == 0 ) ? 0 : ( ( decimal ) p.Members.Count( a => ( populationIds.Contains( a.PersonId ) ) ) / populationCount ) * 100 );
                     }
                     break;
                 case MeasureTypeSpecifier.NumberOfParticipants:
@@ -206,7 +268,7 @@ namespace Rock.Reporting.DataSelect.Group
                     {
                         // Number
                         resultQuery = new GroupService( context ).Queryable()
-                                                                 .Select( p => (decimal)p.Members.Count( a => populationIds.Contains( a.PersonId ) ) );
+                                                                 .Select( p => ( decimal ) p.Members.Count( a => populationIds.Contains( a.PersonId ) ) );
                     }
                     break;
             }
@@ -218,7 +280,7 @@ namespace Rock.Reporting.DataSelect.Group
 
         private Expression GetDefaultSelectExpression( RockContext context, MemberExpression entityIdProperty )
         {
-            var resultQuery = new GroupService( context ).Queryable().Select( p => (decimal)0 );
+            var resultQuery = new GroupService( context ).Queryable().Select( p => ( decimal ) 0 );
 
             var selectExpression = SelectExpressionExtractor.Extract( resultQuery, entityIdProperty, "p" );
 
@@ -264,12 +326,12 @@ namespace Rock.Reporting.DataSelect.Group
         public override string GetSelection( System.Web.UI.Control[] controls )
         {
             var dvpDataView = ( DataViewItemPicker ) controls[0];
-            var ddlFormat = (DropDownList)controls[1];
+            var ddlFormat = ( DropDownList ) controls[1];
 
             var settings = new ParticipationRateSelectSettings();
 
-            settings.ParseMeasureType(ddlFormat.SelectedValue);
-            settings.ParseDataViewId(dvpDataView.SelectedValue);
+            settings.ParseMeasureType( ddlFormat.SelectedValue );
+            settings.ParseDataViewId( dvpDataView.SelectedValue );
 
             return settings.ToSelectionString();
         }
@@ -289,7 +351,7 @@ namespace Rock.Reporting.DataSelect.Group
             }
 
             var dvpDataView = ( DataViewItemPicker ) controls[0];
-            var ddlFormat = (DropDownList)controls[1];
+            var ddlFormat = ( DropDownList ) controls[1];
 
             if ( settings.DataViewGuid.HasValue )
             {
@@ -353,10 +415,10 @@ namespace Rock.Reporting.DataSelect.Group
 
                 DataViewGuid = selectionValues[0].AsGuidOrNull();
 
-                this.ParseMeasureType(selectionValues[1]);
+                this.ParseMeasureType( selectionValues[1] );
             }
 
-            public void ParseMeasureType(string measureTypeName)
+            public void ParseMeasureType( string measureTypeName )
             {
                 if ( measureTypeName != null )
                 {
@@ -365,10 +427,10 @@ namespace Rock.Reporting.DataSelect.Group
                 else
                 {
                     MeasureType = MeasureTypeSpecifier.NumberOfParticipants;
-                }                
+                }
             }
 
-            public void ParseDataViewId(string dataViewId)
+            public void ParseDataViewId( string dataViewId )
             {
                 var id = dataViewId.AsIntegerOrNull();
 
@@ -383,12 +445,12 @@ namespace Rock.Reporting.DataSelect.Group
                 else
                 {
                     DataViewGuid = null;
-                }                
+                }
             }
 
             public string ToSelectionString()
             {
-                return DataViewGuid + "|" + ( (int)MeasureType );
+                return DataViewGuid + "|" + ( ( int ) MeasureType );
             }
         }
 

@@ -115,7 +115,7 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
-        /// Loads the by model.
+        /// Loads the indexable document from the Site.
         /// </summary>
         /// <param name="site">The site.</param>
         /// <returns></returns>

@@ -149,7 +149,7 @@ namespace Rock.UniversalSearch.IndexModels
         private string iconCssClass = "fa fa-bullhorn";
 
         /// <summary>
-        /// Loads the by model.
+        /// Loads the indexable document from the ContentChannelItem.
         /// </summary>
         /// <param name="contentChannelItem">The content channel item.</param>
         /// <returns></returns>

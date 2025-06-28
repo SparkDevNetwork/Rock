@@ -15,6 +15,8 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Data;
@@ -227,7 +229,7 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
-        /// Loads the by model.
+        /// Loads the indexable document from the Person.
         /// </summary>
         /// <param name="person">The person.</param>
         /// <returns></returns>
@@ -300,5 +302,121 @@ namespace Rock.UniversalSearch.IndexModels
 
             return personIndex;
         }
+
+        /// <summary>
+        /// Loads the indexable documents from a list of models.
+        /// </summary>
+        /// <param name="personQuery">The person query.</param>
+        /// <param name="rockContext">The rock context.</param>
+        /// <returns></returns>
+        public static List<PersonIndex> LoadByModelBulk( IQueryable<Person> personQuery, RockContext rockContext )
+        {
+            // Includes to avoid lazy loading.
+            personQuery = personQuery
+                .Include( p => p.PrimaryFamily.GroupLocations )
+                .Include( p => p.PhoneNumbers );
+
+            var personIndexes = new List<PersonIndex>();
+
+            var people = personQuery.ToList();
+            if ( !people.Any() )
+            {
+                return personIndexes;
+            }
+
+            // Load all index enabled attributes for the collection.
+            // NOTE:  This is not fully bulk, but still much more efficient than loading attributes for each person.
+            people.LoadFilteredAttributes( a => a.IsIndexEnabled );
+
+            // Bulk queries to avoid spawning new queries for each Person record.
+            var homeLocations = personQuery.GetHomeLocations( rockContext );
+            var previousNames = personQuery.GetPreviousNames( rockContext );
+            var spouses = personQuery.GetSpouses( rockContext );
+
+            foreach ( Person person in people )
+            {
+                var personIndex = new PersonIndex();
+                try
+                {
+                    personIndex.SourceIndexModel = "Rock.Model.Person";
+                    personIndex.ModelConfiguration = "nofilters";
+                    personIndex.Id = person.Id;
+                    personIndex.FirstName = person.FirstName;
+                    personIndex.NickName = person.NickName;
+                    personIndex.LastName = person.LastName;
+                    personIndex.ModelOrder = 10;
+                    personIndex.CampusId = person.PrimaryCampusId;
+                    personIndex.ConnectionStatusValueId = person.ConnectionStatusValueId;
+                    personIndex.RecordStatusValueId = person.RecordStatusValueId;
+                    personIndex.Age = person.Age;
+                    personIndex.Gender = person.Gender.ToString();
+                    personIndex.PhotoUrl = person.PhotoUrl;
+                    personIndex.Email = person.Email;
+                    personIndex.DocumentName = person.FullName;
+                    personIndex.FamilyRole = person.AgeClassification.ToString();
+
+                    if ( person.SuffixValueId.HasValue )
+                    {
+                        personIndex.Suffix = DefinedValueCache.GetValue( person.SuffixValueId );
+                    }
+
+                    if ( person.PhoneNumbers != null )
+                    {
+                        personIndex.PhoneNumbers = string.Join( "|", person.PhoneNumbers.Select( p => DefinedValueCache.GetValue( p.NumberTypeValueId ) + "^" + p.Number ) );
+                    }
+
+                    if ( previousNames.ContainsKey( person.Id ) && previousNames[person.Id].Any() )
+                    {
+                        personIndex.PreviousLastNames = string.Join( ",", previousNames[person.Id].Select( n => n.LastName ) );
+                    }
+                    else
+                    {
+                        personIndex.PreviousLastNames = string.Empty;
+                    }
+
+                    if ( homeLocations.ContainsKey( person.Id ) && homeLocations[person.Id] != null )
+                    {
+                        var address = homeLocations[person.Id];
+                        personIndex.StreetAddress = address.Street1 + " " + address.Street2;
+                        personIndex.City = address.City;
+                        personIndex.State = address.State;
+                        personIndex.PostalCode = address.PostalCode;
+                        personIndex.Country = address.Country;
+                    }
+
+                    // get spouse
+                    if ( spouses.ContainsKey( person.Id ) && spouses[person.Id] != null )
+                    {
+                        personIndex.Spouse = spouses[person.Id].FullName;
+                    }
+
+                    foreach ( var rawKey in person.Attributes.Keys )
+                    {
+                        // Remove invalid characters from the attribute key, based on AddIndexableAttributes();
+                        var safeKey = rawKey;
+                        safeKey = safeKey.Replace( ".", "_" );
+                        safeKey = safeKey.Replace( ",", "_" );
+                        safeKey = safeKey.Replace( "#", "_" );
+                        safeKey = safeKey.Replace( "*", "_" );
+                        safeKey = safeKey.StartsWith( "_" ) ? safeKey.Substring( 1 ) : safeKey;
+
+                        // If the keys don't match, substitue the new one.
+                        if ( safeKey != rawKey )
+                        {
+                            personIndex[safeKey] = person.Attributes[rawKey];
+                        }
+                    }
+
+                    personIndexes.Add( personIndex );
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( ex );
+                }
+            }
+
+            return personIndexes;
+        }
+
     }
 }

@@ -1,0 +1,83 @@
+<template>
+    <DropDownList v-model="interactionChannel"
+                  :items="interactionChannelOptions"
+                  label="Interaction Channel"
+                  rules="required"
+                  showBlankItem />
+
+    <DropDownList v-if="interactionComponentOptions.length > 0"
+                  v-model="interactionComponent"
+                  :items="interactionComponentOptions"
+                  label="Interaction Component"
+                  showBlankItem />
+
+    <TextBox v-model="operation" label="Operation" />
+
+    <RadioButtonList v-model="selectionMode" :items="selectionModeOptions" label="Selection Mode" />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { InteractionCountSelectGetComponentsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/interactionCountSelectGetComponentsOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const interactionChannelOptions = safeParseJson<ListItemBag[]>(props.options.interactionChannelOptions) ?? [];
+    const interactionChannel = ref<string>(props.modelValue.interactionChannel ?? "");
+
+    const interactionComponentOptions = ref(safeParseJson<ListItemBag[]>(props.options.interactionComponentOptions) ?? []);
+    const interactionComponent = ref<string>(props.modelValue.interactionComponent ?? "");
+
+    const operation = ref<string>(props.modelValue.operation ?? "");
+
+    const selectionModeOptions = safeParseJson<ListItemBag[]>(props.options.selectionModeOptions) ?? [];
+    const selectionMode = ref<string>(props.modelValue.selectionMode ?? "");
+
+    watch(interactionChannel, async () => {
+        interactionComponentOptions.value = [];
+
+        if (interactionChannel.value) {
+            interactionComponentOptions.value = await loadInteractionComponents();
+        }
+    });
+
+    async function loadInteractionComponents(): Promise<ListItemBag[]> {
+        const options: InteractionCountSelectGetComponentsOptionsBag = {
+            interactionChannelGuid: interactionChannel.value,
+        };
+
+        const response = await props.executeRequest({
+            action: "GetComponents",
+            options: JSON.stringify(options)
+        });
+
+        const interactionComponentOptions = safeParseJson<ListItemBag[]>(response?.interactionComponentOptions) ?? [];
+
+        if (Array.isArray(interactionComponentOptions)) {
+            return interactionComponentOptions;
+        }
+        else {
+            console.error("Error fetching items from server", response?.Message);
+            return [];
+        }
+    }
+
+    watch([interactionChannel, interactionComponent, operation, selectionMode], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            interactionChannel: interactionChannel.value,
+            interactionComponent: interactionComponent.value,
+            operation: operation.value,
+            selectionMode: selectionMode.value,
+        });
+    });
+</script>
