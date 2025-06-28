@@ -39,15 +39,25 @@ namespace RockWeb
         {
             try
             {
+                var entityTypeGuid = context.Request.QueryString["EntityTypeGuid"].AsGuidOrNull();
                 int entityTypeId = context.Request.QueryString["EntityTypeId"].AsInteger();
                 string recordKey = context.Request.QueryString["RecordKey"];
 
-                if ( entityTypeId == 0 || recordKey.IsNullOrWhiteSpace() )
+                if ( ( entityTypeId == 0 && entityTypeGuid == null ) || recordKey.IsNullOrWhiteSpace() )
                 {
-                    throw new Exception( "Missing or invalid EntityTypeId or RecordKey" );
+                    throw new Exception( "Missing or invalid EntityTypeId/Guid or RecordKey" );
                 }
 
-                Type backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeId ).AssemblyName );
+                Type backgroundCheckComponentType;
+                if ( entityTypeGuid.HasValue )
+                {
+                    backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeGuid.Value ).AssemblyName );
+                }
+                else
+                {
+                    backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeId ).AssemblyName );
+                }
+
                 if ( backgroundCheckComponentType != null )
                 {
                     MethodInfo methodInfo = backgroundCheckComponentType.GetMethod( "GetReportUrl" );

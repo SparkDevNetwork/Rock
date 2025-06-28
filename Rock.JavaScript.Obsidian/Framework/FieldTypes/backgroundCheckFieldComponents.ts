@@ -24,6 +24,7 @@ import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./backgroundCheckField.partial";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
+//import { splitCase } from "@Obsidian/Utility/stringUtils";
 
 export const EditComponent = defineComponent({
     name: "BackgroundCheckField.Edit",
@@ -37,17 +38,21 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-
         const fileValue = ref<ListItemBag>({});
         const entityType = ref<ListItemBag>({});
         const textValue = ref<string>("");
 
         const isFile = computed((): boolean => {
-            const entityTypeValue = entityType.value.value;
+            const entityTypeValue = entityType?.value?.value;
             return (entityTypeValue?.toLowerCase() !== EntityType.CheckrProvider.toLowerCase());
         });
 
         watch(() => props.modelValue, () => {
+
+            if (!props.modelValue) {
+                return;
+            }
+
             const splitValues = props.modelValue.split(",");
 
             /*
@@ -57,13 +62,13 @@ export const EditComponent = defineComponent({
 
                 - a single GUID (used by ProtectMyMinistry), the props.modelValue format is:
 
-                    {EntityType.Guid},{EntityType.FriendlyName},BinaryFileGuid,filename(if any)
-                    0                  1                        2              3
+                    {EntityType.Guid},{EntityType.FriendlyName},{BinaryFile.Guid},{filename(if any)}
+                    0                  1                        2                 3
 
                 - a comma-delimited string of <EntityTypeId>,<Key|Guid> (used by other providers),
                     the props.modelValue format is:
-                    {EntityType.Guid},{EntityType.FriendlyName},{RecordKey|BinaryFileGuid},filename(if any)
-                    0                  1                         2                         3
+                    {EntityType.Guid},{EntityType.FriendlyName},{RecordKey|BinaryFile.Guid},{filename(if any)}
+                    0                  1                         2                          3
 
                     splitValues[2] will be RecordKey for Checkr, and a BinaryFileGuid for everyone else (isFile=true)
             */
@@ -74,18 +79,18 @@ export const EditComponent = defineComponent({
             }
 
             entityType.value = {
-                text: splitValues[1],
-                value: splitValues[0]
+                text: splitValues[1], // EntityType.FriendlyName
+                value: splitValues[0] // EntityType.Guid
             };
 
             if (isFile.value) {
                 fileValue.value = {
-                    text: splitValues[3],
-                    value: splitValues[2]
+                    text: splitValues[3], // filename (if any)
+                    value: splitValues[2] // BinaryFile Guid
                 };
             }
             else {
-                textValue.value = splitValues[2];
+                textValue.value = splitValues[2]; // RecordKey
             }
 
         }, { immediate: true });
@@ -113,7 +118,7 @@ export const EditComponent = defineComponent({
             fileValue,
             entityType,
             isFile,
-            textValue
+            textValue,
         };
     },
 
