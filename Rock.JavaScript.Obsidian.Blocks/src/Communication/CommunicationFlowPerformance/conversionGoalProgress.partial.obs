@@ -106,7 +106,7 @@
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import { ConversionGoalType } from "@Obsidian/Enums/Communication/conversionGoalType";
-    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { prependSingularIndefiniteArticle } from "@Obsidian/Utility/stringUtils";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
@@ -114,7 +114,7 @@
     import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
 
     const props = defineProps({
-        modelValue: {
+        messages: {
             type: Array as PropType<MessageBag[]>,
             required: true
         },
@@ -268,27 +268,50 @@
         }
     });
 
+    const progressBarType = computed<"danger" | "success" | "critical" | "warning" | "default">(() => {
+        switch (conversionGoalStatus.value) {
+            case "Achieved":
+                return "success";
+            case "Missed":
+                return "danger";
+            case "Pending":
+                return "warning";
+            case "Not Tracked":
+            default:
+                return "default";
+        }
+    });
+
+    const messagesGroupedByInstance = computed<GroupedEnumerable<string, MessageBag>[]>(() => {
+        return Enumerable
+            .from(props.messages)
+            .groupBy(m => m.communicationFlowInstanceIdKey)
+            .ofType((g): g is GroupedEnumerable<string, MessageBag> => !isNullish(g.key))
+            .toArray();
+    });
+
     const conversionGoalStatus = computed<ConversionGoalStatus>(() => {
-        if (props.modelValue.length === 0) {
+        if (props.messages.length === 0) {
             // No instance selected or no messages have been sent for the selected flow instances.
             return "Not Tracked";
         }
         else {
+            const conversionGoalTargetFractionalPercent = (props.conversionGoalTargetPercent ?? 0) / 100;
+
             const goalNotMetInstances = Enumerable
-                .from(recipientsByInstance.value)
-                .where(instanceRecipients => {
-                    const sentCount = instanceRecipients.count(r => !!r.sentDateTime);
-                    const conversionCount = instanceRecipients.count(r => !!r.convertedDateTime);
+                .from(messagesGroupedByInstance.value)
+                .where(messagesByInstance => {
+                    const messageCount = messagesByInstance.count();
+                    const conversionCount = messagesByInstance.count(m => !!m.convertedDateTime);
 
-                    const conversionPercent = sentCount <= 0 ? 0 : (conversionCount / sentCount) * 100;
-                    const conversionGoalTargetPercent = props.conversionGoalTargetPercent ?? 0;
+                    const conversionPercent = messageCount ? conversionCount / messageCount : 0;
 
-                    return conversionPercent < conversionGoalTargetPercent;
+                    return conversionPercent < conversionGoalTargetFractionalPercent;
                 })
                 .toArray();
 
             if (Enumerable.from(goalNotMetInstances).any()) {
-                if (Enumerable.from(goalNotMetInstances).any(instanceRecipients => instanceRecipients.any(ix => !ix.sentDateTime))) {
+                if (Enumerable.from(goalNotMetInstances).any(messagesByInstance => messagesByInstance.any(m => !m.sentDateTime))) {
                     // At least one instance has unsent communications
                     // and the conversion percent is below the target.
                     return "Pending";
@@ -306,58 +329,31 @@
         }
     });
 
-    const progressBarType = computed<"danger" | "success" | "critical" | "warning" | "default">(() => {
-        switch (conversionGoalStatus.value) {
-            case "Achieved":
-                return "success";
-            case "Missed":
-                return "danger";
-            case "Pending":
-                return "warning";
-            case "Not Tracked":
-            default:
-                return "default";
-        }
-    });
-
-    const recipientsByInstance = computed(() => {
-        return Enumerable
-            .from(props.modelValue)
-            .groupBy(r => r.communicationFlowInstanceIdKey)
-            .toArray();
-    });
-
-    const instanceConversionPercentages = computed(() => {
-        return Enumerable
-            .from(recipientsByInstance.value)
-            .select(instanceRecipients => {
-                const sentCount = instanceRecipients.count(r => !!r.sentDateTime);
-                const conversionCount = instanceRecipients.count(r => !!r.convertedDateTime);
-
-                if (sentCount <= 0) {
-                    return {
-                        instanceIdKey: instanceRecipients.key,
-                        conversionPercent: 0
-                    };
-                }
-                else {
-                    return {
-                        instanceIdKey: instanceRecipients.key,
-                        conversionPercent: conversionCount / sentCount
-                    };
-                }
-            })
-            .toArray();
-    });
-
     const hasSentMessages = computed<boolean>(() => {
-        return props.modelValue.some(r => r.sentDateTime);
+        return props.messages.some(m => m.sentDateTime);
     });
 
     const averageInstanceConversionPercent = computed<number>(() => {
         return Enumerable
-            .from(instanceConversionPercentages.value)
-            .average(instance => instance.conversionPercent);
+            .from(messagesGroupedByInstance.value)
+            .select(messagesByInstance => {
+                const messageCount = messagesByInstance.count();
+                const conversionCount = messagesByInstance.count(m => !!m.convertedDateTime);
+
+                if (messageCount) {
+                    return {
+                        communicationFlowInstanceIdKey: messagesByInstance.key,
+                        conversionPercent: conversionCount / messageCount
+                    };
+                }
+                else {
+                    return {
+                        communicationFlowInstanceIdKey: messagesByInstance.key,
+                        conversionPercent: 0
+                    };
+                }
+            })
+            .average(i => i.conversionPercent);
     });
 
     // #endregion Computed Properties

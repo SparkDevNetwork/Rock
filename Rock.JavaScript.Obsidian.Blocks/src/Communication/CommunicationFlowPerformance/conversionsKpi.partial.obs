@@ -15,8 +15,8 @@
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
     const props = defineProps({
-        modelValue: {
-            type: Array as PropType<MessageBag[] | null | undefined>,
+        messages: {
+            type: Array as PropType<MessageBag[]>,
             required: true
         }
     });
@@ -24,13 +24,13 @@
     // #region Computed Values
 
     const conversionCount = computed<string>(() => {
-        const enumerable = Enumerable.from(props.modelValue ?? []);
+        const messageEnumerable = Enumerable.from(props.messages);
 
-        if (!enumerable.any()) {
+        if (!messageEnumerable.any()) {
             return "N/A";
         }
         else {
-            return asLocaleString(enumerable.sum(i => i.convertedDateTime ? 1 : 0));
+            return asLocaleString(messageEnumerable.where(i => !!i.convertedDateTime).count());
         }
     });
 

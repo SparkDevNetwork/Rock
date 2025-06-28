@@ -38,11 +38,8 @@
     }
 
     const props = defineProps({
-        /**
-         * The communication recipients for the selected communication flow instances.
-         */
-        modelValue: {
-            type: Array as PropType<MessageBag[] | null | undefined>,
+        messages: {
+            type: Array as PropType<MessageBag[]>,
             required: true
         },
 
@@ -56,7 +53,7 @@
 
     const hasSentCommunications = computed<boolean>(() => {
         // Check if there are any recipients with a sent date.
-        return Enumerable.from(props.modelValue ?? []).any(r => !!r.sentDateTime);
+        return Enumerable.from(props.messages).any(m => !!m.sentDateTime);
     });
 
     const totalFlowPerformanceOverTimeData = computed<ChartData<"line">>(() => {
@@ -100,55 +97,55 @@
     });
 
     const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
-        const dataPoints: ChartNumericDataPointBag[] = [];
-        const sentMessagesEnumerable = Enumerable.from(props.modelValue ?? []);
-        const totalMessages = sentMessagesEnumerable.count();
+        const messageCount = props.messages.length;
 
-        if (totalMessages <= 0) {
-            return dataPoints;
+        if (messageCount <= 0) {
+            return [];
         }
+        const messageEnumerable = Enumerable.from(props.messages);
 
-        const conversionRateData = buildCumulativeRates(
+        const conversionRateDataPoints = buildCumulativeRates(
             // Conversion dates.
-            sentMessagesEnumerable
-                .select(r => parseRockDateTime(r.convertedDateTime))
+            messageEnumerable
+                .select(m => parseRockDateTime(m.convertedDateTime))
                 .ofType(isRockDateTime),
             {
                 seriesName: SeriesName.ConversionRate,
                 color: "#68D391",
-                totalCount: totalMessages,
+                totalCount: messageCount,
                 dateTransformer: dateTransformer.value,
                 dateFormatter: dateFormatter.value
             }
         );
 
-        const unsubscribeRateData = buildCumulativeRates(
+        const unsubscribeRateDataPoints = buildCumulativeRates(
             // Unsubscribe dates.
-            sentMessagesEnumerable
-                .select(r => parseRockDateTime(r.unsubscribedDateTime))
+            messageEnumerable
+                .select(m => parseRockDateTime(m.unsubscribedDateTime))
                 .ofType(isRockDateTime),
             {
                 seriesName: SeriesName.UnsubscribeRate,
                 color: "#FC8181",
-                totalCount: totalMessages,
+                totalCount: messageCount,
                 dateTransformer: dateTransformer.value,
                 dateFormatter: dateFormatter.value
             });
 
-        const data = conversionRateData
-            .concat(unsubscribeRateData)
-            .orderBy(dp => dp.rockDateTime.toMilliseconds()) // Re-order so the data are all in chronological order.
+        const dataPoints = conversionRateDataPoints
+            .concat(unsubscribeRateDataPoints)
+            .orderBy(d => d.rockDateTime.toMilliseconds()) // Re-order so the data are all in chronological order.
             .toArray();
 
-        // Ensure the earliest instance starting date is included in the data.
-        const earliestInstanceSentDate = sentMessagesEnumerable
-            .select(i => parseRockDateTime(i.instanceStartDate))
+        // Ensure the data points include the earliest instance start date.
+        const earliestInstanceSentDate = messageEnumerable
+            .select(m => parseRockDateTime(m.instanceStartDate))
             .ofType(isRockDateTime)
-            .orderBy(dp => dp.toMilliseconds())
+            .orderBy(d => d.toMilliseconds())
+            .select(d => dateTransformer.value(d))
             .firstOrDefault();
 
-        if (earliestInstanceSentDate && !data.some(d => d.rockDateTime.isEarlierThan(earliestInstanceSentDate))) {
-            data.unshift({
+        if (earliestInstanceSentDate && !dataPoints.some(d => d.rockDateTime.isEarlierThan(earliestInstanceSentDate))) {
+            dataPoints.unshift({
                 rockDateTime: earliestInstanceSentDate,
                 seriesName: SeriesName.ConversionRate,
                 color: "#68D391",
@@ -157,7 +154,7 @@
             });
         }
 
-        return data;
+        return dataPoints;
     });
 
     // #endregion Computed Values

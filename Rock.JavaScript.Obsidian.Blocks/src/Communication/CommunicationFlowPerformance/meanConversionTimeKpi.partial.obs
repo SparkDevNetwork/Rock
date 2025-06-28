@@ -16,8 +16,8 @@
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
     const props = defineProps({
-        modelValue: {
-            type: Array as PropType<MessageBag[] | null | undefined>,
+        messages: {
+            type: Array as PropType<MessageBag[]>,
             required: true
         }
     });
@@ -27,21 +27,21 @@
     // #region Computed Values
 
     const averageTimeBeforeConversion = computed<string>(() => {
-        const enumerable = Enumerable.from(props.modelValue ?? []);
+        const messageEnumerable = Enumerable.from(props.messages);
 
-        if (!enumerable.any()) {
+        if (!messageEnumerable.any()) {
             // There are no recipients for the selected flow instances,
             // so there is no average conversion time to calculate.
             return "N/A";
         }
 
-        const conversionTimesInMilliseconds = enumerable
-            .select(recipient => {
-                const recipientSentDate = parseRockDateTime(recipient.sentDateTime);
-                const recipientConvertedDate = parseRockDateTime(recipient.convertedDateTime);
+        const conversionTimesInMilliseconds = messageEnumerable
+            .select(message => {
+                const sentDate = parseRockDateTime(message.sentDateTime);
+                const convertedDate = parseRockDateTime(message.convertedDateTime);
 
-                if (recipientSentDate && recipientConvertedDate) {
-                    return recipientConvertedDate.toMilliseconds() - recipientSentDate.toMilliseconds();
+                if (sentDate && convertedDate) {
+                    return convertedDate.toMilliseconds() - sentDate.toMilliseconds();
                 }
                 else {
                     // No conversion time for this recipient.

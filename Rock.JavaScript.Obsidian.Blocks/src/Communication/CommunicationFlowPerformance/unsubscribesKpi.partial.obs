@@ -15,7 +15,7 @@
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
-import { asLocaleString } from "./utils.partial";
+    import { asLocaleString } from "./utils.partial";
 
     enum UnsubscribeLevel {
         Flow = 1,
@@ -25,8 +25,8 @@ import { asLocaleString } from "./utils.partial";
     }
 
     const props = defineProps({
-        modelValue: {
-            type: Array as PropType<MessageBag[] | null | undefined>,
+        messages: {
+            type: Array as PropType<MessageBag[]>,
             required: true
         }
     });
@@ -45,32 +45,28 @@ import { asLocaleString } from "./utils.partial";
     });
 
     const tooltip = computed<string | undefined>(() => {
-        if (isNullish(props.modelValue)) {
-            return;
-        }
-
         return `Unsubscribes from Flows: ${asLocaleString(unsubscribeInfo.value?.unsubscribesFromFlow ?? 0)}\n` +
             `Unsubscribes from All: ${asLocaleString(unsubscribeInfo.value?.unsubscribesFromAll ?? 0)}\n` +
             `Unsubscribes from Other: ${asLocaleString(unsubscribeInfo.value?.unsubscribesFromOther ?? 0)}`;
     });
 
     const unsubscribeInfo = computed<UnsubscribeInfo | null | undefined>(() => {
-        const enumerable = Enumerable.from(props.modelValue ?? []);
+        const messageEnumerable = Enumerable.from(props.messages);
 
-        if (!enumerable.any()) {
+        if (!messageEnumerable.any()) {
             // There are no recipients for the selected instances.
             // There is no unsubscribe info at this point until at least one communication is sent.
             return null;
         }
 
-        const unsubscribedRecipients = enumerable
-            .where(r => !!r.unsubscribedDateTime)
+        const unsubscribedMessages = messageEnumerable
+            .where(m => !!m.unsubscribedDateTime)
             .toArray();
 
         return {
-            unsubscribesFromAll: Enumerable.from(unsubscribedRecipients).count(r => r.unsubscribeLevel === UnsubscribeLevel.All),
-            unsubscribesFromFlow: Enumerable.from(unsubscribedRecipients).count(r => r.unsubscribeLevel === UnsubscribeLevel.Flow),
-            unsubscribesFromOther: Enumerable.from(unsubscribedRecipients).count(r => isNullish(r.unsubscribeLevel) || ![UnsubscribeLevel.All, UnsubscribeLevel.Flow].includes(r.unsubscribeLevel)),
+            unsubscribesFromAll: Enumerable.from(unsubscribedMessages).count(m => m.unsubscribeLevel === UnsubscribeLevel.All),
+            unsubscribesFromFlow: Enumerable.from(unsubscribedMessages).count(m => m.unsubscribeLevel === UnsubscribeLevel.Flow),
+            unsubscribesFromOther: Enumerable.from(unsubscribedMessages).count(m => isNullish(m.unsubscribeLevel) || ![UnsubscribeLevel.All, UnsubscribeLevel.Flow].includes(m.unsubscribeLevel)),
         };
     });
 </script>

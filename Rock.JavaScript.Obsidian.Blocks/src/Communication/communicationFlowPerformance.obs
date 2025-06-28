@@ -42,19 +42,19 @@
                                     :conversionGoalTargetPercent="config.flowPerformance?.conversionGoalTargetPercent"
                                     :conversionGoalTimeframeInDays="config.flowPerformance?.conversionGoalTimeframeInDays"
                                     :conversionGoalType="config.flowPerformance?.conversionGoalType"
-                                    :modelValue="selectedMessages" />
+                                    :messages="selectedMessages" />
 
             <template v-if="!isNullish(config.flowPerformance?.conversionGoalType)">
                 <template v-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OneTime">
                     <div class="row">
                         <div class="col-md-4">
-                            <FlowKeyMetrics :modelValue="selectedMessages"
+                            <FlowKeyMetrics :messages="selectedMessages"
                                             :flowPerformance="config.flowPerformance"
                                             vertical />
                         </div>
 
                         <div class="col-md-8">
-                            <TotalFlowPerformanceOverTime :modelValue="selectedMessages"
+                            <TotalFlowPerformanceOverTime :messages="selectedMessages"
                                                           :flowPerformance="config.flowPerformance"
                                                           :dateUnit="dateUnit" />
                         </div>
@@ -62,15 +62,15 @@
                 </template>
 
                 <template v-else>
-                    <FlowKeyMetrics :modelValue="selectedMessages" />
+                    <FlowKeyMetrics :messages="selectedMessages" />
 
                     <div class="row">
                         <div class="col-md-6">
-                            <TotalFlowPerformanceOverTime :modelValue="selectedMessages"
+                            <TotalFlowPerformanceOverTime :messages="selectedMessages"
                                                           :dateUnit="dateUnit" />
                         </div>
                         <div class="col-md-6">
-                            <InstanceVsFlowPerformanceAverage :modelValue="selectedMessages"
+                            <InstanceVsFlowPerformanceAverage :messages="selectedMessages"
                                                               :allMessages="config.flowPerformance?.messages ?? []" />
                         </div>
                     </div>
@@ -80,7 +80,7 @@
             <template v-else>
                 <div class="row">
                     <div class="col-md-4">
-                        <UnsubscribesKpi :modelValue="selectedMessages" />
+                        <UnsubscribesKpi :messages="selectedMessages" />
                     </div>
                 </div>
             </template>
@@ -97,8 +97,7 @@
         </template>
     </Panel>
 
-    <MessageListGrid :modelValue="selectedMessages"
-                     :messages="config.flowPerformance?.messages"
+    <MessageListGrid :messages="selectedMessages"
                      :gridDefinition="config.gridDefinition"
                      @viewMessage="onViewMessage" />
 </template>

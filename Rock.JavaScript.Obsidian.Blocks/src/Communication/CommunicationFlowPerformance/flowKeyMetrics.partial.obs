@@ -3,24 +3,24 @@
         <div v-if="!vertical"
              class="row">
             <div class="col-md-4">
-                <ConversionsKpi :modelValue="modelValue" />
+                <ConversionsKpi :messages="messages" />
             </div>
 
             <div class="col-md-4">
-                <MeanConversionTimeKpi :modelValue="modelValue" />
+                <MeanConversionTimeKpi :messages="messages" />
             </div>
 
             <div class="col-md-4">
-                <UnsubscribesKpi :modelValue="modelValue" />
+                <UnsubscribesKpi :messages="messages" />
             </div>
         </div>
 
         <div v-else
              class="row">
             <div class="col-md-12">
-                <ConversionsKpi :modelValue="modelValue" />
-                <MeanConversionTimeKpi :modelValue="modelValue" />
-                <UnsubscribesKpi :modelValue="modelValue" />
+                <ConversionsKpi :messages="messages" />
+                <MeanConversionTimeKpi :messages="messages" />
+                <UnsubscribesKpi :messages="messages" />
             </div>
         </div>
     </Panel>
@@ -35,8 +35,8 @@
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
 
     defineProps({
-        modelValue: {
-            type: Array as PropType<MessageBag[] | null | undefined>,
+        messages: {
+            type: Array as PropType<MessageBag[]>,
             required: true
         },
 
