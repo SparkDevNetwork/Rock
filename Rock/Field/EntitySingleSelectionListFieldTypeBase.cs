@@ -47,6 +47,7 @@ namespace Rock.Field.Types
             return string.Empty;
         }
 
+#if WEBFORMS
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -61,6 +62,7 @@ namespace Rock.Field.Types
                 ? GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetCondensedTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) );
         }
+#endif
 
         /// <summary>
         /// Returns a user-friendly description of the entity.
@@ -79,6 +81,7 @@ namespace Rock.Field.Types
 
         #region Edit Control
 
+#if WEBFORMS
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -141,11 +144,13 @@ namespace Rock.Field.Types
                 editControl.SetValue( value );
             }
         }
+#endif
 
         #endregion
 
         #region Entity Methods
 
+#if WEBFORMS
         /// <summary>
         /// Gets the edit value as the IEntity.Id
         /// </summary>
@@ -175,6 +180,7 @@ namespace Rock.Field.Types
 
             SetEditValue( control, configurationValues, guidValue );
         }
+#endif
 
         /// <summary>
         /// Gets the entity.

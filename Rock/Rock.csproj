@@ -11,15 +11,23 @@
   <PropertyGroup>
     <DefineConstants Condition=" '$(TargetFramework)' == 'net472' ">$(DefineConstants);WEBFORMS</DefineConstants>
     <DefineConstants Condition=" '$(TargetFramework)' == 'net472' ">$(DefineConstants);REVIEW_WEBFORMS</DefineConstants>
-    <DefineConstants Condition=" '$(TargetFramework)' == 'net6.0' ">$(DefineConstants);REVIEW_NET5_0_OR_GREATER</DefineConstants>
+    <DefineConstants Condition=" '$(TargetFramework)' != 'net472' ">$(DefineConstants);REVIEW_NET5_0_OR_GREATER</DefineConstants>
   </PropertyGroup>
 
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
+    <Compile Remove="**/*.NG.cs" />
+    <Compile Remove="CoreShims/**/*.cs" />
+  </ItemGroup>
+
+  <ItemGroup Condition=" '$(TargetFramework)' != 'net472' ">
+    <Compile Remove="**/*.WebForms.cs" />
+    <Compile Remove="CheckIn/*.cs" />
+    <Compile Remove="Web/UI/**/*.cs" />
+    <Compile Include="Web/UI/ContextAttribute.cs" />
+    <Compile Include="Web/UI/Controls/Chart/ChartStyle.cs"/>
+  </ItemGroup>
+
   <ItemGroup>
-    <Compile Condition=" '$(TargetFramework)' == 'net472' " Remove="**/*.NG.cs" />
-    <Compile Condition=" '$(TargetFramework)' == 'net472' " Remove="CoreShims/**/*.cs" />
-    <Compile Condition=" '$(TargetFramework)' == 'net6.0' " Remove="**/*.WebForms.cs" />
-    <Compile Condition=" '$(TargetFramework)' == 'net6.0' " Remove="Web/UI/**/*.cs" />
-    <Compile Condition=" '$(TargetFramework)' == 'net6.0' " Include="Web/UI/ContextAttribute.cs" />
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
@@ -35,10 +43,10 @@
     <PackageReference Include="CommonMark.NET" Version="0.13.2" />
     <PackageReference Include="CronExpressionDescriptor" Version="2.16.0" />
     <PackageReference Include="CS-Script" Version="3.13.2" />
-    <PackageReference Include="DDay.iCal" Version="1.0.2.575" />
+    <PackageReference Condition=" '$(TargetFramework)' == 'net472' " Include="DDay.iCal" Version="1.0.2.575" />
     <PackageReference Include="dotless" Version="1.5.2" />
-    <PackageReference Include="EF6.TagWith" Version="1.2.1" />
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Condition=" '$(TargetFramework)' == 'net472' " Include="EF6.TagWith" Version="1.2.1" />
+    <PackageReference Condition=" '$(TargetFramework)' == 'net472' " Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="FirebaseAdmin" Version="2.4.0" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="2.4.0" />
     <PackageReference Include="Hashids.net" Version="1.4.1" />
@@ -102,11 +110,20 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="FCM.Net.Core" Version="1.0.0.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="5.0.6" />
+    <PackageReference Include="Quartz" Version="3.6.0" />
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
+    <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.6" />
+    <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+    <Reference Include="Rock.Common.Mobile, Version=0.3.13.0, Culture=neutral, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
+      <Private>False</Private>
+    </Reference>
   </ItemGroup>
 
   <ItemGroup>

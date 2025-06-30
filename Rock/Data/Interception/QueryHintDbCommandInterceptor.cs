@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Infrastructure.Interception;
 using System.Linq;
 
@@ -99,3 +100,4 @@ namespace Rock.Data
         OPTIMIZE_FOR_UNKNOWN
     }
 }
+#endif

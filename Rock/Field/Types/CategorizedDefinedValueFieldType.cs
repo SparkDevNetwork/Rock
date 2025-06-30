@@ -21,16 +21,18 @@ using System.Linq;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+#endif
 
 using Rock.Attribute;
-#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
+#if WEBFORMS
 using TreeNode = Rock.Web.UI.Controls.TreeNode;
+#endif
 
 namespace Rock.Field.Types
 {
@@ -94,6 +96,7 @@ namespace Rock.Field.Types
             }
         }
 
+#if WEBFORMS
         private List<ListItem> GetDefinedValueListItems( int? definedTypeId )
         {
             var definedValues = new List<ListItem>();
@@ -112,6 +115,7 @@ namespace Rock.Field.Types
 
             return definedValues;
         }
+#endif
 
         #endregion
 
@@ -394,10 +398,12 @@ namespace Rock.Field.Types
             }
         }
 
+#if WEBFORMS
         private class DefinedValueTreeNode : CategorizedValuePickerItem
         {
             public string ParentKey { get; set; }
         }
+#endif
 
         #endregion
 
@@ -409,7 +415,11 @@ namespace Rock.Field.Types
             var settings = new Settings( privateConfigurationValues.ToDictionary( k => k.Key, k => new ConfigurationValue( k.Value ) ) );
 
             var values = privateValue?.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries ).ToArray() ?? new string[0];
+#if WEBFORMS
             values = values.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+#else
+            values = values.Select( s => System.Net.WebUtility.UrlDecode( s ) ).ToArray();   
+#endif
 
             var referencedEntities = new List<ReferencedEntity>();
             if ( settings.DefinedTypeId != null )
@@ -874,6 +884,7 @@ namespace Rock.Field.Types
 
         #region IEntityFieldType
 
+#if WEBFORMS
         /// <inheritdoc/>
         public int? GetEditValueAsEntityId( Control control, Dictionary<string, ConfigurationValue> configurationValues )
         {
@@ -885,6 +896,7 @@ namespace Rock.Field.Types
         {
             SetEditValue( control, configurationValues, id.ToString() );
         }
+#endif
 
         /// <inheritdoc/>
         public IEntity GetEntity( string value )

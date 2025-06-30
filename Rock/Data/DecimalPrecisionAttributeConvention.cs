@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+#if REVIEW_WEBFORMS
 using System.Data.Entity.ModelConfiguration.Configuration;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
@@ -36,3 +37,4 @@ namespace Rock.Data
         }
     }
 }
+#endif

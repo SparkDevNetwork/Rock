@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using System.Data.Entity.Infrastructure.Interception;
 
@@ -85,3 +86,4 @@ namespace Rock.Data
 
     
 }
+#endif

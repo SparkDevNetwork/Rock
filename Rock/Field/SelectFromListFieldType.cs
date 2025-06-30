@@ -76,6 +76,7 @@ namespace Rock.Field.Types
             return clientValues;
         }
 
+#if WEBFORMS
         /// <summary>
         /// Creates the HTML controls required to configure this type of field
         /// </summary>
@@ -151,6 +152,7 @@ namespace Rock.Field.Types
                 tbRepeatColumns.Visible = !cbEnhanced.Checked;
             }
         }
+#endif
 
         #endregion Configuration
 
@@ -173,6 +175,7 @@ namespace Rock.Field.Types
                 .AsDelimited( ", " );
         }
 
+#if WEBFORMS
         /// <summary>
         /// Returns the field's current value(s)
         /// </summary>
@@ -185,6 +188,7 @@ namespace Rock.Field.Types
         {
             return GetTextValue( value, configurationValues.ToDictionary( k => k.Key, k => k.Value.Value ) );
         }
+#endif
 
         #endregion
 
@@ -198,6 +202,7 @@ namespace Rock.Field.Types
         /// </value>
         internal abstract Dictionary<string, string> GetListSource( Dictionary<string, ConfigurationValue> configurationValues );
 
+#if WEBFORMS
         /// <summary>
         /// Creates the control(s) necessary for prompting user for a new value
         /// </summary>
@@ -300,6 +305,7 @@ namespace Rock.Field.Types
                 }
             }
         }
+#endif
 
         #endregion
 
@@ -319,6 +325,7 @@ namespace Rock.Field.Types
             }
         }
 
+#if WEBFORMS
         /// <summary>
         /// Gets the filter value control.
         /// </summary>
@@ -383,6 +390,7 @@ namespace Rock.Field.Types
                 ( ( RockDropDownList ) control ).SetValue( value );
             }
         }
+#endif
 
         /// <summary>
         /// Formats the filter value value.

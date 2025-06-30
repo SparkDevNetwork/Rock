@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System.Data.Entity;
 using EF6.TagWith;
 using Rock.Data.Interception;
@@ -42,3 +43,4 @@ namespace Rock.Data
         }
     }
 }
+#endif

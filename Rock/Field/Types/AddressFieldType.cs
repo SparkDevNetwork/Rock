@@ -201,6 +201,7 @@ namespace Rock.Field.Types
 
         #region Filter Control
 
+#if WEBFORMS
         /// <summary>
         /// Creates the control needed to filter (query) values using this field type.
         /// </summary>
@@ -214,6 +215,7 @@ namespace Rock.Field.Types
             // This field type does not support filtering
             return null;
         }
+#endif
 
         /// <summary>
         /// Determines whether this filter has a filter control

@@ -19,7 +19,9 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Text.RegularExpressions;
+#if REVIEW_WEBFORMS
 using System.Web.Hosting;
+#endif
 using System.Web.UI.WebControls;
 using Humanizer;
 using Rock.Utility;
@@ -377,6 +379,7 @@ namespace Rock.Communication
 
         #region Controls
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates the dynamic lava value controls.
         /// </summary>
@@ -430,6 +433,7 @@ namespace Rock.Communication
 
             return lavaFieldsTemplateDictionary;
         }
+#endif
 
         #endregion Controls
     }

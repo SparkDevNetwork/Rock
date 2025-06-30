@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Data.Common;
@@ -40,7 +41,7 @@ namespace Rock.Data.Interception
             This DB interceptor was created to provide a central place for Rock to extend EF
             with new capabilities.
 
-            # Metrics
+            - Metrics
             The first of these capabilities was to provide a metrics collection of timings and
             details for queries in a context. Many different attempts were made to measure the
             timings. DateTime.Now and DateTime.UtcNow were ruled out as they are not very performant
@@ -55,14 +56,14 @@ namespace Rock.Data.Interception
             - Full:  This mode included counts as well as the actual SQL that was run. The SQL is evaluated
                      and the parameters are inserted into the SQL.
 
-            # Future
+            - Future
             TagWith - https://github.com/VariableNotFound/ef6-tagwith
             Note that this could break SQL Server's query plan cache as the cache is keyed off of the
             entire SQL string (including comments). So if the comments were to change this would trigger
             multiple cached plans. I don't think this would lead a lot 'extra' plans since the tags would
             be consistent. Should warn people not to make the tags dynamic though.
 
-            # Performance
+            - Performance
             Performance testing was done to view the impact of running this interceptor. The results of
             which are below.
 
@@ -355,3 +356,4 @@ namespace Rock.Data.Interception
         #endregion
     }
 }
+#endif

@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Core.EntityClient;
+#endif
 using System.Data.Entity.Infrastructure;
 using System.Linq;
 using System.Linq.Expressions;
@@ -50,7 +52,11 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="RockContextReadOnly"/> class.
         /// </summary>
         public RockContextReadOnly()
+#if REVIEW_WEBFORMS
             : this( new RockContext( RockApp.Current.InitializationSettings.ReadOnlyConnectionString ) )
+#else
+            : base( RockApp.Current.InitializationSettings.ReadOnlyConnectionString )
+#endif
         {
             /*  2021-09-28 MDP
 
@@ -63,6 +69,7 @@ namespace Rock.Data
             */
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContextReadOnly"/> class.
         /// </summary>
@@ -85,6 +92,7 @@ namespace Rock.Data
             base.Dispose( disposing );
             _ownedRockContext?.Dispose();
         }
+#endif
 
         /// <summary>
         /// Not Supported by <see cref="RockContextReadOnly"/> or <see cref="RockContextAnalytics"/>.

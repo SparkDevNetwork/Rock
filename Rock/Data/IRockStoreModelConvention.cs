@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Core.Metadata.Edm;
 using System.Data.Entity.ModelConfiguration.Conventions;
 
@@ -29,3 +30,4 @@ namespace Rock.Data
     {
     }
 }
+#endif
