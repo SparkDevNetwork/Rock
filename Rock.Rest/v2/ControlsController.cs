@@ -2984,7 +2984,7 @@ namespace Rock.Rest.v2
         [Rock.SystemGuid.RestActionGuid( "75DA0671-38E2-4FF9-B334-CC0C88B559D0" )]
         public IActionResult ComponentPickerGetEntityTypes( [FromBody] ComponentPickerGetComponentsOptionsBag options )
         {
-            var componentsList = GetComponentListItems( options.ContainerType );
+            var componentsList = GetComponentListItems( options.ContainerType, options.IncludeInactive );
 
             return Ok( componentsList );
         }
@@ -9931,10 +9931,11 @@ namespace Rock.Rest.v2
         /// Retrieve a list of ListItems representing components for the given container type
         /// </summary>
         /// <param name="containerType"></param>
+        /// <param name="includeInactive">if set to <c>true</c> includes inactive items.</param>
         /// <returns>A list of ListItems representing components</returns>
-        private List<ListItemBag> GetComponentListItems( string containerType )
+        private List<ListItemBag> GetComponentListItems( string containerType, bool includeInactive )
         {
-            return GetComponentListItems( containerType, ( x ) => true );
+            return GetComponentListItems( containerType, ( x ) => true, includeInactive );
         }
 
         /// <summary>
@@ -9943,8 +9944,9 @@ namespace Rock.Rest.v2
         /// </summary>
         /// <param name="containerType"></param>
         /// <param name="isValidComponentChecker"></param>
+        /// <param name="includeInactive">if set to <c>true</c> includes inactive items.</param>
         /// <returns>A list of ListItemBags representing components</returns>
-        private List<ListItemBag> GetComponentListItems( string containerType, Func<Component, bool> isValidComponentChecker )
+        private List<ListItemBag> GetComponentListItems( string containerType, Func<Component, bool> isValidComponentChecker, bool includeInactive = false )
         {
             if ( containerType.IsNullOrWhiteSpace() )
             {
@@ -9974,8 +9976,7 @@ namespace Rock.Rest.v2
             {
                 var componentValue = component.Value.Value;
                 var entityType = EntityTypeCache.Get( componentValue.GetType() );
-
-                if ( !componentValue.IsActive || entityType == null || !isValidComponentChecker( componentValue ) )
+                if ( ( !componentValue.IsActive && !includeInactive ) || entityType == null || !isValidComponentChecker( componentValue ) )
                 {
                     continue;
                 }
@@ -9994,9 +9995,11 @@ namespace Rock.Rest.v2
                     }
                 }
 
+                var itemText = componentValue.IsActive ? componentName : $"{componentName} (inactive)";
+
                 items.Add( new ListItemBag
                 {
-                    Text = componentName,
+                    Text = itemText,
                     Value = entityType.Guid.ToString().ToUpper()
                 } );
             }
