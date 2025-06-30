@@ -33,9 +33,9 @@ namespace Rock.Field.Types
     /// <summary>
     /// Field used to display or upload a new binary file of a specific type.
     /// Stored as:
-    ///    * BinaryFile.Guid (for PMM)
-    ///    * EntityTypeId,RecordKey (for Checkr).
-    ///    * EntityTypeId,BinaryFile.Guid (for other providers).
+    ///    * BinaryFile.Guid              (for Protect My Ministry, aka PMM)
+    ///    * EntityTypeId,RecordKey       (for Checkr)
+    ///    * EntityTypeId,BinaryFile.Guid (for other providers)
     ///
     /// Rock's core <b>Background Check Document</b> person attribute—along with this
     /// <b>Background Check FieldType</b>—was originally designed to support only Protect My Ministry
@@ -167,23 +167,30 @@ namespace Rock.Field.Types
         /// <inheritdoc />
         public override string GetPrivateEditValue( string publicValue, Dictionary<string, string> privateConfigurationValues )
         {
-            if ( !string.IsNullOrWhiteSpace( publicValue ) )
+            if ( string.IsNullOrWhiteSpace( publicValue ) )
             {
-                var valueSplit = publicValue.Split( ',' );
-
-                if ( valueSplit.Length > 2 && Guid.TryParse( valueSplit[0], out Guid entityTypeGuid ) )
-                {
-                    var entityType = EntityTypeCache.Get( entityTypeGuid );
-
-                    if ( entityType != null )
-                    {
-                        // All providers except the legacy PMM must store a value that includes EntityTypeId
-                        return $"{entityType.Id},{valueSplit[2]}";
-                    }
-                }
+                return publicValue;
             }
 
-            return publicValue;
+            // The public value we're given will be in the format of:
+            //    {Provider EntityType's Guid},{Providers Name},{Remote Record Key|BinaryFileGuid},{filename (if any)}
+            var valueSplit = publicValue.Split( ',' );
+
+            if ( valueSplit.Length <= 2 || !Guid.TryParse( valueSplit[0], out Guid entityTypeGuid ) )
+            {
+                return publicValue;
+            }
+
+            var entityType = EntityTypeCache.Get( entityTypeGuid );
+            if ( entityType == null )
+            {
+                return publicValue;
+            }
+
+            // All providers except PMM must include EntityTypeId
+            return entityType.Guid == SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.AsGuid()
+                ? valueSplit[2]
+                : $"{entityType.Id},{valueSplit[2]}";
         }
 
         #endregion
@@ -307,40 +314,42 @@ namespace Rock.Field.Types
                 internalValue.ProviderEntityTypeId = entityType.Id;
                 internalValue.ProviderName = entityType.FriendlyName;
                 internalValue.FileName = GetFileName( binaryFileGuid );
+
+                return internalValue;
+            }
+
+            // If the value is a comma delimited string of <int>,<key|guid>, the int is the provider's
+            // EntityTypeId and the key|guid is either the remote record key (Checkr) or the BinaryFileGuid (other providers).
+            var valueSplit = privateValue.Split( ',' );
+            if ( valueSplit?.Length != 2 )
+            {
+                // Anything other than two parts are not a valid value
+                return null;
+            }
+
+            var entityTypeId = valueSplit[0];
+            var recordKeyOrGuid = valueSplit[1];
+            var entityTypeParsed = EntityTypeCache.Get( entityTypeId.AsInteger() );
+
+            // An unknown entity type / provider? Not legal.
+            if ( entityTypeParsed == null )
+            {
+                return null;
+            }
+            
+            internalValue.ProviderEntityTypeId = entityTypeParsed.Id;
+            internalValue.ProviderEntityTypeGuid = entityTypeParsed.Guid;
+            internalValue.ProviderName = entityTypeParsed.FriendlyName;
+
+            if ( Guid.TryParse( recordKeyOrGuid, out binaryFileGuid ) )
+            {
+                internalValue.BinaryFileGuid = binaryFileGuid;
+                internalValue.FileName = GetFileName( binaryFileGuid );
             }
             else
             {
-                // If the value is a comma delimited string of <int>,<key|guid>, the int is the provider's
-                // EntityTypeId and the key|guid is either the remote record key (Checkr) or the BinaryFileGuid (other providers).
-                var valueSplit = privateValue.Split( ',' );
-                if ( valueSplit?.Length == 2 )
-                {
-                    var entityTypeId = valueSplit[0];
-                    var recordKeyOrGuid = valueSplit[1];
-                    var entityType = EntityTypeCache.Get( entityTypeId.AsInteger() );
-
-                    if ( entityType != null )
-                    {
-                        internalValue.ProviderEntityTypeId = entityType.Id;
-                        internalValue.ProviderEntityTypeGuid = entityType.Guid;
-                        internalValue.ProviderName = entityType.FriendlyName;
-
-                        if ( Guid.TryParse( recordKeyOrGuid, out binaryFileGuid ) )
-                        {
-                            internalValue.BinaryFileGuid = binaryFileGuid;
-                            internalValue.FileName = GetFileName( binaryFileGuid );
-                        }
-                        else
-                        {
-                            internalValue.FileName = "Report";
-                            internalValue.RecordKey = recordKeyOrGuid;
-                        }
-                    }
-                }
-                else
-                {
-                    return null;
-                }
+                internalValue.FileName = "Report";
+                internalValue.RecordKey = recordKeyOrGuid;
             }
 
             return internalValue;

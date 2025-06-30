@@ -20,7 +20,7 @@ import { defineAsyncComponent } from "@Obsidian/Utility/component";
 import { FieldTypeBase } from "./fieldType";
 import { escapeHtml } from "@Obsidian/Utility/stringUtils";
 
-export type ValueItem = {
+export type PublicValueItem = {
     isLegacyProtectMyMinistry?: boolean;
     isFileBased?: boolean;
     providerName?: string;
@@ -59,7 +59,7 @@ export class BackgroundCheckFieldType extends FieldTypeBase {
 
         let htmlValue = "Report";
         try {
-            const clientValue = JSON.parse(value || "{}") as ValueItem;
+            const clientValue = JSON.parse(value || "{}") as PublicValueItem;
 
             const filePath = configurationValues[ConfigurationValueKey.FilePath];
             const entityTypeGuid = configurationValues[ConfigurationValueKey.OriginalProviderEntityTypeGuid];
