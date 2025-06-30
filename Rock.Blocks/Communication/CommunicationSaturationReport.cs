@@ -186,7 +186,7 @@ namespace Rock.Blocks.Communication
         {
             return new GridBuilder<RecipientGridDataBag>()
                 //.WithBlock( this )
-                .AddField( "idKey", a => a.Person.IdKey )
+                .AddField( "idKey", a => a.Person?.IdKey )
                 .AddPersonField( "person", a => a.Person )
                 .AddTextField( "connectionStatus", a => a.ConnectionStatus )
                 .AddField( "messageCount", a => a.MessageCount );
@@ -205,7 +205,7 @@ namespace Rock.Blocks.Communication
                 .AddTextField( "name", a => a.Name )
                 .AddDateTimeField( "dateSent", a => a.SendDateTime )
                 .AddField( "messageCount", a => a.MessageCount )
-                .AddTextField( "sentBy", a => a.SentBy.FullName )
+                .AddTextField( "sentBy", a => a.SentBy?.FullName ?? string.Empty )
                 .AddTextField( "reviewedBy", a => a.ReviewedBy == null || a.ReviewedBy.Id == a.SentBy.Id ? "" : a.ReviewedBy?.FullName );
         }
 
@@ -267,8 +267,8 @@ namespace Rock.Blocks.Communication
                     && cr.PersonAlias.Person.Guid != anonymousVisitorGuid
                     && cr.PersonAlias.Person.RecordStatusValueId == activeRecordStatusValueId
                     && cr.PersonAlias.Person.AgeClassification == AgeClassification.Adult
-                    && cr.CreatedDateTime >= filters.StartDate
-                    && cr.CreatedDateTime < filters.EndDate
+                    && cr.Communication.SendDateTime >= filters.StartDate
+                    && cr.Communication.SendDateTime < filters.EndDate
                     && filters.CommunicationType.Contains( cr.Communication.CommunicationType )
                 );
 
@@ -327,8 +327,8 @@ namespace Rock.Blocks.Communication
         protected GridDataBag GetCommunicationsGridDataBag( RockContext rockContext )
         {
             int namelessRecordTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
-            var anonymousVisitorGuid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid();
-            var activeRecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
+            var anonymousVisitorGuid = SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid();
+            var activeRecordStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
 
             var filters = new ComputedFilters( GetFilterOptions(), BlockCache );
 

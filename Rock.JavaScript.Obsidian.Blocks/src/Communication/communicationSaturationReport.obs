@@ -9,6 +9,7 @@
                     <SlidingDateRangePicker v-model="dateRange"
                                             label="Select Date Range"
                                             :enabledTimeUnits="enabledTimeUnits"
+                                            :enabledSlidingDateRangeUnits="enabledRangeUnits"
                                             previewLocation="Top"
                                             :rules="validateDateRange" />
                 </div>
@@ -124,11 +125,14 @@
     const mediumOptions: ListItemBag[] = enumToListItemBag(communicationTypes);
 
     const enabledTimeUnits = [TimeUnit.Day, TimeUnit.Week, TimeUnit.Month, TimeUnit.Year];
+    const enabledRangeUnits = [RangeType.Current, RangeType.Previous, RangeType.Last, RangeType.DateRange];
     const dateRangeAsString = computed(() => slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.Last, timeValue: 1, timeUnit: TimeUnit.Month }));
     const dataViewAsString = computed(() => dataView.value?.value ?? "");
     const connectionStatusAsString = computed(() => connectionStatus.value?.value ?? "");
     const mediumAsString = computed(() => medium.value.length > 0 ? medium.value.join(",") : mediumOptions.map(m => m.value).join(","));
     const bulkOnlyAsString = computed(() => asTrueOrFalseString(bulkOnly.value));
+
+    const day = 1000 * 60 * 60 * 24;
 
     async function onFilterChange(): Promise<void> {
         isLoading.value = true;
@@ -153,9 +157,9 @@
             // Nullish value
             !value
             // Less than 7 Days or is Current Day
-            || (value.timeUnit === TimeUnit.Day && (value.timeValue < 7 || value.rangeType === RangeType.Current))
-            // Date Range that is less than 7 days (calculated with <6 because Jan 7 minus Jan 1 is 6 days)
-            || (value.rangeType === RangeType.DateRange && ((new Date(value.upperDate) - new Date(value.lowerDate)) / (1000 * 60 * 60 * 24)) < 6)
+            || (value.timeUnit === TimeUnit.Day && (value.timeValue! < 7 || value.rangeType === RangeType.Current))
+            // Date Range that is less than 7 days (calculated with <6 because Jan 7 minus Jan 1 is 6 days even though it's 7 calendar days)
+            || (value.rangeType === RangeType.DateRange && ((new Date(value.upperDate!).valueOf() - new Date(value.lowerDate!).valueOf()) / day) < 6)
         ) {
             return "Please select a time span of at least 7 days";
         }
