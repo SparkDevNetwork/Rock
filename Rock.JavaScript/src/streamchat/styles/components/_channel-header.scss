@@ -1,0 +1,93 @@
+.rocktheme-community {
+    --channel-header-background-color: var(--color-interface-softer);
+    --channel-header-text-color: var(--color-interface-stronger);
+    --channel-header-border-color: var(--color-interface-soft);
+    --channel-header-avatar-size: calc(var(--str-chat__spacing-px) * 36);
+    --channel-header-nav-button-size: 28px;
+    --channel-header-favorite-color: #FFD700;
+    --channel-header-title-font-size: 16px;
+    --channel-header-title-font-weight: 700;
+    --channel-header-title-padding: 0;
+    --channel-header-title-margin: 0;
+    --channel-header-favorite-font-size: 14px;
+    --channel-header-favorite-lg-size: 20px;
+
+    .rock-channel-header {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: var(--channel-header-background-color);
+        width: 100%;
+        min-height: 64px;
+        height: 64px;
+        /* padding: 12px; */
+        padding-inline: 1.5rem !important;
+        border-bottom: 1px solid var(--channel-header-border-color);
+
+        .rock-channel-header-left {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .rock-channel-header-right {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .rock-channel-header-avatar {
+            --str-chat__avatar-size: var(--channel-header-avatar-size);
+        }
+
+        .rock-channel-header-title {
+            font-size: var(--channel-header-title-font-size);
+            padding: var(--channel-header-title-padding);
+            margin: var(--channel-header-title-margin);
+            font-weight: var(--channel-header-title-font-weight);
+            color: var(--channel-header-text-color);
+        }
+
+        .rock-channel-header-nav-button {
+            background: none;
+            border: none;
+            color: var(--channel-header-text-color);
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+            height: var(--channel-header-nav-button-size);
+            width: var(--channel-header-nav-button-size);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &--active {
+                background: var(--channel-header-border-color);
+            }
+
+            &:hover {
+                background: var(--channel-header-border-color);
+            }
+        }
+    }
+
+    .rock-channel-header-favorite {
+        font-size: var(--channel-header-favorite-font-size);
+        cursor: pointer;
+
+        &.rock-channel-header-favorite--active {
+            color: var(--channel-header-favorite-color);
+        }
+    }
+
+    .rock-channel-header-favorite-lg {
+        font-size: var(--channel-header-favorite-font-size);
+        cursor: pointer;
+        height: var(--channel-header-favorite-lg-size);
+        width: var(--channel-header-favorite-lg-size);
+
+        &.rock-channel-header-favorite--active {
+            color: var(--channel-header-favorite-color);
+        }
+    }
+}

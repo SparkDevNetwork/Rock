@@ -1,0 +1,161 @@
+.rocktheme-community {
+    --message-composer-margin-inline: 1.5rem;
+    --message-composer-margin-bottom: 1.5rem;
+    --message-composer-margin-right: 1.5rem;
+    --message-composer-bg: var(--color-interface-softer);
+    --message-composer-border: 1px solid var(--color-interface-soft);
+    --message-composer-border-radius: 4px;
+    --message-composer-input-bg: var(--color-interface-softest);
+    --message-composer-input-radius: 4px;
+    --message-composer-gap: 6px;
+    --message-composer-input-padding: 6px;
+    --message-composer-footer-gap: 4px;
+    --message-composer-footer-padding: 4px;
+    --message-composer-action-size: 24px;
+    --message-composer-action-radius: 4px;
+    --message-composer-action-color: var(--color-interface-strong);
+    --message-composer-action-hover-bg: var(--color-interface-soft);
+    --message-composer-action-font-size: 14px;
+    --message-composer-send-padding: 4px;
+    --message-composer-send-color: var(--color-interface-stronger);
+    --message-composer-send-disabled-color: var(--color-interface-medium);
+    --message-composer-send-hover-bg: var(--color-interface-soft);
+    --message-composer-textarea-font-size: 14px;
+    --message-composer-textarea-color: var(--color-interface-stronger);
+    --message-composer-textarea-radius: 4px;
+    --message-composer-textarea-bg: var(--color-interface-softest);
+
+    .rock-message-composer {
+        display: flex;
+        flex-direction: column;
+        margin-inline: var(--message-composer-margin-inline);
+        margin-bottom: var(--message-composer-margin-bottom);
+        margin-right: var(--message-composer-margin-right);
+        background-color: var(--message-composer-bg);
+        border: var(--message-composer-border);
+        border-radius: var(--message-composer-border-radius);
+
+        >.rock-message-composer-footer {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+
+            .rock-message-composer-actions {
+                display: flex;
+                gap: var(--message-composer-footer-gap);
+                align-items: center;
+                padding: var(--message-composer-footer-padding);
+
+                .rock-message-composer-action {
+                    background: none;
+                    border: none;
+                    cursor: pointer;
+                    height: var(--message-composer-action-size);
+                    width: var(--message-composer-action-size);
+                    color: var(--message-composer-action-color);
+                    border-radius: var(--message-composer-action-radius);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    &:hover {
+                        background: var(--message-composer-action-hover-bg);
+                    }
+
+                    >i {
+                        color: var(--message-composer-action-color);
+                        font-size: var(--message-composer-action-font-size);
+                    }
+                }
+            }
+
+            .rock-message-composer-send {
+                padding: var(--message-composer-send-padding);
+
+                .rock-send-button {
+                    background: none;
+                    border: none;
+                    height: var(--message-composer-action-size);
+                    width: var(--message-composer-action-size);
+                    color: var(--message-composer-send-color);
+                    border-radius: var(--message-composer-action-radius);
+                    display: flex;
+                    align-items: center;
+                    justify-content: center;
+
+                    >i {
+                        font-size: var(--message-composer-action-font-size);
+                    }
+
+                    &:disabled {
+                        color: var(--message-composer-send-disabled-color);
+                        cursor: not-allowed;
+                    }
+
+                    &:not(:disabled):hover {
+                        background-color: var(--message-composer-send-hover-bg);
+                        cursor: pointer;
+                    }
+                }
+            }
+        }
+    }
+
+    .rock-message-composer-input {
+        background-color: var(--message-composer-input-bg);
+        border-radius: var(--message-composer-input-radius);
+        display: flex;
+        flex-direction: column;
+        gap: var(--message-composer-footer-gap);
+        align-items: center;
+    }
+
+    .rock-community-message-input {
+        display: flex;
+        flex-direction: column;
+        gap: var(--message-composer-gap);
+    }
+
+    .rock-message-input-container {
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        width: 100%;
+        min-width: 0;
+        max-height: 100%;
+        background-color: var(--message-composer-input-bg);
+        padding: var(--message-composer-input-padding);
+        border-radius: var(--message-composer-input-radius);
+
+        .str-chat__message-textarea {
+            resize: none;
+            border: none;
+            color: var(--message-composer-textarea-color);
+            background-color: var(--message-composer-textarea-bg);
+            box-shadow: none;
+            background: none;
+            outline: none;
+            font-size: var(--message-composer-textarea-font-size);
+            width: 100%;
+            border-radius: var(--message-composer-textarea-radius);
+        }
+    }
+
+    .str-chat__attachment-preview-list {
+        .str-chat__attachment-preview-file {
+            background-color: var(--message-composer-input-bg);
+        }
+    }
+
+    .str-chat__file-input-container {
+        width: var(--message-composer-action-size);
+        height: var(--message-composer-action-size);
+        display: flex;
+    }
+
+    /* bc todo: look into what this is for */
+    .str-chat__list-notifications {
+        display: none;
+    }
+}

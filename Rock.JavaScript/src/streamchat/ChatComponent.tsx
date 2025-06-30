@@ -9,18 +9,18 @@ import "stream-chat-react/dist/css/v2/index.css";
 import "./chatComponent.css";
 
 import type { ChatComponentProps } from "./ChatComponentProps";
-import { RockChannelPreview } from "./ChannelPreview/RockChannelPreview";
-import { ChatConfigContext } from "./Chat/ChatConfigContext";
-import ChannelListHeader from "./ChannelListHeader/ChannelListHeader";
-import CreateChannelModal from "./CreateChannel/CreateChannelModal";
-import { WrappedChannel } from "./MessageAction/WrappedChannel";
-import { WrappedChannelList } from "./ChannelList/WrappedChannelList";
+import { RockChannelPreview } from "./Components/ChannelPreview/RockChannelPreview";
+import { ChatConfigContext } from "./Components/Chat/ChatConfigContext";
+import ChannelListHeader from "./Components/ChannelListHeader/ChannelListHeader";
+import CreateChannelModal from "./Components/CreateChannel/CreateChannelModal";
+import { WrappedChannel } from "./Components/MessageAction/WrappedChannel";
+import { WrappedChannelList } from "./Components/ChannelList/WrappedChannelList";
 import { getRenderChannelsFn } from "./ChatUtils";
-import { ChannelListControllerContext } from "./ChannelList/ChannelListControllerContext";
+import { ChannelListControllerContext } from "./Components/ChannelList/ChannelListControllerContext";
 import { ChatViewStyle } from "./ChatViewStyle";
-import { ChannelRightPaneProvider } from "./ChannelRightPane/ChannelRightPaneContext";
+import { ChannelRightPaneProvider } from "./Components/ChannelRightPane/ChannelRightPaneContext";
 import { RockChatWindow } from "./RockChatWindow";
-import { ModalProvider } from "./Modal/ModalContext";
+import { ModalProvider } from "./Components/Modal/ModalContext";
 
 /**
  * The ChatComponent sets up and renders the Stream Chat UI

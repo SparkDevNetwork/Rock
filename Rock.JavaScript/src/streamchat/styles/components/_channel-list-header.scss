@@ -1,0 +1,61 @@
+.rocktheme-community {
+    --channel-list-header-bg: var(--color-interface-softer);
+    --channel-list-header-border: var(--color-interface-soft);
+    --channel-list-header-width: var(--sidebar-width);
+    --channel-list-header-avatar-size: calc(var(--str-chat__spacing-px) * 28);
+    --channel-list-header-action-gap: 4px;
+    --channel-list-header-icon-btn-size: 28px;
+    --channel-list-header-icon-btn-radius: 4px;
+    --channel-list-header-icon-btn-color: var(--color-interface-stronger);
+    --channel-list-header-icon-font-size: 16px;
+
+    .rock-channel-list-header-container {
+        background-color: var(--channel-list-header-bg);
+    }
+
+    .rock-channel-list-header {
+        display: flex;
+        align-items: center;
+        padding-left: 16px;
+        padding-right: 16px;
+        padding-inline: 16px;
+        height: 64px;
+        justify-content: space-between;
+        border-bottom: 1px solid var(--channel-list-header-border);
+        border-right: 1px solid var(--channel-list-header-border);
+        width: var(--channel-list-header-width);
+        min-width: var(--channel-list-header-width);
+
+        .rock-channel-list-header-avatar {
+            --str-chat__avatar-size: var(--channel-list-header-avatar-size);
+        }
+
+        .rock-channel-list-header-actions {
+            display: flex;
+            gap: var(--channel-list-header-action-gap);
+            align-items: center;
+        }
+
+        >.rock-channel-list-header-actions>.rock-channel-list-header-icon-button {
+            background: none;
+            border: none;
+            cursor: pointer;
+            height: var(--channel-list-header-icon-btn-size);
+            width: var(--channel-list-header-icon-btn-size);
+            color: var(--channel-list-header-icon-btn-color);
+            border-radius: var(--channel-list-header-icon-btn-radius);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            &:hover {
+                background: var(--channel-list-header-border);
+            }
+
+            >i {
+                color: var(--channel-list-header-icon-btn-color);
+                font-size: var(--channel-list-header-icon-font-size);
+            }
+        }
+    }
+}

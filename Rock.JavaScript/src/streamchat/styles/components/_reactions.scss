@@ -1,0 +1,31 @@
+// Message Reactions Variables
+.rocktheme-community {
+    --reaction-option-size: calc(var(--str-chat__spacing-px) * 24);
+    --reaction-emoji-size: 16px;
+    --reaction-options-border: 1px solid var(--color-interface-soft);
+    --reaction-options-bg: var(--color-interface-softest);
+    --reaction-gap: 6px;
+
+    .str-chat__message-reaction-selector {
+        .str-chat__message-reactions-options {
+            .str-chat__message-reactions-option {
+                width: var(--reaction-option-size);
+                height: var(--reaction-option-size);
+                --str-chat__stream-emoji-size: var(--reaction-emoji-size);
+            }
+        }
+    }
+
+    .str-chat__reaction-selector {
+        .str-chat__message-reactions-options {
+            border: var(--reaction-options-border);
+            background-color: var(--reaction-options-bg);
+        }
+    }
+
+    .str-chat__message-reactions-container {
+        .str-chat__message-reactions {
+            gap: var(--reaction-gap);
+        }
+    }
+}

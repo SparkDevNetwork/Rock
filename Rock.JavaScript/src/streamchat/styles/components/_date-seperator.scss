@@ -1,0 +1,40 @@
+.rocktheme-community {
+    --date-separator-gap: 0.75rem;
+    --date-separator-margin: 1.5rem 0;
+    --date-separator-padding-inline: 1.5rem !important;
+    --date-separator-bar-height: 1px;
+    --date-separator-bar-bg: var(--color-interface-soft);
+    --date-separator-bubble-bg: var(--color-interface-softest);
+    --date-separator-bubble-color: var(--color-interface-stronger);
+    --date-separator-bubble-font-size: 0.75rem;
+    --date-separator-bubble-font-weight: 500;
+    --date-separator-bubble-radius: 999px;
+    --date-separator-bubble-padding: 4px 12px;
+    --date-separator-bubble-shadow: 0 0 0 1px var(--color-interface-soft);
+
+    .rock-date-separator {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: var(--date-separator-gap);
+        margin: var(--date-separator-margin);
+        padding-inline: var(--date-separator-padding-inline);
+    }
+
+    .rock-date-separator__bar {
+        flex-grow: 1;
+        height: var(--date-separator-bar-height);
+        background-color: var(--date-separator-bar-bg);
+    }
+
+    .rock-date-separator__bubble {
+        background-color: var(--date-separator-bubble-bg);
+        color: var(--date-separator-bubble-color);
+        font-size: var(--date-separator-bubble-font-size);
+        font-weight: var(--date-separator-bubble-font-weight);
+        border-radius: var(--date-separator-bubble-radius);
+        padding: var(--date-separator-bubble-padding);
+        white-space: nowrap;
+        box-shadow: var(--date-separator-bubble-shadow);
+    }
+}

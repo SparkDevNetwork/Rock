@@ -1,0 +1,268 @@
+.rock-chat-modal-backdrop {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+.rock-chat-modal-content {
+    background: var(--color-interface-softest, #fff);
+    border-radius: 8px;
+    width: 400px;
+    max-width: 90%;
+    box-shadow: 0 4px 16px rgba(0, 0, 0, 0.5);
+    color: var(--color-interface-stronger, #000);
+    display: flex;
+    gap: 24px;
+    flex-direction: column;
+    padding: 16px;
+}
+
+.rock-chat-modal-content .rock-chat-modal-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.rock-chat-modal-content .rock-chat-modal-header .rock-chat-modal-title {
+    font-size: 18px;
+    font-weight: 500;
+    color: var(--color-interface-stronger, #000);
+    margin: 0;
+}
+
+.rock-chat-modal-content .rock-chat-modal-header .rock-chat-modal-close {
+    background: none;
+    border: none;
+    font-size: 16px;
+    cursor: pointer;
+    color: inherit;
+}
+
+.rock-chat-modal-content .create-channel-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.rock-chat-modal-content .create-channel-modal-label {
+    font-size: 12px;
+    font-weight: 400;
+    color: var(--color-interface-stronger, #000);
+    margin: 0px 0px 6px 0px;
+    line-height: 1;
+}
+
+/* Add Link Modal */
+
+.rock-add-link-modal-fieldset {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    border: none;
+    padding: 0;
+}
+
+.rock-add-link-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+.rock-add-link-modal-field-row {
+    display: flex;
+    flex-direction: column;
+}
+
+.rock-add-link-modal-input {
+    box-sizing: border-box;
+    border-radius: 4px;
+    border: 1px solid var(--color-interface-soft);
+    min-height: 2.5rem;
+    padding: .5rem .9375rem;
+    width: 100%;
+}
+
+.rock-add-link-modal-field-row-label {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--color-interface-strong);
+}
+
+.rock-add-link-modal-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.rock-add-link-modal-button-secondary {
+    background: var(--color-interface-soft);
+    color: var(--color-interface-stronger);
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+.rock-add-link-modal-button-secondary:hover {
+    background: var(--color-interface-softer);
+}
+
+.rock-add-link-modal-button-primary {
+    background: var(--color-primary);
+    color: #fff;
+    border: none;
+    border-radius: 4px;
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+    font-size: 14px;
+}
+
+/* Create Channel Modal */
+.create-channel-modal-header,
+.create-channel-modal-footer {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.create-channel-modal-body {
+    flex: 1;
+    position: relative;
+}
+
+.create-channel-modal-close {
+    background: none;
+    border: none;
+    font-size: 1.25rem;
+    cursor: pointer;
+    color: inherit;
+    width: 1.5rem;
+    height: 1.5rem;
+}
+
+.create-channel-modal-close-icon {
+    width: 1.25rem;
+    height: 1.25rem;
+    color: var(--color-interface-strong);
+}
+
+.create-channel-modal-footer button {
+    padding: 0.5rem 1rem;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+}
+
+.create-channel-modal-create {
+    background: var(--color-primary);
+    color: #fff;
+}
+
+.create-channel-modal-create:disabled {
+    opacity: 0.5;
+    cursor: not-allowed;
+}
+
+.create-channel-modal-create:disabled:hover {
+    opacity: 0.5;
+}
+
+.create-channel-modal-footer button:hover {
+    opacity: 0.9;
+}
+
+.create-channel-modal-input-container {
+    display: flex;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 4px;
+    padding: 4px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    background: var(--color-interface-softest, #fff);
+}
+
+.create-channel-modal-input:focus {
+    outline: none !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+.create-channel-modal-chip {
+    display: flex;
+    align-items: center;
+    background: var(--color-primary, #006eff);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 4px;
+    font-size: 0.875rem;
+}
+
+.create-channel-modal-chip-text {
+    margin-right: 4px;
+}
+
+.create-channel-modal-chip-remove {
+    background: none;
+    border: none;
+    color: inherit;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    padding: 0;
+}
+
+.create-channel-modal-input {
+    flex: 1;
+    min-width: 120px;
+    border: none;
+    outline: none;
+    background: transparent;
+    color: var(--color-interface-stronger, #000);
+    padding: 4px;
+}
+
+.create-channel-modal-search-results {
+    position: absolute;
+    top: calc(100% + 4px);
+    left: 0;
+    right: 0;
+    max-height: 200px;
+    overflow-y: auto;
+    background: var(--color-interface-softest, #f9f9f9);
+    border: 1px solid rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    z-index: 1001;
+    list-style: none;
+    margin: 0;
+    padding: 0.5rem 0;
+}
+
+.create-channel-modal-search-results li {
+    padding: 0.5rem 1rem;
+    cursor: pointer;
+}
+
+.create-channel-modal-search-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 0.5rem 1rem;
+    color: var(--color-interface-stronger);
+}
+
+.create-channel-modal-search-avatar {
+    border-radius: 50%;
+}
+
+.create-channel-modal-search-results li:hover {
+    background: rgba(0, 0, 0, 0.05);
+}

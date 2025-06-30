@@ -6,10 +6,10 @@ import {
     Window
 } from 'stream-chat-react';
 
-import { RockChannelHeader } from './ChannelHeader/RockChannelHeader';
-import { SafeMessageInput } from './MessageInput/SafeMessageInput';
-import { ChannelRightPane } from './ChannelRightPane/ChannelRightPane';
-import { useChannelRightPane } from './ChannelRightPane/ChannelRightPaneContext';
+import { RockChannelHeader } from './Components/ChannelHeader/RockChannelHeader';
+import { SafeMessageInput } from './Components/MessageInput/SafeMessageInput';
+import { ChannelRightPane } from './Components/ChannelRightPane/ChannelRightPane';
+import { useChannelRightPane } from './Components/ChannelRightPane/ChannelRightPaneContext';
 
 /**
  * Encapsulates the full chat window view, including header, message list, input, thread, and right-side pane.

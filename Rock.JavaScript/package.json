@@ -3,7 +3,9 @@
   "scripts": {
     "prebuild": "rimraf ../RockWeb/Scripts/Rock/Monaco",
     "build": "webpack --no-color && webpack --config ./webpack.config.monaco.js --no-color",
-    "clean": "tsc --build --clean"
+    "clean": "tsc --build --clean",
+    "sass": "sass ./src/streamchat/styles/main.scss ./src/streamchat/styles/main.css",
+    "sass:watch": "sass --watch ./src/streamchat/styles/main.scss ./src/streamchat/styles/main.css"
   },
   "devDependencies": {
     "@babel/core": "^7.26.10",
@@ -24,6 +26,7 @@
     "file-loader": "^6.2.0",
     "monaco-editor-webpack-plugin": "^7.1.0",
     "rimraf": "^6.0.1",
+    "sass": "^1.89.2",
     "style-loader": "^3.3.3",
     "terser-webpack-plugin": "^5.3.9",
     "ts-loader": "^9.4.4",

@@ -1,0 +1,190 @@
+.rocktheme-community {
+    --message-gap: 6px;
+    --message-title-gap: 4px;
+    --message-content-gap: 6px;
+    --message-badges-gap: 0.5rem;
+    --message-author-font-size: 14px;
+    --message-author-font-weight: 700;
+    --message-author-color: var(--color-interface-stronger);
+    --message-author-line-height: 1.25rem;
+    --message-avatar-size: calc(var(--str-chat__spacing-px) * 36);
+    --message-send-failed-color: var(--color-danger-strong);
+    --message-send-failed-font-size: 16px;
+    --message-wrapper-padding-inline: 1.5rem !important;
+    --message-wrapper-padding-right: 1.5rem !important;
+    --message-wrapper-bg-hover: var(--color-interface-softer);
+    --message-reaction-bg: var(--color-interface-softer);
+    --message-reaction-bg-hover: var(--color-interface-softest);
+    --message-actions-gap: 0.25rem;
+    --message-actions-bg: var(--color-interface-softest);
+    --message-actions-border: 1px solid var(--color-interface-soft);
+    --message-actions-border-radius: 4px;
+    --message-actions-padding: 2px;
+    --message-actions-margin-right: 1.5rem;
+    --message-action-color: var(--color-interface-stronger);
+    --message-action-font-size: 14px;
+    --message-action-size: 24px;
+    --message-action-border-radius: 4px;
+    --message-action-bg-active: var(--color-interface-soft);
+    --message-timestamp-font-size: 12px;
+    --message-timestamp-color: var(--color-interface-strong);
+    --message-timestamp-line-height: 1.25rem;
+    --message-layout-line-height: 120%;
+
+    .rock-message-container {
+        display: flex;
+        gap: var(--message-gap);
+        padding-top: var(--message-gap);
+        padding-bottom: var(--message-gap);
+
+        .rock-message-title-layout {
+            display: flex;
+            align-items: center;
+            gap: var(--message-title-gap);
+        }
+
+        .rock-message-layout {
+            display: flex;
+            flex-direction: column;
+            line-height: var(--message-layout-line-height);
+
+            .rock-message-content {
+                display: flex;
+                flex-direction: column;
+                gap: var(--message-content-gap);
+            }
+
+            .rock-message-author {
+                font-size: var(--message-author-font-size);
+                font-weight: var(--message-author-font-weight);
+                color: var(--message-author-color);
+                line-height: var(--message-author-line-height);
+            }
+        }
+
+        .rock-avatar-container {
+            --str-chat__avatar-size: var(--message-avatar-size);
+        }
+    }
+
+    .str-chat__message-text-inner {
+        p {
+            white-space: pre-line;
+        }
+    }
+
+    .rock-chat-message-send-failed {
+        .rock-chat-message-send-failed-icon {
+            display: block;
+        }
+    }
+
+    .rock-message-badges {
+        display: flex;
+        gap: var(--message-badges-gap);
+    }
+
+    .rock-message-wrapper {
+        position: relative;
+        display: flex;
+        padding-inline: var(--message-wrapper-padding-inline);
+        padding-right: var(--message-wrapper-padding-right);
+        --str-chat__message-reaction-background-color: var(--message-reaction-bg);
+
+        &:hover,
+        &[data-dialog-open="true"] {
+            background-color: var(--message-wrapper-bg-hover);
+            --str-chat__message-reaction-background-color: var(--message-reaction-bg-hover);
+
+            .rock-message-actions {
+                opacity: 1;
+                pointer-events: auto;
+            }
+        }
+    }
+
+    .rock-message-actions {
+        position: absolute;
+        right: 0;
+        top: -1rem;
+        display: flex;
+        gap: var(--message-actions-gap);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 0.30s ease;
+        background: var(--message-actions-bg);
+        border: var(--message-actions-border);
+        border-radius: var(--message-actions-border-radius);
+        padding: var(--message-actions-padding);
+        margin-right: var(--message-actions-margin-right);
+    }
+
+    .rock-message-action {
+        background: none;
+        border: none;
+        color: var(--message-action-color);
+        border-radius: var(--message-action-border-radius);
+        cursor: pointer;
+        font-size: var(--message-action-font-size);
+        height: var(--message-action-size);
+        width: var(--message-action-size);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        &--active,
+        &:hover {
+            background: var(--message-action-bg-active);
+        }
+    }
+
+    .rock-message-simple-timestamp {
+        font-size: var(--message-timestamp-font-size);
+        color: var(--message-timestamp-color);
+        line-height: var(--message-timestamp-line-height);
+    }
+
+    /* Replies Content */
+    .rocktheme-community .rock-replies-content-container {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        margin-top: 6px;
+    }
+
+    .rock-replies-content-count {
+        display: flex;
+        align-items: center;
+        gap: 0.25rem;
+        font-size: 12px;
+        color: var(--color-interface-strong);
+    }
+
+    .rock-replies-content-container .rock-replies-content-count>.rock-replies-content-count-text {
+        font-weight: 600;
+    }
+
+    .rock-replies-content-thread-reply-button {
+        background: var(--color-interface-soft);
+        border: none;
+        color: var(--color-interface-stronger);
+        border-radius: 4px;
+        cursor: pointer;
+        font-size: 14px;
+        padding: 0.5rem;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        line-height: 0.75rem;
+    }
+
+    .rock-replies-content-thread-reply-button:hover {
+        background: var(--color-interface-soft);
+    }
+
+    .rock-chat-message-send-failed-icon {
+        color: var(--message-send-failed-color);
+        display: none;
+        font-size: var(--message-send-failed-font-size);
+    }
+}
