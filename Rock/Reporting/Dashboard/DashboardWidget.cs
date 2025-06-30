@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System.Collections.Generic;
 
 using Rock.Attribute;
@@ -191,3 +192,4 @@ namespace Rock.Reporting.Dashboard
         }
     }
 }
+#endif

@@ -22,9 +22,12 @@
   <ItemGroup Condition=" '$(TargetFramework)' != 'net472' ">
     <Compile Remove="**/*.WebForms.cs" />
     <Compile Remove="CheckIn/*.cs" />
+    <Compile Remove="Plugin/**.*.cs" />
+    <Compile Include="Plugin/VersionAttribute.cs" />
     <Compile Remove="Web/UI/**/*.cs" />
     <Compile Include="Web/UI/ContextAttribute.cs" />
-    <Compile Include="Web/UI/Controls/Chart/ChartStyle.cs"/>
+    <Compile Include="Web/UI/Controls/Chart/ChartStyle.cs" />
+    <Compile Include="Web/UI/Controls/ValueFilter.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -115,10 +118,13 @@
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="5.0.6" />
+    <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="4.0.0" />
     <PackageReference Include="Quartz" Version="3.6.0" />
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.6" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
+    <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.6" />
+    <PackageReference Include="System.Runtime.Caching" Version="9.0.6" />
     <Reference Include="Rock.Common.Mobile, Version=0.3.13.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>

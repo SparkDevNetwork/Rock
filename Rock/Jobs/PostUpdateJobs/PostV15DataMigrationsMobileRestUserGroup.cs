@@ -18,7 +18,9 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Drawing.Text;
 using System.Linq;
+#if REVIEW_WEBFORMS
 using System.ServiceModel.Channels;
+#endif
 
 using Rock.Attribute;
 using Rock.Data;

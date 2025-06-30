@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using System.Diagnostics;
 
@@ -355,3 +356,4 @@ namespace CSScriptEvaluatorApi
         public int Index = 0;
     }
 }
+#endif

@@ -74,6 +74,7 @@ namespace Rock.Jobs
 
         #region Fields
 
+#if REVIEW_WEBFORMS
         private int _commandTimeout;
         private int? _maximumMetricsToRetain;
 
@@ -124,11 +125,13 @@ namespace Rock.Jobs
 
         // For each Job run, the value of each PerformanceCounter will be stored here, before being saved as a new MetricValue.
         private IDictionary<Guid, PerformanceCounterMetricValue> _performanceCounterMetricValues;
+#endif
 
         #endregion
 
         #region Properties
 
+#if WEBFORMS
         /// <summary>
         /// Gets the <see cref="PerformanceCounter"/>s of interest.
         /// </summary>
@@ -147,12 +150,14 @@ namespace Rock.Jobs
                 return _performanceCounters;
             }
         }
+#endif
 
         #endregion
 
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
+#if WEBFORMS
             try
             {
                 /*
@@ -181,8 +186,12 @@ namespace Rock.Jobs
                 ExceptionLogService.LogException( ex );
                 throw;
             }
+#else
+            throw new NotSupportedException( "This job is only supported in WebForms applications." );
+#endif
         }
 
+#if WEBFORMS
         /// <summary>
         /// Determines if the ADO.NET <see cref="PerformanceCounter"/>s are enabled.
         /// </summary>
@@ -361,5 +370,6 @@ namespace Rock.Jobs
                 } );
             }
         }
+#endif
     }
 }

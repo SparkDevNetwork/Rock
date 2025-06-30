@@ -21,7 +21,9 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Text;
+#if REVIEW_WEBFORMS
 using EntityFramework.Utilities;
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -78,7 +80,11 @@ namespace Rock.Jobs
         {
             get
             {
+#if REVIEW_WEBFORMS
                 return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
+#else
+                return new Field.Types.KeyValueListFieldType().GetValuesFromString( GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
+#endif
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().AsGuidOrNull().Value );
             }

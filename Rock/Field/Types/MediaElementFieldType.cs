@@ -411,6 +411,7 @@ namespace Rock.Field.Types
             return null;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Sets the account and folder values if they were provided in the
         /// configuration.
@@ -440,6 +441,7 @@ namespace Rock.Field.Types
                 mediaElementPicker.ShowAccountPicker = false;
             }
         }
+#endif
 
         #endregion
 

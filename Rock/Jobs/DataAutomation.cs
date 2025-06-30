@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
+using System.Net.Http;
 using System.Web;
 
 using Rock.Attribute;
@@ -44,7 +45,9 @@ namespace Rock.Jobs
     public class DataAutomation : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Data Automation";
+#if REVIEW_WEBFORMS
         private HttpContext _httpContext = null;
+#endif
         private int commandTimeout;
 
         #region AttributeKeys
@@ -77,7 +80,9 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
+#if REVIEW_WEBFORMS
             _httpContext = HttpContext.Current;
+#endif
             commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 180;
             string reactivateResult = ReactivatePeople();
             string inactivateResult = InactivatePeople();
@@ -135,7 +140,11 @@ Update Family Status: {updateFamilyStatus}
                     using ( RockContext rockContext = new RockContext() )
                     {
                         rockContext.SourceOfChange = SOURCE_OF_CHANGE;
+#if REVIEW_WEBFORMS
                         rockContext.Database.CommandTimeout = commandTimeout;
+#else
+                        rockContext.Database.SetCommandTimeout( commandTimeout );
+#endif
                         // attach the person object to this rockContext so that it will do changetracking on it
                         new PersonService( rockContext ).Attach( person );
 
@@ -178,7 +187,11 @@ Update Family Status: {updateFamilyStatus}
                 catch ( Exception ex )
                 {
                     // log but don't throw
+#if REVIEW_WEBFORMS
                     ExceptionLogService.LogException( new Exception( $"Exception occurred trying to autofill gender for PersonId:{person.Id}.", ex ), _httpContext );
+#else
+                    ExceptionLogService.LogException( new Exception( $"Exception occurred trying to autofill gender for PersonId:{person.Id}.", ex ) );
+#endif
                     recordsWithError += 1;
                 }
             }
@@ -238,7 +251,11 @@ Update Family Status: {updateFamilyStatus}
                 {
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
+#if REVIEW_WEBFORMS
                     rockContext.Database.CommandTimeout = commandTimeout;
+#else
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
+#endif
 
                     var excludeAttributeIds = GetIgnoredPersonAttributeList( rockContext );
                     // Get all the person ids with selected activity
@@ -354,7 +371,11 @@ Update Family Status: {updateFamilyStatus}
                     catch ( Exception ex )
                     {
                         // Log exception and keep on trucking.
+#if REVIEW_WEBFORMS
                         ExceptionLogService.LogException( new Exception( $"Exception occurred trying to activate PersonId:{personId}.", ex ), _httpContext );
+#else
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to activate PersonId:{personId}.", ex ) );
+#endif
                     }
                 }
 
@@ -364,7 +385,11 @@ Update Family Status: {updateFamilyStatus}
             catch ( Exception ex )
             {
                 // Log exception and return the exception messages.
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, _httpContext );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
 
                 return ex.Messages().AsDelimited( "; " );
             }
@@ -451,7 +476,11 @@ Update Family Status: {updateFamilyStatus}
                     var excludeAttributeIds = GetIgnoredPersonAttributeList( rockContext );
 
                     // increase the timeout just in case.
+#if REVIEW_WEBFORMS
                     rockContext.Database.CommandTimeout = commandTimeout;
+#else
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
+#endif
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
                     // Get all the person ids with selected activity
@@ -544,7 +573,11 @@ Update Family Status: {updateFamilyStatus}
                         catch ( Exception ex )
                         {
                             // Log exception and keep on trucking.
+#if REVIEW_WEBFORMS
                             ExceptionLogService.LogException( new Exception( $"Exception occurred trying to inactivate PersonId:{personId}.", ex ), _httpContext );
+#else
+                            ExceptionLogService.LogException( new Exception( $"Exception occurred trying to inactivate PersonId:{personId}.", ex ) );
+#endif
                         }
                     }
                 }
@@ -555,7 +588,11 @@ Update Family Status: {updateFamilyStatus}
             catch ( Exception ex )
             {
                 // Log exception and return the exception messages.
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, _httpContext );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
                 return ex.Messages().AsDelimited( "; " );
             }
         }
@@ -596,7 +633,11 @@ Update Family Status: {updateFamilyStatus}
                 {
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
+#if REVIEW_WEBFORMS
                     rockContext.Database.CommandTimeout = commandTimeout;
+#else
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
+#endif
 
                     // Start a qry for all family ids
                     var familyIdQry = new GroupService( rockContext )
@@ -864,7 +905,11 @@ Update Family Status: {updateFamilyStatus}
                     catch ( Exception ex )
                     {
                         // Log exception and keep on trucking.
+#if REVIEW_WEBFORMS
                         ExceptionLogService.LogException( new Exception( $"Exception occurred trying to update campus for GroupId:{familyId}.", ex ), _httpContext );
+#else
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to update campus for GroupId:{familyId}.", ex ) );
+#endif
                     }
                 }
 
@@ -874,7 +919,11 @@ Update Family Status: {updateFamilyStatus}
             catch ( Exception ex )
             {
                 // Log exception and return the exception messages.
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, _httpContext );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
                 return ex.Messages().AsDelimited( "; " );
             }
         }
@@ -928,7 +977,11 @@ Update Family Status: {updateFamilyStatus}
                 using ( var rockContext = new RockContext() )
                 {
                     // increase the timeout just in case.
+#if REVIEW_WEBFORMS
                     rockContext.Database.CommandTimeout = commandTimeout;
+#else
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
+#endif
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
                     var qry = new GroupMemberService( rockContext )
@@ -1188,7 +1241,11 @@ Update Family Status: {updateFamilyStatus}
                     catch ( Exception ex )
                     {
                         // Log exception and keep on trucking.
+#if REVIEW_WEBFORMS
                         ExceptionLogService.LogException( new Exception( $"Exception occurred trying to check for adult child mode on PersonId:{personId}.", ex ), _httpContext );
+#else
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to check for adult child mode on PersonId:{personId}.", ex ) );
+#endif
                     }
                 }
 
@@ -1198,7 +1255,11 @@ Update Family Status: {updateFamilyStatus}
             catch ( Exception ex )
             {
                 // Log exception and return the exception messages.
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, _httpContext );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
                 return ex.Messages().AsDelimited( "; " );
             }
         }
@@ -1251,7 +1312,11 @@ Update Family Status: {updateFamilyStatus}
                 int dataViewId = connectionStatusDataviewMapping.Value.Value;
                 using ( var dataViewRockContext = new RockContext() )
                 {
+#if REVIEW_WEBFORMS
                     dataViewRockContext.Database.CommandTimeout = commandTimeout;
+#else
+                    dataViewRockContext.Database.SetCommandTimeout( commandTimeout );
+#endif
                     var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {
@@ -1294,7 +1359,11 @@ Update Family Status: {updateFamilyStatus}
                         catch ( Exception ex )
                         {
                             // log but don't throw
+#if REVIEW_WEBFORMS
                             ExceptionLogService.LogException( new Exception( $"Exception occurred trying to update connection status for PersonId:{person.Id}.", ex ), _httpContext );
+#else
+                            ExceptionLogService.LogException( new Exception( $"Exception occurred trying to update connection status for PersonId:{person.Id}.", ex ) );
+#endif
                             recordsWithError += 1;
                         }
                     }
@@ -1337,7 +1406,11 @@ Update Family Status: {updateFamilyStatus}
                 int dataViewId = groupStatusDataviewMapping.Value.Value;
                 using ( var dataViewRockContext = new RockContext() )
                 {
+#if REVIEW_WEBFORMS
                     dataViewRockContext.Database.CommandTimeout = commandTimeout;
+#else
+                    dataViewRockContext.Database.SetCommandTimeout( commandTimeout );
+#endif
                     var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {

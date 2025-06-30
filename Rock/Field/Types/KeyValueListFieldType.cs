@@ -17,8 +17,8 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-#if WEBFORMS
 using System.Web;
+#if WEBFORMS
 using System.Web.UI;
 #endif
 
@@ -635,6 +635,55 @@ namespace Rock.Field.Types
             return values;
         }
 
+#else
+        /// <summary>
+        /// Gets the values from string.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="configurationValues">The configuration values.</param>
+        /// <param name="condensed">if set to <c>true</c> [condensed].</param>
+        /// <returns></returns>
+        public List<KeyValuePair<string, object>> GetValuesFromString( string value, Dictionary<string, ConfigurationValue> configurationValues, bool condensed )
+        {
+            List<KeyValuePair<string, object>> values = new List<KeyValuePair<string, object>>();
+
+            bool isDefinedType = configurationValues != null && configurationValues.ContainsKey( "definedtype" ) && configurationValues["definedtype"].Value.AsIntegerOrNull().HasValue;
+
+            string[] nameValues = value.Split( new char[] { '|' }, StringSplitOptions.RemoveEmptyEntries );
+
+            // url decode array items just in case they were UrlEncoded (in the KeyValueList controls)
+            nameValues = nameValues.Select( s => HttpUtility.UrlDecode( s ) ).ToArray();
+
+            foreach ( string nameValue in nameValues )
+            {
+                string[] nameAndValue = nameValue.Split( new char[] { '^' } );
+                if ( nameAndValue.Length == 2 )
+                {
+                    if ( isDefinedType )
+                    {
+                        var definedValue = DefinedValueCache.Get( nameAndValue[1].AsInteger() );
+                        if ( definedValue != null )
+                        {
+                            values.Add( new KeyValuePair<string, object>( nameAndValue[0], definedValue ) );
+                        }
+                        else
+                        {
+                            values.Add( new KeyValuePair<string, object>( nameAndValue[0], nameAndValue[1] ) );
+                        }
+                    }
+                    else
+                    {
+                        values.Add( new KeyValuePair<string, object>( nameAndValue[0], nameAndValue[1] ) );
+                    }
+                }
+                else
+                {
+                    values.Add( new KeyValuePair<string, object>( nameAndValue[0], null ) );
+                }
+            }
+
+            return values;
+        }
 #endif
         #endregion
 

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using System.Web.UI;
 using Rock.Model;
@@ -99,3 +100,4 @@ namespace Rock.Financial
         HostedGatewayMode[] GetSupportedHostedGatewayModes( FinancialGateway financialGateway );
     }
 }
+#endif

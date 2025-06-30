@@ -34,7 +34,9 @@ namespace Rock.Jobs
     public class ConnectionRequestWorkflowTriggers : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Connection Request Workflow Triggers";
+#if REVIEW_WEBFORMS
         private HttpContext _httpContext = null;
+#endif
 
         #region Keys
 
@@ -71,7 +73,9 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
+#if REVIEW_WEBFORMS
             _httpContext = HttpContext.Current;
+#endif
 
             // Get all the workflows from cache
             var cachedWorkflows = ConnectionWorkflowService.GetCachedTriggers();
@@ -124,7 +128,11 @@ namespace Rock.Jobs
                         using ( var updateRockContext = new RockContext() )
                         {
                             // increase the timeout just in case.
+#if REVIEW_WEBFORMS
                             updateRockContext.Database.CommandTimeout = 180;
+#else
+                            updateRockContext.Database.SetCommandTimeout( 180 );
+#endif
                             updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
                             var connectionOpportunity = connectionRequest.ConnectionOpportunity;
                             if ( connectionOpportunity != null )
@@ -164,7 +172,11 @@ namespace Rock.Jobs
                     catch ( Exception ex )
                     {
                         // Log exception and keep on trucking.
+#if REVIEW_WEBFORMS
                         ExceptionLogService.LogException( new Exception( $"Exception occurred trying to trigger future follow-up workflow: {connectionRequest.Id}.", ex ), _httpContext );
+#else
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to trigger future follow-up workflow: {connectionRequest.Id}.", ex ) );
+#endif
                         recordsWithError += 1;
                     }
                 }
@@ -181,7 +193,11 @@ namespace Rock.Jobs
             catch ( Exception ex )
             {
                 // Log exception and return the exception messages.
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, _httpContext );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
 
                 return ex.Messages().AsDelimited( "; " );
             }

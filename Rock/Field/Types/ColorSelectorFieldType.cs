@@ -176,6 +176,7 @@ namespace Rock.Field.Types
             return GetSelectedColors( colors, values ).AsDelimited( "," );
         }
 
+#if WEBFORMS
         private ListItems GetColorsConfigurationControl( List<Control> controls )
         {
             if ( controls?.Any() == true && controls[0] is ListItems listItems )
@@ -185,6 +186,7 @@ namespace Rock.Field.Types
 
             return null;
         }
+#endif
 
         /// <summary>
         /// Gets the selected colors.

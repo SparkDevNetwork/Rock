@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System.Net.Http.Headers;
 using System.Web;
 
@@ -38,3 +39,4 @@ namespace Rock.Financial
         bool HandleWebhook( FinancialGateway financialGateway, HttpRequestHeaders requestHeaders, HttpRequest request );
     }
 }
+#endif

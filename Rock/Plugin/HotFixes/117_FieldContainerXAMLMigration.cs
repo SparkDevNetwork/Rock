@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,7 +15,9 @@
 // </copyright>
 
 using System.Linq;
+#if REVIEW_WEBFORMS
 using System.Web.Hosting;
+#endif
 using Rock.Store;
 
 namespace Rock.Plugin.HotFixes

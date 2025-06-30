@@ -30,7 +30,11 @@ using Rock.Model;
 using Rock.Reporting;
 using Rock.Web.UI.Controls;
 
+#if REVIEW_WEBFORMS
 using static Rock.Web.UI.Controls.ListItems;
+#else
+using KeyValuePair = System.Collections.Generic.KeyValuePair<System.Guid, string>;
+#endif
 
 namespace Rock.Field.Types
 {

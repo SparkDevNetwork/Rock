@@ -34,7 +34,9 @@ using EntityFramework.Utilities;
 
 using Newtonsoft.Json;
 
+#if REVIEW_WEBFORMS
 using OfficeOpenXml;
+#endif
 
 using Rock.Data;
 

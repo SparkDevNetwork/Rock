@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using System.Reflection;
 using System.Runtime.Remoting.Lifetime;
@@ -297,3 +298,4 @@ script.UnloadOwnerDomain();
         int Sub(int a, int b);
     }
 }
+#endif
