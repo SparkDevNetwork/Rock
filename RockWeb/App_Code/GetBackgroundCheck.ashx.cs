@@ -95,7 +95,7 @@ namespace RockWeb
                         }
                         else
                         {
-                            SendError( context, 500, "The underlying component was unable to retrieve the requested item.  Please ask the administrator to check the exception log for additional details." );
+                            SendError( context, 500, "The underlying component was unable to retrieve the requested item.  Additional details can be found in the exception log." );
                         }
                     }
                 }
