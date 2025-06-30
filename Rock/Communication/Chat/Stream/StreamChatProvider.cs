@@ -101,6 +101,14 @@ namespace Rock.Communication.Chat
         }
 
         /// <summary>
+        /// Event hook IDs.
+        /// </summary>
+        internal static class EventHookId
+        {
+            public const string WebhookChatToRockSync = "webhook-chat-to-rock-sync";
+        }
+
+        /// <summary>
         /// JSON property names for Stream webhook payloads.
         /// </summary>
         private static class WebhookJsonProperty
@@ -734,6 +742,77 @@ namespace Rock.Communication.Chat
                     WebhookEvent.UserUnbanned,
 
                     WebhookEvent.UserDeleted
+                },
+
+                // Push version should be to set to v3. 
+                PushConfig = new PushConfigRequest
+                {
+                    Version = "v3"
+                }
+            };
+
+            try
+            {
+                await RetryAsync(
+                    async () => await AppClient.UpdateAppSettingsAsync( request ),
+                    operationName
+                );
+            }
+            catch ( ChatProviderDeprecatedFeatureException )
+            {
+                return await UpdateAppSettingsWithMultiEventHooksAsync();
+            }
+            catch ( Exception ex )
+            {
+                result.Exception = ex;
+            }
+
+            // If an exception wasn't thrown, assume app settings were updated.
+            result.IsSetUp = !result.HasException;
+
+            return result;
+        }
+
+        /// <summary>
+        /// Updates app settings in Stream to match the current Rock app settings, using the newer "Multi-Event Hooks" API.
+        /// </summary>
+        /// <returns>
+        /// A task representing the asynchronous operation, containing a <see cref="ChatSyncSetupResult"/> indicating
+        /// whether the app settings were updated in the external chat system.
+        /// </returns>
+        private async Task<ChatSyncSetupResult> UpdateAppSettingsWithMultiEventHooksAsync()
+        {
+            var result = new ChatSyncSetupResult();
+
+            var operationName = nameof( UpdateAppSettingsAsync ).SplitCase();
+
+            var request = new AppSettingsRequest
+            {
+                EventHooks = new List<EventHook>
+                {
+                    new EventHook
+                    {
+                        Id = EventHookId.WebhookChatToRockSync,
+                        Enabled = true,
+                        HookType = HookType.Webhook,
+                        WebhookUrl = ChatHelper.WebhookUrl,
+                        EventTypes = new List<string>
+                        {
+                            WebhookEvent.ChannelCreated,
+                            WebhookEvent.ChannelUpdated,
+
+                            WebhookEvent.MemberAdded,
+                            WebhookEvent.MemberRemoved,
+
+                            WebhookEvent.ChannelMuted,
+                            WebhookEvent.ChannelUnmuted,
+
+                            WebhookEvent.UserBanned,
+                            WebhookEvent.UserUnbanned,
+
+                            WebhookEvent.UserDeleted
+                        }
+                    }
                 },
 
                 // Push version should be to set to v3. 
@@ -2056,7 +2135,7 @@ namespace Rock.Communication.Chat
             // 4) Update member push preferences. Always do this no matter what.
             // We are not tracking the result of this operation, just the exceptions.
             var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers.Select( kvp => kvp.Value ).ToList() );
-            if( pushPreferenceResult?.HasException == true )
+            if ( pushPreferenceResult?.HasException == true )
             {
                 exceptions.Add( pushPreferenceResult.Exception );
             }
@@ -3314,6 +3393,27 @@ namespace Rock.Communication.Chat
                         {
                             ChatHelper.ReportAccountSuspendedResponseReceived( streamChatException );
                             throw;
+                        }
+
+                        // Stream often reuses this generic "Input Error: When wrong data/parameter is sent to the API"
+                        // error code for both recoverable and non-recoverable scenarios, so we have to dig a bit deeper
+                        // to see which type this is.
+                        if ( streamChatException.ErrorCode == 4 )
+                        {
+                            /*
+                                6/30/2025 - JPH
+
+                                `AppSettingsRequest.WebhookUrl` and `AppSettingsRequest.WebhookUrl` have been deprecated
+                                in favor of a newly-added `AppSettingsRequest.EventHooks` property. We need to support
+                                both approaches, as we don't get to dictate when a given app is migrated to this new
+                                approach.
+
+                                Reason: Stream will require one of two different ways to set webhook URLs and event types.
+                             */
+                            if ( streamChatException.Message.ToLower().Contains( "use the event_hooks field to configure webhooks" ) )
+                            {
+                                throw new ChatProviderDeprecatedFeatureException( streamChatException.Message );
+                            }
                         }
 
                         /*

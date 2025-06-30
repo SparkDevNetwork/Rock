@@ -731,6 +731,7 @@
     <Compile Include="Communication\Chat\Exceptions\ChatAccountSuspendedException.cs" />
     <Compile Include="Communication\Chat\Exceptions\ChatSyncException.cs" />
     <Compile Include="Communication\Chat\Exceptions\ChatWebhookParseException.cs" />
+    <Compile Include="Communication\Chat\Exceptions\ChatProviderDeprecatedFeatureException.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncBanResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatSyncMuteResult.cs" />
     <Compile Include="Communication\Chat\Sync\ChatUserMessageCountsByChatChannelResult.cs" />

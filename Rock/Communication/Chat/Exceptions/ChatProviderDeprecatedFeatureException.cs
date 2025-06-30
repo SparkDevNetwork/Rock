@@ -19,25 +19,25 @@ using System;
 namespace Rock.Communication.Chat.Exceptions
 {
     /// <summary>
-    /// Represents an error encountered when Rock has invalid account information for the external chat system.
+    /// Represents an error encountered when the external chat system no longer supports a previously-working approach
+    /// for implementing a given feature. This indicates that we should try an alternate approach, if possible.
     /// </summary>
-    /// <seealso cref="Exception"/>
-    internal class ChatAccountInvalidException : Exception
+    internal class ChatProviderDeprecatedFeatureException : Exception
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChatAccountInvalidException"/> class.
+        /// Initializes a new instance of the <see cref="ChatProviderDeprecatedFeatureException"/> class.
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
-        public ChatAccountInvalidException( string message ) : base( message )
+        public ChatProviderDeprecatedFeatureException( string message ) : base( message )
         {
         }
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="ChatAccountInvalidException"/> class.
+        /// Initializes a new instance of the <see cref="ChatProviderDeprecatedFeatureException"/> class.
         /// </summary>
         /// <param name="message">The error message that explains the reason for the exception.</param>
         /// <param name="innerException">The exception that is the cause of the current exception, or a null reference if no inner exception is specified.</param>
-        public ChatAccountInvalidException( string message, Exception innerException ) : base( message, innerException )
+        public ChatProviderDeprecatedFeatureException( string message, Exception innerException ) : base( message, innerException )
         {
         }
     }
