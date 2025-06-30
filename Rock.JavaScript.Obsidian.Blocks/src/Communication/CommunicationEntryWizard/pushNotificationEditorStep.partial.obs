@@ -224,7 +224,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
     import { vShortcut } from "@Obsidian/Directives/shortcut";
-    import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
+    import { PushOpenActionType } from "@Obsidian/Enums/Communication/pushOpenActionType";
     import { SiteType } from "@Obsidian/Enums/Cms/siteType";
     import { Guid } from "@Obsidian/Types";
     import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
@@ -273,7 +273,7 @@
         },
 
         pushOpenAction: {
-            type: Number as PropType<PushOpenAction>,
+            type: Number as PropType<PushOpenActionType>,
             required: true
         },
 
@@ -306,7 +306,7 @@
         (e: "update:communicationTemplateGuid", value: Guid | null | undefined): void;
         (e: "update:pushData", value: string | null | undefined): void;
         (e: "update:pushMessage", value: string): void;
-        (e: "update:pushOpenAction", value: PushOpenAction): void;
+        (e: "update:pushOpenAction", value: PushOpenActionType): void;
         (e: "update:pushOpenMessageJson", value: string | null | undefined): void;
         (e: "update:pushTitle", value: string): void;
     }>();
@@ -389,20 +389,20 @@
 
     // #region Functions
 
-    function getOpenAction(pushOpenAction: PushOpenAction, isUsingRockMobilePushTransport: boolean, mobilePage: PageRouteValueBag | null | undefined): OpenAction {
+    function getOpenAction(pushOpenAction: PushOpenActionType, isUsingRockMobilePushTransport: boolean, mobilePage: PageRouteValueBag | null | undefined): OpenAction {
         switch (pushOpenAction) {
-            case PushOpenAction.LinkToMobilePage:
+            case PushOpenActionType.LinkToMobilePage:
                 if (mobilePage) {
                     return OpenAction.SpecificPage;
                 }
                 else {
                     return OpenAction.OpenHomepage;
                 }
-            case PushOpenAction.LinkToUrl:
+            case PushOpenActionType.LinkToUrl:
                 return OpenAction.LinkToUrl;
-            case PushOpenAction.ShowDetails:
+            case PushOpenActionType.ShowDetails:
                 return OpenAction.ShowDetails;
-            case PushOpenAction.NoAction:
+            case PushOpenActionType.NoAction:
             default:
                 if (isUsingRockMobilePushTransport) {
                     return OpenAction.OpenHomepage;
@@ -483,14 +483,14 @@
     watch(openAction, () => {
         switch (openAction.value) {
             case OpenAction.LinkToUrl:
-                internalPushOpenAction.value = PushOpenAction.LinkToUrl;
+                internalPushOpenAction.value = PushOpenActionType.LinkToUrl;
                 internalPushData.value = {
                     mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
                     linkToPageUrl: linkToPageUrl.value
                 };
                 break;
             case OpenAction.OpenHomepage:
-                internalPushOpenAction.value = PushOpenAction.LinkToMobilePage;
+                internalPushOpenAction.value = PushOpenActionType.LinkToMobilePage;
                 // To open the homepage, do not specify a page.
                 internalPushData.value = {
                     mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
@@ -498,13 +498,13 @@
                 };
                 break;
             case OpenAction.ShowDetails:
-                internalPushOpenAction.value = PushOpenAction.ShowDetails;
+                internalPushOpenAction.value = PushOpenActionType.ShowDetails;
                 internalPushData.value = {
                     mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
                 };
                 break;
             case OpenAction.SpecificPage:
-                internalPushOpenAction.value = PushOpenAction.LinkToMobilePage;
+                internalPushOpenAction.value = PushOpenActionType.LinkToMobilePage;
                 internalPushData.value = {
                     mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
                     mobilePage: mobilePage.value,
@@ -513,7 +513,7 @@
                 break;
             case OpenAction.NoAction:
             default:
-                internalPushOpenAction.value = PushOpenAction.NoAction;
+                internalPushOpenAction.value = PushOpenActionType.NoAction;
                 internalPushData.value = {
                     mobileApplicationGuid: toGuidOrNull(mobileApplicationGuidOrEmptyString.value),
                 };

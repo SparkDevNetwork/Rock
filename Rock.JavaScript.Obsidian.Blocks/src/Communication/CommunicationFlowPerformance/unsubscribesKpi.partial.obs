@@ -1,0 +1,72 @@
+<template>
+    <Kpi color="red"
+         :colorShade="700"
+         iconCssClass="ti ti-circle-minus"
+         isCard
+         label="Unsubscribes From Flow"
+         :tooltip="tooltip"
+         :value="value" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { UnsubscribeInfo } from "./types.partial";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+    import { asLocaleString } from "./utils.partial";
+
+    enum UnsubscribeLevel {
+        Flow = 1,
+        CommunicationList = 2,
+        Bulk = 3,
+        All = 4,
+    }
+
+    const props = defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        }
+    });
+
+    const value = computed<string>(() => {
+        if (isNullish(unsubscribeInfo.value?.unsubscribesFromFlow) &&
+            isNullish(unsubscribeInfo.value?.unsubscribesFromAll) &&
+            isNullish(unsubscribeInfo.value?.unsubscribesFromOther)) {
+            return "N/A";
+        }
+
+        const totalUnsubscribes = (unsubscribeInfo.value?.unsubscribesFromFlow ?? 0)
+            + (unsubscribeInfo.value?.unsubscribesFromAll ?? 0)
+            + (unsubscribeInfo.value?.unsubscribesFromOther ?? 0);
+        return asLocaleString(totalUnsubscribes);
+    });
+
+    const tooltip = computed<string | undefined>(() => {
+        return `Unsubscribes from Flows: ${asLocaleString(unsubscribeInfo.value?.unsubscribesFromFlow ?? 0)}\n` +
+            `Unsubscribes from All: ${asLocaleString(unsubscribeInfo.value?.unsubscribesFromAll ?? 0)}\n` +
+            `Unsubscribes from Other: ${asLocaleString(unsubscribeInfo.value?.unsubscribesFromOther ?? 0)}`;
+    });
+
+    const unsubscribeInfo = computed<UnsubscribeInfo | null | undefined>(() => {
+        const messageEnumerable = Enumerable.from(props.messages);
+
+        if (!messageEnumerable.any()) {
+            // There are no recipients for the selected instances.
+            // There is no unsubscribe info at this point until at least one communication is sent.
+            return null;
+        }
+
+        const unsubscribedMessages = messageEnumerable
+            .where(m => !!m.unsubscribedDateTime)
+            .toArray();
+
+        return {
+            unsubscribesFromAll: Enumerable.from(unsubscribedMessages).count(m => m.unsubscribeLevel === UnsubscribeLevel.All),
+            unsubscribesFromFlow: Enumerable.from(unsubscribedMessages).count(m => m.unsubscribeLevel === UnsubscribeLevel.Flow),
+            unsubscribesFromOther: Enumerable.from(unsubscribedMessages).count(m => isNullish(m.unsubscribeLevel) || ![UnsubscribeLevel.All, UnsubscribeLevel.Flow].includes(m.unsubscribeLevel)),
+        };
+    });
+</script>

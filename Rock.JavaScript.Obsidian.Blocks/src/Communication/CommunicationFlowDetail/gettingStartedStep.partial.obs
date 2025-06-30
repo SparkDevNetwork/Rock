@@ -1,0 +1,413 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="title" hasFullscreen>
+        <template #headerActions>
+            <HighlightLabel v-if="!isActive" class="mr-3">Inactive</HighlightLabel>
+        </template>
+
+        <RockForm :id="formId" @submit="$emit('nextStep')">
+            <GuideWell title="Getting Started With Your Communication Flow"
+                       body="A flow is a great way to trigger a series of pre-configured communications to reach your audience. Select the kind of flow you want to kickoff, who you want to reach, and when you want to reach them." />
+
+            <fieldset>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="nameOrEmptyString"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
+
+                    <div class="col-md-6">
+                        <CheckBox v-model="internalIsActive"
+                                  help="Activate the communication flow after setup is complete. Once activated, automation will begin sending messages as configured."
+                                  label="Active" />
+                    </div>
+                </div>
+
+                <TextBox v-model="descriptionOrEmptyString"
+                         label="Description"
+                         rules="required"
+                         textMode="multiline" />
+
+                <div class="row">
+                    <div class="col-md-3">
+                        <CategoryPicker v-model="internalCategory"
+                                        label="Category" />
+                    </div>
+                </div>
+
+                <TileRadioButtonList v-model="triggerTypeAsString"
+                                     :items="triggerTypes"
+                                     label="Flow Type"
+                                     rules="required" />
+
+                <TransitionVerticalCollapse>
+                    <ConditionalWell v-if="internalTriggerType !== CommunicationFlowTriggerType.OnDemand">
+                        <div v-if="internalTriggerType === CommunicationFlowTriggerType.Recurring"
+                             class="form-control-group">
+                            <div class="flow-type-schedule-row form-row">
+                                <div style="width: 225px;">
+                                    <DataViewPicker v-model="internalTargetAudienceDataView"
+                                                    :entityTypeGuid="EntityType.Person"
+                                                    help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active."
+                                                    label="Target Audience"
+                                                    rules="required" />
+                                </div>
+
+                                <div class="flow-start-date-time">
+                                    <DateTimePicker v-model="startDateTimeIsoString"
+                                                    help="Defines when the flow will start. Automation and messaging will begin based on this date and time."
+                                                    label="Flow Start Date & Time"
+                                                    rules="required" />
+                                </div>
+
+                                <ScheduleBuilder v-model="internalICalendarContent"
+                                                 hideDuration
+                                                 hideStartDateTime
+                                                 label="Schedule Builder"
+                                                 :rules="['required', validateRecurringSchedule]" />
+                            </div>
+                        </div>
+
+                        <div v-else-if="internalTriggerType === CommunicationFlowTriggerType.OneTime"
+                             class="form-control-group">
+                            <div class="flow-type-schedule-row form-row">
+                                <div style="width: 225px;">
+                                    <DataViewPicker v-model="internalTargetAudienceDataView"
+                                                    :entityTypeGuid="EntityType.Person"
+                                                    help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active."
+                                                    label="Target Audience"
+                                                    rules="required" />
+                                </div>
+
+                                <div class="flow-start-date-time">
+                                    <DateTimePicker v-model="startDateTimeIsoString"
+                                                    help="Defines when the flow will start. Automation and messaging will begin based on this date and time."
+                                                    label="Flow Start Date & Time"
+                                                    rules="required" />
+                                </div>
+                            </div>
+                        </div>
+                    </ConditionalWell>
+                </TransitionVerticalCollapse>
+
+                <CheckBox v-model="internalIsGoalTrackingEnabled"
+                          help="Enabling this feature lets you track desired behaviors, such as group sign-ups or event registrations."
+                          label="Enable Conversion Tracking" />
+
+                <AttributeValuesContainer v-model="attributeValuesOrEmpty"
+                                          :attributes="attributesOrEmpty"
+                                          isEditMode :numberOfColumns="2" />
+
+                <div class="form-group">
+                    <a class="show-options-button"
+                       role="button"
+                       @click="areAdvancedSettingsShown = !areAdvancedSettingsShown">
+                        {{ areAdvancedSettingsShown ? 'Hide' : 'Show' }} Advanced Settings
+                    </a>
+                </div>
+
+                <TransitionVerticalCollapse>
+                    <ConditionalWell v-if="areAdvancedSettingsShown">
+                        <TextBox v-model="unsubscribeMessageOrEmptyString"
+                                 help="Displays in the unsubscribe block when a recipient opts out of this flow. Applies only to flows with Email or SMS messages. Default: 'Only unsubscribe me from the [FlowName] flow.'"
+                                 label="Unsubscribe Message"
+                                 textMode="multiline" />
+                    </ConditionalWell>
+                </TransitionVerticalCollapse>
+            </fieldset>
+        </RockForm>
+
+        <template #footerSecondaryActions>
+            <RockButton btnType="primary"
+                        :form="formId"
+                        type="submit">Next</RockButton>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+.show-options-button {
+    font-size: var(--font-size-small);
+}
+
+.flow-type-schedule-row {
+    gap: var(--spacing-large);
+}
+
+.flow-start-date-time :deep(.form-control-group) {
+    margin-right: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import GuideWell from "./guideWell.partial.obs";
+    import TileRadioButtonList from "./tileRadioButtonList.partial.obs";
+    import { TileListItemBag } from "./types.partial";
+    import { isEnumValue } from "./utils.partial";
+    import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { CommunicationFlowTriggerType } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { Calendar, Event } from "@Obsidian/Utility/internetCalendar";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+
+    const props = defineProps({
+        attributes: {
+            type: Object as PropType<Record<string, PublicAttributeBag> | null | undefined>,
+            required: true
+        },
+
+        attributeValues: {
+            type: Object as PropType<Record<string, string> | null | undefined>,
+            required: true
+        },
+
+        category: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: true
+        },
+
+        description: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        isActive: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        iCalendarContent: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        isGoalTrackingEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        name: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        targetAudienceDataView: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        triggerType: {
+            type: Number as PropType<CommunicationFlowTriggerType>,
+            required: true
+        },
+
+        unsubscribeMessage: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "nextStep"): void;
+        (e: "update:attributes", value: Record<string, PublicAttributeBag> | null | undefined): void;
+        (e: "update:attributeValues", value: Record<string, string> | null | undefined): void;
+        (e: "update:category", value: ListItemBag | null | undefined): void;
+        (e: "update:description", value: string | null | undefined): void;
+        (e: "update:iCalendarContent", value: string | null | undefined): void;
+        (e: "update:isActive", value: boolean): void;
+        (e: "update:isGoalTrackingEnabled", value: boolean): void;
+        (e: "update:name", value: string | null | undefined): void;
+        (e: "update:targetAudienceDataView", value: ListItemBag | null | undefined): void;
+        (e: "update:triggerType", value: CommunicationFlowTriggerType): void;
+        (e: "update:unsubscribeMessage", value: string | null | undefined): void;
+    }>();
+
+    const triggerTypes: TileListItemBag[] = [
+        {
+            iconCssClass: "ti ti-refresh",
+            text: "Recurring",
+            subtext: "Messages will be sent to a selected audience on a defined recurring schedule.",
+            value: `${CommunicationFlowTriggerType.Recurring}`,
+        },
+        {
+            iconCssClass: "ti ti-stack-2",
+            text: "On-Demand",
+            subtext: "Workflows or other events will assign individuals to a flow instance.",
+            value: `${CommunicationFlowTriggerType.OnDemand}`,
+        },
+        {
+            iconCssClass: "ti ti-clock",
+            text: "One-Time",
+            subtext: "A single flow will be launched at the specified date and time.",
+            value: `${CommunicationFlowTriggerType.OneTime}`,
+        }
+    ];
+
+    const formId = `communication-flow-detail-getting-started-${newGuid()}`;
+
+    // #region Values
+
+    // UI values.
+    const areAdvancedSettingsShown = ref<boolean>(false);
+    const internalIsGoalTrackingEnabled = useVModelPassthrough(props, "isGoalTrackingEnabled", emit);
+
+    // State values.
+    const internalAttributes = useVModelPassthrough(props, "attributes", emit);
+    const internalAttributeValues = useVModelPassthrough(props, "attributeValues", emit);
+    const internalCategory = useVModelPassthrough(props, "category", emit);
+    const internalICalendarContent = useVModelPassthrough(props, "iCalendarContent", emit);
+    const internalDescription = useVModelPassthrough(props, "description", emit);
+    const internalIsActive = useVModelPassthrough(props, "isActive", emit);
+    const internalName = useVModelPassthrough(props, "name", emit);
+    const internalTargetAudienceDataView = useVModelPassthrough(props, "targetAudienceDataView", emit);
+    const internalTriggerType = useVModelPassthrough(props, "triggerType", emit);
+    const internalUnsubscribeMessage = useVModelPassthrough(props, "unsubscribeMessage", emit);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const startDateTimeIsoString = computed<string | null>({
+        get(): string | null {
+            const calendar = internalICalendarContent.value ? new Calendar(internalICalendarContent.value) : null;
+            const event = calendar?.events && calendar.events.length > 0 ? calendar.events[0] : null;
+            //const rrule = event?.recurrenceRules && event.recurrenceRules.length > 0 ? event.recurrenceRules[0] : null;
+            return event?.startDateTime?.toISOString() ?? null;
+        },
+        set(value: string | null) {
+            const startDateTime = value ? RockDateTime.parseISO(value) ?? undefined : undefined;
+            const endDateTime = startDateTime?.addDays(1).date;
+            let calendar = internalICalendarContent.value ? new Calendar(internalICalendarContent.value) : null;
+
+            if (!calendar) {
+                calendar = new Calendar();
+            }
+
+            let event = calendar.events && calendar.events.length > 0 ? calendar.events[0] : null;
+
+            if (event) {
+                event.startDateTime = startDateTime;
+                event.endDateTime = endDateTime;
+            }
+            else {
+                const e = new Event();
+                e.startDateTime = startDateTime;
+                e.endDateTime = endDateTime;
+
+                calendar.events.push(e);
+            }
+
+            internalICalendarContent.value = calendar.build();
+        }
+    });
+
+    const attributesOrEmpty = computed<Record<string, PublicAttributeBag>>({
+        get() {
+            return internalAttributes.value || {};
+        },
+        set(value: Record<string, PublicAttributeBag>) {
+            internalAttributes.value = value;
+        }
+    });
+
+    const attributeValuesOrEmpty = computed<Record<string, string>>({
+        get() {
+            return internalAttributeValues.value || {};
+        },
+        set(value: Record<string, string>) {
+            internalAttributeValues.value = value;
+        }
+    });
+
+    const descriptionOrEmptyString = computed<string>({
+        get() {
+            return internalDescription.value ?? "";
+        },
+        set(value: string) {
+            internalDescription.value = value;
+        }
+    });
+
+    const nameOrEmptyString = computed<string>({
+        get() {
+            return internalName.value ?? "";
+        },
+        set(value: string) {
+            internalName.value = value;
+        }
+    });
+
+    const triggerTypeAsString = computed<string>({
+        get() {
+            return isNullish(internalTriggerType.value) ? "" : `${internalTriggerType.value}`;
+        },
+        set(value: string) {
+            const parsed = Number(value);
+
+            if (isEnumValue(CommunicationFlowTriggerType, parsed)) {
+                internalTriggerType.value = parsed;
+            }
+            else {
+                internalTriggerType.value = CommunicationFlowTriggerType.Recurring;
+            }
+        }
+    });
+
+    const unsubscribeMessageOrEmptyString = computed<string>({
+        get() {
+            return internalUnsubscribeMessage.value ?? "";
+        },
+        set(value: string) {
+            internalUnsubscribeMessage.value = value;
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    const validateRecurringSchedule: ValidationRuleFunction = (value: unknown): ValidationResult => {
+        if (props.triggerType !== CommunicationFlowTriggerType.Recurring
+            || !value
+            || typeof value !== "string") {
+            return true;
+        }
+
+        // Validate that the schedule is not a one-time schedule.
+        const calendar = new Calendar(value);
+        const event = calendar.events?.[0];
+
+        if (event?.recurrenceRules?.length || event?.recurrenceDates?.length) {
+            return true;
+        }
+
+        return "must be recurring";
+    };
+
+    // #endregion Functions
+</script>

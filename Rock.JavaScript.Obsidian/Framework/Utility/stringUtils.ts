@@ -431,6 +431,38 @@ export function safeParseJson<T>(value: string | null | undefined): T | undefine
     }
 }
 
+/**
+ * Returns a string like "an apple" or "a banana" based on the initial sound of the word.
+ * Handles common English edge cases, including silent 'h' and hard 'u' sounds.
+ */
+export function prependSingularIndefiniteArticle(singularWord: string): string {
+    if (!singularWord) {
+        return singularWord;
+    }
+
+    const lower = singularWord.toLowerCase();
+
+    // Common silent "h" words
+    const silentH = ["honest", "hour", "honor", "heir"];
+    if (silentH.includes(lower)) {
+        return `an ${singularWord}`;
+    }
+
+    // Words starting with hard "u" like "unicorn", "university"
+    const hardURegex = /^(u[bcfhjkqrstn])/i; // "ubiquitous", "unicorn", etc.
+    if (hardURegex.test(singularWord)) {
+        return `a ${singularWord}`;
+    }
+
+    // Words starting with vowel sounds
+    const vowelSound = /^[aeiou]/i;
+    if (vowelSound.test(singularWord)) {
+        return `an ${singularWord}`;
+    }
+
+    return `a ${singularWord}`;
+}
+
 export default {
     asCommaAnd,
     containsHtmlTag,

@@ -106,17 +106,46 @@ namespace Rock.CodeGeneration
             {
                 return new PropertyDeclaration( "DateTimeOffset?", new[] { "System" } );
             }
-            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Enums" ) )
+            else if ( type.IsRockEnum() )
             {
                 return new PropertyDeclaration( type.Name, new[] { type.Namespace } );
             }
-            else if ( type.IsEnum && type.Namespace.StartsWith( "Rock.Model") && type.GetCustomAttributes().FirstOrDefault( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" ) != null )
+            else if ( type.IsRockNullableEnum( out var enumType ) )
             {
-                return new PropertyDeclaration( type.Name, new[] { type.Namespace } );
+                return new PropertyDeclaration( $"{enumType.Name}?", new[] { enumType.Namespace } );
             }
             else
             {
                 throw new Exception( $"Unable to convert {type.GetFriendlyName()} to CSharp declaration." );
+            }
+        }
+
+        public static bool IsRockEnum( this Type type )
+        {
+            return type.IsEnum
+                &&
+                (
+                    type.Namespace.StartsWith( "Rock.Enums" )
+                    ||
+                    (
+                        type.Namespace.StartsWith( "Rock.Model")
+                        && type.GetCustomAttributes().Any( a => a.GetType().FullName == "Rock.Enums.EnumDomainAttribute" )
+                    )
+                );
+        }
+
+        public static bool IsRockNullableEnum( this Type type, out Type enumType )
+        {
+            if ( Nullable.GetUnderlyingType( type ) is Type underlyingType
+                && underlyingType.IsRockEnum() )
+            {
+                enumType = underlyingType;
+                return true;
+            }
+            else
+            {
+                enumType = null;
+                return false;
             }
         }
     }

@@ -3,5 +3,6 @@ export type { AnnotationPluginOptions } from "chartjs-plugin-annotation";
 
 import { Chart } from "chart.js/auto";
 import annotationPlugin from "chartjs-plugin-annotation";
+import "chartjs-adapter-luxon";
 
 Chart.register(annotationPlugin);

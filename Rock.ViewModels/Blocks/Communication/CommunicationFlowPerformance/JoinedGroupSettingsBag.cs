@@ -15,31 +15,18 @@
 // </copyright>
 //
 
-namespace Rock.Enums.Blocks.Communication.CommunicationEntry
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
     /// <summary>
-    /// The Push Open Action used by the Communication Entry block.
+    /// The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Joined Specific Group".
     /// </summary>
-    public enum PushOpenActionType
+    public class JoinedGroupSettingsBag
     {
         /// <summary>
-        /// No action
+        /// Gets or sets the Group that needs to be joined for the conversion goal to be achieved.
         /// </summary>
-        NoAction,
-
-        /// <summary>
-        /// Show details
-        /// </summary>
-        ShowDetails,
-
-        /// <summary>
-        /// Link to mobile page
-        /// </summary>
-        LinkToMobilePage,
-
-        /// <summary>
-        /// Link to URL
-        /// </summary>
-        LinkToUrl
+        public ListItemBag Group { get; set; }
     }
 }

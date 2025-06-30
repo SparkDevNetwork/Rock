@@ -49,7 +49,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents the name of the communication template
-        /// </value>
+        /// </value>-
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
@@ -334,7 +334,7 @@ namespace Rock.Model
         /// The push open action.
         /// </value>
         [DataMember]
-        public PushOpenAction? PushOpenAction { get; set; }
+        public Utility.PushOpenAction? PushOpenAction { get; set; }
 
         /// <summary>
         /// Gets or sets the push open message.

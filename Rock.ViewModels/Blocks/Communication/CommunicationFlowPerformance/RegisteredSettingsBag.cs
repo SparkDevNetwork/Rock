@@ -15,31 +15,18 @@
 // </copyright>
 //
 
-namespace Rock.Enums.Blocks.Communication.CommunicationEntryWizard
+using Rock.ViewModels.Utility;
+
+namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
     /// <summary>
-    /// The Push Open Action used by the Communication Entry Wizard block.
+    /// The conversion goal settings for the Communication Flow Performance block when the conversion goal type is "Registered".
     /// </summary>
-    public enum PushOpenAction
+    public class RegisteredSettingsBag
     {
         /// <summary>
-        /// No action
+        /// Gets or sets the Registration Instance that needs to be joined for the conversion goal to be achieved.
         /// </summary>
-        NoAction,
-
-        /// <summary>
-        /// Show details
-        /// </summary>
-        ShowDetails,
-
-        /// <summary>
-        /// Link to mobile page
-        /// </summary>
-        LinkToMobilePage,
-
-        /// <summary>
-        /// Link to URL
-        /// </summary>
-        LinkToUrl
+        public ListItemBag RegistrationInstance { get; set; }
     }
 }

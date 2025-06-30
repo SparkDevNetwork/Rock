@@ -21,9 +21,9 @@
 // </copyright>
 //
 
-import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
 import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
 import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+import { PushOpenActionType } from "@Obsidian/Enums/Communication/pushOpenActionType";
 import { SegmentCriteria } from "@Obsidian/Enums/Communication/segmentCriteria";
 import { Guid } from "@Obsidian/Types";
 import { CommunicationEntryWizardPushNotificationOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardPushNotificationOptionsBag";
@@ -98,7 +98,7 @@ export type CommunicationEntryWizardCommunicationBag = {
     pushMessage?: string | null;
 
     /** Gets or sets the push open action. */
-    pushOpenAction?: PushOpenAction | null;
+    pushOpenAction?: PushOpenActionType | null;
 
     /** Gets or sets the push open message. */
     pushOpenMessage?: string | null;

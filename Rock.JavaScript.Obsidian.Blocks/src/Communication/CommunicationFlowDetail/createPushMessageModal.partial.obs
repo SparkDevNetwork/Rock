@@ -1,0 +1,394 @@
+<template>
+    <Panel isFullscreen
+           isFullscreenPageOnly
+           panelBodyCssClass="push-builder-panel-body"
+           title="Create Push Message">
+        <template #default>
+            <div class="panel-body-contents">
+                <div class="push-form-container">
+                    <RockForm :id="createPushFormId" @submit="onSavePushMessageClicked">
+                        <TextBox v-model="name"
+                                 :disabled="disabled"
+                                 label="Name"
+                                 rules="required" />
+
+                        <TextBox v-model="pushTitle"
+                                 :disabled="disabled"
+                                 label="Title"
+                                 :maxLength="100"
+                                 rules="required" />
+
+                        <SmsMessageEditor v-model="pushMessage"
+                                          :disabled="disabled"
+                                          :editorHeight="210"
+                                          :isCharacterCountShown="true"
+                                          :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                                          rules="required"
+                                          toolbarLabel="Push Message" />
+
+                        <RadioButtonList v-model="customPushOpenAction"
+                                         :disabled="disabled"
+                                         help="Defines the open action for the message."
+                                         horizontal
+                                         :items="customPushOpenActions"
+                                         label="Open Action"
+                                         rules="required" />
+
+                        <template v-if="customPushOpenAction === CustomPushOpenActionType.LinkToUrl">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <UrlLinkBox v-model="pushUrl"
+                                                :disabled="disabled"
+                                                label="URL"
+                                                rules="required" />
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-else-if="customPushOpenAction === CustomPushOpenActionType.SpecificPage">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <PagePicker v-model="pushMobilePage"
+                                                :disabled="disabled"
+                                                label="Mobile Page"
+                                                rules="required"
+                                                :siteType="SiteType.Mobile" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <KeyValueList v-model="pushMobilePageQueryStringItems"
+                                                  :disabled="disabled"
+                                                  label="Mobile Page Query String"
+                                                  keyPlaceholder="Key"
+                                                  valuePlaceholder="Value" />
+                                </div>
+                            </div>
+                        </template>
+
+                        <template v-else-if="customPushOpenAction === CustomPushOpenActionType.ShowDetails">
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <DropDownList v-model="pushMobileApplicationGuidOrEmptyString"
+                                                  blankValue="All Applications"
+                                                  :disabled="disabled"
+                                                  :items="props.pushMobileApplications"
+                                                  label="Application" />
+                                </div>
+                            </div>
+
+                            <div class="row">
+                                <div class="col-md-12">
+                                    <template v-if="onlyHadHtmlContentOnLoad">
+                                        <NotificationBox alertType="warning">
+                                            Please convert the Additional Details section into structured content by copying its contents into the designated field below.
+                                        </NotificationBox>
+                                        <HtmlEditor v-model="pushOpenMessage"
+                                                    :disabled="disabled"
+                                                    label="Additional Details" />
+                                    </template>
+
+                                    <StructuredContentEditor v-model="pushOpenMessageJson"
+                                                             :disabled="disabled"
+                                                             label="Additional Details" />
+                                </div>
+                            </div>
+                        </template>
+                    </RockForm>
+                </div>
+
+                <div class="push-editor-container">
+                    <PushNotificationMobilePreview :pushTitle="pushTitle"
+                                                   :pushMessage="pushMessage" />
+                </div>
+            </div>
+        </template>
+
+        <template #footerActions>
+            <RockButton btnType="default" :disabled="disabled" @click="emit('close')">Cancel</RockButton>
+        </template>
+
+        <template #footerSecondaryActions>
+            <RockButton btnType="primary" :disabled="disabled" :form="createPushFormId" type="submit">Save</RockButton>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+:deep(.push-builder-panel-body) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+}
+
+:deep(.push-builder-panel-body .actions) {
+    margin: 0;
+}
+
+.panel-body-contents {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+}
+
+.push-form-container {
+    width: 540px;
+    padding: var(--spacing-large);
+    overflow-y: auto;
+}
+
+.push-editor-container {
+    flex: 1;
+    overflow-y: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import PushNotificationMobilePreview from "./pushNotificationMobilePreview.partial.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PagePicker from "@Obsidian/Controls/pagePicker.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
+    import { SiteType } from "@Obsidian/Enums/Cms/siteType";
+    import { PushOpenActionType } from "@Obsidian/Enums/Communication/pushOpenActionType";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { CommunicationFlowDetailCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowDetailCommunicationTemplateBag";
+    import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        communicationTemplate: {
+            type: Object as PropType<CommunicationFlowDetailCommunicationTemplateBag | null | undefined>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isRockMobilePushTransportConfigured: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        pushMobileApplications: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+        (e: "saveCommunicationTemplate", value: CommunicationFlowDetailCommunicationTemplateBag): void;
+    }>();
+
+    const createPushFormId = `create-push-form-${newGuid()}`;
+
+    enum CustomPushOpenActionType {
+        // No Rock Mobile Push transport configured.
+        NoAction = "No Action",
+        LinkToUrl = "Link To URL",
+
+        // Rock Mobile Push transport configured.
+        OpenHomepage = "Open Homepage",
+        SpecificPage = "Specific Page",
+        ShowDetails = "Show Details"
+    }
+
+    // #region Values
+
+    // UI state.
+    const onlyHadHtmlContentOnLoad = ref<boolean>(!!props.communicationTemplate?.pushOpenMessage && !props.communicationTemplate.pushOpenMessageJson);
+
+    // Entity state.
+    const guid = ref<Guid>(toGuidOrNull(props.communicationTemplate?.guid) ?? emptyGuid);
+    const name = ref<string>(props.communicationTemplate?.name ?? "");
+    const pushMessage = ref<string>(props.communicationTemplate?.pushMessage ?? "");
+    const pushTitle = ref<string>(props.communicationTemplate?.pushTitle ?? "");
+    const pushUrl = ref<string>(props.communicationTemplate?.pushUrl ?? "");
+    const pushMobilePage = ref<PageRouteValueBag | null | undefined>(props.communicationTemplate?.pushMobilePage);
+    const pushMobilePageQueryStringItems = ref<KeyValueItem[] | undefined>(recordAsKeyValueItems(props.communicationTemplate?.pushMobilePageQueryString || {}));
+    const pushOpenMessage = ref<string>(props.communicationTemplate?.pushOpenMessage ?? "");
+    const pushOpenMessageJson = ref<string>(props.communicationTemplate?.pushOpenMessageJson ?? "");
+    const pushMobileApplication = ref<ListItemBag | null | undefined>(props.communicationTemplate?.pushMobileApplication);
+    const customPushOpenAction = ref<CustomPushOpenActionType>(getCustomPushOpenActionType(props.communicationTemplate?.pushOpenAction ?? PushOpenActionType.NoAction));
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    function getCustomPushOpenActionType(value: PushOpenActionType): CustomPushOpenActionType {
+        if (props.isRockMobilePushTransportConfigured) {
+            switch (value) {
+                case PushOpenActionType.LinkToUrl:
+                    if (pushMobilePage.value) {
+                        return CustomPushOpenActionType.LinkToUrl;
+                    }
+                    else {
+                        return CustomPushOpenActionType.OpenHomepage;
+                    }
+                case PushOpenActionType.LinkToMobilePage:
+                    return CustomPushOpenActionType.SpecificPage;
+                case PushOpenActionType.ShowDetails:
+                    return CustomPushOpenActionType.ShowDetails;
+                default:
+                    return CustomPushOpenActionType.OpenHomepage;
+            }
+        }
+        else {
+            switch (value) {
+                case PushOpenActionType.NoAction:
+                    return CustomPushOpenActionType.NoAction;
+                case PushOpenActionType.LinkToUrl:
+                    return CustomPushOpenActionType.LinkToUrl;
+                default:
+                    return CustomPushOpenActionType.NoAction;
+            }
+        }
+    }
+
+    const pushMobileApplicationGuidOrEmptyString = computed<string>({
+        get() {
+            const guid = toGuidOrNull(pushMobileApplication.value?.value);
+            return guid ?? "";
+        },
+        set(value: string) {
+            const guid = toGuidOrNull(value);
+
+            if (guid) {
+                pushMobileApplication.value = props.pushMobileApplications.find(n => areEqual(n.value, guid));
+            }
+            else {
+                pushMobileApplication.value = null;
+            }
+        }
+    });
+
+    const customPushOpenActions = computed<ListItemBag[]>(() => {
+        if (props.isRockMobilePushTransportConfigured) {
+            return [
+                {
+                    value: CustomPushOpenActionType.OpenHomepage,
+                    text: CustomPushOpenActionType.OpenHomepage
+                },
+                {
+                    value: CustomPushOpenActionType.SpecificPage,
+                    text: CustomPushOpenActionType.SpecificPage
+                },
+                {
+                    value: CustomPushOpenActionType.ShowDetails,
+                    text: CustomPushOpenActionType.ShowDetails
+                }
+            ];
+        }
+        else {
+            return [
+                {
+                    value: CustomPushOpenActionType.NoAction,
+                    text: CustomPushOpenActionType.NoAction
+                },
+                {
+                    value: CustomPushOpenActionType.LinkToUrl,
+                    text: CustomPushOpenActionType.LinkToUrl
+                }
+            ];
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onSavePushMessageClicked(): void {
+        const bag: CommunicationFlowDetailCommunicationTemplateBag = {
+            guid: guid.value,
+            name: name.value,
+            pushMobileApplication: pushMobileApplication.value,
+            pushTitle: pushTitle.value,
+            pushMessage: pushMessage.value
+        };
+
+        switch (customPushOpenAction.value) {
+            case CustomPushOpenActionType.OpenHomepage:
+                bag.pushOpenAction = PushOpenActionType.LinkToMobilePage;
+                break;
+            case CustomPushOpenActionType.SpecificPage:
+                bag.pushOpenAction = PushOpenActionType.LinkToMobilePage;
+                bag.pushMobilePage = pushMobilePage.value;
+                bag.pushMobilePageQueryString = keyValueItemsAsRecord(pushMobilePageQueryStringItems.value);
+                break;
+            case CustomPushOpenActionType.ShowDetails:
+                bag.pushOpenAction = PushOpenActionType.ShowDetails;
+                bag.pushOpenMessageJson = pushOpenMessageJson.value;
+                bag.pushOpenMessage = pushOpenMessage.value;
+                break;
+            case CustomPushOpenActionType.NoAction:
+                bag.pushOpenAction = PushOpenActionType.NoAction;
+                break;
+            case CustomPushOpenActionType.LinkToUrl:
+                bag.pushOpenAction = PushOpenActionType.LinkToUrl;
+                bag.pushUrl = pushUrl.value;
+                break;
+        }
+
+        emit("saveCommunicationTemplate", bag);
+    }
+
+    // #endregion Event Handlers
+
+    // #region Functions
+
+    function recordAsKeyValueItems(record: Record<string, string> | undefined): KeyValueItem[] | undefined {
+        if (record === undefined) {
+            return;
+        }
+
+        const items: KeyValueItem[] = [];
+
+        for (const key in record) {
+            if (key) {
+                items.push({
+                    key,
+                    value: record[key]
+                });
+            }
+        }
+
+        return items;
+    }
+
+    function keyValueItemsAsRecord(items: KeyValueItem[] | undefined): Record<string, string> | undefined {
+        if (items === undefined) {
+            return undefined;
+        }
+
+        const record: Record<string, string> = {};
+
+        for (const item of items) {
+            if (item.key && item.value) {
+                record[item.key] = item.value;
+            }
+        }
+
+        return record;
+    }
+
+    // #endregion Functions
+</script>

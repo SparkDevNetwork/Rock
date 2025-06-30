@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+import { assertType } from "./util";
+
 /**
  * A function that will select a value from the object.
  */
@@ -522,6 +524,11 @@ export class Enumerable<T> {
 
     /**
      * Aggregates the elements of the sequence using a specified accumulator function and seed value.
+     *
+     * This method realizes the enumerable and iterates through each element immediately.
+     *
+     * Use `scan()` for a lazy version of this method.
+     *
      * @param accumulator - A function that accumulates each element.
      * @param seed - The initial value for the accumulation.
      * @returns The aggregated value.
@@ -529,6 +536,7 @@ export class Enumerable<T> {
     aggregate<U>(accumulator: (acc: U, item: T, index: number) => U, seed: U): U {
         let result = seed;
         let index = 0;
+
         for (const item of this) {
             result = accumulator(result, item, index++);
         }
@@ -538,7 +546,7 @@ export class Enumerable<T> {
     /**
      * Determines whether all elements in the sequence satisfy a condition or if the sequence contains any elements.
      * @param predicate - An optional function to test each element for a condition.
-     * @returns `true` if all elements satisfy the condition; otherwise, `false`.
+     * @returns `true` if all elements satisfy the condition or if the collection is empty; otherwise, `false`.
      */
     all(predicate: (item: T) => boolean): boolean {
         for (const item of this) {
@@ -592,6 +600,21 @@ export class Enumerable<T> {
     }
 
     /**
+     * Concatenates the current sequence with another sequence.
+     * @param second - The second sequence to concatenate.
+     * @returns A new Enumerable containing the concatenated elements.
+     */
+    concat(second: Iterable<T>): Enumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        return new Enumerable(function* () {
+            yield* self;
+            yield* second;
+        });
+    }
+
+    /**
      * Returns the number of elements in the sequence.
      * @returns The total number of elements.
      */
@@ -615,6 +638,106 @@ export class Enumerable<T> {
 
         return total;
     }
+
+    /**
+     * Returns distinct elements from the sequence, using strict equality.
+     *
+     * Works well for primitives (numbers, strings, booleans, symbols)
+     *
+     * @returns A new Enumerable with unique elements.
+     */
+    distinct(): Enumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        return new Enumerable(function* () {
+            const seen = new Set<T>();
+            for (const item of self) {
+                if (!seen.has(item)) {
+                    seen.add(item);
+                    yield item;
+                }
+            }
+        });
+    }
+
+    /**
+     * Returns distinct elements from the sequence based on a key selector.
+     * @param keySelector A function to extract the key for comparison.
+     * @returns A new Enumerable with unique elements by key.
+     */
+    distinctBy<TKey>(keySelector: (item: T) => TKey): Enumerable<T> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        return new Enumerable(function* () {
+            const seenKeys = new Set<string>();
+
+            for (const item of self) {
+                const key = keySelector(item);
+                const keyString = JSON.stringify(key); // acts like a structural hash
+
+                if (!seenKeys.has(keyString)) {
+                    seenKeys.add(keyString);
+                    yield item;
+                }
+            }
+        });
+    }
+
+    /**
+     * Returns the first element from the collection if there are any elements.
+     * Otherwise will throw an exception.
+     *
+     * @returns The first element in the collection.
+     */
+    public first(): T;
+
+    /**
+     * Filters the list by the predicate and then returns the first element
+     * in the collection if any remain. Otherwise throws an exception.
+     *
+     * @param predicate The predicate to filter the elements by.
+     *
+     * @returns The first element in the collection.
+     */
+    public first(predicate: PredicateFn<T>): T;
+
+    /**
+     * Filters the list by the predicate and then returns the first element
+     * in the collection if any remain. Otherwise throws an exception.
+     *
+     * @param predicate The predicate to filter the elements by.
+     *
+     * @returns The first element in the collection.
+     */
+    public first(predicate?: PredicateFn<T>): T {
+        let i = 0;
+
+        for (const item of this) {
+            if (!predicate || predicate(item, i)) {
+                return item;
+            }
+
+            i++;
+        }
+
+        throw noElementsFound;
+    }
+
+    /**
+     * Returns the first element of the sequence or a default value if the sequence is empty.
+     * @param defaultValue - The default value to return if the sequence is empty.
+     * @returns The first element of the sequence or the default value.
+     */
+    firstOrDefault(): T | undefined;
+
+    /**
+     * Returns the first element of the sequence or a default value if the sequence is empty.
+     * @param defaultValue - The default value to return if the sequence is empty.
+     * @returns The first element of the sequence or the default value.
+     */
+    firstOrDefault(defaultValue: T): T;
 
     /**
      * Returns the first element of the sequence or a default value if the sequence is empty.
@@ -651,24 +774,59 @@ export class Enumerable<T> {
         const self = this;
 
         return new Enumerable(function* () {
-            const map = new Map<TKey, T[]>();
+            const map = new Map<string, { key: TKey, values: T[] }>();
 
             for (const item of self) {
                 const key = keySelector(item);
-                const group = map.get(key);
+                const keyString = JSON.stringify(key); // acts like GetHashCode + ToString()
 
-                if (group) {
-                    group.push(item);
+                const entry = map.get(keyString);
+
+                if (entry) {
+                    entry.values.push(item);
                 }
                 else {
-                    map.set(key, [item]);
+                    map.set(keyString, { key, values: [item] });
                 }
             }
 
-            for (const [key, values] of map) {
+            for (const { key, values } of map.values()) {
                 yield new GroupedEnumerable<TKey, T>(key, values);
             }
         });
+    }
+
+    /**
+     * Returns the last element of the sequence.
+     * @returns The last element.
+     * @throws If the sequence is empty.
+     */
+    last(): T;
+
+    /**
+     * Returns the last element of the sequence that satisfies the predicate.
+     * @param predicate A function to test each element.
+     * @returns The last matching element.
+     * @throws If no matching element is found.
+     */
+    last(predicate: (item: T) => boolean): T;
+
+    last(predicate?: (item: T) => boolean): T {
+        let found = false;
+        let lastMatch: T | undefined = undefined;
+
+        for (const item of this) {
+            if (!predicate || predicate(item)) {
+                found = true;
+                lastMatch = item;
+            }
+        }
+
+        if (!found || lastMatch === undefined) {
+            throw new Error("No element satisfies the condition in last()");
+        }
+
+        return lastMatch;
     }
 
     /**
@@ -776,6 +934,46 @@ export class Enumerable<T> {
     ): OrderedEnumerable<T> {
         const descendingComparer = (a: U, b: U): number => -comparer(a, b);
         return this.orderBy(keySelector, descendingComparer);
+    }
+
+    /**
+     * Applies an accumulator function over the sequence, yielding each intermediate result.
+     * The first yielded value is based on the seed provided.
+     *
+     * This behaves like a "scan" or "running total" operation in functional programming.
+     * It is the lazy counterpart to `aggregate()` that preserves intermediate state at each step.
+     *
+     * @template U The type of the accumulated value.
+     * @param seed The initial accumulator value.
+     * @param accumulator A function that takes the accumulated value, the current element, and the index,
+     *                    and returns the new accumulated value.
+     * @returns An Enumerable of the intermediate accumulated values.
+     *
+     * @example
+     * const values = Enumerable.from([1, 2, 3, 4])
+     *     .scan(0, (acc, val) => acc + val)
+     *     .toArray();
+     * // Output: [1, 3, 6, 10]
+     *
+     * @example
+     * const withIndex = Enumerable.from(["a", "b", "c"])
+     *     .scan([], (acc, item, index) => [...acc, `${index}:${item}`])
+     *     .toArray();
+     * // Output: [["0:a"], ["0:a", "1:b"], ["0:a", "1:b", "2:c"]]
+     */
+    scan<U>(seed: U, accumulator: (acc: U, item: T, index: number) => U): Enumerable<U> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        return new Enumerable(function* () {
+            let acc = seed;
+            let index = 0;
+
+            for (const item of self) {
+                acc = accumulator(acc, item, index++);
+                yield acc;
+            }
+        });
     }
 
     /**
@@ -922,10 +1120,9 @@ export class Enumerable<T> {
     }
 
     /**
-     * Returns a generator that yields each element of the sequence paired with its index.
+     * Returns a new Enumerable that yields each element of the sequence paired with its index.
      *
-     * @generator
-     * @yields {[T, number]} A tuple containing the element and its zero-based index.
+     * @returns An Enumerable of [element, index] tuples.
      *
      * @example
      * // Example usage with a for...of loop:
@@ -947,11 +1144,16 @@ export class Enumerable<T> {
      * console.log(indexed);
      * // Output: [['x', 0], ['z', 2]]
      */
-    *withIndex(): IterableIterator<[T, number]> {
-        let index = 0;
-        for (const item of this) {
-            yield [item, index++];
-        }
+    withIndex(): Enumerable<[T, number]> {
+        // eslint-disable-next-line @typescript-eslint/no-this-alias
+        const self = this;
+
+        return new Enumerable(function* (): Generator<[T, number]> {
+            let index = 0;
+            for (const item of self) {
+                yield [item, index++];
+            }
+        });
     }
 }
 
@@ -1025,16 +1227,9 @@ class OrderedEnumerable<T> extends Enumerable<T> {
     }
 }
 
-class GroupedEnumerable<TKey, TElement> extends Enumerable<TElement> {
+export class GroupedEnumerable<TKey, TElement> extends Enumerable<TElement> {
     constructor(public readonly key: TKey, elements: Iterable<TElement>
     ) {
         super(() => elements);
     }
-}
-
-/**
- * Blindly asserts that the value is of type T.
- */
-function assertType<T>(value: unknown): value is T {
-    return true;
 }

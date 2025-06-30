@@ -1031,7 +1031,8 @@ namespace RockWeb.Blocks.Communication
 
             var templates = templateService.Queryable()
                 .AsNoTracking()
-                .Where( a => a.IsActive )
+                .Where( a => a.IsActive && a.UsageType == null ) // By default, exclude templates with a specified usage type (e.g., Communication Flows)
+                .ToList()
                 .OrderBy( t => t.Name )
                 .ToList();
 

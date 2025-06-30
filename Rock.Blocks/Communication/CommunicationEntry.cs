@@ -36,6 +36,7 @@ using Rock.ViewModels.Blocks.Communication.CommunicationEntry;
 using Rock.ViewModels.Utility;
 using Rock.ViewModels.Rest.Controls;
 using Rock.Web.Cache;
+using Rock.Enums.Communication;
 
 namespace Rock.Blocks.Communication
 {
@@ -948,9 +949,9 @@ namespace Rock.Blocks.Communication
 
             return mediums
                 .OrderBy( medium =>
-                    medium.Medium.CommunicationType == CommunicationType.Email ? 1 :
-                    medium.Medium.CommunicationType == CommunicationType.SMS ? 2 :
-                    medium.Medium.CommunicationType == CommunicationType.PushNotification ? 3 : 4
+                    medium.Medium.CommunicationType == Model.CommunicationType.Email ? 1 :
+                    medium.Medium.CommunicationType == Model.CommunicationType.SMS ? 2 :
+                    medium.Medium.CommunicationType == Model.CommunicationType.PushNotification ? 3 : 4
                 )
                 .Select( medium => new ListItemBag
                 {
@@ -1557,17 +1558,17 @@ namespace Rock.Blocks.Communication
         /// Gets the medium entity type unique identifier for a communication type.
         /// </summary>
         /// <param name="communicationType">The communication type.</param>
-        private Guid? GetMediumEntityTypeGuid( CommunicationType communicationType )
+        private Guid? GetMediumEntityTypeGuid( Model.CommunicationType communicationType )
         {
             switch ( communicationType )
             {
-                case CommunicationType.Email:
+                case Model.CommunicationType.Email:
                     return SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid();
-                case CommunicationType.SMS:
+                case Model.CommunicationType.SMS:
                     return SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid();
-                case CommunicationType.PushNotification:
+                case Model.CommunicationType.PushNotification:
                     return SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid();
-                case CommunicationType.RecipientPreference:
+                case Model.CommunicationType.RecipientPreference:
                 default:
                     return null;
             }
@@ -1591,7 +1592,7 @@ namespace Rock.Blocks.Communication
 
             foreach ( var template in new CommunicationTemplateService( rockContext )
                 .Queryable().AsNoTracking()
-                .Where( a => a.IsActive )
+                .Where( a => a.IsActive && a.UsageType == null ) // By default, exclude templates with a specified usage type (e.g., Communication Flows)
                 .OrderBy( t => t.Name ) )
             {
                 if ( template == null || !template.IsAuthorized( Authorization.VIEW, currentPerson ) )
@@ -1607,8 +1608,8 @@ namespace Rock.Blocks.Communication
                    
                    Reason: GitHub Issue #4888
                  */
-                var isValidEmailTemplate = medium.CommunicationType == CommunicationType.Email && template.HasEmailTemplate() && !template.SupportsEmailWizard();
-                var isValidSmsTemplate = medium.CommunicationType == CommunicationType.SMS && template.HasSMSTemplate();
+                var isValidEmailTemplate = medium.CommunicationType == Model.CommunicationType.Email && template.HasEmailTemplate() && !template.SupportsEmailWizard();
+                var isValidSmsTemplate = medium.CommunicationType == Model.CommunicationType.SMS && template.HasSMSTemplate();
                 if ( isValidEmailTemplate || isValidSmsTemplate )
                 {
                     templates.Add( template );
@@ -1672,7 +1673,7 @@ namespace Rock.Blocks.Communication
             var newRecipients = new List<CommunicationEntryRecipientBag>( bag.Recipients );
 
             // Include additional email recipients.
-            if ( medium.CommunicationType == CommunicationType.Email && bag.AdditionalEmailAddresses?.Any() == true )
+            if ( medium.CommunicationType == Model.CommunicationType.Email && bag.AdditionalEmailAddresses?.Any() == true )
             {
                 var additionalEmailRecipientPersonAliasIds = new List<int>();
 
@@ -1795,11 +1796,11 @@ namespace Rock.Blocks.Communication
 
             var communicationType = communication.CommunicationType;
             List<ListItemBag> binaryFileAttachments;
-            if ( communicationType == CommunicationType.Email )
+            if ( communicationType == Model.CommunicationType.Email )
             {
                 binaryFileAttachments = bag.EmailAttachmentBinaryFiles;
             }
-            else if ( communicationType == CommunicationType.SMS )
+            else if ( communicationType == Model.CommunicationType.SMS )
             {
                 binaryFileAttachments = bag.SmsAttachmentBinaryFiles;
             }
@@ -2393,13 +2394,13 @@ namespace Rock.Blocks.Communication
             public IEnumerable<int> SMSAttachmentBinaryFileIds { get => this.SmsAttachments?.Select( a => a.Id ); }
             public CommunicationStatus Status { get => _bag.Status; set => _bag.Status = value; }
 
-            public PushOpenAction? PushOpenAction
+            public Rock.Utility.PushOpenAction? PushOpenAction
             {
                 get
                 {
                     return _bag.PushOpenAction.HasValue
-                        ? ( PushOpenAction ) ( int ) _bag.PushOpenAction.Value
-                        : ( PushOpenAction? ) null;
+                        ? ( Rock.Utility.PushOpenAction ) ( int ) _bag.PushOpenAction.Value
+                        : ( Rock.Utility.PushOpenAction? ) null;
                 }
                 set
                 {

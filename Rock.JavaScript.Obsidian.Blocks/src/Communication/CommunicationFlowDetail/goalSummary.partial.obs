@@ -1,0 +1,20 @@
+<template>
+    <div class="goal-summary">
+        <span><i class="ti ti-target"></i>
+            <slot></slot>
+        </span>
+    </div>
+</template>
+
+<style scoped>
+.goal-summary {
+    color: var(--color-info-strong);
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+    margin-bottom: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    // TBD
+</script>

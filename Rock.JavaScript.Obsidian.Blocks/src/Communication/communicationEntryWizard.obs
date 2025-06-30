@@ -225,7 +225,7 @@
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
     import { EmailEditorApi, GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
     import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
-    import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/pushOpenAction";
+    import { PushOpenActionType } from "@Obsidian/Enums/Communication/pushOpenActionType";
     import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
     import { SegmentCriteria } from "@Obsidian/Enums/Communication/segmentCriteria";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -385,7 +385,7 @@
     const pushData = ref<CommunicationEntryWizardPushNotificationOptionsBag | null | undefined>(config.communication?.pushData);
     const pushImageBinaryFileGuid = ref<Guid | null | undefined>(config.communication?.pushImageBinaryFileGuid);
     const pushMessage = ref<string>(config.communication?.pushMessage ?? "");
-    const pushOpenAction = ref<PushOpenAction>(config.communication?.pushOpenAction ?? PushOpenAction.NoAction);
+    const pushOpenAction = ref<PushOpenActionType>(config.communication?.pushOpenAction ?? PushOpenActionType.NoAction);
     const pushOpenMessage = ref<string>(config.communication?.pushOpenMessage ?? "");
     const pushOpenMessageJson = ref<string | undefined>(config.communication?.pushOpenMessageJson ?? undefined);
     const pushTitle = ref<string>(config.communication?.pushTitle ?? "");
@@ -779,7 +779,7 @@
         // Push fields.
         pushData.value = bag.pushData;
         pushMessage.value = bag.pushMessage ?? "";
-        pushOpenAction.value = bag.pushOpenAction ?? PushOpenAction.NoAction;
+        pushOpenAction.value = bag.pushOpenAction ?? PushOpenActionType.NoAction;
         pushOpenMessageJson.value = bag.pushOpenMessageJson ?? undefined;
         pushTitle.value = bag.pushTitle ?? "";
         pushImageBinaryFileGuid.value = bag.pushImageBinaryFileGuid;
@@ -1120,7 +1120,7 @@
         pushData.value = bag.pushData;
         pushImageBinaryFileGuid.value = bag.pushImageBinaryFileGuid;
         pushMessage.value = bag.pushMessage ?? "";
-        pushOpenAction.value = bag.pushOpenAction ?? PushOpenAction.NoAction;
+        pushOpenAction.value = bag.pushOpenAction ?? PushOpenActionType.NoAction;
         pushOpenMessage.value = bag.pushOpenMessage ?? "";
         pushOpenMessageJson.value = bag.pushOpenMessageJson ?? undefined;
         pushTitle.value = bag.pushTitle ?? "";

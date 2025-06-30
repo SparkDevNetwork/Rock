@@ -1,0 +1,224 @@
+<template>
+    <div class="communication-flow-message"
+         :class="{
+            'is-hovering': isHovering
+        }"
+         @click="$emit('edit')"
+         @mouseenter="isHovering = true"
+         @mouseleave="isHovering = false">
+        <div class="communication-flow-message-and-line">
+            <div class="communication-step-badge">
+                <Badge badgeType="success">Step {{ order + 1 }}</Badge>
+            </div>
+
+            <div class="communication-flow-info">
+                <HighlightLabel labelType="info"
+                                :iconCssClass="`${getLabelIconCssClass(communicationType)} fa-lg`"></HighlightLabel>
+
+                <div class="communication-flow-preview">
+                    <h4>{{ name }}</h4>
+                    <small v-if="preview" class="text-muted">{{ preview }}</small>
+                </div>
+            </div>
+        </div>
+
+        <div class="communication-flow-right">
+            <div class="communication-message-from">
+                <i :class="`${getFromIconCssClass(communicationType)} text-muted`"></i>
+                <small class="text-muted">{{ from }}</small>
+            </div>
+
+            <DropDownMenu align="right"
+                          :disabled="disabled"
+                          :items="[
+                            {
+                                type: 'default',
+                                iconCssClass: 'ti ti-chevrons-up',
+                                title: 'Move Up',
+                                handler: () => $emit('moveUp')
+                            },
+                            {
+                                type: 'default',
+                                iconCssClass: 'ti ti-chevrons-down',
+                                title: 'Move Down',
+                                handler: () => $emit('moveDown')
+                            },
+                            {
+                                type: 'default',
+                                iconCssClass: 'ti ti-edit text-info',
+                                title: 'Edit',
+                                handler: () => $emit('edit')
+                            },
+                            {
+                                type: 'default',
+                                iconCssClass: 'ti ti-trash text-danger',
+                                title: 'Delete',
+                                handler: () => $emit('delete')
+                            },
+                        ]"
+                          @click.stop
+                          @mouseenter="isHovering = false"
+                          @mouseleave="isHovering = true" />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.communication-flow-message {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-huge);
+    padding: var(--spacing-large);
+    border-radius: var(--border-radius-base);
+    border: 1px solid var(--color-interface-medium);
+    cursor: pointer;
+    transition: background-color .15s ease-in-out;
+}
+
+.communication-flow-message.is-hovering {
+    background-color: var(--color-info-soft);
+}
+
+.communication-flow-message-and-line {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-large);
+    flex: 1;
+    overflow: hidden;
+}
+
+.communication-step-badge {
+    /* Prevent the step label from shrinking. */
+    flex-shrink: 0;
+}
+
+.communication-flow-info {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-medium);
+    overflow: hidden;
+}
+
+.communication-flow-preview {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+    overflow: hidden;
+}
+
+.communication-flow-preview h4 {
+    margin: 0;
+}
+
+.communication-flow-preview small {
+    white-space: nowrap;
+    text-overflow: ellipsis;
+    overflow: hidden;
+}
+
+.communication-flow-right {
+    display: flex;
+    flex: 0.5;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-large);
+}
+
+.communication-message-from {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType, ref } from "vue";
+    import Badge from "@Obsidian/Controls/badge.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+
+    defineProps({
+        communicationCount: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        communicationType: {
+            type: Object as PropType<CommunicationType>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        from: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        name: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        order: {
+            type: Number as PropType<number>,
+            required: true
+        },
+
+        preview: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+
+    defineEmits<{
+        (e: "edit"): void;
+        (e: "delete"): void;
+        (e: "moveUp"): void;
+        (e: "moveDown"): void;
+    }>();
+
+    // #region Values
+
+    const isHovering = ref<boolean>(false);
+
+    // #endregion Values
+
+    // #region Functions
+
+    function getLabelIconCssClass(type: CommunicationType): string {
+        switch (type) {
+            case CommunicationType.Email:
+                return "ti ti-mail";
+            case CommunicationType.SMS:
+                return "ti ti-message";
+            case CommunicationType.PushNotification:
+                return "ti ti-device-mobile";
+            default:
+                return "";
+        }
+    }
+
+    function getFromIconCssClass(type: CommunicationType): string {
+        switch (type) {
+            case CommunicationType.Email:
+                return "ti ti-address-book";
+            case CommunicationType.SMS:
+                return "ti ti-phone";
+            case CommunicationType.PushNotification:
+                return "ti ti-box";
+            default:
+                return "";
+        }
+    }
+
+    // #endregion Functions
+</script>
