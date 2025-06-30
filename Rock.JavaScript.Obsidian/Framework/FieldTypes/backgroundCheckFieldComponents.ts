@@ -24,7 +24,6 @@ import ComponentPicker from "@Obsidian/Controls/componentPicker.obs";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 import { ConfigurationValueKey } from "./backgroundCheckField.partial";
 import { EntityType } from "@Obsidian/SystemGuids/entityType";
-//import { splitCase } from "@Obsidian/Utility/stringUtils";
 
 export const EditComponent = defineComponent({
     name: "BackgroundCheckField.Edit",

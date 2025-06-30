@@ -78,7 +78,7 @@ namespace RockWeb
                             {
                                 if ( url == "Unauthorized" )
                                 {
-                                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                                    context.Response.StatusCode = ( int ) HttpStatusCode.Unauthorized;
                                     return;
                                 }
                                 else
@@ -92,6 +92,10 @@ namespace RockWeb
                             {
                                 // Can safely ignore this exception
                             }
+                        }
+                        else
+                        {
+                            SendError( context, 500, "The underlying component was unable to retrieve the requested item.  Please ask the administrator to check the exception log for additional details." );
                         }
                     }
                 }
@@ -112,6 +116,20 @@ namespace RockWeb
                 ExceptionLogService.LogException( ex, context );
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             }
+        }
+
+        /// <summary>
+        /// Sends an error code response and completes the request.
+        /// </summary>
+        /// <param name="context">THe HttpContext for this request.</param>
+        /// <param name="code">The response code to send.</param>
+        /// <param name="message">The response message to send.</param>
+        private void SendError( HttpContext context, int code, string message )
+        {
+            context.Response.Clear();
+            context.Response.StatusCode = code;
+            context.Response.StatusDescription = message;
+            context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>

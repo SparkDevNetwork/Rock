@@ -74,7 +74,7 @@ namespace Rock.Field.Types
         public override string GetPublicValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
             //return GetTextValue( privateValue, privateConfigurationValues );
-            var internalValue = ParseInternalValue( privateValue );
+            var internalValue = ParseForPublicValue( privateValue );
             if ( internalValue == null )
             {
                 return string.Empty;
@@ -106,7 +106,7 @@ namespace Rock.Field.Types
         {
             var publicConfigurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, privateValue );
 
-            var internalValue = ParseInternalValue( privateValue );
+            var internalValue = ParseForPublicValue( privateValue );
             if ( internalValue != null )
             {
                 publicConfigurationValues[ORIGINAL_PROVIDER_ENTITY_TYPE_GUID] = internalValue.ProviderEntityTypeGuid.ToString();
@@ -136,7 +136,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            var internalValue = ParseInternalValue( privateValue );
+            var internalValue = ParseForPublicValue( privateValue );
             if ( internalValue == null )
             {
                 return string.Empty;
@@ -199,7 +199,7 @@ namespace Rock.Field.Types
         /// <inheritdoc />
         public override string GetHtmlValue( string privateValue, Dictionary<string, string> privateConfigurationValues )
         {
-            var internalValue = ParseInternalValue( privateValue );
+            var internalValue = ParseForPublicValue( privateValue );
             if ( internalValue == null )
             {
                 return string.Empty;
@@ -283,18 +283,19 @@ namespace Rock.Field.Types
         }
 
         /// <summary>
-        /// This will return null if the given value is not valid.
+        /// Parses the internal, private value into an object that is easier to deal with; hiding
+        /// the splitting/parsing into this one method.  This will return null if the given value is not valid.
         /// </summary>
-        /// <param name="privateValue"></param>
-        /// <returns></returns>
-        private static InternalValue ParseInternalValue( string privateValue )
+        /// <param name="privateValue">The internally stored internal value for this field type.</param>
+        /// <returns>A value suitable for public usage or null if the private value is not valid or empty .</returns>
+        private static PublicValueItem ParseForPublicValue( string privateValue )
         {
             if ( string.IsNullOrWhiteSpace( privateValue ) )
             {
                 return null;
             }
 
-            var internalValue = new InternalValue();
+            var internalValue = new PublicValueItem();
 
             // If the value is a single guid, the privateValue is just the BinaryFileGuid and
             // the provider is the PMM legacy provider.
@@ -574,7 +575,7 @@ namespace Rock.Field.Types
 
 #endif
         #endregion
-        private class InternalValue
+        private class PublicValueItem
         {
             public bool IsLegacyProtectMyMinistry { get; set; } = false;
             public bool IsFileBased => BinaryFileGuid.HasValue;
