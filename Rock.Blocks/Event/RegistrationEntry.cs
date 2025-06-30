@@ -2484,13 +2484,14 @@ namespace Rock.Blocks.Event
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes )
         {
             string phoneNumber = string.Empty;
+            string countryCode = null;
             bool? isMessagingEnabled = null;
 
             var phoneData = fieldValue.ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>();
             if ( phoneData != null )
             {
-                // We got the number and SMS selection, so set both.
                 phoneNumber = phoneData.Number;
+                countryCode = phoneData.CountryCode;
                 isMessagingEnabled = phoneData.IsMessagingEnabled;
             }
             else if ( fieldValue is string )
@@ -2529,6 +2530,11 @@ namespace Rock.Blocks.Event
             {
                 oldPhoneNumber = phone.NumberFormattedWithCountryCode;
                 oldIsMessagingEnabled = phone.IsMessagingEnabled;
+            }
+
+            if ( !string.IsNullOrWhiteSpace( countryCode ) )
+            {
+                phone.CountryCode = countryCode;
             }
 
             phone.Number = cleanNumber;

@@ -1,6 +1,16 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <component v-if="component" :is="component" v-bind="fieldControlComponentProps" v-model="fieldValues[field.guid]" />
+    <PhoneNumberBox
+                    v-if="isPhoneField"
+                    v-bind="fieldControlComponentProps"
+                    v-model="phoneNumber"
+                    :countryCode="countryCode"
+                    @update:countryCode="onCountryCodeChange" />
+    <component
+               v-else-if="component"
+               :is="component"
+               v-bind="fieldControlComponentProps"
+               v-model="fieldValues[field.guid]" />
     <NotificationBox v-else alertType="danger">Could not load the control for person field {{ fieldType }}.</NotificationBox>
 </template>
 <script setup lang="ts">
@@ -36,6 +46,8 @@
     });
 
     const registrationEntryState = use(CurrentRegistrationEntryState);
+    const phoneNumber = ref("");
+    const countryCode = ref("1");
 
     // #region Values
 
@@ -192,6 +204,15 @@
         return props.field.personFieldType;
     });
 
+    // Determine if the field is a phone field to conditionally render using PhoneNumberBox explicitly
+    const isPhoneField = computed(() => {
+        return ([
+            RegistrationPersonFieldType.HomePhone,
+            RegistrationPersonFieldType.WorkPhone,
+            RegistrationPersonFieldType.MobilePhone
+        ] as RegistrationPersonFieldType[]).includes(props.field.personFieldType);
+    });
+
     // #endregion
 
     /**
@@ -220,9 +241,24 @@
         }
     }
 
+    function onCountryCodeChange(theCountryCode: string): void {
+        countryCode.value = theCountryCode;
+    }
+
     setDefaultValueIfNeeded();
+
+    // #region Watchers
+
+    watch([phoneNumber, countryCode], () => {
+        props.fieldValues[props.field.guid] = {
+            number: phoneNumber.value,
+            countryCode: countryCode.value
+        };
+    });
 
     // Fix issue with TextBox being passed an undefined value instead of an
     // empty string.
     watch(() => props.fieldValues, () => setDefaultValueIfNeeded(), { deep: true });
+
+    // #endregion
 </script>
