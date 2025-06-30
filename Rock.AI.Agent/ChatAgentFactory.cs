@@ -107,7 +107,7 @@ namespace Rock.AI.Agent
             var agent = AIAgentCache.Get( agentId, rockContext );
             var settings = agent.GetAdditionalSettings<AgentSettings>();
 
-            _agentConfiguration = new AgentConfiguration( agentId, provider, string.Empty, settings.Role, GetSkillConfigurations( agentId, rockContext ) );
+            _agentConfiguration = new AgentConfiguration( agentId, provider, string.Empty, settings, GetSkillConfigurations( agentId, rockContext ) );
             sw.Stop();
 
             _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );

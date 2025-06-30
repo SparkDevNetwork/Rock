@@ -30,6 +30,11 @@
                               :items="roleItems"
                               :showBlankItem="false"
                               rules="required" />
+
+                <NumberBox v-model="autoSummarizeThreshold"
+                           label="Auto Summarize Threshold"
+                           help="The number of tokens that will trigger an auto summarization of the conversion when the agent is processing a message."
+                           :minimumValue="0" />
             </div>
         </div>
     </fieldset>
@@ -38,6 +43,7 @@
 <script setup lang="ts">
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { PropType, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
@@ -70,6 +76,7 @@
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
     const persona = propertyRef(props.modelValue.bag?.persona ?? "", "Persona");
+    const autoSummarizeThreshold = ref(props.modelValue.bag?.autoSummarizeThreshold ?? 0);
     const avatarBinaryFile = ref(props.modelValue.bag?.avatarBinaryFile ?? null);
     const role = ref((props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
 
@@ -104,7 +111,7 @@
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([...propRefs, avatarBinaryFile, role], () => {
+    watch([...propRefs, autoSummarizeThreshold, avatarBinaryFile, role], () => {
         const newValue: ValidPropertiesBox<AIAgentBag> = {
             bag: { ...props.modelValue.bag } as AIAgentBag
         };
@@ -112,6 +119,7 @@
         setPropertiesBoxValue(newValue, "description", description.value);
         setPropertiesBoxValue(newValue, "name", name.value);
         setPropertiesBoxValue(newValue, "persona", persona.value);
+        setPropertiesBoxValue(newValue, "autoSummarizeThreshold", autoSummarizeThreshold.value);
         setPropertiesBoxValue(newValue, "avatarBinaryFile", avatarBinaryFile.value);
         setPropertiesBoxValue(newValue, "role", toNumber(role.value) as ModelServiceRole);
 

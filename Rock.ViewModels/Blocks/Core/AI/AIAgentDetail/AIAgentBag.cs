@@ -34,6 +34,13 @@ namespace Rock.ViewModels.Blocks.Core.AI.AIAgentDetail
         public List<AgentSkillBag> Skills { get; set; }
 
         /// <summary>
+        /// The token threshold before auto-summarization will be triggered
+        /// when a new user message is added. This only applies to persisted
+        /// sessions.
+        /// </summary>
+        public int AutoSummarizeThreshold { get; set; }
+
+        /// <summary>
         /// The binary file that contains the image to use as the avatar to
         /// represent the agent. This will be used in the administrative UI and
         /// the chat UI to represent the agent visually.

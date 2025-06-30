@@ -35,6 +35,13 @@ export type AIAgentBag = {
     attributeValues?: Record<string, string> | null;
 
     /**
+     * The token threshold before auto-summarization will be triggered
+     * when a new user message is added. This only applies to persisted
+     * sessions.
+     */
+    autoSummarizeThreshold: number;
+
+    /**
      * The binary file that contains the image to use as the avatar to
      * represent the agent. This will be used in the administrative UI and
      * the chat UI to represent the agent visually.

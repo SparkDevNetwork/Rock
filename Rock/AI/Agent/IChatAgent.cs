@@ -30,15 +30,15 @@ namespace Rock.AI.Agent
 
         int? SessionId { get; }
 
-        void StartNewSession( int? entityTypeId, int? entityId );
+        Task StartNewSessionAsync( int? entityTypeId, int? entityId );
 
-        void LoadSession( int sessionId );
+        Task LoadSessionAsync( int sessionId );
 
-        void AddMessage( AuthorRole role, string message );
+        Task AddMessageAsync( AuthorRole role, string message );
 
-        ContextAnchor AddAnchor( IEntity entity );
+        Task<ContextAnchor> AddAnchorAsync( IEntity entity );
 
-        void RemoveAnchor( int entityTypeId );
+        Task RemoveAnchorAsync( int entityTypeId );
 
         Task<ChatMessageContent> GetChatMessageContentAsync();
 

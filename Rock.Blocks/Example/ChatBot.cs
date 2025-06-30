@@ -46,7 +46,7 @@ namespace Rock.Blocks.Example
             _agentBuilder = agentBuilder;
         }
 
-        public override object GetObsidianBlockInitialization()
+        public async override Task<object> GetObsidianBlockInitializationAsync()
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
@@ -69,7 +69,7 @@ namespace Rock.Blocks.Example
             {
                 var agent = _agentBuilder.Build( agentCache.Id );
 
-                agent.StartNewSession( null, null );
+                await agent.StartNewSessionAsync( null, null );
 
                 sessions = GetRecentSessions();
                 sessionId = sessions.Last().Id;
@@ -116,9 +116,9 @@ namespace Rock.Blocks.Example
             return new AIAgentSessionHistoryService( RockContext )
                 .Queryable()
                 .Where( h => h.AIAgentSessionId == sessionId
-                    && h.IsCurrentlyInContext
                     && !h.IsSummary )
                 .OrderBy( h => h.MessageDateTime )
+                .ThenBy( h => h.Id )
                 .Select( h => new ChatMessageBag
                 {
                     Role = h.MessageRole,
@@ -153,7 +153,7 @@ namespace Rock.Blocks.Example
         }
 
         [BlockAction]
-        async public Task<BlockActionResult> SendMessage( string message, int sessionId )
+        public async Task<BlockActionResult> SendMessage( string message, int sessionId )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
@@ -165,8 +165,8 @@ namespace Rock.Blocks.Example
 
             var agent = _agentBuilder.Build( agentCache.Id );
 
-            agent.LoadSession( sessionId );
-            agent.AddMessage( AuthorRole.User, message );
+            await agent.LoadSessionAsync( sessionId );
+            await agent.AddMessageAsync( AuthorRole.User, message );
 
             var result = await agent.GetChatMessageContentAsync();
             var usage = agent.GetMetricUsageFromResult( result );
@@ -181,7 +181,7 @@ namespace Rock.Blocks.Example
         }
 
         [BlockAction]
-        public BlockActionResult StartNewSession()
+        public async Task<BlockActionResult> StartNewSession()
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
@@ -194,7 +194,7 @@ namespace Rock.Blocks.Example
             var agent = _agentBuilder.Build( agentCache.Id );
 
             // Start a new session.
-            agent.StartNewSession( null, null );
+            await agent.StartNewSessionAsync( null, null );
 
             return ActionOk( new ChatSessionBag
             {
@@ -230,7 +230,7 @@ namespace Rock.Blocks.Example
         }
 
         [BlockAction]
-        public BlockActionResult CreateAnchor( int sessionId, string entityTypeName, int entityId )
+        public async Task<BlockActionResult> CreateAnchor( int sessionId, string entityTypeName, int entityId )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
@@ -256,14 +256,14 @@ namespace Rock.Blocks.Example
 
             var agent = _agentBuilder.Build( agentCache.Id );
 
-            agent.LoadSession( sessionId );
-            agent.AddAnchor( entity );
+            await agent.LoadSessionAsync( sessionId );
+            await agent.AddAnchorAsync( entity );
 
             return ActionOk( GetSessionAnchors( sessionId ) );
         }
 
         [BlockAction]
-        public BlockActionResult DeleteAnchor( int sessionId, int entityTypeId )
+        public async Task<BlockActionResult> DeleteAnchor( int sessionId, int entityTypeId )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
@@ -275,8 +275,8 @@ namespace Rock.Blocks.Example
 
             var agent = _agentBuilder.Build( agentCache.Id );
 
-            agent.LoadSession( sessionId );
-            agent.RemoveAnchor( entityTypeId );
+            await agent.LoadSessionAsync( sessionId );
+            await agent.RemoveAnchorAsync( entityTypeId );
 
             return ActionOk();
         }

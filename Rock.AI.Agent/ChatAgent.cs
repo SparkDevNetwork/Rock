@@ -36,6 +36,10 @@ namespace Rock.AI.Agent
 {
     internal class ChatAgent : IChatAgent
     {
+        private const string AutoSummarizePrompt = "Provide a very brief summary of the following conversation, including only the most important details."
+            + " This will be used when sending subsequent requests to the language model."
+            + " It should reduce extra whitespace and doesn't need to be user-friendly:\n\n";
+
         private readonly AgentConfiguration _agentConfiguration;
 
         private readonly Kernel _kernel;
@@ -45,6 +49,8 @@ namespace Rock.AI.Agent
         private readonly RockRequestContext _requestContext;
 
         private readonly Lazy<TiktokenTokenizer> _tokenizer = new Lazy<TiktokenTokenizer>( CreateTokenizer );
+
+        private bool _historyNeedsSummary = false;
 
         public int? SessionId { get; private set; }
 
@@ -61,7 +67,7 @@ namespace Rock.AI.Agent
             Context.AgentId = _agentConfiguration.AgentId;
         }
 
-        public void StartNewSession( int? entityTypeId, int? entityId )
+        public Task StartNewSessionAsync( int? entityTypeId, int? entityId )
         {
             if ( _requestContext?.CurrentPerson?.PrimaryAliasId == null )
             {
@@ -88,9 +94,11 @@ namespace Rock.AI.Agent
 
                 SessionId = session.Id;
             }
+
+            return Task.CompletedTask;
         }
 
-        public void LoadSession( int sessionId )
+        public Task LoadSessionAsync( int sessionId )
         {
             using ( var rockContext = _rockContextFactory.CreateRockContext() )
             {
@@ -98,10 +106,12 @@ namespace Rock.AI.Agent
                     .Where( s => s.AIAgentSessionId == sessionId
                         && s.IsCurrentlyInContext )
                     .OrderBy( s => s.MessageDateTime )
+                    .ThenBy( s => s.Id )
                     .Select( s => new
                     {
                         s.MessageRole,
-                        s.Message
+                        s.Message,
+                        s.TokenCount
                     } )
                     .ToList();
 
@@ -146,23 +156,31 @@ namespace Rock.AI.Agent
                 }
 
                 SessionId = sessionId;
+                _historyNeedsSummary = messages.Sum( m => m.TokenCount ) >= _agentConfiguration.AutoSummarizeThreshold;
             }
+
+            return Task.CompletedTask;
         }
 
-        public void AddMessage( AuthorRole role, string message )
+        public Task AddMessageAsync( AuthorRole role, string message )
         {
             if ( role != AuthorRole.User && role != AuthorRole.Assistant )
             {
                 throw new ArgumentOutOfRangeException( nameof( role ), "An invalid author role was specified." );
             }
 
-            AddMessage( role, message, CountTokens( message ), 0 );
+            return AddMessageAsync( role, message, CountTokens( message ), 0 );
         }
 
-        private void AddMessage( AuthorRole role, string message, int tokenCount, int consumedTokenCount )
+        async private Task AddMessageAsync( AuthorRole role, string message, int tokenCount, int consumedTokenCount )
         {
             if ( SessionId.HasValue )
             {
+                if ( role == AuthorRole.User && _historyNeedsSummary )
+                {
+                    await SummarizeChatHistoryAsync();
+                }
+
                 using ( var rockContext = _rockContextFactory.CreateRockContext() )
                 {
                     var historyService = new AIAgentSessionHistoryService( rockContext );
@@ -198,7 +216,7 @@ namespace Rock.AI.Agent
             }
         }
 
-        public ContextAnchor AddAnchor( IEntity entity )
+        public Task<ContextAnchor> AddAnchorAsync( IEntity entity )
         {
             var entityTypeId = entity.TypeId;
 
@@ -226,10 +244,10 @@ namespace Rock.AI.Agent
                 }
             }
 
-            return anchor.PayloadJson.FromJsonOrNull<ContextAnchor>();
+            return Task.FromResult( anchor.PayloadJson.FromJsonOrNull<ContextAnchor>() );
         }
 
-        public void RemoveAnchor( int entityTypeId )
+        public Task RemoveAnchorAsync( int entityTypeId )
         {
             Context.RemoveAnchor( entityTypeId );
 
@@ -237,6 +255,8 @@ namespace Rock.AI.Agent
             {
                 InactivateEntityAnchor( entityTypeId );
             }
+
+            return Task.CompletedTask;
         }
 
         private void InactivateEntityAnchor( int entityTypeId )
@@ -267,18 +287,76 @@ namespace Rock.AI.Agent
             }
         }
 
-        async public Task<ChatMessageContent> GetChatMessageContentAsync()
+        /// <summary>
+        /// Summarizes the chat history for the current session. This should
+        /// only be called just before adding a user message, otherwise the
+        /// results will be unexpected.
+        /// </summary>
+        async private Task SummarizeChatHistoryAsync()
+        {
+            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            {
+                var messages = new AIAgentSessionHistoryService( rockContext ).Queryable()
+                    .Where( s => s.AIAgentSessionId == SessionId.Value
+                        && s.IsCurrentlyInContext )
+                    .OrderBy( s => s.MessageDateTime )
+                    .ThenBy( s => s.Id )
+                    .ToList();
+
+                if ( messages.Count == 0 )
+                {
+                    return;
+                }
+
+                var chatHistoryText = string.Join( "\n", messages.Select( m => $"{m.MessageRole}: {m.Message}" ) );
+                var prompt = AutoSummarizePrompt + chatHistoryText;
+
+                var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
+                var result = await chat.GetChatMessageContentAsync(
+                    new ChatHistory { new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt ) },
+                    executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+                    kernel: _kernel
+                );
+
+                var historyService = new AIAgentSessionHistoryService( rockContext );
+                var usage = GetMetricUsageFromResult( result );
+
+                messages.ForEach( m => m.IsCurrentlyInContext = false );
+
+                var history = new AIAgentSessionHistory
+                {
+                    AIAgentSessionId = SessionId.Value,
+                    MessageRole = AuthorRole.Assistant,
+                    Message = result.Content,
+                    IsCurrentlyInContext = true,
+                    IsSummary = true,
+                    MessageDateTime = RockDateTime.Now,
+                    TokenCount = usage?.OutputTokenCount ?? CountTokens( result.Content ),
+                    ConsumedTokenCount = usage?.TotalTokenCount ?? 0
+                };
+
+                historyService.Add( history );
+
+                rockContext.SaveChanges();
+                _historyNeedsSummary = false;
+            }
+
+            // Reload the session data.
+            await LoadSessionAsync( SessionId.Value );
+        }
+
+        public async Task<ChatMessageContent> GetChatMessageContentAsync()
         {
             var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
 
-            var result = await chat.GetChatMessageContentAsync( 
+            var result = await chat.GetChatMessageContentAsync(
                 Context.GetChatHistory(),
                 executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
                 kernel: _kernel );
 
             var usage = GetMetricUsageFromResult( result );
 
-            AddMessage( AuthorRole.Assistant, result.Content, usage?.OutputTokenCount ?? 0, usage?.TotalTokenCount ?? 0 );
+            await AddMessageAsync( AuthorRole.Assistant, result.Content, usage?.OutputTokenCount ?? CountTokens( result.Content ), usage?.TotalTokenCount ?? 0 );
 
             return result;
         }

@@ -25,6 +25,13 @@ namespace Rock.AI.Agent
     {
         public int AgentId { get; }
 
+        /// <summary>
+        /// The token threshold before auto-summarization will be triggered
+        /// when a new user message is added. This only applies to persisted
+        /// sessions.
+        /// </summary>
+        public int AutoSummarizeThreshold { get; }
+
         public AgentProviderComponent Provider { get; }
 
         public ModelServiceRole Role { get; }
@@ -33,12 +40,13 @@ namespace Rock.AI.Agent
 
         public IReadOnlyCollection<SkillConfiguration> Skills { get; }
 
-        public AgentConfiguration( int agentId, AgentProviderComponent provider, string persona, ModelServiceRole role, IReadOnlyList<SkillConfiguration> skills )
+        public AgentConfiguration( int agentId, AgentProviderComponent provider, string persona, AgentSettings settings, IReadOnlyList<SkillConfiguration> skills )
         {
             AgentId = agentId;
+            AutoSummarizeThreshold = settings.AutoSummarizeThreshold;
             Provider = provider;
             Persona = persona ?? string.Empty;
-            Role = role;
+            Role = settings.Role;
             Skills = skills ?? new List<SkillConfiguration>();
         }
     }

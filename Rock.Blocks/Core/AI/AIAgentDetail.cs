@@ -207,6 +207,7 @@ namespace Rock.Blocks.Core
             return new AIAgentBag
             {
                 IdKey = entity.IdKey,
+                AutoSummarizeThreshold = settings.AutoSummarizeThreshold,
                 AvatarBinaryFile = entity.AvatarBinaryFile.ToListItemBag(),
                 Description = entity.Description,
                 Name = entity.Name,
@@ -297,6 +298,9 @@ namespace Rock.Blocks.Core
             }
 
             var settings = entity.GetAdditionalSettings<AgentSettings>();
+
+            box.IfValidProperty( nameof( box.Bag.AutoSummarizeThreshold ),
+                () => settings.AutoSummarizeThreshold = box.Bag.AutoSummarizeThreshold );
 
             box.IfValidProperty( nameof( box.Bag.AvatarBinaryFile ),
                 () => entity.AvatarBinaryFileId = box.Bag.AvatarBinaryFile.GetEntityId<BinaryFile>( RockContext ) );

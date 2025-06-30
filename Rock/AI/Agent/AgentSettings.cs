@@ -26,6 +26,13 @@ namespace Rock.AI.Agent
     internal class AgentSettings
     {
         /// <summary>
+        /// The token threshold before auto-summarization will be triggered
+        /// when a new user message is added. This only applies to persisted
+        /// sessions.
+        /// </summary>
+        public int AutoSummarizeThreshold { get; set; } = 2_000;
+
+        /// <summary>
         /// The role that the agent will use when determining which language
         /// model to use.
         /// </summary>
