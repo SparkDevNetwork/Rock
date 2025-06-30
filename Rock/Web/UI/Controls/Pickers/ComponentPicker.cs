@@ -164,7 +164,7 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Adds a component to the <see cref="Items"/> collection, displaying its name
+        /// Adds a component to the <see cref="ListControl.Items"/> collection, displaying its name
         /// and marking it as " (inactive)" if applicable.
         /// </summary>
         /// <param name="component">
@@ -177,7 +177,7 @@ namespace Rock.Web.UI.Controls
         /// " (inactive)" is appended to the display name.
         /// </param>
         /// <remarks>
-        /// The component's display name is derived from its <see cref="EntityType"/> metadata if available,
+        /// The component's display name is derived from its <see cref="Type"/> metadata if available,
         /// otherwise it falls back to the internal name key, formatted via <c>SplitCase()</c> if needed.
         /// </remarks>
         private void AddComponentListItem( KeyValuePair<int, KeyValuePair<string, Component>> component, bool isActive )

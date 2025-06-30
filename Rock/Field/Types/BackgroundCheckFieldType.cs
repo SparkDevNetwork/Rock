@@ -46,7 +46,7 @@ namespace Rock.Field.Types
     /// the Background Check Document attribute must include:
     /// <list type="bullet">
     /// <item>
-    /// The <c>EntityTypeId</c> of the provider's <see cref="BackgroundCheckComponent"/> implementation.
+    /// The <c>EntityTypeId</c> of the provider's <see cref="Rock.Security.BackgroundCheckComponent"/> implementation.
     /// </item>
     /// <item>
     /// The <c>BinaryFile.Guid</c> of the resulting background check document.

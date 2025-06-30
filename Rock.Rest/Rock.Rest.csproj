@@ -46,7 +46,7 @@
     <PackageReference Include="Swashbuckle.Core" Version="5.5.3" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
     <PackageReference Include="System.IdentityModel.Tokens.Jwt" Version="5.7.0" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.4.2" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.6" />
     <PackageReference Include="System.Runtime.CompilerServices.Unsafe" Version="6.0.0" />
   </ItemGroup>
 
