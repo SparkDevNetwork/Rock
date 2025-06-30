@@ -20,8 +20,10 @@ using System.IO;
 using System.Text.RegularExpressions;
 using System.Web;
 
+#if REVIEW_WEBFORMS
 using dotless.Core;
 using dotless.Core.configuration;
+#endif
 using Rock.Web.Cache;
 using Rock.Web.UI;
 
@@ -61,6 +63,7 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
+#if REVIEW_WEBFORMS
             // Get the current page object if it is available.
             RockPage page = null;
 
@@ -68,6 +71,7 @@ namespace Rock.Lava.Blocks
             {
                 page = HttpContext.Current.Handler as RockPage;
             }
+#endif
 
             var settings = GetAttributesFromMarkup( _markup, context );
             var parms = settings.Attributes;
@@ -80,6 +84,7 @@ namespace Rock.Lava.Blocks
 
                 if ( parms.ContainsKey( "compile" ) )
                 {
+#if REVIEW_WEBFORMS
                     if ( parms["compile"] == "less" )
                     {
                         DotlessConfiguration dotLessConfiguration = new DotlessConfiguration();
@@ -156,6 +161,7 @@ namespace Rock.Lava.Blocks
                             stylesheet = LessWeb.Parse( stylesheet, dotLessConfiguration );
                         }
                     }
+#endif
 
                     if ( stylesheet == string.Empty )
                     {
@@ -173,6 +179,7 @@ namespace Rock.Lava.Blocks
 
                 var styleText = $"{Environment.NewLine}<style>{stylesheet}</style>{Environment.NewLine}";
 
+#if REVIEW_WEBFORMS
                 if ( page != null )
                 {
                     if ( parms.ContainsKey( "id" ) )
@@ -197,6 +204,7 @@ namespace Rock.Lava.Blocks
                     }
                 }
                 else
+#endif
                 {
                     result.Write( styleText );
                 }

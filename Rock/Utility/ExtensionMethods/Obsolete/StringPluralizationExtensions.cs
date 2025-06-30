@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if WEBFORMS
 using System;
 using System.Data.Entity.Design.PluralizationServices;
 using System.Globalization;
@@ -113,3 +114,4 @@ namespace Rock
 
     }
 }
+#endif

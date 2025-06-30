@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -351,6 +351,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override string GetThumbnail( AssetStorageProvider assetStorageProvider, string assetKey, DateTime? lastModifiedDateTime )
         {
+#if REVIEW_WEBFORMS
             var name = GetNameFromKey( assetKey );
             var path = GetPathFromKey( assetKey );
             var mimeType = System.Web.MimeMapping.GetMimeMapping( name );
@@ -382,8 +383,12 @@ namespace Rock.Storage.AssetStorage
 
             CreateImageThumbnail( assetStorageProvider, new Asset { Name = name, Key = assetKey, Type = AssetType.File }, physicalThumbPath, false );
             return virtualThumbPath;
+#else
+            throw new NotImplementedException();
+#endif
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Deletes the image thumbnail for the provided Asset. If the asset is a file then the single thumbnail
         /// is deleted. If the asset is a directory then a recursive delete is done.
@@ -394,6 +399,7 @@ namespace Rock.Storage.AssetStorage
         {
             base.DeleteImageThumbnail( assetStorageProvider, asset );
         }
+#endif
 
         #endregion Override Methods
 
@@ -407,6 +413,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         private Google.Apis.Storage.v1.Data.Object TranslateRockAssetToGoogleObject( Asset asset, string bucketName )
         {
+#if REVIEW_WEBFORMS
             var name = asset.Key;
 
             if ( asset.Type == AssetType.Folder )
@@ -427,6 +434,9 @@ namespace Rock.Storage.AssetStorage
                 Updated = asset.LastModifiedDateTime,
                 ContentType = System.Web.MimeMapping.GetMimeMapping( name )
             };
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <summary>

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using System.IO;
 using System.Linq;
@@ -371,3 +372,4 @@ namespace Rock.Services.NuGet
         }
     }
 }
+#endif

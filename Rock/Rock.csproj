@@ -15,19 +15,21 @@
   </PropertyGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net472' ">
-    <Compile Remove="**/*.NG.cs" />
-    <Compile Remove="CoreShims/**/*.cs" />
+    <Compile Remove="**\*.NG.cs" />
+    <Compile Remove="CoreShims\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'net472' ">
-    <Compile Remove="**/*.WebForms.cs" />
-    <Compile Remove="CheckIn/*.cs" />
-    <Compile Remove="Plugin/**.*.cs" />
-    <Compile Include="Plugin/VersionAttribute.cs" />
-    <Compile Remove="Web/UI/**/*.cs" />
-    <Compile Include="Web/UI/ContextAttribute.cs" />
-    <Compile Include="Web/UI/Controls/Chart/ChartStyle.cs" />
-    <Compile Include="Web/UI/Controls/ValueFilter.cs" />
+    <Compile Remove="**\*.WebForms.cs" />
+    <Compile Remove="CheckIn\*.cs" />
+    <Compile Remove="Plugin\**\*.cs" />
+    <Compile Remove="RealTime\AspNet\**\*.cs" />
+    <Compile Remove="Web\UI\**\*.cs" />
+    <Compile Include="Model\Core\PersonToken\PersonToken.WebForms.cs" />
+    <Compile Include="Plugin\VersionAttribute.cs" />
+    <Compile Include="Web\UI\ContextAttribute.cs" />
+    <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
+    <Compile Include="Web\UI\Controls\ValueFilter.cs" />
   </ItemGroup>
 
   <ItemGroup>
@@ -36,7 +38,7 @@
     </Compile>
   </ItemGroup>
 
-  <ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net472' " >
     <PackageReference Include="Antlr" Version="3.5.0.2" />
     <PackageReference Include="AWSSDK.Core" Version="3.3.25.4" />
     <PackageReference Include="AWSSDK.S3" Version="3.3.21.1" />
@@ -46,10 +48,10 @@
     <PackageReference Include="CommonMark.NET" Version="0.13.2" />
     <PackageReference Include="CronExpressionDescriptor" Version="2.16.0" />
     <PackageReference Include="CS-Script" Version="3.13.2" />
-    <PackageReference Condition=" '$(TargetFramework)' == 'net472' " Include="DDay.iCal" Version="1.0.2.575" />
+    <PackageReference Include="DDay.iCal" Version="1.0.2.575" />
     <PackageReference Include="dotless" Version="1.5.2" />
-    <PackageReference Condition=" '$(TargetFramework)' == 'net472' " Include="EF6.TagWith" Version="1.2.1" />
-    <PackageReference Condition=" '$(TargetFramework)' == 'net472' " Include="EntityFramework" Version="6.4.4" />
+    <PackageReference Include="EF6.TagWith" Version="1.2.1" />
+    <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="FirebaseAdmin" Version="2.4.0" />
     <PackageReference Include="Google.Cloud.Storage.V1" Version="2.4.0" />
     <PackageReference Include="Hashids.net" Version="1.4.1" />
@@ -113,18 +115,63 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="AWSSDK.S3" Version="4.0.3.1" />
+    <PackageReference Include="AngleSharp" Version="1.3.0" />
+    <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
+    <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
+    <PackageReference Include="CS-Script" Version="4.9.7" />
+    <PackageReference Include="CronExpressionDescriptor" Version="2.41.0" />
+    <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
+    <PackageReference Include="Elasticsearch.Net" Version="7.17.5" />
+    <PackageReference Include="Google.Cloud.Storage.V1" Version="2.4.0" />
     <PackageReference Include="FCM.Net.Core" Version="1.0.0.1" />
+    <PackageReference Include="FirebaseAdmin" Version="3.2.0" />
+    <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
+    <PackageReference Include="Ical.Net" Version="4.2.0" />
+    <PackageReference Include="IdentityModel" Version="3.0.0" />
+    <PackageReference Include="Lucene.Net" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.Expressions" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.Queries" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.QueryParser" Version="4.8.0-beta00005" />
+    <PackageReference Include="Lucene.Net.Sandbox" Version="4.8.0-beta00005" />
+    <PackageReference Include="MassTransit.Azure.ServiceBus.Core" Version="8.5.0" />
+    <PackageReference Include="MassTransit.RabbitMQ" Version="8.5.0" />
+    <PackageReference Include="MaxMind.GeoIP2" Version="5.3.0" />
+    <PackageReference Include="Microsoft.Azure.Storage.Blob" Version="11.1.3" />
     <PackageReference Include="Microsoft.EntityFrameworkCore" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.Proxies" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="5.0.6" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer.NetTopologySuite" Version="5.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Configuration" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Extensions.Logging.Debug" Version="9.0.6" />
+    <PackageReference Include="Microsoft.Web.Xdt" Version="3.1.0" />
+    <PackageReference Include="NEST" Version="7.17.5" />
+    <PackageReference Include="NEST.JsonNetSerializer" Version="7.17.5" />
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="4.0.0" />
+    <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
+    <PackageReference Include="OpenXmlPowerTools.NetStandard" Version="4.6.0" />
+    <PackageReference Include="PuppeteerSharp" Version="18.1.0" />
     <PackageReference Include="Quartz" Version="3.6.0" />
+    <PackageReference Include="QRCoder" Version="1.6.0" />
+    <PackageReference Include="RestSharp" Version="106.15.0" />
+    <PackageReference Include="Serilog.Extensions.Logging" Version="8.0.0" />
+    <PackageReference Include="Serilog.Formatting.Compact" Version="1.1.0" />
+    <PackageReference Include="Serilog.Formatting.Compact.Reader" Version="1.0.3" />
+    <PackageReference Include="Serilog.Sinks.File" Version="4.1.0" />
+    <PackageReference Include="SixLabors.Fonts" Version="1.0.0-beta19" />
+    <PackageReference Include="SixLabors.ImageSharp" Version="2.1.4" />
+    <PackageReference Include="SixLabors.ImageSharp.Drawing" Version="1.0.0-beta15" />
     <PackageReference Include="System.ComponentModel.Composition" Version="5.0.0" />
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.6" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.6" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.6" />
     <PackageReference Include="System.Runtime.Caching" Version="9.0.6" />
+    <PackageReference Include="Twilio" Version="7.11.3" />
+    <PackageReference Include="UAParser" Version="3.1.47" />
+    <PackageReference Include="Z.EntityFramework.Plus.EFCore" Version="5.103.9.1" />
     <Reference Include="Rock.Common.Mobile, Version=0.3.13.0, Culture=neutral, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>

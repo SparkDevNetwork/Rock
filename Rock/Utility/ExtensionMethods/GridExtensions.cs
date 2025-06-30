@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if WEBFORMS
 using System.Web.UI.WebControls;
 
 namespace Rock
@@ -55,3 +56,4 @@ namespace Rock
         #endregion
     }
 }
+#endif

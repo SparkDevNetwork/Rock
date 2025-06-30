@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -535,6 +535,7 @@ namespace Rock.Storage.AssetStorage
         /// <returns></returns>
         public override string GetThumbnail( AssetStorageProvider assetStorageProvider, string assetKey, DateTime? lastModifiedDateTime )
         {
+#if REVIEW_WEBFORMS
             string name = GetNameFromKey( assetKey );
             string path = GetPathFromKey( assetKey );
 
@@ -567,8 +568,12 @@ namespace Rock.Storage.AssetStorage
             CreateImageThumbnail( assetStorageProvider, new Asset { Name = name, Key = assetKey, Type = AssetType.File }, physicalThumbPath, false );
 
             return virtualThumbPath;
+#else
+            throw new NotImplementedException();
+#endif
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Deletes the image thumbnail for the provided Asset. If the asset is a file then the singel thumbnail
         /// is deleted. If the asset is a directory then a recurrsive delete is done.
@@ -579,6 +584,7 @@ namespace Rock.Storage.AssetStorage
         {
             base.DeleteImageThumbnail( assetStorageProvider, asset );
         }
+#endif
 
         #endregion Override Methods
 

@@ -703,6 +703,9 @@ namespace Rock.Lava
         /// </returns>
         public static string ZebraPhoto( ILavaRenderContext context, object input, string size = "395", double brightness = 1.0, double contrast = 1.0, string fileName = "LOGO", int rotationDegree = 0 )
         {
+#if REVIEW_NET5_0_OR_GREATER
+            throw new NotImplementedException();
+#else
             var person = GetPerson( input, context );
             try
             {
@@ -920,6 +923,7 @@ namespace Rock.Lava
                 0, 0, originalImage.Width, originalImage.Height, GraphicsUnit.Pixel, imageAttributes );
 
             return adjustedImage;
+#endif
         }
 
         /// <summary>
@@ -1324,11 +1328,13 @@ namespace Rock.Lava
                     return person;
                 }
 
+#if NET472_OR_GREATER
                 var checkinPerson = input as CheckIn.CheckInPerson;
                 if ( checkinPerson != null )
                 {
                     return checkinPerson.Person;
                 }
+#endif
             }
 
             return null;

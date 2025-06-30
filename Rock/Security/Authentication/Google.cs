@@ -20,7 +20,9 @@ using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Net;
 using System.Web;
+#if REVIEW_WEBFORMS
 using System.Web.Security;
+#endif
 using Newtonsoft.Json;
 
 using RestSharp;
@@ -71,6 +73,7 @@ namespace Rock.Security.ExternalAuthentication
             get { return true; }
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Tests the Http Request to determine if authentication should be tested by this
         /// authentication provider.
@@ -91,6 +94,7 @@ namespace Rock.Security.ExternalAuthentication
         {
             return GenerateExternalLoginUrl( GetRedirectUrl( request ), request.QueryString["returnurl"] );
         }
+#endif
 
         /// <summary>
         /// JSON Class for Access Token Response
@@ -122,6 +126,7 @@ namespace Rock.Security.ExternalAuthentication
             public string token_type { get; set; }
         }
 
+#if REVIEW_WEBFORMS
         /// <inheritdoc/>
         public override bool Authenticate( HttpRequest request, out string userName, out string returnUrl )
         {
@@ -138,6 +143,7 @@ namespace Rock.Security.ExternalAuthentication
 
             return result.IsAuthenticated;
         }
+#endif
 
         /// <summary>
         /// Gets the URL of an image that should be displayed.
@@ -149,11 +155,13 @@ namespace Rock.Security.ExternalAuthentication
             return string.Empty;
         }
 
+#if REVIEW_WEBFORMS
         private string GetRedirectUrl( HttpRequest request )
         {
             Uri uri = new Uri( request.UrlProxySafe().ToString() );
             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }
+#endif
 
         /// <summary>
         /// Authenticates the user based on user name and password
@@ -460,7 +468,11 @@ namespace Rock.Security.ExternalAuthentication
             }
             catch ( Exception ex )
             {
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
             }
 
             return result;
@@ -473,7 +485,11 @@ namespace Rock.Security.ExternalAuthentication
                 "https://accounts.google.com/o/oauth2/auth?response_type=code&client_id={0}&redirect_uri={1}&state={2}&scope=https://www.googleapis.com/auth/userinfo.email+https://www.googleapis.com/auth/userinfo.profile",
                 GetAttributeValue( "ClientID" ),
                 HttpUtility.UrlEncode( externalProviderReturnUrl ),
+#if REVIEW_WEBFORMS
                 HttpUtility.UrlEncode( successfulAuthenticationRedirectUrl ?? FormsAuthentication.DefaultUrl ) ) );
+#else
+                HttpUtility.UrlEncode( successfulAuthenticationRedirectUrl ?? throw new NotSupportedException() ) ) );
+#endif
         }
 
         /// <inheritdoc/>

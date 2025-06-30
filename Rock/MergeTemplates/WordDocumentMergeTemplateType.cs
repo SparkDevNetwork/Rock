@@ -68,21 +68,25 @@ namespace Rock.MergeTemplates
         {
             get
             {
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     return HttpContext.Current.Items[$"{this.GetType().FullName}:Exceptions"] as List<Exception>;
                 }
+#endif
 
                 return _nonHttpContextExceptions;
             }
 
             set
             {
+#if REVIEW_WEBFORMS
                 if ( HttpContext.Current != null )
                 {
                     HttpContext.Current.Items[$"{this.GetType().FullName}:Exceptions"] = value;
                 }
                 else
+#endif
                 {
                     _nonHttpContextExceptions = value;
                 }

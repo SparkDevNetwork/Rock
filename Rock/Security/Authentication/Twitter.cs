@@ -22,7 +22,9 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Net;
 using System.Web;
+#if REVIEW_WEBFORMS
 using System.Web.Security;
+#endif
 
 using Newtonsoft.Json.Converters;
 using Newtonsoft.Json.Linq;
@@ -90,6 +92,7 @@ namespace Rock.Security.ExternalAuthentication
             get { return true; }
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Tests the Http Request to determine if authentication should be tested by this
         /// authentication provider.
@@ -118,6 +121,7 @@ namespace Rock.Security.ExternalAuthentication
 
             return GenerateExternalLoginUrl( redirectUri, _returnUrl );
         }
+#endif
 
         /// <summary>
         /// Gets the request token.
@@ -137,6 +141,7 @@ namespace Rock.Security.ExternalAuthentication
             _oauthTokenSecret = r["oauth_token_secret"];
         }
 
+#if REVIEW_WEBFORMS
         /// <inheritdoc/>
         public override bool Authenticate( HttpRequest request, out string userName, out string returnUrl )
         {
@@ -164,6 +169,7 @@ namespace Rock.Security.ExternalAuthentication
             Uri uri = new Uri( request.UrlProxySafe().ToString() );
             return uri.Scheme + "://" + uri.GetComponents( UriComponents.HostAndPort, UriFormat.UriEscaped ) + uri.LocalPath;
         }
+#endif
 
         /// <summary>
         /// Gets the URL of an image that should be displayed.
@@ -441,7 +447,11 @@ namespace Rock.Security.ExternalAuthentication
                 }
                 catch ( Exception ex )
                 {
+#if REVIEW_WEBFORMS
                     ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                    ExceptionLogService.LogException( ex );
+#endif
                 }
             }
 

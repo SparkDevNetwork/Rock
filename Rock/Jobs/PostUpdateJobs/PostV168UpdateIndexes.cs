@@ -14,7 +14,9 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using DocumentFormat.OpenXml.Wordprocessing;
+#endif
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;

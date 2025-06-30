@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if WEBFORMS
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -769,3 +770,4 @@ namespace Rock
         #endregion HiddenField Extensions
     }
 }
+#endif

@@ -17,7 +17,9 @@
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+#if REVIEW_WEBFORMS
 using System.DirectoryServices.AccountManagement;
+#endif
 
 using Rock.Attribute;
 using Rock.Model;
@@ -88,6 +90,7 @@ namespace Rock.Security.Authentication
             return EncryptPassword( password );
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Authenticates the user based on a request from a third-party provider.  Will set the username and returnUrl values.
         /// </summary>
@@ -123,6 +126,7 @@ namespace Rock.Security.Authentication
         {
             throw new NotImplementedException();
         }
+#endif
 
         /// <summary>
         /// Gets the URL of an image that should be displayed.
@@ -158,6 +162,7 @@ namespace Rock.Security.Authentication
         /// <returns></returns>
         public override bool ChangePassword( UserLogin user, string oldPassword, string newPassword, out string warningMessage )
         {
+#if REVIEW_WEBFORMS
             warningMessage = null;
             string username = user.UserName;
             if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
@@ -185,6 +190,9 @@ namespace Rock.Security.Authentication
             }
 
             return false;
+#else
+            throw new NotSupportedException();
+#endif
         }
 
         /// <summary>
@@ -195,6 +203,7 @@ namespace Rock.Security.Authentication
         /// <exception cref="System.NotImplementedException"></exception>
         public override void SetPassword( UserLogin user, string password )
         {
+#if REVIEW_WEBFORMS
             string username = user.UserName;
             if ( !String.IsNullOrWhiteSpace( GetAttributeValue( "Domain" ) ) )
             {
@@ -210,6 +219,9 @@ namespace Rock.Security.Authentication
                     userPrincipal.SetPassword( password );
                 }
             }
+#else
+            throw new NotSupportedException();
+#endif
         }
 
         #region ICredentialAuthentication Implementation
@@ -217,6 +229,7 @@ namespace Rock.Security.Authentication
         /// <inheritdoc/>
         public bool Authenticate( CredentialAuthenticationOptions options )
         {
+#if REVIEW_WEBFORMS
             var serverName = GetAttributeValue( "Server" );
             using ( var context = new PrincipalContext( ContextType.Domain, serverName ) )
             {
@@ -279,6 +292,9 @@ namespace Rock.Security.Authentication
                 // If the userPrincipal is not null then FindByIdentity discovered the user exists and the password is valid, so return true. Otherwise return false.
                 return userPrincipal != null;
             }
+#else
+            throw new NotSupportedException();
+#endif
         }
 
         /// <inheritdoc/>

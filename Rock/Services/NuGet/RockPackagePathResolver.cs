@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using NuGet;
 
@@ -52,3 +53,4 @@ namespace Rock.Services.NuGet
         #pragma warning restore CS0809
     }
 }
+#endif

@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if WEBFORMS
 using System.Collections;
 using System.Web;
 
@@ -53,3 +54,4 @@ namespace Rock
         #endregion Items extension methods
     }
 }
+#endif

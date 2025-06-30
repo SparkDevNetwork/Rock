@@ -46,6 +46,7 @@ namespace Rock.Communication.VideoEmbed
         /// <returns></returns>
         public abstract string GetThumbnail( string videoUrl );
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Adds the play button on thumbnail and returns its url
         /// </summary>
@@ -129,5 +130,6 @@ namespace Rock.Communication.VideoEmbed
 
             return newImage;
         }
+#endif
     }
 }

@@ -194,6 +194,7 @@ namespace Rock.Security.ExternalAuthentication
             throw new NotImplementedException();
         }
 
+#if REVIEW_WEBFORMS
         /// <inheritdoc/>
         public override bool Authenticate( HttpRequest request, out string userName, out string returnUrl )
         {
@@ -210,6 +211,7 @@ namespace Rock.Security.ExternalAuthentication
 
             return result.IsAuthenticated;
         }
+#endif
 
         /// <summary>
         /// Changes the password.
@@ -237,6 +239,7 @@ namespace Rock.Security.ExternalAuthentication
             throw new NotImplementedException();
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Generates the log in URL.
         /// </summary>
@@ -246,6 +249,7 @@ namespace Rock.Security.ExternalAuthentication
         {
             return GenerateExternalLoginUrl( GetRedirectUrl(), request.QueryString[PageParameterKey.ReturnUrl] );
         }
+#endif
 
         /// <summary>
         /// Gets the URL of an image that should be displayed.
@@ -256,6 +260,7 @@ namespace Rock.Security.ExternalAuthentication
             return string.Empty;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Tests the Http Request to determine if authentication should be tested by this
         /// authentication provider.
@@ -266,6 +271,7 @@ namespace Rock.Security.ExternalAuthentication
         {
             return IsReturningFromExternalAuthentication( request.QueryString.ToSimpleQueryStringDictionary() );
         }
+#endif
 
         /// <summary>
         /// Sets the password.
@@ -730,7 +736,11 @@ namespace Rock.Security.ExternalAuthentication
             }
             catch ( Exception ex )
             {
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
             }
             finally
             {
@@ -786,6 +796,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <param name="cookieName">The cookie name.</param>
         private void DeleteResponseCookie( string cookieName )
         {
+#if REVIEW_WEBFORMS
             // To delete a cookie, the value must be cleared
             // and the expiration date should be a past date.
 
@@ -797,8 +808,12 @@ namespace Rock.Security.ExternalAuthentication
             cookie.Expires = new DateTime( 1970, 1, 1, 0, 0, 0, 0, DateTimeKind.Utc );
 
             HttpContext.Current.Response.Cookies.Set( cookie );
+#else
+            throw new NotImplementedException();
+#endif
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Creates and returns a new cookie instance with the flags required for the OIDC process.
         /// </summary>
@@ -823,6 +838,7 @@ namespace Rock.Security.ExternalAuthentication
                 Value = Encryption.EncryptString( cookieValue ),
             };
         }
+#endif
 
         /// <summary>
         /// Gets a request cookie value or <c>""</c> if not found.
@@ -831,6 +847,7 @@ namespace Rock.Security.ExternalAuthentication
         /// <returns>The cookie value.</returns>
         private string GetRequestCookieValue( string cookieName )
         {
+#if REVIEW_WEBFORMS
             var cookie = HttpContext.Current.Request.Cookies[cookieName];
 
             if ( cookie == null )
@@ -839,6 +856,9 @@ namespace Rock.Security.ExternalAuthentication
             }
 
             return Encryption.DecryptString( cookie?.Value ).ToStringSafe();
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         /// <summary>
@@ -848,8 +868,12 @@ namespace Rock.Security.ExternalAuthentication
         /// <param name="cookieValue">The cookie value.</param>
         private void SetResponseCookieValue( string cookieName, string cookieValue )
         {
+#if REVIEW_WEBFORMS
             var cookie = GetCookieInstance( cookieName, cookieValue );
             HttpContext.Current.Response.Cookies.Set( cookie );
+#else
+            throw new NotImplementedException();
+#endif
         }
 
         #endregion

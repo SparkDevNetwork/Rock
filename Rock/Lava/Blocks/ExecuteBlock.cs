@@ -20,7 +20,11 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 
+#if REVIEW_WEBFORMS
 using CSScriptLibrary;
+#else
+using CSScriptLib;
+#endif
 
 namespace Rock.Lava.Blocks
 {

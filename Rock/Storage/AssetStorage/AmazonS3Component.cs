@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
+// NOTE: The new .NET Core compatible AWS SDK only supports Async methods. This will need a major rework.
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -1057,3 +1059,4 @@ namespace Rock.Storage.AssetStorage
 
     }
 }
+#endif

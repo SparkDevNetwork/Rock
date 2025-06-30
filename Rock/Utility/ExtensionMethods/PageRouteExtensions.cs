@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if WEBFORMS
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -143,3 +144,4 @@ namespace Rock
         #endregion Route Extensions
     }
 }
+#endif

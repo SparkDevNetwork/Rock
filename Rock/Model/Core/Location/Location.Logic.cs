@@ -26,7 +26,9 @@ using System.Linq;
 using System.Runtime.Serialization;
 using System.Text;
 
+#if REVIEW_WEBFORMS
 using Microsoft.SqlServer.Types;
+#endif
 
 using Rock.Data;
 using Rock.Web.Cache;
@@ -420,12 +422,18 @@ namespace Rock.Model
         /// <returns>A <see cref="SqlGeography"/> <see cref="SqlParameter"/>.</returns>
         internal static SqlParameter GetGeographySqlParameter( string parameterName, DbGeography geography )
         {
+#if !REVIEW_WEBFORMS
+#endif
             // https://stackoverflow.com/a/45099842 (Use SqlGeography instead of DbGeography)
             // https://stackoverflow.com/a/23187033 (Entity Framework: SqlGeography vs DbGeography)
             return new SqlParameter
             {
                 ParameterName = parameterName,
+#if REVIEW_WEBFORMS
                 Value = SqlGeography.Parse( geography.AsText() ),
+#else
+                Value = new System.Data.SqlTypes.SqlBytes( new NetTopologySuite.IO.SqlServerBytesWriter { IsGeography = true }.Write( geography ) ),
+#endif
                 SqlDbType = SqlDbType.Udt,
                 UdtTypeName = "geography"
             };

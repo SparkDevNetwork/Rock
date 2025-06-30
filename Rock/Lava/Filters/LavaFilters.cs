@@ -2133,7 +2133,11 @@ namespace Rock.Lava
                     {
                         var keyValueField = ( Rock.Field.Types.KeyValueListFieldType ) field;
 
+#if REVIEW_WEBFORMS
                         return keyValueField.GetValuesFromString( null, rawValue, attribute.QualifierValues, false );
+#else
+                        return keyValueField.GetValuesFromString( rawValue, attribute.QualifierValues, false );
+#endif
                     }
 
                     if ( qualifier.Equals( "Object", StringComparison.OrdinalIgnoreCase ) && field is Rock.Field.ICachedEntitiesFieldType )

@@ -48,6 +48,7 @@ namespace Rock
             return sortedScheduleList;
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Orders the check-in schedules by <see cref="Schedule.Order"/>, then next start date time, then name, then ID.
         /// </summary>
@@ -68,5 +69,6 @@ namespace Rock
                 .ThenBy( a => a.Schedule?.Name )
                 .ThenBy( a => a.Schedule?.Id );
         }
+#endif
     }
 }
