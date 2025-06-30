@@ -60,7 +60,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
             PressedOpacity=""0.6"" 
             DefaultOpacity=""1"" 
             HoveredOpacity=""0.6"" 
-            Command=""{Binding ShowCoverSheet}"" 
+            Command=""{Binding PushPage}"" 
             CommandParameter=""{{ DetailPage }}?FinancialBatch={{ FinancialBatchIdKey }}"" />
     </Rock:StyledBorder.Behaviors>
 </Rock:StyledBorder>",
@@ -228,7 +228,10 @@ namespace Rock.Blocks.Types.Mobile.Finance
             var filterStatus = GetAttributeValue( AttributeKeys.BatchStatus ).ConvertToEnum<BatchStatus>();
             qry = qry.Where( b => b.Status == filterStatus );
 
+            // Get the detail page Guid to use in the merge fields.
             var detailPageGuid = GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull();
+
+            // Get the financial batches based on the provided start index and count.
             var financialBatches = qry
                 .OrderByDescending( fb => fb.BatchStartDateTime )
                 .Skip( startIndex )
