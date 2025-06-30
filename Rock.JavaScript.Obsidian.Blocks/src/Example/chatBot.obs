@@ -26,7 +26,7 @@
                      class="message"
                      :class="getMessageClass(message)"
                      :title="getTokenCounts(message)">
-                    <span class="message-text" v-html="parse(message.message)"></span>
+                    <span class="message-text" v-html="parse(message.message ?? '')"></span>
                 </div>
             </div>
 
