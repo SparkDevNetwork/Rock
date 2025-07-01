@@ -1,13 +1,22 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using AngleSharp.Dom;
+
 using Rock.Attribute;
+using Rock.Common.Mobile.Blocks.Finance.FinancialBatchDetail;
 using Rock.Common.Mobile.Blocks.Finance.FinancialBatchList;
+using Rock.Data;
 using Rock.Model;
+using Rock.ViewModels.Blocks.Finance.FinancialBatchDetail;
+using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 
 using WebGrease.Css.Extensions;
+using BatchStatus = Rock.Model.BatchStatus;
+using Rock.Lava;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -25,92 +34,221 @@ namespace Rock.Blocks.Types.Mobile.Finance
     public class FinancialBatchDetail : RockBlockType
     {
 
+        private const string AuthorizationReopenBatch = "ReopenBatch";
+
+        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out FinancialBatch entity, out BlockActionResult error )
+        {
+            var entityService = new FinancialBatchService( rockContext );
+            error = null;
+
+            // Determine if we are editing an existing entity or creating a new one.
+            if ( idKey.IsNotNullOrWhiteSpace() )
+            {
+                // If editing an existing entity then load it and make sure it
+                // was found and can still be edited.
+                entity = entityService.Get( idKey );
+            }
+            else
+            {
+                // Create a new entity.
+                entity = new FinancialBatch();
+                entityService.Add( entity );
+            }
+
+            if ( entity == null )
+            {
+                error = ActionBadRequest( $"{FinancialBatch.FriendlyTypeName} not found." );
+                return false;
+            }
+
+            var isReopenDisabled = entity.Status == BatchStatus.Closed && !entity.IsAuthorized( AuthorizationReopenBatch, RequestContext.CurrentPerson );
+            if ( entity.IsAutomated || !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) || isReopenDisabled )
+            {
+                error = ActionBadRequest( $"Not authorized to edit {FinancialBatch.FriendlyTypeName}." );
+                return false;
+            }
+
+            return true;
+        }
+
         /// <summary>
         /// Saves the financial batch.
         /// </summary>
         /// <param name="financialBatchBag"></param>
         /// <returns></returns>
-        [BlockAction( "SaveFinancialBatch" )]
-        public BlockActionResult SaveFinancialBatch( AddFinancialBatchBag financialBatchBag )
+        [BlockAction( "Save" )]
+        public BlockActionResult Save( AddFinancialBatchBag financialBatchBag )
         {
             if ( financialBatchBag == null )
             {
                 return ActionBadRequest( "Financial batch data is required." );
             }
 
-            // Get the campus Id base on the given Campus Guid.
-            var campusGuid = financialBatchBag.Campus.AsGuidOrNull();
-            int? campusId = null;
-            if ( campusGuid.HasValue )
-            {
-                campusId = CampusCache.GetId( campusGuid.Value );
-            }
-
-            var status = financialBatchBag.Status.ConvertToEnum<BatchStatus>();
-
-            var financialBatch = new FinancialBatch
-            {
-                Name = financialBatchBag.Name,
-                Status = status,
-                BatchStartDateTime = financialBatchBag.BatchStartDate,
-                BatchEndDateTime = financialBatchBag.BatchEndDate,
-                ControlAmount = financialBatchBag.ControlAmount ?? 0,
-                ControlItemCount = financialBatchBag.ControlItemCount,
-                CampusId = campusId,
-                Note = financialBatchBag.Note
-            };
+            BlockActionResult error;
 
             var financialBatchService = new FinancialBatchService( RockContext );
-            financialBatchService.Add( financialBatch );
+            var idKey = financialBatchBag.IdKey;
+
+            // Determine if we are editing or creating new batch.
+            if ( !TryGetEntityForEditAction( idKey, RockContext, out var batch, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            if ( batch.Status == BatchStatus.Closed && financialBatchBag.Status.ConvertToEnum<BatchStatus>() != BatchStatus.Closed )
+            {
+                if ( !batch.IsAuthorized( AuthorizationReopenBatch, RequestContext.CurrentPerson ) )
+                {
+                    return ActionUnauthorized( "User is not authorized to reopen a closed batch" );
+                }
+            }
+
+            var isNew = batch.Id == 0;
+            var isStatusChanged = financialBatchBag.Status.ConvertToEnum<BatchStatus>() != batch.Status;
+
+            var changes = new History.HistoryChangeList();
+            if ( isNew )
+            {
+                changes.AddChange( History.HistoryVerb.Add, History.HistoryChangeType.Record, "Batch" );
+            }
+
+
+            var currentCampusName = CampusCache.Get( batch.CampusId ?? 0 )?.Name ?? "None";
+            var newCampus = CampusCache.Get( financialBatchBag.Campus );
+
+            History.EvaluateChange( changes, "Batch Name", batch.Name, financialBatchBag.Name );
+            History.EvaluateChange( changes, "Campus", currentCampusName, newCampus?.Name ?? "None" );
+            History.EvaluateChange( changes, "Status", batch?.Status, financialBatchBag.Status.ConvertToEnum<BatchStatus>() );
+            History.EvaluateChange( changes, "Start Date/Time", batch.BatchStartDateTime, financialBatchBag.BatchStartDate );
+            History.EvaluateChange( changes, "End Date/Time", batch.BatchEndDateTime, financialBatchBag.BatchEndDate );
+            History.EvaluateChange( changes, "Control Amount", batch?.ControlAmount.FormatAsCurrency(), ( financialBatchBag.ControlAmount ?? 0.0m ).FormatAsCurrency() );
+            History.EvaluateChange( changes, "Control Item Count", batch.ControlItemCount, financialBatchBag.ControlItemCount );
+            //History.EvaluateChange( changes, "Accounting System Code", batch.AccountingSystemCode, financialBatchBag.AccountingSystemCode );
+            History.EvaluateChange( changes, "Notes", batch.Note, financialBatchBag.Note );
+
+            // Replicating the behavior in the Webforms block where the batch end date is set
+            // to the next day after the start date if not provided.
+            batch.BatchEndDateTime = financialBatchBag.BatchEndDate;
+            batch.BatchStartDateTime = financialBatchBag.BatchStartDate;
+            batch.CampusId = newCampus?.Id;
+            batch.ControlAmount = financialBatchBag.ControlAmount ?? 0.0m;
+            batch.ControlItemCount = financialBatchBag.ControlItemCount ?? 0;
+            batch.Name = financialBatchBag.Name;
+            batch.Note = financialBatchBag.Note;
+            batch.Status = financialBatchBag.Status.ConvertToEnum<BatchStatus>();
+            if ( batch.BatchEndDateTime == null )
+            {
+                batch.BatchEndDateTime = batch.BatchStartDateTime?.AddDays( 1 );
+            }
+
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                if ( changes.Any() )
+                {
+                    HistoryService.SaveChanges(
+                        RockContext,
+                        typeof( FinancialBatch ),
+                        Rock.SystemGuid.Category.HISTORY_FINANCIAL_BATCH.AsGuid(),
+                        batch.Id,
+                        changes );
+                }
+
+                // NOT SUPPORT ATTRIBUTE IN MOBILE IT YET.
+                //batch.SaveAttributeValues( RockContext );
+
+            } );
+
+            return ActionOk( batch.IdKey );
+        }
+
+        /// <summary>
+        /// Deletes the specified entity.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be deleted.</param>
+        /// <returns>A string that contains the URL to be redirected to on success.</returns>
+        [BlockAction( "Delete" )]
+        public BlockActionResult Delete( string key )
+        {
+            var entityService = new FinancialBatchService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, RockContext, out var batch, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            if ( !entityService.CanDelete( batch, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( batch );
             RockContext.SaveChanges();
 
-            return ActionOk();
+            return ActionOk( this.GetParentPageUrl() );
+        }
+
+        /// <summary>
+        /// Gets the box that will contain all the information needed to begin
+        /// the edit operation.
+        /// </summary>
+        /// <param name="key">The identifier of the entity to be edited.</param>
+        /// <returns>A box that contains the entity and any other information required.</returns>
+        [BlockAction( "Edit" )]
+        public BlockActionResult Edit( string key )
+        {
+            if ( !TryGetEntityForEditAction( key, RockContext, out var batch, out var actionError ) )
+            {
+                return actionError;
+            }
+
+            var bag = new FinancialBatchDetailBag
+            {
+                IdKey = batch.IdKey,
+                Id = batch.Id,
+                Name = batch.Name,
+                Status = batch.Status.ToString(),
+                BatchStartDate = batch.BatchStartDateTime,
+                BatchEndDate = batch.BatchEndDateTime,
+                TransactionAmount = batch.GetTotalTransactionAmount( RockContext ),
+                ControlAmount = batch.ControlAmount,
+                ControlItemCount = batch.ControlItemCount,
+                Campus = batch.Campus.Name,
+                CampusGuid = batch.Campus.Guid.ToString(),
+                Note = batch.Note,
+            };
+
+            // NOT SUPPORT YET IN MOBILE.
+            //bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
+
+            return ActionOk( bag );
         }
 
         /// <summary>
         /// Gets the financial batch detail.
         /// </summary>
         /// <returns></returns>
-        [BlockAction( "GetBatchDetail" )]
-        public BlockActionResult GetBatchDetail( FinancialBatchOption options )
+        [BlockAction( "GetBatchDetails" )]
+        public BlockActionResult GetBatchDetails( string key )
         {
-            var batch = new FinancialBatchService( RockContext ).Get( options.IdKey );
-
-            decimal totalAmount = 0;
-            batch.Transactions.ForEach( t => totalAmount += t.TotalAmount );
+            var batch = new FinancialBatchService( RockContext ).Get( key );
 
             return ActionOk( new FinancialBatchDetailBag
             {
                 Id = batch?.Id,
+                IdKey = batch?.IdKey,
                 Name = batch?.Name,
                 Status = batch?.Status.ConvertToString(),
                 BatchStartDate = batch?.BatchStartDateTime,
                 BatchEndDate = batch?.BatchEndDateTime,
-                TransactionAmount = totalAmount,
+                TransactionAmount = batch?.GetTotalTransactionAmount( RockContext ),
                 ControlAmount = batch?.ControlAmount,
+                ControlItemCount = batch?.ControlItemCount,
                 Campus = batch?.Campus?.Name,
+                CampusGuid = batch?.Campus?.Guid.ToString(),
                 Note = batch?.Note
             } );
-        }
-        public class FinancialBatchDetailBag
-        {
-            public int? Id { get; set; }
-            public string Name { get; set; }
-            public string Status { get; set; }
-            public DateTime? BatchStartDate { get; set; }
-            public DateTime? BatchEndDate { get; set; }
-            public decimal? TransactionAmount { get; set; }
-            public decimal? ControlAmount { get; set; }
-            public string Campus { get; set; }
-            public string Note { get; set; }
-        }
-
-        public class FinancialBatchOption
-        {
-            /// <summary>
-            /// Gets or sets the identifier of the financial batch.
-            /// </summary>
-            public string IdKey { get; set; }
         }
     }
 }
