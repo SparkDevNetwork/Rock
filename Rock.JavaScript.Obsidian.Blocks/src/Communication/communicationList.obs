@@ -6,10 +6,11 @@
 
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
-          keyField="guid"
+          keyField="idKey"
           itemTerm="Communication"
           title="List of Communications"
           liveUpdates
+          stickyHeader
           gridSettings
           :gridSettingsActive="hasSettingsFilters"
           :showMergeTemplate="false"
@@ -41,7 +42,7 @@
                                 :title="`Filter to ${CommunicationTypeDescription[CommunicationType.Email]}`"
                                 class="mr-1"
                                 @click="onToggleCommunicationTypeFilter(CommunicationType.Email, $event)">
-                        <i class="fa fa-envelope"></i>
+                        <i class="ti ti-mail"></i>
                     </RockButton>
                     <RockButton v-if="showFilterToSMSButton"
                                 :btnType="filterToSMSBtnType"
@@ -49,7 +50,7 @@
                                 :title="`Filter to ${CommunicationTypeDescription[CommunicationType.SMS]}`"
                                 class="mr-1"
                                 @click="onToggleCommunicationTypeFilter(CommunicationType.SMS, $event)">
-                        <i class="fa fa-sms"></i>
+                        <i class="ti ti-message"></i>
                     </RockButton>
                     <RockButton v-if="showFilterToPushButton"
                                 :btnType="filterToPushBtnType"
@@ -57,13 +58,13 @@
                                 :title="`Filter to ${CommunicationTypeDescription[CommunicationType.PushNotification]}`"
                                 class="mr-1"
                                 @click="onToggleCommunicationTypeFilter(CommunicationType.PushNotification, $event)">
-                        <i class="fa fa-mobile-alt"></i>
+                        <i class="ti ti-device-mobile"></i>
                     </RockButton>
                     <RockButton :btnType="filterToRecipientPreferenceBtnType"
                                 :btnSize="BtnSize.Small"
                                 :title="`Filter to ${CommunicationTypeDescription[CommunicationType.RecipientPreference]}`"
                                 @click="onToggleCommunicationTypeFilter(CommunicationType.RecipientPreference, $event)">
-                        <i class="fa fa-user"></i>
+                        <i class="ti ti-user-circle"></i>
                     </RockButton>
                 </div>
             </div>
@@ -81,7 +82,7 @@
                 field="displayName"
                 title="Name"
                 sortField="name"
-                width="25%"
+                width="40%"
                 :quickFilterValue="getDisplayNameTextValue"
                 :excludeFromExport="true">
             <template #format="{ row }">
@@ -89,25 +90,27 @@
             </template>
         </Column>
 
-        <Column name="status"
-                field="status"
+        <Column name="inferredStatus"
+                field="inferredStatus"
                 title="Status"
+                visiblePriority="sm"
                 :filter="pickExistingValueFilter"
                 :filterValue="getCommunicationStatusTextValue"
                 :quickFilterValue="getCommunicationStatusTextValue">
             <template #format="{ row }">
-                <StatusLabel :row="row" :textSource="statusTextSource" />
+                <StatusLabel :row="(row as Row)" />
             </template>
         </Column>
 
         <Column name="recipientCount"
                 field="recipientCount"
                 title="Recipients"
+                visiblePriority="sm"
                 :filter="numberValueFilter"
                 :quickFilterValue="getRecipientCountFilterTextValue">
             <template #format="{ row }">
                 <Badge :badgeType="BadgeType.Info" class="grid-cell-recipients">
-                    <i class="fa fa-user-friends"></i> {{ asFormattedString(row.recipientCount) }}
+                    <i class="ti ti-users"></i> {{ asFormattedString(row.recipientCount) }}
                 </Badge>
             </template>
         </Column>
@@ -120,25 +123,26 @@
         <LabelColumn name="topic"
                      field="topic"
                      title="Topic"
-                     defaultLabelClass="communication-topic"
+                     defaultLabelClass="outline"
                      visiblePriority="xl"
                      :filter="pickExistingValueFilter" />
 
         <Column name="sendDateTime"
                 field="sendDateTime"
                 title="Send Date"
+                visiblePriority="lg"
                 :filter="dateValueFilter"
                 :filterValue="getSendDateTimeIsoValue"
                 :quickFilterValue="getSendDateTimeTextValue"
                 :sortValue="getSendDateTimeIsoValue"
                 :exportValue="getSendDateTimeTextValue">
             <template #format="{ row }">
-                <div class="grid-cell-send-date">
+                <div class="communication-list-grid-cell-send-date">
                     <template v-if="row.sendDateTime">
                         {{ getFormattedDateTime(row.sendDateTime) }}
                     </template>
                     <template v-else-if="row.futureSendDateTime">
-                        <i class="fa fa-clock-o align-self-center"></i>
+                        <i class="ti ti-clock align-self-center"></i>
                         {{ getFormattedDateTime(row.futureSendDateTime) }}
                     </template>
                 </div>
@@ -148,6 +152,7 @@
         <PersonColumn name="sentByPerson"
                       field="sentByPerson"
                       title="Sent By"
+                      visiblePriority="xl"
                       :hideAvatar="true"
                       :showAsLink="true"
                       :filter="pickExistingValueFilter"
@@ -155,6 +160,7 @@
                       :quickFilterValue="getSentByPersonTextValue" />
 
         <DeleteColumn v-if="config.isDeleteEnabled"
+                      visiblePriority="xl"
                       :rowDisabled="getIsDeleteDisabled"
                       @click="onDeleteClick" />
 
@@ -174,13 +180,6 @@
 .grid-cell-recipients {
     font-size: var(--font-size-small);
 }
-
-:deep(.label-communication-topic),
-:global(.grid-filter-popup-body .label-communication-topic) {
-    color: var(--color-interface-strong);
-    background-color: transparent;
-    border: solid 1px var(--color-interface-medium);
-}
 </style>
 
 <script setup lang="ts">
@@ -193,7 +192,7 @@
     import Grid, { Column, dateValueFilter, DeleteColumn, LabelColumn, numberValueFilter, PersonColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
-    import { CommunicationStatusDescription } from "@Obsidian/Enums/Communication/communicationStatus";
+    import { InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
     import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { BadgeType } from "@Obsidian/Enums/Controls/badgeType";
@@ -221,12 +220,6 @@
 
     onConfigurationValuesChanged(useReloadBlock());
 
-    const statusTextSource = {
-        ...CommunicationStatusDescription,
-        5: "Sending",
-        6: "Sent"
-    };
-
     // We'll enforce a default date range of the last 6 months - to be applied
     // if the individual doesn't have a preference - as the [Communication] table
     // can have a large number of rows.
@@ -237,9 +230,9 @@
     };
 
     // Ensure rapid filter selection changes result in using only the latest
-    // filter values before saving person prefernces or making a request to the
+    // filter values before saving person preferences or making a request to the
     // server for new grid data.
-    let filterCancellationTokenSource = new CancellationTokenSource();
+    let filterCancellationTokenSource: CancellationTokenSource | null = null;
 
     // #region Values
 
@@ -389,9 +382,16 @@
 
     /**
      * Called when the grid is requesting the row data be loaded.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to exit early and discard results.
      */
-    async function loadGridData(): Promise<GridDataBag> {
+    async function loadGridData(cancellationToken?: ICancellationToken): Promise<GridDataBag> {
         const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (cancellationToken?.isCancellationRequested) {
+            return {};
+        }
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
@@ -403,25 +403,29 @@
     }
 
     /**
-     * Sets the grid data source.
+     * Saves the currently-selected person preferences.
      *
      * @param cancellationToken A cancellation token that will instruct this
      * function to exit early and discard results.
      */
-    async function setGridDataSource(cancellationToken?: ICancellationToken): Promise<void> {
+    async function savePreferences(cancellationToken?: ICancellationToken): Promise<void> {
         if (cancellationToken?.isCancellationRequested) {
             return;
         }
 
-        gridDataSource.value = loadGridData();
+        await preferences.save();
+
+        // Reload grid data to apply new person preference selections.
+        gridDataSource.value = loadGridData(cancellationToken);
     }
 
     /**
-     * Calls the `setGridDataSource` function immediately and then debounces
-     * future calls so it will only be called once during the specified delay
-     * period (250ms).
+     * Debounces calls to the `savePreferences` function so it will only be
+     * called once during the specified delay period (500ms). We're building in
+     * this debounce because the block's design encourages rapid filter
+     * selection by way of the medium and "Created By .." buttons.
      */
-    const loadGridDataDebounce = debounceAsync(setGridDataSource, { eager: true });
+    const savePreferencesDebounce = debounceAsync(savePreferences, { delay: 500 });
 
     /**
      * Gets the text value for the "Type" column.
@@ -447,7 +451,7 @@
      * @param row The row whose value to get.
      */
     function getCommunicationStatusTextValue(row: Record<string, unknown>): string {
-        return statusTextSource[(row as Row).status];
+        return InferredCommunicationStatusDescription[(row as Row).inferredStatus];
     }
 
     /**
@@ -564,14 +568,14 @@
      * @param event The mouse event.
      */
     async function onToggleCommunicationTypeFilter(communicationType: CommunicationType, event: MouseEvent): Promise<void> {
-        (event.currentTarget as HTMLElement)?.blur();
-
-        // Cancel any existing grid data requests.
+        // Cancel any in-process filtering.
         filterCancellationTokenSource?.cancel();
         filterCancellationTokenSource = new CancellationTokenSource();
 
+        (event.currentTarget as HTMLElement)?.blur();
+
         // Add or remove the communication type filter.
-        var communicationTypeString = communicationType.toString();
+        const communicationTypeString = communicationType.toString();
         if (!filterCommunicationTypes.value.includes(communicationTypeString)) {
             // Add it.
             filterCommunicationTypes.value = [
@@ -588,13 +592,7 @@
         // Set the preference.
         preferences.setValue(PreferenceKey.FilterCommunicationTypes, filterCommunicationTypes.value.join("|"));
 
-        if (!filterCancellationTokenSource.token.isCancellationRequested) {
-            // Save the latest preferences.
-            await preferences.save();
-        }
-
-        // Reload the grid data.
-        loadGridDataDebounce(filterCancellationTokenSource.token);
+        await savePreferencesDebounce(filterCancellationTokenSource.token);
     }
 
     /**
@@ -619,7 +617,7 @@
 
         if (result.isSuccess) {
             if (gridData && gridData.rows) {
-                const index = gridData.rows.findIndex(r => (r["guid"] === key));
+                const index = gridData.rows.findIndex(r => (r["idKey"] === key));
 
                 if (index !== -1) {
                     gridData.rows?.splice(index, 1);
@@ -636,6 +634,7 @@
     // #region Watchers
 
     watch(gridSettings, async () => {
+        // Cancel any in-process filtering.
         filterCancellationTokenSource?.cancel();
         filterCancellationTokenSource = new CancellationTokenSource();
 
@@ -652,15 +651,10 @@
         preferences.setValue(PreferenceKey.FilterName, gridSettings.value.name);
         preferences.setValue(PreferenceKey.FilterContent, gridSettings.value.content);
 
-        if (!filterCancellationTokenSource.token.isCancellationRequested) {
-            // Save the latest preferences.
-            await preferences.save();
-        }
-
-        loadGridDataDebounce(filterCancellationTokenSource.token);
+        await savePreferencesDebounce(filterCancellationTokenSource.token);
     });
 
     // #endregion Watchers
 
-    loadGridDataDebounce(filterCancellationTokenSource.token);
+    gridDataSource.value = loadGridData();
 </script>

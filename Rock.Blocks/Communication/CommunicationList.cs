@@ -25,6 +25,7 @@ using System.Text;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Enums.Communication;
 using Rock.Enums.Controls;
 using Rock.Model;
 using Rock.Obsidian.UI;
@@ -36,6 +37,8 @@ using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
+using CommunicationType = Rock.Model.CommunicationType;
+
 namespace Rock.Blocks.Communication
 {
     /// <summary>
@@ -46,7 +49,7 @@ namespace Rock.Blocks.Communication
     [Category( "Communication" )]
     [Description( "Lists the status of all previously created communications." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -81,7 +84,7 @@ namespace Rock.Blocks.Communication
             public const string Communication = "Communication";
         }
 
-        private static class PreferenceKey
+        private static class PersonPreferenceKey
         {
             public const string FilterCreatedBy = "filter-created-by";
             public const string FilterCommunicationTypes = "filter-communication-types";
@@ -111,6 +114,11 @@ namespace Rock.Blocks.Communication
         #region Properties
 
         /// <summary>
+        /// Gets whether the current person can approve communications.
+        /// </summary>
+        private bool CanApprove => BlockCache.IsAuthorized( Authorization.APPROVE, GetCurrentPerson() );
+
+        /// <summary>
         /// Gets the block person preferences.
         /// </summary>
         private PersonPreferenceCollection BlockPersonPreferences => this.GetBlockPersonPreferences();
@@ -119,14 +127,14 @@ namespace Rock.Blocks.Communication
         /// Gets the unique identifier of the "created by" <see cref="PersonAlias"/> by whom to filter the results.
         /// </summary>
         private Guid? FilterCreatedByPersonAliasGuid => BlockPersonPreferences
-            .GetValue( PreferenceKey.FilterCreatedBy )
+            .GetValue( PersonPreferenceKey.FilterCreatedBy )
             .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
 
         /// <summary>
         /// Gets the list of <see cref="CommunicationType"/> integer values by which to filter the results.
         /// </summary>
         private List<int> FilterCommunicationTypes => BlockPersonPreferences
-            .GetValue( PreferenceKey.FilterCommunicationTypes )
+            .GetValue( PersonPreferenceKey.FilterCommunicationTypes )
             .SplitDelimitedValues()
             .Select( t => t.AsIntegerOrNull() )
             .Where( t => t.HasValue )
@@ -137,48 +145,48 @@ namespace Rock.Blocks.Communication
         /// Gets whether to hide results whose status is <see cref="CommunicationStatus.Draft"/>.
         /// </summary>
         private bool FilterHideDrafts => BlockPersonPreferences
-            .GetValue( PreferenceKey.FilterHideDrafts )
+            .GetValue( PersonPreferenceKey.FilterHideDrafts )
             .AsBoolean();
 
         /// <summary>
         /// Gets the send date range by which to filter the results.
         /// </summary>
         private SlidingDateRangeBag FilterSendDateRange => BlockPersonPreferences
-            .GetValue( PreferenceKey.FilterSendDateRange )
+            .GetValue( PersonPreferenceKey.FilterSendDateRange )
             .ToSlidingDateRangeBagOrNull();
 
         /// <summary>
         /// Gets the lower recipient count limit by which to filter the results.
         /// </summary>
         private int? FilterRecipientCountLower => BlockPersonPreferences
-            .GetValue( PreferenceKey.FilterRecipientCountLower )
+            .GetValue( PersonPreferenceKey.FilterRecipientCountLower )
             .AsIntegerOrNull();
 
         /// <summary>
         /// Gets the upper recipient count limit by which to filter the results.
         /// </summary>
         private int? FilterRecipientCountUpper => BlockPersonPreferences
-            .GetValue( PreferenceKey.FilterRecipientCountUpper )
+            .GetValue( PersonPreferenceKey.FilterRecipientCountUpper )
             .AsIntegerOrNull();
 
         /// <summary>
         /// Gets the unique identifier of the Topic <see cref="DefinedValue"/> by which to filter the results.
         /// </summary>
         private Guid? FilterTopicValueGuid => BlockPersonPreferences
-            .GetValue( PreferenceKey.FilterTopic )
+            .GetValue( PersonPreferenceKey.FilterTopic )
             .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
 
         /// <summary>
         /// Gets the name by which to filter the results.
         /// </summary>
         private string FilterName => BlockPersonPreferences
-            .GetValue( PreferenceKey.FilterName );
+            .GetValue( PersonPreferenceKey.FilterName );
 
         /// <summary>
         /// Gets the content by which to filter the results.
         /// </summary>
         private string FilterContent => BlockPersonPreferences
-            .GetValue( PreferenceKey.FilterContent );
+            .GetValue( PersonPreferenceKey.FilterContent );
 
         #endregion Properties
 
@@ -237,7 +245,7 @@ namespace Rock.Blocks.Communication
                 new SqlParameter( SqlParamKey.RecipientCountUpper, ( object ) FilterRecipientCountUpper ?? DBNull.Value )
             };
 
-            var senderPersonAliasGuid = GetCanApprove()
+            var senderPersonAliasGuid = CanApprove
                 ? FilterCreatedByPersonAliasGuid        // Show the communications created by the selected person or all communication if no person is selected.
                 : GetCurrentPerson().PrimaryAliasGuid;  // Only show the current person's communications.
 
@@ -251,15 +259,14 @@ namespace Rock.Blocks.Communication
             // Build a dynamic SQL query to project only the needed data into a custom POCO.
             sqlSb.AppendLine( $@"
 ;WITH CommunicationAggregate AS (
-    SELECT c.[Id]
-        , c.[Guid]
+    SELECT c.[Id] AS [CommunicationId]
         , c.[CommunicationTemplateId]
         , c.[SystemCommunicationId]
         , c.[CommunicationType] AS [Type]
         , CASE
+            WHEN c.[Name] IS NOT NULL AND c.[Name] <> '' THEN c.[Name]
             WHEN c.[Subject] IS NOT NULL AND c.[Subject] <> '' THEN c.[Subject]
-            WHEN c.[PushTitle] IS NOT NULL AND c.[PushTitle] <> '' THEN c.[PushTitle]
-            ELSE c.[Name]
+            ELSE c.[PushTitle]
           END AS [Name]
         , c.[Summary]
         , c.[Status]
@@ -345,7 +352,6 @@ namespace Rock.Blocks.Communication
             }
 
             sqlSb.Append( $@"    GROUP BY c.[Id]
-        , c.[Guid]
         , c.[CommunicationTemplateId]
         , c.[SystemCommunicationId]
         , c.[CommunicationType]
@@ -404,7 +410,7 @@ LEFT OUTER JOIN [Person] pSender ON pSender.[Id] = paSender.[PersonId]
 LEFT OUTER JOIN [PersonAlias] paReviewer ON paReviewer.[Id] = ca.[ReviewerPersonAliasId]
 LEFT OUTER JOIN [Person] pReviewer ON pReviewer.[Id] = paReviewer.[PersonId]
 ORDER BY ca.[IsDraftWithoutSendDate] DESC
-    , CASE WHEN ca.[IsDraftWithoutSendDate] = 1 THEN ca.[Id] ELSE NULL END DESC
+    , CASE WHEN ca.[IsDraftWithoutSendDate] = 1 THEN ca.[CommunicationId] ELSE NULL END DESC
     , COALESCE(ca.[SendDateTime], ca.[FutureSendDateTime]) DESC;" );
 
             var communicationRows = RockContext.Database
@@ -506,7 +512,7 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
         {
             var options = new CommunicationListOptionsBag
             {
-                ShowCreatedByFilter = GetCanApprove(),
+                ShowCreatedByFilter = CanApprove,
                 HasActiveEmailTransport = MediumContainer.HasActiveEmailTransport(),
                 HasActiveSmsTransport = MediumContainer.HasActiveSmsTransport(),
                 HasActivePushTransport = MediumContainer.HasActivePushTransport()
@@ -535,7 +541,7 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
         {
             return new GridBuilder<CommunicationRow>()
                 .WithBlock( this )
-                .AddField( "guid", a => a.Guid )
+                .AddField( "idKey", a => a.CommunicationId.AsIdKey() )
                 .AddField( "type", a => a.Type )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "summary", a =>
@@ -547,7 +553,7 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
 
                     return a.Summary;
                 } )
-                .AddField( "status", a => a.InferredStatus )
+                .AddField( "inferredStatus", a => a.InferredStatus )
                 .AddField( "recipientCount", a => a.RecipientCount )
                 .AddField( "deliveredCount", a => a.DeliveredCount )
                 .AddField( "openedCount", a => a.OpenedCount )
@@ -578,7 +584,7 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
                         NickName = a.SenderPersonNickName,
                         LastName = a.SenderPersonLastName,
                         SuffixValueId = a.SenderPersonSuffixValueId,
-                        RecordSourceValueId = a.SenderRecordTypeValueId
+                        RecordSourceValueId = a.SenderPersonRecordTypeValueId
                     };
                 } )
                 .AddDateTimeField( "reviewedDateTime", a => a.ReviewedDateTime )
@@ -593,19 +599,10 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
                         a.ReviewerPersonNickName,
                         a.ReviewerPersonLastName,
                         a.ReviewerPersonSuffixValueId,
-                        a.ReviewerRecordTypeValueId
+                        a.ReviewerPersonRecordTypeValueId
                     );
                 } )
                 .AddField( "isDeleteDisabled", a => a.DeliveredCount > 0 );
-        }
-
-        /// <summary>
-        /// Gets whether the current person can approve communications.
-        /// </summary>
-        /// <returns></returns>
-        private bool GetCanApprove()
-        {
-            return this.BlockCache.IsAuthorized( Authorization.APPROVE, GetCurrentPerson() );
         }
 
         #endregion
@@ -618,9 +615,9 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
         private class CommunicationRow
         {
             /// <summary>
-            /// Gets or sets the <see cref="Rock.Model.Communication"/> unique identifier.
+            /// Gets or sets the <see cref="Rock.Model.Communication"/> identifier.
             /// </summary>
-            public Guid Guid { get; set; }
+            public int CommunicationId { get; set; }
 
             /// <inheritdoc cref="Rock.Model.Communication.CommunicationTemplateId"/>
             public int? CommunicationTemplateId { get; set; }
@@ -641,14 +638,10 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
             /// </summary>
             public string Summary { get; set; }
 
-            /// <inheritdoc cref="Rock.Model.Communication.Status"/>
-            public CommunicationStatus Status { get; set; }
-
             /// <summary>
-            /// The inferred status of the communication, which can be an actual <see cref="CommunicationStatus"/> value
-            /// or one of "Sending (5)" or "Sent (6)", which the UI knows how to display.
+            /// Gets or sets the <see cref="InferredCommunicationStatus"/> for this communication.
             /// </summary>
-            public int InferredStatus { get; set; }
+            public InferredCommunicationStatus InferredStatus { get; set; }
 
             /// <inheritdoc cref="Rock.Model.Communication.CommunicationTopicValueId"/>
             public int? TopicValueId { get; set; }
@@ -713,7 +706,7 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
             /// <summary>
             /// Gets or sets the record type value identifier of the person who sent the <see cref="Rock.Model.Communication"/>.
             /// </summary>
-            public int? SenderRecordTypeValueId { get; set; }
+            public int? SenderPersonRecordTypeValueId { get; set; }
 
             /// <summary>
             /// Gets or sets the identifier of the person who reviewed the <see cref="Rock.Model.Communication"/>.
@@ -738,7 +731,7 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
             /// <summary>
             /// Gets or sets the record type value identifier of the person who reviewed the <see cref="Rock.Model.Communication"/>.
             /// </summary>
-            public int? ReviewerRecordTypeValueId { get; set; }
+            public int? ReviewerPersonRecordTypeValueId { get; set; }
         }
 
         #endregion Supporting Classes

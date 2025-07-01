@@ -1,0 +1,240 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="communicationDetail" class="communication-analytics">
+
+        <DeliveryBreakdown :deliveryBreakdown="deliveryBreakdown" />
+
+        <LoadingIndicator v-if="showLoadingIndicator" :delay="1000" />
+
+        <template v-if="showMetrics">
+
+            <NotificationBox v-if="getAnalyticsDataErrorMessage" :alertType="AlertType.Warning">
+                {{ getAnalyticsDataErrorMessage }}
+            </NotificationBox>
+
+            <NotificationBox v-else-if="showNoActivityMessage" :alertType="AlertType.Info">
+                No activity found for this communication.
+            </NotificationBox>
+
+            <template v-else>
+
+                <MessagePerformance :analytics="analytics" :showEmailMetrics="showEmailMetrics" />
+
+                <TopClients :topClientsDataPoints="analytics?.topClients"
+                            :allClientsDataPoints="analytics?.allClients" />
+
+            </template>
+        </template>
+
+        <Panel v-else title="Message Performance">
+            <div class="communication-analytics-no-metrics">
+                <i class="ti ti-alert-triangle ti-4x"></i>
+                <div class="no-metrics-to-show-message">
+                    Nothing To Show
+                </div>
+                <div class="no-metrics-for-medium-message">
+                    Performance metrics are currently unavailable for this medium.
+                </div>
+            </div>
+        </Panel>
+
+    </div>
+</template>
+
+<style scoped>
+.communication-analytics-no-metrics {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    color: var(--color-interface-medium);
+}
+
+.no-metrics-for-medium-message {
+    font-size: var(--font-size-xsmall);
+    margin-top: var(--spacing-tiny);
+    text-align: center;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import { ChartStyles, TabItem } from "./types.partial";
+    import { getCssVar, provideChartStyles, useCommunicationDetail, useMediumFilter, useSelectedTab } from "./utils.partial";
+    import DeliveryBreakdown from "./deliveryBreakdown.partial.obs";
+    import MessagePerformance from "./messagePerformance.partial.obs";
+    import TopClients from "./topClients.partial.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
+    import { debounceAsync } from "@Obsidian/Utility/util";
+    import { CommunicationAnalyticsRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationAnalyticsRequestBag";
+    import { CommunicationAnalyticsResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationAnalyticsResponseBag";
+    import { CommunicationDeliveryBreakdownBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDeliveryBreakdownBag";
+
+    const invokeBlockAction = useInvokeBlockAction();
+    const communicationDetail = useCommunicationDetail();
+    const mediumFilter = useMediumFilter();
+    const selectedTab = useSelectedTab();
+
+    // Ensure rapid filter selection changes result in using only the latest
+    // filter values before making a request to the server for new data.
+    let filterCancellationTokenSource: CancellationTokenSource | null = null;
+
+    // #region Values
+
+    const isLoadingAnalyticsData = ref(false);
+    const getAnalyticsDataErrorMessage = ref("");
+
+    const deliveryBreakdown = ref<CommunicationDeliveryBreakdownBag | null | undefined>(communicationDetail.value?.deliveryBreakdown);
+    const analytics = ref<CommunicationAnalyticsResponseBag | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const showLoadingIndicator = computed((): boolean => {
+        return !analytics.value && isLoadingAnalyticsData.value;
+    });
+
+    const showMetrics = computed((): boolean => {
+        const communicationHasMetrics = [
+            CommunicationType.Email,
+            CommunicationType.PushNotification,
+            CommunicationType.RecipientPreference
+        ].some(
+            t => communicationDetail.value?.type === t
+        );
+
+        return communicationHasMetrics && mediumFilter.value !== CommunicationType.SMS;
+    });
+
+    const showNoActivityMessage = computed((): boolean => {
+        return !!analytics.value?.showNoActivityMessage;
+    });
+
+    const showEmailMetrics = computed((): boolean => {
+        return communicationDetail.value?.type === CommunicationType.Email
+            || mediumFilter.value === CommunicationType.Email;
+    });
+
+    const chartStyles = computed((): ChartStyles => {
+        return {
+            fontFamily: getCssVar("--font-family-sans-serif", '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'),
+            fontColor: getCssVar("--color-interface-stronger", "#0D1117"),
+            fontSize: parseInt(getCssVar("--font-size-small", "14")),
+            fontWeight: getCssVar("--font-weight-semibold", "600"),
+            legendBoxSize: parseInt(getCssVar("--spacing-large", "24")),
+            fallbackColor: "#8e8e93"
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Gets the analytics data.
+     *
+     * @param cancellationToken A cancellation token that will instruct this
+     * function to exit early and discard results.
+     */
+    async function getAnalyticsData(cancellationToken?: ICancellationToken): Promise<void> {
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        isLoadingAnalyticsData.value = true;
+        getAnalyticsDataErrorMessage.value = "";
+
+        const bag: CommunicationAnalyticsRequestBag = {
+            type: mediumFilter.value
+        };
+
+        const result = await invokeBlockAction<CommunicationAnalyticsResponseBag>("GetCommunicationAnalytics", { bag });
+        isLoadingAnalyticsData.value = false;
+
+        if (cancellationToken?.isCancellationRequested) {
+            return;
+        }
+
+        if (!result.isSuccess || !result.data || result.data.errorMessage) {
+            getAnalyticsDataErrorMessage.value = result.errorMessage
+                || result.data?.errorMessage
+                || "Unknown error while trying to get analytics data.";
+            return;
+        }
+
+        deliveryBreakdown.value = result.data.deliveryBreakdown;
+
+        if (!showMetrics.value || !hasAnalyticsDataChanged(result.data)) {
+            // Only overwrite the analytics if metrics should be shown (and if
+            // the data has actually changed since the last load). This will
+            // help prevent unnecessary screen flickering.
+            return;
+        }
+
+        analytics.value = result.data;
+    }
+
+    /**
+     * Calls the `getAnalyticsData` function immediately and then debounces
+     * future calls so it will only be called once during the specified delay
+     * period (250ms).
+     */
+    const getAnalyticsDataDebounce = debounceAsync(getAnalyticsData, { eager: true });
+
+    /**
+     * Cancels any in-progress data loads, then [re]loads data.
+     */
+    function loadData(): void {
+        filterCancellationTokenSource?.cancel();
+        filterCancellationTokenSource = new CancellationTokenSource();
+
+        getAnalyticsDataDebounce(filterCancellationTokenSource.token);
+    }
+
+    /**
+     * Determines if the analytics data has changed since the last time it was
+     * loaded.
+     *
+     * @param newData The latest copy of analytics data to be compared against
+     * the existing data.
+     */
+    function hasAnalyticsDataChanged(newData: CommunicationAnalyticsResponseBag): boolean {
+        // Exclude known-differing non-chart data between [Email] and [SMS], as
+        // we really only care about limiting excessive chart re-animations.
+        const excludedKeys = new Set(["deliveryBreakdown"]);
+
+        const replacer = (key: string, value: unknown): unknown => {
+            return excludedKeys.has(key) ? undefined : value;
+        };
+
+        const newJson = JSON.stringify(newData, replacer);
+        const oldJson = JSON.stringify(analytics.value, replacer);
+
+        return newJson !== oldJson;
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch([mediumFilter, selectedTab], () => {
+        if (selectedTab.value !== TabItem.Analytics) {
+            return;
+        }
+
+        loadData();
+    });
+
+    // #endregion Watchers
+
+    loadData();
+
+    provideChartStyles(chartStyles);
+</script>

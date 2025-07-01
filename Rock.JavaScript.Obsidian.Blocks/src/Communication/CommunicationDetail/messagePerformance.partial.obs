@@ -1,0 +1,199 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="analytics" title="Message Performance">
+
+        <Kpis :kpis="analytics?.kpis" :showEmailMetrics="showEmailMetrics" />
+
+        <Panel title="Performance Chart"
+               :hasFullscreen="true">
+            <div class="communication-analytics-performance-chart-actions">
+                <div class="form-group">
+                    <ButtonGroup v-model="performanceChartItem"
+                                 :items="performanceChartItems"
+                                 :btnSize="BtnSize.ExtraSmall" />
+                </div>
+                <RadioButtonList v-if="showPerformanceChartTimeframeFilter"
+                                 v-model="performanceChartTimeframe"
+                                 :items="performanceChartTimeframeItems"
+                                 :horizontal="true"
+                                 :disableLabel="true" />
+            </div>
+            <div class="communication-analytics-performance-chart">
+                <UniqueInteractionsOverTime v-if="showUniqueInteractionsOverTime"
+                                            :chartDataPoints="visibleInteractionDataPoints" />
+                <UniqueActivityFlow v-else :activityFlow="analytics?.activityFlow" />
+            </div>
+        </Panel>
+
+        <TopPerformingLinks :linksAnalytics="analytics?.allLinksAnalytics" />
+
+        <div class="row d-flex flex-wrap align-items-stretch">
+            <div class="col-xs-12 col-md-6">
+                <Panel title="Unique Opens By Gender">
+                    <div class="communication-analytics-gender-chart">
+                        <UniqueOpensByGender :chartDataPoints="analytics?.uniqueOpensByGender" />
+                    </div>
+                </Panel>
+            </div>
+            <div class="col-xs-12 col-md-6">
+                <Panel title="Unique Opens By Age Range">
+                    <div class="communication-analytics-age-range-chart">
+                        <UniqueOpensByAgeRange :chartDataPoints="analytics?.uniqueOpensByAgeRange" />
+                    </div>
+                </Panel>
+            </div>
+        </div>
+
+    </Panel>
+</template>
+
+<style scoped>
+.communication-analytics-performance-chart-actions {
+    display: flex;
+    flex-direction: row-reverse;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-analytics-performance-chart {
+    height: 450px;
+}
+
+.communication-analytics-gender-chart,
+.communication-analytics-age-range-chart {
+    height: 350px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { PerformanceChartItem, PerformanceChartTimeframe } from "./types.partial";
+    import { useCommunicationDetail } from "./utils.partial";
+    import Kpis from "./kpis.partial.obs";
+    import TopPerformingLinks from "./topPerformingLinks.partial.obs";
+    import UniqueActivityFlow from "./uniqueActivityFlow.partial.obs";
+    import UniqueInteractionsOverTime from "./uniqueInteractionsOverTime.partial.obs";
+    import UniqueOpensByAgeRange from "./uniqueOpensByAgeRange.partial.obs";
+    import UniqueOpensByGender from "./uniqueOpensByGender.partial.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationAnalyticsResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationAnalyticsResponseBag";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+
+    const communicationDetail = useCommunicationDetail();
+
+    const performanceChartItems = [
+        {
+            text: PerformanceChartItem.Time,
+            value: PerformanceChartItem.Time
+        },
+        {
+            text: PerformanceChartItem.Flow,
+            value: PerformanceChartItem.Flow
+        }
+    ];
+
+    const performanceChartTimeframeItems = [
+        {
+            text: PerformanceChartTimeframe.First45Days,
+            value: PerformanceChartTimeframe.First45Days
+        },
+        {
+            text: PerformanceChartTimeframe.AllTime,
+            value: PerformanceChartTimeframe.AllTime
+        }
+    ];
+
+    const props = defineProps({
+        analytics: {
+            type: Object as PropType<CommunicationAnalyticsResponseBag | null>,
+            required: true
+        },
+
+        showEmailMetrics: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    type InteractionDataPoint = ChartNumericDataPointBag & { date: RockDateTime };
+
+    // #region Values
+
+    const performanceChartItem = ref(PerformanceChartItem.Time);
+    const performanceChartTimeframe = ref(PerformanceChartTimeframe.First45Days);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const communicationSendDate = computed((): RockDateTime | undefined => {
+        return communicationDetail.value?.sendDateTime
+            ? RockDateTime.parseISO(communicationDetail.value.sendDateTime)?.date
+            : undefined;
+    });
+
+    const fortyFifthDayDate = computed((): RockDateTime | undefined => {
+        return communicationSendDate.value?.addDays(44);
+    });
+
+    const showUniqueInteractionsOverTime = computed((): boolean => {
+        return performanceChartItem.value === PerformanceChartItem.Time;
+    });
+
+    const interactionDataPoints = computed((): InteractionDataPoint[] => {
+        const interactionsOverTime = props.analytics?.uniqueInteractionsOverTime;
+        if (!interactionsOverTime || !communicationSendDate.value) {
+            return [];
+        }
+
+        // Enrich each data point with the parsed RockDateTime.
+        return interactionsOverTime
+            .filter(dp =>
+                dp?.seriesName
+                && dp.label
+                && !isNullish(dp.value)
+                && dp.color
+            )
+            .map(dp => {
+                const date = RockDateTime.parseISO(dp.label!);
+                if (!date) {
+                    return null;
+                }
+                return { ...dp, date };
+            })
+            .filter((dp): dp is InteractionDataPoint => !!dp);
+    });
+
+    const visibleInteractionDataPoints = computed((): ChartNumericDataPointBag[] => {
+        return interactionDataPoints.value
+            .filter(dp => {
+                if (performanceChartTimeframe.value === PerformanceChartTimeframe.AllTime) {
+                    return true;
+                }
+
+                // Only show data points for the first 45 days.
+                return dp.date <= fortyFifthDayDate.value!;
+            })
+            .map(dp => ({
+                ...dp,
+                label: dp.date.toASPString("d")
+            }));
+    });
+
+    const showPerformanceChartTimeframeFilter = computed((): boolean => {
+        return !!(
+            showUniqueInteractionsOverTime.value
+            && fortyFifthDayDate.value
+            && interactionDataPoints.value
+                .some(dp => dp.date > fortyFifthDayDate.value!)
+        );
+    });
+
+    // #endregion Computed Values
+</script>

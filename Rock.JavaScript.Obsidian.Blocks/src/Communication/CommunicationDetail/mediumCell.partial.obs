@@ -1,0 +1,51 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="communication-detail-medium-cell">
+        <i v-if="iconCssClass" :class="iconCssClass"></i>
+    </div>
+</template>
+
+<style scoped>
+.communication-detail-medium-cell {
+    color: var(--color-info-strong);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { RecipientGridRow } from "./types.partial";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+
+    const props = defineProps({
+        row: {
+            type: Object as PropType<RecipientGridRow>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /** The icon CSS class to use for this row. */
+    const iconCssClass = computed((): string => {
+        let icon = "";
+        switch (props.row.medium) {
+            case CommunicationType.Email:
+                icon = "mail";
+                break;
+            case CommunicationType.SMS:
+                icon = "message";
+                break;
+            case CommunicationType.PushNotification:
+                icon = "device-mobile";
+                break;
+        }
+
+        if (!icon) {
+            return "";
+        }
+
+        return `ti ti-${icon} ti-2x`;
+    });
+
+    // #endregion Computed Values
+</script>
