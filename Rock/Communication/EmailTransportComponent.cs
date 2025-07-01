@@ -1272,6 +1272,29 @@ namespace Rock.Communication
                 transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
                 transaction.RecipientStatus = result.Status;
 
+                /*
+                    6/30/25 - MSE
+
+                    Fixed communication record to save correct ReplyToEmail when sender is not a safe sender.
+
+                    Reason: When Rock replaces FromEmail with organization email for unsafe senders, the
+                    communication record should save the original sender's email in ReplyToEmail field.
+                */
+                if ( !string.IsNullOrWhiteSpace( recipientEmailMessage.ReplyToEmail ) )
+                {
+                    var replyToEmail = recipientEmailMessage.ReplyToEmail;
+                    try
+                    {
+                        replyToEmail = new System.Net.Mail.MailAddress( replyToEmail ).Address;
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                    }
+
+                    transaction.ReplyTo = replyToEmail;
+                }
+
                 if ( recipientEmailMessage.CreateCommunicationRecordImmediately )
                 {
                     try
