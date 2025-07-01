@@ -25,9 +25,9 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const connectionTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.connectionTypeOptions) ?? [];
+    const connectionTypeOptions = safeParseJson<ListItemBag[]>(props.options.connectionTypeOptions) ?? [];
     const connectionType = ref<Guid>(props.modelValue.connectionType ?? "");
-    const connectionOpportunityOptions = safeParseJson<Record<string, ListItemBag[]>>(props.modelValue.connectionOpportunityOptions) ?? [];
+    const connectionOpportunityOptions = safeParseJson<Record<string, ListItemBag[]>>(props.options.connectionOpportunityOptions) ?? [];
     const connectionOpportunity = ref<Guid>(props.modelValue.connectionOpportunity ?? "");
 
     const currentConnectionOpportunityOptions = computed<ListItemBag[] | undefined>(() => {

@@ -72,9 +72,9 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const learningProgramOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.learningProgramOptions) ?? []);
+    const learningProgramOptions = safeParseJson<ListItemBag[]>(props.options.learningProgramOptions) ?? [];
     const learningProgram = ref<Guid>(props.modelValue.learningProgram ?? "");
-    const learningCourseOptionsByProgram = ref<Record<Guid, ListItemBag[]>>(safeParseJson(props.modelValue.learningCourseOptions) ?? {});
+    const learningCourseOptionsByProgram = safeParseJson<Record<Guid, ListItemBag[]>>(props.options.learningCourseOptions) ?? {};
     const learningCourse = ref<Guid>(props.modelValue.learningCourse ?? "");
     const learningClass = ref<ListItemBag | null>(safeParseJson(props.modelValue.learningClass) ?? null);
     const learningClassActivity = ref<ListItemBag | null>(safeParseJson(props.modelValue.learningClassActivity) ?? null);
@@ -83,7 +83,7 @@
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
 
     const learningCourseOptions = computed(() => {
-        return learningCourseOptionsByProgram.value[learningProgram.value] ?? [];
+        return learningCourseOptionsByProgram[learningProgram.value] ?? [];
     });
 
     const comparisonItems = getFilteredComparisonTypeOptions(

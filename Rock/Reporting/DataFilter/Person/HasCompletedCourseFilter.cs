@@ -60,17 +60,6 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            return new DynamicComponentDefinitionBag
-            {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasCompletedCourseFilter.obs" )
-            };
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
-        {
-            var config = SelectionConfig.Parse( selection );
-
             var learningProgramOptions = new LearningProgramService( rockContext )
                 .Queryable()
                 .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
@@ -78,10 +67,6 @@ namespace Rock.Reporting.DataFilter.Person
                 .ToList()
                 .Select( lp => lp.ToListItemBag() )
                 .ToList();
-
-            var learningProgramGuid = new LearningCourseService( rockContext )
-                .Get( config?.LearningCourseGuid ?? Guid.Empty )
-                ?.LearningProgram.Guid;
 
             var learningCourseOptions = new LearningCourseService( rockContext )
                 .Queryable()
@@ -108,11 +93,29 @@ namespace Rock.Reporting.DataFilter.Person
                 }
             }
 
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasCompletedCourseFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "learningProgramOptions", learningProgramOptions.ToCamelCaseJson( false, true ) },
+                    { "learningCourseOptions", learningCourseOptionsByProgram.ToCamelCaseJson( false, true ) },
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var learningProgramGuid = new LearningCourseService( rockContext )
+                .Get( config?.LearningCourseGuid ?? Guid.Empty )
+                ?.LearningProgram.Guid;
+
             var data = new Dictionary<string, string>
             {
-                { "learningProgramOptions", learningProgramOptions.ToCamelCaseJson( false, true ) },
                 { "learningProgram", learningProgramGuid?.ToString() },
-                { "learningCourseOptions", learningCourseOptionsByProgram.ToCamelCaseJson( false, true ) },
                 { "learningCourse", config?.LearningCourseGuid?.ToString() },
                 { "courseStatus", config?.LearningCompletionStatuses.ToCamelCaseJson( false, true ) },
                 { "dateRange", config?.SlidingDateRangeDelimitedValues },

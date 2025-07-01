@@ -25,7 +25,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const documentTypeOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.documentTypeOptions) ?? []);
+    const documentTypeOptions = safeParseJson<ListItemBag[]>(props.options.documentTypeOptions) ?? [];
     const documentType = ref<Guid>(props.modelValue.documentType ?? "");
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
 

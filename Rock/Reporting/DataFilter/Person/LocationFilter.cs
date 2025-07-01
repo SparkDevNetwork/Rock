@@ -168,9 +168,20 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var familyLocations = GroupTypeCache.GetFamilyGroupType()
+                .LocationTypeValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value )
+                .Select( l => new ListItemBag { Value = l.Guid.ToString(), Text = l.Value } )
+                .ToList();
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/locationFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/locationFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "locationTypeOptions", familyLocations.ToCamelCaseJson( false, true ) }
+                },
             };
         }
 
@@ -178,17 +189,6 @@ namespace Rock.Reporting.DataFilter.Person
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             var settings = new FilterSettings( selection );
-            var data = new Dictionary<string, string>();
-
-            var familyLocations = GroupTypeCache.GetFamilyGroupType()
-                .LocationTypeValues
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Value )
-                .Select( l => new ListItemBag { Value = l.Guid.ToString(), Text = l.Value } )
-                .ToList();
-            data.Add( "locationTypeOptions", familyLocations.ToCamelCaseJson( false, true ) );
-
-            data.Add( "locationType", settings.LocationTypeGuid.ToStringSafe() );
 
             var address = new AddressControlBag
             {
@@ -198,9 +198,12 @@ namespace Rock.Reporting.DataFilter.Person
                 PostalCode = settings.PostalCode,
                 Country = settings.Country
             };
-            data.Add( "address", address.ToCamelCaseJson( false, true ) );
 
-            return data;
+            return new Dictionary<string, string>
+            {
+                { "locationType", settings.LocationTypeGuid.ToStringSafe() },
+                { "address", address.ToCamelCaseJson( false, true ) }
+            };
         }
 
         /// <inheritdoc/>

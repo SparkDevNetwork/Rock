@@ -35,19 +35,10 @@
     const interactionComponent = ref<ListItemBag | null>(safeParseJson(props.modelValue.interactionComponent) ?? null);
     const operation = ref<string>(props.modelValue.operation ?? "");
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
-    const channelsWithComponents = safeParseJson<Guid[]>(props.modelValue.channelsWithComponents) ?? [];
+    const channelsWithComponents = safeParseJson<Guid[]>(props.options.channelsWithComponents) ?? [];
 
     const showComponentPicker = computed(() => {
         return interactionChannel.value && channelsWithComponents.includes(interactionChannel.value.value ?? "");
-    });
-
-    console.log({
-        interactionChannel: interactionChannel.value,
-        interactionComponent: interactionComponent.value,
-        channelsWithComponents,
-        showComponentPicker: showComponentPicker.value,
-        operation: operation.value,
-        dateRange: dateRange.value,
     });
 
     // reset the interaction component if the channel changes

@@ -7,7 +7,7 @@
             <NumberBox v-model="count" disableLabel />
         </div>
         <div class="col-md-2 mt-1">
-            page views on the
+            sessions on the
         </div>
         <div class="col-md-5">
             <DropDownList v-model="sites" :items="siteOptions"
@@ -62,7 +62,7 @@
     const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
     const count = ref<number | null>(toNumberOrNull(props.modelValue.count));
     const sites = ref<Guid[]>(safeParseJson(props.modelValue.sites) ?? []);
-    const siteOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.siteOptions) ?? []);
+    const siteOptions = safeParseJson<ListItemBag[]>(props.options.siteOptions) ?? [];
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
     const pages = ref<PageRouteValueBag[]>(safeParseJson(props.modelValue.pages) ?? []);
 

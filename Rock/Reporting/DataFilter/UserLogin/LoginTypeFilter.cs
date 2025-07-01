@@ -74,9 +74,23 @@ namespace Rock.Reporting.DataFilter.UserLogin
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var loginTypeOptions = new List<ListItemBag>();
+
+            foreach ( var item in AuthenticationContainer.Instance.Components.Values )
+            {
+                if ( item.Value.IsActive )
+                {
+                    loginTypeOptions.Add( new ListItemBag { Text = item.Metadata.ComponentName, Value = item.Value.EntityType.Guid.ToString() } );
+                }
+            }
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/UserLogin/loginTypeFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/UserLogin/loginTypeFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "loginTypeOptions", loginTypeOptions.ToCamelCaseJson(false, true) }
+                }
             };
         }
 
@@ -87,7 +101,6 @@ namespace Rock.Reporting.DataFilter.UserLogin
 
             var loginTypeId = selectionValues[0].AsIntegerOrNull() ?? 0;
             Guid? loginTypeGuid = null;
-            var loginTypeOptions = new List<ListItemBag>();
 
             foreach ( var item in AuthenticationContainer.Instance.Components.Values )
             {
@@ -95,16 +108,10 @@ namespace Rock.Reporting.DataFilter.UserLogin
                 {
                     loginTypeGuid = item.Value.EntityType.Guid;
                 }
-
-                if ( item.Value.IsActive )
-                {
-                    loginTypeOptions.Add( new ListItemBag { Text = item.Metadata.ComponentName, Value = item.Value.EntityType.Guid.ToString() } );
-                }
             }
 
             var data = new Dictionary<string, string>
             {
-                { "loginTypeOptions", loginTypeOptions.ToCamelCaseJson(false, true) },
                 { "loginType", loginTypeGuid?.ToString() },
             };
 

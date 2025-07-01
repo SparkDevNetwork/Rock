@@ -86,9 +86,18 @@ namespace Rock.Reporting.DataFilter.Group
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var memberStatuses = Enum.GetValues( typeof( GroupMemberStatus ) )
+                .Cast<GroupMemberStatus>()
+                .Select( a => new ListItemBag { Text = a.ConvertToString(), Value = a.ConvertToInt().ToString() } )
+                .ToList();
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/memberCountFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/memberCountFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "memberStatuses", memberStatuses.ToCamelCaseJson(false, true) }
+                }
             };
         }
 
@@ -96,16 +105,7 @@ namespace Rock.Reporting.DataFilter.Group
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             var selectionValues = selection.Split( '|' );
-
-            var memberStatuses = Enum.GetValues( typeof( GroupMemberStatus ) )
-                .Cast<GroupMemberStatus>()
-                .Select( a => new ListItemBag { Text = a.ConvertToString(), Value = a.ConvertToInt().ToString() } )
-                .ToList();
-
-            var data = new Dictionary<string, string>
-            {
-                { "memberStatuses", memberStatuses.ToCamelCaseJson(false, true) }
-            };
+            var data = new Dictionary<string, string>();
 
             if ( selectionValues.Length > 3 )
             {

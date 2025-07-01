@@ -57,17 +57,6 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            return new DynamicComponentDefinitionBag
-            {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasCompletedProgramFilter.obs" )
-            };
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
-        {
-            var config = SelectionConfig.Parse( selection );
-
             var learningProgramOptions = new LearningProgramService( rockContext )
                 .Queryable()
                 .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
@@ -76,9 +65,23 @@ namespace Rock.Reporting.DataFilter.Person
                 .Select( lp => lp.ToListItemBag() )
                 .ToList();
 
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasCompletedProgramFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "learningProgramOptions", learningProgramOptions.ToCamelCaseJson(false, true) }
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
             var data = new Dictionary<string, string>
             {
-                { "learningProgramOptions", learningProgramOptions.ToCamelCaseJson(false, true) },
                 { "learningProgram", config?.LearningProgramGuid?.ToString() },
                 { "dateRange", config?.SlidingDateRangeDelimitedValues },
             };

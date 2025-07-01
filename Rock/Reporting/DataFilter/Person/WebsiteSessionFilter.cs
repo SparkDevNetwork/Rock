@@ -76,9 +76,23 @@ namespace Rock.Reporting.DataFilter.Interaction
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
+            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
+
+            var siteOptions = new InteractionChannelService( rockContext )
+                .Queryable()
+                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
+                .Select( x => new ListItemBag() { Text = x.Name, Value = x.Guid.ToString() } )
+                .OrderBy( m => m.Text )
+                .ToList();
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/websiteSessionFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/websiteSessionFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "siteOptions", siteOptions.ToCamelCaseJson( false, true ) },
+                }
             };
         }
 
@@ -94,16 +108,6 @@ namespace Rock.Reporting.DataFilter.Interaction
 
             var sites = InteractionChannelCache.GetMany( config.WebsiteIds ).Select( dv => dv.Guid );
 
-            var websiteGuid = SystemGuid.DefinedValue.INTERACTIONCHANNELTYPE_WEBSITE.AsGuid();
-            var activeSiteIds = SiteCache.All().Where( s => s.IsActive ).Select( s => s.Id );
-
-            var siteOptions = new InteractionChannelService( new RockContext() )
-                .Queryable()
-                .Where( ic => ic.ChannelTypeMediumValue.Guid == websiteGuid && ic.IsActive && activeSiteIds.Contains( ic.ChannelEntityId.Value ) )
-                .Select( x => new ListItemBag() { Text = x.Name, Value = x.Guid.ToString() } )
-                .OrderBy( m => m.Text )
-                .ToList();
-
             var pages = PageCache.GetMany( config.PageIds )
                 .Select( dv => new PageRouteValueBag
                 {
@@ -113,7 +117,6 @@ namespace Rock.Reporting.DataFilter.Interaction
             return new Dictionary<string, string>
             {
                 { "sites", sites.ToCamelCaseJson( false, true ) },
-                { "siteOptions", siteOptions.ToCamelCaseJson( false, true ) },
                 { "comparisonType", config.ComparisonValue },
                 { "count", selection.IsNullOrWhiteSpace() ? "" : config.ViewsCount.ToString() },
                 { "dateRange", config.DelimitedDateRangeValues },

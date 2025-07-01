@@ -39,7 +39,7 @@
         { text: "Not Leader", value: "NotLeader" },
     ];
 
-    const groupTypes = ref<ListItemBag[]>(safeParseJson(props.modelValue.groupTypes) ?? []);
+    const groupTypes = safeParseJson<ListItemBag[]>(props.options.groupTypes) ?? [];
 
     const memberType = ref<string>(props.modelValue.memberType ?? "");
     const groupTypeGuid = ref<string>(props.modelValue.groupTypeGuid ?? "");
