@@ -15,32 +15,16 @@
 // </copyright>
 //
 
-namespace Rock.Model
+namespace Rock.Enums.Communication
 {
     /// <summary>
-    /// Represents the level at which an individual can unsubscribe from communications.
+    /// Represents the usage type for the communication template.
     /// </summary>
-    [Enums.EnumDomain( "Communication" )]
-    public enum UnsubscribeLevel
+    public enum CommunicationTemplateUsageType
     {
         /// <summary>
-        /// Unsubscribe from all communications.
+        /// The Communication Template is used for Communication Flows, and not to be used for typical Communications.
         /// </summary>
-        All = 1,
-
-        /// <summary>
-        /// Unsubscribe from bulk communications.
-        /// </summary>
-        Bulk = 2,
-
-        /// <summary>
-        /// Unsubscribe from communication lists.
-        /// </summary>
-        CommunicationList = 3,
-
-        /// <summary>
-        /// Unsubscribe from communication flows.
-        /// </summary>
-        Flows = 4,
+        CommunicationFlows = 1,
     }
 }

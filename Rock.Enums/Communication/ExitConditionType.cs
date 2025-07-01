@@ -15,32 +15,31 @@
 // </copyright>
 //
 
-namespace Rock.Model
+namespace Rock.Enums.Communication
 {
     /// <summary>
-    /// Represents the level at which an individual can unsubscribe from communications.
+    /// Condition for when a recipient no longer receives messages from a communication flow instance.
     /// </summary>
-    [Enums.EnumDomain( "Communication" )]
-    public enum UnsubscribeLevel
+    public enum ExitConditionType
     {
         /// <summary>
-        /// Unsubscribe from all communications.
+        /// Recipient exits the communication flow instance after the last message is sent.
         /// </summary>
-        All = 1,
+        LastMessageSent = 0,
 
         /// <summary>
-        /// Unsubscribe from bulk communications.
+        /// Recipient exits the communication flow instance if any email is opened.
         /// </summary>
-        Bulk = 2,
+        AnyEmailOpened = 1,
 
         /// <summary>
-        /// Unsubscribe from communication lists.
+        /// Recipient exits the communication flow instance if any email is clicked through.
         /// </summary>
-        CommunicationList = 3,
+        AnyEmailClickedThrough = 2,
 
         /// <summary>
-        /// Unsubscribe from communication flows.
+        /// Recipient exits the communication flow instance if conversion is achieved.
         /// </summary>
-        Flows = 4,
+        ConversionAchieved = 3
     }
 }

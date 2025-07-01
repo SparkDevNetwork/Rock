@@ -29,15 +29,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// CommunicationTemplate Service class
+    /// CommunicationFlow Service class
     /// </summary>
-    public partial class CommunicationTemplateService : Service<CommunicationTemplate>
+    public partial class CommunicationFlowService : Service<CommunicationFlow>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationTemplateService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationFlowService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public CommunicationTemplateService(RockContext context) : base(context)
+        public CommunicationFlowService(RockContext context) : base(context)
         {
         }
 
@@ -49,23 +49,21 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( CommunicationTemplate item, out string errorMessage )
+        public bool CanDelete( CommunicationFlow item, out string errorMessage )
         {
             errorMessage = string.Empty;
 
-            // ignoring Communication,CommunicationTemplateId
-
-            if ( new Service<CommunicationFlowCommunication>( Context ).Queryable().Any( a => a.CommunicationTemplateId == item.Id ) )
+            if ( new Service<CommunicationFlowInstance>( Context ).Queryable().Any( a => a.CommunicationFlowId == item.Id ) )
             {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationTemplate.FriendlyTypeName, CommunicationFlowCommunication.FriendlyTypeName );
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationFlow.FriendlyTypeName, CommunicationFlowInstance.FriendlyTypeName );
                 return false;
             }
             return true;
         }
     }
 
-    [HasQueryableAttributes( typeof( CommunicationTemplate.CommunicationTemplateQueryableAttributeValue ), nameof( CommunicationTemplateAttributeValues ) )]
-    public partial class CommunicationTemplate
+    [HasQueryableAttributes( typeof( CommunicationFlow.CommunicationFlowQueryableAttributeValue ), nameof( CommunicationFlowAttributeValues ) )]
+    public partial class CommunicationFlow
     {
         /// <summary>
         /// Gets the entity attribute values. This should only be used inside
@@ -74,10 +72,10 @@ namespace Rock.Model
         /// or selecting values. Do <b>not</b> use it for accessing the
         /// attributes after the entity has been loaded.
         /// </summary>
-        public virtual ICollection<CommunicationTemplateQueryableAttributeValue> CommunicationTemplateAttributeValues { get; set; } 
+        public virtual ICollection<CommunicationFlowQueryableAttributeValue> CommunicationFlowAttributeValues { get; set; } 
 
         /// <inheritdoc/>
-        public class CommunicationTemplateQueryableAttributeValue : QueryableAttributeValue
+        public class CommunicationFlowQueryableAttributeValue : QueryableAttributeValue
         {
         }
     }
@@ -85,36 +83,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class CommunicationTemplateExtensionMethods
+    public static partial class CommunicationFlowExtensionMethods
     {
         /// <summary>
-        /// Clones this CommunicationTemplate object to a new CommunicationTemplate object
+        /// Clones this CommunicationFlow object to a new CommunicationFlow object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static CommunicationTemplate Clone( this CommunicationTemplate source, bool deepCopy )
+        public static CommunicationFlow Clone( this CommunicationFlow source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as CommunicationTemplate;
+                return source.Clone() as CommunicationFlow;
             }
             else
             {
-                var target = new CommunicationTemplate();
+                var target = new CommunicationFlow();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this CommunicationTemplate object to a new CommunicationTemplate object with default values for the properties in the Entity and Model base classes.
+        /// Clones this CommunicationFlow object to a new CommunicationFlow object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static CommunicationTemplate CloneWithoutIdentity( this CommunicationTemplate source )
+        public static CommunicationFlow CloneWithoutIdentity( this CommunicationFlow source )
         {
-            var target = new CommunicationTemplate();
+            var target = new CommunicationFlow();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -131,49 +129,28 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another CommunicationTemplate object to this CommunicationTemplate object
+        /// Copies the properties from another CommunicationFlow object to this CommunicationFlow object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this CommunicationTemplate target, CommunicationTemplate source )
+        public static void CopyPropertiesFrom( this CommunicationFlow target, CommunicationFlow source )
         {
             target.Id = source.Id;
-            target.BCCEmails = source.BCCEmails;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.CategoryId = source.CategoryId;
-            target.CCEmails = source.CCEmails;
-            target.CssInliningEnabled = source.CssInliningEnabled;
+            target.ConversionGoalTargetPercent = source.ConversionGoalTargetPercent;
+            target.ConversionGoalTimeframeInDays = source.ConversionGoalTimeframeInDays;
+            target.ConversionGoalType = source.ConversionGoalType;
             target.Description = source.Description;
+            target.ExitConditionType = source.ExitConditionType;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.FromEmail = source.FromEmail;
-            target.FromName = source.FromName;
-            target.ImageFileId = source.ImageFileId;
             target.IsActive = source.IsActive;
-            target.IsStarter = source.IsStarter;
-            target.IsSystem = source.IsSystem;
-            target.LavaFieldsJson = source.LavaFieldsJson;
-            target.LogoBinaryFileId = source.LogoBinaryFileId;
-            target.Message = source.Message;
-            target.MessageMetaData = source.MessageMetaData;
             target.Name = source.Name;
-            target.PushData = source.PushData;
-            target.PushImageBinaryFileId = source.PushImageBinaryFileId;
-            target.PushMessage = source.PushMessage;
-            target.PushOpenAction = source.PushOpenAction;
-            target.PushOpenMessage = source.PushOpenMessage;
-            target.PushOpenMessageJson = source.PushOpenMessageJson;
-            target.PushSound = source.PushSound;
-            target.PushTitle = source.PushTitle;
-            target.ReplyToEmail = source.ReplyToEmail;
-            target.SenderPersonAliasId = source.SenderPersonAliasId;
-            #pragma warning disable 612, 618
-            target.SMSFromDefinedValueId = source.SMSFromDefinedValueId;
-            #pragma warning restore 612, 618
-            target.SmsFromSystemPhoneNumberId = source.SmsFromSystemPhoneNumberId;
-            target.SMSMessage = source.SMSMessage;
-            target.Subject = source.Subject;
-            target.UsageType = source.UsageType;
-            target.Version = source.Version;
+            target.ScheduleId = source.ScheduleId;
+            target.TargetAudienceDataViewId = source.TargetAudienceDataViewId;
+            target.TriggerType = source.TriggerType;
+            target.UnsubscribeMessage = source.UnsubscribeMessage;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

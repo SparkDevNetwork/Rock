@@ -21,31 +21,16 @@
 // </copyright>
 //
 
-/** Represents the level at which an individual can unsubscribe from communications. */
-export const UnsubscribeLevel = {
-    /** Unsubscribe from all communications. */
-    All: 1,
-
-    /** Unsubscribe from bulk communications. */
-    Bulk: 2,
-
-    /** Unsubscribe from communication lists. */
-    CommunicationList: 3,
-
-    /** Unsubscribe from communication flows. */
-    Flows: 4
+/** Represents the usage type for the communication template. */
+export const CommunicationTemplateUsageType = {
+    /** The Communication Template is used for Communication Flows, and not to be used for typical Communications. */
+    CommunicationFlows: 1
 } as const;
 
-/** Represents the level at which an individual can unsubscribe from communications. */
-export const UnsubscribeLevelDescription: Record<number, string> = {
-    1: "All",
-
-    2: "Bulk",
-
-    3: "Communication List",
-
-    4: "Flows"
+/** Represents the usage type for the communication template. */
+export const CommunicationTemplateUsageTypeDescription: Record<number, string> = {
+    1: "Communication Flows"
 };
 
-/** Represents the level at which an individual can unsubscribe from communications. */
-export type UnsubscribeLevel = typeof UnsubscribeLevel[keyof typeof UnsubscribeLevel];
+/** Represents the usage type for the communication template. */
+export type CommunicationTemplateUsageType = typeof CommunicationTemplateUsageType[keyof typeof CommunicationTemplateUsageType];

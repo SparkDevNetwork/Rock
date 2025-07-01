@@ -15,32 +15,41 @@
 // </copyright>
 //
 
-namespace Rock.Model
+namespace Rock.Enums.Communication
 {
     /// <summary>
-    /// Represents the level at which an individual can unsubscribe from communications.
+    /// A conversion goal type for a Communication Flow. This is used to track the success of a Communication Flow in achieving its goals.
     /// </summary>
-    [Enums.EnumDomain( "Communication" )]
-    public enum UnsubscribeLevel
+    public enum ConversionGoalType
     {
         /// <summary>
-        /// Unsubscribe from all communications.
+        /// Recipients have completed a Workflow form. This means they initiated a workflow and it was marked Completed.
         /// </summary>
-        All = 1,
+        CompletedForm = 1,
 
         /// <summary>
-        /// Unsubscribe from bulk communications.
+        /// Recipients have registered for an event.
         /// </summary>
-        Bulk = 2,
+        Registered = 2,
 
         /// <summary>
-        /// Unsubscribe from communication lists.
+        /// Recipients have joined a Group of a given Group Type.
         /// </summary>
-        CommunicationList = 3,
+        JoinedGroupType = 3,
 
         /// <summary>
-        /// Unsubscribe from communication flows.
+        /// Recipients have joined a Group.
         /// </summary>
-        Flows = 4,
+        JoinedGroup = 4,
+
+        /// <summary>
+        /// Recipients have entered a Data View.
+        /// </summary>
+        EnteredDataView = 5,
+
+        /// <summary>
+        /// Recipients have taken a step in a Workflow.
+        /// </summary>
+        TookStep = 6
     }
 }

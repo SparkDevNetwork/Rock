@@ -29,15 +29,15 @@ using Rock.Data;
 namespace Rock.Model
 {
     /// <summary>
-    /// CommunicationRecipient Service class
+    /// CommunicationFlowInstanceCommunication Service class
     /// </summary>
-    public partial class CommunicationRecipientService : Service<CommunicationRecipient>
+    public partial class CommunicationFlowInstanceCommunicationService : Service<CommunicationFlowInstanceCommunication>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="CommunicationRecipientService"/> class
+        /// Initializes a new instance of the <see cref="CommunicationFlowInstanceCommunicationService"/> class
         /// </summary>
         /// <param name="context">The context.</param>
-        public CommunicationRecipientService(RockContext context) : base(context)
+        public CommunicationFlowInstanceCommunicationService(RockContext context) : base(context)
         {
         }
 
@@ -49,21 +49,15 @@ namespace Rock.Model
         /// <returns>
         ///   <c>true</c> if this instance can delete the specified item; otherwise, <c>false</c>.
         /// </returns>
-        public bool CanDelete( CommunicationRecipient item, out string errorMessage )
+        public bool CanDelete( CommunicationFlowInstanceCommunication item, out string errorMessage )
         {
             errorMessage = string.Empty;
-
-            if ( new Service<CommunicationFlowInstanceRecipient>( Context ).Queryable().Any( a => a.UnsubscribeCommunicationRecipientId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationRecipient.FriendlyTypeName, CommunicationFlowInstanceRecipient.FriendlyTypeName );
-                return false;
-            }
             return true;
         }
     }
 
-    [HasQueryableAttributes( typeof( CommunicationRecipient.CommunicationRecipientQueryableAttributeValue ), nameof( CommunicationRecipientAttributeValues ) )]
-    public partial class CommunicationRecipient
+    [HasQueryableAttributes( typeof( CommunicationFlowInstanceCommunication.CommunicationFlowInstanceCommunicationQueryableAttributeValue ), nameof( CommunicationFlowInstanceCommunicationAttributeValues ) )]
+    public partial class CommunicationFlowInstanceCommunication
     {
         /// <summary>
         /// Gets the entity attribute values. This should only be used inside
@@ -72,10 +66,10 @@ namespace Rock.Model
         /// or selecting values. Do <b>not</b> use it for accessing the
         /// attributes after the entity has been loaded.
         /// </summary>
-        public virtual ICollection<CommunicationRecipientQueryableAttributeValue> CommunicationRecipientAttributeValues { get; set; } 
+        public virtual ICollection<CommunicationFlowInstanceCommunicationQueryableAttributeValue> CommunicationFlowInstanceCommunicationAttributeValues { get; set; } 
 
         /// <inheritdoc/>
-        public class CommunicationRecipientQueryableAttributeValue : QueryableAttributeValue
+        public class CommunicationFlowInstanceCommunicationQueryableAttributeValue : QueryableAttributeValue
         {
         }
     }
@@ -83,36 +77,36 @@ namespace Rock.Model
     /// <summary>
     /// Generated Extension Methods
     /// </summary>
-    public static partial class CommunicationRecipientExtensionMethods
+    public static partial class CommunicationFlowInstanceCommunicationExtensionMethods
     {
         /// <summary>
-        /// Clones this CommunicationRecipient object to a new CommunicationRecipient object
+        /// Clones this CommunicationFlowInstanceCommunication object to a new CommunicationFlowInstanceCommunication object
         /// </summary>
         /// <param name="source">The source.</param>
         /// <param name="deepCopy">if set to <c>true</c> a deep copy is made. If false, only the basic entity properties are copied.</param>
         /// <returns></returns>
-        public static CommunicationRecipient Clone( this CommunicationRecipient source, bool deepCopy )
+        public static CommunicationFlowInstanceCommunication Clone( this CommunicationFlowInstanceCommunication source, bool deepCopy )
         {
             if (deepCopy)
             {
-                return source.Clone() as CommunicationRecipient;
+                return source.Clone() as CommunicationFlowInstanceCommunication;
             }
             else
             {
-                var target = new CommunicationRecipient();
+                var target = new CommunicationFlowInstanceCommunication();
                 target.CopyPropertiesFrom( source );
                 return target;
             }
         }
 
         /// <summary>
-        /// Clones this CommunicationRecipient object to a new CommunicationRecipient object with default values for the properties in the Entity and Model base classes.
+        /// Clones this CommunicationFlowInstanceCommunication object to a new CommunicationFlowInstanceCommunication object with default values for the properties in the Entity and Model base classes.
         /// </summary>
         /// <param name="source">The source.</param>
         /// <returns></returns>
-        public static CommunicationRecipient CloneWithoutIdentity( this CommunicationRecipient source )
+        public static CommunicationFlowInstanceCommunication CloneWithoutIdentity( this CommunicationFlowInstanceCommunication source )
         {
-            var target = new CommunicationRecipient();
+            var target = new CommunicationFlowInstanceCommunication();
             target.CopyPropertiesFrom( source );
 
             target.Id = 0;
@@ -129,34 +123,18 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Copies the properties from another CommunicationRecipient object to this CommunicationRecipient object
+        /// Copies the properties from another CommunicationFlowInstanceCommunication object to this CommunicationFlowInstanceCommunication object
         /// </summary>
         /// <param name="target">The target.</param>
         /// <param name="source">The source.</param>
-        public static void CopyPropertiesFrom( this CommunicationRecipient target, CommunicationRecipient source )
+        public static void CopyPropertiesFrom( this CommunicationFlowInstanceCommunication target, CommunicationFlowInstanceCommunication source )
         {
             target.Id = source.Id;
-            target.AdditionalMergeValuesJson = source.AdditionalMergeValuesJson;
+            target.CommunicationFlowCommunicationId = source.CommunicationFlowCommunicationId;
+            target.CommunicationFlowInstanceId = source.CommunicationFlowInstanceId;
             target.CommunicationId = source.CommunicationId;
-            target.DeliveredDateTime = source.DeliveredDateTime;
-            target.FirstSendAttemptDateTime = source.FirstSendAttemptDateTime;
             target.ForeignGuid = source.ForeignGuid;
             target.ForeignKey = source.ForeignKey;
-            target.MediumEntityTypeId = source.MediumEntityTypeId;
-            target.OpenedClient = source.OpenedClient;
-            target.OpenedDateTime = source.OpenedDateTime;
-            target.PersonalDeviceId = source.PersonalDeviceId;
-            target.PersonAliasId = source.PersonAliasId;
-            target.ResponseCode = source.ResponseCode;
-            target.SendDateTime = source.SendDateTime;
-            target.SentMessage = source.SentMessage;
-            target.SpamComplaintDateTime = source.SpamComplaintDateTime;
-            target.Status = source.Status;
-            target.StatusNote = source.StatusNote;
-            target.TransportEntityTypeName = source.TransportEntityTypeName;
-            target.UniqueMessageId = source.UniqueMessageId;
-            target.UnsubscribeDateTime = source.UnsubscribeDateTime;
-            target.UnsubscribeLevel = source.UnsubscribeLevel;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

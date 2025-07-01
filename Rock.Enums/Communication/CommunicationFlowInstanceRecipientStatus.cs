@@ -15,32 +15,21 @@
 // </copyright>
 //
 
-namespace Rock.Model
+namespace Rock.Enums.Communication
 {
     /// <summary>
-    /// Represents the level at which an individual can unsubscribe from communications.
+    /// The recipient status in a Communication Flow Instance.
     /// </summary>
-    [Enums.EnumDomain( "Communication" )]
-    public enum UnsubscribeLevel
+    public enum CommunicationFlowInstanceRecipientStatus
     {
         /// <summary>
-        /// Unsubscribe from all communications.
+        /// The recipient is still active to receive communications in the communication flow instance.
         /// </summary>
-        All = 1,
+        Active = 1,
 
         /// <summary>
-        /// Unsubscribe from bulk communications.
+        /// The recipient has unsubscribed from the communication flow instance and will no longer receive communications.
         /// </summary>
-        Bulk = 2,
-
-        /// <summary>
-        /// Unsubscribe from communication lists.
-        /// </summary>
-        CommunicationList = 3,
-
-        /// <summary>
-        /// Unsubscribe from communication flows.
-        /// </summary>
-        Flows = 4,
+        Unsubscribe = 2
     }
 }

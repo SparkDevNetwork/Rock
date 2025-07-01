@@ -17,30 +17,22 @@
 
 namespace Rock.Model
 {
-    /// <summary>
-    /// Represents the level at which an individual can unsubscribe from communications.
-    /// </summary>
-    [Enums.EnumDomain( "Communication" )]
-    public enum UnsubscribeLevel
+    public partial class CommunicationFlow
     {
         /// <summary>
-        /// Unsubscribe from all communications.
+        /// Gets the Conversion Goal Settings for this flow.
         /// </summary>
-        All = 1,
+        internal ConversionGoalSettings GetConversionGoalSettings()
+        {
+            return this.GetAdditionalSettingsOrNull<ConversionGoalSettings>();
+        }
 
         /// <summary>
-        /// Unsubscribe from bulk communications.
+        /// Sets the Conversion Goal Settings for this flow.
         /// </summary>
-        Bulk = 2,
-
-        /// <summary>
-        /// Unsubscribe from communication lists.
-        /// </summary>
-        CommunicationList = 3,
-
-        /// <summary>
-        /// Unsubscribe from communication flows.
-        /// </summary>
-        Flows = 4,
+        internal void SetConversionGoalSettings( ConversionGoalSettings settings )
+        {
+            this.SetAdditionalSettings( settings );
+        }
     }
 }

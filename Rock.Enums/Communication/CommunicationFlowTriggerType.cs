@@ -15,32 +15,26 @@
 // </copyright>
 //
 
-namespace Rock.Model
+namespace Rock.Enums.Communication
 {
     /// <summary>
-    /// Represents the level at which an individual can unsubscribe from communications.
+    /// Represents the types of triggers that determine when a Communication Flow is executed.
     /// </summary>
-    [Enums.EnumDomain( "Communication" )]
-    public enum UnsubscribeLevel
+    public enum CommunicationFlowTriggerType
     {
         /// <summary>
-        /// Unsubscribe from all communications.
+        /// The Communication Flow runs on a recurring schedule (e.g., weekly, monthly).
         /// </summary>
-        All = 1,
+        Recurring = 1,
 
         /// <summary>
-        /// Unsubscribe from bulk communications.
+        /// The Communication Flow runs on demand, such as by a Workflow or manual event.
         /// </summary>
-        Bulk = 2,
+        OnDemand = 2,
 
         /// <summary>
-        /// Unsubscribe from communication lists.
+        /// The Communication Flow is scheduled to run only once at a specific date and time.
         /// </summary>
-        CommunicationList = 3,
-
-        /// <summary>
-        /// Unsubscribe from communication flows.
-        /// </summary>
-        Flows = 4,
+        OneTime = 3,
     }
 }

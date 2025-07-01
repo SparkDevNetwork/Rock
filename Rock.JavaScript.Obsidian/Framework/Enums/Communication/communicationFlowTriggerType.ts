@@ -21,31 +21,26 @@
 // </copyright>
 //
 
-/** Represents the level at which an individual can unsubscribe from communications. */
-export const UnsubscribeLevel = {
-    /** Unsubscribe from all communications. */
-    All: 1,
+/** Represents the types of triggers that determine when a Communication Flow is executed. */
+export const CommunicationFlowTriggerType = {
+    /** The Communication Flow runs on a recurring schedule (e.g., weekly, monthly). */
+    Recurring: 1,
 
-    /** Unsubscribe from bulk communications. */
-    Bulk: 2,
+    /** The Communication Flow runs on demand, such as by a Workflow or manual event. */
+    OnDemand: 2,
 
-    /** Unsubscribe from communication lists. */
-    CommunicationList: 3,
-
-    /** Unsubscribe from communication flows. */
-    Flows: 4
+    /** The Communication Flow is scheduled to run only once at a specific date and time. */
+    OneTime: 3
 } as const;
 
-/** Represents the level at which an individual can unsubscribe from communications. */
-export const UnsubscribeLevelDescription: Record<number, string> = {
-    1: "All",
+/** Represents the types of triggers that determine when a Communication Flow is executed. */
+export const CommunicationFlowTriggerTypeDescription: Record<number, string> = {
+    1: "Recurring",
 
-    2: "Bulk",
+    2: "On Demand",
 
-    3: "Communication List",
-
-    4: "Flows"
+    3: "One Time"
 };
 
-/** Represents the level at which an individual can unsubscribe from communications. */
-export type UnsubscribeLevel = typeof UnsubscribeLevel[keyof typeof UnsubscribeLevel];
+/** Represents the types of triggers that determine when a Communication Flow is executed. */
+export type CommunicationFlowTriggerType = typeof CommunicationFlowTriggerType[keyof typeof CommunicationFlowTriggerType];

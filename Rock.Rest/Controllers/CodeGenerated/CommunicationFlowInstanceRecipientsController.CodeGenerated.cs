@@ -21,31 +21,20 @@
 // </copyright>
 //
 
-/** Represents the level at which an individual can unsubscribe from communications. */
-export const UnsubscribeLevel = {
-    /** Unsubscribe from all communications. */
-    All: 1,
+using Rock.Model;
+using Rock.SystemGuid;
 
-    /** Unsubscribe from bulk communications. */
-    Bulk: 2,
-
-    /** Unsubscribe from communication lists. */
-    CommunicationList: 3,
-
-    /** Unsubscribe from communication flows. */
-    Flows: 4
-} as const;
-
-/** Represents the level at which an individual can unsubscribe from communications. */
-export const UnsubscribeLevelDescription: Record<number, string> = {
-    1: "All",
-
-    2: "Bulk",
-
-    3: "Communication List",
-
-    4: "Flows"
-};
-
-/** Represents the level at which an individual can unsubscribe from communications. */
-export type UnsubscribeLevel = typeof UnsubscribeLevel[keyof typeof UnsubscribeLevel];
+namespace Rock.Rest.Controllers
+{
+    /// <summary>
+    /// CommunicationFlowInstanceRecipients REST API
+    /// </summary>
+    [RestControllerGuid( "7D3149E8-87CC-414E-A134-113A52C5265E" )]
+    public partial class CommunicationFlowInstanceRecipientsController : Rock.Rest.ApiController<Rock.Model.CommunicationFlowInstanceRecipient>
+    {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="CommunicationFlowInstanceRecipientsController"/> class.
+        /// </summary>
+        public CommunicationFlowInstanceRecipientsController() : base( new Rock.Model.CommunicationFlowInstanceRecipientService( new Rock.Data.RockContext() ) ) { } 
+    }
+}

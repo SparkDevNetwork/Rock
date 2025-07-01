@@ -109,6 +109,36 @@ namespace Rock.SystemGuid
         public const string CONTENT_CHANNEL_ITEM = "BF12AE64-21FB-433B-A8A4-E40E8C426DDA";
 
         /// <summary>
+        /// The guid for the communication flow
+        /// </summary>
+        public const string COMMUNICATION_FLOW = "C7A67172-9A41-4421-94B0-F59DFEACF705";
+
+        /// <summary>
+        /// The guid for the communication flow communication
+        /// </summary>
+        public const string COMMUNICATION_FLOW_COMMUNICATION = "07D0CECC-066F-45A8-95BC-7C8F5199D53C";
+
+        /// <summary>
+        /// The guid for the communication flow instance
+        /// </summary>
+        public const string COMMUNICATION_FLOW_INSTANCE = "7B487D88-0667-4AFF-BC6C-1FC8482392C8";
+
+        /// <summary>
+        /// The guid for the communication flow instance communication
+        /// </summary>
+        public const string COMMUNICATION_FLOW_INSTANCE_COMMUNICATION = "FC2D426E-07E4-4803-BCB6-09CB43031856";
+
+        /// <summary>
+        /// The guid for the communication flow instance recipient
+        /// </summary>
+        public const string COMMUNICATION_FLOW_INSTANCE_RECIPIENT = "F615AC08-8ACD-48F9-B42E-2F4CE02D4206";
+
+        /// <summary>
+        /// The guid for the communication flow instance conversion history
+        /// </summary>
+        public const string COMMUNICATION_FLOW_INSTANCE_CONVERSION_HISTORY = "726B5B81-B4B2-4E74-9069-0409A3D19753";
+
+        /// <summary>
         /// The guid for the email communication medium
         /// </summary>
         public const string COMMUNICATION_MEDIUM_EMAIL = "5A653EBE-6803-44B4-85D2-FB7B8146D55D";
