@@ -142,6 +142,7 @@
     import UnsubscribesKpi from "./CommunicationFlowPerformance/unsubscribesKpi.partial.obs";
     import { useStore } from "@Obsidian/PageState";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+    import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
 
     type ViewMessageIdKeys = {
         instanceIdKey: string;
@@ -161,10 +162,12 @@
     const reloadBlock = useReloadBlock();
     const { parseRockDateTime } = provideRockDateTimeParser();
 
+    const initialCommunicationFlowInstanceIdKey = getPageParameter("CommunicationFlowInstance") as string | undefined ?? undefined;
+
     // #region Values
 
-    const selectedRecurringFlowInstanceIdKeyOrEmptyString = ref<string>(getPageParameter("CommunicationFlowInstance") as string ?? "");
-    const selectedOnDemandSlidingDateRange = ref<SlidingDateRange | null>({ rangeType: RangeType.Last, timeValue: 1, timeUnit: TimeUnit.Month });
+    const selectedRecurringFlowInstanceIdKeyOrEmptyString = ref<string>(initialCommunicationFlowInstanceIdKey ?? "");
+    const selectedOnDemandSlidingDateRange = ref<SlidingDateRange | null>(findSelectedOnDemandDateRange(initialCommunicationFlowInstanceIdKey));
 
     // #endregion Values
 
@@ -206,7 +209,6 @@
             }
 
             const { start: startDate, end: endDate } = calculateSlidingDateRange(selectedOnDemandSlidingDateRange.value);
-
             if (!startDate && !endDate) {
                 return allMessages;
             }
@@ -327,6 +329,42 @@
     // #endregion Computed Values
 
     // #region Functions
+
+    function findSelectedOnDemandDateRange(communicationFlowInstanceIdKey: string | undefined): SlidingDateRange {
+        if (!isNullish(communicationFlowInstanceIdKey)) {
+            const messageEnumerable = Enumerable.from(config.flowPerformance?.messages ?? []);
+
+            // Find the first message that matches the instance ID key.
+            const instanceStartDate = messageEnumerable
+                .where(m => m.communicationFlowInstanceIdKey === communicationFlowInstanceIdKey)
+                .select(m => parseRockDateTime(m.communicationFlowInstanceStartDate))
+                .firstOrDefault();
+
+            if (!isNullish(instanceStartDate)) {
+                // Starting from now, calculate the best time value and time unit
+                // to use for the date range based on the instance start date.
+                const now = RockDateTime.now();
+                const timeDifference = RockTimeSpan.fromMilliseconds(now.toMilliseconds() - instanceStartDate.toMilliseconds());
+                // Although it seems weird, since using RangeType.Last treats timeValue: 1 as the current time unit,
+                // we need to add 1 to the timeValue.
+                if (timeDifference.totalDays > 365) {
+                    return { rangeType: RangeType.Last, timeValue: Math.ceil(timeDifference.totalDays / 365) + 1, timeUnit: TimeUnit.Year };
+                }
+                else if (timeDifference.totalDays > 30) {
+                    return { rangeType: RangeType.Last, timeValue: Math.ceil(timeDifference.totalDays / 30) + 1, timeUnit: TimeUnit.Month };
+                }
+                else if (timeDifference.totalDays > 7) {
+                    return { rangeType: RangeType.Last, timeValue: Math.ceil(timeDifference.totalDays / 7) + 1, timeUnit: TimeUnit.Week };
+                }
+                else {
+                    return { rangeType: RangeType.Last, timeValue: Math.ceil(timeDifference.totalDays) + 1, timeUnit: TimeUnit.Day };
+                }
+            }
+        }
+
+        // Otherwise, return a default date range of the last month.
+        return { rangeType: RangeType.Last, timeValue: 1, timeUnit: TimeUnit.Month };
+    }
 
     function getViewMessageIdKeys(communicationFlowInstanceCommunicationIdKey: string): ViewMessageIdKeys {
         return Enumerable

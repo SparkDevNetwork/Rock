@@ -11,93 +11,98 @@
             <NotificationBox v-if="generateFlowError"
                              alertType="danger"
                              v-html="generateFlowError" />
-
             <div class="row">
                 <div class="col-md-3">
-                    <DropDownList v-model="smsFromSystemNumberGuidOrEmptyString"
-                                  :disabled="isGeneratingFlow"
-                                  help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
-                                  :items="config.smsFromSystemPhoneNumbers ?? []"
-                                  label="From Phone"
-                                  rules="required"
-                                  :showBlankItem="false" />
+                    <div class="row">
+                        <div class="col-md-12">
+                            <DropDownList v-model="smsFromSystemNumberGuidOrEmptyString"
+                                          :disabled="isGeneratingFlow"
+                                          help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
+                                          :items="config.smsFromSystemPhoneNumbers ?? []"
+                                          label="From Phone"
+                                          rules="required"
+                                          :showBlankItem="false" />
 
-                    <NumberBox v-model="approximateUnsubscribeRate"
-                               :disabled="isGeneratingFlow"
-                               label="Approximate Unsubscribe Rate (%)"
-                               :minimumValue="0"
-                               :maximumValue="100"
-                               help="The approximate unsubscribe rate for the flow instances. This is used to determine how many people will be unsubscribed from the flow after each run."
-                               rules="required" />
+                            <NumberBox v-model="approximateUnsubscribeRate"
+                                       :disabled="isGeneratingFlow"
+                                       label="Approximate Unsubscribe Rate (%)"
+                                       :minimumValue="0"
+                                       :maximumValue="100"
+                                       help="The approximate unsubscribe rate for the flow instances. This is used to determine how many people will be unsubscribed from the flow after each run."
+                                       rules="required" />
 
-                    <NumberBox v-model="approximateConversionRate"
-                               :disabled="isGeneratingFlow"
-                               label="Approximate Conversion Rate (%)"
-                               :minimumValue="0"
-                               :maximumValue="100"
-                               help="The approximate conversion rate for the flow. This is used to determine how many people will be converted to the next step in the flow after each run."
-                               rules="required" />
+                            <NumberBox v-model="approximateConversionRate"
+                                       :disabled="isGeneratingFlow"
+                                       label="Approximate Conversion Rate (%)"
+                                       :minimumValue="0"
+                                       :maximumValue="100"
+                                       help="The approximate conversion rate for the flow. This is used to determine how many people will be converted to the next step in the flow after each run."
+                                       rules="required" />
 
-                    <NumberBox v-model="targetConversionRate"
-                               :disabled="isGeneratingFlow"
-                               label="Target Conversion Rate (%)"
-                               :minimumValue="0"
-                               :maximumValue="100"
-                               help="The target conversion rate for the flow. This is used to determine how many people will be converted to the next step in the flow after each run."
-                               rules="required" />
+                            <NumberBox v-model="targetConversionRate"
+                                       :disabled="isGeneratingFlow"
+                                       label="Target Conversion Rate (%)"
+                                       :minimumValue="0"
+                                       :maximumValue="100"
+                                       help="The target conversion rate for the flow. This is used to determine how many people will be converted to the next step in the flow after each run."
+                                       rules="required" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <TabbedContent v-model:selectedTab="triggerType"
+                                   :tabs="triggerTypeItems">
+                        <template #tabpane="{ item, selectedTab }">
+                            <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.Recurring]"
+                                 class="row">
+                                <div class="col-md-12">
+                                    <ScheduleBuilder v-model="iCalendarContent"
+                                                     :disabled="isGeneratingFlow"
+                                                     label="Schedule Builder"
+                                                     :rules="['required', validateRecurringSchedule]" />
+
+                                    <DataViewPicker v-model="targetAudienceDataView"
+                                                    :disabled="isGeneratingFlow"
+                                                    :entityTypeGuid="EntityType.Person"
+                                                    help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active."
+                                                    label="Target Audience"
+                                                    rules="required" />
+                                </div>
+                            </div>
+
+                            <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.OneTime]"
+                                 class="row">
+                                <div class="col-md-12">
+                                    <DateTimePicker v-model="startDateTimeIsoString"
+                                                    help="Defines when the flow will start. Automation and messaging will begin based on this date and time."
+                                                    label="Flow Start Date & Time"
+                                                    rules="required" />
+
+                                    <DataViewPicker v-model="targetAudienceDataView"
+                                                    :disabled="isGeneratingFlow"
+                                                    :entityTypeGuid="EntityType.Person"
+                                                    help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active."
+                                                    label="Target Audience"
+                                                    rules="required" />
+                                </div>
+                            </div>
+
+                            <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.OnDemand]"
+                                 class="row">
+                                <div class="col-md-12">
+                                    <DataViewPicker v-model="targetAudienceDataView"
+                                                    :disabled="isGeneratingFlow"
+                                                    :entityTypeGuid="EntityType.Person"
+                                                    help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active. Although not required for on-demand flows, it is required for this sample data generation."
+                                                    label="Target Audience"
+                                                    rules="required" />
+                                </div>
+                            </div>
+                        </template>
+                    </TabbedContent>
                 </div>
             </div>
-
-            <TabbedContent v-model:selectedTab="triggerType"
-                           :tabs="triggerTypeItems">
-                <template #tabpane="{ item, selectedTab }">
-                    <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.Recurring]"
-                         class="row">
-                        <div class="col-md-3">
-                            <ScheduleBuilder v-model="iCalendarContent"
-                                             :disabled="isGeneratingFlow"
-                                             label="Schedule Builder"
-                                             :rules="['required', validateRecurringSchedule]" />
-
-                            <DataViewPicker v-model="targetAudienceDataView"
-                                            :disabled="isGeneratingFlow"
-                                            :entityTypeGuid="EntityType.Person"
-                                            help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active."
-                                            label="Target Audience"
-                                            rules="required" />
-                        </div>
-                    </div>
-
-                    <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.OneTime]"
-                         class="row">
-                        <div class="col-md-3">
-                            <DateTimePicker v-model="startDateTimeIsoString"
-                                            help="Defines when the flow will start. Automation and messaging will begin based on this date and time."
-                                            label="Flow Start Date & Time"
-                                            rules="required" />
-
-                            <DataViewPicker v-model="targetAudienceDataView"
-                                            :disabled="isGeneratingFlow"
-                                            :entityTypeGuid="EntityType.Person"
-                                            help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active."
-                                            label="Target Audience"
-                                            rules="required" />
-                        </div>
-                    </div>
-
-                    <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.OnDemand]"
-                         class="row">
-                        <div class="col-md-3">
-                            <DataViewPicker v-model="targetAudienceDataView"
-                                            :disabled="isGeneratingFlow"
-                                            :entityTypeGuid="EntityType.Person"
-                                            help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active. Although not required for on-demand flows, it is required for this sample data generation."
-                                            label="Target Audience"
-                                            rules="required" />
-                        </div>
-                    </div>
-                </template>
-            </TabbedContent>
         </RockForm>
 
         <template #footerActions>

@@ -1,5 +1,4 @@
 <template>
-    {{ hasMultipleInstanceMessages ? "Multiple Instances" : "Single Instance" }}
     <Grid :definition="gridDefinition ?? undefined"
           :data="messageRows"
           :entityTypeGuid="EntityType.CommunicationFlowCommunication"
