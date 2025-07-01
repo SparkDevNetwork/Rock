@@ -87,7 +87,7 @@
 
                     <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.OnDemand]"
                          class="row">
-                        <div class="col-md-">
+                        <div class="col-md-3">
                             <DataViewPicker v-model="targetAudienceDataView"
                                             :disabled="isGeneratingFlow"
                                             :entityTypeGuid="EntityType.Person"

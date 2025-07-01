@@ -138,7 +138,7 @@
 
         // Ensure the data points include the earliest instance start date.
         const earliestInstanceSentDate = messageEnumerable
-            .select(m => parseRockDateTime(m.instanceStartDate))
+            .select(m => parseRockDateTime(m.communicationFlowInstanceStartDate))
             .ofType(isRockDateTime)
             .orderBy(d => d.toMilliseconds())
             .select(d => dateTransformer.value(d))

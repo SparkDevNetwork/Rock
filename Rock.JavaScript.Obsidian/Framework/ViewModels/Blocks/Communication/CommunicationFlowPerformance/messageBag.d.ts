@@ -41,14 +41,14 @@ export type MessageBag = {
     /** Gets or sets the communication flow instance identifier key. */
     communicationFlowInstanceIdKey?: string | null;
 
+    /** Gets or sets the instance start date. */
+    communicationFlowInstanceStartDate?: string | null;
+
     /** Gets or sets the type of the communication. */
     communicationType: CommunicationType;
 
     /** Gets or sets the date/time the person converted. */
     convertedDateTime?: string | null;
-
-    /** Gets or sets the instance start date. */
-    instanceStartDate?: string | null;
 
     /** Gets or sets the date/time the message was opened. */
     openedDateTime?: string | null;

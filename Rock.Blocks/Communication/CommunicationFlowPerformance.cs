@@ -124,7 +124,6 @@ namespace Rock.Blocks.Communication
 
         private PerformanceBag GetFlowPerformance( RockContext rockContext, string flowKey, bool allowIntegerIds )
         {
-            // pre-pull InteractionChannel once
             var commChannelId = InteractionChannelCache
                     .Get( Rock.SystemGuid.InteractionChannel.COMMUNICATION.AsGuid() )?.Id ?? 0;
 
@@ -182,7 +181,7 @@ namespace Rock.Blocks.Communication
                         cr.UnsubscribeLevel,
                         CommunicationFlowCommunicationName = ic.CommunicationFlowCommunication.Name,
                         cr.Communication.CommunicationType,
-                        InstanceStartDate = ic.CommunicationFlowInstance.StartDate,
+                        CommunicationFlowInstanceStartDate = ic.CommunicationFlowInstance.StartDate,
 
                         Clicked =
                             ctx.Interactions
@@ -220,7 +219,7 @@ namespace Rock.Blocks.Communication
                     UnsubscribeLevel = cr.UnsubscribeLevel,
                     ClickedDateTime = cr.Clicked,
                     ConvertedDateTime = cr.Converted,
-                    InstanceStartDate = cr.InstanceStartDate
+                    CommunicationFlowInstanceStartDate = cr.CommunicationFlowInstanceStartDate
                 } )
                 .ToList();
 
@@ -319,13 +318,15 @@ namespace Rock.Blocks.Communication
                 .WithBlock( this )
                 .AddField( nameof( GridRowBag.CommunicationFlowCommunicationIdKey ).ToCamelCase(), b => b.CommunicationFlowCommunicationIdKey )
                 .AddField( nameof( GridRowBag.CommunicationFlowInstanceCommunicationIdKey ).ToCamelCase(), b => b.CommunicationFlowInstanceCommunicationIdKey )
+                .AddField( nameof( GridRowBag.CommunicationFlowInstanceIdKey ).ToCamelCase(), b => b.CommunicationFlowInstanceIdKey )
                 .AddTextField( nameof( GridRowBag.CommunicationFlowCommunicationName ).ToCamelCase(), b => b.CommunicationFlowCommunicationName )
                 .AddField( nameof( GridRowBag.CommunicationType ).ToCamelCase(), b => b.CommunicationType )
                 .AddField(  nameof( GridRowBag.Sent).ToCamelCase(), b => b.Sent )
                 .AddField(  nameof( GridRowBag.Conversions ).ToCamelCase(), b => b.Conversions )
                 .AddField( nameof( GridRowBag.Unsubscribes ).ToCamelCase(), b => b.Unsubscribes )
                 .AddField( nameof( GridRowBag.Opens ).ToCamelCase(), b => b.Opens )
-                .AddField( nameof( GridRowBag.Clicks ).ToCamelCase(), b => b.Clicks );
+                .AddField( nameof( GridRowBag.Clicks ).ToCamelCase(), b => b.Clicks )
+                .AddField( nameof( GridRowBag.CommunicationFlowInstanceStartDate ).ToCamelCase(), b => b.CommunicationFlowInstanceStartDate );
         }
 
         #endregion

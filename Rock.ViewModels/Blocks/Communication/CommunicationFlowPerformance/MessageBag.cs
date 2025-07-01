@@ -11,14 +11,14 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
     public class MessageBag
     {
         /// <summary>
-        /// Gets or sets the communication flow instance identifier key.
-        /// </summary>
-        public string CommunicationFlowInstanceIdKey { get; set; }
-
-        /// <summary>
         /// Gets or sets the communication flow communication identifier key.
         /// </summary>
         public string CommunicationFlowCommunicationIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the communication flow instance identifier key.
+        /// </summary>
+        public string CommunicationFlowInstanceIdKey { get; set; }
 
         /// <summary>
         /// Gets or sets the communication flow instance communication identifier key.
@@ -28,7 +28,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
         /// <summary>
         /// Gets or sets the instance start date.
         /// </summary>
-        public DateTime InstanceStartDate { get; set; }
+        public DateTime CommunicationFlowInstanceStartDate { get; set; }
 
         /// <summary>
         /// Gets or sets the person alias identifier key.

@@ -17,6 +17,16 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
         public string CommunicationFlowCommunicationIdKey { get; set; }
 
         /// <summary>
+        /// Gets or sets the communication flow instance identifier key.
+        /// </summary>
+        public string CommunicationFlowInstanceIdKey { get; set; }
+
+        /// <summary>
+        /// Gets or sets the instance start date.
+        /// </summary>
+        public DateTime CommunicationFlowInstanceStartDate { get; set; }
+
+        /// <summary>
         /// Gets or sets the communication flow instance communication identifier key.
         /// </summary>
         public string CommunicationFlowInstanceCommunicationIdKey { get; set; }
