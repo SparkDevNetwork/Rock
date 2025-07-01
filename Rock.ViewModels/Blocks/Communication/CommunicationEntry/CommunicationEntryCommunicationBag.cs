@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Enums.Blocks.Communication.CommunicationEntry;
+using Rock.Enums.Communication;
 using Rock.Model;
 using Rock.ViewModels.Utility;
 

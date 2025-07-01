@@ -15,31 +15,41 @@
 // </copyright>
 //
 
-namespace Rock.Enums.Blocks.Communication.CommunicationEntry
+namespace Rock.Enums.Communication
 {
     /// <summary>
-    /// The Push Open Action used by the Communication Entry block.
+    /// A conversion goal type for a Communication Flow. This is used to track the success of a Communication Flow in achieving its goals.
     /// </summary>
-    public enum PushOpenActionType
+    public enum ConversionGoalType
     {
         /// <summary>
-        /// No action
+        /// Recipients have completed a Workflow form. This means they initiated a workflow and it was marked Completed.
         /// </summary>
-        NoAction,
+        CompletedForm = 1,
 
         /// <summary>
-        /// Show details
+        /// Recipients have registered for an event.
         /// </summary>
-        ShowDetails,
+        Registered = 2,
 
         /// <summary>
-        /// Link to mobile page
+        /// Recipients have joined a Group of a given Group Type.
         /// </summary>
-        LinkToMobilePage,
+        JoinedGroupType = 3,
 
         /// <summary>
-        /// Link to URL
+        /// Recipients have joined a Group.
         /// </summary>
-        LinkToUrl
+        JoinedGroup = 4,
+
+        /// <summary>
+        /// Recipients have entered a Data View.
+        /// </summary>
+        EnteredDataView = 5,
+
+        /// <summary>
+        /// Recipients have taken a step in a Workflow.
+        /// </summary>
+        TookStep = 6
     }
 }

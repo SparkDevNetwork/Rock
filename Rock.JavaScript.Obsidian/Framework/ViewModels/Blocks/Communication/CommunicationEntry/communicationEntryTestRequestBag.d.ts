@@ -21,8 +21,8 @@
 // </copyright>
 //
 
-import { PushOpenActionType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntry/pushOpenActionType";
 import { CommunicationStatus } from "@Obsidian/Enums/Communication/communicationStatus";
+import { PushOpenActionType } from "@Obsidian/Enums/Communication/pushOpenActionType";
 import { Guid } from "@Obsidian/Types";
 import { CommunicationEntryPushNotificationOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryPushNotificationOptionsBag";
 import { CommunicationEntryRecipientBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntry/communicationEntryRecipientBag";

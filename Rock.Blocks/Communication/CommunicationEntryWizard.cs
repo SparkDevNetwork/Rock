@@ -25,7 +25,6 @@ using Rock.Communication;
 using Rock.Data;
 using CommunicationEntryWizardCommunicationType = Rock.Enums.Communication.CommunicationType;
 using CommunicationType = Rock.Model.CommunicationType;
-using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
 using PushOpenAction = Rock.Utility.PushOpenAction;
 using Rock.Model;
 using Rock.Observability;
@@ -45,6 +44,7 @@ using Rock.Security.SecurityGrantRules;
 using System.Text.RegularExpressions;
 using System.Data;
 using System.Data.SqlClient;
+using Rock.Enums.Communication;
 
 namespace Rock.Blocks.Communication
 {
@@ -1377,10 +1377,10 @@ namespace Rock.Blocks.Communication
                     ? new BinaryFileService( rockContext ).GetGuid( c.PushImageBinaryFileId.Value )
                     : null;
 
-            CommunicationEntryWizardPushOpenAction GetPushOpenAction( Model.Communication c )
+            PushOpenActionType GetPushOpenAction( Model.Communication c )
                 => c.PushOpenAction.HasValue
                     ? ConvertPushOpenAction( c.PushOpenAction.Value )
-                    : CommunicationEntryWizardPushOpenAction.NoAction;
+                    : PushOpenActionType.NoAction;
 
             Guid? GetSmsFromSystemPhoneNumberGuid( Model.Communication c )
                 => c.SmsFromSystemPhoneNumberId.HasValue
@@ -1495,9 +1495,9 @@ namespace Rock.Blocks.Communication
         /// </summary>
         /// <param name="pushOpenAction">The push open action to convert.</param>
         /// <returns>The equivalent <see cref="CommunicationEntryWizardPushOpenAction"/>.</returns>
-        private CommunicationEntryWizardPushOpenAction ConvertPushOpenAction( PushOpenAction pushOpenAction )
+        private PushOpenActionType ConvertPushOpenAction( PushOpenAction pushOpenAction )
         {
-            return ( CommunicationEntryWizardPushOpenAction ) pushOpenAction;
+            return ( PushOpenActionType ) ( int ) pushOpenAction;
         }
         
         /// <summary>
@@ -1505,9 +1505,9 @@ namespace Rock.Blocks.Communication
         /// </summary>
         /// <param name="pushOpenAction">The push open action to convert.</param>
         /// <returns>The equivalent <see cref="PushOpenAction"/>.</returns>
-        private PushOpenAction ConvertPushOpenAction( CommunicationEntryWizardPushOpenAction pushOpenAction )
+        private PushOpenAction ConvertPushOpenAction( PushOpenActionType pushOpenAction )
         {
-            return ( PushOpenAction ) pushOpenAction;
+            return ( PushOpenAction ) ( int ) pushOpenAction;
         }
         
         /// <summary>
@@ -1576,7 +1576,7 @@ namespace Rock.Blocks.Communication
                 .Queryable()
                 .AsNoTracking()
                 .Include( a => a.Attachments.Select( b => b.BinaryFile ) )
-                .Where( a => a.IsActive );
+                .Where( a => a.IsActive && a.UsageType == null ); // By default, exclude templates with a specified usage type (e.g., Communication Flows)
 
             // Apply external query filters.
             if ( queryFilter != null )

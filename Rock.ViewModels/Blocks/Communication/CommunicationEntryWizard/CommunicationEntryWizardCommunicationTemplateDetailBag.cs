@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Enums.Blocks.Communication.CommunicationEntryWizard;
+using Rock.Enums.Communication;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
@@ -120,7 +120,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         /// <summary>
         /// Gets or sets the push open action.
         /// </summary>
-        public PushOpenAction? PushOpenAction { get; set; }
+        public PushOpenActionType? PushOpenAction { get; set; }
 
         /// <summary>
         /// Gets or sets a value indicating whether this communication template can be used with the Communication Entry Wizard block.

@@ -15,31 +15,26 @@
 // </copyright>
 //
 
-namespace Rock.Enums.Blocks.Communication.CommunicationEntryWizard
+namespace Rock.Enums.Communication
 {
     /// <summary>
-    /// The Push Open Action used by the Communication Entry Wizard block.
+    /// Represents the types of triggers that determine when a Communication Flow is executed.
     /// </summary>
-    public enum PushOpenAction
+    public enum CommunicationFlowTriggerType
     {
         /// <summary>
-        /// No action
+        /// The Communication Flow runs on a recurring schedule (e.g., weekly, monthly).
         /// </summary>
-        NoAction,
+        Recurring = 1,
 
         /// <summary>
-        /// Show details
+        /// The Communication Flow runs on demand, such as by a Workflow or manual event.
         /// </summary>
-        ShowDetails,
+        OnDemand = 2,
 
         /// <summary>
-        /// Link to mobile page
+        /// The Communication Flow is scheduled to run only once at a specific date and time.
         /// </summary>
-        LinkToMobilePage,
-
-        /// <summary>
-        /// Link to URL
-        /// </summary>
-        LinkToUrl
+        OneTime = 3,
     }
 }

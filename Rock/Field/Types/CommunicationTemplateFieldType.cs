@@ -67,11 +67,17 @@ namespace Rock.Field.Types
             {
                 bool includeInactive = configuration.ContainsKey( INCLUDE_INACTIVE_KEY ) && configuration[INCLUDE_INACTIVE_KEY].AsBoolean();
 
-                var templates = new CommunicationTemplateService( rockContext ).Queryable().Where( c => ( c.IsActive || includeInactive ) ).OrderBy( t => t.Name ).Select( a => new ListItemBag()
-                {
-                    Value = a.Guid.ToString(),
-                    Text = a.Name
-                } ).ToList();
+                var templates = new CommunicationTemplateService( rockContext )
+                    .Queryable()
+                    .Where( c => ( c.IsActive || includeInactive ) && c.UsageType == null ) // By default, exclude templates with a specified usage type (e.g., Communication Flows)
+                    .Select( a => new ListItemBag()
+                    {
+                        Value = a.Guid.ToString(),
+                        Text = a.Name
+                    } )
+                    .ToList()
+                    .OrderBy( t => t.Text )
+                    .ToList();
 
                 if ( templates.Any() )
                 {
@@ -274,11 +280,17 @@ namespace Rock.Field.Types
             editControl.Items.Add( new ListItem() );
             var includeInactive = configurationValues.ContainsKey( INCLUDE_INACTIVE_KEY ) && configurationValues[INCLUDE_INACTIVE_KEY].Value.AsBoolean();
 
-            var templates = new CommunicationTemplateService( new RockContext() ).Queryable().Where( v => includeInactive || v.IsActive ).OrderBy( t => t.Name ).Select( a => new
-            {
-                a.Guid,
-                a.Name
-            } );
+            var templates = new CommunicationTemplateService( new RockContext() )
+                .Queryable()
+                .Where( v => ( includeInactive || v.IsActive ) && v.UsageType == null ) // By default, exclude templates with a specified usage type (e.g., Communication Flows)
+                .Select( a => new
+                {
+                    a.Guid,
+                    a.Name
+                } )
+                .ToList()
+                .OrderBy( t => t.Name )
+                .ToList();
 
             if ( templates.Any() )
             {

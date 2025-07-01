@@ -17,7 +17,7 @@
 using System;
 using System.Collections.Generic;
 
-using Rock.Enums.Blocks.Communication.CommunicationTemplateDetail;
+using Rock.Enums.Communication;
 using Rock.Model;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
@@ -132,7 +132,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationTemplateDetail
         /// <summary>
         /// Gets or sets the push open action.
         /// </summary>
-        public PushOpenAction PushOpenAction { get; set; }
+        public PushOpenActionType PushOpenAction { get; set; }
 
         /// <summary>
         /// Gets or sets the push open message.

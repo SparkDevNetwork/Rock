@@ -84,6 +84,13 @@ export default defineComponent({
         onClick: {
             type: Function as PropType<(key: string, grid: IGridState) => (void | Promise<void>)>,
             required: false
+        },
+
+        /**
+         * An optional callback to get an additional message for the delete confirmation.
+         */
+        additionalMessage: {
+            type: Function as PropType<((row: Record<string, unknown>) => string | null | undefined) | undefined>
         }
     }
 });

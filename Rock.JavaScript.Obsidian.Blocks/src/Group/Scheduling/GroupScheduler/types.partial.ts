@@ -294,7 +294,7 @@ export const ProgressState = {
     critical: "critical",
     warning: "warning",
     success: "success"
-};
+} as const;
 
 /**
  * The classification of how a scheduled attendance instance matches the preference of the individual.

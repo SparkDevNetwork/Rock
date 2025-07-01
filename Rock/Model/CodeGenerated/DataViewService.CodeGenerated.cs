@@ -53,6 +53,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<CommunicationFlow>( Context ).Queryable().Any( a => a.TargetAudienceDataViewId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, CommunicationFlow.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<ConnectionStatusAutomation>( Context ).Queryable().Any( a => a.DataViewId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", DataView.FriendlyTypeName, ConnectionStatusAutomation.FriendlyTypeName );

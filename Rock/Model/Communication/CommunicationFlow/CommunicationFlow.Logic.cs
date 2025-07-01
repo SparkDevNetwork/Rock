@@ -15,31 +15,24 @@
 // </copyright>
 //
 
-namespace Rock.Enums.Blocks.Communication.CommunicationTemplateDetail
+namespace Rock.Model
 {
-    /// <summary>
-    /// The Push Open Action used by the Template Detail block.
-    /// </summary>
-    public enum PushOpenAction
+    public partial class CommunicationFlow
     {
         /// <summary>
-        /// No action
+        /// Gets the Conversion Goal Settings for this flow.
         /// </summary>
-        NoAction,
+        internal ConversionGoalSettings GetConversionGoalSettings()
+        {
+            return this.GetAdditionalSettingsOrNull<ConversionGoalSettings>();
+        }
 
         /// <summary>
-        /// Show details
+        /// Sets the Conversion Goal Settings for this flow.
         /// </summary>
-        ShowDetails,
-
-        /// <summary>
-        /// Link to mobile page
-        /// </summary>
-        LinkToMobilePage,
-
-        /// <summary>
-        /// Link to URL
-        /// </summary>
-        LinkToUrl
+        internal void SetConversionGoalSettings( ConversionGoalSettings settings )
+        {
+            this.SetAdditionalSettings( settings );
+        }
     }
 }

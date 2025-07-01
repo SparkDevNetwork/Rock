@@ -295,7 +295,7 @@
                     </div>
                 </div>
 
-                <template v-if="pushOpenActionAsString === `${PushOpenAction.LinkToUrl}`">
+                <template v-if="pushOpenActionAsString === `${PushOpenActionType.LinkToUrl}`">
                     <div class="row">
                         <div class="col-md-12">
                             <UrlLinkBox v-model="pushUrl"
@@ -305,7 +305,7 @@
                     </div>
                 </template>
 
-                <template v-else-if="pushOpenActionAsString === `${PushOpenAction.LinkToMobilePage}`">
+                <template v-else-if="pushOpenActionAsString === `${PushOpenActionType.LinkToMobilePage}`">
                     <div class="row">
                         <div class="col-md-12">
                             <PagePicker v-model="pushMobilePage"
@@ -326,7 +326,7 @@
                     </div>
                 </template>
 
-                <template v-else-if="pushOpenActionAsString === `${PushOpenAction.ShowDetails}`">
+                <template v-else-if="pushOpenActionAsString === `${PushOpenActionType.ShowDetails}`">
                     <div class="row">
                         <div class="col-md-12">
                             <DropDownList v-model="pushMobileApplicationGuidOrEmptyString"
@@ -542,7 +542,7 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
     import UrlLinkBox from "@Obsidian/Controls/urlLinkBox.obs";
-    import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationTemplateDetail/pushOpenAction";
+    import { PushOpenActionType } from "@Obsidian/Enums/Communication/pushOpenActionType";
     import { SiteType } from "@Obsidian/Enums/Cms/siteType";
     import { CommunicationTemplateVersion, CommunicationTemplateVersionDescription } from "@Obsidian/Enums/Communication/communicationTemplateVersion";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
@@ -638,7 +638,7 @@
     // Push fields.
     const pushTitle = ref<string>(config.pushTitle ?? "");
     const pushMessage = ref<string>(config.pushMessage ?? "");
-    const pushOpenAction = ref<PushOpenAction>(config.pushOpenAction);
+    const pushOpenAction = ref<PushOpenActionType>(config.pushOpenAction);
     const pushUrl = ref<string>(config.pushUrl ?? "");
     const pushMobilePage = ref<PageRouteValueBag | null | undefined>(config.pushMobilePage);
     const pushMobilePageQueryStringItems = ref<KeyValueItem[]>(recordAsKeyValueItems(config.pushMobilePageQueryString || {}));
@@ -741,12 +741,12 @@
         set(value: string) {
             const parsed = Number(value);
 
-            if (isEnumValue(PushOpenAction, parsed)) {
+            if (isEnumValue(PushOpenActionType, parsed)) {
                 pushOpenAction.value = parsed;
             }
             else {
                 // If unknown, then set to the default.
-                pushOpenAction.value = PushOpenAction.NoAction;
+                pushOpenAction.value = PushOpenActionType.NoAction;
             }
         }
     });
@@ -755,11 +755,11 @@
         if (config.isRockMobilePushTransportConfigured) {
             return [
                 {
-                    value: `${PushOpenAction.LinkToMobilePage}`,
+                    value: `${PushOpenActionType.LinkToMobilePage}`,
                     text: "Link To Mobile Page"
                 },
                 {
-                    value: `${PushOpenAction.ShowDetails}`,
+                    value: `${PushOpenActionType.ShowDetails}`,
                     text: "Show Details"
                 }
             ];
@@ -767,11 +767,11 @@
         else {
             return [
                 {
-                    value: `${PushOpenAction.NoAction}`,
+                    value: `${PushOpenActionType.NoAction}`,
                     text: "No Action"
                 },
                 {
-                    value: `${PushOpenAction.LinkToUrl}`,
+                    value: `${PushOpenActionType.LinkToUrl}`,
                     text: "Link To URL"
                 }
             ];

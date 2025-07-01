@@ -26,6 +26,7 @@ using System.Runtime.Serialization;
 using Newtonsoft.Json;
 using Rock.Communication;
 using Rock.Data;
+using Rock.Enums.Communication;
 using Rock.Security;
 using Rock.Utility;
 
@@ -48,7 +49,7 @@ namespace Rock.Model
         /// </summary>
         /// <value>
         /// A <see cref="System.String"/> that represents the name of the communication template
-        /// </value>
+        /// </value>-
         [Required]
         [MaxLength( 100 )]
         [DataMember( IsRequired = true )]
@@ -143,6 +144,15 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public CommunicationTemplateVersion Version { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Communication Template usage type.
+        /// </summary>
+        /// <value>
+        /// If <see langword="null"/>, this is a general purpose template that should be shown in the Communication List and Communication Entry Wizard blocks.
+        /// </value>
+        [DataMember]
+        public CommunicationTemplateUsageType? UsageType { get; set; }
 
         #region Email Fields
 
@@ -324,7 +334,7 @@ namespace Rock.Model
         /// The push open action.
         /// </value>
         [DataMember]
-        public PushOpenAction? PushOpenAction { get; set; }
+        public Utility.PushOpenAction? PushOpenAction { get; set; }
 
         /// <summary>
         /// Gets or sets the push open message.

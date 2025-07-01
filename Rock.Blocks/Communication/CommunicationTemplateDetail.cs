@@ -25,7 +25,7 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Communication;
 using Rock.Constants;
-using Rock.Enums.Blocks.Communication.CommunicationTemplateDetail;
+using Rock.Enums.Communication;
 using Rock.Model;
 using Rock.Security;
 using Rock.Security.SecurityGrantRules;
@@ -210,7 +210,7 @@ namespace Rock.Blocks.Communication
 
             if ( communicationTemplate.PushOpenAction != null )
             {
-                box.PushOpenAction = ( PushOpenAction )( int )communicationTemplate.PushOpenAction.Value;
+                box.PushOpenAction = ( PushOpenActionType )( int )communicationTemplate.PushOpenAction.Value;
             }
 
             PushData pushData;
@@ -428,7 +428,7 @@ namespace Rock.Blocks.Communication
                     communicationTemplate.Attachments.Add( new CommunicationTemplateAttachment
                     {
                         BinaryFileId = binaryFileId,
-                        CommunicationType = CommunicationType.Email
+                        CommunicationType = Model.CommunicationType.Email
                     } );
                 }
                 
