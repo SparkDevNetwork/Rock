@@ -9029,6 +9029,7 @@ ul ul, ol ul, ul ol, ol ol {
   text-align: center;
   background-color: var(--color-interface-stronger);
   border-radius: var(--rounded-small);
+  word-break: break-word;
 }
 
 .tooltip-arrow {
@@ -10760,6 +10761,9 @@ ul ul, ol ul, ul ol, ol ol {
 }
 .panel-block > .panel-heading .panel-title {
   font-size: var(--font-size-h5);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .panel-block > .panel-body {
   -ms-flex: 1 1 auto;
