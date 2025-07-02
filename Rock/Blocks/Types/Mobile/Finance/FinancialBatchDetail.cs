@@ -17,6 +17,8 @@ using Rock.Web.Cache;
 using WebGrease.Css.Extensions;
 using BatchStatus = Rock.Model.BatchStatus;
 using Rock.Lava;
+using OpenXmlPowerTools;
+using CSScriptLibrary;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -35,6 +37,8 @@ namespace Rock.Blocks.Types.Mobile.Finance
     {
 
         private const string AuthorizationReopenBatch = "ReopenBatch";
+
+        #region Methods
 
         private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out FinancialBatch entity, out BlockActionResult error )
         {
@@ -70,6 +74,10 @@ namespace Rock.Blocks.Types.Mobile.Finance
 
             return true;
         }
+
+        #endregion
+
+        #region Block Actions
 
         /// <summary>
         /// Saves the financial batch.
@@ -234,6 +242,43 @@ namespace Rock.Blocks.Types.Mobile.Finance
         {
             var batch = new FinancialBatchService( RockContext ).Get( key );
 
+            // Grab the financial transaction that belong to the batch.
+            var batchTransactionsQuery = new FinancialTransactionService( RockContext )
+                .Queryable()
+                .Where( ft => ft.BatchId.HasValue && ft.BatchId.Value == batch.Id );
+
+            // Get the transaction count that belong to the batch.
+            var transactionItemCount = batchTransactionsQuery.Count();
+
+            // Get the Currency Totals
+            var currencyTotals = batchTransactionsQuery
+                .Where( t => t.FinancialPaymentDetailId.HasValue )
+                .GroupBy( ft => ft.FinancialPaymentDetail.CurrencyTypeValueId )
+                .ToList()
+                .Select( g => new CurrencyTotalsBag
+                {
+                    CurrencyTypeValueId = g.Key ?? 0,
+                    CurrencyName = DefinedValueCache.GetName( g.Key ),
+                    Amount = g.Sum( pd => pd.TotalAmount )
+                } )
+                .ToList();
+
+            // Grab the financial transaction detail that belong to the batch.
+            var batchFinancialTransactionDetails = new FinancialTransactionDetailService( RockContext )
+                .Queryable()
+                .Where( ftd => ftd.Transaction.BatchId.HasValue && ftd.Transaction.BatchId.Value == batch.Id );
+
+            // Get the Account Totals.
+            var accountTotals = batchFinancialTransactionDetails
+                .GroupBy( ftd => ftd.Account )
+                .Select( g => new AccountTotalsBag
+                {
+                    AccountId = g.Key.Id,
+                    AccountName = g.Key.Name,
+                    TotalAmount = g.Sum( ftd => ftd.Amount )
+                } )
+                .ToList();
+
             return ActionOk( new FinancialBatchDetailBag
             {
                 Id = batch?.Id,
@@ -243,6 +288,9 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 BatchStartDate = batch?.BatchStartDateTime,
                 BatchEndDate = batch?.BatchEndDateTime,
                 TransactionAmount = batch?.GetTotalTransactionAmount( RockContext ),
+                TransactionCount = transactionItemCount,
+                CurrencyTotals = currencyTotals,
+                AccountTotals = accountTotals,
                 ControlAmount = batch?.ControlAmount,
                 ControlItemCount = batch?.ControlItemCount,
                 Campus = batch?.Campus?.Name,
@@ -250,5 +298,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 Note = batch?.Note
             } );
         }
+
+        #endregion
     }
 }
