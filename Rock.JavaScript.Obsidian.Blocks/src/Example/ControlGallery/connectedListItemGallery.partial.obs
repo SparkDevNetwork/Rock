@@ -10,10 +10,12 @@
                            :primaryActions="primaryActions"
                            :secondaryActions="secondaryActions"
                            :title="title"
-                           @click="onClick">
+                           :onClick="simulateNotClickable ? undefined : onClick">
 
             <template v-if="simulateDescriptionSlot" #description>
-                <div>Description Content</div>
+                <div>
+                    <i class="ti ti-clock"></i> {{ description }}
+                </div>
             </template>
 
         </ConnectedListItem>
@@ -29,7 +31,6 @@
             <div class="row">
                 <TextBox v-model="title" formGroupClasses="col-md-4" label="Title" />
                 <TextBox v-model="description" formGroupClasses="col-md-4" label="Description" />
-                <TextBox v-model="asideIconCssClass" formGroupClasses="col-md-4" label="Aside Icon CSS Class" />
             </div>
 
             <div class="row">
@@ -122,10 +123,16 @@
         {
             value: "description",
             text: "Description Slot"
+        },
+        {
+            value: "notClickable",
+            text: "Not Clickable"
         }
     ];
 
     const simulateDescriptionSlot = computed((): boolean => simulateValues.value.includes("description"));
+
+    const simulateNotClickable = computed((): boolean => simulateValues.value.includes("notClickable"));
 
     const exampleCode = computed<string>(() => {
         return `<ConnectedListItem aside="${aside.value}"
@@ -136,14 +143,14 @@
                    description="${description.value}"
                    :primaryActions="${JSON.stringify(primaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
                    :secondaryActions="${JSON.stringify(secondaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
-                   title="${title.value}"
-                   @click="onClick"${simulateValues.value.includes("description") ? `>
-    <template #description>Description Content</template>
+                   title="${title.value}"${!simulateNotClickable.value ? `
+                   @click="onClick"` : ""}${simulateDescriptionSlot.value ? `>
+    <i class="ti ti-clock"></i> ${description.value}
 </ConnectedListItem>` : " />"}`;
     });
 
     function onClick(): void {
-        alert("Button clicked!");
+        alert("Item clicked!");
     }
 
     watch(iconLabelType, (newValue) => {

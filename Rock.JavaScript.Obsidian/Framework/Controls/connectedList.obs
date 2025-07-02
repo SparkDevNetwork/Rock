@@ -2,13 +2,13 @@
 <template>
     <div class="connected-list">
         <template v-for="(entry, index) in decoratedChildren" :key="index">
-            <div class="connected-list-item">
+            <div class="connected-list-item-container">
                 <div v-if="index > 0"
                      :class="[
-                         'connected-list-connector',
-                         entry.showConnectorTip ? 'connected-list-connector-tip' : '',
-                         hideConnectors ? 'connected-list-connector-transparent' : ''
-                     ]"></div>
+                        'connected-list-connector',
+                        entry.showConnectorTip ? 'connected-list-connector-tip' : '',
+                        hideConnectors ? 'connected-list-connector-transparent' : ''
+                    ]"></div>
 
                 <component :is="entry.vnode" />
             </div>

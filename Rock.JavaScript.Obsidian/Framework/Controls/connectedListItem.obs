@@ -21,7 +21,7 @@
 
             <div v-if="title || description || $slots.description" class="connected-list-item-title-and-desc">
                 <h4 v-if="title" class="connected-list-item-title">{{ title }}</h4>
-                <small v-if="description || $slots.description" class="connected-list-button-description text-muted">
+                <small v-if="description || $slots.description" class="connected-list-item-description text-muted">
                     <slot name="description">
                         {{ description }}
                     </slot>
@@ -58,7 +58,7 @@
     </div>
 </template>
 
-<style scoped>
+<style>
 .connected-list-item {
     height: 90px;
     display: flex;
@@ -69,15 +69,19 @@
     border-radius: var(--border-radius-base);
     border: 1px solid var(--color-interface-medium);
     transition: background-color .15s ease-in-out;
+
+    /* May need to revisit this if a mobile version of the UI is needed */
+    min-width: v-bind(minWidth);
 }
 
-.connected-list-item.is-hovering {
+/* Only show hover state if the item is clickable. */
+.connected-list-item.clickable.is-hovering {
     background-color: var(--color-info-soft);
 }
 
 .connected-list-item-badge {
     /* Prevent the badge from shrinking. */
-    flex-shrink: 0;
+    flex: 0 auto;
 }
 
 .connected-list-item-icon .label {
@@ -89,8 +93,13 @@
     flex-direction: row;
     align-items: center;
     gap: var(--spacing-medium);
-    flex: 1;
+    flex: 1 1 0;
     overflow: hidden;
+
+    /* The icon+title+desc container needs a min width;
+       otherwise, it'll shrink until it's hidden
+       before the aside shrinks. */
+    min-width: v-bind(iconTitleAndDescMinWidth);
 }
 
 .connected-list-item-title-and-desc {
@@ -110,7 +119,8 @@
     overflow: hidden;
 }
 
-.connected-list-item-description {
+.connected-list-item-description,
+.connected-list-item-description > * {
     font-size: var(--font-size-small);
     /* line-height: var(--line-height-tight) (line-height: 1.1) clips the bottom of "g" and "y"
        for small text, so making a little larger. */
@@ -125,8 +135,17 @@
     flex-direction: row;
     align-items: center;
     gap: var(--spacing-xsmall);
-    flex: 0;
+    flex: 0 1 auto;
     white-space: nowrap;
+
+    /* Force min-width of 0 so the aside can shrink properly. */
+    min-width: 0;
+}
+
+.connected-list-item-aside small {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .connected-list-item-actions {
@@ -134,6 +153,7 @@
     flex-direction: row;
     align-items: center;
     gap: var(--spacing-tiny);
+    flex: 0 auto;
 }
 
 .connected-list-item-primary-actions {
@@ -178,12 +198,24 @@
 
         iconLabelType: {
             type: String as PropType<Omit<HighlightLabelType, "custom"> | string>,
-            default: "info"
+            default: "info" as const
+        },
+
+        iconTitleAndDescMinWidth: {
+            type: String as PropType<string>,
+            required: false,
+            default: "150px" as const
         },
 
         description: {
             type: String as PropType<string | null | undefined>,
             required: false
+        },
+
+        minWidth: {
+            type: String as PropType<string>,
+            required: false,
+            default: "440px" as const
         },
 
         primaryActions: {
@@ -202,7 +234,7 @@
         },
 
         /**
-         * Optional click handler that will be called when the main button
+         * Optional click handler that will be called when the main item
          * is clicked.
          */
         onClick: {
@@ -248,7 +280,7 @@
     // #region Event Handlers
 
     /**
-     * Handles the click event on the main button. This will simply call the
+     * Handles the click event on the main item. This will simply call the
      * onClick function if it is defined. This is used so that we can detect
      * when a click handler is defined and apply the "clickable" class.
      */
