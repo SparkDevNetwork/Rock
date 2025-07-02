@@ -159,8 +159,18 @@ namespace Rock.Workflow
             }
 
             person.FirstName = personBag.FirstName;
-            person.NickName = personBag.NickName.IsNotNullOrWhiteSpace() ? personBag.NickName : personBag.FirstName;
             person.LastName = personBag.LastName;
+
+            if ( personBag.NickName.IsNotNullOrWhiteSpace() )
+            {
+                person.NickName = personBag.NickName;
+            }
+            else if ( string.IsNullOrWhiteSpace( person.NickName ) )
+            {
+                // Only set the nickname in the database to the first name if the nickname is empty.
+                // This prevents a differing nickname from being overwritten with the first name
+                person.NickName = personBag.FirstName;
+            }
 
             if ( form.PersonEntryEmailEntryOption != WorkflowActionFormPersonEntryOption.Hidden )
             {
