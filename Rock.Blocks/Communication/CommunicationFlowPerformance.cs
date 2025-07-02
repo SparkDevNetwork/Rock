@@ -173,6 +173,7 @@ namespace Rock.Blocks.Communication
                     {
                         ic.CommunicationFlowCommunicationId,
                         ic.CommunicationFlowInstanceId,
+                        CommunicationFlowInstanceCompletedDateTime = ic.CommunicationFlowInstance.CompletedDateTime,
                         CommunicationFlowInstanceCommunicationId = ic.Id,
                         cr.PersonAliasId,
                         Sent = cr.SendDateTime,
@@ -181,7 +182,7 @@ namespace Rock.Blocks.Communication
                         cr.UnsubscribeLevel,
                         CommunicationFlowCommunicationName = ic.CommunicationFlowCommunication.Name,
                         cr.Communication.CommunicationType,
-                        CommunicationFlowInstanceStartDate = ic.CommunicationFlowInstance.StartDate,
+                        CommunicationFlowInstanceStartDateTime = ic.CommunicationFlowInstance.StartDateTime,
 
                         Clicked =
                             ctx.Interactions
@@ -219,7 +220,8 @@ namespace Rock.Blocks.Communication
                     UnsubscribeLevel = cr.UnsubscribeLevel,
                     ClickedDateTime = cr.Clicked,
                     ConvertedDateTime = cr.Converted,
-                    CommunicationFlowInstanceStartDate = cr.CommunicationFlowInstanceStartDate
+                    CommunicationFlowInstanceStartDateTime = cr.CommunicationFlowInstanceStartDateTime,
+                    CommunicationFlowInstanceCompletedDateTime = cr.CommunicationFlowInstanceCompletedDateTime
                 } )
                 .ToList();
 

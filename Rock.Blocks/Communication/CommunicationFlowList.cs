@@ -168,15 +168,15 @@ namespace Rock.Blocks.Communication
 
                     var lastTriggerDate = communicationFlow
                         .CommunicationFlowInstances
-                        .Where( i => i.StartDate.Date <= today )
+                        .Where( i => i.StartDateTime.Date <= today )
                         .Select( i => new
                         {
-                            i.StartDate
+                            i.StartDateTime
                         } )
-                        .OrderByDescending( s => s.StartDate )
+                        .OrderByDescending( s => s.StartDateTime )
                         .FirstOrDefault();
 
-                    return lastTriggerDate?.StartDate;
+                    return lastTriggerDate?.StartDateTime;
                 } )
                 .AddTextField( "status", communicationFlow =>
                 {

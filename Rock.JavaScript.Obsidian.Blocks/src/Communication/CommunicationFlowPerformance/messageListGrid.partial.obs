@@ -5,7 +5,13 @@
           :keyField="keyField"
           itemTerm="Message"
           stickyHeader
-          @selectItem="onViewMessage">
+          @selectItem="onViewMessage"
+          :isCountMessageVisible="false"
+          :isSearchVisible="false"
+          :showExport="false"
+          :showMergeTemplate="false"
+          disablePaging
+          isFooterHidden>
         <Column v-if="hasMultipleInstanceMessages"
                 :field="getField('communicationFlowInstanceStartDate')"
                 :name="getField('communicationFlowInstanceStartDate')"
@@ -19,11 +25,12 @@
 
         <TextColumn :field="getField('communicationFlowCommunicationName')"
                     :name="getField('communicationFlowCommunicationName')"
-                    title="Message Name" />
+                    title="Message Name"
+                    width="300px" />
 
         <Column :field="getField('communicationType')"
                 :name="getField('communicationType')"
-                title="Type">
+                title="Medium">
             <template #format="{ row }">
                 <HighlightLabel labelType="info">
                     <template v-if="getRow(row).communicationType === CommunicationType.Email"><i class="ti ti-mail"></i> Email</template>
@@ -151,7 +158,7 @@
                     conversions: messagesByInstance.count(m => !!m.convertedDateTime),
                     unsubscribes: messagesByInstance.count(m => !!m.unsubscribedDateTime),
                     communicationFlowInstanceIdKey: firstMessage.communicationFlowInstanceIdKey,
-                    communicationFlowInstanceStartDate: firstMessage.communicationFlowInstanceStartDate,
+                    communicationFlowInstanceStartDateTime: firstMessage.communicationFlowInstanceStartDateTime,
                 };
             })
             .toArray();

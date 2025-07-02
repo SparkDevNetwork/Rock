@@ -32,7 +32,7 @@
             <div v-else-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OneTime"
                  class="row">
                 <div class="col-md-3">
-                    <StaticFormControl :modelValue="format_Thursday_JanDot_1_1970(parseRockDateTime(config.flowPerformance?.messages?.[0]?.communicationFlowInstanceStartDate))"
+                    <StaticFormControl :modelValue="format_Thursday_JanDot_1_1970(parseRockDateTime(config.flowPerformance?.messages?.[0]?.communicationFlowInstanceStartDateTime))"
                                        help="For One-time flows, this is the start date and time of the initial message."
                                        label="Flow Instance" />
                 </div>
@@ -151,8 +151,8 @@
 
     const config = useConfigurationValues<InitializationBox>();
     const {
-        format_1_1_1970,
-        format_Thursday_JanDot_1_1970
+        format_Thursday_JanDot_1_1970,
+        format_JanDot_1_1970
     } = RockDateTimeFormatter;
 
     // This is used to get the "CommunicationFlowInstance" page parameter
@@ -180,7 +180,7 @@
             .distinctBy(x => x.communicationFlowInstanceIdKey)
             .select(m => ({
                 instanceIdKey: m.communicationFlowInstanceIdKey,
-                instanceStartDateTime: parseRockDateTime(m.communicationFlowInstanceStartDate)
+                instanceStartDateTime: parseRockDateTime(m.communicationFlowInstanceStartDateTime)
             }))
             .ofType((m): m is {
                 instanceIdKey: string;
@@ -216,7 +216,7 @@
                 return Enumerable
                     .from(allMessages)
                     .where(m => {
-                        const instanceStartDate = parseRockDateTime(m.communicationFlowInstanceStartDate);
+                        const instanceStartDate = parseRockDateTime(m.communicationFlowInstanceStartDateTime);
 
                         if (!instanceStartDate) {
                             return false;
@@ -281,7 +281,7 @@
     });
 
     const dataLastUpdatedMessage = computed<string>(() => {
-        return `Data Last Updated On:  ${format_1_1_1970(RockDateTime.now())}`;
+        return `Data Last Updated On:  ${format_JanDot_1_1970(RockDateTime.now())}`;
     });
 
     const onViewMessage = computed<((key: string) => void) | undefined>(() => {
@@ -337,7 +337,7 @@
             // Find the first message that matches the instance ID key.
             const instanceStartDate = messageEnumerable
                 .where(m => m.communicationFlowInstanceIdKey === communicationFlowInstanceIdKey)
-                .select(m => parseRockDateTime(m.communicationFlowInstanceStartDate))
+                .select(m => parseRockDateTime(m.communicationFlowInstanceStartDateTime))
                 .firstOrDefault();
 
             if (!isNullish(instanceStartDate)) {

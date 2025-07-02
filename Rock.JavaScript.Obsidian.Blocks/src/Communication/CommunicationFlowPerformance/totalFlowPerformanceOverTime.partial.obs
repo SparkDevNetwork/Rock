@@ -1,5 +1,6 @@
 <template>
     <Panel v-if="hasSentCommunications"
+           hasFullscreen
            panelBodyCssClass="chart-container"
            title="Total Flow Performance Over Time">
         <Chart :data="totalFlowPerformanceOverTimeData"
@@ -138,7 +139,7 @@
 
         // Ensure the data points include the earliest instance start date.
         const earliestInstanceSentDate = messageEnumerable
-            .select(m => parseRockDateTime(m.communicationFlowInstanceStartDate))
+            .select(m => parseRockDateTime(m.communicationFlowInstanceStartDateTime))
             .ofType(isRockDateTime)
             .orderBy(d => d.toMilliseconds())
             .select(d => dateTransformer.value(d))

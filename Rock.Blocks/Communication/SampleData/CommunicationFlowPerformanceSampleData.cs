@@ -317,7 +317,7 @@ namespace Rock.Blocks.Communication
                 var unsubscribed = new List<int>();
                 var converted = new List<int>();
 
-                var instance = new CommunicationFlowInstance { StartDate = instanceDate };
+                var instance = new CommunicationFlowInstance { StartDateTime = instanceDate };
                 flow.CommunicationFlowInstances.Add( instance );
                 RockContext.SaveChanges();
 
@@ -343,9 +343,9 @@ namespace Rock.Blocks.Communication
                     var sendDateTime = current.AddDays( flowCommunication.DaysToWait ).Date.Add( flowCommunication.TimeToSend );
                     current = sendDateTime;
 
-                    if ( sendDateTime > RockDateTime.Now )
+                    if ( sendDateTime > RockDateTime.Now || instance.CompletedDateTime.HasValue )
                     {
-                        // future send, skip
+                        // future send or no more recipients, skip
                         continue;
                     }
 
@@ -388,51 +388,67 @@ namespace Rock.Blocks.Communication
                                   && !converted.Contains( r.RecipientPersonAlias.Id ) )
                         .ToList();
 
-                    foreach ( var r in eligible )
+                    if ( !eligible.Any() )
                     {
-                        var causedUnsub = ( decimal ) _random.NextDouble() <=
-                                          ( approxUnsubscribeRate / 100m / communicationCount );
-                        var unsubDate = causedUnsub
-                            ? GetRandomDateTime( sendDateTime, nextInstanceDate )
-                            : ( DateTime? ) null;
-                        var unsubLevel = causedUnsub
-                            ? ( UnsubscribeLevel? ) _random.Next( maxUnsubscribeLevel.ConvertToInt() + 1 )
-                            : default;
-
-                        var commRecip = new CommunicationRecipient
-                        {
-                            PersonAlias = r.RecipientPersonAlias,
-                            UnsubscribeDateTime = unsubDate,
-                            UnsubscribeLevel = unsubLevel,
-                            SendDateTime = comm.SendDateTime
-                        };
-                        comm.Recipients.Add( commRecip );
-
-                        if ( causedUnsub )
-                        {
-                            unsubscribed.Add( r.Id );
-                            r.UnsubscribeCommunicationRecipient = commRecip;
-                        }
-                        else if ( ( decimal ) _random.NextDouble() <= ( approxConversionRate / 100m / communicationCount ) )
-                        {
-                            instance.CommunicationFlowInstanceConversionHistories.Add(
-                                new CommunicationFlowInstanceConversionHistory
-                                {
-                                    PersonAlias = r.RecipientPersonAlias,
-                                    Date = GetRandomDateTime( instanceDate, nextInstanceDate ),
-                                    CommunicationFlowCommunication = flowCommunication
-                                } );
-                            converted.Add( r.Id );
-                        }
+                        // There are no more eligible recipients. Mark the instance as completed.
+                        instance.CompletedDateTime = comm.SendDateTime;
                         RockContext.SaveChanges();
                     }
+                    else
+                    {
+                        foreach ( var r in eligible )
+                        {
+                            var causedUnsub = ( decimal ) _random.NextDouble() <=
+                                              ( approxUnsubscribeRate / 100m / communicationCount );
+                            var unsubDate = causedUnsub
+                                ? GetRandomDateTime( sendDateTime, nextInstanceDate )
+                                : ( DateTime? ) null;
+                            var unsubLevel = causedUnsub
+                                ? ( UnsubscribeLevel? ) _random.Next( maxUnsubscribeLevel.ConvertToInt() + 1 )
+                                : default;
+
+                            var commRecip = new CommunicationRecipient
+                            {
+                                PersonAlias = r.RecipientPersonAlias,
+                                UnsubscribeDateTime = unsubDate,
+                                UnsubscribeLevel = unsubLevel,
+                                SendDateTime = comm.SendDateTime
+                            };
+                            comm.Recipients.Add( commRecip );
+
+                            if ( causedUnsub )
+                            {
+                                unsubscribed.Add( r.Id );
+                                r.UnsubscribeCommunicationRecipient = commRecip;
+                            }
+                            else if ( ( decimal ) _random.NextDouble() <= ( approxConversionRate / 100m / communicationCount ) )
+                            {
+                                instance.CommunicationFlowInstanceConversionHistories.Add(
+                                    new CommunicationFlowInstanceConversionHistory
+                                    {
+                                        PersonAlias = r.RecipientPersonAlias,
+                                        Date = GetRandomDateTime( instanceDate, nextInstanceDate ),
+                                        CommunicationFlowCommunication = flowCommunication
+                                    } );
+                                converted.Add( r.Id );
+                            }
+
+                            // Save after processing each recipient.
+                            RockContext.SaveChanges();
+                        }
+                    }
                 }
+
+                // All communications processed. Mark the 
+
 
                 instanceDate = nextInstanceDate ?? default;
                 nextInstanceDate = nextInstanceDate != null
                     ? getNextInstanceDate( nextInstanceDate.Value )
                     : null;
             }
+
+
         }
 
         private List<PersonAlias> GetPersonAliases( RockContext rockContext, int? targetAudienceDataViewId )

@@ -311,7 +311,7 @@
                 .toArray();
 
             if (Enumerable.from(goalNotMetInstances).any()) {
-                if (Enumerable.from(goalNotMetInstances).any(messagesByInstance => messagesByInstance.any(m => !m.sentDateTime))) {
+                if (Enumerable.from(goalNotMetInstances).any(messagesByInstance => messagesByInstance.any(m => !m.sentDateTime) || messagesByInstance.any(m => !m.communicationFlowInstanceCompletedDateTime))) {
                     // At least one instance has unsent communications
                     // and the conversion percent is below the target.
                     return "Pending";

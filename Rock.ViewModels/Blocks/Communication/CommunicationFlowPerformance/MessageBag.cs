@@ -28,7 +28,13 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
         /// <summary>
         /// Gets or sets the instance start date.
         /// </summary>
-        public DateTime CommunicationFlowInstanceStartDate { get; set; }
+        public DateTime CommunicationFlowInstanceStartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time that this Communication Flow Instance was completed.
+        /// </summary>
+        /// <value>When this is not <see langword="null"/>, then no more messages will be sent for this flow.</value>
+        public DateTime? CommunicationFlowInstanceCompletedDateTime { get; set; }
 
         /// <summary>
         /// Gets or sets the person alias identifier key.
