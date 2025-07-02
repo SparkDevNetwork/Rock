@@ -122,9 +122,9 @@ namespace Rock.Blocks
         /// <summary>
         /// Builds a grid attribute that should be included on the Grid.
         /// </summary>
-        /// <param name="key">They Key or GUID of the desired Attribute.</param>
+        /// <param name="identifier">They Key or GUID of the desired Attribute.</param>
         /// <returns>An <see cref="AttributeCache"/> object.</returns>
-        protected AttributeCache AddCustomGridAttribute( string key )
+        protected AttributeCache AddCustomGridAttribute( object identifier )
         {
             if ( _cachedGridDataAttributes == null )
             {
@@ -138,7 +138,17 @@ namespace Rock.Blocks
                 if ( entityTypeId.HasValue )
                 {
                     var attributes = AttributeCache.GetByEntityType( entityTypeId.Value );
-                    var attribute = attributes.FirstOrDefault( ac => ac.Key == key );
+                    AttributeCache attribute = null;
+
+                    // Check if identifier is a string or Guid and find the corresponding attribute
+                    if ( identifier is string key )
+                    {
+                        attribute = attributes.FirstOrDefault( ac => ac.Key == key );
+                    }
+                    else if ( identifier is Guid guid )
+                    {
+                        attribute = attributes.FirstOrDefault( ac => ac.Guid == guid );
+                    }
 
                     if ( attribute != null )
                     {
