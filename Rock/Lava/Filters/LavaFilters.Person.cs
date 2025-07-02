@@ -1165,6 +1165,8 @@ namespace Rock.Lava
             // Get results and shape for return
             var results = new GroupService( rockContext )
                 .GetNearestGroups( point, numericalGroupTypeId.Value, numericalMaxResults, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
+                .Select( g => new { g.Group, g.Location} )
+                .ToList()
                 .Select( g => new GroupProximityResult
                 {
                     StraightLineDistance = g.Location.GeoPoint.Distance( point.ToDbGeography() ), 

@@ -860,6 +860,7 @@
     <Compile Include="Lava\Blocks\RockEntityDeleteBlock.cs" />
     <Compile Include="Lava\Blocks\RockEntityModifyBlock.cs" />
     <Compile Include="Lava\Filters\Internal\GroupProximityResult.cs" />
+    <Compile Include="Lava\Shortcodes\GroupFinderShortcode.cs" />
     <Compile Include="Lava\Shortcodes\LavaShortcodeMetaDataAttribute.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.cs" />
     <Compile Include="Model\CMS\LavaApplication\LavaApplication.Logic.cs" />

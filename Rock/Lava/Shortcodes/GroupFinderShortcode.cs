@@ -33,6 +33,7 @@ using Rock.Address.Classes;
 using Rock.Data;
 using Rock.Lava.Filters.Internal;
 using Rock.Model;
+using Rock.Net;
 using Rock.Web.UI;
 
 namespace Rock.Lava.Shortcodes
@@ -121,6 +122,11 @@ namespace Rock.Lava.Shortcodes
         /// </summary>
         private string _internalMarkup = string.Empty;
 
+        /// <summary>
+        /// Sharable rock context
+        /// </summary>
+        private RockContext _rockContext;
+
         #endregion
 
         #region Methods
@@ -152,7 +158,7 @@ namespace Rock.Lava.Shortcodes
             var engine = context.GetService<ILavaEngine>();
 
             // Get Rock Context
-            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+            _rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
             var settings = GetAttributesFromMarkup( _blockPropertiesMarkup, context );
             var mergedMarkup = engine.RenderTemplate( _internalMarkup, LavaRenderParameters.WithContext( context ) );
@@ -163,9 +169,6 @@ namespace Rock.Lava.Shortcodes
                 return;
             }
 
-            // Get the origin point
-            
-
             // Get the options for the shortcode
             var options = new Options
             {
@@ -174,14 +177,26 @@ namespace Rock.Lava.Shortcodes
                 ReturnOnlyClosestLocationPerGroup = settings[ParameterKeys.ReturnOnlyClosestLocationPerGroup].AsBooleanOrNull() ?? true,
                 MaxDistance = settings[ParameterKeys.MaxDistance].AsIntegerOrNull(),
                 Origin = settings[ParameterKeys.Origin].ToString(),
-                OriginPoint = GetOriginPoint( settings[ParameterKeys.Origin].ToString() )
+                OriginPoint = GetOriginPoint( settings[ParameterKeys.Origin].ToString(), context )
             };
 
             //var (nodes, edges) = GetNodesAndEdges( childElements );
 
+            /*
+                Hide Overcapacity Groups
+                Campus Filter
+                Day of Week Filter
+                Time of Day Filter
+                Attribute Filters
+                Travel Time
+            */
+
+
             // Create the initial query context.
-            var results = new GroupService( rockContext )
-                .GetNearestGroups( options.OriginPoint, options.GroupTypeIdList , options.MaxResults, options.ReturnOnlyClosestLocationPerGroup, options.MaxDistance )
+            var results = new GroupService( _rockContext )
+                .GetNearestGroups( options.OriginPoint, options.GroupTypeIdList, options.MaxResults, options.ReturnOnlyClosestLocationPerGroup, options.MaxDistance )
+                .Select( g => new { g.Group, g.Location } )
+                .ToList()
                 .Select( g => new GroupProximityResult
                 {
                     StraightLineDistance = g.Location.GeoPoint.Distance( options.OriginPoint.ToDbGeography() ),
@@ -189,26 +204,71 @@ namespace Rock.Lava.Shortcodes
                     Location = g.Location
                 } ).ToList();
 
-            
 
-            result.Write( "output here" );
+            // Process the residual content and output results
+            var mergeFields = context.GetMergeFields();
+            mergeFields.AddOrReplace( "MatchedGroups", results );
+
+            result.Write( residualBlockContent.ResolveMergeFields( mergeFields) );
         }
 
         /// <summary>
         /// Gets the origin point from the settings. If the origin is not a lat/long, it will be geocoded.
         /// </summary>
         /// <param name="originString"></param>
+        /// <param name="context"></param>
         /// <returns></returns>
-        private static GeographyPoint GetOriginPoint( string originString )
+        private GeographyPoint GetOriginPoint( string originString, ILavaRenderContext context )
         {
-            // Check if it's a lat/long
-            if ( GeographyPoint.TryParse( "40.7128,-74.0060", out var point ) )
+            // If blank then assume current person
+            if ( originString.IsNullOrWhiteSpace() )
+            {
+                originString = GetCurrentPerson( context )?.Id.ToString();
+            }
+
+            // Check if it's an int, if so this will be a person id and we'll use their home address
+            if (Int32.TryParse( originString, out int personId ) )
+            {
+                return new GeographyPoint( new PersonService( _rockContext ).GetGeopoints( personId ).FirstOrDefault() );
+            }
+
+            // Check if it's a lat/long if so return it
+            if ( GeographyPoint.TryParse( originString, out var point ) )
             {
                 return point;
             }
 
-            // Run it through the geocoder
-            return Task.Run( () => ( LocationHelpers.Geocode( originString ) ).Result;
+            // Otherwise, run it through the geocoder
+            return Task.Run( () => ( LocationHelpers.Geocode( originString ) ) ).Result;
+        }
+
+        /// <summary>
+        /// Gets the current person.
+        /// </summary>
+        /// <param name="context">The context.</param>
+        /// <returns></returns>
+        private Person GetCurrentPerson( ILavaRenderContext context )
+        {
+            // First check for a person override value included in lava context
+            if ( context.GetMergeField( "CurrentPerson" ) is Person currentPerson )
+            {
+                return currentPerson;
+            }
+
+            // Next check the RockRequestContext in the lava context.
+            if ( context.GetInternalField( "RockRequestContext" ) is RockRequestContext currentRequest )
+            {
+                return currentRequest.CurrentPerson;
+            }
+
+            // Finally check the HttpContext.
+            var httpContext = System.Web.HttpContext.Current;
+            if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
+            {
+                return httpContext.Items["CurrentPerson"] as Person;
+            }
+
+            return null;
         }
 
         /// <summary>

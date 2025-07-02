@@ -153,20 +153,15 @@ namespace Rock.Lava
             }
 
             // Add parameters for tracking the recursion depth.
-            int currentRecursionDepth = 0;
+            int originalRecursionDepth = context.GetMergeField( "RecursionDepth" ).ToString().AsInteger();
 
-            if ( parms.ContainsKey( "RecursionDepth" ) )
+            if ( originalRecursionDepth > _maxRecursionDepth )
             {
-                currentRecursionDepth = parms["RecursionDepth"].ToString().AsInteger() + 1;
+                result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
+                return;
+            }        
 
-                if ( currentRecursionDepth > _maxRecursionDepth )
-                {
-                    result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
-                    return;
-                }
-            }
-
-            parms.AddOrReplace( "RecursionDepth", currentRecursionDepth );
+            parms.AddOrReplace( "RecursionDepth", originalRecursionDepth + 1 );
 
             var securityCheckRequired = true;
 
@@ -226,10 +221,15 @@ namespace Rock.Lava
             var blockHasContent = residualMarkup.IsNotNullOrWhiteSpace();
             parms.AddOrReplace( "blockContentExists", blockHasContent );
 
+            // Get the original blockContent so we can replace it when we're done. This is needed for nested shortcodes
+            var originalBlockContent = context.GetMergeField( "blockContent" );
+
+
+            // Set the blockContent merge field even if there is no content to prevent parent shortcodes from bleeding into their children.
+            parms.AddOrReplace( "blockContent", residualMarkup );
+
             if ( blockHasContent )
             {
-                parms.AddOrReplace( "blockContent", residualMarkup );
-
                 if ( securityCheckRequired )
                 {
                     // If the commands enabled for the current render context are a superset of the commands enabled for the shortcode,
@@ -300,6 +300,10 @@ namespace Rock.Lava
             {
                 context.ExitChildScope();
             }
+
+            // Reset the original parameters in the context
+            context.SetMergeField( "blockContent", originalBlockContent );
+            context.SetMergeField( "RecursionDepth", originalRecursionDepth );
         }
 
         #endregion
