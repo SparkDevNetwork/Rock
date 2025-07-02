@@ -139,7 +139,9 @@ namespace Rock.Blocks.Core
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "Id", a => a.Id )
-                .AddAttributeFields( GetGridAttributes() );
+                .AddCustomAttributeField( "color", AddCustomGridAttribute( "core_CampusColor" ) )
+                .AddAttributeFields( GetGridAttributes() )
+                ;
         }
 
         #endregion

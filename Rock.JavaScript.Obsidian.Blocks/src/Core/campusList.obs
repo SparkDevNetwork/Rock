@@ -23,6 +23,13 @@
                     :filter="textValueFilter"
                     visiblePriority="lg" />
 
+        <LabelColumn name="shortCode"
+                    title="Short Code"
+                    field="shortCode"
+                    :filter="textValueFilter"
+                    :colorSource="campusShortCodeLabelColors"
+                    visiblePriority="lg" />
+
         <TextColumn name="phoneNumber"
                     title="Phone Number"
                     field="phoneNumber"
@@ -77,13 +84,15 @@
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { DefinedValue } from "@Obsidian/SystemGuids/definedValue";
-    import Grid, { AttributeColumns, BooleanColumn, Column, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, BooleanColumn, Column, PersonColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, LabelColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { CampusListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/CampusList/campusListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { CampusBag } from "@Obsidian/ViewModels/Blocks/Core/CampusDetail/campusBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { NavigationUrlKey } from "./CampusList/types.partial";
-    import { reactive, ref } from "vue";
+    import { reactive, ref, computed } from "vue";
 
     const config = useConfigurationValues<ListBlockBox<CampusListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -97,6 +106,8 @@
         [DefinedValue.CampusStatusOpen]: "info",
         [DefinedValue.CampusStatusPending]: "warning"
     });
+    
+    const campusShortCodeLabelColors = ref<Record<string, string>>({});
 
     // #endregion
 
@@ -110,6 +121,15 @@
 
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
+            let items: Record<string, string> = {};
+            gridData.rows?.forEach(row => {
+                let campus = row as CampusBag;
+                let color = row.color as ListItemBag;
+                if(campus.shortCode && color.value ) {
+                    items[campus.shortCode] = color.value;
+                }
+            })
+            campusShortCodeLabelColors.value = items;
             return gridData;
         }
         else {
