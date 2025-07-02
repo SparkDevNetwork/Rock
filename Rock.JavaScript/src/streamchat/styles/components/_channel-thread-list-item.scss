@@ -1,0 +1,83 @@
+.rocktheme-community {
+    .rock-channel-thread-list-item {
+        --str-chat__avatar-size: var(--message-avatar-size);
+
+        display: flex;
+        flex-direction: column;
+        border: none;
+        background-color: var(--color-interface-softest);
+        color: var(--color-interface-strong);
+        padding: 12px;
+        border-bottom: 1px solid var(--color-interface-soft);
+        width: 100%;
+
+
+        &:hover {
+            background-color: var(--color-interface-soft);
+        }
+
+        .rock-channel-thread-list-item-layout {
+            display: flex;
+            gap: 6px;
+
+        }
+
+        .rock-channel-thread-list-item-parent-message-preview-title-layout {
+            display: flex;
+            gap: 4px;
+            align-items: center;
+        }
+
+        .rock-channel-thread-list-item-parent-message-preview-created-by-text {
+            color: var(--message-author-color);
+            font-size: var(--message-author-font-size);
+            font-weight: var(--message-author-font-weight);
+            line-height: var(--message-author-line-height);
+            margin: 0;
+            padding: 0;
+        }
+
+        .rock-channel-thread-list-item-parent-message-preview-created-at {
+            line-height: var(--message-timestamp-line-height);
+            font-size: var(--message-timestamp-font-size);
+            color: var(--message-timestamp-color);
+
+        }
+
+        .rock-channel-thread-list-item-parent-message-preview-text {
+            color: var(--str-chat__text-color);
+            font-size: 16px;
+            text-align: start;
+            width: 100%;
+            margin: 0;
+        }
+
+        .str-chat__message-text-inner>div {
+            display: -webkit-box;
+            /* activate the box model */
+            -webkit-box-orient: vertical;
+            /* stack children vertically */
+            -webkit-line-clamp: 7;
+            line-clamp: 7;
+            /* limit to 7 lines */
+            overflow: hidden;
+            /* hide anything past line 7 */
+            /* optional, for a “…” indicator */
+            text-overflow: ellipsis;
+            word-break: break-word;
+            color: var(--color-interface-stronger)
+        }
+
+        .rock-channel-thread-list-item-parent-message-preview-text-inner {
+            display: -webkit-box;
+            -webkit-line-clamp: 4;
+            line-clamp: 4;
+            white-space: pre-line;
+            /* Limit to 2 lines */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-break: break-word;
+        }
+    }
+}

@@ -140,6 +140,10 @@
             width: 100%;
             border-radius: var(--message-composer-textarea-radius);
         }
+
+        .str-chat__suggestion-list-container {
+            bottom: 72px; // There should hopefully be a better way to do this
+        }
     }
 
     .str-chat__attachment-preview-list {

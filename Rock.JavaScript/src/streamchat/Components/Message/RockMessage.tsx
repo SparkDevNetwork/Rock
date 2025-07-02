@@ -413,9 +413,9 @@ const RockMessageWithContext = (props: RockMessageProps) => {
                     )}
 
                     <div className="rock-message-container-layout">
-                        <div className='rock-message-container'>
+                        <div className="rock-message-container">
                             {message.user && (
-                                <div className='rock-avatar-container'>
+                                <div className="rock-avatar-container">
                                     <Avatar
                                         image={message.user.image}
                                         name={message.user.name || message.user.id}

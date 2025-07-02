@@ -42,7 +42,6 @@ export const RockChatWindow: React.FC = () => {
                     </div>
                     <div className="rock-chat-window-content-right">
                         {activePane && <ChannelRightPane />}
-                        {/* <Thread /> */}
                     </div>
                 </div>
             </div>

@@ -10,7 +10,7 @@ export const ThreadPaneContent = () => {
 
     if (!thread) {
         return (
-            <div style={{ height: '100%', display: 'flex', flexDirection: 'column', width: '100%' }}>
+            <div className="thread-pane-content">
                 <ChannelPaneHeader title="Threads" icon="fas fa-comments" />
                 <ChannelThreadList />
             </div>
@@ -19,8 +19,8 @@ export const ThreadPaneContent = () => {
 
     // if (!thread) return <div>Select a message to view the thread.</div>;
     return (
-        <div style={{ height: '100%', display: 'flex', flexDirection: 'column', width: '100%' }}>
-            <ChannelPaneHeader title="Thread" icon="fas fa-comment-dots" />
+        <div className="thread-pane-content">
+            {/* Header is handled in the Channel component */}
             <Thread Input={SafeMessageInput} />
         </div>
     );

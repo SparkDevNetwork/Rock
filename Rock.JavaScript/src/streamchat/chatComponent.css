@@ -38,37 +38,6 @@
     height: calc(100vh - 36px);
 }
 
-.rock-chat-window {
-    display: flex;
-    flex-direction: column;
-    flex-grow: 1;
-    min-height: 0;
-}
-
-.rock-chat-window-content {
-    display: flex;
-    flex-direction: row;
-    flex-grow: 1;
-    min-height: 0;
-}
-
-.rock-chat-window-content-left {
-    display: flex;
-    flex-direction: column;
-    min-height: 0;
-    width: 100%;
-}
-
-.rock-chat-window--with-pane .rock-chat-window-content-left {
-    width: 70%;
-}
-
-.rock-chat-window-content-left>.str-chat__message-list {
-    flex-grow: 1;
-    min-height: 0;
-    overflow-y: auto;
-}
-
 .rock-badge {
     border-radius: 4px;
     font-size: .625rem;

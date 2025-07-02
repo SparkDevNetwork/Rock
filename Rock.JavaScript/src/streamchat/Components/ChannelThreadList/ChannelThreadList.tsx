@@ -6,6 +6,7 @@ import type { Thread, ThreadManagerState } from 'stream-chat';
 import { useChatContext, useComponentContext, useStateStore, ThreadListItem as DefaultThreadListItem, useThreadsViewContext, useChat, useChannelActionContext } from 'stream-chat-react';
 import { CustomThreadListLoadingIndicator } from './ChannelThreadListLoadingIndicator';
 import { ChannelThreadListUnseenThreadsBanner as DefaultThreadListUnseenThreadsBanner } from './ChannelThreadListUnseenBanner';
+import { ChannelThreadListItem } from '../ChannelThreadItem/ChannelThreadListItem';
 
 const selector = (nextValue: ThreadManagerState) => ({ threads: nextValue.threads });
 
@@ -70,7 +71,7 @@ export const ChannelThreadList = ({ virtuosoProps }: ThreadListProps) => {
                 }}
                 computeItemKey={computeItemKey}
                 data={filteredThreads}
-                itemContent={(_, thread) => <ThreadListItem thread={thread} threadListItemUIProps={
+                itemContent={(_, thread) => <ChannelThreadListItem thread={thread} threadListItemUIProps={
                     {
                         onClick: () => {
                             console.log('Thread clicked:', thread);

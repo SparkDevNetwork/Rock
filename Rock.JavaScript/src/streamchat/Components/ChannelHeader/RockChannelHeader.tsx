@@ -1,5 +1,5 @@
 import React from 'react';
-import { Avatar as DefaultAvatar, ChannelHeaderProps, ChannelHeader as DefaultHeader, useChannelPreviewInfo, useChatContext, useChannelMembershipState } from 'stream-chat-react';
+import { Avatar as DefaultAvatar, ChannelHeaderProps, ChannelHeader as DefaultHeader, useChannelPreviewInfo, useChatContext, useChannelMembershipState, useChannelActionContext, useThreadsViewContext } from 'stream-chat-react';
 import { DefaultChatChannelNamer } from '../ChannelNamer/DefaultChannelNamer';
 import { useChatConfig } from '../Chat/ChatConfigContext';
 import { ChatViewStyle } from '../../ChatViewStyle';
@@ -34,6 +34,9 @@ export const RockChannelHeader: React.FC = (props: ChannelHeaderProps) => {
     const { refresh } = useChannelListController();
     // Used to control which right pane is active (info, threads, etc.)
     const { setActivePane, activePane } = useChannelRightPane();
+
+    const { closeThread } = useChannelActionContext();
+    const { setActiveThread } = useThreadsViewContext();
 
     // Use our custom channel namer, falling back to undefined if it returns null
     const title = DefaultChatChannelNamer(channel, directMessageChannelTypeKey!, client.userID!) ?? undefined;
@@ -76,7 +79,18 @@ export const RockChannelHeader: React.FC = (props: ChannelHeaderProps) => {
             key: 'threads',
             iconClass: 'fas fa-comments',
             title: 'Threads',
-            onClick: () => setActivePane('threads'),
+            onClick: () => {
+                // If already active, close the thread
+                console.log('Active pane:', activePane);
+                if (activePane == 'threads') {
+                    console.log('Closing thread');
+                    closeThread();
+                    setActiveThread(undefined);
+                    setActivePane(null);
+                } else {
+                    setActivePane('threads');
+                }
+            },
         },
         {
             key: 'search',
@@ -133,12 +147,7 @@ export const RockChannelHeader: React.FC = (props: ChannelHeaderProps) => {
                             <button
                                 key={key}
                                 onClick={() => {
-                                    // Toggle off if already active
-                                    if (activePane === key.replace('channelInfo', 'info')) {
-                                        setActivePane(null);
-                                    } else {
-                                        onClick();
-                                    }
+                                    onClick();
                                 }}
                                 title={title}
                                 aria-label={title}

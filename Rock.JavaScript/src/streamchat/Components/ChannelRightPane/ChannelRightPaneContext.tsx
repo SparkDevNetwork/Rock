@@ -1,7 +1,5 @@
 // ChannelRightPaneContext.tsx
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import { LocalMessage } from 'stream-chat';
-import { useChannelActionContext } from 'stream-chat-react';
 
 type ChannelPaneView = 'info' | 'threads' | 'search' | 'mentions' | 'members' | 'more' | null;
 

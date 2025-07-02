@@ -16,6 +16,7 @@ interface ChatConfigContextType {
     sharedChannelTypeKey?: string;
     directMessageChannelTypeKey?: string;
     chatViewStyle: ChatViewStyle;
+    refreshChat: () => void;
 }
 
 /**
