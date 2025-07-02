@@ -508,7 +508,11 @@
     }
 
     /** The CSS classes to apply to the activity container. */
-    function getActivityContainerClasses(activity: LearningClassActivityCompletionBag): string {
+    function getActivityContainerClasses(activity: LearningClassActivityCompletionBag | null): string {
+        if (!activity) {
+            return "";
+        }
+
         const classes = activity.isAvailable === true ? ["available"] : ["not-available"];
 
         classes.push("activity-navigation-item-container");
