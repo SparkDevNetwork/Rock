@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,15 +15,19 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,7 +39,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Show the date of the last attendance in a group of type." )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select last attendance date of a person in a specific type of group." )]
-    [Rock.SystemGuid.EntityTypeGuid( "F3C67ECD-5E80-4807-8F90-6AD110674ADF")]
+    [Rock.SystemGuid.EntityTypeGuid( "F3C67ECD-5E80-4807-8F90-6AD110674ADF" )]
     public class LastAttendedGroupOfType : DataSelectComponent
     {
         #region Properties
@@ -107,6 +111,41 @@ namespace Rock.Reporting.DataSelect.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupTypeOptions = new GroupTypeService( rockContext ).Queryable()
+                .OrderBy( gt => gt.Order )
+                .ThenBy( gt => gt.Name )
+                .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
+                .ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/lastAttendedGroupOfTypeSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["groupTypeOptions"] = groupTypeOptions.ToCamelCaseJson( false, true ),
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string> { ["groupType"] = selection };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "groupType", string.Empty );
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -136,10 +175,10 @@ namespace Rock.Reporting.DataSelect.Person
             if ( groupTypeGuid != Guid.Empty )
             {
                 AttendanceService attendanceService = new AttendanceService( context );
-                var groupAttendanceQry = attendanceService.Queryable().Where( a => a.Occurrence.Group.GroupType.Guid == groupTypeGuid);
+                var groupAttendanceQry = attendanceService.Queryable().Where( a => a.Occurrence.Group.GroupType.Guid == groupTypeGuid );
 
                 var qry = new PersonService( context ).Queryable()
-                    .Select( p => groupAttendanceQry.Where( xx => xx.PersonAlias.PersonId == p.Id && xx.DidAttend == true ).Max( xx => xx.StartDateTime ));
+                    .Select( p => groupAttendanceQry.Where( xx => xx.PersonAlias.PersonId == p.Id && xx.DidAttend == true ).Max( xx => xx.StartDateTime ) );
 
                 Expression selectExpression = SelectExpressionExtractor.Extract( qry, entityIdProperty, "p" );
 
@@ -184,16 +223,16 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
-        {            
+        {
             // Get the selected Group Type as a Guid.
-            var groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId().GetValueOrDefault(0);
+            var groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId().GetValueOrDefault( 0 );
 
             string value1 = string.Empty;
 
-            if (groupTypeId > 0)
+            if ( groupTypeId > 0 )
             {
-                var groupType = GroupTypeCache.Get(groupTypeId);
-                value1 = (groupType == null) ? string.Empty : groupType.Guid.ToString();
+                var groupType = GroupTypeCache.Get( groupTypeId );
+                value1 = ( groupType == null ) ? string.Empty : groupType.Guid.ToString();
             }
 
             return value1;
@@ -207,7 +246,7 @@ namespace Rock.Reporting.DataSelect.Person
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
             var groupType = new GroupTypeService( new RockContext() ).Get( selection.AsGuid() );
-            ( controls[0] as GroupTypePicker ).SetValue( groupType != null ? groupType.Id : (int?)null );
+            ( controls[0] as GroupTypePicker ).SetValue( groupType != null ? groupType.Id : ( int? ) null );
         }
 
         #endregion

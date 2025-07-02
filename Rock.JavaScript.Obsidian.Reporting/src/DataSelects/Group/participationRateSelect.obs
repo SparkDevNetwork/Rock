@@ -1,0 +1,32 @@
+<template>
+    <DataViewPicker v-model="dataView" :entityTypeGuid="EntityType.Person" label="Candidate Data View" showBlankItem help="The Data View that returns the set of people from which participation in the Group is measured." />
+    <DropDownList v-model="measureType" :items="measureTypeOptions" label="Measure Type" :showBlankItem="false" />
+</template>
+
+<script setup lang="ts">
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const dataView = ref<ListItemBag>(safeParseJson<ListItemBag>(props.modelValue.dataView) ?? {});
+
+    const measureTypeOptions = safeParseJson<ListItemBag[]>(props.options.measureTypeOptions) ?? [];
+    const measureType = ref<string>(props.modelValue.measureType ?? "");
+
+    watch([dataView, measureType], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            dataView: JSON.stringify(dataView.value),
+            measureType: measureType.value,
+        });
+    });
+</script>

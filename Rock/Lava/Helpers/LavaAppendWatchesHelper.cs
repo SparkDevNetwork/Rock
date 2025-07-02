@@ -393,7 +393,6 @@ namespace Rock.Lava.Helpers
             media.HasWatched = true;
             media.WatchInteractionGuid = watch.InteractionGuid;
             media.WatchInteractionDateTime = watch.InteractionDateTime;
-
             try
             {
                 var watchData = ( dynamic ) watch.InteractionData.FromJsonDynamic();

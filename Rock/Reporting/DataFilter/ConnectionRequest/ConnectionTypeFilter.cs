@@ -28,6 +28,7 @@ using System.Linq.Expressions;
 using System.Collections.Generic;
 using Rock.Net;
 using Rock.Web.Cache;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataFilter.ConnectionRequest
 {
@@ -64,27 +65,36 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ConnectionRequest/connectionTypeFilter.obs";
-
         #endregion
 
         #region Configuration
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var config = SelectionConfig.Parse( selection );
-
             var connectionTypeOptions = ConnectionTypeCache.All()
                 .OrderBy( ct => ct.Order )
                 .ThenBy( ct => ct.Name )
                 .Select( ct => ct.ToListItemBag() )
                 .ToList();
 
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ConnectionRequest/connectionTypeFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "connectionTypeOptions", connectionTypeOptions.ToCamelCaseJson(false, true) }
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
             var data = new Dictionary<string, string>
             {
-                { "connectionTypeOptions", connectionTypeOptions.ToCamelCaseJson(false, true) },
                 { "connectionType", config?.ConnectionTypeGuid.ToString() },
             };
 

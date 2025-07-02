@@ -1302,7 +1302,9 @@ namespace Rock.Workflow.Action
                     return;
                 }
 
-                recipients.Add( new RockEmailMessageRecipient( recipientPerson, mergeFields ) );
+                var recipient = new RockEmailMessageRecipient( recipientPerson, mergeFields );
+                recipient.MergeFields.AddOrReplace( recipient.PersonMergeFieldKey, recipientPerson );
+                recipients.Add( recipient );               
             }
             else if ( formNotificationEmailDestination == FormNotificationEmailDestination.CampusTopic
                 && notificationEmailSettings.CampusTopicValueId.HasValue )
@@ -1346,6 +1348,7 @@ namespace Rock.Workflow.Action
                 if ( systemCommunication != null )
                 {
                     var emailMessage = new RockEmailMessage( systemCommunication );
+                    emailMessage.AdditionalMergeFields = new Dictionary<string, object>( mergeFields );
                     emailMessage.SetRecipients( recipients );
                     emailMessage.Send();
                 }

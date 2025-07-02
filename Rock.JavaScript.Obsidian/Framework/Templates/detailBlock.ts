@@ -868,7 +868,7 @@ export default defineComponent({
     </template>
 
     <template #footerSecondaryActions>
-        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)" :disabled="action.disabled">
+        <RockButton v-for="action in internalFooterSecondaryActions" :btnType="action.type" btnSize="sm" :title="action.title" @click="onActionClick(action, $event)" :disabled="action.disabled" :key="action.title+action.iconCssClass">
             <i :class="getActionIconCssClass(action)"></i>
         </RockButton>
     </template>

@@ -16,7 +16,7 @@
 
         <TextColumn name="note" title="Note" field="note" :filter="textValueFilter" width="70%" visiblePriority="lg" />
 
-        <DateColumn name="expirationDate" title="Expiration Date" field="expirationDate" :filter="dateValueFilter" visiblePriority="sm" />
+        <DateColumn name="expirationDate" title="Expiration Date" field="expirationDate" width="150px" :filter="dateValueFilter" visiblePriority="sm" />
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
@@ -115,7 +115,7 @@
      * Start the save operation by requesting the edit signal form to
      * validate and then trigger the submit event.
      */
-     const startSavePersonSignal = (): void => {
+    const startSavePersonSignal = (): void => {
         submitPersonSignal.value = true;
     };
 
@@ -198,7 +198,7 @@
     /**
      * Called the edit or add modal is closed.
      */
-     function onCloseModal(): void {
+    function onCloseModal(): void {
         personSignalEditBag.value.bag = {};
         isEditing.value = false;
     }

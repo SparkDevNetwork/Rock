@@ -24,10 +24,12 @@ using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Enums.Blocks.Crm.FamilyPreRegistration;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Crm.FamilyPreRegistration;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
@@ -136,7 +138,7 @@ namespace Rock.Blocks.Crm
     [DefinedValueField(
         "Connection Status",
         Key = AttributeKey.ConnectionStatus,
-        Description = "The connection status that should be used when adding new people.",
+        Description = "The connection status to use for new individuals (default = 'Visitor').",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = false,
         AllowMultiple = false,
@@ -146,12 +148,22 @@ namespace Rock.Blocks.Crm
     [DefinedValueField(
         "Record Status",
         Key = AttributeKey.RecordStatus,
-        Description = "The record status that should be used when adding new people.",
+        Description = "The record status to use for new individuals (default = 'Active').",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
         IsRequired = false,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE,
         Order = 12 )]
+
+    [DefinedValueField(
+        "Record Source",
+        Key = AttributeKey.RecordSource,
+        Description = "The record source to use for new individuals (default = 'Family Registration'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        IsRequired = false,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_FAMILY_REGISTRATION,
+        Order = 13 )]
 
     [WorkflowTypeField(
         "Workflow Types",
@@ -159,7 +171,7 @@ namespace Rock.Blocks.Crm
         Description = BlockAttributeDescription.WorkflowTypes,
         AllowMultiple = true,
         IsRequired = false,
-        Order = 13 )]
+        Order = 14 )]
 
     [WorkflowTypeField(
         "Parent Workflow",
@@ -167,7 +179,7 @@ namespace Rock.Blocks.Crm
         Description = BlockAttributeDescription.ParentWorkflow,
         AllowMultiple = false,
         IsRequired = false,
-        Order = 14 )]
+        Order = 15 )]
 
     [WorkflowTypeField(
         "Child Workflow",
@@ -175,7 +187,7 @@ namespace Rock.Blocks.Crm
         Description = BlockAttributeDescription.ChildWorkflow,
         AllowMultiple = false,
         IsRequired = false,
-        Order = 15 )]
+        Order = 16 )]
 
     [CodeEditorField(
         "Redirect URL",
@@ -186,7 +198,7 @@ namespace Rock.Blocks.Crm
         EditorTheme = CodeEditorTheme.Rock,
         EditorHeight = 200,
         IsRequired = false,
-        Order = 16 )]
+        Order = 17 )]
 
     [TextField(
         "Planned Visit Information Panel Title",
@@ -194,7 +206,7 @@ namespace Rock.Blocks.Crm
         Description = "The title for the Planned Visit Information panel",
         DefaultValue = "Visit Information",
         IsRequired = false,
-        Order = 17 )]
+        Order = 18 )]
 
     [CustomDropdownListField(
         "Show SMS Opt-in",
@@ -203,21 +215,21 @@ namespace Rock.Blocks.Crm
         ListSource = ListSource.DISPLAY_SMS_OPT_IN,
         IsRequired = true,
         DefaultValue = "Hide",
-        Order = 18 )]
+        Order = 19 )]
 
     [BooleanField(
         "Disable Captcha Support",
         Key = AttributeKey.DisableCaptchaSupport,
         Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
         DefaultBooleanValue = false,
-        Order = 19 )]
+        Order = 20 )]
 
     [BooleanField(
         "Prioritize Child Entry",
         Key = AttributeKey.PrioritizeChildEntry,
         Description = "Moves the Child panel above the Adult Information panel and starts with one child to be filled in.",
         IsRequired = false,
-        Order = 20 )]
+        Order = 21 )]
 
     #region Adult Category
 
@@ -558,6 +570,7 @@ namespace Rock.Blocks.Crm
             public const string AutoMatch = "AutoMatch";
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
+            public const string RecordSource = "RecordSource";
             public const string WorkflowTypes = "WorkflowTypes";
             public const string ParentWorkflow = "ParentWorkflow";
             public const string ChildWorkflow = "ChildWorkflow";
@@ -1059,15 +1072,19 @@ namespace Rock.Blocks.Crm
                             GroupMemberStatus = GroupMemberStatus.Active
                         };
 
-                        if ( isNewFamily )
-                        {
-                            adult.GivingGroupId = primaryFamily.Id;
-                        }
-
                         groupMemberService.Add( currentFamilyMember );
-
                         rockContext.SaveChanges();
                     }
+                }
+
+                // If the family is new or one of the adults has a giving group Id, set the giving group Id for all adults in the family.
+                if ( isNewFamily || adults.Any( a => a.GivingGroupId == primaryFamily.Id ) )
+                {
+                    foreach ( var adult in adults )
+                    {
+                        adult.GivingGroupId = primaryFamily.Id;
+                    }
+                    rockContext.SaveChanges();
                 }
 
                 // Save the family address.
@@ -1076,7 +1093,7 @@ namespace Rock.Blocks.Crm
                     var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                     if ( homeLocationType != null )
                     {
-                        // Only save the location if it is valid according to the country's requirements.
+                        // Only save the location if it is valid according to the country's requirements, or the address is optional according to the block settings.
                         Location location = new Location()
                         {
                             Street1 = bag.Address.Street1,
@@ -1086,21 +1103,28 @@ namespace Rock.Blocks.Crm
                             PostalCode = bag.Address.PostalCode,
                             Country = bag.Address.Country,
                         };
-                        var isValid = LocationService.ValidateLocationAddressRequirements( location, out string validationMessage );
+
+                        var isOptional = GetFieldBag( AttributeKey.AdultAddress ).IsOptional;
+                        var isValid = isOptional || LocationService.ValidateLocationAddressRequirements( location, out string validationMessage );
 
                         if ( isValid )
                         {
                             // Find a location record for the address that was entered.
+                            // TODO: The default country should be removed once Obsidian has full country support.
                             location = new LocationService( rockContext ).Get(
-                                // TODO: The default country should be removed once Obsidian has full country support.
                                 bag.Address.Street1,
                                 bag.Address.Street2,
                                 bag.Address.City,
                                 bag.Address.State,
                                 bag.Address.PostalCode,
                                 bag.Address.Country ?? GlobalAttributesCache.Get().OrganizationCountry,
-                                primaryFamily,
-                                verifyLocation: true );
+                                new GetLocationArgs
+                                {
+                                    CreateNewLocation = true,
+                                    Group = primaryFamily,
+                                    ValidateLocation = !isOptional,
+                                    VerifyLocation = true,
+                                } );
                         }
                         else
                         {
@@ -1208,7 +1232,8 @@ namespace Rock.Blocks.Crm
                             LastName = child.LastName.FixCase(),
                             RecordTypeValueId = recordTypePersonId,
                             RecordStatusValueId = recordStatusValue != null ? recordStatusValue.Id : ( int? ) null,
-                            ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : ( int? ) null
+                            ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : ( int? ) null,
+                            RecordSourceValueId = GetRecordSourceValueId()
                         };
 
                         personService.Add( person );
@@ -2769,7 +2794,8 @@ namespace Rock.Blocks.Crm
                     LastName = bag.LastName.FixCase(),
                     RecordTypeValueId = recordTypePersonId,
                     RecordStatusValueId = recordStatusValueId,
-                    ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : ( int? ) null
+                    ConnectionStatusValueId = connectionStatusValue != null ? connectionStatusValue.Id : ( int? ) null,
+                    RecordSourceValueId = GetRecordSourceValueId()
                 };
 
                 personService.Add( adult );
@@ -2940,6 +2966,18 @@ namespace Rock.Blocks.Crm
             }
 
             rockContext.SaveChanges();
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId()
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
         }
 
         #endregion

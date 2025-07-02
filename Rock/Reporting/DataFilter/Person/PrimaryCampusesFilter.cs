@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -25,8 +25,10 @@ using System.Web.UI;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
-using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.Person
@@ -37,8 +39,8 @@ namespace Rock.Reporting.DataFilter.Person
     [Description( "Filter people that are associated with any of the selected campuses." )]
     [Export( typeof( DataFilterComponent ) )]
     [ExportMetadata( "ComponentName", "Person Primary Campuses Filter" )]
-    [Rock.SystemGuid.EntityTypeGuid( "D8768A8F-06E3-4A88-BC2B-41CC44AB9C7B")]
-    public class PrimaryCampusesFilter : DataFilterComponent, IUpdateSelectionFromPageParameters
+    [Rock.SystemGuid.EntityTypeGuid( "D8768A8F-06E3-4A88-BC2B-41CC44AB9C7B" )]
+    public class PrimaryCampusesFilter : DataFilterComponent, IUpdateSelectionFromRockRequestContext
     {
         #region Properties
 
@@ -81,6 +83,55 @@ namespace Rock.Reporting.DataFilter.Person
         internal virtual bool IncludeInactive
         {
             get { return true; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/primaryCampusesFilter.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var result = new Dictionary<string, string>();
+
+            if ( selection.IsNullOrWhiteSpace() )
+            {
+                result.Add( "campuses", "[]" );
+                return result;
+            }
+
+            var selectionValues = selection.Split( '|' );
+            var campuses = new List<ListItemBag>();
+            var campusGuidList = selectionValues[0].Split( ',' ).AsGuidList();
+            foreach ( var campusGuid in campusGuidList )
+            {
+                var campus = CampusCache.Get( campusGuid );
+                if ( campus != null )
+                {
+                    campuses.Add( new ListItemBag { Text = campus.Name, Value = campus.Guid.ToString() } );
+                }
+            }
+
+            result.AddOrReplace( "campuses", campuses.ToCamelCaseJson( false, true ) );
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var campusGuids = data.GetValueOrNull( "campuses" )?.FromJsonOrNull<ListItemBag[]>()?.Select( s => s.Value ).ToList();
+
+            return campusGuids == null ? string.Empty : campusGuids.AsDelimited( "," );
         }
 
         #endregion
@@ -251,7 +302,7 @@ function() {{
         /// <returns></returns>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )
         {
-            var rockContext = (RockContext)serviceInstance.Context;
+            var rockContext = ( RockContext ) serviceInstance.Context;
 
             string[] selectionValues = selection.Split( '|' );
             if ( selectionValues.Length >= 1 )
@@ -283,19 +334,20 @@ function() {{
         }
 
         /// <summary>
-        /// Updates the selection from page parameters.
+        /// Updates the selection from parameters on the request.
         /// </summary>
         /// <param name="selection">The selection.</param>
-        /// <param name="rockBlock">The rock block.</param>
+        /// <param name="requestContext">The rock request context.</param>
+        /// <param name="rockContext">The rock database context.</param>
         /// <returns></returns>
-        public string UpdateSelectionFromPageParameters( string selection, RockBlock rockBlock )
+        public string UpdateSelectionFromRockRequestContext( string selection, Rock.Net.RockRequestContext requestContext, RockContext rockContext )
         {
             string[] selectionValues = selection?.Split( '|' ) ?? new string[] { "" };
             if ( selectionValues.Length >= 1 )
             {
                 // check for either a CampusId or CampusIds parameter
-                var campusIds = rockBlock.PageParameter( "CampusId" )?.SplitDelimitedValues().AsIntegerList();
-                campusIds = campusIds ?? rockBlock.PageParameter( "CampusIds" )?.SplitDelimitedValues().AsIntegerList() ?? new List<int>();
+                var campusIds = requestContext.GetPageParameter( "CampusId" )?.SplitDelimitedValues().AsIntegerList();
+                campusIds = campusIds ?? requestContext.GetPageParameter( "CampusIds" )?.SplitDelimitedValues().AsIntegerList() ?? new List<int>();
 
                 if ( campusIds.Any() )
                 {

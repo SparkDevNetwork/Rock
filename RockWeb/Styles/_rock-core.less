@@ -9,38 +9,63 @@
 @color-base-primary: red(@brand-primary), green(@brand-primary), blue(@brand-primary);
 
 :root {
-  /*
-      NextGen CSS Variables
-      ---------------------------------------
-  */
-  /* INTERFACE COLORS  */
-  --color-interface-strongest: #000000;
-  --color-interface-stronger: #1C1C1E;
-  --color-interface-strong: #5D5D6F;
-  --color-interface-medium: #8B8BA7;
-  --color-interface-soft: #D9D9E3;
-  --color-interface-softer: #F2F2F7;
-  --color-interface-softest: #FFFFFF;
+  --base-interface-strongest: #0a0a0a;
+  --base-interface-stronger: #0D1117;
+  --base-interface-strong: #3D444D;
+  --base-interface-medium: #8B8BA7;
+  --base-interface-soft: #D9D9E3;
+  --base-interface-softer: #F8F8FC;
+  --base-interface-softest: #fdfdfd;
+  --base-critical: #ee7725;
+  --base-danger: #D70015;
+  --base-info: #005DD7;
+  --base-success: #01A11E;
+  --base-primary: #FF791D;
+  --base-warning: #E58600;
+  --base-link: #006DCC;
+  --base-secondary: #83758F;
 
-  /* APPLICATION COLORS  */
-  --color-critical-soft: #FEDEC8;
-  --color-critical-strong: #EE7624;
-  --color-danger-soft: #FFCCD1;
-  --color-danger-strong: #D70015;
-  --color-info-soft: #D6EAFF;
-  --color-info-strong: #007AFF;
-  --color-success-soft: #D7F4DE;
-  --color-success-strong: #248A3D;
-  --color-warning-soft: #FFECD1;
-  --color-warning-strong: #E58600;
-
-  /* SYSTEM COLORS  */
-  --color-primary: #EE7725;
-  --color-campus: #83758f;
-  --color-link: #006DCC;
-  --color-link-hover: #003766;
-
-  /* CATEGORICAL COLORS  */
+  // INTERFACE COLORS
+  --color-interface-strongest: var(--base-interface-strongest);
+  --color-interface-stronger: var(--base-interface-stronger);
+  --color-interface-strong: var(--base-interface-strong);
+  --color-interface-medium: var(--base-interface-medium);
+  --color-interface-soft: var(--base-interface-soft);
+  --color-interface-softer: var(--base-interface-softer);
+  --color-interface-softest: var(--base-interface-softest);
+  // APPLICATION COLORS
+  --color-critical-soft: var(--base-critical);
+  --color-critical-strong: var(--base-critical);
+  --color-critical-tint: var(--base-critical);
+  --color-critical-shade: var(--base-critical);
+  --color-danger-soft: var(--base-danger);
+  --color-danger-strong: var(--base-danger);
+  --color-danger-tint: var(--base-danger);
+  --color-danger-shade: var(--base-danger);
+  --color-info-soft: var(--base-info);
+  --color-info-strong: var(--base-info);
+  --color-info-tint: var(--base-info);
+  --color-info-shade: var(--base-info);
+  --color-success-soft: var(--base-success);
+  --color-success-strong: var(--base-success);
+  --color-success-tint: var(--base-success);
+  --color-success-shade: var(--base-success);
+  --color-warning-soft: var(--base-warning);
+  --color-warning-strong: var(--base-warning);
+  --color-warning-tint: var(--base-warning);
+  --color-warning-shade: var(--base-warning);
+  // SYSTEM COLORS
+  --color-primary-soft: var(--base-primary);
+  --color-primary: var(--base-primary);
+  --color-primary-tint: var(--base-primary);
+  --color-primary-shade: var(--base-primary);
+  --color-link: var(--base-link);
+  --color-link-tint: var(--base-link);
+  --color-link-shade: var(--base-link);
+  --color-secondary: var(--base-secondary);
+  --color-secondary-tint: var(--base-secondary);
+  --color-secondary-shade: var(--base-secondary);
+  // CATEGORICAL COLORS
   --color-categorical-1: #007aff;
   --color-categorical-2: #5856D6;
   --color-categorical-3: #4cd964;
@@ -49,8 +74,7 @@
   --color-categorical-6: #5ac8fa;
   --color-categorical-7: #ffcc00;
   --color-categorical-8: #8e8e93;
-
-  /* DIVERGING COLORS */
+  // DIVERGING COLORS
   --color-diverging-1: #2507b7;
   --color-diverging-2: #3109f5;
   --color-diverging-3: #6447f7;
@@ -62,8 +86,7 @@
   --color-diverging-9: #5be2d4;
   --color-diverging-10: #22c8b7;
   --color-diverging-11: #1ca394;
-
-  /* SEQUENTIAL COLORS */
+  // SEQUENTIAL COLORS
   --color-sequential-1: #1a844a;
   --color-sequential-2: #209f58;
   --color-sequential-3: #25b967;
@@ -75,8 +98,7 @@
   --color-sequential-9: #AFEECB;
   --color-sequential-10: #C9F4DC;
   --color-sequential-11: #E4F9ED;
-
-  /* FONT SIZES */
+  // FONT SIZES
   --font-size-xsmall: 12px;
   --font-size-small: 14px;
   --font-size-regular: 16px;
@@ -86,36 +108,35 @@
   --font-size-h4: 22px;
   --font-size-h5: 18px;
   --font-size-h6: 16px;
-
-  /* FONT WEIGHTS  */
+  // FONT WEIGHTS
   --font-weight-light: 300;
   --font-weight-regular: 400;
   --font-weight-medium: 500;
   --font-weight-semibold: 600;
   --font-weight-bold: 700;
   --font-weight-black: 900;
-
-  /* LINE HEIGHTS  */
+  // LINE HEIGHTS
   --line-height-normal: 1.5;
   --line-height-tight: 1.1;
   --line-height-compact: 1.055;
-
-  /* SPACING */
-  --spacing-tiny:       4px;
-  --spacing-xsmall:     8px;
-  --spacing-small:     12px;
-  --spacing-medium:    16px;
-  --spacing-large:     24px;
-  --spacing-xlarge:    48px;
-  --spacing-huge:      80px; 
-
-  /* BORDER RADIUS */
+  // SPACING
+  --spacing-tiny: 4px;
+  --spacing-xsmall: 8px;
+  --spacing-small: 12px;
+  --spacing-medium: 16px;
+  --spacing-large: 24px;
+  --spacing-xlarge: 48px;
+  --spacing-huge: 80px;
+  // BORDER RADIUS
   --rounded-tiny: 2px;
+  --rounded-xsmall: 4px;
   --rounded-small: 6px;
   --rounded-medium: 8px;
   --rounded-large: 12px;
   --rounded-xlarge: 16px;
   --rounded-huge: 24px;
+  --box-shadow: ~"rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px";
+
   /*
       Legacy CSS Variables Below
       ---------------------------------------
@@ -158,6 +179,35 @@
   --input-placeholder: @input-color-placeholder;
 }
 
+@supports (color: color-mix(in srgb, red 50%, white 50%)) {
+  :root {
+    --tint-white-percentage: 50%;
+    --shade-black-percentage: 15%;
+    --color-critical-tint: ~"color-mix(in srgb, var(--base-critical) 50%, transparent var(--tint-white-percentage))";
+    --color-critical-soft: ~"color-mix(in srgb, var(--base-critical) 7%,   transparent var(--tint-white-percentage))";
+    --color-critical-shade: ~"color-mix(in srgb, var(--base-critical) 100%, #000 var(--shade-black-percentage))";
+    --color-danger-tint: ~"color-mix(in srgb, var(--base-danger) 50%, transparent var(--tint-white-percentage))";
+    --color-danger-soft: ~"color-mix(in srgb, var(--base-danger) 7%,   transparent var(--tint-white-percentage))";
+    --color-danger-shade: ~"color-mix(in srgb, var(--base-danger) 100%, #000 var(--shade-black-percentage))";
+    --color-info-tint: ~"color-mix(in srgb, var(--base-info) 50%, transparent var(--tint-white-percentage))";
+    --color-info-soft: ~"color-mix(in srgb, var(--base-info) 7%,   transparent var(--tint-white-percentage))";
+    --color-info-shade: ~"color-mix(in srgb, var(--base-info) 100%, #000 var(--shade-black-percentage))";
+    --color-success-tint: ~"color-mix(in srgb, var(--base-success) 50%, transparent var(--tint-white-percentage))";
+    --color-success-soft: ~"color-mix(in srgb, var(--base-success) 7%,   transparent var(--tint-white-percentage))";
+    --color-success-shade: ~"color-mix(in srgb, var(--base-success) 100%, #000 var(--shade-black-percentage))";
+    --color-warning-tint: ~"color-mix(in srgb, var(--base-warning) 50%, transparent var(--tint-white-percentage))";
+    --color-warning-soft: ~"color-mix(in srgb, var(--base-warning) 7%,   transparent var(--tint-white-percentage))";
+    --color-warning-shade: ~"color-mix(in srgb, var(--base-warning) 100%, #000 var(--shade-black-percentage))";
+    --color-primary-tint: ~"color-mix(in srgb, var(--base-primary) 50%, transparent var(--tint-white-percentage))";
+    --color-primary-soft: ~"color-mix(in srgb, var(--base-primary) 7%,   transparent var(--tint-white-percentage))";
+    --color-primary-shade: ~"color-mix(in srgb, var(--base-primary) 100%, #000 var(--shade-black-percentage))";
+    --color-link-tint: ~"color-mix(in srgb, var(--base-link) 50%, transparent var(--tint-white-percentage))";
+    --color-link-shade: ~"color-mix(in srgb, var(--base-link) 100%, #000 var(--shade-black-percentage))";
+    --color-secondary-tint: ~"color-mix(in srgb, var(--base-secondary) 50%, transparent var(--tint-white-percentage))";
+    --color-secondary-shade: ~"color-mix(in srgb, var(--base-secondary) 100%, #000 var(--shade-black-percentage))";
+  }
+}
+
 // 1. Imports
 //--------------------------------
 @import "_rock-mixins.less";
@@ -175,6 +225,7 @@
 
 // import as less files so they are concatenated properly
 @import (less) "./summernote/summernote.min.css";
+@import (less) "styles-v2-prototype/icons/tabler-icon.css";
 
 @import "_page-admin.less";
 @import "_modal.less";
@@ -541,6 +592,10 @@ th[align="right"] {
     //   color: @panel-heading-text-color;
     // }
 
+    .panel-header-actions {
+      margin-right: 1rem !important;
+    }
+    
     .panel-title {
       small {
         opacity: .5;

@@ -45,7 +45,7 @@
 
             <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin" />
 
-            <MergeFieldPlugin :mergeFields="mergeFields" ref="mergeFieldPlugin" />
+            <MergeFieldPlugin :mergeFields="mergeFields" :commonMergeFields="commonMergeFields" ref="mergeFieldPlugin" />
 
             <ImageBrowserPlugin ref="imageBrowserPlugin"
                                 :encryptedRootFolder="encryptedImageRootFolder"
@@ -220,6 +220,16 @@
             required: false
         },
 
+        /**
+         * A list of common merge field to show below the picker for easy access. Should be an array of strings
+         * and the strings should be in the following format: "FieldName^Label|Icon" or just "FieldName^Label", where the FieldName is the
+         * name of the merge field, Label is the text to display on the button, and Icon is the CSS class for icon.
+         */
+        commonMergeFields: {
+            type: Array as PropType<string[] | undefined>,
+            required: false
+        },
+
         /** Editor height in pixels (including toolbar). */
         editorHeight: {
             type: Number as PropType<number>,
@@ -268,6 +278,17 @@
             type: Boolean,
             default: false
         },
+
+        /**
+         * When set to true, the HTML editor will show the asset manager button
+         * in the toolbar. This requires that a security grant token be available
+         * that provides access to the asset manager.
+         */
+        enableAssetManager: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
 
         /**
          * When set to true, the code editor allows toggling even if the content includes Lava commands,
@@ -477,6 +498,9 @@
     // This gets called after the plugins have been mounted.
     onMounted(() => {
         if (editorId.value) {
+            const assetManagerPluginId = props.enableAssetManager
+                ? assetManagerPlugin.value?.id
+                : undefined;
             // Define the toolbar buttons depending on the toolbar config (light or full).
             // They are displayed in the order in which they are defined
             // and grouped using pipe (|) characters; e.g.,
@@ -487,9 +511,9 @@
             // so no need to create a rockpastefromword plugin at this point.
             // https://www.tiny.cloud/docs/tinymce/6/available-toolbar-buttons/
             const toolbarConfigs: Record<ToolbarConfig, string> = {
-                "light": `${editSourceCodePlugin.value?.id} | bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist | removeformat | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | undo redo`,
-                "light-compact": `${editSourceCodePlugin.value?.id} bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist ${paragraphPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} removeformat ${pasteAsPlainTextPlugin.value?.id} ${mergeFieldPlugin.value?.id} undo redo`,
-                "full": `${editSourceCodePlugin.value?.id} | bold italic underline strikethrough numlist bullist link ${shortLinkPlugin.value?.id} | undo redo | removeformat | styles forecolor backcolor | fontfamily fontsize superscript subscript table hr | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPlugin.value?.id} | ${pasteAsPlainTextPlugin.value?.id} | help`,
+                "light": `${editSourceCodePlugin.value?.id} | bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist | removeformat | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPluginId} | ${pasteAsPlainTextPlugin.value?.id} | undo redo`,
+                "light-compact": `${editSourceCodePlugin.value?.id} bold italic strikethrough link ${shortLinkPlugin.value?.id} forecolor backcolor styles numlist bullist ${paragraphPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPluginId} removeformat ${pasteAsPlainTextPlugin.value?.id} ${mergeFieldPlugin.value?.id} undo redo`,
+                "full": `${editSourceCodePlugin.value?.id} | bold italic underline strikethrough numlist bullist link ${shortLinkPlugin.value?.id} | undo redo | removeformat | styles forecolor backcolor | fontfamily fontsize superscript subscript table hr | ${paragraphPlugin.value?.id} | ${mergeFieldPlugin.value?.id} | ${imageBrowserPlugin.value?.id} ${fileBrowserPlugin.value?.id} ${assetManagerPluginId} | ${pasteAsPlainTextPlugin.value?.id} | help`,
             };
 
             // Get the default system font.

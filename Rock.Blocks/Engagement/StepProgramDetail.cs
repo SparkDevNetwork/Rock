@@ -114,24 +114,6 @@ namespace Rock.Blocks.Engagement
 
         #endregion Keys
 
-        /// <summary>
-        /// The step statuses, should be accessed using the <see cref="GetStepStatuses"/> since performs a null check on <see cref="_stepStatuses"/>
-        /// before assigning a value when possible.
-        /// </summary>
-        private List<StepStatus> _stepStatuses;
-
-        /// <summary>
-        /// The rock context, should be accessed using the <see cref="GetRockContext"/> method since it performs a null check before
-        /// creating a new instance.
-        /// </summary>
-        private RockContext _rockContext;
-
-        /// <summary>
-        /// The step type, should be accessed using the <see cref="GetStepProgram"/> since performs a null check on <see cref="_stepProgram"/>
-        /// before assigning a value when possible.
-        /// </summary>
-        private StepProgram _stepProgram;
-
         #region Methods
 
         /// <inheritdoc/>
@@ -163,7 +145,7 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = GetRockContext() )
+            using ( var rockContext = new RockContext() )
             {
                 var box = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>();
 
@@ -307,17 +289,17 @@ namespace Rock.Blocks.Engagement
 
             var defaultDateRange = GetAttributeValue( AttributeKey.SlidingDateRange );
 
-            bag.ShowChart = ShowActivitySummary();
-            bag.Kpi = GetKpi( defaultDateRange );
+            bag.ShowChart = ShowActivitySummary( entity );
+            bag.Kpi = GetKpi( defaultDateRange, entity );
             bag.DefaultDateRange = GetSlidingDateRangeBag( defaultDateRange );
-            bag.StepFlowPageUrl = RequestContext.ResolveRockUrl( $"~/steps/program/{GetStepProgramId()}/flow" );
+            bag.StepFlowPageUrl = RequestContext.ResolveRockUrl( $"~/steps/program/{entity.Id}/flow" );
 
-            var showActivitySummary = ShowActivitySummary();
+            var showActivitySummary = ShowActivitySummary( entity );
 
             if ( showActivitySummary )
             {
                 // Get chart data and set visibility of related elements.
-                var chartFactory = GetChartJsFactory( defaultDateRange );
+                var chartFactory = GetChartJsFactory( defaultDateRange , entity);
 
                 if ( chartFactory.HasData )
                 {
@@ -343,7 +325,7 @@ namespace Rock.Blocks.Engagement
             }
 
             var bag = GetCommonEntityBag( entity );
-            var rockContext = GetRockContext();
+            var rockContext = new RockContext();
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
@@ -367,8 +349,8 @@ namespace Rock.Blocks.Engagement
                     Guid = wt.Guid,
                     WorkflowTrigger = GetTriggerType( wt.TriggerType, wt.TypeQualifier ),
                     WorkflowType = wt.WorkflowType.ToListItemBag(),
-                    PrimaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
-                    SecondaryQualifier = GetStepStatuses( entity.Id ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
+                    PrimaryQualifier = GetStepStatuses( entity ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).FromStatusId )?.Guid.ToString(),
+                    SecondaryQualifier = GetStepStatuses( entity ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
                 } ).ToList();
 
             bag.StatusOptions = new StepStatusService( rockContext ).Queryable().Where( s => s.StepProgramId == entity.Id ).AsEnumerable().ToListItemBagList();
@@ -401,8 +383,9 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private ListItemBag GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition condition, string typeQualifier )
         {
+            var rockContext = new RockContext();
             var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings( typeQualifier );
-            var text = new StepWorkflowTriggerService( GetRockContext() ).GetTriggerSettingsDescription( condition, qualifierSettings );
+            var text = new StepWorkflowTriggerService( rockContext ).GetTriggerSettingsDescription( condition, qualifierSettings );
             var value = condition.ToStringSafe();
 
             return new ListItemBag() { Text = text, Value = value };
@@ -412,18 +395,15 @@ namespace Rock.Blocks.Engagement
         /// Gets all the available step statuses.
         /// </summary>
         /// <returns></returns>
-        private List<StepStatus> GetStepStatuses( int stepProgramId )
+        private List<StepStatus> GetStepStatuses( StepProgram entity )
         {
-            return _stepStatuses ?? ( _stepStatuses = new StepStatusService( GetRockContext() ).Queryable().Where( s => s.StepProgramId == stepProgramId ).ToList() );
-        }
+            var rockContext = new RockContext();
+            var stepProgramId = entity.Id;
 
-        /// <summary>
-        /// Gets the rock context.
-        /// </summary>
-        /// <returns></returns>
-        private RockContext GetRockContext()
-        {
-            return _rockContext ?? ( _rockContext = new RockContext() );
+            return new StepStatusService( rockContext )
+                .Queryable()
+                .Where( s => s.StepProgramId == stepProgramId )
+                .ToList();
         }
 
         /// <summary>
@@ -483,7 +463,7 @@ namespace Rock.Blocks.Engagement
         /// <returns>The <see cref="StepProgram"/> to be viewed or edited on the page.</returns>
         private StepProgram GetInitialEntity( RockContext rockContext )
         {
-            return _stepProgram = GetInitialEntity<StepProgram, StepProgramService>( rockContext, PageParameterKey.StepProgramId );
+            return GetInitialEntity<StepProgram, StepProgramService>( rockContext, PageParameterKey.StepProgramId );
         }
 
         /// <summary>
@@ -602,9 +582,8 @@ namespace Rock.Blocks.Engagement
         /// <summary>
         /// Gets the kpi HTML.
         /// </summary>
-        private string GetKpi( string delimitedDateRange )
+        private string GetKpi( string delimitedDateRange, StepProgram stepProgram )
         {
-            var stepProgram = GetStepProgram();
             var template = GetAttributeValue( AttributeKey.KpiLava );
 
             if ( template.IsNullOrWhiteSpace() || stepProgram == null )
@@ -612,9 +591,9 @@ namespace Rock.Blocks.Engagement
                 return string.Empty;
             }
 
-            var startedQuery = GetStartedStepQuery( delimitedDateRange );
-            var completedStepQuery = GetCompletedStepQuery( delimitedDateRange );
-            var completedPrograms = GetCompletedProgramQuery( delimitedDateRange ).ToList();
+            var startedQuery = GetStartedStepQuery( delimitedDateRange, stepProgram );
+            var completedStepQuery = GetCompletedStepQuery( delimitedDateRange, stepProgram );
+            var completedPrograms = GetCompletedProgramQuery( delimitedDateRange, stepProgram ).ToList();
 
             var individualsCompleting = completedPrograms.Count;
             var stepsStarted = startedQuery.Count();
@@ -640,11 +619,11 @@ namespace Rock.Blocks.Engagement
         /// Gets the completed step query.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<Step> GetStepsCompletedQuery( string delimitedDateRange )
+        private IQueryable<Step> GetStepsCompletedQuery( string delimitedDateRange, StepProgram stepProgram )
         {
-            var dataContext = GetRockContext();
-            var stepService = new StepService( dataContext );
-            var stepProgramId = GetStepProgramId();
+            var rockContext = new RockContext();
+            var stepService = new StepService( rockContext );
+            var stepProgramId = stepProgram.Id;
 
             var query = stepService.Queryable()
                 .AsNoTracking()
@@ -684,17 +663,17 @@ namespace Rock.Blocks.Engagement
         /// Gets the active step type ids.
         /// </summary>
         /// <returns></returns>
-        private IEnumerable<int> GetActiveStepTypeIds()
+        private IEnumerable<int> GetActiveStepTypeIds( StepProgram stepProgram )
         {
-            var stepProgramId = GetStepProgramId();
-            var stepProgram = StepProgramCache.Get( stepProgramId );
+            var stepProgramId = stepProgram.Id;
+            var stepProgramCache = StepProgramCache.Get( stepProgramId );
 
-            if ( stepProgram == null )
+            if ( stepProgramCache == null )
             {
                 return new List<int>();
             }
 
-            var stepTypeIds = stepProgram.StepTypes.Where( st => st.IsActive ).Select( st => st.Id );
+            var stepTypeIds = stepProgramCache.StepTypes.Where( st => st.IsActive ).Select( st => st.Id );
             return stepTypeIds;
         }
 
@@ -702,17 +681,17 @@ namespace Rock.Blocks.Engagement
         /// Gets the completed step query.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<Step> GetCompletedStepQuery( string delimitedDateRange )
+        private IQueryable<Step> GetCompletedStepQuery( string delimitedDateRange, StepProgram stepProgram )
         {
-            var stepTypeIds = GetActiveStepTypeIds();
+            var stepTypeIds = GetActiveStepTypeIds( stepProgram );
 
             if ( stepTypeIds == null )
             {
                 return null;
             }
 
-            var dataContext = GetRockContext();
-            var stepService = new StepService( dataContext );
+            var rockContext = new RockContext();
+            var stepService = new StepService( rockContext );
 
             var query = stepService.Queryable()
                 .AsNoTracking()
@@ -751,10 +730,10 @@ namespace Rock.Blocks.Engagement
         /// Gets the completed step program query.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<StepProgramService.PersonStepProgramViewModel> GetCompletedProgramQuery( string delimitedDateRange )
+        private IQueryable<StepProgramService.PersonStepProgramViewModel> GetCompletedProgramQuery( string delimitedDateRange, StepProgram stepProgram )
         {
-            var stepProgramId = GetStepProgramId();
-            var rockContext = GetRockContext();
+            var stepProgramId = stepProgram.Id;
+            var rockContext = new RockContext();
             var service = new StepProgramService( rockContext );
             var query = service.GetPersonCompletingProgramQuery( stepProgramId );
 
@@ -793,17 +772,17 @@ namespace Rock.Blocks.Engagement
         /// Gets the completed step query.
         /// </summary>
         /// <returns></returns>
-        private IQueryable<Step> GetStartedStepQuery( string delimitedDateRange )
+        private IQueryable<Step> GetStartedStepQuery( string delimitedDateRange, StepProgram stepProgram )
         {
-            var stepTypeIds = GetActiveStepTypeIds();
+            var stepTypeIds = GetActiveStepTypeIds( stepProgram );
 
             if ( stepTypeIds == null )
             {
                 return null;
             }
 
-            var dataContext = GetRockContext();
-            var stepService = new StepService( dataContext );
+            var rockContext = new RockContext();
+            var stepService = new StepService( rockContext );
 
             var query = stepService.Queryable()
                 .AsNoTracking()
@@ -842,17 +821,17 @@ namespace Rock.Blocks.Engagement
         /// Returns true if the block should display the Activity Summary chart.
         /// </summary>
         /// <returns></returns>
-        private bool ShowActivitySummary()
+        private bool ShowActivitySummary (StepProgram stepProgram )
         {
             // Set the visibility of the Activity Summary chart.
             var showActivitySummary = GetAttributeValue( AttributeKey.ShowChart ).AsBoolean( true );
-            var stepProgramId = GetStepProgramId();
+            var stepProgramId = stepProgram.Id;
 
             if ( showActivitySummary )
             {
                 // If the Step Type does not have any activity, hide the Activity Summary.
-                var dataContext = GetRockContext();
-                var stepService = new StepService( dataContext );
+                var rockContext = new RockContext();
+                var stepService = new StepService( rockContext );
                 var stepsQuery = stepService.Queryable()
                     .AsNoTracking()
                     .Where( x => x.StepType.StepProgramId == stepProgramId
@@ -869,16 +848,16 @@ namespace Rock.Blocks.Engagement
         /// Gets a configured factory that creates the data required for the chart.
         /// </summary>
         /// <returns></returns>
-        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( string delimitedDateRange )
+        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( string delimitedDateRange, StepProgram stepProgram )
         {
             var reportPeriod = new TimePeriod( delimitedDateRange );
             var dateRange = reportPeriod.GetDateRange();
             var startDate = dateRange.Start;
             var endDate = dateRange.End;
-            StepProgram program = GetStepProgram();
+            StepProgram program = stepProgram;
 
             // Get all of the completed Steps associated with the current program, grouped by Step Type.
-            var stepsCompletedQuery = GetStepsCompletedQuery( delimitedDateRange );
+            var stepsCompletedQuery = GetStepsCompletedQuery( delimitedDateRange, stepProgram );
 
             if ( startDate.HasValue )
             {
@@ -1019,36 +998,6 @@ namespace Rock.Blocks.Engagement
                 MaintainAspectRatio = false,
                 SizeToFitContainerWidth = true
             };
-        }
-
-        /// <summary>
-        /// Gets the step program data model displayed by this page.
-        /// </summary>
-        /// <returns></returns>
-        private StepProgram GetStepProgram()
-        {
-            if ( _stepProgram == null )
-            {
-                var stepProgramId = GetStepProgramId();
-                _stepProgram = new StepProgramService( GetRockContext() ).Queryable()
-                    .Where( c => c.Id == stepProgramId )
-                    .FirstOrDefault();
-            }
-
-            return _stepProgram ?? RequestContext.GetContextEntity<StepProgram>();
-        }
-
-        private int GetStepProgramId()
-        {
-            var key = RequestContext.GetPageParameter( PageParameterKey.StepProgramId );
-            var id = !PageCache.Layout.Site.DisablePredictableIds ? key.AsIntegerOrNull() : null;
-
-            if ( !id.HasValue )
-            {
-                id = Rock.Utility.IdHasher.Instance.GetId( key );
-            }
-
-            return id.GetValueOrDefault();
         }
 
         /// <summary>
@@ -1406,15 +1355,15 @@ namespace Rock.Blocks.Engagement
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult RefreshChart( string dateRange )
+        public BlockActionResult RefreshChart( string dateRange , StepProgram stepProgram )
         {
-            var showActivitySummary = ShowActivitySummary();
+            var showActivitySummary = ShowActivitySummary( stepProgram );
             var chartDataJson = string.Empty;
 
             if ( showActivitySummary )
             {
                 // Get chart data and set visibility of related elements.
-                var chartFactory = GetChartJsFactory( dateRange );
+                var chartFactory = GetChartJsFactory( dateRange, stepProgram );
 
                 if ( chartFactory.HasData )
                 {
@@ -1424,7 +1373,7 @@ namespace Rock.Blocks.Engagement
                 }
             }
 
-            var kpi = GetKpi( dateRange );
+            var kpi = GetKpi( dateRange, stepProgram );
 
             return ActionOk( new StepProgramBag() { ChartData = chartDataJson, Kpi = kpi, ShowChart = showActivitySummary } );
         }

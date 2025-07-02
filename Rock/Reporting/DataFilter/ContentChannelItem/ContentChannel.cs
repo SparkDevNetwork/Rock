@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ContentChannelItem
@@ -63,15 +64,12 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelFilter.obs";
-
         #endregion
 
         #region Configuration
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             var contentChannelOptions = new ContentChannelService( new RockContext() ).Queryable()
                .Where( a => a.ContentChannelType.ShowInChannelList == true )
@@ -80,10 +78,22 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                .Select( a => a.ToListItemBag() )
                .ToList();
 
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["contentChannelOptions"] = contentChannelOptions.ToCamelCaseJson( false, true )
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
             return new Dictionary<string, string>
             {
                 ["contentChannel"] = selection,
-                ["contentChannelOptions"] = contentChannelOptions.ToCamelCaseJson( false, true )
             };
         }
 

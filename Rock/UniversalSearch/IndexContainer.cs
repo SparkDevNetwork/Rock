@@ -142,10 +142,7 @@ namespace Rock.UniversalSearch
                 var component = indexType.Value.Value;
                 if ( component.IsActive && component.IsConnected )
                 {
-                    foreach(var document in documents )
-                    {
-                        component.IndexDocument( document );
-                    }
+                    component.IndexDocuments( documents );
                 }
             }
         }
@@ -172,14 +169,29 @@ namespace Rock.UniversalSearch
         /// <typeparam name="T"></typeparam>
         /// <param name="document">The document.</param>
         /// <param name="indexName">Name of the index.</param>
+        [Obsolete( "Use the method that takes only the document parameter, instead." )]
+        [RockObsolete( "17.2" )]
         public static void DeleteDocument<T>(T document, string indexName = null ) where T : class, new()
+        {
+            DeleteDocument( document );
+
+            // This method was deprecated due to incomplete implementation of the indexName/mappingType parameters, which would have
+            // resulted in an error if used.
+        }
+
+        /// <summary>
+        /// Deletes the document.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="document">The document.</param>
+        public static void DeleteDocument<T>( T document ) where T : class, new()
         {
             foreach ( var indexType in IndexContainer.Instance.Components )
             {
                 var component = indexType.Value.Value;
                 if ( component.IsActive && component.IsConnected )
                 {
-                    component.DeleteDocument<T>( document, indexName );
+                    component.DeleteDocument<T>( document );
                 }
             }
         }

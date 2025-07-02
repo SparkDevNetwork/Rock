@@ -24,6 +24,7 @@ using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.Extensions.Logging;
 
 using Rock.CheckIn.v2;
 using Rock.CheckIn.v2.Labels;
@@ -34,7 +35,6 @@ using Rock.ViewModels.Rest.CheckIn;
 using Rock.Web.Cache;
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.Security;
-
 
 #if WEBFORMS
 using FromBodyAttribute = System.Web.Http.FromBodyAttribute;
@@ -57,15 +57,25 @@ namespace Rock.Rest.v2
     [Rock.SystemGuid.RestControllerGuid( "52b3c68a-da8d-4374-a199-8bc8368a22bc" )]
     public sealed class CheckInController : ApiControllerBase
     {
+        /// <summary>
+        /// The database context to use for this request.
+        /// </summary>
         private readonly RockContext _rockContext;
+
+        /// <summary>
+        /// The logger to use when writing messages.
+        /// </summary>
+        private readonly ILogger _logger;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="CheckInController"/> class.
         /// </summary>
         /// <param name="rockContext">The database context to use for this request.</param>
-        public CheckInController( RockContext rockContext )
+        /// <param name="logger">The logger to use when writing messages.</param>
+        public CheckInController( RockContext rockContext, ILogger<CheckInController> logger )
         {
             _rockContext = rockContext;
+            _logger = logger;
         }
 
         /// <summary>
@@ -387,7 +397,7 @@ namespace Rock.Rest.v2
                 if ( !options.Session.IsPending )
                 {
                     var cts = new CancellationTokenSource( 5000 );
-                    var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                    var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
 
                     clientLabelBags = clientLabels
                         .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
@@ -453,7 +463,7 @@ namespace Rock.Rest.v2
                 var result = session.ConfirmAttendance( options.SessionGuid );
 
                 var cts = new CancellationTokenSource( 5000 );
-                var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
 
                 var clientLabelBags = clientLabels
                     .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
@@ -519,7 +529,7 @@ namespace Rock.Rest.v2
                 var result = session.Checkout( sessionRequest, options.AttendanceIds, kiosk );
 
                 var cts = new CancellationTokenSource( 5000 );
-                await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
 
                 return Ok( result );
             }
@@ -603,6 +613,66 @@ namespace Rock.Rest.v2
             } );
 
             return ResponseMessage( Request.CreateResponse( HttpStatusCode.SwitchingProtocols ) );
+        }
+
+        /// <summary>
+        /// Notifies server that an individual has entered or left the range
+        /// of one or more proximity beacons.
+        /// </summary>
+        /// <param name="proximity">The data that describes the detected beacons.</param>
+        /// <returns>The result of the operation.</returns>
+        [HttpPost]
+        [Route( "ProximityCheckIn" )]
+        [Authenticate]
+        [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
+        [ProducesResponseType( HttpStatusCode.NoContent )]
+        [ProducesResponseType( HttpStatusCode.BadRequest )]
+        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [SystemGuid.RestActionGuid( "2e0e2704-8730-4949-b726-05401930b0e0" )]
+        public IActionResult PostProximityCheckIn( [FromBody] ProximityCheckInOptionsBag proximity )
+        {
+            if ( RockRequestContext.CurrentPerson == null )
+            {
+                return Unauthorized();
+            }
+
+            if ( proximity != null && _logger.IsEnabled( LogLevel.Information ) )
+            {
+                var beacons = ( proximity.Beacons ?? new List<ProximityBeaconBag>() )
+                    .Select( b => $"{{Major={b.Major}, Minor={b.Minor}, Rssi={b.Rssi}, Accuracy={b.Accuracy}}}" );
+
+                _logger.LogInformation( "ProximityCheckin Uuid={uuid}, Present={present}, PersonalDeviceGuid={personalDeviceGuid}, Beacons=[{beacons:l}]",
+                    proximity.ProximityGuid,
+                    proximity.IsPresent,
+                    proximity.PersonalDeviceGuid,
+                    string.Join( ", ", beacons ) );
+            }
+
+            var beacon = proximity?.Beacons?.FirstOrDefault();
+
+            if ( beacon == null )
+            {
+                return BadRequest( "No beacons were detected." );
+            }
+
+            var proximityDirector = new ProximityDirector( _rockContext );
+
+            if ( proximity.IsPresent )
+            {
+                if ( !proximityDirector.CheckIn( RockRequestContext.CurrentPerson, beacon ) )
+                {
+                    return BadRequest( "No location was available for check-in." );
+                }
+            }
+            else
+            {
+                if ( !proximityDirector.Checkout( RockRequestContext.CurrentPerson, beacon ) )
+                {
+                    return BadRequest( "No location was available for checkout." );
+                }
+            }
+
+            return NoContent();
         }
     }
 }

@@ -101,5 +101,10 @@ namespace Rock.SystemGuid
         /// The library viewer route 'admin/cms/content-library'.
         /// </summary>
         public const string LIBRARY_VIEWER = "36648CBD-A1F6-4DF4-81FB-D36DB0932919";
+
+        /// <summary>
+        /// The Group Placement route 'GroupPlacement'
+        /// </summary>
+        public const string GROUP_PLACEMENT = "C00ECC2D-8067-44DE-8947-A87B2CC4D575";
     }
 }

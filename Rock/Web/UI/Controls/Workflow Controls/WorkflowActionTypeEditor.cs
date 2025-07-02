@@ -316,6 +316,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
 
             workflowActionForm.PersonEntryConnectionStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() );
             workflowActionForm.PersonEntryRecordStatusValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() );
+            workflowActionForm.PersonEntryRecordSourceValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW.AsGuid() );
             workflowActionForm.PersonEntryGroupLocationTypeValueId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
 
             workflowActionForm.Actions = "Submit^^^Your information has been submitted successfully.";

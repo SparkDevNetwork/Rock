@@ -17,11 +17,13 @@
 using System;
 using System.ComponentModel;
 using System.Net;
+using System.Threading.Tasks;
 
 using RestSharp;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Login;
+using Rock.Common.Mobile.Enums;
 using Rock.Common.Mobile.Security.Authentication;
 using Rock.Data;
 using Rock.Enums.Security;
@@ -29,6 +31,12 @@ using Rock.Mobile;
 using Rock.Model;
 using Rock.Utility;
 using Rock.Web.Cache;
+using Newtonsoft.Json;
+using System.Collections.Generic;
+using System.Net.Http.Headers;
+using System.Net.Http;
+using System.Linq;
+using Microsoft.Extensions.Logging;
 
 namespace Rock.Blocks.Types.Mobile.Cms
 {
@@ -132,13 +140,28 @@ namespace Rock.Blocks.Types.Mobile.Cms
         DefaultValue = "Login With Entra",
         Order = 12 )]
 
+    [BooleanField( "Use Embedded Web View For External Authentication",
+        Key = AttributeKeys.UseEmbeddedWebViewForExternalAuthentication,
+        Description = "When enabled, the application will use an embedded web view for the external authentication process. This must be disabled in cases where you want to offer Fido2/Passkey support.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        Order = 13 )]
+
+    [BooleanField( "Enable Enhanced Authentication Security",
+        Key = AttributeKeys.EnableEnhancedAuthenticationSecurity,
+        Description = "Only applies to external authentication. Whether or not to enable enhanced authentication security. This will be automatically enabled in a future version of Rock, and the setting will be removed.",
+        IsRequired = false,
+        DefaultBooleanValue = true,
+        Order = 14 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_LOGIN_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( "6006FE32-DC01-4B1C-A9B8-EE172451F4C5" )]
-
     public class Login : RockBlockType
     {
+        #region Keys
+
         /// <summary>
         /// The block setting attribute keys for the MobileLogin block.
         /// </summary>
@@ -200,6 +223,11 @@ namespace Rock.Blocks.Types.Mobile.Cms
             public const string EntraLoginButtonText = "EntraLoginButtonText";
 
             /// <summary>
+            /// Whether or not to use an embedded web view for external authentication.
+            /// </summary>
+            public const string UseEmbeddedWebViewForExternalAuthentication = "UseEmbeddedWebViewForExternalAuthentication";
+
+            /// <summary>
             /// The header content key.
             /// </summary>
             public const string HeaderContent = "HeaderContent";
@@ -208,7 +236,14 @@ namespace Rock.Blocks.Types.Mobile.Cms
             /// The footer content key.
             /// </summary>
             public const string FooterContent = "FooterContent";
+
+            /// <summary>
+            /// The enable enhanced authentication security key.
+            /// </summary>
+            public const string EnableEnhancedAuthenticationSecurity = "EnableEnhancedAuthenticationSecurity";
         }
+
+        #endregion
 
         #region IRockMobileBlockType Implementation
 
@@ -235,6 +270,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 EnableEntraLogin = GetAttributeValue( AttributeKeys.EnableEntraLogin ).AsBoolean(),
                 EntraLoginButtonText = GetAttributeValue( AttributeKeys.EntraLoginButtonText ),
                 Auth0LoginButtonText = GetAttributeValue( AttributeKeys.Auth0LoginButtonText ),
+                UseEmbeddedWebViewForExternalAuthentication = GetAttributeValue( AttributeKeys.UseEmbeddedWebViewForExternalAuthentication ).AsBoolean(),
                 HeaderContent = GetAttributeValue( AttributeKeys.HeaderContent ),
                 FooterContent = GetAttributeValue( AttributeKeys.FooterContent )
             };
@@ -326,7 +362,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
         {
             var systemEmailGuid = GetAttributeValue( AttributeKeys.ConfirmAccountTemplate ).AsGuidOrNull();
             var confirmationWebPage = GetAttributeValue( AttributeKeys.ConfirmationWebPage );
-            var confirmationPageGuid = confirmationWebPage.Split( ',' )[ 0 ].AsGuidOrNull();
+            var confirmationPageGuid = confirmationWebPage.Split( ',' )[0].AsGuidOrNull();
             var confirmationPage = confirmationPageGuid.HasValue ? PageCache.Get( confirmationPageGuid.Value ) : null;
 
             // Make sure we have the required information.
@@ -340,6 +376,251 @@ namespace Rock.Blocks.Types.Mobile.Cms
             UserLoginService.SendConfirmationEmail( userLogin, systemEmailGuid.Value, confirmationPage, null, mergeFields );
 
             return true;
+        }
+
+        #endregion
+
+        #region External Authentication
+
+        /// <summary>
+        /// The keys to utilize when converting data returned from an external authentication provider.
+        /// </summary>
+        private static class ExternalAuthenticationPayloadKeys
+        {
+            public readonly static string[] FirstNameEligibleKeys = new[] { "firstname", "first_name", "given_name", "givenName" };
+            public readonly static string[] LastNameEligibleKeys = new[] { "lastname", "last_name", "family_name", "surname" };
+            public readonly static string[] PhoneNumerEligibleKeys = new[] { "phone", "phonenumber", "phone_number", "mobilePhone" };
+            public readonly static string[] PictureEligibleKeys = new[] { "photo", "picture", "profile_image", "avatar" };
+            public readonly static string[] DateOfBirthEligibleKeys = new[] { "birthday", "birth_date", "birthdate", "date_of_birth" };
+            public readonly static string[] UpdatedAtKeys = new[] { "updated_at" };
+            public readonly static string[] NickNameKeys = new[] { "nickname" };
+            public readonly static string[] EmailKeys = new[] { "email", "mail" };
+            public readonly static string[] SubKeys = new[] { "sub" };
+            public readonly static string[] GenderKeys = new[] { "gender" };
+            public readonly static string[] EmailVerifiedKeys = new[] { "email_verified" };
+            public readonly static string[] PreferredUsernameKeys = new[] { "preferred_username" };
+        }
+
+        /// <summary>
+        /// Gets whether or not external authentication is enabled.
+        /// </summary>
+        /// <returns></returns>
+        private bool IsExternalAuthenticationEnabled( AdditionalSiteSettings additionalSettings )
+        {
+            var enableAuth0Login = GetAttributeValue( AttributeKeys.EnableAuth0Login ).AsBoolean();
+            var enableEntraLogin = GetAttributeValue( AttributeKeys.EnableEntraLogin ).AsBoolean();
+
+            // If one of the block settings is enabled, then we can assume it's configured.
+            if ( enableAuth0Login || enableEntraLogin )
+            {
+                return true;
+            }
+
+            // Otherwise, make sure that we have the necessary settings in the application settings.
+            if ( additionalSettings.Auth0ClientId.IsNotNullOrWhiteSpace() || additionalSettings.EntraClientId.IsNotNullOrWhiteSpace() )
+            {
+                return true;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Gets the corresponding information for the configured Entra component.
+        /// </summary>
+        /// <returns></returns>
+        private (string UsernamePrefix, int? ProviderEntityTypeId) GetEntraComponentInfo()
+        {
+            var additionalSettings = this.PageCache.Layout.Site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
+            if ( additionalSettings == null || additionalSettings.EntraAuthenticationComponent == null )
+            {
+                return (null, null);
+            }
+
+            var provider = EntityTypeCache.Get( additionalSettings.EntraAuthenticationComponent.Value );
+
+            if ( provider == null )
+            {
+                return (null, null);
+            }
+
+            string prefix = "ENTRA_";
+
+            // The majority of entra logins are provided by the Triumph or BEMA
+            // plugin.
+            //
+            // These plugins handle the naming a little differently, and for the sake
+            // We're just going to do a quick check to see if
+            // we can make the UserLogin records match the plugin style.
+            //
+            // Otherwise, use the standard ENTRA_<email> format.
+
+            // Triumph 
+            if ( provider.AssemblyName.Contains( "tech.triumph" ) )
+            {
+                prefix = "AzureAD_";
+            }
+            // BEMA
+            else if ( provider.AssemblyName.Contains( "com.bemaservices" ) )
+            {
+                prefix = "Office365_";
+            }
+
+            return (prefix, provider.Id);
+        }
+
+        /// <summary>
+        /// Gets the user information from the external authentication provider.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <param name="provider">The authentication provider.</param>
+        /// <returns>A bag containing user information.</returns>
+        private async Task<ExternalAuthenticationUserInfoBag> GetUserInfoAsync( string accessToken, SupportedAuthenticationProvider provider )
+        {
+            if ( provider == SupportedAuthenticationProvider.Auth0 )
+            {
+                return await GetAuth0UserInfoAsync( accessToken );
+            }
+            else if ( provider == SupportedAuthenticationProvider.Entra )
+            {
+                return await GetEntraUserInfoAsync( accessToken );
+            }
+
+            return null;
+        }
+
+        /// <summary>
+        /// Gets the user information from Auth0.
+        /// </summary>
+        /// <param name="accessToken">The access token for the request.</param>
+        /// <returns></returns>
+        private async Task<ExternalAuthenticationUserInfoBag> GetAuth0UserInfoAsync( string accessToken )
+        {
+            var additionalSettings = this.PageCache.Layout.Site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+            var domain = additionalSettings.Auth0Domain;
+
+            try
+            {
+                using ( var httpClient = new HttpClient() )
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", accessToken );
+
+                    var response = await httpClient.GetAsync( $"https://{domain.EnsureTrailingForwardslash()}userinfo" );
+
+                    if ( !response.IsSuccessStatusCode )
+                    {
+                        return null;
+                    }
+
+                    var json = await response.Content.ReadAsStringAsync();
+                    var payload = JsonConvert.DeserializeObject<Dictionary<string, object>>( json );
+                    if( payload == null )
+                    {
+                        return null;
+                    }
+
+                    return GetUserInfoFromData( payload, SupportedAuthenticationProvider.Auth0 );
+                }
+            }
+            catch ( Exception )
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets the user information from Entra.
+        /// </summary>
+        /// <param name="accessToken">The access token.</param>
+        /// <returns></returns>
+        private async Task<ExternalAuthenticationUserInfoBag> GetEntraUserInfoAsync( string accessToken )
+        {
+            const string graphMeEndpoint = "https://graph.microsoft.com/v1.0/me";
+
+            try
+            {
+                using ( var httpClient = new HttpClient() )
+                {
+                    httpClient.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue( "Bearer", accessToken );
+
+                    var response = await httpClient.GetAsync( graphMeEndpoint );
+
+                    if ( !response.IsSuccessStatusCode )
+                    {
+                        return null;
+                    }
+
+                    var json = await response.Content.ReadAsStringAsync();
+                    var payload = JsonConvert.DeserializeObject<Dictionary<string, object>>( json );
+                    if ( payload == null )
+                    {
+                        return null;
+                    }
+
+                    return GetUserInfoFromData( payload, SupportedAuthenticationProvider.Entra );
+                }
+            }
+            catch ( Exception )
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets a <see cref="ExternalAuthenticationUserInfoBag" /> based on the provided dictionary values.
+        /// This is done utilizing the <see cref="ExternalAuthenticationPayloadKeys" /> that are used to represent
+        /// all of the different keys we support.
+        /// </summary>
+        /// <param name="data"></param>
+        /// <param name="provider"></param>
+        /// <returns></returns>
+        private ExternalAuthenticationUserInfoBag GetUserInfoFromData( Dictionary<string, object> data, SupportedAuthenticationProvider provider )
+        {
+            // Helper to grab the first non-empty value from a set of keys
+            string GetFirstMatch( params string[] keys ) =>
+                keys.Select( key => data.GetValueOrNull( key )?.ToString() )
+                    .FirstOrDefault( value => value.IsNotNullOrWhiteSpace() );
+
+            // Core values
+            var firstName = GetFirstMatch( ExternalAuthenticationPayloadKeys.FirstNameEligibleKeys );
+            var lastName = GetFirstMatch( ExternalAuthenticationPayloadKeys.LastNameEligibleKeys );
+            var phoneNumber = GetFirstMatch( ExternalAuthenticationPayloadKeys.PhoneNumerEligibleKeys );
+            var picture = GetFirstMatch( ExternalAuthenticationPayloadKeys.PictureEligibleKeys );
+            var birthDateStr = GetFirstMatch( ExternalAuthenticationPayloadKeys.DateOfBirthEligibleKeys );
+            var updatedAtStr = GetFirstMatch( ExternalAuthenticationPayloadKeys.UpdatedAtKeys );
+            var nickname = GetFirstMatch( ExternalAuthenticationPayloadKeys.NickNameKeys );
+            var email = GetFirstMatch( ExternalAuthenticationPayloadKeys.EmailKeys );
+            var sub = GetFirstMatch( ExternalAuthenticationPayloadKeys.SubKeys );
+            var genderStr = GetFirstMatch( ExternalAuthenticationPayloadKeys.GenderKeys );
+            var emailVerified = GetFirstMatch( ExternalAuthenticationPayloadKeys.EmailVerifiedKeys );
+            var preferredUsername = GetFirstMatch( ExternalAuthenticationPayloadKeys.PreferredUsernameKeys );
+
+            // Parsing
+            if( email.IsNullOrWhiteSpace() && preferredUsername.IsNotNullOrWhiteSpace() && preferredUsername.Contains('@' ) )
+            {
+                email = preferredUsername;
+            }
+
+            var updatedAt = updatedAtStr.AsDateTime();
+            var birthDate = birthDateStr.AsDateTime()?.Date;
+            var gender = genderStr?.ConvertToEnumOrNull<Rock.Common.Mobile.Enums.Gender>() ?? Common.Mobile.Enums.Gender.Unknown;
+
+            return new ExternalAuthenticationUserInfoBag
+            {
+                FirstName = firstName,
+                LastName = lastName,
+                Email = email,
+                EmailVerified = emailVerified.AsBooleanOrNull() ?? true,
+                ForeignKey = sub,
+                Gender = gender,
+                NickName = nickname,
+                PhoneNumber = phoneNumber,
+                Picture = picture,
+                UpdatedAt = updatedAt ?? RockDateTime.Now,
+                BirthDate = birthDate,
+                Provider = provider,
+            };
         }
 
         /// <summary>
@@ -369,19 +650,17 @@ namespace Rock.Blocks.Types.Mobile.Cms
             {
                 var personRecordTypeId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
 
-                if( connectionStatusValueId == null )
+                if ( connectionStatusValueId == null )
                 {
                     connectionStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_CONNECTION_STATUS_VISITOR.AsGuid() ).Id;
                 }
 
-                if( recordStatusValueId == null )
+                if ( recordStatusValueId == null )
                 {
                     recordStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING.AsGuid() ).Id;
                 }
 
-                //
                 // Build the person match query based off of the data the external authentication returned.
-                //
                 var firstName = personInfo.FirstName?.Trim()?.FixCase();
                 var lastName = personInfo.LastName?.Trim()?.FixCase();
                 var email = personInfo.Email;
@@ -416,7 +695,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                         person.LastName = lastName;
                         person.Email = email;
                         person.IsEmailActive = true;
-                        person.EmailPreference = EmailPreference.EmailAllowed;
+                        person.EmailPreference = Rock.Model.EmailPreference.EmailAllowed;
 
                         person.NickName = personInfo.NickName?.Trim()?.FixCase();
                         person.Gender = personInfo.Gender.ToNative();
@@ -509,34 +788,26 @@ namespace Rock.Blocks.Types.Mobile.Cms
             int? providerEntityTypeId;
             string externalPass;
 
-            //
             // For the authentication providers that are supported,
             // we need to structure the UserLogin accordingly.
-            //
             switch ( supportedMobileProvider )
             {
-                //
                 // AUTH0_<value>
-                //
                 case Common.Mobile.Enums.SupportedAuthenticationProvider.Auth0:
                     usernamePrefix = "AUTH0_";
                     externalPass = "auth0";
                     providerEntityTypeId = EntityTypeCache.Get( "9D2EDAC7-1051-40A1-BE28-32C0ABD1B28F" )?.Id;
                     break;
 
-                //
                 // ENTRA_<value> or AzureAD_<value> or Office365_<value>
-                //
                 case Common.Mobile.Enums.SupportedAuthenticationProvider.Entra:
-                    var entraLoginInfo = GetEntraComponentInfo();
-                    usernamePrefix = entraLoginInfo.UsernamePrefix;
-                    providerEntityTypeId = entraLoginInfo.ProviderEntityTypeId;
+                    var (UsernamePrefix, ProviderEntityTypeId) = GetEntraComponentInfo();
+                    usernamePrefix = UsernamePrefix;
+                    providerEntityTypeId = ProviderEntityTypeId;
                     externalPass = "entra";
                     break;
 
-                //
                 // Unsupported
-                //
                 default:
                     return null;
             }
@@ -552,52 +823,6 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 ExternalPass = externalPass,
                 ProviderEntityTypeId = providerEntityTypeId.Value
             };
-        }
-
-        /// <summary>
-        /// Gets the corresponding information for the configured Entra component.
-        /// </summary>
-        /// <returns></returns>
-        private (string UsernamePrefix, int? ProviderEntityTypeId) GetEntraComponentInfo()
-        {
-            var additionalSettings = this.PageCache.Layout.Site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
-
-            if ( additionalSettings == null || additionalSettings.EntraAuthenticationComponent == null )
-            {
-                return (null, null);
-            }
-
-            var provider = EntityTypeCache.Get( additionalSettings.EntraAuthenticationComponent.Value );
-
-            if ( provider == null )
-            {
-                return (null, null);
-            }
-
-            string prefix = "ENTRA_";
-
-            //
-            // The majority of entra logins are provided by the Triumph or BEMA
-            // plugin.
-            //
-            // These plugins handle the naming a little differently, and for the sake
-            // We're just going to do a quick check to see if
-            // we can make the UserLogin records match the plugin style.
-            //
-            // Otherwise, use the standard ENTRA_<email> format.
-
-            // Triumph 
-            if ( provider.AssemblyName.Contains( "tech.triumph" ) )
-            {
-                prefix = "AzureAD_";
-            }
-            // BEMA
-            else if ( provider.AssemblyName.Contains( "com.bemaservices" ) )
-            {
-                prefix = "Office365_";
-            }
-
-            return (prefix, provider.Id);
         }
 
         #endregion
@@ -671,6 +896,122 @@ namespace Rock.Blocks.Types.Mobile.Cms
         }
 
         /// <summary>
+        /// Processes the external authentication request.
+        /// </summary>
+        /// <param name="options">The parameters for external authentication.</param>
+        /// <returns></returns>
+        [BlockAction]
+        public async Task<BlockActionResult> ProcessExternalAuthentication( ExternalAuthenticationRequestBag options )
+        {
+            var additionalSettings = this.PageCache.Layout.Site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
+            if ( !IsExternalAuthenticationEnabled( additionalSettings ) )
+            {
+                return ActionBadRequest( "External authentication is not enabled." );
+            }
+
+            if ( options == null || options.AccessToken.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "There was no token provided for external authentication." );
+            }
+
+            // OIDC clients return an access token which is used to retrieve user information.
+            var userInfo = await GetUserInfoAsync( options.AccessToken, options.AuthenticationProvider );
+            if( userInfo == null )
+            {
+                Logger.LogError( "There was no user information returned from the external authentication provider." );
+                return ActionBadRequest( "There was no user information returned from the external authentication provider." );
+            }
+
+            // For the authentication providers that are supported,
+            // we need to structure the UserLogin accordingly.
+            string usernameValue = string.Empty;
+
+            switch ( options.AuthenticationProvider )
+            {
+                case Common.Mobile.Enums.SupportedAuthenticationProvider.Auth0:
+                    usernameValue = userInfo.ForeignKey;
+                    break;
+                case Common.Mobile.Enums.SupportedAuthenticationProvider.Entra:
+                    usernameValue = userInfo.Email;
+                    break;
+            }
+
+            if ( usernameValue.IsNullOrWhiteSpace() )
+            {
+                return ActionBadRequest( "There was no corresponding username provided for the authentication provider." );
+            }
+
+            // We'll supplement and save this as needed below.
+            var failedHistoryLogin = new HistoryLogin
+            {
+                UserName = usernameValue,
+                SourceSiteId = this.PageCache?.SiteId,
+                WasLoginSuccessful = false
+            };
+
+            var providerInfo = GetExternalAuthUserLoginInfo( options.AuthenticationProvider, usernameValue );
+
+            if ( providerInfo == null )
+            {
+                var errorMessage = "There was no entity found for that authentication provider.";
+
+                failedHistoryLogin.LoginFailureReason = LoginFailureReason.Other;
+                failedHistoryLogin.LoginFailureMessage = $"{errorMessage} ({options.AuthenticationProvider.ConvertToString()})";
+                failedHistoryLogin.SaveAfterDelay();
+
+                return ActionBadRequest( errorMessage );
+            }
+
+            var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerInfo, RockContext, additionalSettings?.Auth0ConnectionStatusValueId, additionalSettings?.Auth0RecordStatusValueId );
+
+            // Something went wrong or we didn't receive enough information to create a Person.
+            if ( userLogin == null )
+            {
+                failedHistoryLogin.LoginFailureReason = LoginFailureReason.UserNotFound;
+                failedHistoryLogin.SaveAfterDelay();
+
+                return ActionBadRequest( "There was an error when authenticating your request. Please ensure your external authentication provider is configured correctly." );
+            }
+
+            // We now know the IDs of the person attempting to authenticate.
+            failedHistoryLogin.UserLoginId = userLogin.Id;
+            failedHistoryLogin.PersonAliasId = userLogin.Person?.PrimaryAliasId;
+
+            // Make sure the login is confirmed, otherwise login is not allowed.
+            if ( userLogin.IsConfirmed != true )
+            {
+                failedHistoryLogin.LoginFailureReason = LoginFailureReason.UserNotConfirmed;
+                failedHistoryLogin.SaveAfterDelay();
+
+                SendConfirmation( userLogin );
+                return ActionBadRequest( GetUnconfirmedMessage() );
+            }
+
+            // Make sure the login is not locked out.
+            if ( userLogin.IsLockedOut == true )
+            {
+                failedHistoryLogin.LoginFailureReason = LoginFailureReason.LockedOut;
+                failedHistoryLogin.SaveAfterDelay();
+
+                return ActionBadRequest( GetLockedOutMessage() );
+            }
+
+            UpdateLastLoginDetails( userLogin, options.PersonalDeviceGuid, RockContext );
+
+            var authCookie = Rock.Security.Authorization.GetSimpleAuthCookie( userLogin.UserName, true, false );
+            var mobilePerson = MobileHelper.GetMobilePerson( userLogin.Person, PageCache.Layout.Site );
+            mobilePerson.AuthToken = authCookie.Value;
+
+            return ActionOk( new
+            {
+                Person = mobilePerson
+            } );
+        }
+
+        #region Legacy Actions
+
+        /// <summary>
         /// Processes an external login.
         /// On the shell, use whatever authentication
         /// component to create a <see cref="ExternalAuthenticationUserInfoBag" />. 
@@ -681,15 +1022,28 @@ namespace Rock.Blocks.Types.Mobile.Cms
         /// <param name="provider">The supported authentication provider.</param>
         /// <returns>BlockActionResult.</returns>
         [BlockAction]
+        [Obsolete( "This method is obsolete, and will be removed in a near-future release." )]
+        [RockObsolete( "17.1" )]
         public BlockActionResult ProcessExternalLogin( ExternalAuthenticationUserInfoBag userInfo, Guid? personalDeviceGuid, bool rememberMe, Rock.Common.Mobile.Enums.SupportedAuthenticationProvider provider )
         {
+            var additionalSettings = this.PageCache.Layout.Site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
+            if ( !IsExternalAuthenticationEnabled( additionalSettings ) )
+            {
+                return ActionBadRequest( "External authentication is not enabled." );
+            }
+
+            var enforceEnhancedSecurity = GetAttributeValue( AttributeKeys.EnableEnhancedAuthenticationSecurity ).AsBoolean();
+            if( enforceEnhancedSecurity )
+            {
+                Logger.LogError( "Legacy external authentication endpoint was called, but enhanced authentication security is enabled." );
+                return ActionBadRequest( "You have enhanced authentication security enabled, but are still utilizing the legacy external authentication endpoint." );
+            }
+
             using ( var rockContext = new RockContext() )
             {
-                //
                 // For the authentication providers that are supported,
                 // we need to structure the UserLogin accordingly.
-                //
-
                 string usernameValue = string.Empty;
 
                 switch ( provider )
@@ -729,7 +1083,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
                 }
 
                 // Create or retrieve a Person using the information provided in the external authentication info bag.
-                var additionalSettings = this.PageCache.Layout.Site.AdditionalSettings.FromJsonOrNull<AdditionalSiteSettings>();
+
                 var userLogin = GetOrCreatePersonFromExternalAuthenticationUserInfo( userInfo, providerInfo, rockContext, additionalSettings?.Auth0ConnectionStatusValueId, additionalSettings?.Auth0RecordStatusValueId );
 
                 // Something went wrong or we didn't receive enough information to create a Person.
@@ -779,7 +1133,35 @@ namespace Rock.Blocks.Types.Mobile.Cms
 
         #endregion
 
+        #endregion
+
         #region Helper Classes
+
+        /// <summary>
+        /// A bag representing the information required to process an external authentication request.
+        /// </summary>
+        public class ExternalAuthenticationRequestBag
+        {
+            /// <summary>
+            /// Gets or sets the access token.
+            /// </summary>
+            public string AccessToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identity token.
+            /// </summary>
+            public string IdentityToken { get; set; }
+
+            /// <summary>
+            /// Gets or sets the personal device unique identifier.
+            /// </summary>
+            public Guid PersonalDeviceGuid { get; set; }
+
+            /// <summary>
+            /// Gets or sets the authentication provider.
+            /// </summary>
+            public SupportedAuthenticationProvider AuthenticationProvider { get; set; }
+        }
 
         /// <summary>
         /// A bag containing the information needed to create a new UserLogin

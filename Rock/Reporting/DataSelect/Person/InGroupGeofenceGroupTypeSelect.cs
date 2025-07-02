@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,16 +15,19 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
-using System.Data.Entity;
-using System.Data.Entity.SqlServer;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -36,7 +39,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Show the group(s) of a specific group type where one or more of the person's family's map locations are withing the group's geofence." )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Geofencing group of specific group type" )]
-    [Rock.SystemGuid.EntityTypeGuid( "26571938-D421-4BAA-8150-84A31FE5D2FF")]
+    [Rock.SystemGuid.EntityTypeGuid( "26571938-D421-4BAA-8150-84A31FE5D2FF" )]
     public class InGroupGeofenceGroupTypeSelect : DataSelectComponent
     {
         #region Properties
@@ -108,6 +111,41 @@ namespace Rock.Reporting.DataSelect.Person
 
         #endregion
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupTypeOptions = new GroupTypeService( rockContext ).Queryable()
+                .OrderBy( gt => gt.Order )
+                .ThenBy( gt => gt.Name )
+                .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
+                .ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/inGroupGeofenceGroupTypeSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["groupTypeOptions"] = groupTypeOptions.ToCamelCaseJson( false, true ),
+                },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string> { ["groupType"] = selection };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "groupType", "" );
+        }
+
+        #endregion
+
         #region Methods
 
         /// <summary>
@@ -174,12 +212,12 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="controls">The controls.</param>
         /// <returns></returns>
         public override string GetSelection( System.Web.UI.Control[] controls )
-        {            
+        {
             // Get the selected Group Type as a Guid.
-            var groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId().GetValueOrDefault(0);
-            if (groupTypeId > 0)
+            var groupTypeId = ( controls[0] as GroupTypePicker ).SelectedValueAsId().GetValueOrDefault( 0 );
+            if ( groupTypeId > 0 )
             {
-                var groupType = GroupTypeCache.Get(groupTypeId);
+                var groupType = GroupTypeCache.Get( groupTypeId );
                 return ( groupType == null ) ? string.Empty : groupType.Guid.ToString();
             }
 
@@ -193,8 +231,8 @@ namespace Rock.Reporting.DataSelect.Person
         /// <param name="selection">The selection.</param>
         public override void SetSelection( System.Web.UI.Control[] controls, string selection )
         {
-            var groupType = new GroupTypeService( new RockContext() ).Get( selection.AsGuid());
-            ( controls[0] as GroupTypePicker ).SetValue( groupType != null ? groupType.Id : (int?)null );
+            var groupType = new GroupTypeService( new RockContext() ).Get( selection.AsGuid() );
+            ( controls[0] as GroupTypePicker ).SetValue( groupType != null ? groupType.Id : ( int? ) null );
         }
 
         #endregion

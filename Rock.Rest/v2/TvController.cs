@@ -862,7 +862,8 @@ namespace Rock.Rest.v2.Controllers
                     UserLoginService.UpdateLastLogin(
                         new UpdateLastLoginArgs {
                             UserName = principal.Identity.Name,
-                            SourceSiteIdOverride = site.Id
+                            SourceSiteIdOverride = site.Id,
+                            ShouldSkipWritingHistoryLog = true
                         }
                     );
                 }

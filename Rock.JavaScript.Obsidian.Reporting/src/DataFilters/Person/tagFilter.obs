@@ -1,0 +1,47 @@
+<template>
+    <RadioButtonList v-model="tagType"
+                     horizontal
+                     :items="tagTypeOptions"
+                     label="Tag Type" />
+
+    <DropDownList v-model="tag"
+                  :items="tagOptions"
+                  label="Tag"
+                  grouped
+                  enhanceForLongLists />
+</template>
+
+<script setup lang="ts">
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const tagType = ref<Guid>(props.modelValue.tagType ?? "");
+    const tagTypeOptions: ListItemBag[] = [
+        { text: "Personal Tags", value: "1" },
+        { text: "Organizational Tags", value: "2" },
+    ];
+    const tag = ref<Guid>(props.modelValue.tag ?? "");
+    const tagOptionsByType = safeParseJson<Record<Guid, ListItemBag[]>>(props.options.tagOptionsByType) ?? {};
+
+    const tagOptions = computed(() => {
+        return tagOptionsByType[tagType.value] ?? [];
+    });
+
+    watch([tagType, tag], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            tagType: tagType.value,
+            tag: tag.value,
+        });
+    });
+</script>

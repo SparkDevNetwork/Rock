@@ -1,0 +1,30 @@
+<template>
+    <CodeEditor v-model="template"
+                mode="lava"
+                label="Template"
+                editor="monaco"
+                help="Use Lava syntax to get the values of any of the fields in this report. For example, to create a link to the Person record, type <code>&lt;a href=&quot;~/Person/{{ Id }}&quot;&gt;{{ NickName }} {{ LastName }}&lt;/a&gt</code>. For some fields, use the dot notation to get the property you want. <code>{{ Phone.Number }}</code> or <code> {{ Phone.IsMessagingEnabled }}</code><br />Note: The fieldname will be the Column Label without spaces or special characters." />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const template = ref(props.modelValue.template ?? "");
+
+    watch([template], () => {
+        const newData = {
+            ...props.modelValue,
+            template: template.value
+        };
+
+        emit("update:modelValue", newData);
+    });
+</script>

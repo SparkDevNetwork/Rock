@@ -23,12 +23,14 @@ using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Communication;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Enums.Blocks.Security.AccountEntry;
 using Rock.Model;
 using Rock.Security;
 using Rock.Security.Authentication;
 using Rock.Security.Authentication.Passwordless;
+using Rock.Utility;
 using Rock.ViewModels.Blocks.Security.AccountEntry;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -156,7 +158,7 @@ namespace Rock.Blocks.Security
     [DefinedValueField(
         "Connection Status",
         Key = AttributeKey.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default = 'Prospect'.)",
+        Description = "The connection status to use for new individuals (default = 'Prospect').",
         DefinedTypeGuid = "2E6540EA-63F0-40FE-BE50-F2A84735E600",
         IsRequired = true,
         AllowMultiple = false,
@@ -166,12 +168,22 @@ namespace Rock.Blocks.Security
     [DefinedValueField(
         "Record Status",
         Key = AttributeKey.RecordStatus,
-        Description = "The record status to use for new individuals (default = 'Pending'.)",
+        Description = "The record status to use for new individuals (default = 'Pending').",
         DefinedTypeGuid = "8522BADD-2871-45A5-81DD-C76DA07E2E7E",
         IsRequired = true,
         AllowMultiple = false,
-        DefaultValue = "283999EC-7346-42E3-B807-BCE9B2BABB49",
+        DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Order = 14 )]
+
+    [DefinedValueField(
+        "Record Source",
+        Key = AttributeKey.RecordSource,
+        Description = "The record source to use for new individuals (default = 'External Website'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        IsRequired = true,
+        AllowMultiple = false,
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_EXTERNAL_WEBSITE,
+        Order = 15 )]
 
     [CustomDropdownListField(
         "Address",
@@ -180,7 +192,7 @@ namespace Rock.Blocks.Security
         ListSource = ListSource.HIDE_OPTIONAL_REQUIRED,
         IsRequired = false,
         DefaultValue = "Optional",
-        Order = 15 )]
+        Order = 16 )]
 
     [GroupLocationTypeField(
         "Location Type",
@@ -189,7 +201,7 @@ namespace Rock.Blocks.Security
         GroupTypeGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY,
         IsRequired = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME,
-        Order = 16 )]
+        Order = 17 )]
 
     [BooleanField(
         "Show Phone Numbers",
@@ -352,6 +364,7 @@ namespace Rock.Blocks.Security
             public const string AccountCreatedTemplate = "AccountCreatedTemplate";
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
+            public const string RecordSource = "RecordSource";
             public const string Address = "Address";
             public const string LocationType = "LocationType";
             public const string ShowPhoneNumbers = "ShowPhoneNumbers";
@@ -659,7 +672,8 @@ namespace Rock.Blocks.Security
                 RecordTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id,
                 Gender = box.PersonInfo.Gender ?? Gender.Unknown,
                 ConnectionStatusValueId = DefinedValueCache.Get( GetAttributeValue( AttributeKey.ConnectionStatus ).AsGuid() )?.Id,
-                RecordStatusValueId = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() )?.Id
+                RecordStatusValueId = DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordStatus ).AsGuid() )?.Id,
+                RecordSourceValueId = GetRecordSourceValueId()
             };
 
             if ( config.IsBirthDateShown )
@@ -791,6 +805,18 @@ namespace Rock.Blocks.Security
             person.SaveAttributeValues( rockContext );
 
             return person;
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId()
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
         }
 
         /// <summary>

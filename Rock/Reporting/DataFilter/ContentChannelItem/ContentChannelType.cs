@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
@@ -64,25 +65,34 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelTypeFilter.obs";
-
         #endregion
 
         #region Configuration
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             var contentChannelTypeOptions = new ContentChannelTypeService( rockContext ).Queryable()
                 .OrderBy( a => a.Name )
                 .Select( a => new ListItemBag { Value = a.Guid.ToString(), Text = a.Name } )
                 .ToList();
 
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelTypeFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["contentChannelTypeOptions"] = contentChannelTypeOptions.ToCamelCaseJson( false, true )
+                },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
             return new Dictionary<string, string>
             {
                 ["contentChannelType"] = selection,
-                ["contentChannelTypeOptions"] = contentChannelTypeOptions.ToCamelCaseJson( false, true )
             };
         }
 

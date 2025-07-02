@@ -28,6 +28,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataFilter.ConnectionRequest
@@ -65,18 +66,13 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ConnectionRequest/activityFilter.obs";
-
         #endregion
 
         #region Configuration
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var config = SelectionConfig.Parse( selection );
-
             var activityTypeOptions = new ConnectionActivityTypeService( new RockContext() ).Queryable( "ConnectionType" )
                 .AsNoTracking()
                 .Where( a => a.IsActive )
@@ -86,12 +82,23 @@ namespace Rock.Reporting.DataFilter.ConnectionRequest
                 .Select( a => a.ToListItemBag() )
                 .ToList();
 
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ConnectionRequest/activityFilter.obs" ),
+                Options = new Dictionary<string, string> { { "activityTypeOptions", activityTypeOptions.ToCamelCaseJson( false, true ) } }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
             var isBlank = selection.Trim() == string.Empty;
 
             return new Dictionary<string, string>
             {
                 { "activityType", config?.ConnectionActivityTypeGuid?.ToString() },
-                { "activityTypeOptions", activityTypeOptions.ToCamelCaseJson(false, true) },
                 { "comparisonType", (isBlank ? ComparisonType.GreaterThanOrEqualTo : config?.IntegerCompare).ConvertToInt().ToString() },
                 { "minimumCount", isBlank ? "1" : config?.MinimumCount.ToString() },
                 { "dateRange", config?.SlidingDateRangeDelimitedValues },

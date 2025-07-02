@@ -1,0 +1,44 @@
+<template>
+    <DropDownList v-model="noteType"
+                  :items="noteTypeOptions"
+                  label="Note Type"
+                  enhanceForLongLists
+                  showBlankItem />
+
+    <TextBox v-model="contains" label="Contains" />
+
+    <SlidingDateRangePicker v-model="dateRange"
+                            label="Date Range"
+                            help="The date range that the note was created during." />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString, RangeType } from "@Obsidian/Utility/slidingDateRange";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const noteTypeOptions = safeParseJson<ListItemBag[]>(props.options.noteTypeOptions) ?? [];
+    const noteType = ref<Guid>(props.modelValue.noteType ?? "");
+    const contains = ref<string>(props.modelValue.contains ?? "");
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    watch([noteType, contains, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            noteType: noteType.value,
+            contains: contains.value,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.All }),
+        });
+    });
+</script>

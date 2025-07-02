@@ -6,11 +6,15 @@
       xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
       xmlns:dp="clr-namespace:DiffPlex.Wpf.Controls;assembly=DiffPlex.Wpf"
       xmlns:local="clr-namespace:Rock.CodeGeneration.Pages"
+      xmlns:util="clr-namespace:Rock.CodeGeneration.Utility"
+      xmlns:vm="clr-namespace:Rock.CodeGeneration.ViewModels"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
+      d:DataContext="{d:DesignInstance Type=vm:GeneratedFilePreviewPageViewModel, IsDesignTimeCreatable=True}"
       Title="GeneratedFilePreview">
     <Page.Resources>
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
+        <util:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
     </Page.Resources>
 
     <Grid>
@@ -27,7 +31,9 @@
                  Grid.Row="0"
                  Grid.Column="0"
                  SelectionMode="Single"
-                 SelectionChanged="FileListBox_SelectionChanged">
+                 SelectionChanged="FileListBox_SelectionChanged"
+                 ItemsSource="{Binding ExportFiles}"
+                 Visibility="{Binding Settings.ObsidianViewModelsIsGroupedView, Converter={StaticResource InverseBoolToVis}}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
                     <Grid>
@@ -61,6 +67,65 @@
                 </DataTemplate>
             </ListBox.ItemTemplate>
         </ListBox>
+
+        <TreeView Name="FileTreeView"
+                  Grid.Row="0"
+                  Grid.Column="0"
+                  SelectedItemChanged="FileTreeView_SelectedItemChanged"
+                  ItemsSource="{Binding ExportFileGroups}"
+                  Visibility="{Binding Settings.ObsidianViewModelsIsGroupedView, Converter={StaticResource BoolToVis}}">
+            <TreeView.ItemContainerStyle>
+                <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                    <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                </Style>
+            </TreeView.ItemContainerStyle>
+            
+            <TreeView.Resources>
+
+                <!-- ExportFileGroup Hierarchical Template -->
+                <HierarchicalDataTemplate DataType="{x:Type local:ExportFileGroup}"
+                                          ItemsSource="{Binding ExportFiles}">
+                    <StackPanel Orientation="Horizontal">
+                        <CheckBox IsThreeState="True"
+                                  IsChecked="{Binding IsExporting, Mode=TwoWay}"
+                                  Margin="0,0,4,0"
+                                  Visibility="{Binding IsWriteNeeded, Converter={StaticResource BoolToVis}}" />
+                        <TextBlock Text="{Binding FolderPath}" FontStyle="Italic" />
+                    </StackPanel>
+                </HierarchicalDataTemplate>
+
+                <!-- ExportFile Template -->
+                <DataTemplate DataType="{x:Type local:ExportFile}">
+                    <Grid>
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <CheckBox Grid.Column="0"
+                                  Visibility="{Binding IsWriteNeeded, Converter={StaticResource BoolToVis}}"
+                                  IsChecked="{Binding IsExporting}" />
+
+                        <fa:IconBlock Grid.Column="0"
+                                      Icon="Check"
+                                      Foreground="Green"
+                                      Visibility="{Binding IsUpToDate, Converter={StaticResource BoolToVis}}"
+                                      ToolTip="This file is up to date."
+                                      Margin="0,0,4,0"/>
+
+                        <StackPanel Orientation="Horizontal"
+                                    Grid.Column="1"
+                                    Margin="4,0,0,0">
+                            <TextBlock HorizontalAlignment="Stretch"
+                                       IsEnabled="{Binding IsWriteNeeded}"
+                                       Text="{Binding File.FileName}"
+                                       FontWeight="Regular"/>
+                        </StackPanel>
+                    </Grid>
+                </DataTemplate>
+
+            </TreeView.Resources>
+        </TreeView>
 
         <Grid Grid.Row="0"
               Grid.Column="1">

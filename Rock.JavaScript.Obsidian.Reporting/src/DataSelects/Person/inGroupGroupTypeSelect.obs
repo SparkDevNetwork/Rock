@@ -1,0 +1,73 @@
+<template>
+    <DropDownList v-model="groupType" :items="groupTypeOptions" label="Group Type" showBlankItem />
+
+    <CheckBoxList v-if="groupRoleOptions.length > 0" v-model="groupRoles" :items="groupRoleOptions" label="with Group Role(s)" />
+
+    <DropDownList v-model="groupMemberStatus"
+                  :items="groupMemberStatusOptions"
+                  label="with Group Member Status"
+                  help="Select a specific group member status only include to only show true for group members with that status. Leaving this blank will return true for all members."
+                  showBlankItem />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { InGroupGroupTypeSelectGetRolesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/inGroupGroupTypeSelectGetRolesOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const groupTypeOptions = safeParseJson<ListItemBag[]>(props.options.groupTypeOptions) ?? [];
+    const groupType = ref<string>(props.modelValue.groupType ?? "");
+
+    const groupRoleOptions = ref(safeParseJson<ListItemBag[]>(props.options.groupRoleOptions) ?? []);
+    const groupRoles = ref<string[]>(safeParseJson(props.modelValue.groupRoles) ?? []);
+
+    const groupMemberStatusOptions = safeParseJson<ListItemBag[]>(props.options.groupMemberStatusOptions) ?? [];
+    const groupMemberStatus = ref<string>(props.modelValue.groupMemberStatus ?? "");
+
+    watch(groupType, async () => {
+        groupRoleOptions.value = [];
+
+        if (groupType.value) {
+            groupRoleOptions.value = await loadGroupRoles();
+        }
+    });
+
+    async function loadGroupRoles(): Promise<ListItemBag[]> {
+        const options: InGroupGroupTypeSelectGetRolesOptionsBag = {
+            groupTypeGuid: groupType.value,
+        };
+
+        const response = await props.executeRequest({
+            action: "GetRoles",
+            options: JSON.stringify(options)
+        });
+
+        const groupRoleOptions = safeParseJson<ListItemBag[]>(response?.groupRoleOptions) ?? [];
+
+        if (Array.isArray(groupRoleOptions)) {
+            return groupRoleOptions;
+        }
+        else {
+            console.error("Error fetching items from server", response?.Message);
+            return [];
+        }
+    }
+
+    watch([groupType, groupRoles, groupMemberStatus], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            groupType: groupType.value,
+            groupRoles: JSON.stringify(groupRoles.value),
+            groupMemberStatus: groupMemberStatus.value,
+        });
+    });
+</script>

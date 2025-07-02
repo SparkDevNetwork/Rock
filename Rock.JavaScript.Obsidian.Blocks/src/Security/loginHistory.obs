@@ -4,9 +4,9 @@
         {{ config.errorMessage }}
     </NotificationBox>
 
-    <Grid v-else-if="gridDefinition"
-          :definition="gridDefinition"
+    <Grid :definition="gridDefinition"
           :data="gridDataSource"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
           title="Login History"
           keyField="historyLoginGuid"
           itemTerm="Login History"
@@ -62,7 +62,8 @@
     </Grid>
 
     <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
+                       v-model:visible="isGridSettingsVisible"
+                       :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
 <script setup lang="ts">
@@ -72,44 +73,42 @@
     import Grid, { DateTimeColumn, dateValueFilter, LabelColumn, PersonColumn, pickExistingValueFilter, TextColumn } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
-    import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
-    import { calculateSlidingDateRange, parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
-    import { LoginHistoryFiltersBag } from "@Obsidian/ViewModels/Blocks/Security/LoginHistory/loginHistoryFiltersBag";
-    import { LoginHistoryInitializationBox } from "@Obsidian/ViewModels/Blocks/Security/LoginHistory/loginHistoryInitializationBox";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { parseSlidingDateRangeString, RangeType, SlidingDateRange, slidingDateRangeToString, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { LoginHistoryOptionsBag } from "@Obsidian/ViewModels/Blocks/Security/LoginHistory/loginHistoryOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
-    const config = useConfigurationValues<LoginHistoryInitializationBox>();
+    const config = useConfigurationValues<ListBlockBox<LoginHistoryOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
     const preferences = usePersonPreferences().blockPreferences;
+
+    onConfigurationValuesChanged(useReloadBlock());
 
     const statusLabelColors: Record<string, string> = {
         Success: "success"
     };
 
-    // We'll enforce a default date range of the last 3 months - to be applied
-    // if the individual doesn't have a preference - as the [HistoryLogin] table
+    // We'll enforce a default date range of the last 30 days - to be applied if
+    // the individual doesn't have a preference - as the [HistoryLogin] table
     // can have a large number of rows.
     const defaultSlidingDateRange: SlidingDateRange = {
         rangeType: RangeType.Last,
-        timeUnit: TimeUnit.Month,
-        timeValue: 3
+        timeUnit: TimeUnit.Day,
+        timeValue: 30
     };
-
-    // Keep track of the last-applied sliding date range string, to prevent
-    // unnecessary re-querying of the grid data.
-    let lastSlidingDateRangeString = "";
 
     // #region Values
 
-    const gridDefinition = ref<GridDefinitionBag | null>(config.gridDefinition ?? null);
+    const gridDefinition = ref<GridDefinitionBag | undefined>(config.gridDefinition ?? undefined);
     const gridDataSource = ref<Promise<GridDataBag>>();
     let gridData: GridDataBag | undefined;
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
-        slidingDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterSlidingDateRange)) ?? defaultSlidingDateRange
+        slidingDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterSlidingDateRange))
     });
 
     // #endregion Values
@@ -125,9 +124,11 @@
         );
     });
 
-    /** `true` if the grid settings is performing any filtering. */
+    /**
+     * Always `true`, since we're enforcing a default date range.
+     * */
     const hasSettingsFilters = computed((): boolean => {
-        return !!(gridSettings.value?.slidingDateRange);
+        return true;
     });
 
     // #endregion Computed Values
@@ -138,16 +139,8 @@
      * Called when the grid is requesting the row data be loaded.
      */
     async function loadGridData(): Promise<GridDataBag> {
-        var bag: LoginHistoryFiltersBag = {};
-        if (gridSettings.value.slidingDateRange) {
-            var dateRange = calculateSlidingDateRange(gridSettings.value.slidingDateRange);
-            bag.startDateTime = dateRange?.start?.toISOString();
-            bag.endDateTime = dateRange?.end?.toISOString();
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
 
-            lastSlidingDateRangeString = slidingDateRangeToString(gridSettings.value.slidingDateRange);
-        }
-
-        const result = await invokeBlockAction<GridDataBag>("GetGridData", { bag });
         if (result.isSuccess && result.data) {
             gridData = reactive(result.data);
             return gridData;
@@ -172,30 +165,15 @@
     // #region Watchers
 
     watch(gridSettings, async () => {
-        let slidingDateRangeString = "";
-        if (gridSettings.value.slidingDateRange) {
-            slidingDateRangeString = slidingDateRangeToString(gridSettings.value.slidingDateRange);
-        }
+        const slidingDateRangeString = gridSettings.value.slidingDateRange
+            ? slidingDateRangeToString(gridSettings.value.slidingDateRange)
+            : slidingDateRangeToString(defaultSlidingDateRange);
 
-        // We'll allow an individual to clear out their preference value.
         preferences.setValue(PreferenceKey.FilterSlidingDateRange, slidingDateRangeString);
 
         await preferences.save();
 
-        // But we'll also enforce the default if they've cleared the filter; the
-        // individual will need to go out of their way to get a larger, targeted
-        // date range.
-        if (!slidingDateRangeString) {
-            slidingDateRangeString = slidingDateRangeToString(defaultSlidingDateRange);
-            gridSettings.value = {
-                slidingDateRange: defaultSlidingDateRange
-            };
-        }
-
-        // Only reload the grid data if the date range has actually changed.
-        if (lastSlidingDateRangeString !== slidingDateRangeString) {
-            gridDataSource.value = loadGridData();
-        }
+        gridDataSource.value = loadGridData();
     });
 
     // #endregion Watchers

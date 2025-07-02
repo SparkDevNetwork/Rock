@@ -26,6 +26,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
@@ -78,27 +79,33 @@ namespace Rock.Reporting.DataFilter.Group
             }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Group/memberCountFilter.obs";
-
         #endregion
 
         #region Configuration
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var selectionValues = selection.Split( '|' );
-
             var memberStatuses = Enum.GetValues( typeof( GroupMemberStatus ) )
                 .Cast<GroupMemberStatus>()
                 .Select( a => new ListItemBag { Text = a.ConvertToString(), Value = a.ConvertToInt().ToString() } )
                 .ToList();
 
-            var data = new Dictionary<string, string>
+            return new DynamicComponentDefinitionBag
             {
-                { "memberStatuses", memberStatuses.ToCamelCaseJson(false, true) }
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/memberCountFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "memberStatuses", memberStatuses.ToCamelCaseJson(false, true) }
+                }
             };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionValues = selection.Split( '|' );
+            var data = new Dictionary<string, string>();
 
             if ( selectionValues.Length > 3 )
             {

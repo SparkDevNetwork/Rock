@@ -150,7 +150,8 @@ namespace Rock.Rest.Controllers
                     new UpdateLastLoginArgs
                     {
                         UserName = principal.Identity.Name,
-                        SourceSiteIdOverride = site.Id
+                        SourceSiteIdOverride = site.Id,
+                        ShouldSkipWritingHistoryLog = true
                     }
                 );
             }
@@ -538,14 +539,15 @@ namespace Rock.Rest.Controllers
         }
 
         /// <summary>
-        /// Updates the location permission status.
+        /// Updates the location permission and if the beacon monitoring is enabled for the personal device.
         /// </summary>
         /// <param name="locationPermissionOptions"></param>
+        /// <param name="isBeaconMonitoringEnabled"></param>
         /// <returns></returns>
         [System.Web.Http.Route( "api/mobile/UpdateLocationPermission" )]
         [HttpPut]
         [Rock.SystemGuid.RestActionGuid( "DF6065C9-A5F8-4549-AD00-F2C0823C9E0D" )]
-        public IHttpActionResult UpdateLocationPermission( LocationPermissionOptions locationPermissionOptions )
+        public IHttpActionResult UpdateLocationPermission( [FromBody] LocationPermissionOptions locationPermissionOptions, bool isBeaconMonitoringEnabled )
         {
             if ( locationPermissionOptions == null )
             {
@@ -589,6 +591,7 @@ namespace Rock.Rest.Controllers
 
                 personalDevice.LocationPermissionStatus = locationPermissionInfo.LocationPermission.ToNative();
                 personalDevice.IsPreciseLocationEnabled = locationPermissionInfo.IsPrecise;
+                personalDevice.IsBeaconMonitoringEnabled = isBeaconMonitoringEnabled;
 
                 rockContext.SaveChanges();
 

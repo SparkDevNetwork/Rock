@@ -28,8 +28,10 @@ using Rock.Constants;
 using Rock.Enums.Blocks.Communication.CommunicationTemplateDetail;
 using Rock.Model;
 using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.ViewModels.Blocks.Communication.CommunicationTemplateDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Communication
@@ -40,6 +42,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication Template Detail" )]
     [Category( "Communication" )]
     [Description( "Used for editing a communication template that can be selected when creating a new communication, SMS, etc. to people." )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 
@@ -60,7 +63,7 @@ namespace Rock.Blocks.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "017EEC30-BDDA-4159-8249-2852AF4ADCF2" )]
     [Rock.SystemGuid.BlockTypeGuid( "FBAB4EB2-B180-4A76-9B5B-C75E2255F691" )]
-    public class CommunicationTemplateDetail : RockBlockType
+    public class CommunicationTemplateDetail : RockBlockType, IBreadCrumbBlock
     {
         #region Keys
 
@@ -125,7 +128,8 @@ namespace Rock.Blocks.Communication
                 NavigationUrls =
                 {
                     [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
-                }
+                },
+                SecurityGrantToken = GetSecurityGrantToken()
             };
 
             if ( communicationTemplateKey.IsNotNullOrWhiteSpace() && communicationTemplateKey.AsInteger() != 0 )
@@ -154,9 +158,14 @@ namespace Rock.Blocks.Communication
 
             if ( communicationTemplate == null )
             {
-                box.Title = "New Communication Template";
+                box.Title = "Add Communication Template";
                 communicationTemplate = new CommunicationTemplate();
                 isNewTemplate = true;
+                this.ResponseContext.SetPageTitle( "Communication Template Detail" );
+            }
+            else
+            {
+                this.ResponseContext.SetPageTitle( communicationTemplate.Name );
             }
 
             box.IsNew = isNewTemplate;
@@ -566,5 +575,64 @@ namespace Rock.Blocks.Communication
         }
 
         #endregion Block Actions
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new SecurityGrant();
+
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
+            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
+
+            return securityGrant.ToToken();
+        }
+
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageReference.Parameters );
+            var entityKey = pageReference.GetPageParameter( PageParameterKey.CommunicationTemplate );
+
+            if ( entityKey.IsNullOrWhiteSpace() )
+            {
+                entityKey = pageReference.GetPageParameter( PageParameterKey.TemplateId );
+            }
+
+            var arePredictableIdsEnabled = !this.PageCache.Layout.Site.DisablePredictableIds;
+
+            // If a zero identifier is specified then create a new entity.
+            if ( entityKey.IsNullOrWhiteSpace() )
+            {
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        new BreadCrumbLink( "Communication Template Detail", breadCrumbPageRef )
+                    }
+                };
+            }
+            else
+            {
+                var title = new CommunicationTemplateService( this.RockContext )
+                    .GetSelect( entityKey, f => f.Name, arePredictableIdsEnabled );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                    {
+                        new BreadCrumbLink( title ?? "Communication Template Detail", breadCrumbPageRef )
+                    }
+                };
+            }
+        }
+
+        #endregion
     }
 }

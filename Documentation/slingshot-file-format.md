@@ -28,7 +28,7 @@ A zip file named *.slingshot with the following sub files:
 * person-attributevalue.csv
 * person-note.csv
 * person-phone.csv
-* person-searchkey.csv
+* person-search-key.csv
 * person.csv
 * schedule.csv
 
@@ -38,15 +38,12 @@ A zip file named *.slingshot with the following sub files:
 `AttendanceId,PersonId,GroupId,LocationId,ScheduleId,DeviceId,StartDateTime,EndDateTime,Note,CampusId`
 
 Example:
-`732216119,19471,1096,2021694793,1645614320,3/1/2010 9:00,3/1/2010 10:00,1`		
-
-## business.csv
-
-`Id,Name,RecordStatus,InactiveReason,Email,EmailPreference,CampusId`
+`732216119,19471,1096,2021694793,1645614320,12,3/1/2010 9:00,3/1/2010 10:00,,1`
 
 ## business-address.csv
-
-`BusinessId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,IsMailing,AddressType`
+`BusinessId,Street1,Street2,City,State,PostalCode,Country,IsMailing`
+Example:
+`999,153 Fish Ave,,Glendale,AZ,71291,,True`
 
 ## business-attribute.csv
 `Key,Name,FieldType,Category`
@@ -60,16 +57,23 @@ Example:
 Example:
 `12,DonorBusiness,TRUE`
 
-## business-phone.csv
-
-`BusinessId,PhoneType,PhoneNumber,IsMessagingEnabled,IsUnlisted`
-
 ## business-contact.csv
-
 `PersonId,BusinessId`
 
 Example:
-`14,3213213210`
+`14,999`
+
+## business-phone.csv
+`BusinessId,PhoneType,PhoneNumber,IsMessagingEnabled,IsUnlisted`
+
+Example:
+`999,WorkPhone,5555551234,FALSE,FALSE`
+
+## business.csv
+`Id,Name,RecordStatus,InactiveReason,Email,EmailPreference,CampusId`
+
+Example:
+`999,Business Inc,Active,,info@fakeinbox.com,EmailAllowed,0`
 
 ## family-attribute.csv
 `Key,Name,FieldType,Category`
@@ -78,7 +82,6 @@ Example:
 `FamilyPhoto,Family Photo,Rock.Field.Types.ImageFieldType,Family Information`
 
 ## family-note.csv
-
 `FamilyId,Id,NoteType,Caption,IsAlert,IsPrivateNote,Text,DateTime,CreatedByPersonId`
 
 Example:
@@ -89,19 +92,17 @@ Example:
 `Id,Name,IsTaxDeductible,CampusId,ParentAccountId`
 
 Example:
-`1111,Staff Parish Misc,False,,`
+`900,Staff Parish Misc,False,,`
 
 
 ## financial-batch.csv
-
 `Id,Name,CampusId,StartDate,EndDate,Status,CreatedByPersonId,CreatedDateTime,ModifiedByPersonId,ModifiedDateTime,ControlAmount`
 
 Example:
-`9876543210,Imported Batch: 4/21/2018,,4/21/2018 12:00:00 AM,4/21/2018 12:00:00 AM,Closed,,,,,0`
+`9876,Imported Batch: 4/21/2018,,4/21/2018 12:00:00 AM,4/21/2018 12:00:00 AM,Closed,,,,,0`
 
 
 ## financial-pledge.csv
-
 `Id,PersonId,AccountId,StartDate,EndDate,PledgeFrequency,TotalAmount,CreatedDateTime,ModifiedDateTime`
 
 Example:
@@ -109,33 +110,23 @@ Example:
 
 
 ## financial-transaction.csv
-
 `Id,BatchId,AuthorizedPersonId,TransactionDate,TransactionType,TransactionSource,CurrencyType,Summary,TransactionCode,CreatedByPersonId,CreatedDateTime,ModifiedByPersonId,ModifiedDateTime`
 
 Example:
-`333333,1231231230,44444,6/11/2018 12:00:00 AM,Contribution,BankChecks,Check,ACS PaymentType: Check,006060,,6/11/2018 12:00:00 AM,,`
+`333333,9876,14,6/11/2018 12:00:00 AM,Contribution,BankChecks,Check,ACS PaymentType: Check,006060,,6/11/2018 12:00:00 AM,,`
 
 
 ## financial-transactiondetail.csv
-
 `Id,TransactionId,AccountId,Amount,Summary,CreatedByPersonId,CreatedDateTime,ModifiedByPersonId,ModifiedDateTime`
 
 Example:
-`1,181818,900,100.00,,,6/21/2012 12:00:00 AM,,`
-
-
-## group.csv
-
-`Id,Name,Description,Order,ParentGroupId,GroupTypeId,CampusId,Capacity,MeetingDay,MeetingTime,IsActive,IsPublic`
-
-Example:
-`3213213210,Activities,,0,9999,42,1,,2,19:00,True,True`
+`1,333333,900,100.00,,,6/21/2012 12:00:00 AM,,`
 
 ## group-address.csv
 `GroupId,Street1,Street2,City,State,PostalCode,Country,Latitude,Longitude,IsMailing,AddressType`
 
 Example:
-`68,11624 N 31st Dr,,Phoenix,Az,85029-3202,,33.59310,-112.12649,1,Home`
+`3213,11624 N 31st Dr,,Phoenix,Az,85029-3202,,33.59310,-112.12649,1,Home`
 
 ## group-attribute.csv
 `Key,Name,FieldType,Category`
@@ -147,18 +138,22 @@ Example:
 `GroupId,AttributeKey,AttributeValue`
 
 Example:
-`10,HasChildcare,TRUE`
+`3213,HasChildcare,TRUE`
+
+## group.csv
+`Id,Name,Description,Order,ParentGroupId,GroupTypeId,CampusId,Capacity,MeetingDay,MeetingTime,IsActive,IsPublic`
+
+Example:
+`3213,Activities,,0,0,9999,1,,2,19:00,TRUE,TRUE`
 
 ## groupmember.csv
-
 `PersonId,GroupId,Role`
 
 Example:
-`14,3213213210,Member`
+`14,3213,Member`
 
 
 ## grouptype.csv
-
 `Id,Name`
 
 Example:
@@ -168,7 +163,7 @@ Example:
 `Id,ParentLocationId,Name,IsActive,LocationType,Street1,Street2,City,State,Country,PostalCode,County`
 
 Example:
-`2,,Main Campus,1,Campus,24654 N Lake Pleasant Pkwy Ste 103-192,,Peoria,Az,US,85383-1359,Maricopa`
+`2,,Main Campus,1,MeetingLocation,24654 N Lake Pleasant Pkwy Ste 103-192,,Peoria,Az,US,85383-1359,Maricopa`
 
 
 ## person-address.csv
@@ -184,7 +179,7 @@ Example:
 `Key,Name,FieldType,Category`
 
 Example(s):
-`OurSpecialAttribKey_,Our Special Thing,Rock.Field.Types.TextFieldType,Imported Attributes`
+`OurSpecialAttribKey,Our Special Thing,Rock.Field.Types.TextFieldType,Imported Attributes`
 `ExtBaptism,External Baptism Date,Rock.Field.Types.DateTimeFieldType,Imported Attributes`
 
 
@@ -193,7 +188,7 @@ Example(s):
 `PersonId,AttributeKey,AttributeValue`
 
 Example(s):
-`14,OurSpecialAttribKey_,Unknown Pre2015`
+`14,OurSpecialAttribKey,Unknown Pre2015`
 `14,ExtBaptism,1978-10-04T00:00:00.0000000`
 
 
@@ -218,10 +213,9 @@ Example(s):
 `PersonId,SearchValue`
 
 Example:
-`4,ted@example.com`
+`14,5a0441a-5d61249`
 
 ## person.csv
-
 `Id,FamilyId,FamilyName,FamilyImageUrl,FamilyRole,FirstName,NickName,LastName,MiddleName,Salutation,Suffix,Email,Gender,MaritalStatus,Birthdate,AnniversaryDate,RecordStatus,InactiveReason,ConnectionStatus,EmailPreference,CreatedDateTime,ModifiedDateTime,PersonPhotoUrl,CampusId,CampusName,Note,Grade,GiveIndividually,IsDeceased`
 
 Example(s):
@@ -287,6 +281,4 @@ The following are new, proposed file format definitions that are being considere
 ## registrationinstance.csv
 
 `Id,Name,RegistrationTemplateId,StartDateTime,EndDateTime,SendReminderDateTime,MaxAttendees,AccountId,ContactPhone,ContactEmail,PersonId,AdditionalReminderDetails,AdditionalConfirmationDetails`
-
-
 

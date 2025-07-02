@@ -128,6 +128,7 @@
                                     <Rock:CampusPicker ID="cpCampus" runat="server" Label="Campus" />
                                     <Rock:RockDropDownList ID="ddlSignatureDocumentTemplate" runat="server" Label="Require Signed Document"
                                         Help="If members of this group need to have signed a document, select that document type here." />
+                                    <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source Override" Help="The record source for group members added to this group. If not set, the group type's record source will be used." />
                                 </div>
                             </div>
 
@@ -359,28 +360,39 @@
                         <Rock:PanelWidget ID="wpChat" runat="server" Title="Chat">
                             <div class="row">
                                 <div class="col-md-6">
-                                    <Rock:RockDropDownList ID="ddlIsChatEnabled" runat="server" CssClass="input-width-xl" Label="Is Chat Enabled" Help="If enabled, this group will participate in the chat system as a chat channel.">
+                                    <Rock:RockDropDownList ID="ddlIsChatEnabled" runat="server" CssClass="input-width-xl" Label="Enable Chat" Help="If enabled, this group will participate in the chat system as a chat channel.">
                                         <asp:ListItem Value="" Text="Inherit from Group Type" />
                                         <asp:ListItem Value="n" Text="No" />
                                         <asp:ListItem Value="y" Text="Yes" />
                                     </Rock:RockDropDownList>
-                                    <Rock:RockDropDownList ID="ddlIsLeavingChatChannelAllowed" runat="server" CssClass="input-width-xl" Label="Is Leaving Chat Channel Allowed" Help="If enabled, individuals are allowed to leave this chat channel.">
+                                    <Rock:RockDropDownList ID="ddlIsLeavingChatChannelAllowed" runat="server" CssClass="input-width-xl" Label="Allow Members to Leave Channel" Help="If enabled, individuals are allowed to leave this chat channel.">
                                         <asp:ListItem Value="" Text="Inherit from Group Type" />
                                         <asp:ListItem Value="n" Text="No" />
                                         <asp:ListItem Value="y" Text="Yes" />
                                     </Rock:RockDropDownList>
                                 </div>
                                 <div class="col-md-6">
-                                    <Rock:RockDropDownList ID="ddlIsChatChannelPublic" runat="server" CssClass="input-width-xl" Label="Is Chat Channel Public" Help="If enabled, this chat channel is visible to everyone when performing a search. This also implies that the channel may be joined by any person via the chat application.">
+                                    <Rock:RockDropDownList ID="ddlIsChatChannelPublic" runat="server" CssClass="input-width-xl" Label="Make Channel Public" Help="If enabled, this chat channel is visible to everyone when performing a search. This also implies that the channel may be joined by any person via the chat application.">
                                         <asp:ListItem Value="" Text="Inherit from Group Type" />
                                         <asp:ListItem Value="n" Text="No" />
                                         <asp:ListItem Value="y" Text="Yes" />
                                     </Rock:RockDropDownList>
-                                    <Rock:RockDropDownList ID="ddlIsChatChannelAlwaysShown" runat="server" CssClass="input-width-xl" Label="Is Chat Channel Always Shown" Help="If enabled, this chat channel is always shown in the channel list even if the person has not joined the channel.">
+                                    <Rock:RockDropDownList ID="ddlIsChatChannelAlwaysShown" runat="server" CssClass="input-width-xl" Label="Always Show Channel" Help="If enabled, this chat channel is always shown in the channel list even if the person has not joined the channel.">
                                         <asp:ListItem Value="" Text="Inherit from Group Type" />
                                         <asp:ListItem Value="n" Text="No" />
                                         <asp:ListItem Value="y" Text="Yes" />
                                     </Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:RockDropDownList ID="ddlChatPushNotificationMode" runat="server" CssClass="input-width-xl" Label="Push Notification Mode" Help="Controls how push notifications are sent for this chat channel.">
+                                        <asp:ListItem Value="" Text="Inherit from Group Type" />
+                                        <asp:ListItem Value="0" Text="All Messages" />
+                                        <asp:ListItem Value="1" Text="Mentions" />
+                                        <asp:ListItem Value="2" Text="Silent" />
+                                    </Rock:RockDropDownList>
+                                </div>
+                                <div class="col-md-6">
+                                    <Rock:ImageUploader ID="imgChatChannelAvatar" runat="server" Label="Channel Avatar" Help="The image to use for this chat channel in the external chat system. Recommended image size is 120x120." />
                                 </div>
                             </div>
                         </Rock:PanelWidget>
@@ -442,6 +454,7 @@
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <asp:LinkButton ID="btnArchive" runat="server" Text="Archive" CssClass="btn btn-link js-archive-group" OnClick="btnArchive_Click" CausesValidation="false" />
                             <span class="pull-right">
+                                <asp:HyperLink ID="hlGroupPlacement" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group Placement"><i class="fa fa-project-diagram"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlGroupRSVP" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group RSVP"><i class="fa fa-user-check"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlGroupScheduler" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group Scheduler"><i class="fa fa-calendar-alt"></i></asp:HyperLink>
                                 <asp:HyperLink ID="hlGroupHistory" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Group History"><i class="fa fa-history"></i></asp:HyperLink>

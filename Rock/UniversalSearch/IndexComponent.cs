@@ -50,14 +50,66 @@ namespace Rock.UniversalSearch
         /// <param name="document">The document.</param>
         /// <param name="indexName">Name of the index.</param>
         /// <param name="mappingType">Type of the mapping.</param>
-        public abstract void IndexDocument<T>( T document, string indexName = null, string mappingType = null ) where T : class, new();
+        [Obsolete( "Use the method that takes only the document parameter, instead." )]
+        [RockObsolete( "17.2" )]
+        public virtual void IndexDocument<T>( T document, string indexName = null, string mappingType = null ) where T : class, new()
+        {
+            throw new Exception( "Deprecated method called." ); // This method was abstract prior to 17.2.
+
+            // This method was deprecated due to incomplete implementation of the indexName/mappingType parameters, which would have
+            // resulted in an error if used.
+        }
 
         /// <summary>
-        /// Deletes the type of the documents by.
+        /// Indexes the document.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="document">The document.</param>
+        public virtual void IndexDocument<T>( T document ) where T : class, new()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            IndexDocument( document, null, null );
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        /// <summary>
+        /// Indexes multiple documents.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="documents">The documents.</param>
+        public virtual void IndexDocuments<T>( IEnumerable<T> documents ) where T : class, new()
+        {
+            foreach ( var document in documents )
+            {
+                IndexDocument( document );
+            }
+        }
+
+        /// <summary>
+        /// Deletes the documents by type.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="indexName">Name of the index.</param>
-        public abstract void DeleteDocumentsByType<T>( string indexName = null ) where T : class, new();
+        [Obsolete( "Use the method that does not pass an indexName parameter, instead." )]
+        [RockObsolete( "17.2" )]
+        public virtual void DeleteDocumentsByType<T>( string indexName ) where T : class, new()
+        {
+            throw new Exception( "Deprecated method called." ); // This method was abstract prior to 17.2.
+
+            // This method was deprecated due to incomplete implementation of the indexName/mappingType parameters, which would have
+            // resulted in an error if used.
+        }
+
+        /// <summary>
+        /// Deletes the documents by type.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        public virtual void DeleteDocumentsByType<T>() where T : class, new()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            DeleteDocumentsByType<T>( null );
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
 
         /// <summary>
         /// Creates the index.
@@ -78,7 +130,27 @@ namespace Rock.UniversalSearch
         /// <typeparam name="T"></typeparam>
         /// <param name="document">The document.</param>
         /// <param name="indexName">Name of the index.</param>
-        public abstract void DeleteDocument<T>( T document, string indexName = null ) where T : class, new();
+        [Obsolete( "Use the method that takes only the document parameter, instead." )]
+        [RockObsolete( "17.2" )]
+        public virtual void DeleteDocument<T>( T document, string indexName = null ) where T : class, new()
+        {
+            throw new Exception( "Deprecated method called." ); // This method was abstract prior to 17.2.
+
+            // This method was deprecated due to incomplete implementation of the indexName/mappingType parameters, which would have
+            // resulted in an error if used.
+        }
+
+        /// <summary>
+        /// Deletes the document.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="document">The document.</param>
+        public virtual void DeleteDocument<T>( T document ) where T : class, new()
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            DeleteDocument( document, null );
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
 
         /// <summary>
         /// Deletes the document by identifier.
@@ -121,7 +193,7 @@ namespace Rock.UniversalSearch
         /// <param name="size">The size.</param>
         /// <param name="from">From.</param>
         /// <returns></returns>
-        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria criteria = null, int? size = null, int? from = null  );
+        public abstract List<IndexModelBase> Search( string query, SearchType searchType = SearchType.Wildcard, List<int> entities = null, SearchFieldCriteria criteria = null, int? size = null, int? from = null );
 
         /// <summary>
         /// Searches the specified query.

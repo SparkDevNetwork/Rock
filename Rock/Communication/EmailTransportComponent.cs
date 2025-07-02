@@ -372,6 +372,12 @@ namespace Rock.Communication
                             recipient.StatusNote = result.StatusNote;
                             recipient.TransportEntityTypeName = this.GetType().FullName;
 
+                            if ( result.Status == CommunicationRecipientStatus.Delivered )
+                            {
+                                recipient.SendDateTime = RockDateTime.Now;
+                                // Do not set DeliveredDateTime, as this should be set by email transport webhooks.
+                            }
+
                             // Log it
                             try
                             {
@@ -776,7 +782,7 @@ namespace Rock.Communication
                 if ( emailMessage.CssInliningEnabled )
                 {
                     // move styles inline to help it be compatible with more email clients
-                    body = body.ConvertHtmlStylesToInlineAttributes( true );
+                    body = body.ConvertHtmlStylesToInlineAttributes();
                 }
             }
 
@@ -935,7 +941,7 @@ namespace Rock.Communication
                 if ( emailMessage.CssInliningEnabled )
                 {
                     // move styles inline to help it be compatible with more email clients
-                    htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes( true );
+                    htmlBody = htmlBody.ConvertHtmlStylesToInlineAttributes();
                 }
 
                 // add the main Html content to the email
@@ -1176,6 +1182,11 @@ namespace Rock.Communication
                     {
                         recipient.StatusNote = result.StatusNote;
                     }
+                    else
+                    {
+                        recipient.SendDateTime = RockDateTime.Now;
+                        // Do not set DeliveredDateTime, as this should be set by email transport webhooks.
+                    }
 
                     recipient.TransportEntityTypeName = this.GetType().FullName;
 
@@ -1260,6 +1271,29 @@ namespace Rock.Communication
 
                 transaction.RecipientGuid = recipientEmailMessage.MessageMetaData["communication_recipient_guid"].AsGuidOrNull();
                 transaction.RecipientStatus = result.Status;
+
+                /*
+                    6/30/25 - MSE
+
+                    Fixed communication record to save correct ReplyToEmail when sender is not a safe sender.
+
+                    Reason: When Rock replaces FromEmail with organization email for unsafe senders, the
+                    communication record should save the original sender's email in ReplyToEmail field.
+                */
+                if ( !string.IsNullOrWhiteSpace( recipientEmailMessage.ReplyToEmail ) )
+                {
+                    var replyToEmail = recipientEmailMessage.ReplyToEmail;
+                    try
+                    {
+                        replyToEmail = new System.Net.Mail.MailAddress( replyToEmail ).Address;
+                    }
+                    catch ( Exception ex )
+                    {
+                        ExceptionLogService.LogException( ex );
+                    }
+
+                    transaction.ReplyTo = replyToEmail;
+                }
 
                 if ( recipientEmailMessage.CreateCommunicationRecordImmediately )
                 {

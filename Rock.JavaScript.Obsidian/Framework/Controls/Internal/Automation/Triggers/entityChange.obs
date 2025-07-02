@@ -1,0 +1,256 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div class="col-md-6">
+            <EntityTypePicker label="Entity Type"
+                              v-model="entityType"
+                              showBlankItem
+                              enhanceForLongLists
+                              rules="required" />
+
+            <CheckBoxList v-model="triggeredOn"
+                          label="Trigger On"
+                          :items="triggeredOnItems"
+                          horizontal
+                          rules="required" />
+        </div>
+    </div>
+
+    <TransitionVerticalCollapse>
+        <div v-if="isLoadingEntityType">
+            <LoadingIndicator />
+        </div>
+    </TransitionVerticalCollapse>
+
+    <TransitionVerticalCollapse>
+        <div v-if="!!entityType && !isLoadingEntityType">
+            <div class="d-flex align-items-center">
+                <h4 class="flex-grow-1">Criteria</h4>
+
+                <Toggle v-model="isAdvanced"
+                        trueText="Advanced"
+                        falseText="Simple"
+                        btnSize="xs" />
+            </div>
+
+            <template v-if="isAdvanced">
+                <CodeEditor v-model="advancedCriteria"
+                            label="Advanced Filter"
+                            editor="monaco"
+                            rules="required" />
+            </template>
+            <template v-else>
+                <SimpleCriteria v-model="simpleCriteria"
+                                :properties="properties" />
+            </template>
+        </div>
+    </TransitionVerticalCollapse>
+</template>
+
+<script setup lang="ts">
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import EntityTypePicker from "@Obsidian/Controls/entityTypePicker.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import SimpleCriteria from "./EntityChange/simpleCriteria.partial.obs";
+    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { EntityChangeModificationType, EntityChangeModificationTypeDescription } from "@Obsidian/Enums/Core/Automation/Triggers/entityChangeModificationType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
+    import { standardDynamicComponentProps, updateRefValue } from "@Obsidian/Utility/component";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { toNumber, toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { computed, ref, watch } from "vue";
+
+    const enum ConfigurationKey {
+        EntityType = "entityType",
+        TriggeredOn = "triggeredOn",
+        FilterMode = "filterMode",
+        SimpleCriteria = "simpleCriteria",
+        AdvancedCriteria = "advancedCriteria",
+    }
+
+    const enum OptionKey {
+        Properties = "properties",
+    }
+
+    const props = defineProps(standardDynamicComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const entityType = ref<ListItemBag | null>(safeParseJson<ListItemBag>(props.modelValue[ConfigurationKey.EntityType]) ?? null);
+    const triggeredOn = ref<string[]>(parseTriggeredOn(props.modelValue[ConfigurationKey.TriggeredOn]));
+    const filterMode = ref<number>(toNumberOrNull(props.modelValue[ConfigurationKey.FilterMode]) ?? 0);
+    const simpleCriteria = ref(props.modelValue[ConfigurationKey.SimpleCriteria] ?? "");
+    const advancedCriteria = ref(props.modelValue[ConfigurationKey.AdvancedCriteria] ?? "");
+
+    const properties = ref<string[]>(safeParseJson<string[]>(props.options[OptionKey.Properties]) ?? []);
+
+    const isLoadingEntityType = ref(false);
+
+    let entityChangeCancellationSource: CancellationTokenSource | null = null;
+
+    const triggeredOnItems = enumToListItemBag(EntityChangeModificationTypeDescription);
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Determines if the advanced criteria editor should be shown.
+     */
+    const isAdvanced = computed({
+        get() {
+            return filterMode.value === 1;
+        },
+        set(value: boolean) {
+            filterMode.value = value ? 1 : 0;
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Parses the `triggeredOn` configuration key value into a list of selected
+     * EntityChangeModificationType values.
+     *
+     * @param triggeredOnValue The value of the triggeredOn property.
+     *
+     * @returns The list of triggered on values.
+     */
+    function parseTriggeredOn(triggeredOnValue: string | null | undefined): string[] {
+        var triggeredOn = toNumber(triggeredOnValue);
+        const triggeredOnItems: string[] = [];
+
+        if (!triggeredOn) {
+            return [];
+        }
+
+        if (triggeredOn & EntityChangeModificationType.Added) {
+            triggeredOnItems.push(EntityChangeModificationType.Added.toString());
+        }
+
+        if (triggeredOn & EntityChangeModificationType.Modified) {
+            triggeredOnItems.push(EntityChangeModificationType.Modified.toString());
+        }
+
+        if (triggeredOn & EntityChangeModificationType.Deleted) {
+            triggeredOnItems.push(EntityChangeModificationType.Deleted.toString());
+        }
+
+        return triggeredOnItems;
+    }
+
+    /**
+     * Updates the properties list based on the selected entity type.
+     *
+     * @param entityTypeValue The value of the selected entity type.
+     * @param token The cancellation token to cancel the request if needed.
+     */
+    async function updateProperties(entityTypeValue: string, token: ICancellationToken): Promise<void> {
+        if (token.isCancellationRequested) {
+            return;
+        }
+
+        if (!entityTypeValue) {
+            properties.value = [];
+            return;
+        }
+
+        try {
+            const result = await props.executeRequest({ entityType: entityTypeValue });
+
+            if (result?.properties) {
+                properties.value = safeParseJson<string[]>(result.properties) ?? [];
+            }
+            else {
+                properties.value = [];
+            }
+        }
+        catch (error) {
+            if (!token.isCancellationRequested) {
+                properties.value = [];
+                await alert(error instanceof Error ? error.message : "Unable to load properties for the selected entity type.");
+            }
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the entity type is changed. This will update the properties
+     * that are available for selection.
+     */
+    async function onEntityTypeChanged(): Promise<void> {
+        entityChangeCancellationSource?.cancel();
+        entityChangeCancellationSource = new CancellationTokenSource();
+
+        // Immediately clear values that are no longer valid.
+        properties.value = [];
+        simpleCriteria.value = "";
+
+        const token = entityChangeCancellationSource.token;
+        const entityTypeValue = entityType.value?.value ?? "null";
+
+        // If the update process takes more than 100ms, then hide the UI.
+        const timer = window.setTimeout(() => {
+            if (!token.isCancellationRequested) {
+                isLoadingEntityType.value = true;
+            }
+        }, 100);
+
+        await updateProperties(entityTypeValue, token);
+
+        window.clearTimeout(timer);
+
+        if (token.isCancellationRequested) {
+            return;
+        }
+
+        isLoadingEntityType.value = false;
+    }
+
+    // #endregion
+
+    watch(entityType, () => onEntityTypeChanged());
+
+    watch([entityType, filterMode, triggeredOn, simpleCriteria, advancedCriteria], () => {
+        const newValues = { ...props.modelValue };
+
+        newValues[ConfigurationKey.EntityType] = JSON.stringify(entityType.value);
+        newValues[ConfigurationKey.TriggeredOn] = triggeredOn.value.map(toNumber).reduce((a, b) => a | b, 0).toString();
+        newValues[ConfigurationKey.FilterMode] = filterMode.value.toString();
+        newValues[ConfigurationKey.SimpleCriteria] = simpleCriteria.value;
+        newValues[ConfigurationKey.AdvancedCriteria] = advancedCriteria.value;
+
+        emit("update:modelValue", newValues);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(entityType, safeParseJson<ListItemBag>(props.modelValue[ConfigurationKey.EntityType]) ?? null);
+        updateRefValue(triggeredOn, parseTriggeredOn(props.modelValue[ConfigurationKey.TriggeredOn]));
+        updateRefValue(filterMode, toNumberOrNull(props.modelValue[ConfigurationKey.FilterMode]) ?? 0);
+        updateRefValue(simpleCriteria, props.modelValue[ConfigurationKey.SimpleCriteria] ?? "");
+        updateRefValue(advancedCriteria, props.modelValue[ConfigurationKey.AdvancedCriteria] ?? "");
+
+        // If this triggered an entityType change, cancel it since we already
+        // have the values we need.
+        entityChangeCancellationSource?.cancel();
+        entityChangeCancellationSource = null;
+    });
+
+    watch(() => props.options[OptionKey.Properties], () => {
+        properties.value = safeParseJson<string[]>(props.options[OptionKey.Properties]) ?? [];
+    });
+</script>

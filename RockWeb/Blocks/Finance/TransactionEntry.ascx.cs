@@ -27,6 +27,7 @@ using Rock;
 using Rock.Attribute;
 using Rock.Bus.Message;
 using Rock.Communication;
+using Rock.Crm.RecordSource;
 using Rock.Data;
 using Rock.Financial;
 using Rock.Lava;
@@ -151,7 +152,7 @@ namespace RockWeb.Blocks.Finance
 
     [DefinedValueField( "Connection Status",
         Key = AttributeKey.ConnectionStatus,
-        Description = "The connection status to use for new individuals (default: 'Prospect'.)",
+        Description = "The connection status to use for new individuals (default: 'Prospect').",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_CONNECTION_STATUS,
         IsRequired = true,
         AllowMultiple = false,
@@ -160,37 +161,46 @@ namespace RockWeb.Blocks.Finance
 
     [DefinedValueField( "Record Status",
         Key = AttributeKey.RecordStatus,
-        Description = "The record status to use for new individuals (default: 'Pending'.)",
+        Description = "The record status to use for new individuals (default: 'Pending').",
         DefinedTypeGuid = Rock.SystemGuid.DefinedType.PERSON_RECORD_STATUS,
         IsRequired = true,
         AllowMultiple = false,
         DefaultValue = Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_PENDING,
         Order = 14 )]
 
+    [DefinedValueField( "Record Source",
+        Key = AttributeKey.RecordSource,
+        Description = "The record source to use for new individuals (default = 'Giving'). If a 'RecordSource' page parameter is found, it will be used instead.",
+        DefinedTypeGuid = Rock.SystemGuid.DefinedType.RECORD_SOURCE_TYPE,
+        IsRequired = true,
+        AllowMultiple = false,
+        DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_GIVING,
+        Order = 15 )]
+
     [BooleanField( "Enable Comment Entry",
         Key = AttributeKey.EnableCommentEntry,
         Description = "Allows the guest to enter the value that's put into the comment field (will be appended to the 'Payment Comment Template' setting)",
         DefaultBooleanValue = false,
-        Order = 15 )]
+        Order = 16 )]
 
     [TextField( "Comment Entry Label",
         Key = AttributeKey.CommentEntryLabel,
         Description = "The label to use on the comment edit field (e.g. Trip Name to give to a specific trip).",
         IsRequired = false,
         DefaultValue = "Comment",
-        Order = 16 )]
+        Order = 17 )]
 
     [BooleanField( "Enable Business Giving",
         Key = AttributeKey.EnableBusinessGiving,
         Description = "Should the option to give as a business be displayed?",
         DefaultBooleanValue = true,
-        Order = 17 )]
+        Order = 18 )]
 
     [BooleanField( "Enable Anonymous Giving",
         Key = AttributeKey.EnableAnonymousGiving,
         Description = "Should the option to give anonymously be displayed. Giving anonymously will display the transaction as 'Anonymous' in places where it is shown publicly, for example, on a list of fundraising contributors.",
         DefaultBooleanValue = false,
-        Order = 18 )]
+        Order = 19 )]
 
     #endregion Default Category
 
@@ -466,6 +476,7 @@ namespace RockWeb.Blocks.Finance
             public const string AddressType = "AddressType";
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
+            public const string RecordSource = "RecordSource";
             public const string EnableCommentEntry = "EnableCommentEntry";
             public const string CommentEntryLabel = "CommentEntryLabel";
             public const string EnableBusinessGiving = "EnableBusinessGiving";
@@ -2278,6 +2289,8 @@ namespace RockWeb.Blocks.Finance
                             person.RecordStatusValueId = dvcRecordStatus.Id;
                         }
 
+                        person.RecordSourceValueId = GetRecordSourceValueId();
+
                         // Create Person/Family
                         familyGroup = PersonService.SaveNewPerson( person, rockContext, null, false );
                     }
@@ -2380,6 +2393,8 @@ namespace RockWeb.Blocks.Finance
                     person.RecordStatusValueId = dvcRecordStatus.Id;
                 }
 
+                person.RecordSourceValueId = GetRecordSourceValueId();
+
                 // Create Person/Family
                 PersonService.SaveNewPerson( person, rockContext, null, false );
             }
@@ -2462,6 +2477,8 @@ namespace RockWeb.Blocks.Finance
                         business.RecordStatusValueId = dvcRecordStatus.Id;
                     }
 
+                    business.RecordSourceValueId = GetRecordSourceValueId();
+
                     // Create Person/Family
                     familyGroup = PersonService.SaveNewPerson( business, rockContext, null, false );
 
@@ -2519,6 +2536,18 @@ namespace RockWeb.Blocks.Finance
             }
 
             return person;
+        }
+
+        /// <summary>
+        /// Gets the record source to use for new individuals.
+        /// </summary>
+        /// <returns>
+        /// The identifier of the Record Source Type <see cref="DefinedValue"/> to use.
+        /// </returns>
+        private int? GetRecordSourceValueId()
+        {
+            return RecordSourceHelper.GetSessionRecordSourceValueId()
+                ?? DefinedValueCache.Get( GetAttributeValue( AttributeKey.RecordSource ).AsGuid() )?.Id;
         }
 
         /// <summary>

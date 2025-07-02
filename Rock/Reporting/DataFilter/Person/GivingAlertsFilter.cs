@@ -17,6 +17,7 @@
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -65,22 +66,34 @@ namespace Rock.Reporting.DataFilter
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/givingAlertsFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var alertTypeService = new FinancialTransactionAlertTypeService( rockContext );
+
+            var alertTypeOptions = alertTypeService.Queryable()
+                .Select( fta => new ListItemBag() { Text = fta.Name, Value = fta.Guid.ToString() } )
+                .ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/givingAlertsFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "alertTypeOptions", alertTypeOptions.ToCamelCaseJson( false, true ) }
+                },
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             var config = SelectionConfig.Parse( selection );
             var alertTypeService = new FinancialTransactionAlertTypeService( rockContext );
-
-            var alertTypeOptions = alertTypeService.Queryable()
-                .Select( fta => new ListItemBag() { Text = fta.Name, Value = fta.Guid.ToString() } )
-                .ToList();
             var alertTypes = new List<Guid>();
 
             if ( config?.TransactionAlertTypeIds != null )
@@ -93,7 +106,6 @@ namespace Rock.Reporting.DataFilter
 
             var data = new Dictionary<string, string>
             {
-                { "alertTypeOptions", alertTypeOptions.ToCamelCaseJson(false, true) },
                 { "alertTypes", alertTypes.ToJson() },
                 { "dateRange", config?.DelimitedDateRangeValues },
                 { "amount", config?.Amount.ToString() },

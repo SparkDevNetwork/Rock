@@ -12,7 +12,7 @@
                 <div class="row">
                     <div ref="searchContainer" class="search-container col-md-9 col-sm-8">
                         <div class="mb-3">
-                            <TextBox v-model="searchText" placeholder="Search" class="form-control" isClearable />
+                            <TextBox v-model="searchText" placeholder="Search" class="form-control" isClearable @keydown.enter="handleEnterKey" />
                         </div>
                     </div>
                     <div class="control-wrapper col-md-3 col-sm-4">
@@ -30,9 +30,9 @@
                 </div>
                 <div v-for="(category, index) in categorySections" :key="index" style="width: 100%;">
                     <div v-if="category.children && category.children.length > 0 && filteredSettings(category).length > 0">
-                        <h2>{{ category.title }}</h2>
+                        <h4>{{ category.title }}</h4>
                         <div class="list-as-blocks">
-                            <ul class="mb-5">
+                            <ul>
                                 <li v-for="(setting, index) in filteredSettings(category)" :key="index">
                                     <a :href="setting.url ?? parentUrl" :title="getTitle(setting)">
                                         <i v-if="setting.icon !== ''" :class="setting.icon"></i>
@@ -68,7 +68,7 @@
     const parentUrl = window.location.href;
     const currentCategoryIndex = ref(toNumber(preferences.getValue(PreferenceKey.SelectedCategoryIndex)) ?? 0);
     const currentCategoryTitle = ref<string | null | undefined>(preferences.getValue(PreferenceKey.SelectedCategoryTitle).length > 0 ? preferences.getValue(PreferenceKey.SelectedCategoryTitle) : "All");
-    const pages = ref<PageSearchPageBag[]>([{id: -1, title: "All", children: [], icon: null, description: null, parentPageId: null, pageDisplayDescription: false}, ...config.pages ?? []]);
+    const pages = ref<PageSearchPageBag[]>([{ id: -1, title: "All", children: [], icon: null, description: null, parentPageId: null, pageDisplayDescription: false }, ...config.pages ?? []]);
     const searchText = ref("");
     const searchContainer = ref<HTMLElement>();
     const isSortedAlphabetically = ref(preferences.getValue(PreferenceKey.IsSortedAlphabetically) === "true");
@@ -150,6 +150,40 @@
         return [];
     };
 
+    /**
+     * Navigates to the single visible filtered item when the Enter key is pressed.
+     */
+    function handleEnterKey(): void {
+        // Search for visible <li> inside .list-as-blocks
+        const allLists = document.querySelectorAll(".list-as-blocks ul");
+
+        let visibleList: HTMLUListElement | null = null;
+
+        // Find the first visible list
+        for (const list of Array.from(allLists)) {
+            const style = window.getComputedStyle(list);
+            if (style.display !== "none" && style.visibility !== "hidden") {
+                visibleList = list as HTMLUListElement;
+                break;
+            }
+        }
+
+        if (!visibleList) {
+            return;
+        }
+
+        const visibleItems = Array.from(visibleList.querySelectorAll("li")).filter(li => {
+            const style = window.getComputedStyle(li);
+            return style.display !== "none" && style.visibility !== "hidden";
+        });
+
+        if (visibleItems.length === 1) {
+            const link = visibleItems[0].querySelector("a") as HTMLAnchorElement | null;
+            if (link?.href) {
+                window.location.href = link.href;
+            }
+        }
+    }
     // #endregion
 
 </script>

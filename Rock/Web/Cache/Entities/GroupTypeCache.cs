@@ -24,6 +24,7 @@ using Rock.Attribute;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Enums.CheckIn;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Model;
 
@@ -39,6 +40,14 @@ namespace Rock.Web.Cache
         private TemplateConfigurationData _checkInConfiguration;
 
         private AreaConfigurationData _checkInAreaData;
+
+        /// <summary>
+        /// The check-in template purpose identifier. This is cached here because
+        /// there are places in check-in where we need to know if a group type
+        /// is a check-in template, but since most aren't we end up pulling this
+        /// value from cache repeatedly every time that group type is checked.
+        /// </summary>
+        private static int? _checkInTemplateTypeId;
 
         /// <summary>
         /// The parent group type identifiers.
@@ -892,6 +901,44 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool IsChatChannelAlwaysShown { get; private set; }
 
+        /// <inheritdoc cref="GroupType.ChatPushNotificationMode"/>
+        [DataMember]
+        public ChatNotificationMode ChatPushNotificationMode { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
+        /// the source of <see cref="GroupMember"/>s added to <see cref="Group"/>s of this type. This can be overridden
+        /// by <see cref="Group.GroupMemberRecordSourceValueId"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        [DataMember]
+        public int? GroupMemberRecordSourceValueId { get; private set; }
+
+        /// <summary>
+        /// Gets or sets the default Record Source Type <see cref="DefinedValueCache"/>, representing the source of
+        /// <see cref="GroupMember"/>s added to <see cref="Group"/>s of this type. This can be overridden by
+        /// <see cref="Group.GroupMemberRecordSourceValue"/> if <see cref="AllowGroupSpecificRecordSource"/> is
+        /// <see langword="true"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="DefinedValueCache"/> representing the Record Source Type.
+        /// </value>
+        public DefinedValueCache GroupMemberRecordSourceValue => GroupMemberRecordSourceValueId.HasValue
+            ? DefinedValueCache.Get( GroupMemberRecordSourceValueId.Value )
+            : null;
+
+        /// <summary>
+        /// Gets or sets whether <see cref="Group"/>s of this type can override <see cref="GroupMemberRecordSourceValueId"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> representing whether <see cref="Group"/>s of this type can override
+        /// <see cref="GroupMemberRecordSourceValueId"/>.
+        /// </value>
+        [DataMember]
+        public bool AllowGroupSpecificRecordSource { get; private set; }
+
         #endregion
 
         #region Public Methods
@@ -1058,9 +1105,12 @@ namespace Rock.Web.Cache
 
             if ( _checkInConfiguration == null )
             {
-                var checkinTemplateTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), rockContext )?.Id;
+                if ( !_checkInTemplateTypeId.HasValue )
+                {
+                    _checkInTemplateTypeId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUPTYPE_PURPOSE_CHECKIN_TEMPLATE.AsGuid(), rockContext )?.Id;
+                }
 
-                if ( GroupTypePurposeValueId != checkinTemplateTypeId )
+                if ( GroupTypePurposeValueId != _checkInTemplateTypeId )
                 {
                     return null;
                 }
@@ -1235,6 +1285,9 @@ namespace Rock.Web.Cache
             IsLeavingChatChannelAllowed = groupType.IsLeavingChatChannelAllowed;
             IsChatChannelPublic = groupType.IsChatChannelPublic;
             IsChatChannelAlwaysShown = groupType.IsChatChannelAlwaysShown;
+            ChatPushNotificationMode = groupType.ChatPushNotificationMode;
+            GroupMemberRecordSourceValueId = groupType.GroupMemberRecordSourceValueId;
+            AllowGroupSpecificRecordSource = groupType.AllowGroupSpecificRecordSource;
         }
 
         /// <summary>

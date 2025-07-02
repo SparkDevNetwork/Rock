@@ -246,6 +246,12 @@ namespace RockWeb.Blocks.Crm
                 // Process Query String parameter "Set", specifying a set of people to merge.
                 int? setId = PageParameter( "Set" ).AsIntegerOrNull();
 
+                if ( setId == null )
+                {
+                    var mergeIdKey = PageParameter( "Set" );
+                    setId = Rock.Utility.IdHasher.Instance.GetId( mergeIdKey );
+                }
+
                 if ( setId.HasValue )
                 {
                     selectedPersonIds = new EntitySetItemService( new RockContext() )
@@ -574,6 +580,7 @@ namespace RockWeb.Blocks.Crm
                         primaryPerson.RecordTypeValueId = GetNewIntValue( "RecordType" );
                         primaryPerson.RecordStatusValueId = GetNewIntValue( "RecordStatus" );
                         primaryPerson.RecordStatusReasonValueId = GetNewIntValue( "RecordStatusReason" );
+                        primaryPerson.RecordSourceValueId = GetNewIntValue( "RecordSource" );
                         primaryPerson.ConnectionStatusValueId = GetNewIntValue( "ConnectionStatus" );
                         primaryPerson.IsDeceased = GetNewBoolValue( "Deceased" ) ?? false;
                         primaryPerson.Gender = ( Gender ) GetNewEnumValue( "Gender", typeof( Gender ) );
@@ -581,7 +588,7 @@ namespace RockWeb.Blocks.Crm
                         primaryPerson.SetBirthDate( GetNewDateTimeValue( "BirthDate" ) );
                         primaryPerson.AnniversaryDate = GetNewDateTimeValue( "AnniversaryDate" );
                         primaryPerson.GraduationYear = GetNewIntValue( "GraduationYear" );
-                        primaryPerson.Email = GetNewStringValue( "Email" );
+                        primaryPerson.Email = GetNewStringValue( "Email" )?.Trim().ToLower();
                         primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive" ) ?? true;
                         primaryPerson.EmailNote = GetNewStringValue( "EmailNote" );
                         primaryPerson.EmailPreference = ( EmailPreference ) GetNewEnumValue( "EmailPreference", typeof( EmailPreference ) );
@@ -2625,9 +2632,20 @@ AND Attendance.Id != @FirstTimeRecordId
                 valuesRow.PersonPersonPropertyList = new List<ValuesRowPersonPersonProperty>();
 
                 // Check if this row should be considered "matching" and set the IsMatchingRow property
-                if ( personProperty.Values.Select( v => v.Value ).Distinct().Count() == 1 )
+                if ( personProperty.Key != "Email" )
                 {
-                    valuesRow.IsMatchingRow = true;
+                    if ( personProperty.Values.Select( v => v.Value ?? string.Empty ).Distinct().Count() == 1 )
+                    {
+                        valuesRow.IsMatchingRow = true;
+                    }
+                }
+                else
+                {
+                    // Disregard capitalization for email addresses
+                    if ( personProperty.Values.Select( v => v.Value?.Trim().ToLower() ?? string.Empty ).Distinct().Count() == 1 )
+                    {
+                        valuesRow.IsMatchingRow = true;
+                    }
                 }
 
                 foreach ( var person in People )
@@ -2703,6 +2721,7 @@ AND Attendance.Id != @FirstTimeRecordId
             AddProperty( "RecordType", person.Id, person.RecordTypeValue );
             AddProperty( "RecordStatus", person.Id, person.RecordStatusValue );
             AddProperty( "RecordStatusReason", person.Id, person.RecordStatusReasonValue );
+            AddProperty( "RecordSource", person.Id, person.RecordSourceValue );
             AddProperty( "ConnectionStatus", person.Id, person.ConnectionStatusValue );
             AddProperty( "Deceased", person.Id, person.IsDeceased );
             AddProperty( "Gender", person.Id, person.Gender );

@@ -26,6 +26,8 @@ using Rock.Cms;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkDetail;
@@ -99,6 +101,14 @@ namespace Rock.Blocks.Cms
                 box.Options = GetBoxOptions( box.IsEditable );
                 box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<PageShortLink>();
 
+                var defaultSite = box.Options.SiteOptions.FirstOrDefault();
+                var defaultSiteId = SiteCache.GetId( defaultSite?.Value.AsGuid() ?? Guid.Empty ) ?? 0;
+
+                if ( defaultSiteId != 0 && box.Entity.Token.IsNullOrWhiteSpace() )
+                {
+                    box.Entity.Token = new PageShortLinkService( RockContext ).GetUniqueToken( defaultSiteId, _minTokenLength );
+                }
+
                 return box;
             }
         }
@@ -111,21 +121,46 @@ namespace Rock.Blocks.Cms
         /// <returns>The options that provide additional details to the block.</returns>
         private PageShortLinkDetailOptionsBag GetBoxOptions( bool isEditable )
         {
-            var options = new PageShortLinkDetailOptionsBag
+            var siteOptions = SiteCache
+                .All()
+                .Where( site => site.EnabledForShortening )
+                .OrderBy( site => site.Name )
+                .Select( site => new ListItemBag
+                {
+                    Value = site.Guid.ToString(),
+                    Text = site.Name
+                } )
+                .ToList();
+
+            var defaultDomainUrls = new List<ListItemBag>();
+
+            foreach ( var siteOption in siteOptions )
             {
-                SiteOptions = Web.Cache.SiteCache
-                    .All()
-                    .Where( site => site.EnabledForShortening && site.SiteType == SiteType.Web )
-                    .OrderBy( site => site.Name )
-                    .Select( site => new ListItemBag
+                var siteGuid = siteOption.Value.AsGuidOrNull();
+
+                if ( siteGuid.HasValue )
+                {
+                    var site = SiteCache.Get( siteGuid.Value );
+                    if ( site == null )
+                    {
+                        continue;
+                    }
+
+                    var defaultUrl = new SiteService( RockContext ).GetDefaultDomainUri( site.Id );
+
+                    defaultDomainUrls.Add( new ListItemBag
                     {
                         Value = site.Guid.ToString(),
-                        Text = site.Name
-                    } )
-                   .ToList(),
-            };
+                        Text = defaultUrl.ToString()
+                    } );
+                }
+            }
 
-            return options;
+            return new PageShortLinkDetailOptionsBag
+            {
+                SiteOptions = siteOptions,
+                DefaultDomainUrls = defaultDomainUrls
+            };
         }
 
         /// <summary>
@@ -257,6 +292,8 @@ namespace Rock.Blocks.Cms
                 Site = entity.Site.ToListItemBag(),
                 Token = entity.Token,
                 Url = entity.Url,
+                Category = entity.Category.ToListItemBag(),
+                IsPinned = entity.IsPinned,
                 ScheduledRedirects = entity.GetScheduleData()
                     .Schedules
                     ?.Select( ConvertToScheduledRedirectBag )
@@ -295,6 +332,12 @@ namespace Rock.Blocks.Cms
 
             var bag = GetCommonEntityBag( entity );
 
+            // If we are creating a new Short Link than set IsPinned to True by default.
+            if ( entity.Id == 0 )
+            {
+                bag.IsPinned = true;
+            }
+
             var utmSettings = entity.GetAdditionalSettings<UtmSettings>();
 
             bag.UtmSettings = new UtmSettingsBag
@@ -327,6 +370,12 @@ namespace Rock.Blocks.Cms
 
             box.IfValidProperty( nameof( box.Bag.Url ),
                 () => entity.Url = box.Bag.Url );
+
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
+
+            box.IfValidProperty( nameof( box.Bag.IsPinned ),
+                () => entity.IsPinned = box.Bag.IsPinned );
 
             box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
@@ -677,6 +726,23 @@ GROUP BY [Bucket], [Partition]";
                 .OrderBy( r => r.Bucket )
                 .ThenBy( r => r.Partition )
                 .ToList();
+        }
+
+        /// <inheritdoc/>
+        protected override SecurityGrant GetSecurityGrant( PageShortLink entity )
+        {
+            var securityGrant = base.GetSecurityGrant( entity );
+
+            var utmCampaignType = DefinedTypeCache.Get( SystemGuid.DefinedType.UTM_CAMPAIGN.AsGuid(), RockContext );
+            var utmMediumType = DefinedTypeCache.Get( SystemGuid.DefinedType.UTM_MEDIUM.AsGuid(), RockContext );
+            var utmSourceType = DefinedTypeCache.Get( SystemGuid.DefinedType.UTM_SOURCE.AsGuid(), RockContext );
+
+            securityGrant
+                .AddRule( new AddDefinedValueToTypeGrantRule( utmCampaignType.Id ) )
+                .AddRule( new AddDefinedValueToTypeGrantRule( utmMediumType.Id ) )
+                .AddRule( new AddDefinedValueToTypeGrantRule( utmSourceType.Id ) );
+
+            return securityGrant;
         }
 
         #endregion

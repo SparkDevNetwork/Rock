@@ -67,6 +67,7 @@
                                     Help="The group member status that new registrants should be added to group with." />
                                 <Rock:DefinedValuePicker ID="dvpConnectionStatus" runat="server" Label="Connection Status"
                                     Help="The connection status to use for new individuals. Setting this here will override the setting on the Registration Entry block." />
+                                <Rock:DefinedValuePicker ID="dvpRecordSource" runat="server" Label="Record Source" Help="The record source to use for new individuals. If a 'RecordSource' page parameter is found at the time of registration, it will be used instead." />
                             </div>
                             <div class="col-md-8">
                                 <div class="row">
@@ -405,7 +406,7 @@
                     <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Info" />
 
                     <div class="row">
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockLiteral ID="lGroupType" runat="server" Label="Group Type" />
                             <Rock:RockLiteral ID="lWorkflowType" runat="server" Label="Registration Workflow" />
                             <Rock:RockLiteral ID="lRequiredSignedDocument" runat="server" Label="Required Signature Document" />
@@ -420,7 +421,7 @@
                                 </div>
                             </Rock:RockControlWrapper>
                         </div>
-                        <div class="col-md-6">
+                        <div class="col-md-4">
                             <Rock:RockLiteral ID="lCost" runat="server" Label="Cost" />
                             <Rock:RockLiteral ID="lMinimumInitialPayment" runat="server" Label="Minimum Initial Payment" />
                             <Rock:RockLiteral ID="lDefaultPaymentAmount" runat="server" Label="Default Payment Amount" />
@@ -435,6 +436,18 @@
                                 </asp:Repeater>
                             </Rock:RockControlWrapper>
                         </div>
+                        <div class="col-md-4">
+                            <div class="form-group static-control">
+                                <asp:Label ID="lGroupPlacements" runat="server" CssClass="control-label" Text="Group Placements"></asp:Label>
+                                <asp:Repeater ID="rptGroupPlacements" runat="server">
+                                    <ItemTemplate>
+                                        <li>
+                                            <asp:HyperLink ID="hlPlacement" runat="server" NavigateUrl='<%# Eval("Url") %>' Text='<%# Eval("Name") %>' />
+                                        </li>
+                                    </ItemTemplate>
+                                </asp:Repeater>
+                            </div>
+                        </div>
                     </div>
                     <div class="row">
                         <div class="col-md-12">
@@ -448,9 +461,6 @@
                         <Rock:HiddenFieldWithClass ID="hfHasRegistrations" runat="server" CssClass="js-has-registrations" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-template" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnPlacements" runat="server" CssClass="btn btn-default btn-sm btn-square" OnClick="btnPlacements_Click">
-                                <i class="fa fa-random"></i>
-                            </asp:LinkButton>
                             <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </span>

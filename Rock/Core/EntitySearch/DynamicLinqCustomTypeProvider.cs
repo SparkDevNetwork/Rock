@@ -32,7 +32,7 @@ namespace Rock.Core.EntitySearch
     /// This allows us to add in custom extension methods that should be available
     /// during entity search operations.
     /// </summary>
-    class DynamicLinqCustomTypeProvider : IDynamicLinkCustomTypeProvider
+    class DynamicLinqCustomTypeProvider : IDynamicLinqCustomTypeProvider
     {
         #region Fields
 

@@ -1593,5 +1593,6 @@ const configurationValues: RegistrationEntryInitializationBox = {
     "showSmsOptIn": false,
     "isPaymentPlanAllowed": false,
     "isPaymentPlanConfigured": false,
-    "disableCaptchaSupport": true
+    "disableCaptchaSupport": true,
+    "areCurrentFamilyMembersShown": false
 };

@@ -1,12 +1,9 @@
 <template>
     <div class="row">
         <div class="col-md-6">
-            <GroupPicker v-model="groups"
-                         label="Group(s)"
-                         multiple />
+            <GroupPicker v-model="groups" label="Group(s)" multiple />
 
-            <InlineCheckBox v-model="includeChildGroups"
-                            label="Include Child Group(s)" />
+            <InlineCheckBox v-model="includeChildGroups" label="Include Child Group(s)" />
 
             <div class="margin-l-lg">
                 <InlineCheckBox v-model="includeSelectedGroups"
@@ -32,10 +29,11 @@
             <DropDownList v-model="groupMemberStatus"
                           label="with Group Member Status"
                           help="Select a specific group member status to only include group members with that status. Leaving this blank will return all members."
-                          :items="groupMemberStatusItems" />
+                          :items="groupMemberStatusItems"
+                          showBlankItem
+                          enhanceForLongLists />
 
-            <Panel title="Advanced Filters"
-                   hasCollapse>
+            <Panel title="Advanced Filters" hasCollapse>
                 <SlidingDateRangePicker v-model="dateAdded"
                                         label="Date Added"
                                         help="Select the date range that the person was added to the group. Leaving this blank will not restrict results to a date range." />
@@ -67,6 +65,8 @@
     import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
     import { dataViewFilterProps } from "@Obsidian/Utility/component";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { InGroupFilterGetGroupRolesForGroupsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/inGroupFilterGetGroupRolesForGroupsOptionsBag";
+    import { Guid } from "@Obsidian/Types";
 
     const props = defineProps(dataViewFilterProps);
     const emit = defineEmits<{
@@ -80,18 +80,47 @@
     const includeSelectedGroups = ref<boolean>(asBoolean(props.modelValue.includeSelectedGroups));
     const includeAllDescendants = ref<boolean>(asBoolean(props.modelValue.includeAllDescendants));
     const includeInactiveGroups = ref<boolean>(asBoolean(props.modelValue.includeInactiveGroups));
-    const groupMemberRoles = ref<string[]>(props.modelValue.groupMemberRoles?.split(",") ?? []);
+    const groupMemberRoles = ref<Guid[]>(props.modelValue.groupMemberRoles?.split(",") ?? []);
     const groupMemberStatus = ref(props.modelValue.groupMemberStatus ?? "");
     const dateAdded = ref(parseSlidingDateRangeString(props.modelValue.dateAdded ?? ""));
     const firstAttendance = ref(parseSlidingDateRangeString(props.modelValue.firstAttendance ?? ""));
     const lastAttendance = ref(parseSlidingDateRangeString(props.modelValue.lastAttendance ?? ""));
 
-    // TODO: This needs to be updated in an API call whenever groups changes.
     const groupMemberRoleItems = ref<ListItemBag[]>(safeParseJson(props.modelValue.groupMemberRoleItems) ?? []);
 
     const groupMemberStatusItems = enumToListItemBag(GroupMemberStatusDescription);
 
     // #endregion
+
+    async function loadGroupMemberRoleItems(): Promise<ListItemBag[]> {
+        const options: InGroupFilterGetGroupRolesForGroupsOptionsBag = {
+            groupGuids: groups.value.map(g => g.value) as Guid[],
+            includeChildGroups: includeChildGroups.value,
+            includeSelectedGroups: includeSelectedGroups.value,
+            includeAllDescendants: includeAllDescendants.value,
+            includeInactiveGroups: includeInactiveGroups.value,
+        };
+
+        const response = await props.executeRequest({
+            action: "GetGroupRolesForGroups",
+            options: JSON.stringify(options)
+        });
+
+        const groupRoles = safeParseJson<ListItemBag[]>(response?.groupRoles ?? "[]");
+
+        if (Array.isArray(groupRoles)) {
+            return groupRoles;
+        }
+        else {
+            console.error("Error fetching items from server", response?.Message);
+            return [];
+        }
+    }
+
+    watch([groups, includeChildGroups, includeSelectedGroups, includeAllDescendants, includeInactiveGroups], async () => {
+        groupMemberRoleItems.value = await loadGroupMemberRoleItems();
+    });
+
 
     watch([groups, includeChildGroups, includeSelectedGroups, includeAllDescendants, includeInactiveGroups, groupMemberRoles, groupMemberStatus, dateAdded, firstAttendance, lastAttendance], () => {
         const newData = { ...props.modelValue };

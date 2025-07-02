@@ -1,462 +1,52 @@
-﻿<?xml version="1.0" encoding="utf-8"?>
-<Project ToolsVersion="15.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
-  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.props" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" />
-  <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
-    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
-    <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{E8C5F154-201F-4C67-BCDC-34787DEFFEAE}</ProjectGuid>
-    <OutputType>Library</OutputType>
-    <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>Rock.Blocks</RootNamespace>
-    <AssemblyName>Rock.Blocks</AssemblyName>
-    <TargetFrameworkVersion>v4.7.2</TargetFrameworkVersion>
-    <FileAlignment>512</FileAlignment>
-    <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
-    <NuGetPackageImportStamp>
-    </NuGetPackageImportStamp>
+    <TargetFramework>net472</TargetFramework>
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+    <RockWebPath>..\RockWeb</RockWebPath>
+    <CopyToRockWeb>True</CopyToRockWeb>
   </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
-    <DebugSymbols>true</DebugSymbols>
-    <DebugType>full</DebugType>
-    <Optimize>false</Optimize>
-    <OutputPath>bin\Debug\</OutputPath>
-    <DefineConstants>DEBUG;TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
-    <DebugType>pdbonly</DebugType>
-    <Optimize>true</Optimize>
-    <OutputPath>bin\Release\</OutputPath>
-    <DefineConstants>TRACE</DefineConstants>
-    <ErrorReport>prompt</ErrorReport>
-    <WarningLevel>4</WarningLevel>
-  </PropertyGroup>
-  <ItemGroup>
-    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.dll</HintPath>
-    </Reference>
-    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
-      <HintPath>..\packages\EntityFramework.6.4.4\lib\net45\EntityFramework.SqlServer.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.8.0.0\lib\net462\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.DependencyInjection.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.DependencyInjection.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.DependencyInjection.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Microsoft.Extensions.Logging.Abstractions, Version=8.0.0.0, Culture=neutral, PublicKeyToken=adb9793829ddae60, processorArchitecture=MSIL">
-      <HintPath>..\packages\Microsoft.Extensions.Logging.Abstractions.8.0.0\lib\net462\Microsoft.Extensions.Logging.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Rock.Common.Mobile">
-      <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
-      <Private>False</Private>
-    </Reference>
-    <Reference Include="System" />
-    <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
-    </Reference>
-    <Reference Include="System.ComponentModel.Composition" />
-    <Reference Include="System.ComponentModel.DataAnnotations" />
-    <Reference Include="System.Configuration" />
-    <Reference Include="System.Core" />
-    <Reference Include="System.Diagnostics.DiagnosticSource, Version=8.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Diagnostics.DiagnosticSource.8.0.0\lib\net462\System.Diagnostics.DiagnosticSource.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Memory, Version=4.0.1.2, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Memory.4.5.5\lib\net461\System.Memory.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Numerics" />
-    <Reference Include="System.Numerics.Vectors, Version=4.1.4.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Numerics.Vectors.4.5.0\lib\net46\System.Numerics.Vectors.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Runtime.CompilerServices.Unsafe, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Runtime.CompilerServices.Unsafe.6.0.0\lib\net461\System.Runtime.CompilerServices.Unsafe.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Threading.Tasks.Extensions, Version=4.2.0.1, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
-      <HintPath>..\packages\System.Threading.Tasks.Extensions.4.5.4\lib\net461\System.Threading.Tasks.Extensions.dll</HintPath>
-    </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.IO.Compression" />
-    <Reference Include="System.Web.Http, Version=5.2.3.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35" />
-    <Reference Include="System.Xml.Linq" />
-    <Reference Include="System.Data.DataSetExtensions" />
-    <Reference Include="Microsoft.CSharp" />
-    <Reference Include="System.Data" />
-    <Reference Include="System.Net.Http" />
-    <Reference Include="System.Xml" />
-    <Reference Include="UAParser, Version=3.1.44.0, Culture=neutral, PublicKeyToken=f7377bf021646069, processorArchitecture=MSIL">
-      <HintPath>..\packages\UAParser.3.1.44\lib\net45\UAParser.dll</HintPath>
-    </Reference>
-  </ItemGroup>
+
   <ItemGroup>
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>Properties\AssemblySharedInfo.cs</Link>
     </Compile>
-    <Compile Include="Administration\SystemConfiguration.cs" />
-    <Compile Include="Bus\BusStatus.cs" />
-    <Compile Include="Bus\ConsumerList.cs" />
-    <Compile Include="Bus\QueueList.cs" />
-    <Compile Include="CheckIn\CheckInKiosk.cs" />
-    <Compile Include="CheckIn\CheckInKioskSetup.cs" />
-    <Compile Include="CheckIn\CheckInScheduleBuilder.cs" />
-    <Compile Include="CheckIn\CloudPrintMonitor.cs" />
-    <Compile Include="CheckIn\Configuration\CheckInSimulator.cs" />
-    <Compile Include="CheckIn\Configuration\LabelDesigner.cs" />
-    <Compile Include="Cms\AdaptiveMessageAdaptationDetail.cs" />
-    <Compile Include="Cms\AdaptiveMessageDetail.cs" />
-    <Compile Include="Cms\AdaptiveMessageList.cs" />
-    <Compile Include="Cms\FileAssetManager.cs" />
-    <Compile Include="Cms\BlockTypeList.cs" />
-    <Compile Include="Cms\ContentChannelDetail.cs" />
-    <Compile Include="Cms\ContentChannelItemList.cs" />
-    <Compile Include="Cms\ContentChannelList.cs" />
-    <Compile Include="Cms\ContentChannelTypeList.cs" />
-    <Compile Include="Cms\ContentChannelTypeDetail.cs" />
-    <Compile Include="Cms\LavaShortcodeList.cs" />
-    <Compile Include="Cms\MediaAccountList.cs" />
-    <Compile Include="Cms\MediaFolderList.cs" />
-    <Compile Include="Cms\PersonalizationSegmentList.cs" />
-    <Compile Include="Cms\ThemeDetail.cs" />
-    <Compile Include="Communication\Chat\ChatConfiguration.cs" />
-    <Compile Include="Communication\Chat\ChatView.cs" />
-    <Compile Include="Communication\CommunicationEntryWizard.cs" />
-    <Compile Include="Communication\CommunicationEntry\ValidationContext.cs" />
-    <Compile Include="Communication\CommunicationEntry\ValidationContextExtensions.cs" />
-    <Compile Include="Cms\LogSettings.cs" />
-    <Compile Include="Communication\SmsConversations.cs" />
-    <Compile Include="Communication\CommunicationTemplateDetail.cs" />
-    <Compile Include="Core\PersonSuggestionList.cs" />
-    <Compile Include="Cms\PageSearch.cs" />
-    <Compile Include="Core\DocumentTypeList.cs" />
-    <Compile Include="Crm\Disc.cs" />
-    <Compile Include="Crm\PhotoUpload.cs" />
-    <Compile Include="Event\RegistrationInstanceActiveList.cs" />
-    <Compile Include="Core\ScheduleCategoryExclusionList.cs" />
-    <Compile Include="Core\ScheduledJobHistoryList.cs" />
-    <Compile Include="Lms\LearningClassActivityCompletionDetail.cs" />
-    <Compile Include="Lms\LearningClassActivityCompletionList.cs" />
-    <Compile Include="Lms\LearningClassActivityDetail.cs" />
-    <Compile Include="Lms\LearningClassContentPageDetail.cs" />
-    <Compile Include="Lms\LearningClassAnnouncementDetail.cs" />
-    <Compile Include="Lms\LearningClassDetail.cs" />
-    <Compile Include="Lms\LearningGradingSystemDetail.cs" />
-    <Compile Include="Lms\LearningGradingSystemList.cs" />
-    <Compile Include="Lms\LearningGradingSystemScaleDetail.cs" />
-    <Compile Include="Lms\LearningGradingSystemScaleList.cs" />
-    <Compile Include="Finance\FinancialPersonBankAccountList.cs" />
-    <Compile Include="Finance\FinancialScheduledTransactionList.cs" />
-    <Compile Include="Lms\LearningProgramCompletionDetail.cs" />
-    <Compile Include="Lms\LearningSemesterDetail.cs" />
-    <Compile Include="Lms\Public\PublicLearningClassWorkspace.cs" />
-    <Compile Include="Lms\Public\PublicLearningClassEnrollment.cs" />
-    <Compile Include="Lms\Public\PublicLearningCourseDetail.cs" />
-    <Compile Include="Lms\Public\PublicLearningCourseList.cs" />
-    <Compile Include="Lms\Public\PublicLearningProgramList.cs" />
-    <Compile Include="Administration\PageProperties.cs" />
-    <Compile Include="Finance\FinancialPersonSavedAccountDetail.cs" />
-    <Compile Include="Mobile\CheckIn\CheckIn.cs" />
-    <Compile Include="Security\Oidc\AuthClientDetail.cs" />
-    <Compile Include="Security\LoginHistory.cs" />
-    <Compile Include="Tv\AppleTvPageList.cs" />
-    <Compile Include="Cms\PageList.cs" />
-    <Compile Include="Cms\PageShortLinkClickList.cs" />
-    <Compile Include="Cms\PageShortLinkList.cs" />
-    <Compile Include="Cms\BlockList.cs" />
-    <Compile Include="Cms\PageShortLinkDialog.cs" />
-    <Compile Include="Tv\RokuApplicationDetail.cs" />
-    <Compile Include="Cms\LayoutList.cs" />
-    <Compile Include="Cms\PersistedDatasetList.cs" />
-    <Compile Include="Cms\PersonalLinkList.cs" />
-    <Compile Include="Cms\PersonalLinkSectionList.cs" />
-    <Compile Include="Cms\PageRouteList.cs" />
-    <Compile Include="Core\PersonFollowingList.cs" />
-    <Compile Include="Core\SignatureDocumentDetail.cs" />
-    <Compile Include="Core\SignatureDocumentList.cs" />
-    <Compile Include="Tv\RokuPageDetail.cs" />
-    <Compile Include="Tv\TvPageList.cs" />
-    <Compile Include="Communication\NcoaProcess.cs" />
-    <Compile Include="Core\LogViewer.cs" />
-    <Compile Include="Crm\PhotoVerify.cs" />
-    <Compile Include="Finance\FundraisingList.cs" />
-    <Compile Include="Core\TagReport.cs" />
-    <Compile Include="Engagement\StreakTypeExclusionList.cs" />
-    <Compile Include="Engagement\StreakMapEditor.cs" />
-    <Compile Include="Reporting\PageParameterFilter.cs" />
-    <Compile Include="Security\Oidc\AuthScopeList.cs" />
-    <Compile Include="Security\Oidc\AuthClientList.cs" />
-    <Compile Include="Security\SecurityChangeAuditList.cs" />
-    <Compile Include="Core\PersonSignalList.cs" />
-    <Compile Include="CheckIn\Configuration\CheckInLabelDetail.cs" />
-    <Compile Include="CheckIn\Configuration\CheckInLabelList.cs" />
-    <Compile Include="Engagement\StreakList.cs" />
-    <Compile Include="Engagement\CampaignList.cs" />
-    <Compile Include="Security\UserLoginList.cs" />
-    <Compile Include="Security\RestKeyList.cs" />
-    <Compile Include="Crm\PersonMergeRequestList.cs" />
-    <Compile Include="Event\RegistrationInstanceLinkageList.cs" />
-    <Compile Include="Event\RegistrationInstanceFeeList.cs" />
-    <Compile Include="Core\RestActionList.cs" />
-    <Compile Include="Core\RestControllerList.cs" />
-    <Compile Include="Cms\SiteList.cs" />
-    <Compile Include="Communication\CommunicationList.cs" />
-    <Compile Include="Communication\SmsPipelineList.cs" />
-    <Compile Include="Communication\SystemCommunicationPreview.cs" />
-    <Compile Include="Tv\TvApplicationList.cs" />
-    <Compile Include="Communication\SystemCommunicationList.cs" />
-    <Compile Include="Communication\CommunicationEntry.cs" />
-    <Compile Include="Communication\EmailPreferenceEntry.cs" />
-    <Compile Include="Core\AssetStorageProviderList.cs" />
-    <Compile Include="Core\AttributeMatrixTemplateDetail.cs" />
-    <Compile Include="Core\AttributeMatrixTemplateList.cs" />
-    <Compile Include="Core\AuditList.cs" />
-    <Compile Include="Core\BinaryFileDetail.cs" />
-    <Compile Include="Core\BinaryFileList.cs" />
-    <Compile Include="Core\BinaryFileTypeDetail.cs" />
-    <Compile Include="Core\BinaryFileTypeList.cs" />
-    <Compile Include="Core\CampusList.cs" />
-    <Compile Include="Core\DefinedTypeList.cs" />
-    <Compile Include="Core\DefinedTypeDetail.cs" />
-    <Compile Include="Core\DeviceDetail.cs" />
-    <Compile Include="Core\DeviceList.cs" />
-    <Compile Include="Core\EntitySearchDetail.cs" />
-    <Compile Include="Core\EntitySearchList.cs" />
-    <Compile Include="Core\EventList.cs" />
-    <Compile Include="Core\FollowingSuggestionTypeList.cs" />
-    <Compile Include="Core\LocationList.cs" />
-    <Compile Include="Core\DefinedValueList.cs" />
-    <Compile Include="Core\Notes.cs" />
-    <Compile Include="Core\NoteTypeList.cs" />
-    <Compile Include="Core\NoteWatchDetail.cs" />
-    <Compile Include="Core\NoteWatchList.cs" />
-    <Compile Include="Core\NotificationMessageList.cs" />
-    <Compile Include="Cms\BlockTypeDetail.cs" />
-    <Compile Include="Core\InteractionChannelDetail.cs" />
-    <Compile Include="Core\ScheduleList.cs" />
-    <Compile Include="Core\SignalTypeList.cs" />
-    <Compile Include="Core\SignatureDocumentTemplateList.cs" />
-    <Compile Include="Core\TagList.cs" />
-    <Compile Include="Crm\AssessmentTypeList.cs" />
-    <Compile Include="Crm\BadgeList.cs" />
-    <Compile Include="Crm\NamelessPersonList.cs" />
-    <Compile Include="Crm\PersonDetail\GivingConfiguration.cs" />
-    <Compile Include="Crm\SignalTypeDetail.cs" />
-    <Compile Include="Core\ScheduledJobList.cs" />
-    <Compile Include="Core\SuggestionDetail.cs" />
-    <Compile Include="Cms\LavaShortcodeDetail.cs" />
-    <Compile Include="Engagement\AchievementAttemptDetail.cs" />
-    <Compile Include="Engagement\AchievementAttemptList.cs" />
-    <Compile Include="Engagement\AchievementTypeDetail.cs" />
-    <Compile Include="Engagement\ConnectionOpportunityList.cs" />
-    <Compile Include="Reporting\TithingOverview.cs" />
-    <Compile Include="Engagement\AchievementTypeList.cs" />
-    <Compile Include="CheckIn\AttendanceList.cs" />
-    <Compile Include="Engagement\ConnectionTypeList.cs" />
-    <Compile Include="Engagement\StepParticipantList.cs" />
-    <Compile Include="Engagement\StepProgramList.cs" />
-    <Compile Include="CheckIn\AttendanceHistoryList.cs" />
-    <Compile Include="Engagement\StreakTypeList.cs" />
-    <Compile Include="Engagement\StepTypeList.cs" />
-    <Compile Include="Event\EventCalendarItemList.cs" />
-    <Compile Include="ExtensionMethods\IValidPropertiesBoxExtensions.cs" />
-    <Compile Include="Finance\BenevolenceTypeDetail.cs" />
-    <Compile Include="Finance\BusinessList.cs" />
-    <Compile Include="Finance\FinancialAccountDetail.cs" />
-    <Compile Include="Finance\FinancialAccountList.cs" />
-    <Compile Include="Event\RegistrationEntry\ExtensionMethods.cs" />
-    <Compile Include="Finance\BenevolenceRequestList.cs" />
-    <Compile Include="Event\EventItemOccurrenceList.cs" />
-    <Compile Include="Finance\BenevolenceTypeList.cs" />
-    <Compile Include="Finance\FinancialBatchList.cs" />
-    <Compile Include="Engagement\StepProgramDetail.cs" />
-    <Compile Include="Finance\FinancialGatewayDetail.cs" />
-    <Compile Include="Engagement\StreakTypeExclusionDetail.cs" />
-    <Compile Include="Finance\FinancialGatewayList.cs" />
-    <Compile Include="Finance\BusinessContactList.cs" />
-    <Compile Include="Event\RegistrationInstanceList.cs" />
-    <Compile Include="Event\RegistrationInstancePaymentList.cs" />
-    <Compile Include="Finance\SavedAccountList.cs" />
-    <Compile Include="Finance\FinancialPledgeDetail.cs" />
-    <Compile Include="Finance\FinancialPledgeList.cs" />
-    <Compile Include="Finance\FinancialStatementTemplateDetail.cs" />
-    <Compile Include="CheckIn\Config\CheckinTypeDetail.cs" />
-    <Compile Include="Finance\FinancialStatementTemplateList.cs" />
-    <Compile Include="Group\GroupArchivedList.cs" />
-    <Compile Include="Group\Scheduling\GroupMemberScheduleTemplateList.cs" />
-    <Compile Include="Group\GroupRequirementTypeList.cs" />
-    <Compile Include="Group\GroupTypeList.cs" />
-    <Compile Include="Mobile\MobileLayoutDetail.cs" />
-    <Compile Include="Group\GroupMemberScheduleTemplateDetail.cs" />
-    <Compile Include="Group\GroupRequirementTypeDetail.cs" />
-    <Compile Include="Reporting\PersistedDataViewList.cs" />
-    <Compile Include="Reporting\InteractionDetail.cs" />
-    <Compile Include="Finance\FundraisingDonationList.cs" />
-    <Compile Include="Group\Scheduling\GroupScheduleToolbox.cs" />
-    <Compile Include="Lms\LearningClassList.cs" />
-    <Compile Include="Lms\LearningCourseDetail.cs" />
-    <Compile Include="Lms\LearningCourseList.cs" />
-    <Compile Include="Lms\LearningParticipantDetail.cs" />
-    <Compile Include="Lms\LearningProgramCompletionList.cs" />
-    <Compile Include="Lms\LearningProgramDetail.cs" />
-    <Compile Include="Lms\LearningProgramList.cs" />
-    <Compile Include="Lms\LearningSemesterList.cs" />
-    <Compile Include="Prayer\PrayerCommentList.cs" />
-    <Compile Include="Prayer\PrayerRequestList.cs" />
-    <Compile Include="Reporting\MetricValueDetail.cs" />
-    <Compile Include="Reporting\InteractionComponentDetail.cs" />
-    <Compile Include="Reporting\DynamicData.cs" />
-    <Compile Include="Reporting\MergeTemplateList.cs" />
-    <Compile Include="Reporting\ReportList.cs" />
-    <Compile Include="Finance\VolunteerGenerosityAnalysis.cs" />
-    <Compile Include="RockEntityDetailBlockType.cs" />
-    <Compile Include="Tv\AppleTvPageDetail.cs" />
-    <Compile Include="Engagement\StepTypeDetail.cs" />
-    <Compile Include="Tv\AppleTvAppDetail.cs" />
-    <Compile Include="Event\EventItemDetail.cs" />
-    <Compile Include="Event\EventCalendarDetail.cs" />
-    <Compile Include="Event\RegistrationListLava.cs" />
-    <Compile Include="Finance\BusinessDetail.cs" />
-    <Compile Include="Engagement\StreakTypeDetail.cs" />
-    <Compile Include="Prayer\PrayerRequestDetail.cs" />
-    <Compile Include="Core\FollowingEventTypeDetail.cs" />
-    <Compile Include="Core\ScheduleDetail.cs" />
-    <Compile Include="Crm\AssessmentList.cs" />
-    <Compile Include="Crm\FamilyPreRegistration.cs" />
-    <Compile Include="Crm\PhotoOptOutDetail.cs" />
-    <Compile Include="Engagement\StreakDetail.cs" />
-    <Compile Include="Prayer\PrayerRequestEntry.cs" />
-    <Compile Include="Cms\LibraryViewer.cs" />
-    <Compile Include="Engagement\SignUp\SignUpDetail.cs" />
-    <Compile Include="Example\ObsidianGalleryList.cs" />
-    <Compile Include="Group\GroupAttendanceDetail.cs" />
-    <Compile Include="RockDetailBlockType.cs" />
-    <Compile Include="RockEntityListBlockType.cs" />
-    <Compile Include="RockListBlockType.cs" />
-    <Compile Include="Reporting\ServiceMetricsEntry.cs" />
-    <Compile Include="Group\Scheduling\GroupScheduler.cs" />
-    <Compile Include="Finance\FinancialBatchDetail.cs" />
-    <Compile Include="Finance\FinancialPledgeEntry.cs" />
-    <Compile Include="Group\GroupRegistration.cs" />
-    <Compile Include="Security\AccountEntry.cs" />
-    <Compile Include="Cms\ContentCollectionDetail.cs" />
-    <Compile Include="Cms\ContentCollectionView.cs" />
-    <Compile Include="Cms\LayoutDetail.cs" />
-    <Compile Include="Cms\MediaAccountDetail.cs" />
-    <Compile Include="Cms\MediaFolderDetail.cs" />
-    <Compile Include="Cms\PageShortLinkDetail.cs" />
-    <Compile Include="Cms\PersistedDatasetDetail.cs" />
-    <Compile Include="Cms\PageRouteDetail.cs" />
-    <Compile Include="Cms\PersonalLinkSectionDetail.cs" />
-    <Compile Include="Cms\SiteDetail.cs" />
-    <Compile Include="Core\AssetStorageProviderDetail.cs" />
-    <Compile Include="Communication\SnippetDetail.cs" />
-    <Compile Include="Communication\SnippetTypeDetail.cs" />
-    <Compile Include="Communication\SystemPhoneNumberDetail.cs" />
-    <Compile Include="Core\Attributes.cs" />
-    <Compile Include="Core\CampusDetail.cs" />
-    <Compile Include="Core\CategoryDetail.cs" />
-    <Compile Include="Core\LocationDetail.cs" />
-    <Compile Include="Core\DocumentTypeDetail.cs" />
-    <Compile Include="Core\NoteTypeDetail.cs" />
-    <Compile Include="Core\ServiceJobDetail.cs" />
-    <Compile Include="Core\SignatureDocumentTemplateDetail.cs" />
-    <Compile Include="Core\TagDetail.cs" />
-    <Compile Include="Crm\AssessmentTypeDetail.cs" />
-    <Compile Include="Crm\BadgeDetail.cs" />
-    <Compile Include="Crm\PersonDetail\Badges.cs" />
-    <Compile Include="Bus\QueueDetail.cs" />
-    <Compile Include="Security\ForgotUserName.cs" />
-    <Compile Include="Security\ConfirmAccount.cs" />
-    <Compile Include="Security\RestKeyDetail.cs" />
-    <Compile Include="Engagement\SignUp\SignUpAttendanceDetail.cs" />
-    <Compile Include="Engagement\SignUp\SignUpFinder.cs" />
-    <Compile Include="Engagement\SignUp\SignUpRegister.cs" />
-    <Compile Include="Event\InteractiveExperiences\ExperienceManager.cs" />
-    <Compile Include="Event\InteractiveExperiences\ExperienceManagerOccurrences.cs" />
-    <Compile Include="Event\InteractiveExperiences\ExperienceVisualizer.cs" />
-    <Compile Include="Event\InteractiveExperiences\InteractiveExperienceDetail.cs" />
-    <Compile Include="Event\InteractiveExperiences\LiveExperienceOccurrences.cs" />
-    <Compile Include="Event\InteractiveExperiences\LiveExperience.cs" />
-    <Compile Include="Event\RegistrationEntry.cs" />
-    <Compile Include="Example\FieldTypeGallery.cs" />
-    <Compile Include="ExtensionMethods\IEntityExtensions.cs" />
-    <Compile Include="ExtensionMethods\SettingsExtensions.cs" />
-    <Compile Include="Reporting\MergeTemplateDetail.cs" />
-    <Compile Include="RockObsidianBlockType.cs" />
-    <Compile Include="Example\ControlGallery.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="RockObsidianDetailBlockType.cs" />
-    <Compile Include="Engagement\Steps\StepFlow.cs" />
-    <Compile Include="WebFarm\WebFarmNodeDetail.cs" />
-    <Compile Include="WebFarm\WebFarmNodeLogList.cs" />
-    <Compile Include="WebFarm\WebFarmSettings.cs" />
-    <Compile Include="Security\Login.cs" />
-    <Compile Include="Utility\RealTimeDebugger.cs" />
-    <Compile Include="Utility\RealTimeVisualizer.cs" />
-    <Compile Include="Utility\SmsTestTransport.cs" />
-    <Compile Include="WorkFlow\FormBuilder\ExtensionMethods.cs" />
-    <Compile Include="WorkFlow\FormBuilder\FormBuilderDetail.cs" />
-    <Compile Include="WorkFlow\FormBuilder\FormTemplateDetail.cs" />
-    <Compile Include="WorkFlow\FormBuilder\Utility.cs" />
-    <Compile Include="WorkFlow\WorkflowEntry.cs" />
-    <Compile Include="WorkFlow\WorkflowTriggerDetail.cs" />
-    <Compile Include="WorkFlow\WorkflowList.cs" />
   </ItemGroup>
+
   <ItemGroup>
-    <ProjectReference Include="..\DotLiquid\DotLiquid.csproj">
-      <Project>{00EDCB8D-EF33-459C-AD62-02876BD24DFF}</Project>
-      <Name>DotLiquid</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj">
-      <Project>{13568622-324e-4493-b605-c9896e725d30}</Project>
-      <Name>Rock.Common</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">
-      <Project>{61dece2b-0434-435e-8d65-49a4fdf98365}</Project>
-      <Name>Rock.Enums</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj">
-      <Project>{8820CD93-70EE-496D-B17B-0C4C68DD4957}</Project>
-      <Name>Rock.Lava.Shared</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.NCOA\Rock.NCOA.csproj">
-      <Project>{6fc5781e-c9fc-41e9-87fb-2a9ca8aa2088}</Project>
-      <Name>Rock.NCOA</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj">
-      <Project>{ADD1EDD0-A4CB-4E82-B6AD-6AD1D556DEAE}</Project>
-      <Name>Rock.Rest</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj">
-      <Project>{6fe0930c-6832-4c2f-8a76-d4e4a2d80ddf}</Project>
-      <Name>Rock.Version</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj">
-      <Project>{05baaf85-9c53-4ccd-a535-036427b0df72}</Project>
-      <Name>Rock.ViewModels</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\Rock\Rock.csproj">
-      <Project>{185a31d7-3037-4dae-8797-0459849a84bd}</Project>
-      <Name>Rock</Name>
-    </ProjectReference>
+    <None Remove="DefaultTvApplication.js" />
   </ItemGroup>
-  <ItemGroup>
-    <None Include="App.config" />
-    <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup />
+
   <ItemGroup>
     <EmbeddedResource Include="DefaultTvApplication.js" />
   </ItemGroup>
-  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">
-    <PropertyGroup>
-      <ErrorText>This project references NuGet package(s) that are missing on this computer. Use NuGet Package Restore to download them.  For more information, see http://go.microsoft.com/fwlink/?LinkID=322105. The missing file is {0}.</ErrorText>
-    </PropertyGroup>
-    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.props')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.props'))" />
-    <Error Condition="!Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" Text="$([System.String]::Format('$(ErrorText)', '..\packages\EntityFramework.6.4.4\build\EntityFramework.targets'))" />
-  </Target>
-  <Import Project="..\packages\EntityFramework.6.4.4\build\EntityFramework.targets" Condition="Exists('..\packages\EntityFramework.6.4.4\build\EntityFramework.targets')" />
+
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
+    <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
+    <PackageReference Include="System.IO.Compression" Version="4.3.0" />
+    <PackageReference Include="UAParser" Version="3.1.44" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\Rock.Common\Rock.Common.csproj" />
+    <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj" />
+    <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
+    <ProjectReference Include="..\Rock.NCOA\Rock.NCOA.csproj" />
+    <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
+    <ProjectReference Include="..\Rock.Slingshot\Rock.Slingshot.csproj" />
+    <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
+    <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj" />
+    <ProjectReference Include="..\Rock\Rock.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="Rock.Common.Mobile">
+      <HintPath>..\RockWeb\Bin\Rock.Common.Mobile.dll</HintPath>
+    </Reference>
+    <Reference Include="System.ComponentModel.Composition" />
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Web" />
+  </ItemGroup>
+
 </Project>

@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -113,23 +114,14 @@ namespace Rock.Reporting.DataSelect.Person
             get { return "Group Participation"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataSelects/Person/groupParticipationSelect.obs";
-
         #endregion
 
         #region Configuration
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var result = new Dictionary<string, string>();
-            var settings = new GroupParticipationSelectSettings( selection );
-
-            if ( !settings.IsValid )
-            {
-                return result;
-            }
+            var options = new Dictionary<string, string>();
 
             var listFormatOptions = new List<ListItemBag>
             {
@@ -150,8 +142,7 @@ namespace Rock.Reporting.DataSelect.Person
                 },
             };
 
-            result.Add( "listFormatOptions", listFormatOptions.ToCamelCaseJson( false, true ) );
-            result.Add( "listFormat", settings.ListFormat.ToString() );
+            options.Add( "listFormatOptions", listFormatOptions.ToCamelCaseJson( false, true ) );
 
             var roleTypeOptions = new List<ListItemBag>
             {
@@ -167,8 +158,7 @@ namespace Rock.Reporting.DataSelect.Person
                 }
             };
 
-            result.Add( "roleTypeOptions", roleTypeOptions.ToCamelCaseJson( false, true ) );
-            result.Add( "roleType", settings.RoleType.ToString() );
+            options.Add( "roleTypeOptions", roleTypeOptions.ToCamelCaseJson( false, true ) );
 
             var groupMemberStatusOptions = new List<ListItemBag>
             {
@@ -189,7 +179,28 @@ namespace Rock.Reporting.DataSelect.Person
                 },
             };
 
-            result.Add( "groupMemberStatusOptions", groupMemberStatusOptions.ToCamelCaseJson( false, true ) );
+            options.Add( "groupMemberStatusOptions", groupMemberStatusOptions.ToCamelCaseJson( false, true ) );
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/groupParticipationSelect.obs" ),
+                Options = options
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var result = new Dictionary<string, string>();
+            var settings = new GroupParticipationSelectSettings( selection );
+
+            if ( !settings.IsValid )
+            {
+                return result;
+            }
+
+            result.Add( "listFormat", settings.ListFormat.ToString() );
+            result.Add( "roleType", settings.RoleType.ToString() );
             result.Add( "groupMemberStatus", settings.MemberStatus.ToString() );
 
             if ( settings.DataViewGuid.HasValue )

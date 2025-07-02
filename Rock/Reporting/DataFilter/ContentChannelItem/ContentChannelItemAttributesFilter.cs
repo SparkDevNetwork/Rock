@@ -25,8 +25,10 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Enums.Reporting;
+using Rock.Field;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Reporting;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -67,12 +69,25 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelItemAttributesFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var channelTypeService = new ContentChannelTypeService( rockContext );
+            var contentChannelTypes = channelTypeService.Queryable().OrderBy( a => a.Name ).ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelItemAttributesFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "contentChannelTypeOptions", contentChannelTypes.Select( a => a.ToListItemBag() ).ToList().ToCamelCaseJson( false, true ) }
+                },
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
@@ -83,8 +98,6 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
             var channelTypeService = new ContentChannelTypeService( rockContext );
 
             var contentChannelTypes = channelTypeService.Queryable().OrderBy( a => a.Name ).ToList();
-            data.AddOrReplace( "contentChannelTypeOptions", contentChannelTypes.Select( a => a.ToListItemBag() ).ToList().ToCamelCaseJson( false, true ) );
-
             var fieldFilterSourcesByContentChannelType = new Dictionary<Guid, List<FieldFilterSourceBag>>();
 
             // Prime the dictionary with empty lists to make it easier to add the entity fields
@@ -142,7 +155,7 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                     return data;
                 }
 
-                var contentChannelType = new ContentChannelTypeService( new RockContext() ).Get( values[0].AsGuid() );
+                var contentChannelType = channelTypeService.Get( values[0].AsGuid() );
                 data.AddOrReplace( "contentChannelType", contentChannelType == null ? "" : values[0] );
 
                 if ( values.Count > 1 )
@@ -156,15 +169,18 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
 
                     var attribute = AttributeCache.Get( entityField.AttributeGuid.Value );
 
-                    var filterRule = new FieldFilterRuleBag
+                    if ( values.Count == 3 )
                     {
-                        AttributeGuid = entityField.AttributeGuid,
-                        ComparisonType = ( ComparisonType ) ( values[2].AsInteger() ),
-                        SourceType = FieldFilterSourceType.Attribute,
-                        Value = values[3]
-                    };
+                        var filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, 0, values[2] );
 
-                    data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                        data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                    }
+                    else if ( values.Count == 4 )
+                    {
+                        var filterRule = FieldVisibilityRule.GetPublicRuleBag( attribute, ( ComparisonType ) ( values[2].AsInteger() ), values[3] );
+
+                        data.AddOrReplace( "filterRule", filterRule.ToCamelCaseJson( false, true ) );
+                    }
                 }
             }
 
@@ -183,21 +199,29 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
 
             selectionValues.Add( data.GetValueOrNull( "contentChannelType" ) );
 
-            if ( data.ContainsKey( "filterRule" ) )
+            var filterRule = data.GetValueOrNull( "filterRule" ).FromJsonOrNull<FieldFilterRuleBag>();
+            if ( filterRule == null || filterRule.AttributeGuid == null )
             {
-                var filterRule = data.GetValueOrNull( "filterRule" ).FromJsonOrNull<FieldFilterRuleBag>();
-
-                if ( filterRule != null && filterRule.AttributeGuid != null )
-                {
-                    var entityField = EntityHelper.GetEntityFields( typeof( Rock.Model.ContentChannelItem ) )
-                        .Where( ef => ef.FieldKind == FieldKind.Attribute && ef.AttributeGuid == filterRule.AttributeGuid )
-                        .FirstOrDefault();
-
-                    selectionValues.Add( entityField.UniqueName );
-                    selectionValues.Add( filterRule.ComparisonType.ConvertToInt().ToString() );
-                    selectionValues.Add( filterRule.Value );
-                }
+                return selectionValues.ToJson();
             }
+
+            var attribute = AttributeCache.Get( filterRule.AttributeGuid.Value );
+            var entityField = EntityHelper.GetEntityFieldForAttribute( attribute );
+            var comparisonValue = new ComparisonValue
+            {
+                ComparisonType = filterRule.ComparisonType,
+                Value = filterRule.Value
+            };
+
+            var filterValue = attribute.FieldType.Field.GetPrivateFilterValue( comparisonValue, attribute.ConfigurationValues ).FromJsonOrNull<List<string>>();
+
+            if ( filterValue.Count >= 2 && filterValue[0] == "0" )
+            {
+                filterValue = filterValue.Skip( 1 ).ToList();
+            }
+
+            selectionValues.Add( entityField.UniqueName );
+            selectionValues = selectionValues.Concat( filterValue ).ToList();
 
             return selectionValues.ToJson();
         }

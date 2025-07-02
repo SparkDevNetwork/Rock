@@ -697,9 +697,14 @@ namespace Rock.Tests.Integration.Modes.Core.Model
         /// <summary>
         /// Runs after all tests in this class is executed.
         /// </summary>
-        [ClassCleanup]
+        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
         public static void ClassCleanup()
         {
+            if ( IsContainersEnabled )
+            {
+                return;
+            }
+
             DeleteTestData();
         }
 

@@ -28,6 +28,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -57,31 +58,39 @@ namespace Rock.Reporting.DataFilter.Person
             get { return typeof( Rock.Model.Person ).FullName; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/documentTypeFilter.obs";
-
         #endregion
 
         #region Configuration
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var config = SelectionConfig.Parse( selection );
-
-            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
             var documentTypesOptions = DocumentTypeCache.All()
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Name )
                 .Select( a => a.ToListItemBag() )
                 .ToList();
 
-            var documentTypes = DocumentTypeCache.Get( config.DocumentTypeId )?.Guid;
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/documentTypeFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "documentTypeOptions", documentTypesOptions.ToCamelCaseJson(false, true) }
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
+            var documentType = DocumentTypeCache.Get( config.DocumentTypeId )?.Guid;
 
             var data = new Dictionary<string, string>
             {
-                { "documentTypeOptions", documentTypesOptions.ToCamelCaseJson(false, true) },
-                { "documentType", documentTypes.ToString() },
+                { "documentType", documentType.ToString() },
                 { "dateRange", config?.SlidingDateRangePickerDelimitedValues },
             };
 

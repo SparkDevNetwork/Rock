@@ -37,52 +37,79 @@ export const EditComponent = defineComponent({
     props: getFieldEditorProps(),
 
     setup(props, { emit }) {
-
         const fileValue = ref<ListItemBag>({});
         const entityType = ref<ListItemBag>({});
         const textValue = ref<string>("");
 
         const isFile = computed((): boolean => {
-            const entityTypeValue = entityType.value.value;
-            return entityTypeValue?.toLowerCase() == EntityType.ProtectMyMinistryProvider.toLowerCase();
+            const entityTypeValue = entityType?.value?.value;
+            return (entityTypeValue?.toLowerCase() !== EntityType.CheckrProvider.toLowerCase());
         });
 
         watch(() => props.modelValue, () => {
+
+            if (!props.modelValue) {
+                return;
+            }
+
             const splitValues = props.modelValue.split(",");
 
+            /*
+                6/26/2025 - NA
+
+                If the original stored attribute was:
+
+                - a single GUID (used by ProtectMyMinistry), the props.modelValue format is:
+
+                    {EntityType.Guid},{EntityType.FriendlyName},{BinaryFile.Guid},{filename(if any)}
+                    0                  1                        2                 3
+
+                - a comma-delimited string of <EntityTypeId>,<Key|Guid> (used by other providers),
+                    the props.modelValue format is:
+                    {EntityType.Guid},{EntityType.FriendlyName},{RecordKey|BinaryFile.Guid},{filename(if any)}
+                    0                  1                         2                          3
+
+                    splitValues[2] will be RecordKey for Checkr, and a BinaryFileGuid for everyone else (isFile=true)
+            */
+
+            // Stop if the provider entity type did not change.
+            if (splitValues[0] == entityType?.value?.value) {
+                return;
+            }
+
             entityType.value = {
-                text: splitValues[1],
-                value: splitValues[0]
+                text: splitValues[1], // EntityType.FriendlyName
+                value: splitValues[0] // EntityType.Guid
             };
 
             if (isFile.value) {
                 fileValue.value = {
-                    text: splitValues[3],
-                    value: splitValues[2]
+                    text: splitValues[3], // filename (if any)
+                    value: splitValues[2] // BinaryFile Guid
                 };
             }
             else {
-                textValue.value = splitValues[2];
+                textValue.value = splitValues[2]; // RecordKey
             }
 
         }, { immediate: true });
 
         watch(() => fileValue.value, () => {
-            emit("update:modelValue", `${entityType.value.value},${entityType.value.text},${fileValue.value?.value ?? ""},${fileValue.value?.text ?? ""}`);
+            emit("update:modelValue", `${entityType?.value?.value},${entityType?.value?.text},${fileValue.value?.value ?? ""},${fileValue.value?.text ?? ""}`);
         }, { deep: true });
 
         watch(() => textValue.value, () => {
-            emit("update:modelValue", `${entityType.value.value},${entityType.value.text},${textValue.value ?? ""}`);
+            emit("update:modelValue", `${entityType?.value?.value},${entityType?.value?.text},${textValue.value ?? ""}`);
         });
 
         // If the entity type changes emit the now empty values so the previous default value is overidden. This way if the default value is not set
         // the now empty value is saved.
         watch(() => entityType.value, () => {
-            if (entityType.value?.value?.toLowerCase() == EntityType.ProtectMyMinistryProvider.toLowerCase()) {
-                emit("update:modelValue", `${entityType.value.value},${entityType.value.text},${fileValue.value?.value ?? ""},${fileValue.value?.text ?? ""}`);
+            if (isFile.value) {
+                emit("update:modelValue", `${entityType?.value?.value},${entityType?.value?.text},${fileValue.value?.value ?? ""},${fileValue.value?.text ?? ""}`);
             }
             else {
-                emit("update:modelValue", `${entityType.value.value},${entityType.value.text},${textValue.value ?? ""}`);
+                emit("update:modelValue", `${entityType?.value?.value},${entityType?.value?.text},${textValue.value ?? ""}`);
             }
         });
 
@@ -90,12 +117,12 @@ export const EditComponent = defineComponent({
             fileValue,
             entityType,
             isFile,
-            textValue
+            textValue,
         };
     },
 
     template: `
-    <ComponentPicker v-model="entityType" v-bind="$attrs" containerType="Rock.Security.BackgroundCheckContainer" showBlankItem />
+    <ComponentPicker v-model="entityType" v-bind="$attrs" containerType="Rock.Security.BackgroundCheckContainer" showBlankItem includeInactive />
     <div v-if="entityType?.value">
         <FileUploader v-if="isFile"
             v-model="fileValue"

@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Finance
 {
     /// <summary>
@@ -70,5 +72,10 @@ namespace Rock.ViewModels.Finance
         /// The country.
         /// </value>
         public string Country { get; set; }
+
+        /// <summary>
+        /// The additional parameters to include on the payment request.
+        /// </summary>
+        public Dictionary<string, string> AdditionalParameters { get; set; }
     }
 }

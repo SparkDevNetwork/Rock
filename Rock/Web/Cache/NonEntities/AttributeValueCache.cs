@@ -29,7 +29,6 @@ namespace Rock.Web.Cache
     [Serializable]
     [DataContract]
     [LavaType( "AttributeId", "EntityId", "Value", "ValueFormatted", "PersistedTextValue", "PersistedFormattedValue", "PersistedCondensedTextValue", "PersistedCondensedFormattedValue", "IsPersistedValueDirty", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
-    [DotLiquid.LiquidType( "AttributeId", "EntityId", "Value", "ValueFormatted", "PersistedTextValue", "PersistedFormattedValue", "PersistedCondensedTextValue", "PersistedCondensedFormattedValue", "IsPersistedValueDirty", "AttributeName", "AttributeAbbreviatedName", "AttributeKey", "AttributeIsGridColumn", "AttributeCategoryIds" )]
     public class AttributeValueCache
     {
         #region constructors

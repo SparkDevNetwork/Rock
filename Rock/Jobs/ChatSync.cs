@@ -27,6 +27,7 @@ using Microsoft.Extensions.Logging;
 using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
+using Rock.Communication.Chat.Exceptions;
 using Rock.Communication.Chat.Sync;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
@@ -777,7 +778,7 @@ namespace Rock.Jobs
             }
 
             // Continue by getting existing Rock groups.
-            var existingRockChatGroups = groupService.GetRockChatGroups() ?? new List<RockChatGroup>();
+            var existingRockChatGroups = chatHelper.GetAllRockChatGroups() ?? new List<RockChatGroup>();
 
             // Collect any Rock groups along the way, whose members should be synced.
             var groupsRequiringMemberSync = new List<GroupCache>();
@@ -1050,13 +1051,13 @@ namespace Rock.Jobs
             }
 
             // Get the [chat channel key]-to-[Rock group ID & name] mappings.
-            var rockChatGroups = new GroupService( rockContext ).GetRockChatGroups();
+            var rockChatGroups = chatHelper.GetAllRockChatGroups();
             if ( rockChatGroups?.Any() != true )
             {
-                var taskResult = CreateAndAddNewTaskResult( section, "Missing Chat-to-Rock Mapping Data", TimeSpan.Zero );
+                var taskResult = CreateAndAddNewTaskResult( section, "No Chat Channel Groups found in Rock", TimeSpan.Zero );
                 taskResult.IsWarning = true;
 
-                Log( LogLevel.Warning, "No Chat Channel-to-Rock Group ID mappings found. Unable to create Interactions, as we won't be able to map a given Chat Channel back to a Rock Group." );
+                Log( LogLevel.Warning, "No Chat Channel Groups found in Rock, so no Interactions will be created." );
 
                 // There's no reason to continue if we have no mappings.
                 return;
@@ -1066,10 +1067,10 @@ namespace Rock.Jobs
             var personAliasIdByChatUserKeys = new PersonAliasService( rockContext ).GetChatPersonAliasIdByChatUserKeys();
             if ( personAliasIdByChatUserKeys?.Any() != true )
             {
-                var taskResult = CreateAndAddNewTaskResult( section, "Missing Chat-to-Rock Mapping Data", TimeSpan.Zero );
+                var taskResult = CreateAndAddNewTaskResult( section, "No Chat Individuals found in Rock", TimeSpan.Zero );
                 taskResult.IsWarning = true;
 
-                Log( LogLevel.Warning, "No Chat Individual Key-to-Rock Person Alias ID mappings found. Unable to create Interactions, as we won't be able to map a given Chat Channel back to a Rock Group." );
+                Log( LogLevel.Warning, "No Chat Individuals found in Rock, so no Interactions will be created." );
 
                 // There's no reason to continue if we have no mappings.
                 return;
@@ -1385,25 +1386,33 @@ namespace Rock.Jobs
                 .Where( r => r.IsWarning )
                 .Any();
 
+            var enableErrorLogsMessage = "Enable 'Error' verbosity level for all 'Chat' domains in Rock Logs and re-run the job to get a full list of issues.";
+            var enableWarningLogsMessage = "Enable 'Warning' verbosity level for all 'Chat' domains in Rock Logs and re-run the job to get a full list of issues.";
+
             if ( exceptions.Any() )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. You can also enable 'Error' verbosity level for 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. {enableErrorLogsMessage}" );
             }
             else if ( anyWarnings )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. Enable 'Warning' verbosity level for all 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. {enableWarningLogsMessage}" );
             }
 
             this.Result = jobSummaryBuilder.ToString();
 
+            var jobName = nameof( ChatSync );
+
             if ( exceptions.Any() )
             {
-                var jobName = nameof( ChatSync );
                 var innerException = ChatHelper.GetFirstOrAggregateException( exceptions, $"Exceptions occurred in {jobName}." );
 
-                throw new RockJobWarningException( $"{jobName} completed with errors.", innerException );
+                throw new ChatSyncException( $"{jobName} completed with errors. {enableErrorLogsMessage}", innerException );
+            }
+            else if ( anyWarnings )
+            {
+                throw new RockJobWarningException( $"{jobName} completed with warnings. {enableWarningLogsMessage}" );
             }
         }
 

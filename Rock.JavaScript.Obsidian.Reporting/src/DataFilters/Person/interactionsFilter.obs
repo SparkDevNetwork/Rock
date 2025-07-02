@@ -1,0 +1,58 @@
+<template>
+    <InteractionChannelPicker v-model="interactionChannel"
+                              label="Interaction Channel"
+                              rules="required"
+                              enhanceForLongLists
+                              showBlankItem />
+    <InteractionComponentPicker v-if="showComponentPicker"
+                                v-model="interactionComponent"
+                                label="Interaction Component"
+                                :interactionChannelGuid="interactionChannel?.value"
+                                enhanceForLongLists
+                                showBlankItem />
+    <TextBox v-model="operation" label="Operation" />
+    <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+</template>
+
+<script setup lang="ts">
+    import InteractionChannelPicker from "@Obsidian/Controls/interactionChannelPicker.obs";
+    import InteractionComponentPicker from "@Obsidian/Controls/interactionComponentPicker.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { computed, ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { SlidingDateRange, parseSlidingDateRangeString, slidingDateRangeToString, RangeType } from "@Obsidian/Utility/slidingDateRange";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const interactionChannel = ref<ListItemBag | null>(safeParseJson(props.modelValue.interactionChannel) ?? null);
+    const interactionComponent = ref<ListItemBag | null>(safeParseJson(props.modelValue.interactionComponent) ?? null);
+    const operation = ref<string>(props.modelValue.operation ?? "");
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+    const channelsWithComponents = safeParseJson<Guid[]>(props.options.channelsWithComponents) ?? [];
+
+    const showComponentPicker = computed(() => {
+        return interactionChannel.value && channelsWithComponents.includes(interactionChannel.value.value ?? "");
+    });
+
+    // reset the interaction component if the channel changes
+    watch(interactionChannel, () => {
+        interactionComponent.value = null;
+    });
+
+    watch([interactionChannel, interactionComponent, operation, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            interactionChannel: JSON.stringify(interactionChannel.value),
+            interactionComponent: JSON.stringify(interactionComponent.value),
+            operation: operation.value,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: RangeType.All }),
+        });
+    });
+</script>

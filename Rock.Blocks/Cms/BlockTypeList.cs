@@ -71,8 +71,6 @@ namespace Rock.Blocks.Cms
 
             public const string FilterPath = "filter-path";
 
-            public const string FilterCategory = "filter-category";
-
             public const string FilterSystemTypes = "filter-system-types";
 
             public const string FilterObsidianBlocks = "filter-obsidian-blocks";
@@ -87,9 +85,6 @@ namespace Rock.Blocks.Cms
 
         protected string FilterPath => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterPath );
-
-        protected string FilterCategory => GetBlockPersonPreferences()
-            .GetValue( PreferenceKey.FilterCategory );
 
         protected string FilterSystemTypes => GetBlockPersonPreferences()
             .GetValue( PreferenceKey.FilterSystemTypes );
@@ -165,10 +160,6 @@ namespace Rock.Blocks.Cms
             {
                 query = query.Where( bt => bt.Path.Contains( FilterPath ) );
             }
-            if ( !string.IsNullOrEmpty( FilterCategory ) )
-            {
-                query = query.Where( bt => bt.Category.Contains( FilterCategory ) );
-            }
             if ( !string.IsNullOrEmpty( FilterSystemTypes ) )
             {
                 bool systemTypeFilter = bool.Parse( FilterSystemTypes );
@@ -217,6 +208,12 @@ namespace Rock.Blocks.Cms
                 IsSystem = bt.IsSystem,
                 Status = GetBlockTypeStatus( bt.Path, bt.EntityTypeId, rockContext )
             } ).AsQueryable();
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<BlockTypeListBag> GetOrderedListQueryable( IQueryable<BlockTypeListBag> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.Name ).ThenBy( a => a.Category );
         }
 
         /// <inheritdoc/>

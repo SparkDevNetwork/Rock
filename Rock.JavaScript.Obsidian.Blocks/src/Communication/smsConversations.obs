@@ -41,7 +41,7 @@
                     <div class="conversation-list d-flex flex-column">
                         <div class="header">
                             <div class="clearfix">
-                                <RockButton v-if="isNewMessageButtonVisible && canEditOrAdministrate"
+                                <RockButton v-if="isNewMessageButtonVisible"
                                             :btnType="BtnType.Primary"
                                             :btnSize="BtnSize.Small"
                                             @click="showNewMessageModal">
@@ -96,7 +96,7 @@
                                             <div v-if="conversation.messages && conversation.messages?.length > 0" class="date">
                                                 {{ humanizedDateTime(conversation.messages[conversation.messages.length - 1].createdDateTime) }}
                                             </div>
-                                            <div v-if="canEditOrAdministrate" :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
+                                            <div :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
                                                 <button type="button"
                                                         class="btn btn-xs btn-link btn-overflow"
                                                         data-toggle="dropdown"
@@ -151,25 +151,23 @@
                                                 :contextEntityTypeGuid="selectedConversation.entityTypeGuidForReminder"
                                                 :btnSize="BtnSize.Small"
                                                 @addSuccess="onAddReminder" />
-                                <template v-if="canEditOrAdministrate">
-                                    <RockButton v-if="selectedConversation.isConversationRead"
-                                                :btnType="BtnType.Default"
-                                                :btnSize="BtnSize.Small"
-                                                :isSquare="true"
-                                                title="Mark As Unread"
-                                                @click="toggleConversationReadStatus(selectedConversation)">
-                                        <i class="fa fa-eye-slash fa-fw"></i>
-                                    </RockButton>
-                                    <RockButton v-else
-                                                :btnType="BtnType.Default"
-                                                :btnSize="BtnSize.Small"
-                                                :isSquare="true"
-                                                title="Mark As Read"
-                                                @click="toggleConversationReadStatus(selectedConversation)">
-                                        <i class="fa fa-eye fa-fw"></i>
-                                    </RockButton>
-                                </template>
-                                <RockButton v-if="selectedConversation.isLinkToPersonVisible && canEditOrAdministrate"
+                                <RockButton v-if="selectedConversation.isConversationRead"
+                                            :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Small"
+                                            :isSquare="true"
+                                            title="Mark As Unread"
+                                            @click="toggleConversationReadStatus(selectedConversation)">
+                                    <i class="fa fa-eye-slash fa-fw"></i>
+                                </RockButton>
+                                <RockButton v-else
+                                            :btnType="BtnType.Default"
+                                            :btnSize="BtnSize.Small"
+                                            :isSquare="true"
+                                            title="Mark As Read"
+                                            @click="toggleConversationReadStatus(selectedConversation)">
+                                    <i class="fa fa-eye fa-fw"></i>
+                                </RockButton>
+                                <RockButton v-if="selectedConversation.isLinkToPersonVisible"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
                                             title="Link to Person"
@@ -240,7 +238,7 @@
                                 </div>
                             </transition>
                         </div>
-                        <div v-if="canEditOrAdministrate" ref="newMessageTextBoxContainer" class="footer">
+                        <div ref="newMessageTextBoxContainer" class="footer">
                             <div class="message-actions-prepend">
                                 <RockButton :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Default"
@@ -760,7 +758,6 @@
     const successNotificationBoxMessage = ref<string>("");
     const areConversationsLoading = ref<boolean>(false);
     const isConversationLoading = ref<boolean>(false);
-    const canEditOrAdministrate = ref<boolean>(box.canEditOrAdministrate);
 
     // #endregion
 

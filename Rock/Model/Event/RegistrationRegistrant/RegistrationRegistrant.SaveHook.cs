@@ -17,6 +17,7 @@
 
 using System.Linq;
 using Rock.Data;
+using Rock.Transactions;
 
 namespace Rock.Model
 {
@@ -28,14 +29,17 @@ namespace Rock.Model
         /// <seealso cref="Rock.Data.EntitySaveHook{TEntity}" />
         internal class SaveHook : EntitySaveHook<RegistrationRegistrant>
         {
+            private int? preSavePersonAliasId { get; set; }
+
             /// <summary>
             /// Called before the save operation is executed.
             /// </summary>
             protected override void PreSave()
             {
+                var registrationRegistrant = this.Entity as RegistrationRegistrant;
+
                 if ( this.State == EntityContextState.Added )
                 {
-                    var registrationRegistrant = this.Entity as RegistrationRegistrant;
                     int? registrationTemplateId = registrationRegistrant.RegistrationTemplateId;
 
                     // If the Registration Template foreign key is not assigned, populate it now.
@@ -61,8 +65,60 @@ namespace Rock.Model
                         this.Entity.RegistrationTemplateId = registrationTemplateId.Value;
                     }
                 }
+                else if ( State == EntityContextState.Modified )
+                {
+                    preSavePersonAliasId = registrationRegistrant.PersonAliasId;
+                }
+                else if ( State == EntityContextState.Deleted )
+                {
+                    preSavePersonAliasId = ( int? ) OriginalValues[nameof( registrationRegistrant.PersonAliasId )];
+                }
 
                 base.PreSave();
+            }
+
+            protected override void PostSave()
+            {
+                // If we need to send a real-time notification then do so after
+                // this change has been committed to the database.
+                if ( ShouldSendRealTimeMessage() )
+                {
+                    // EF will null out this field when deleting, so we need to
+                    // snag it from the original values in that case.
+                    var personAliasId = State == EntityContextState.Deleted
+                        ? preSavePersonAliasId
+                        : Entity.PersonAliasId;
+
+                    var registrantState = new RegistrationRegistrantService.RegistrationRegistrantUpdatedState( Entity, personAliasId.Value, State );
+
+                    new SendRegistrantRealTimeNotificationsTransaction( registrantState ).Enqueue( true );
+                }
+
+                base.PostSave();
+            }
+
+            /// <summary>
+            /// Determines if we need to send any real-time messages for the
+            /// changes made to this entity.
+            /// </summary>
+            /// <returns><c>true</c> if a message should be sent, <c>false</c> otherwise.</returns>
+            private bool ShouldSendRealTimeMessage()
+            {
+                if ( !RockContext.IsRealTimeEnabled )
+                {
+                    return false;
+                }
+
+                if ( PreSaveState == EntityContextState.Added )
+                {
+                    return true;
+                }
+                else if ( PreSaveState == EntityContextState.Deleted )
+                {
+                    return true;
+                }
+
+                return false;
             }
         }
     }

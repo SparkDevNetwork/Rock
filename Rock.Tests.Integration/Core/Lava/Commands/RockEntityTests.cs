@@ -294,7 +294,6 @@ Occurrence Collection Type = {{ occurrence | TypeName }}
         [DataRow( @"LastName == ""Decker"" && NickName ^=""T""", "Ted Decker" )]
         [DataRow( @"LastName == ""Decker"" && NickName *=""e""", "Ted Decker" )]
         [DataRow( @"LastName == ""Decker"" && NickName *!""e""", "Cindy Decker" )]
-        [DataRow( @"LastName == ""Decker"" && NickName *!""e""", "Cindy Decker" )]
         [DataRow( @"LastName == ""Decker"" && Employer _= """"", "Cindy Decker" )]
         [DataRow( @"LastName == ""Decker"" && Employer _! ""*""", "Ted Decker" )]
         [DataRow( @"LastName == ""Decker"" && BirthYear > 2000", "Alex Decker" )]

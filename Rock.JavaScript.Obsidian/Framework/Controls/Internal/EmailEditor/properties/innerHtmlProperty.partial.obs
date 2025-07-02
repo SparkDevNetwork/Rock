@@ -3,8 +3,10 @@
     <HtmlEditor v-if="mode === 'html'"
                 v-model="innerHtml"
                 :autocommitDelayMs="0"
-                :editorHeight="380"
+                :editorHeight="642"
+                enableAssetManager
                 :mergeFields="mergeFields ?? []"
+                :commonMergeFields="commonMergeFields"
                 :shortLinkCheckToken="shortLinkCheckToken"
                 :shortLinkGetPageId="shortLinkGetPageId"
                 :shortLinkSites="shortLinkSites"
@@ -64,6 +66,13 @@
 
     // Initialized in the immediate watcher below.
     const innerHtml = ref<string>(props.element.innerHTML ?? "");
+
+    const commonMergeFields = [
+        "Person.FirstName^First Name|fa fa-user",
+        "Person.NickName^Nick Name|fa fa-user",
+        "Person.FullName^Full Name|fa fa-user",
+        "Communication.FromName^From Name|fa fa-envelope",
+    ];
 
     // #endregion
 

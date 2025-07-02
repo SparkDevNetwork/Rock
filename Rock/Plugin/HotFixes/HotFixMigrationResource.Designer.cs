@@ -367,7 +367,7 @@ namespace Rock.Plugin.HotFixes {
         
         /// <summary>
         ///   Looks up a localized string similar to 
-        ///
+        ////*
         ///&lt;doc&gt;
         /// &lt;summary&gt;
         ///   This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]
@@ -951,6 +951,27 @@ namespace Rock.Plugin.HotFixes {
         public static string _225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections {
             get {
                 return ResourceManager.GetString("_225_ImprovePeerNetworkCalculations_spPeerNetwork_UpdateGroupConnections", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to /*
+        ///&lt;doc&gt;
+        ///	&lt;summary&gt;
+        ///        This procedure takes a communication list (group) or communication and returns all of the
+        ///		recipients along with the data needed to determine if the individual can recieve an email,
+        ///		sms or push notification.
+        ///	&lt;/summary&gt;
+        ///
+        ///	&lt;returns&gt;
+        ///		All of the fields needed to drive the communication wizard.
+        ///	&lt;/returns&gt;
+        ///	&lt;param name=&apos;ListId&apos; datatype=&apos;int&apos;&gt;The group id of the communication list or the communication id.&lt;/param&gt;
+        ///	&lt;param name=&apos;ListType&apos; datatype=&apos;int&apos;&gt;1 = Communicati [rest of string was truncated]&quot;;.
+        /// </summary>
+        public static string _250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails {
+            get {
+                return ResourceManager.GetString("_250_AddDuplicateCommunicationRecipientHandling_spCommunicationRecipientDetails", resourceCulture);
             }
         }
     }

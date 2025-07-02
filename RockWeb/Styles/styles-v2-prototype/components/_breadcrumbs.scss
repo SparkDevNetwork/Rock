@@ -1,0 +1,58 @@
+// BREADCRUMB STYLE
+
+
+// =============================================================
+// Table of Content           
+//  + Base Style              
+//  + Header Breadcrumb Style    
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+.breadcrumb {
+  padding:          var(--spacing-xsmall) var(--spacing-medium);
+  list-style:       none;
+  background-color: transparent;
+  border-radius:    var(--rounded-small);
+
+  > li {
+    display: inline-block;
+
+    + li:before {
+      padding:  0 var(--spacing-tiny);
+      color:    var(--color-link-shade);
+      content:  "/\00a0"; // Unicode space added since inline-block means non-collapsing white-space
+    }
+  }
+
+  > .active {
+    color: var(--color-interface-stronger);
+  }
+}
+// ====================== END BASE STYLE ======================
+
+
+// ======================== HEADER BREADCRUMB STYLE ========================
+.page-title-display {
+    .breadcrumb {
+      padding:    0;
+      margin:     0;
+      font-size:  var(--font-size-xsmall);
+
+      a:hover {
+        text-decoration: underline;
+      }
+
+      i {
+        display: none;
+      }
+
+      > li + li::before {
+        font-family:  $font-face;
+        font-size:    80%;
+        font-weight:  $theme-weight;
+        content:      "/";
+      }
+  }
+}
+// ====================== END HEADER BREADCRUMB STYLE ======================

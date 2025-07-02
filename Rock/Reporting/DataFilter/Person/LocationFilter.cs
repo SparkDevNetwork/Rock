@@ -18,10 +18,14 @@ using Rock;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -155,6 +159,68 @@ namespace Rock.Reporting.DataFilter.Person
         public override string Section
         {
             get { return "Additional Filters"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var familyLocations = GroupTypeCache.GetFamilyGroupType()
+                .LocationTypeValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value )
+                .Select( l => new ListItemBag { Value = l.Guid.ToString(), Text = l.Value } )
+                .ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/locationFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "locationTypeOptions", familyLocations.ToCamelCaseJson( false, true ) }
+                },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new FilterSettings( selection );
+
+            var address = new AddressControlBag
+            {
+                Street1 = settings.Street1,
+                City = settings.City,
+                State = settings.State,
+                PostalCode = settings.PostalCode,
+                Country = settings.Country
+            };
+
+            return new Dictionary<string, string>
+            {
+                { "locationType", settings.LocationTypeGuid.ToStringSafe() },
+                { "address", address.ToCamelCaseJson( false, true ) }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new FilterSettings();
+
+            settings.LocationTypeGuid = data.GetValueOrNull( "locationType" )?.AsGuidOrNull();
+            var address = data.GetValueOrNull( "address" )?.FromJsonOrNull<AddressControlBag>() ?? new AddressControlBag();
+
+            settings.Street1 = address.Street1;
+            settings.City = address.City;
+            settings.State = address.State;
+            settings.PostalCode = address.PostalCode;
+            settings.Country = address.Country;
+
+            return settings.ToSelectionString();
         }
 
         #endregion

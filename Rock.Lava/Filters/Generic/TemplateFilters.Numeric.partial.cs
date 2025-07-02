@@ -28,10 +28,15 @@ namespace Rock.Lava.Filters
         /// Supports numeric formats that are implemented in the .NET Framework.
         /// For more details, refer https://docs.microsoft.com/en-us/dotnet/standard/base-types/standard-numeric-format-strings
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input">The input value.</param>
         /// <param name="format">The format string.</param>
         /// <returns></returns>
-        public static string Format( object input, string format )
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        public static string Format( ILavaRenderContext context, object input, string format )
         {
             var inputString = input.ToStringSafe();
 
@@ -41,10 +46,12 @@ namespace Rock.Lava.Filters
                 return inputString;
             }
 
+            CultureInfo cultureInfo = context.GetCultureInfo();
+
             try
             {
                 // Attempt to convert the value to a number.
-                var decimalValue = inputString.AsDecimalOrNull();
+                var decimalValue = inputString.AsDecimalWithCultureOrNull( cultureInfo );
 
                 if ( decimalValue != null )
                 {
@@ -53,17 +60,16 @@ namespace Rock.Lava.Filters
                          || formatChar == "x" )
                     {
                         // Decimal and hexadecimal formats are only supported for integral types, so convert the value to an integer before formatting.
-                        return string.Format( "{0:" + format + "}", ( int ) Math.Truncate( decimalValue.Value ) );
+                        return string.Format( cultureInfo, "{0:" + format + "}", ( int ) Math.Truncate( decimalValue.Value ) );
                     }
 
-                    return string.Format( "{0:" + format + "}", decimalValue );
+                    return string.Format( cultureInfo, "{0:" + format + "}", decimalValue );
                 }
                 else
                 {
                     // The value is not numeric, so try to apply the format directly to the input string.
-                    return string.Format( "{0:" + format + "}", inputString );
+                    return string.Format( cultureInfo, "{0:" + format + "}", inputString );
                 }
-
             }
             catch ( FormatException )
             {
@@ -75,10 +81,15 @@ namespace Rock.Lava.Filters
         /// <summary>
         /// Formats the specified input as currency using the specified CurrencySymbol.
         /// </summary>
+        /// <param name="context">The Lava rendering context, used to determine the effective culture (invariant, client, etc).</param>
         /// <param name="input">The input.</param>
         /// <param name="currencySymbol">The currency symbol.</param>
         /// <returns></returns>
-        public static string FormatAsCurrency( object input, string currencySymbol = null )
+        /// <remarks>
+        /// This method honors the Rock "setculture" Lava command to determine the culture for parsing.
+        /// The culture is resolved via <c>context.GetCultureInfo()</c>.
+        /// </remarks>
+        public static string FormatAsCurrency( ILavaRenderContext context, object input, string currencySymbol = null )
         {
             if ( input == null )
             {

@@ -25,6 +25,7 @@ using System.Runtime.Serialization;
 
 using Rock.Data;
 using Rock.Enums.CheckIn;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Lava;
 using Rock.Security;
@@ -842,6 +843,38 @@ namespace Rock.Model
         [DataMember]
         public bool IsChatChannelAlwaysShown { get; set; }
 
+        /// <summary>
+        /// Gets or sets the <see cref="ChatNotificationMode"/> to control how push notifications are sent for chat
+        /// channels of this type. This can be overridden by the value of <see cref="Group.ChatPushNotificationModeOverride"/>.
+        /// </summary>
+        /// <value>
+        /// The <see cref="ChatNotificationMode"/> to control how push notifications are sent for chat channels of this type.
+        /// </value>
+        [DataMember]
+        public ChatNotificationMode ChatPushNotificationMode { get; set; }
+
+        /// <summary>
+        /// Gets or sets the default Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>, representing
+        /// the source of <see cref="GroupMember"/>s added to <see cref="Group"/>s of this type. This can be overridden
+        /// by <see cref="Group.GroupMemberRecordSourceValueId"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Int32"/> representing the Id of the Record Source Type <see cref="Rock.Model.DefinedValue"/>.
+        /// </value>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.RECORD_SOURCE_TYPE )]
+        public int? GroupMemberRecordSourceValueId { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether <see cref="Group"/>s of this type can override <see cref="GroupMemberRecordSourceValueId"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="System.Boolean"/> representing whether <see cref="Group"/>s of this type can override
+        /// <see cref="GroupMemberRecordSourceValueId"/>.
+        /// </value>
+        [DataMember]
+        public bool AllowGroupSpecificRecordSource { get; set; }
+
         #endregion Entity Properties
 
         #region Group Scheduling Related
@@ -1248,6 +1281,18 @@ namespace Rock.Model
         [DataMember]
         public virtual SystemCommunication AttendanceReminderSystemCommunication { get; set; }
 
+        /// <summary>
+        /// Gets or sets the default Record Source Type <see cref="DefinedValue"/>, representing the source of
+        /// <see cref="GroupMember"/>s added to <see cref="Group"/>s of this type. This can be overridden by
+        /// <see cref="Group.GroupMemberRecordSourceValue"/> if <see cref="AllowGroupSpecificRecordSource"/> is
+        /// <see langword="true"/>.
+        /// </summary>
+        /// <value>
+        /// A <see cref="Rock.Model.DefinedValue"/> representing the Record Source Type .
+        /// </value>
+        [DataMember]
+        public virtual DefinedValue GroupMemberRecordSourceValue { get; set; }
+
         #endregion
 
         #region Public Methods
@@ -1286,6 +1331,7 @@ namespace Rock.Model
             this.HasOptional( p => p.ScheduleReminderSystemCommunication ).WithMany().HasForeignKey( p => p.ScheduleReminderSystemCommunicationId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.ScheduleCancellationWorkflowType ).WithMany().HasForeignKey( p => p.ScheduleCancellationWorkflowTypeId ).WillCascadeOnDelete( false );
             this.HasOptional( p => p.AttendanceReminderSystemCommunication ).WithMany().HasForeignKey( p => p.AttendanceReminderSystemCommunicationId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.GroupMemberRecordSourceValue ).WithMany().HasForeignKey( p => p.GroupMemberRecordSourceValueId ).WillCascadeOnDelete( false );
         }
     }
 

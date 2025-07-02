@@ -14,11 +14,11 @@
 // limitations under the License.
 // </copyright>
 //
-using DotLiquid;
 using Rock.Data;
 using Rock.Lava;
 using Rock.Model;
 using Rock.Web.Cache;
+
 using System;
 using System.Collections.Generic;
 using System.Data.Entity;
@@ -31,7 +31,7 @@ namespace Rock.CheckIn
     /// The status of a check-in device.  
     /// </summary>
     [DataContract]
-    public class KioskDevice : ItemCache<KioskDevice>, ILavaDataDictionary, Lava.ILiquidizable
+    public class KioskDevice : ItemCache<KioskDevice>, ILavaDataDictionary
     {
         #region Constructors
 
@@ -402,6 +402,7 @@ namespace Rock.CheckIn
             groupLocationList
                 .Select( l => l.Group )
                 .DistinctBy( g => g.Id )
+                .ToList()
                 .LoadAttributes( rockContext );
 
             // The above call only loaded Attributes for the first Group of a given ID.
@@ -556,6 +557,8 @@ namespace Rock.CheckIn
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object this[object key]
         {
             get => GetValue( key.ToStringSafe() );
@@ -566,6 +569,8 @@ namespace Rock.CheckIn
         /// </summary>
         /// <returns></returns>
         /// <exception cref="System.NotImplementedException"></exception>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             var dictionary = new Dictionary<string, object>()
@@ -584,7 +589,9 @@ namespace Rock.CheckIn
         /// <returns>
         ///   <c>true</c> if the specified key contains key; otherwise, <c>false</c>.
         /// </returns>
-        public bool ContainsKey(object key)
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
+        public bool ContainsKey( object key )
         {
             return AvailableKeys.Contains( key.ToStringSafe() );
         }

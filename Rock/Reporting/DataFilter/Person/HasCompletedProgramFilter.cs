@@ -27,6 +27,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
@@ -49,18 +50,13 @@ namespace Rock.Reporting.DataFilter.Person
             get { return typeof( Rock.Model.Person ).FullName; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/hasCompletedProgramFilter.obs";
-
         #endregion
 
         #region Configuration
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var config = SelectionConfig.Parse( selection );
-
             var learningProgramOptions = new LearningProgramService( rockContext )
                 .Queryable()
                 .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
@@ -69,9 +65,23 @@ namespace Rock.Reporting.DataFilter.Person
                 .Select( lp => lp.ToListItemBag() )
                 .ToList();
 
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasCompletedProgramFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "learningProgramOptions", learningProgramOptions.ToCamelCaseJson(false, true) }
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var config = SelectionConfig.Parse( selection );
+
             var data = new Dictionary<string, string>
             {
-                { "learningProgramOptions", learningProgramOptions.ToCamelCaseJson(false, true) },
                 { "learningProgram", config?.LearningProgramGuid?.ToString() },
                 { "dateRange", config?.SlidingDateRangeDelimitedValues },
             };

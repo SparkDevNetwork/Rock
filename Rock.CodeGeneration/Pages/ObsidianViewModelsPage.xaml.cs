@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
@@ -11,6 +12,8 @@ using System.Windows.Controls;
 
 using Rock.CodeGeneration.FileGenerators;
 using Rock.CodeGeneration.Utility;
+using Rock.CodeGeneration.ViewModels;
+using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 using Rock.ViewModels.Utility;
 
 namespace Rock.CodeGeneration.Pages
@@ -51,11 +54,24 @@ namespace Rock.CodeGeneration.Pages
             }
 
             // Sort the items so taht invalid ones are at the top.
-            typeItems = typeItems.OrderByDescending( t => t.IsInvalid )
-                .ThenBy( t => t.Name )
-                .ToList();
+            var groupedByNamespace = typeItems
+                .GroupBy( t => t.Type.Namespace )
+                .Select( g => new TypeItemGroup
+                {
+                    Namespace = g.Key,
+                    //IsExpanded = true, set this on load to trigger styles.
+                    Items = new ObservableCollection<TypeItem>( g.OrderByDescending( t => t.IsInvalid ).ThenBy( t => t.Name ) )
+                } )
+                .OrderByDescending( g => g.AnyInvalid )
+                .ThenBy( g => g.Namespace );
 
-            ViewModelsListBox.ItemsSource = typeItems;
+            DataContext = new ObsidianViewModelsPageViewModel
+            {
+                TypeItems = new ObservableCollection<TypeItem>( typeItems
+                        .OrderByDescending( t => t.IsInvalid )
+                        .ThenBy( t => t.Name ) ),
+                GroupedTypeItems = new ObservableCollection<TypeItemGroup>( groupedByNamespace )
+            };
         }
 
         #endregion
@@ -175,8 +191,9 @@ namespace Rock.CodeGeneration.Pages
         /// <returns>A collection of types that should be exported.</returns>
         private IList<Type> GetSelectedTypes()
         {
-            return ViewModelsListBox.ItemsSource
-                .Cast<TypeItem>()
+            return ViewModelsTreeView.ItemsSource
+                .Cast<TypeItemGroup>()
+                .SelectMany( g => g.Items )
                 .Where( t => t.IsExporting )
                 .Select( t => t.Type )
                 .ToList();
@@ -246,8 +263,9 @@ namespace Rock.CodeGeneration.Pages
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void SelectAll_Click( object sender, RoutedEventArgs e )
         {
-            ViewModelsListBox.ItemsSource
-                .Cast<TypeItem>()
+            ViewModelsTreeView.ItemsSource
+                .Cast<TypeItemGroup>()
+                .SelectMany( g => g.Items )
                 .Where( t => !t.IsInvalid )
                 .ToList()
                 .ForEach( i => i.IsExporting = true );
@@ -260,8 +278,9 @@ namespace Rock.CodeGeneration.Pages
         /// <param name="e">The <see cref="RoutedEventArgs"/> instance containing the event data.</param>
         private void SelectNone_Click( object sender, RoutedEventArgs e )
         {
-            ViewModelsListBox.ItemsSource
-                .Cast<TypeItem>()
+            ViewModelsTreeView.ItemsSource
+                .Cast<TypeItemGroup>()
+                .SelectMany( g => g.Items )
                 .Where( t => !t.IsInvalid )
                 .ToList()
                 .ForEach( i => i.IsExporting = false );
@@ -317,99 +336,245 @@ namespace Rock.CodeGeneration.Pages
 
         #endregion
 
-        #region Support Classes
+        private void ExpandAll_Click( object sender, RoutedEventArgs e )
+        {
+            foreach ( var item in ViewModelsTreeView.ItemsSource)
+            {
+                if ( item is TypeItemGroup g )
+                {
+                    g.IsExpanded = true;
+                }
+            }
+        }
+
+        private void CollapseAll_Click( object sender, RoutedEventArgs e )
+        {
+            foreach ( var item in ViewModelsTreeView.ItemsSource)
+            {
+                if ( item is TypeItemGroup g )
+                {
+                    g.IsExpanded = false;
+                }
+            }
+        }
+    }
+
+    #region Support Classes
+
+    /// <summary>
+    /// An item that represents a type to be shown in the list box.
+    /// </summary>
+    public class TypeItem : INotifyPropertyChanged
+    {
+        #region Events
 
         /// <summary>
-        /// An item that represents a type to be shown in the list box.
+        /// Occurs when a property value changes.
         /// </summary>
-        private class TypeItem : INotifyPropertyChanged
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the type represented by this item.
+        /// </summary>
+        /// <value>The type represented by this item.</value>
+        public Type Type { get; }
+
+        /// <summary>
+        /// Gets the name to display in the listbox.
+        /// </summary>
+        /// <value>The name to display in the listbox.</value>
+        public string Name { get; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this item is selected for export.
+        /// </summary>
+        /// <value><c>true</c> if this item is selected for export; otherwise, <c>false</c>.</value>
+        public bool IsExporting
         {
-            #region Events
-
-            /// <summary>
-            /// Occurs when a property value changes.
-            /// </summary>
-            public event PropertyChangedEventHandler PropertyChanged;
-
-            #endregion
-
-            #region Properties
-
-            /// <summary>
-            /// Gets the type represented by this item.
-            /// </summary>
-            /// <value>The type represented by this item.</value>
-            public Type Type { get; }
-
-            /// <summary>
-            /// Gets the name to display in the listbox.
-            /// </summary>
-            /// <value>The name to display in the listbox.</value>
-            public string Name { get; }
-
-            /// <summary>
-            /// Gets or sets a value indicating whether this item is selected for export.
-            /// </summary>
-            /// <value><c>true</c> if this item is selected for export; otherwise, <c>false</c>.</value>
-            public bool IsExporting
+            get => _isExporting;
+            set
             {
-                get => _isExporting;
-                set
-                {
-                    _isExporting = value;
-                    OnPropertyChanged();
-                }
+                _isExporting = value;
+                OnPropertyChanged();
             }
-            private bool _isExporting;
+        }
+        private bool _isExporting;
 
-            /// <summary>
-            /// Gets a value indicating whether this item is invalid.
-            /// </summary>
-            /// <value><c>true</c> if this item is invalid; otherwise, <c>false</c>.</value>
-            public bool IsInvalid => InvalidReason.IsNotNullOrWhiteSpace();
+        /// <summary>
+        /// Gets a value indicating whether this item is invalid.
+        /// </summary>
+        /// <value><c>true</c> if this item is invalid; otherwise, <c>false</c>.</value>
+        public bool IsInvalid => InvalidReason.IsNotNullOrWhiteSpace();
 
-            /// <summary>
-            /// Gets or sets the reason this item is invalid.
-            /// </summary>
-            /// <value>The reason this item is invalid.</value>
-            public string InvalidReason { get; set; }
+        /// <summary>
+        /// Gets or sets the reason this item is invalid.
+        /// </summary>
+        /// <value>The reason this item is invalid.</value>
+        public string InvalidReason { get; set; }
 
-            #endregion
+        // This property only exists to support the tree view and has no effect.
+        public bool IsExpanded { get; set; }
 
-            #region Constructors
+        #endregion
 
-            /// <summary>
-            /// Initializes a new instance of the <see cref="TypeItem"/> class.
-            /// </summary>
-            /// <param name="type">The type to be represented by this item.</param>
-            public TypeItem( Type type )
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="TypeItem"/> class.
+        /// </summary>
+        /// <param name="type">The type to be represented by this item.</param>
+        public TypeItem( Type type )
+        {
+            Type = type;
+            Name = type.Name;
+            IsExporting = true;
+
+            if ( Name.StartsWith( "Rock.ViewModels." ) )
             {
-                Type = type;
-                Name = type.Name;
-                IsExporting = true;
-
-                if ( Name.StartsWith( "Rock.ViewModels." ) )
-                {
-                    Name = Name.Substring( 15 );
-                }
+                Name = Name.Substring( 15 );
             }
+        }
 
-            #endregion
+        #endregion
 
-            #region Methods
+        #region Methods
 
-            /// <summary>
-            /// Called when a property value has changed.
-            /// </summary>
-            /// <param name="propertyName">Name of the property.</param>
-            protected virtual void OnPropertyChanged( [CallerMemberName] string propertyName = null )
-            {
-                PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
-            }
-
-            #endregion
+        /// <summary>
+        /// Called when a property value has changed.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        protected virtual void OnPropertyChanged( [CallerMemberName] string propertyName = null )
+        {
+            PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
         }
 
         #endregion
     }
+
+    public class TypeItemGroup : INotifyPropertyChanged
+    {
+        #region Events
+
+        /// <summary>
+        /// Occurs when a property value changes.
+        /// </summary>
+        public event PropertyChangedEventHandler PropertyChanged;
+
+        #endregion
+
+        #region Properties
+
+        public string Namespace { get; set; }
+
+        public bool AnyInvalid => Items?.Any( i => i.IsInvalid ) == true;
+
+        private ObservableCollection<TypeItem> _items;
+        public ObservableCollection<TypeItem> Items
+        {
+            get => _items;
+            set
+            {
+                var oldValue = _items;
+
+                if ( _items != value )
+                {
+                    _items = value;
+
+                    if ( oldValue != null )
+                    {
+                        UnregisterItemExportChangeCallbacks( oldValue );
+                    }
+
+                    RegisterItemExportChangeCallbacks( _items );
+
+                    _items.CollectionChanged += ( _, __ ) => RegisterItemExportChangeCallbacks( _items );
+                }
+            }
+        }
+
+        private bool _isExpanded;
+
+        public bool IsExpanded
+        {
+            get => _isExpanded;
+            set
+            {
+                if (_isExpanded != value)
+                {
+                    _isExpanded = value;
+                    OnPropertyChanged();
+                }
+            }
+        }
+
+        /// <summary>
+        ///  true  = all children exporting<br/>
+        ///  false = none exporting<br/>
+        ///  null  = mixture
+        /// </summary>
+        public bool? IsExporting
+        {
+            get
+            {
+                var areAnyExporting = Items.Any( i => i.IsExporting );
+                var areAllExporting = Items.All( i => i.IsExporting );
+
+                return areAllExporting ? true : ( areAnyExporting ? ( bool? ) null : false );
+            }
+            set
+            {
+                foreach ( var item in Items )
+                {
+                    item.IsExporting = value ?? false;
+                }
+
+                OnPropertyChanged();
+            }
+        }
+
+        #endregion
+
+        #region Methods
+
+        private void RegisterItemExportChangeCallbacks( IEnumerable<TypeItem> items )
+        {
+            foreach ( var item in items )
+            {
+                item.PropertyChanged += Item_PropertyChanged;
+            }
+        }
+
+        private void UnregisterItemExportChangeCallbacks( IEnumerable<TypeItem> items )
+        {
+            foreach ( var item in items )
+            {
+                item.PropertyChanged -= Item_PropertyChanged;
+            }
+        }
+
+        private void Item_PropertyChanged( object sender, PropertyChangedEventArgs e )
+        {
+            if ( e.PropertyName == nameof( TypeItem.IsExporting ) )
+            {
+                OnPropertyChanged( nameof( IsExporting ) );
+            }
+        }
+
+        /// <summary>
+        /// Called when a property value has changed.
+        /// </summary>
+        /// <param name="propertyName">Name of the property.</param>
+        protected virtual void OnPropertyChanged( [CallerMemberName] string propertyName = null )
+        {
+            PropertyChanged?.Invoke( this, new PropertyChangedEventArgs( propertyName ) );
+        }
+
+        #endregion
+    }
+
+    #endregion
 }

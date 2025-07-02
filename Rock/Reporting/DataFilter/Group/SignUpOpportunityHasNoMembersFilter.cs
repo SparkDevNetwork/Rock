@@ -28,6 +28,7 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -132,31 +133,40 @@ namespace Rock.Reporting.DataFilter.Group
             get { return GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_SIGNUP_GROUP.AsGuid() ).ToIntSafe(); }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Group/signUpOpportunityHasNoMembersFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var groupTypes = new GroupTypeService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( gt => gt.Id == this.SignUpGroupGroupTypeId || gt.InheritedGroupTypeId == this.SignUpGroupGroupTypeId )
+                .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
+                .ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/signUpOpportunityHasNoMembersFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "groupTypes", groupTypes.ToCamelCaseJson(false, true) }
+                },
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
             var selectionConfig = SelectionConfig.Parse( selection );
 
-            var groupTypes = new GroupTypeService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( gt => gt.Id == this.SignUpGroupGroupTypeId || gt.InheritedGroupTypeId == this.SignUpGroupGroupTypeId )
-                    .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
-                    .ToList();
-
             var data = new Dictionary<string, string>
             {
                 { "groupTypeGuid", selectionConfig?.GroupTypeGuid },
                 { "memberType", selectionConfig?.MemberType },
-                { "hidePastOpportunities", selectionConfig?.HidePastOpportunities.ToTrueFalse() },
-                { "groupTypes", groupTypes.ToCamelCaseJson(false, true) }
+                { "hidePastOpportunities", selectionConfig?.HidePastOpportunities.ToTrueFalse() }
             };
 
             return data;

@@ -20,7 +20,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using DotLiquid;
+
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
@@ -536,32 +536,6 @@ namespace Rock.Blocks.Cms
                     rockContext.SaveChanges();
                     entity.SaveAttributeValues( rockContext );
                 } );
-
-                if ( LavaService.RockLiquidIsEnabled )
-                {
-                    // unregister shortcode
-                    if ( oldTagName.IsNotNullOrWhiteSpace() )
-                    {
-                        Template.UnregisterShortcode( oldTagName );
-                    }
-
-                    // Register the new shortcode definition. Note that RockLiquid shortcode tags are case-sensitive.
-                    if ( entity.TagType == TagType.Block )
-                    {
-                        Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeBlock>( entity.TagName );
-                    }
-                    else
-                    {
-                        Template.RegisterShortcode<Rock.Lava.Shortcodes.DynamicShortcodeInline>( entity.TagName );
-                    }
-
-                    // (bug fix) Now we have to clear the entire LavaTemplateCache because it's possible that some other
-                    // usage of this shortcode is cached with a key we can't predict.
-#pragma warning disable CS0618 // Type or member is obsolete
-                    // This obsolete code can be deleted when support for the DotLiquid Lava implementation is removed.
-                    LavaTemplateCache.Clear();
-#pragma warning restore CS0618 // Type or member is obsolete
-                }
 
                 if ( oldTagName.IsNotNullOrWhiteSpace() )
                 {

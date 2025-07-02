@@ -149,7 +149,7 @@ namespace Rock.UniversalSearch.IndexModels
         private string iconCssClass = "fa fa-bullhorn";
 
         /// <summary>
-        /// Loads the by model.
+        /// Loads the indexable document from the ContentChannelItem.
         /// </summary>
         /// <param name="contentChannelItem">The content channel item.</param>
         /// <returns></returns>
@@ -251,6 +251,14 @@ namespace Rock.UniversalSearch.IndexModels
             }
 
             return base.FormatSearchResult( person, displayOptions );
+        }
+
+        /// <inheritdoc/>
+        public override bool IsViewAllowed( Person person, RockContext rockContext )
+        {
+            var contentChannelItem = new ContentChannelItemService( rockContext ).Get( ( int ) this.Id );
+
+            return contentChannelItem?.IsAuthorized( Security.Authorization.VIEW, person ) ?? false;
         }
     }
 }

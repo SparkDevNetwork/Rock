@@ -32,12 +32,12 @@ using Rock.Web.UI.Controls;
 namespace RockWeb.Blocks.Communication
 {
     /// <summary>
-    /// 
+    /// Block that allows a person to manage the communication lists that they are subscribed to.
     /// </summary>
     [DisplayName( "Communication List Subscribe" )]
     [Category( "Communication" )]
     [Description( "Block that allows a person to manage the communication lists that they are subscribed to" )]
-    [ContextAware( typeof( Person ) )]
+    [ContextAware( typeof( Rock.Model.Campus ), typeof( Rock.Model.Person ) )]
 
     #region Block Attributes
 
@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.Communication
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "52E0AA5B-B08B-42E4-8180-DD7925BAA57F" )]
-    public partial class CommunicationListSubscribe : RockBlock
+    public partial class CommunicationListSubscribe : ContextEntityBlock
     {
         #region Attribute Keys
 

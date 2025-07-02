@@ -43,22 +43,21 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const learningProgramOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.learningProgramOptions) ?? []);
+    const learningProgramOptions = safeParseJson<ListItemBag[]>(props.options.learningProgramOptions) ?? [];
     const learningProgram = ref<Guid>(props.modelValue.learningProgram ?? "");
-    const learningCourseOptionsByProgram = ref<Record<Guid, ListItemBag[]>>(safeParseJson(props.modelValue.learningCourseOptions) ?? {});
+    const learningCourseOptionsByProgram = safeParseJson<Record<Guid, ListItemBag[]>>(props.options.learningCourseOptions) ?? {};
     const learningCourse = ref<Guid>(props.modelValue.learningCourse ?? "");
     const courseStatus = ref<`${LearningCompletionStatus}`[]>(safeParseJson<LearningCompletionStatus[]>(props.modelValue.courseStatus)?.map(st => `${st}` as `${LearningCompletionStatus}`) ?? []);
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
 
     const learningCourseOptions = computed(() => {
-        return learningCourseOptionsByProgram.value[learningProgram.value] ?? [];
+        return learningCourseOptionsByProgram[learningProgram.value] ?? [];
     });
 
     const courseStatusOptions = [
         { text: LearningCompletionStatusDescription[LearningCompletionStatus.Pass], value: LearningCompletionStatus.Pass.toString() },
         { text: LearningCompletionStatusDescription[LearningCompletionStatus.Fail], value: LearningCompletionStatus.Fail.toString() },
     ];
-    console.log(courseStatusOptions, courseStatus.value);
 
     watch([learningCourse, courseStatus, dateRange], () => {
         emit("update:modelValue", {

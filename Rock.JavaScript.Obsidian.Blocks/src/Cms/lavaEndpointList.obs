@@ -1,0 +1,169 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid v-if="isBlockVisible" :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Lava Endpoint"
+          entityTypeGuid="F1BBF7D4-CAFD-450D-A89A-B3312C9738A2"
+          :expectedRowCount="config.expectedRowCount ?? undefined"
+          tooltipField="name"
+          stickyHeader
+          liveUpdates
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="slug"
+                    title="Slug"
+                    field="slug"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+        <LabelColumn name="Http Method"
+                     title="Method"
+                     field="httpMethod"
+                     :filter="pickExistingValueFilter"
+                     :textSource="LavaEndpointHttpMethodDescription"
+                     :classSource="httpMethodLabelColors"
+                     width="120"
+                     visiblePriority="sm" />
+        <LabelColumn name="Security Mode"
+                     title="Security Mode"
+                     field="securityMode"
+                     :filter="pickExistingValueFilter"
+                     :textSource="LavaEndpointSecurityModeDescription"
+                     :classSource="securityModeLabelColors"
+                     visiblePriority="sm" />
+        <Column name="Status"
+                title="Status"
+                :filter="pickExistingValueFilter"
+                field="isActive"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <span v-if="row.isActive" class="label label-success">
+                    Active
+                </span>
+                <span v-else class="label label-danger">
+                    Inactive
+                </span>
+            </template>
+        </Column>
+
+        <BooleanColumn name="System"
+                       title="System"
+                       field="isSystem"
+                       visiblePriority="xs" />
+
+        <SecurityColumn />
+
+        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, SecurityColumn, pickExistingValueFilter, LabelColumn } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { LavaEndpointListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/LavaEndpointList/lavaEndpointListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./LavaEndpointList/types.partial";
+    import { reactive, ref } from "vue";
+    import { LavaEndpointHttpMethod, LavaEndpointHttpMethodDescription } from "@Obsidian/Enums/Cms/lavaEndpointHttpMethod";
+    import { LavaEndpointSecurityMode, LavaEndpointSecurityModeDescription } from "@Obsidian/Enums/Cms/lavaEndpointSecurityMode";
+
+    const config = useConfigurationValues<ListBlockBox<LavaEndpointListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const isBlockVisible = ref(config.options?.isBlockVisible ?? false);
+    // #region Values
+
+    const securityModeLabelColors: Record<string, string> = {
+        [LavaEndpointSecurityModeDescription[LavaEndpointSecurityMode.EndpointExecute]]: "info",
+        [LavaEndpointSecurityModeDescription[LavaEndpointSecurityMode.ApplicationView]]: "success",
+        [LavaEndpointSecurityModeDescription[LavaEndpointSecurityMode.ApplicationEdit]]: "warning",
+        [LavaEndpointSecurityModeDescription[LavaEndpointSecurityMode.ApplicationAdministrate]]: "danger"
+    };
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    const httpMethodLabelColors: Record<string, string> = {
+        [LavaEndpointHttpMethodDescription[LavaEndpointHttpMethod.Get]]: "info",
+        [LavaEndpointHttpMethodDescription[LavaEndpointHttpMethod.Post]]: "success",
+        [LavaEndpointHttpMethodDescription[LavaEndpointHttpMethod.Put]]: "warning",
+        [LavaEndpointHttpMethodDescription[LavaEndpointHttpMethod.Delete]]: "danger"
+    };
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete site.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the indivual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>

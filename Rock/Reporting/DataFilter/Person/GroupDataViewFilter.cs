@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
@@ -67,12 +68,18 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Related Data Views"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/groupDataViewFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/groupDataViewFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
@@ -280,6 +287,8 @@ function ()
         private const string _CtlGroupStatus = "ddlGroupStatus";
         private const string _CtlRoleType = "ddlRoleType";
 
+#if WEBFORMS
+
         /// <summary>
         /// Creates the model representation of the child controls used to display and edit the filter settings.
         /// Implement this version of CreateChildControls if your DataFilterComponent works the same in all filter modes
@@ -404,6 +413,9 @@ function ()
 
             return ddlDataView.SelectedValueAsId();
         }
+
+#endif
+
         #endregion
 
         #region Settings

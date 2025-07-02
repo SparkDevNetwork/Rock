@@ -1,0 +1,50 @@
+<template>
+    <div class="row form-row">
+        <div class="col-md-3">
+            <DropDownList v-model="hasPhoneType" :items="hasPhoneTypeOptions" :showBlankItem="false" />
+        </div>
+        <div class="col-md-4">
+            <DropDownList v-model="phoneType" :items="phoneTypeOptions" :showBlankItem="false" />
+        </div>
+    </div>
+    <div class="row form-row">
+        <div class="col-md-2">
+            <DropDownList v-model="hasSMS" :items="hasSMSOptions" label="SMS Enabled" showBlankItem />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const hasPhoneType = ref<string>(props.modelValue.hasPhoneType ?? "True");
+    const hasPhoneTypeOptions: ListItemBag[] = [
+        { value: "True", text: "Has Phone Type" },
+        { value: "False", text: "Doesn't Have Phone Type" },
+    ];
+    const phoneType = ref<string>(props.modelValue.phoneType ?? "");
+    const phoneTypeOptions: ListItemBag[] = safeParseJson(props.options.phoneTypeOptions) ?? [];
+    const hasSMS = ref<string>(props.modelValue.hasSMS ?? "");
+    const hasSMSOptions = ref([
+        { value: "True", text: "Yes" },
+        { value: "False", text: "No" },
+    ]);
+
+    watch([hasPhoneType, phoneType, hasSMS], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            hasPhoneType: hasPhoneType.value,
+            phoneType: phoneType.value,
+            hasSMS: hasSMS.value,
+        });
+    });
+</script>

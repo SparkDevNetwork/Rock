@@ -190,6 +190,15 @@ namespace Rock.Blocks.Cms
     [Rock.SystemGuid.BlockTypeGuid( "CC387575-3530-4CD6-97E0-1F449DCA1869" )]
     public class ContentCollectionView : RockBlockType, IHasCustomActions
     {
+        #region Properties
+
+        /// <summary>
+        /// Gets a list of the enabled sort orders setting.
+        /// </summary>
+        protected List<string> EnabledSortOrders => GetAttributeValue( AttributeKey.EnabledSortOrders ).SplitDelimitedValues().ToList();
+
+        #endregion
+
         #region Keys
 
         private static class AttributeKey
@@ -763,7 +772,7 @@ namespace Rock.Blocks.Cms
             var query = new SearchQueryBag
             {
                 Text = RequestContext.GetPageParameter( "q" ),
-                Order = RequestContext.GetPageParameter( "s" )?.ConvertToEnumOrNull<SearchOrder>() ?? SearchOrder.Relevance,
+                Order = GetInitialSortOrder(),
                 Filters = new Dictionary<string, string>()
             };
 
@@ -790,6 +799,23 @@ namespace Rock.Blocks.Cms
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Gets the initial enabled sort order.
+        /// </summary>
+        /// <returns></returns>
+        private SearchOrder GetInitialSortOrder()
+        {
+            var sortParam = RequestContext.GetPageParameter( "s" )?.ConvertToEnumOrNull<SearchOrder>();
+            if ( sortParam.HasValue )
+            {
+                return sortParam.Value;
+            }
+
+            var firstEnabledSortOrder = EnabledSortOrders?.FirstOrDefault()?.ConvertToEnumOrNull<SearchOrder>();
+
+            return firstEnabledSortOrder ?? SearchOrder.Relevance;
         }
 
         /// <summary>
@@ -1364,7 +1390,7 @@ namespace Rock.Blocks.Cms
                 NumberOfResults = GetAttributeValue( AttributeKey.NumberOfResults ).AsIntegerOrNull(),
                 SearchOnLoad = GetAttributeValue( AttributeKey.SearchOnLoad ).AsBoolean(),
                 GroupResultsBySource = GetAttributeValue( AttributeKey.GroupResultsBySource ).AsBoolean(),
-                EnabledSortOrders = GetAttributeValue( AttributeKey.EnabledSortOrders ).SplitDelimitedValues().ToList(),
+                EnabledSortOrders = EnabledSortOrders,
                 TrendingTerm = GetAttributeValue( AttributeKey.TrendingTerm ),
                 GroupHeaderTemplate = GetAttributeValue( AttributeKey.GroupHeaderTemplate ),
                 ItemTemplate = GetItemTemplate(),

@@ -6,14 +6,14 @@
 
             <div @click.stop="onScrollableClick" class="modal-scrollable" :style="`z-index: ${zIndex};`">
                 <div @click.stop
-                     class="modal container modal-content rock-modal rock-modal-frame modal-overflow"
-                     :class="{ 'animated shake': isShaking }"
+                     class="modal modal-content rock-modal rock-modal-frame modal-overflow"
+                     :class="{ 'animated shake': isShaking, 'container': !isNarrow, [modalContentClasses]: true }"
                      aria-hidden="false"
                      tabindex="-1"
                      role="dialog"
                      style="display: block; margin-top: 0;">
                     <div class="modal-header">
-                        <button v-if="!isCloseButtonHidden" @click="onClose" class="close" aria-hidden="true" type="button">&times;</button>
+                        <button v-if="!isCloseButtonHidden" @click="onClose" class="close" type="button" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                         <template v-if="title">
                             <h3 class="modal-title">{{ title }}</h3>
                             <small v-if="subtitle">{{ subtitle }}</small>
@@ -67,6 +67,11 @@
             default: ""
         },
 
+        modalContentClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         title: {
             type: String as PropType<string>,
             default: ""
@@ -108,6 +113,11 @@
         },
 
         isCloseButtonHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        isNarrow: {
             type: Boolean as PropType<boolean>,
             default: false
         },

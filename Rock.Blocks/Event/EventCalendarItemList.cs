@@ -222,7 +222,7 @@ namespace Rock.Blocks.Event
                 var gridAttributes = GetGridAttributes();
                 var gridAttributeIds = gridAttributes.Select( a => a.Id ).ToList();
 
-                Helper.LoadFilteredAttributes( items.Cast<IHasAttributes>(), rockContext, a => gridAttributeIds.Contains( a.Id ) );
+                Helper.LoadFilteredAttributes( items, rockContext, a => gridAttributeIds.Contains( a.Id ) );
             }
 
             return GetGridBuilder().Build( items );

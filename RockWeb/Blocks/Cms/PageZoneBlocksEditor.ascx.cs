@@ -749,9 +749,8 @@ namespace RockWeb.Blocks.Cms
                     // ignore
                 }
 
-                // If the IsDebuggingEnabled happens to be true, show all the obsidian blocks. This is done for testing purposes.
-                // This flag needs to be removed once all the blocks are migrated to obsidian.
-                var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType, HttpContext.Current.IsDebuggingEnabled )
+                // Show all the Web blocks and even ones with SiteTypeFlags set to None.
+                var blockTypes = BlockTypeService.BlockTypesToDisplay( siteType, true )
                     .Select( b => new
                     {
                         b.Id,

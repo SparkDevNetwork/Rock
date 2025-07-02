@@ -669,7 +669,6 @@ namespace Rock.Tests.Lava.Filters
         [DataTestMethod]
         [DataRow( "Ted Decker   ", "Ted Decker   " )]
         [DataRow( "   Ted Decker", "Ted Decker" )]
-        [DataRow( "Ted Decker   ", "Ted Decker   " )]
         [DataRow( "   ", "" )]
         [DataRow( "", "" )]
         public void TrimStart_WithNoParameters_RemovesLeadingWhitespace( string input, string expected )

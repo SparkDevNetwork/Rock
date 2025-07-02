@@ -231,6 +231,14 @@ namespace Rock.ViewModels.Blocks.Administration.PageProperties
         public List<ListItemBag> Intents { get; set; }
 
         /// <summary>
+        /// Gets or sets the defined value GUIDs for countries from which access will be restricted to this page.
+        /// </summary>
+        /// <value>
+        /// The defined value GUIDs for countries from which access will be restricted to this page.
+        /// </value>
+        public List<Guid> CountriesRestrictedFromAccessing { get; set; }
+
+        /// <summary>
         /// Gets or sets the block contexts.
         /// </summary>
         /// <value>

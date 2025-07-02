@@ -94,13 +94,6 @@ namespace Rock.Lava
         /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
         public override void OnInitialize( string tagName, string markup, List<string> tokens )
         {
-            // This code is only required for the DotLiquid implementation of Lava.
-            if ( _engine.EngineName == "RockLiquid" )
-            {
-                InitializeRockLiquidShortcode( tagName, markup, tokens );
-                return;
-            }
-
             _elementAttributesMarkup = markup;
             _tagName = tagName;
 
@@ -108,7 +101,7 @@ namespace Rock.Lava
 
             if ( tokens.Any() )
             {
-                // To allow for backward-compatibility with custom blocks developed for the DotLiquid framework,
+                // To allow for backward-compatibility with custom blocks developed for the legacy Lava engine,
                 // the set of tokens returned by the Lava block parser includes the closing tag of the block.
                 // We remove the closing tag here because it is not needed for our internal dynamic shortcode implementation.
                 tokens = tokens.Take( tokens.Count - 1 ).ToList();
@@ -117,82 +110,6 @@ namespace Rock.Lava
                 {
                     _blockMarkup.Append( tokenText );
                 }
-            }
-
-            base.OnInitialize( tagName, markup, tokens );
-        }
-
-        /// <summary>
-        /// Initializes the specified tag name.
-        /// </summary>
-        /// <param name="tagName">Name of the tag.</param>
-        /// <param name="markup">The markup.</param>
-        /// <param name="tokens">The tokens.</param>
-        /// <exception cref="System.Exception">Could not find the variable to place results in.</exception>
-        private void InitializeRockLiquidShortcode( string tagName, string markup, List<string> tokens )
-        {
-            _elementAttributesMarkup = markup;
-            _tagName = tagName;
-
-            _blockMarkup = new StringBuilder();
-
-            // Get the block markup. The list of tokens contains all of the lava from the start tag to
-            // the end of the template. This will pull out just the internals of the block.
-            // We must take into consideration nested tags of the same type.
-
-            var endTagFound = false;
-
-            // Create regular expressions for start and end tags.
-            var startTag = $@"{{\[\s*{_tagName}\s*(.*?)\]}}";
-            var endTag = $@"{{\[\s*end{_tagName}\s*\]}}";
-
-            var startTags = 0;
-
-            Regex regExStart = new Regex( startTag );
-            Regex regExEnd = new Regex( endTag );
-
-            string token;
-            while ( ( token = tokens.Shift() ) != null )
-            {
-                Match startTagMatch = regExStart.Match( token );
-                if ( startTagMatch.Success )
-                {
-                    startTags++; // increment the child tag counter
-                    if ( startTags > 1 )
-                    {
-                        _blockMarkup.Append( token );
-                    }
-                }
-                else
-                {
-                    Match endTagMatch = regExEnd.Match( token );
-
-                    if ( endTagMatch.Success )
-                    {
-                        if ( startTags > 1 )
-                        {
-                            startTags--; // decrement the child tag counter
-                            _blockMarkup.Append( token );
-                        }
-                        else
-                        {
-                            endTagFound = true;
-                            break;
-                        }
-                    }
-                    else
-                    {
-                        _blockMarkup.Append( token );
-                    }
-                }
-
-            }
-
-            // If this is a block, we need a closing tag.
-            if ( this.ElementType == LavaShortcodeTypeSpecifier.Block
-                 && !endTagFound )
-            {
-                AssertMissingDelimitation();
             }
 
             base.OnInitialize( tagName, markup, tokens );
@@ -236,20 +153,15 @@ namespace Rock.Lava
             }
 
             // Add parameters for tracking the recursion depth.
-            int currentRecursionDepth = 0;
+            int originalRecursionDepth = context.GetMergeField( "RecursionDepth" ).ToStringSafe().AsInteger();
 
-            if ( parms.ContainsKey( "RecursionDepth" ) )
+            if ( originalRecursionDepth > _maxRecursionDepth )
             {
-                currentRecursionDepth = parms["RecursionDepth"].ToString().AsInteger() + 1;
-
-                if ( currentRecursionDepth > _maxRecursionDepth )
-                {
-                    result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
-                    return;
-                }
+                result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
+                return;
             }
 
-            parms.AddOrReplace( "RecursionDepth", currentRecursionDepth );
+            parms.AddOrReplace( "RecursionDepth", originalRecursionDepth + 1 );
 
             var securityCheckRequired = true;
 
@@ -307,12 +219,22 @@ namespace Rock.Lava
 
             // Set context variables related to the block content so they can be referenced by the shortcode template.
             var blockHasContent = residualMarkup.IsNotNullOrWhiteSpace();
+            var originalBlockContentExists = context.GetMergeField( "blockContentExists" );
+
+            // This "blockContentExists" parameter is not documented in the official
+            // "The Long & Short on Shortcodes" book, but I suppose someone could be using it in their code
+            // to tell if there is content in the shortcode 'block'. Otherwise I would consider this
+            // deprecated and they should just use {% if blockContent == '' %} instead.
             parms.AddOrReplace( "blockContentExists", blockHasContent );
+
+            // Get the original blockContent so we can replace it when we're done. This is needed for nested shortcodes
+            var originalBlockContent = context.GetMergeField( "blockContent" );
+
+            // Set the blockContent merge field even if there is no content to prevent parent shortcodes from bleeding into their children.
+            parms.AddOrReplace( "blockContent", residualMarkup );
 
             if ( blockHasContent )
             {
-                parms.AddOrReplace( "blockContent", residualMarkup );
-
                 if ( securityCheckRequired )
                 {
                     // If the commands enabled for the current render context are a superset of the commands enabled for the shortcode,
@@ -368,7 +290,7 @@ namespace Rock.Lava
                     var enabledCommands = context.GetEnabledCommands();
                     foreach ( var commandName in _shortcode.EnabledLavaCommands )
                     {
-                        if ( !enabledCommands.Contains(commandName) )
+                        if ( !enabledCommands.Contains( commandName ) )
                         {
                             enabledCommands.Add( commandName );
                         }
@@ -383,6 +305,11 @@ namespace Rock.Lava
             {
                 context.ExitChildScope();
             }
+
+            // Reset the original parameters in the context
+            context.SetMergeField( "blockContent", originalBlockContent );
+            context.SetMergeField( "RecursionDepth", originalRecursionDepth );
+            context.SetMergeField( "blockContentExists", originalBlockContentExists );
         }
 
         #endregion
@@ -457,7 +384,7 @@ namespace Rock.Lava
                             // add new parm to a collection of parms and as a single parm if none exist
                             if ( childParameters.ContainsKey( parmName + "s" ) )
                             {
-                                var parmList = (List<object>)childParameters[parmName + "s"];
+                                var parmList = ( List<object> ) childParameters[parmName + "s"];
                                 parmList.Add( dynamicParm );
                             }
                             else

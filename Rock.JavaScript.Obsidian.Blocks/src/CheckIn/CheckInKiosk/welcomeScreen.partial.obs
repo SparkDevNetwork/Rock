@@ -171,6 +171,20 @@
             classes.push("kiosk-not-open");
         }
 
+        // Determine if we have any camera configuration enabled. If not then
+        // we add a class to disable the camera button. On the stock theme this
+        // hides the button completely.
+        const isCameraEnabled = props.configuration.kiosk?.isCameraEnabled
+            && barcodeButtonElement.value
+            && cameraDeviceId.value;
+        const isIpadCameraEnabled = props.configuration.kiosk
+            && props.configuration.kiosk.cameraMode !== CameraBarcodeConfiguration.Off
+            && isIpadAppWithCamera(props.configuration.kiosk);
+
+        if (!isCameraEnabled && !isIpadCameraEnabled) {
+            classes.push("camera-disabled");
+        }
+
         return classes;
     });
 

@@ -32,7 +32,7 @@ namespace Rock.UniversalSearch.IndexModels
     /// Base Index Model
     /// </summary>
     /// <seealso cref="System.Dynamic.DynamicObject" />
-    public class IndexModelBase : DynamicObject, ILavaDataDictionary, Lava.ILiquidizable
+    public class IndexModelBase : DynamicObject, ILavaDataDictionary
     {
         private Dictionary<string, object> _members = new Dictionary<string, object>();
         object Instance;
@@ -144,6 +144,19 @@ namespace Rock.UniversalSearch.IndexModels
 
             // otherwise return not implemented (blank)
             return new FormattedSearchResult() { IsViewAllowed = true, FormattedResult = result };
+        }
+
+        /// <summary>
+        /// Determines whether this instance can be viewed by the person. This is used
+        /// when the item name is used instead of the <see cref="FormatSearchResult(Person, Dictionary{string, object}, Dictionary{string, object})"/>
+        /// output.
+        /// </summary>
+        /// <param name="person">The person that is requesting access to view this item.</param>
+        /// <param name="rockContext">The context to use when accessing the database, this must not be <c>null</c> when called.</param>
+        /// <returns><c>true</c> if <paramref name="person"/> is allowed to view the item; otherwise <c>false</c>.</returns>
+        public virtual bool IsViewAllowed( Person person, RockContext rockContext )
+        {
+            return true;
         }
 
         /// <summary>
@@ -527,6 +540,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// </value>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object this[object key]
         {
             get
@@ -568,6 +583,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// Returns liquid for the object
         /// </summary>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public object ToLiquid()
         {
             return this;
@@ -578,6 +595,8 @@ namespace Rock.UniversalSearch.IndexModels
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
+        [Obsolete( "DotLiquid is not supported and will be fully removed in the future." )]
+        [Rock.RockObsolete( "18.0" )]
         public bool ContainsKey( object key )
         {
             return this.GetDynamicMemberNames().Contains( key.ToString() );

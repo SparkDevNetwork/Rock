@@ -67,12 +67,18 @@ namespace Rock.Reporting.DataFilter.Person
             get { return "Additional Filters"; }
         }
 
-        /// <inheritdoc/>
-        public override string ObsidianFileUrl => "~/Obsidian/Reporting/DataFilters/Person/distanceFromFilter.obs";
-
         #endregion
 
         #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/distanceFromFilter.obs" )
+            };
+        }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
@@ -82,7 +88,7 @@ namespace Rock.Reporting.DataFilter.Person
 
             if ( selectionValues.Length >= 2 )
             {
-                var selectedLocation = new LocationService( new RockContext() ).Get( selectionValues[0].AsGuid() );
+                var selectedLocation = new LocationService( rockContext ).Get( selectionValues[0].AsGuid() );
 
                 if ( selectedLocation != null )
                 {

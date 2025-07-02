@@ -1,11 +1,10 @@
 <template>
     <div class="d-flex flex-fill align-items-center">
-        <div v-if="!hideAvatar" class="mr-3 flex-shrink-0"
-             :style="{ 'width': '36px', 'height': '36px', 'border-radius': '18px', 'background-image': `url('${photoUrl}')`, 'background-size': 'cover' }">
-        </div>
+        <PersonAvatar v-if="!hideAvatar" :personIdKey="idKey" :photoUrl="photoUrl" :photoSize="36" marginRight="3" :enableHoverInfo="enableHoverInfo" />
+
         <div class="flex-grow-1">
             <template v-if="showAsLink && idKey">
-                <a :href="`/person/${idKey}`"><strong>{{ formattedName }}</strong></a>
+                <a :href="`/person/${idKey}`" @click.stop><strong>{{ formattedName }}</strong></a>
             </template>
             <template v-else>
                 <strong>{{ formattedName }}</strong>
@@ -16,14 +15,17 @@
 </template>
 
 <script setup lang="ts">
+    import { computed } from "vue";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
     import { standardCellProps } from "@Obsidian/Core/Controls/grid";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
-    import { computed } from "vue";
 
     const props = defineProps(standardCellProps);
 
     const showAsLink = props.column.props.showAsLink;
     const hideAvatar = props.column.props.hideAvatar;
+    const enableHoverInfo = props.column.props.enableHoverInfo as boolean;
+
     const idKey = computed((): string | undefined => {
         if (!props.column.field) {
             return undefined;

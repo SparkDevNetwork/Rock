@@ -53,6 +53,12 @@ namespace Rock.Model
         {
             errorMessage = string.Empty;
 
+            if ( new Service<CommunicationFlowInstanceCommunication>( Context ).Queryable().Any( a => a.CommunicationId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, CommunicationFlowInstanceCommunication.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<CommunicationResponse>( Context ).Queryable().Any( a => a.RelatedCommunicationId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Communication.FriendlyTypeName, CommunicationResponse.FriendlyTypeName );
@@ -186,6 +192,7 @@ namespace Rock.Model
             target.SMSMessage = source.SMSMessage;
             target.Status = source.Status;
             target.Subject = source.Subject;
+            target.Summary = source.Summary;
             target.SystemCommunicationId = source.SystemCommunicationId;
             target.UrlReferrer = source.UrlReferrer;
             target.CreatedDateTime = source.CreatedDateTime;
