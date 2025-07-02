@@ -66,6 +66,7 @@
     gap: var(--spacing-large);
     align-items: center;
     padding: var(--spacing-large);
+    background-color: var(--color-interface-softest);
     border-radius: var(--border-radius-base);
     border: 1px solid var(--color-interface-medium);
     transition: background-color .15s ease-in-out;
