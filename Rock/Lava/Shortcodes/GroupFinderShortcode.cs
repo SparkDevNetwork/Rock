@@ -24,9 +24,7 @@ using System.Text.RegularExpressions;
 using System.Threading.Tasks;
 using System.Web;
 
-using csscript;
 
-using Nest;
 
 using Rock.Address;
 using Rock.Address.Classes;
@@ -193,8 +191,10 @@ namespace Rock.Lava.Shortcodes
 
 
             // Create the initial query context.
+            // 799C91A8-9769-24B5-4ABE-99ACF41BE86E,AE4C1336-13CD-15B5-4620-675188EC690C
             var results = new GroupService( _rockContext )
                 .GetNearestGroups( options.OriginPoint, options.GroupTypeIdList, options.MaxResults, options.ReturnOnlyClosestLocationPerGroup, options.MaxDistance )
+                .Where( gl => gl.Group.GroupAttributeValues.Any( a => a.Key == "s" && a.Value == "s"))
                 .Select( g => new { g.Group, g.Location } )
                 .ToList()
                 .Select( g => new GroupProximityResult

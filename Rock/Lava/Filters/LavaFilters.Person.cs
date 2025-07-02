@@ -39,7 +39,9 @@ using DocumentFormat.OpenXml.Wordprocessing;
 
 using Humanizer;
 using Humanizer.Localisation;
+
 using Ical.Net;
+
 using ImageResizer;
 
 using Rock;
@@ -60,6 +62,7 @@ using Rock.Web;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
+
 using UAParser;
 
 using Location = Rock.Model.Location;
@@ -1145,7 +1148,7 @@ namespace Rock.Lava
 
                 var personLocation = personService.GetGeopoints( person.Id ).FirstOrDefault();
 
-                if (personLocation == null )
+                if ( personLocation == null )
                 {
                     return null;
                 }
@@ -1163,14 +1166,15 @@ namespace Rock.Lava
             var selectedTravelMode = travelMode.ConvertToEnumOrNull<TravelMode>();
 
             // Get results and shape for return
+            var sourcePoint = point.ToDbGeography();
             var results = new GroupService( rockContext )
                 .GetNearestGroups( point, numericalGroupTypeId.Value, numericalMaxResults, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
-                .Select( g => new { g.Group, g.Location} )
-                .ToList()
+                //.Select( g => new { g.Group, g.Location} )
+                //.ToList()
                 .Select( g => new GroupProximityResult
                 {
-                    StraightLineDistance = g.Location.GeoPoint.Distance( point.ToDbGeography() ), 
-                    Group =  g.Group,
+                    StraightLineDistance = g.Location.GeoPoint.Distance( sourcePoint ),
+                    Group = g.Group,
                     Location = g.Location
                 } ).ToList();
 
@@ -1189,12 +1193,12 @@ namespace Rock.Lava
             var travelDistances = Task.Run( () => LocationHelpers.GetDrivingMatrixAsync( point, destinations, selectedTravelMode.Value ) ).Result;
 
             // Merge travel distances into group results
-            foreach( var travelDistance in travelDistances )
+            foreach ( var travelDistance in travelDistances )
             {
                 // Find matching group result
                 var matches = results.Where( r => r.LocationPoint == travelDistance.DestinationPoint ).ToList();
 
-                foreach( var match in matches )
+                foreach ( var match in matches )
                 {
                     match.TravelDistance = travelDistance.DistanceInMeters;
                     match.TravelTime = travelDistance.TravelTimeInMinutes;
@@ -1220,7 +1224,7 @@ namespace Rock.Lava
             double latitude = double.Parse( parts[0].Trim() );
             double longitude = double.Parse( parts[1].Trim() );
 
-            return new GeographyPoint {  Latitude = latitude, Longitude = longitude};
+            return new GeographyPoint { Latitude = latitude, Longitude = longitude };
         }
 
         /// <summary>
