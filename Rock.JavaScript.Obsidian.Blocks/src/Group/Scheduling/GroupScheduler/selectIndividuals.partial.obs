@@ -334,7 +334,7 @@
         const min = props.occurrence?.minimumCapacity ?? 0;
         const desired = props.occurrence?.desiredCapacity ?? 0;
         const max = props.occurrence?.maximumCapacity ?? 0;
-        const filled = props.spotsFilledCount + selectedPersonIds.value?.length ?? 0;
+        const filled = props.spotsFilledCount + selectedPersonIds.value.length;
 
         if (min > 0 && filled < min) {
             label = `Required for Minimum Capacity: ${min - filled}`;

@@ -44,6 +44,9 @@
                 <RockButton btnType="default"><i class="fa fa-unlock"></i></RockButton>
             </template>
 
+            <template v-if="simulateFooterTray" #footerTray>
+                Footer Tray Content
+            </template>
 
             <h4>Romans 11:33-36</h4>
             <p>
@@ -147,6 +150,10 @@
             text: "Footer Secondary Actions"
         },
         {
+            value: "footerTray",
+            text: "Footer Tray"
+        },
+        {
             value: "helpContent",
             text: "Help Content"
         },
@@ -162,6 +169,7 @@
     const simulateSubheaderRight = computed((): boolean => simulateValues.value.includes("subheaderRight"));
     const simulateFooterActions = computed((): boolean => simulateValues.value.includes("footerActions"));
     const simulateFooterSecondaryActions = computed((): boolean => simulateValues.value.includes("footerSecondaryActions"));
+    const simulateFooterTray = computed((): boolean => simulateValues.value.includes("footerTray"));
     const simulateLargeBody = computed((): boolean => simulateValues.value.includes("largeBody"));
     const simulateHelp = computed((): boolean => simulateValues.value.includes("helpContent"));
     const isFullscreenPageOnly = ref(true);
@@ -176,6 +184,7 @@
     <template #subheaderRight>Sub Header Right</template>
     <template #footerActions>Footer Actions</template>
     <template #footerSecondaryActions>Footer Secondary Actions</template>
+    <template #footerTray>Footer Tray Content</template>
 
     Main Panel Content
 </Panel>`;

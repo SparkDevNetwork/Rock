@@ -6,7 +6,7 @@
 
             <div class="push-notification">
                 <div class="push-icon-container">
-                    <i class="push-icon fa fa-building"></i>
+                    <i class="push-icon ti ti-building"></i>
                 </div>
 
                 <div class="push-message">
@@ -103,8 +103,8 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import MobileBackground from "./mobileBackground.partial.obs";
-    import MobilePreview from "./mobilePreview.partial.obs";
+    import MobileBackground from "./MobilePreview/mobileBackground.partial.obs";
+    import MobilePreview from "./MobilePreview/mobilePreview.partial.obs";
 
     defineProps({
         pushTitle: {

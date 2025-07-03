@@ -1,0 +1,42 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="communication-detail-boolean-with-tooltip-cell"
+         :data-original-title="cellTooltip"
+         :ref="applyTooltip">
+        <i v-if="isTrue" class="ti ti-check"></i>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+
+    defineProps({
+        isTrue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        cellTooltip: {
+            type: String as PropType<string>,
+            default: ""
+        }
+    });
+
+    // #region Functions
+
+    /**
+     * Applies a tooltip to an element. The element should have an
+     * `data-original-title` attribute containing the tooltip text.
+     *
+     * Typical use, `:ref="applyTooltip"`
+     */
+    function applyTooltip(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
+    }
+
+    // #endregion Functions
+</script>
