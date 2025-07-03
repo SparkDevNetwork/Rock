@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,6 +30,7 @@ using Rock.RealTime.Topics;
 using Rock.Slingshot;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.BulkImport;
+using Rock.ViewModels.Utility;
 using Rock.Web;
 
 namespace Rock.Blocks.BulkImport
@@ -58,7 +59,7 @@ namespace Rock.Blocks.BulkImport
         Order = 1 )]
 
     [Rock.SystemGuid.BlockTypeGuid( "66f5882f-163c-4616-9b39-2f063611db22" )]
-    [Rock.SystemGuid.EntityTypeGuid( "5B41F45E-2E09-4F97-8BEA-683AFFE0EB62")]
+    [Rock.SystemGuid.EntityTypeGuid( "5B41F45E-2E09-4F97-8BEA-683AFFE0EB62" )]
     public class BulkImportTool : RockBlockType
     {
         #region Keys
@@ -139,7 +140,7 @@ namespace Rock.Blocks.BulkImport
                 return ActionBadRequest( "Slingshot file not found." );
             }
 
-            var importTask = new Task( () =>
+            var importTask = new Task( async () =>
             {
                 // Wait a little so the browser can render and start listening to events
                 Task.Delay( 1000 ).Wait();
@@ -162,7 +163,13 @@ namespace Rock.Blocks.BulkImport
                         break;
                 }
 
-                var progressReporter = RealTimeHelper.GetTopicContext<ITaskActivityProgress>().Clients.All;
+                var taskChannelName = $"BulkImport:{physicalSlingshotFile}";
+
+                var topic = RealTimeHelper.GetTopicContext<ITaskActivityProgress>();
+
+                await topic.Channels.AddToChannelAsync( request.SessionId, taskChannelName );
+
+                var progressReporter = topic.Clients.Channel( taskChannelName );
                 var progress = new TaskActivityProgress( progressReporter, "Bulk Import" );
                 progress.StartTask( "Starting import..." );
 
@@ -197,7 +204,8 @@ namespace Rock.Blocks.BulkImport
                         progressResults.Add( result.Key, result.Value );
                     }
 
-                    progress.LogMessage( progressMessage );
+                    progressReporter.UpdateTaskProgress( new TaskActivityProgressUpdateBag { Message = progressMessage } );
+
                     if ( !string.IsNullOrEmpty( progressResults.Html ) )
                     {
                         progress.LogMessage( progressResults.Html );
@@ -349,7 +357,7 @@ namespace Rock.Blocks.BulkImport
             var result = new
             {
                 fileName = fileInfo.Name,
-                size = Math.Round( ( decimal )fileInfo.Length / 1024 / 1024, 2 ),
+                size = Math.Round( ( decimal ) fileInfo.Length / 1024 / 1024, 2 ),
                 createdDateTime = fileInfo.CreationTime.ToString(),
                 fullPath = fileInfo.FullName
             };
