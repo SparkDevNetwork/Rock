@@ -140,7 +140,15 @@ namespace Rock.Jobs
                                     triggerWorkflow += 1;
                                 }
 
-                                new ConnectionRequestService( updateRockContext ).Attach( connectionRequest );
+                                // If the ConnectionRequest was attached to the RockContext already due to being changed in the
+                                // launched Workflows, we do not want to attach it again. If attached twice, it will cause an exception
+                                var needsAttached = updateRockContext.Set<Rock.Model.ConnectionRequest>().Local
+                                    .FirstOrDefault( cr => cr.Id == connectionRequest.Id ) == null;
+                                if( needsAttached )
+                                {
+                                    new ConnectionRequestService( updateRockContext ).Attach( connectionRequest );
+                                }
+
                                 connectionRequest.ConnectionState = ConnectionState.Active;
 
                                 var guid = Rock.SystemGuid.ConnectionActivityType.FOLLOWUP_DATE_REACHED.AsGuid();
