@@ -1,24 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-using AngleSharp.Dom;
-
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Finance.FinancialBatchDetail;
-using Rock.Common.Mobile.Blocks.Finance.FinancialBatchList;
 using Rock.Data;
 using Rock.Model;
-using Rock.ViewModels.Blocks.Finance.FinancialBatchDetail;
-using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 
-using WebGrease.Css.Extensions;
 using BatchStatus = Rock.Model.BatchStatus;
-using Rock.Lava;
-using OpenXmlPowerTools;
-using CSScriptLibrary;
 
 namespace Rock.Blocks.Types.Mobile.Finance
 {
@@ -31,10 +21,26 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [IconCssClass( "fa fa-money-bills" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
+    [LinkedPage( "Detail Page",
+        Description = "Page to link to when user taps on a transaction list.",
+        IsRequired = false,
+        Key = AttributeKeys.DetailPage,
+        Order = 1 )]
+
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_FINANCE_FINANCIAL_BATCH_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_FINANCE_FINANCIAL_BATCH_DETAIL )]
     public class FinancialBatchDetail : RockBlockType
     {
+        /// <summary>
+        /// Keys for the attributes used in this block.
+        /// </summary>
+        private static class AttributeKeys
+        {
+            /// <summary>
+            /// The key for the Detail Page attribute.
+            /// </summary>
+            public const string DetailPage = "DetailPage";
+        }
 
         private const string AuthorizationReopenBatch = "ReopenBatch";
 
@@ -73,6 +79,44 @@ namespace Rock.Blocks.Types.Mobile.Finance
             }
 
             return true;
+        }
+
+        /// <summary>
+        /// Gets the batch transactions for the specified batch key, starting at the specified index and returning the specified count of transactions.
+        /// </summary>
+        /// <param name="batchKey"></param>
+        /// <param name="startIndex"></param>
+        /// <param name="count"></param>
+        /// <returns></returns>
+        private List<BatchTransactionsBag> GetBatchTransactions( string batchKey, int startIndex, int count )
+        {
+            var batch = new FinancialBatchService( RockContext ).Get( batchKey );
+            if ( batch == null )
+            {
+                return new List<BatchTransactionsBag>();
+            }
+
+            var transactions = new FinancialTransactionService( RockContext )
+                .Queryable()
+                .Where( t => t.BatchId.HasValue && t.BatchId.Value == batch.Id )
+                .OrderByDescending( t => t.Id )
+                .Skip( startIndex )
+                .Take( count )
+                .ToList()
+                .Select( t => new BatchTransactionsBag
+                {
+                    Id = t.Id,
+                    IdKey = t.IdKey,
+                    TransactionDateTime = t.TransactionDateTime,
+                    TransactionCode = t.TransactionCode ?? "",
+                    Amount = t.TotalAmount,
+                    CurrencyTypeValueId = t.FinancialPaymentDetail.CurrencyTypeValueId,
+                    CurrencyTypeName = DefinedValueCache.GetName( t.FinancialPaymentDetail.CurrencyTypeValueId ) ?? "",
+                    Accounts = t.TransactionDetails.Select( td => td.Account.Name ).ToList() ?? new List<string>(),
+                } )
+                .ToList();
+
+            return transactions;
         }
 
         #endregion
@@ -222,8 +266,8 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 TransactionAmount = batch.GetTotalTransactionAmount( RockContext ),
                 ControlAmount = batch.ControlAmount,
                 ControlItemCount = batch.ControlItemCount,
-                Campus = batch.Campus.Name,
-                CampusGuid = batch.Campus.Guid.ToString(),
+                Campus = batch.Campus?.Name ?? "",
+                CampusGuid = batch.Campus?.Guid.ToString() ?? "",
                 Note = batch.Note,
             };
 
@@ -297,6 +341,32 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 CampusGuid = batch?.Campus?.Guid.ToString(),
                 Note = batch?.Note
             } );
+        }
+
+        /// <summary>
+        /// Gets the transactions for the specified batch key, starting at the specified index and returning the specified count of transactions.
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        [BlockAction( "GetTransactions" )]
+        public BlockActionResult GetTransactions( BatchTransactionsOption options )
+        {
+            var transactions = GetBatchTransactions( options.BatchKey, options.StartIndex, options.Count );
+
+            return ActionOk( transactions );
+        }
+
+        #endregion
+
+        #region IRockMobileBlockType Implementation
+
+        /// <inheritdoc />
+        public override object GetMobileConfigurationValues()
+        {
+            return new Rock.Common.Mobile.Blocks.Finance.FinancialBatchDetail.Configuration
+            {
+                TransactionDetailPageGuid = GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull(),
+            };
         }
 
         #endregion
