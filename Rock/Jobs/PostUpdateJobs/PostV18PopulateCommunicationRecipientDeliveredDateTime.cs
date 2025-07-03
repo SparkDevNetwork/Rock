@@ -75,6 +75,7 @@ DECLARE @EmailMediumEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHER
         AND [Status] IN (1, 4) -- Delivered, Opened
         AND [StatusNote] LIKE 'Confirmed delivered by %'
         AND ISDATE(SUBSTRING([StatusNote], CHARINDEX('at ', [StatusNote]) + 3, 100)) = 1
+    ORDER BY [Id] DESC
 )
 UPDATE cr
 SET [DeliveredDateTime] = TopRows.[ParsedDeliveredDateTime]
@@ -102,6 +103,7 @@ DECLARE @EmailMediumEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHER
         AND [MediumEntityTypeId] <> @EmailMediumEntityTypeId
         AND [Status] IN (1, 4) -- Delivered, Opened
         AND [SendDateTime] IS NOT NULL
+    ORDER BY [Id] DESC
 )
 UPDATE cr
 SET [DeliveredDateTime] = TopRows.[SendDateTime]
