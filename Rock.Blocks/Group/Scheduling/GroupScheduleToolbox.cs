@@ -1202,19 +1202,25 @@ namespace Rock.Blocks.Group.Scheduling
                 }
                 else // ToolboxScheduleRowActionType.Cancel || ToolboxScheduleRowActionType.Decline
                 {
-                    if ( !attendance.IsScheduledPersonDeclined() )
+                    response.IsDeclineReasonRequired = attendance.Occurrence?.Group?.GroupType?.RequiresReasonIfDeclineSchedule == true;
+                    if ( !response.IsDeclineReasonRequired && !attendance.IsScheduledPersonDeclined() )
                     {
+                        // If a decline reason is not required, go ahead and save the attendance and try sending
+                        // "scheduled person response" emails now. Otherwise, we'll wait to send them after the
+                        // decline reason is saved.
+
                         attendanceService.ScheduledPersonDecline( attendance.Id, null );
                         rockContext.SaveChanges();
+
+                        shouldTrySendingResponseEmails = !response.IsDeclineReasonRequired;
+                        response.NewStatus = ToolboxScheduleRowConfirmationStatus.Declined;
+                    }
+                    else
+                    {
+                        response.NewStatus = bag.ExistingConfirmationStatus;
                     }
 
-                    response.NewStatus = ToolboxScheduleRowConfirmationStatus.Declined;
                     response.WasSchedulePreviouslyConfirmed = bag.ActionType == ToolboxScheduleRowActionType.Cancel;
-                    response.IsDeclineReasonRequired = attendance.Occurrence?.Group?.GroupType?.RequiresReasonIfDeclineSchedule == true;
-
-                    // If a decline reason is not required, go ahead and try sending "scheduled person response" emails now.
-                    // Otherwise, we'll wait to send them after the decline reason is saved.
-                    shouldTrySendingResponseEmails = !response.IsDeclineReasonRequired;
 
                     var declineReasonNote = GetAttributeValue( AttributeKey.DeclineReasonNote );
                     response.IsDeclineNoteRequired = declineReasonNote.ToLower() == "required";
@@ -1368,10 +1374,11 @@ namespace Rock.Blocks.Group.Scheduling
                 return;
             }
 
+            int? declineReasonValueId = null;
             var declineReasonValueGuid = bag.DeclineReason?.Value.AsGuidOrNull();
             if ( declineReasonValueGuid.HasValue )
             {
-                var declineReasonValueId = DefinedValueCache.GetId( declineReasonValueGuid.Value );
+                declineReasonValueId = DefinedValueCache.GetId( declineReasonValueGuid.Value );
                 if ( declineReasonValueId.HasValue )
                 {
                     attendance.DeclineReasonValueId = declineReasonValueId;
@@ -1382,6 +1389,8 @@ namespace Rock.Blocks.Group.Scheduling
             {
                 attendance.Note = bag.DeclineReasonNote;
             }
+
+            attendanceService.ScheduledPersonDecline( attendance.Id, declineReasonValueId );
 
             rockContext.SaveChanges();
 
