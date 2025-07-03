@@ -354,3 +354,5 @@ export type ComponentMigrationHelper = {
     migrate(componentElement: Element): Element;
     readonly latestVersion: string;
 };
+
+export type HtmlProcessor = (html: string) => string;

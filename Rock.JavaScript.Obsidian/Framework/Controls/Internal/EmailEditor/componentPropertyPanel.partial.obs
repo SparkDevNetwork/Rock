@@ -33,6 +33,7 @@
                                 :shortLinkGetPageId="shortLinkGetPageId"
                                 :shortLinkSites="shortLinkSites"
                                 :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                                :usageType="usageType"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')"
@@ -60,12 +61,13 @@
                                  @clone="$emit('clone')"
                                  @complete="$emit('complete')"
                                  @delete="$emit('delete')"
-                                 @migrate="$emit('migrate', $event)"  />
+                                 @migrate="$emit('migrate', $event)" />
 
     <CodeComponentPropertyPanel v-else-if="componentTypeName === 'code'"
                                 :componentElement="componentElement"
                                 :hasScrollableBody="true"
                                 :mergeFields="mergeFields"
+                                :usageType="usageType"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
                                 @delete="$emit('delete')"
@@ -115,6 +117,7 @@
     import TitleComponentPropertyPanel from "./propertyPanels/titleComponentPropertyPanel.partial.obs";
     import VideoComponentPropertyPanel from "./propertyPanels/videoComponentPropertyPanel.partial.obs";
     import { EditorComponentTypeName } from "./types.partial";
+    import { UsageType } from "./types";
     import { getComponentTypeName } from "./utils.partial";
     import { Guid } from "@Obsidian/Types";
     import { isHTMLElement } from "@Obsidian/Utility/dom";
@@ -156,6 +159,11 @@
 
         shortLinkTokenMinLength: {
             type: Number as PropType<number | null | undefined>
+        },
+
+        usageType: {
+            type: String as PropType<UsageType>,
+            default: "email" as const
         },
 
         videoProviderNames: {

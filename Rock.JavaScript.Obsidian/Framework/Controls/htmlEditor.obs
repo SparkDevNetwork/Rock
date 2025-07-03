@@ -171,6 +171,7 @@
     import { tinymce, Editor, EditorEvent, Events, RawEditorOptions } from "@Obsidian/Libs/tinymce";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { LavaTagHtmlCommentRegex, replaceLavaHtmlCommentsWithTags, replaceLavaTagsWithHtmlComments } from "@Obsidian/Utility/lava";
     import { debounce, isNullish } from "@Obsidian/Utility/util";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -759,6 +760,27 @@
                     editor.on("blur", (): void => {
                         if (noteEditorContainerElement.value) {
                             noteEditorContainerElement.value.classList.remove("focused");
+                        }
+                    });
+
+                    // Process the initial HTML content so it can be displayed in the editor.
+                    editor.on("BeforeSetContent", e => {
+                        if (e.content) {
+                            // Replace Lava comments `<!-- rock-lava-tag-tagName -->` with tags `{% tagName %}` to allow the editor to process them correctly.
+                            e.content = replaceLavaHtmlCommentsWithTags(e.content);
+                        }
+                    });
+
+                    const pWrappedLavaCommentRegex = new RegExp("^\\s*<p[^>]*>(" + LavaTagHtmlCommentRegex.source + ")</p>\\s*$", "gm");
+
+                    // Process the editor content that will be emitted to the model.
+                    editor.on("PostProcess", e => {
+                        if (e.content) {
+                            // Replace Lava tags `{% tagname %}` with comments `<!-- rock-lava-treplaceLavaTagsWithHtmlComments(e.content)ag-tagname -->` to prevent them from breaking actual HTML structure.
+                            e.content = replaceLavaTagsWithHtmlComments(e.content);
+
+                            // If the Lava comments is on its own line wrapped in a `<p>` tag, strip the `<p>` tag.
+                            e.content = e.content.replace(pWrappedLavaCommentRegex, "$1");
                         }
                     });
                 }

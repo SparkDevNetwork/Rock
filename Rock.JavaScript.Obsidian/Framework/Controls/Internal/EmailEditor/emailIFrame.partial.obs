@@ -78,7 +78,8 @@ iframe {
         ValueProvider,
         ButtonWidthValues,
         ReplaceComponentRequest,
-        HorizontalAlignment
+        HorizontalAlignment,
+        HtmlProcessor
     } from "./types.partial";
     import { GetHtmlRequest } from "./types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -93,6 +94,7 @@ iframe {
         removeWhiteSpaceFromElementAndChildElements
     } from "@Obsidian/Utility/dom";
     import { Enumerable } from "@Obsidian/Utility/linq";
+    import { replaceLavaHtmlCommentsWithTags, replaceLavaTagsWithHtmlComments } from "@Obsidian/Utility/lava";
 
     const props = defineProps({
         /** This is reactive. If it is changed, the inner HTML for the editor will be updated. */
@@ -170,10 +172,34 @@ iframe {
     const draggingCssClass = `${RockRuntimeClassCssClassPrefix}-is-dragging` as const;
     const nonRowHoveredClass = `${RockRuntimeClassCssClassPrefix}-non-row-hovered` as const;
 
+    /**
+     * These will be used to preprocess the HTML before it is rendered in the iframe.
+     */
+    const preprocessors: HtmlProcessor[] = [
+        replaceLavaTagsWithHtmlComments
+    ];
+
+    function preprocessHtml(html: string): string {
+        // Apply all preprocessors to the HTML.
+        return preprocessors.reduce((result, processor) => processor(result), html);
+    }
+
+    /**
+     * These will be used to postprocess the HTML after it is rendered in the iframe.
+     */
+    const postprocessors: HtmlProcessor[] = [
+        replaceLavaHtmlCommentsWithTags
+    ];
+
+    function postprocessHtml(html: string): string {
+        // Apply all postprocessors to the HTML.
+        return postprocessors.reduce((result, processor) => processor(result), html);
+    }
+
     // #region Values
 
     const isResetting = ref<boolean>(false);
-    const internalSrcDoc = ref<string>(props.html);
+    const internalSrcDoc = ref<string>(preprocessHtml(props.html));
     const iFrameElement = ref<HTMLIFrameElement | undefined>();
     const draggingComponentTypeName = ref<EditorComponentTypeName | null | undefined>();
     const draggingElement = ref<HTMLElement | null | undefined>();
@@ -553,7 +579,9 @@ iframe {
                 removeTemporaryWrappers(cloneDocument);
                 removeTemporaryClasses(cloneDocument);
 
-                const html = cloneDocument.documentElement.outerHTML ?? "";
+                let html = cloneDocument.documentElement.outerHTML ?? "";
+
+                html = postprocessHtml(html);
 
                 // Remove the cloned iframe element before returning the HTML.
                 clone.remove();
@@ -2152,7 +2180,7 @@ ${createCssRuleset(":root", props.cssVariables)}
         isResetting.value = true;
 
         nextTick(() => {
-            internalSrcDoc.value = props.html;
+            internalSrcDoc.value = preprocessHtml(props.html);
             isResetting.value = false;
         });
     });

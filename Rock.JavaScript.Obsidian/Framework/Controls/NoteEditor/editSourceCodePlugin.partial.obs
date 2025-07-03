@@ -7,7 +7,9 @@
                     :disabled="disabled"
                     :editorHeight="editorHeight"
                     :mergeFields="mergeFields"
-                    mode="lava" />
+                    mode="lava"
+                    :preprocessor="replaceLavaHtmlCommentsWithTags"
+                    :postprocessor="replaceLavaTagsWithHtmlComments" />
     </KeepAlive>
 </template>
 
@@ -71,7 +73,7 @@
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { Editor, Ui } from "@Obsidian/Libs/tinymce";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { hasLavaCommandFields, hasLavaShortcodeFields } from "@Obsidian/Utility/lava";
+    import { hasLavaCommandFields, hasLavaTagHtmlComments, hasLavaShortcodeFields, replaceLavaHtmlCommentsWithTags, replaceLavaTagsWithHtmlComments } from "@Obsidian/Utility/lava";
 
     const props = defineProps({
         modelValue: {
@@ -138,7 +140,7 @@
 
     /** Determines whether the code editor should be forced to display. */
     const isCodeEditorForced = computed<boolean>(() => {
-        return (hasLavaCommandFields(internalValue.value) || hasLavaShortcodeFields(internalValue.value)) && !props.isTogglableCodeEditorForced;
+        return (hasLavaCommandFields(internalValue.value) || hasLavaShortcodeFields(internalValue.value) || hasLavaTagHtmlComments(internalValue.value)) && !props.isTogglableCodeEditorForced;
     });
 
     //#endregion

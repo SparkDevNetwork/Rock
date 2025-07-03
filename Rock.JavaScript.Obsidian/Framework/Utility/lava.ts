@@ -24,6 +24,11 @@ const engine = new Liquid({
 const hasLavaCommandFieldsRegex: RegExp = /\{%.+%\}/;
 const hasLavaShortcodeFieldsRegex: RegExp = /\{\[.+\]\}/;
 
+export const LavaTagHtmlCommentRegex: RegExp = /<!--\s*rock-lava-tag-(\w+)(?:\s+([\s\S]*?))?-->/;
+const lavaTagHtmlCommentGlobalRegex: RegExp = new RegExp(LavaTagHtmlCommentRegex.source, "g");
+const lavaTagRegex: RegExp = /\{%-?\s*(\w+)(?:\s+([\s\S]*?))?-?%\}/;
+const lavaTagGlobalRegex: RegExp = new RegExp(lavaTagRegex.source, "g");
+
 export function resolveMergeFields(template: string, mergeFields: Record<string, unknown>): string {
     const tpl = engine.parse(template);
 
@@ -35,7 +40,48 @@ export function hasLavaCommandFields(template: string): boolean {
     return hasLavaCommandFieldsRegex.test(template);
 }
 
+/** Determines whether the string potentially has lava tag HTML comments `<!-- rock-lava-tag-<name> [args] -->` in it. */
+export function hasLavaTagHtmlComments(template: string): boolean {
+    return LavaTagHtmlCommentRegex.test(template);
+}
+
 /** Determines whether the string potentially has lava shortcode {[ ]} fields in it. */
 export function hasLavaShortcodeFields(template: string): boolean {
     return hasLavaShortcodeFieldsRegex.test(template);
+}
+
+/**
+ * Replaces Lava tags in a template with HTML comments to prevent them from breaking HTML structure.
+ *
+ * @param template The template string containing Lava tags `{% %}`.
+ * @returns The modified template string with Lava tags replaced by HTML comments.
+ *
+ * @example
+ * replaceLavaTagsWithHtmlComments(`{% raw %}`); // `<!-- rock-lava-tag-raw -->`
+ * replaceLavaTagsWithHtmlComments(`{% if Person.IsMember %}`); // `<!-- rock-lava-tag-if Person.IsMember -->`
+ * replaceLavaTagsWithHtmlComments(`{% assign name = 'Ted Decker' %}`); // `<!-- rock-lava-tag-assign name = 'Ted Decker' -->`
+ */
+export function replaceLavaTagsWithHtmlComments(template: string): string {
+    return template.replace(
+        lavaTagGlobalRegex,
+        "<!-- rock-lava-tag-$1 $2-->"
+    );
+}
+
+/**
+ * Replaces Lava HTML comments in a template with tags to prevent them from breaking HTML structure.
+ *
+ * @param template The template string containing Lava HTML comments `<!-- rock-lava-tag-<name> [args] -->`.
+ * @returns The modified template string with Lava tags replaced by HTML comments.
+ *
+ * @example
+ * replaceLavaTagsWithHtmlComments(`<!-- rock-lava-tag-raw -->`); // `{% raw %}`
+ * replaceLavaTagsWithHtmlComments(`<!-- rock-lava-tag-if Person.IsMember -->`); // `{% if Person.IsMember %}`
+ * replaceLavaTagsWithHtmlComments(`<!-- rock-lava-tag-assign name = 'Ted Decker' -->`); // `{% assign name = 'Ted Decker' %}`
+ */
+export function replaceLavaHtmlCommentsWithTags(template: string): string {
+    return template.replace(
+        lavaTagHtmlCommentGlobalRegex,
+        "{% $1 $2%}"
+    );
 }

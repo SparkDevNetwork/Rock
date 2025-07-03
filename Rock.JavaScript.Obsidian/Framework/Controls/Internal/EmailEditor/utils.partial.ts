@@ -1873,7 +1873,7 @@ export function getTextComponentHelper(): ComponentMigrationHelper & {
                 latestVersion,
                 // Wrap component in a content-wrapper so the wrapper can be styled.
                 // It's important that no whitespace is left around the editable area.
-                `<div class="content-wrapper content-wrapper-for-text ${RockCssClassContentEditable}"><p style="margin: 0;">Let's see what you have to say!</p></div>`
+                `<div class="content-wrapper content-wrapper-for-text ${RockCssClassContentEditable}"><p>Let's see what you have to say!</p></div>`
             );
 
             return componentElements.marginWrapper.table;

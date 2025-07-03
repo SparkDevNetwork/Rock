@@ -142,6 +142,14 @@
         disabled: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        preprocessor: {
+            type: Function as PropType<((value: string) => string) | undefined>
+        },
+
+        postprocessor: {
+            type: Function as PropType<((value: string) => string) | undefined>
         }
     });
 
@@ -157,7 +165,7 @@
 
     let observer: ResizeObserver | undefined;
 
-    const internalValue = ref(props.modelValue);
+    const internalValue = ref(props.preprocessor ? props.preprocessor(props.modelValue) : props.modelValue);
     const uniqueId = newGuid();
     const editorWrapper = ref<HTMLDivElement>();
 
@@ -250,7 +258,12 @@
     });
 
     watch(() => props.modelValue, () => {
-        updateRefValue(internalValue, props.modelValue);
+        if (props.mode === "lava") {
+            updateRefValue(internalValue, props.preprocessor ? props.preprocessor(props.modelValue) : props.modelValue);
+        }
+        else {
+            updateRefValue(internalValue, props.modelValue);
+        }
 
         if (editor && editor.getValue() !== internalValue.value) {
             editor.setValue(internalValue.value, 1);
@@ -260,7 +273,7 @@
     watch(() => props.editor, initialize);
 
     watch(internalValue, () => {
-        emit("update:modelValue", internalValue.value);
+        emit("update:modelValue", props.postprocessor ? props.postprocessor(internalValue.value) : internalValue.value);
     });
 
     /**
