@@ -256,6 +256,7 @@ DECLARE @CommIndex INT = 0
     , @Jitter INT
     , @CommCreatedDateTime DATETIME
     , @FutureSendDateTime DATETIME
+    , @ReviewedDateTime DATETIME
     , @SendDateTime DATETIME
     , @CommunicationAgeInMinutes INT
 
@@ -263,8 +264,8 @@ DECLARE @CommIndex INT = 0
     , @RandomizeCommStatus INT
     , @CommStatus INT
     , @IsBulk BIT
-    , @SenderId INT
-    , @ReviewerId INT
+    , @SenderPersonAliasId INT
+    , @ReviewerPersonAliasId INT
 
     , @NameLength INT
     , @SubjectLength INT
@@ -277,6 +278,7 @@ DECLARE @CommIndex INT = 0
     , @Name NVARCHAR(100)
     , @Subject NVARCHAR(1000)
     , @Message NVARCHAR(MAX)
+    , @DynamicMessageHeight INT
     , @SMSMessage NVARCHAR(MAX)
     , @PushTitle NVARCHAR(100)
     , @PushMessage NVARCHAR(MAX)
@@ -311,6 +313,7 @@ DECLARE @RecipientCount INT
     , @RecipientPersonAliasId INT
     , @MediumEntityTypeId INT
     , @RecipientSendDateTime DATETIME
+    , @DeliveredDateTime DATETIME
 
     , @RandomizeUnsubscribeOffsetMinutes INT
     , @UnsubscribeOffsetMinutes INT
@@ -448,11 +451,24 @@ BEGIN
 
     SET @CommunicationAgeInMinutes = DATEDIFF(MINUTE, @SendDateTime, GETDATE());
 
-    SET @SenderId = (SELECT TOP 1 [PersonAliasId] FROM @PersonAndAliasIds ORDER BY NEWID());
-    SET @ReviewerId = CASE
-        WHEN ABS(CHECKSUM(NEWID())) % 2 = 0 THEN @SenderId -- Self-approved 50% of the time.
-        ELSE (SELECT TOP 1 [PersonAliasId] FROM @PersonAndAliasIds ORDER BY NEWID()) -- Approved by someone else 50% of the time.
-    END;
+    SET @SenderPersonAliasId = (SELECT TOP 1 [PersonAliasId] FROM @PersonAndAliasIds ORDER BY NEWID());
+
+    -- Only set reviewer info if the communication is approved.
+    SET @ReviewedDateTime = NULL;
+    SET @ReviewerPersonAliasId = NULL;
+    IF @CommStatus = @CommStatusApproved
+    BEGIN
+        SET @ReviewedDateTime = @CommCreatedDateTime;
+
+        IF ABS(CHECKSUM(NEWID())) % 2 = 0 -- Self-approved 50% of the time.
+        BEGIN
+            SET @ReviewerPersonAliasId = @SenderPersonAliasId;
+        END
+        ELSE
+        BEGIN
+            SET @ReviewerPersonAliasId = (SELECT TOP 1 [PersonAliasId] FROM @PersonAndAliasIds ORDER BY NEWID());
+        END
+    END
 
     SET @TopicId = NULL;
     IF ABS(CHECKSUM(NEWID())) % 100 < 30 -- Assign a random topic 30% of the time.
@@ -492,7 +508,224 @@ BEGIN
                 FOR XML PATH(''), TYPE).value('.', 'NVARCHAR(MAX)'), 1, 1, ''), @SubjectLength)
             );
 
-        SET @Message = '<html><body><p>' + (SELECT TOP 1 [Text] FROM @LoremIpsum ORDER BY NEWID()) + '</p></body></html>';
+        SET @DynamicMessageHeight = 200 + ABS(CHECKSUM(NEWID())) % 4801; -- 200-5000px
+
+        SET @Message = '<html lang="en"><head>
+        <title>A Responsive Email Template</title>
+    
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <style>
+            /* ========================================================
+               CLIENT-SPECIFIC STYLES
+               - Handles quirks across various email clients
+            ======================================================== */
+    
+            /* Prevents mobile devices from adjusting text size */
+            body, table, td, a {
+                -webkit-text-size-adjust: 100%;
+                -ms-text-size-adjust: 100%;
+            }
+    
+            /* Removes extra spacing between tables in Outlook */
+            table, td {
+                mso-table-lspace: 0pt;
+                mso-table-rspace: 0pt;
+            }
+    
+            /* Improves image scaling in older versions of Outlook (Word engine) */
+            img {
+                -ms-interpolation-mode: bicubic;
+            }
+    
+            /* ========================================================
+               GENERAL RESET STYLES
+               - Normalize elements across clients
+            ======================================================== */
+    
+            img {
+                border: 0;
+                height: auto;
+                line-height: 100%;
+                outline: none;
+                text-decoration: none;
+            }
+    
+            table {
+                border-collapse: collapse !important;
+            }
+    
+            table.border-background-wrapper {
+                border-collapse: separate !important;
+                border-spacing: 0;
+            }
+    
+            body {
+                height: 100% !important;
+                margin: 0 !important;
+                padding: 0 !important;
+                width: 100% !important;
+            }
+    
+            /* ========================================================
+               iOS BLUE LINKS
+               - Resets auto-linked phone numbers, emails, etc.
+            ======================================================== */
+    
+            a[x-apple-data-detectors] {
+                color: inherit !important;
+                text-decoration: none !important;
+                font-size: inherit !important;
+                font-family: inherit !important;
+                font-weight: inherit !important;
+                line-height: inherit !important;
+            }
+    
+            /* ========================================================
+               RESPONSIVE MOBILE STYLES
+               - Adjusts layout for screens <= 525px wide
+            ======================================================== */
+    
+            @media screen and (max-width: 525px) {
+                /* Makes tables fluid */
+                .wrapper {
+                    width: 100% !important;
+                    max-width: 100% !important;
+                }
+    
+                /* Centers logo images */
+                .logo img {
+                    margin: 0 auto !important;
+                }
+    
+                /* Hides elements on mobile */
+                .mobile-hide {
+                    display: none !important;
+                }
+    
+                /* Ensures images scale fluidly */
+                .img-max {
+                    max-width: 100% !important;
+                    width: 100% !important;
+                    height: auto !important;
+                }
+    
+                /* Makes tables take full width */
+                .responsive-table {
+                    width: 100% !important;
+                }
+    
+                /* Padding utility classes for mobile adjustments */
+                .padding {
+                    padding: 10px 5% 15px 5% !important;
+                }
+    
+                .padding-meta {
+                    padding: 30px 5% 0px 5% !important;
+                    text-align: center;
+                }
+    
+                .padding-copy {
+                    padding: 10px 5% 10px 5% !important;
+                    text-align: center;
+                }
+    
+                .no-padding {
+                    padding: 0 !important;
+                }
+    
+                .section-padding {
+                    padding: 50px 15px 50px 15px !important;
+                }
+    
+                /* Styles buttons for better touch targets */
+                .mobile-button-container {
+                    margin: 0 auto;
+                    width: 100% !important;
+                }
+    
+                .mobile-button {
+                    padding: 15px !important;
+                    border: 0 !important;
+                    font-size: 16px !important;
+                    display: block !important;
+                }
+            }
+    
+            /* ========================================================
+               ANDROID GMAIL FIX
+               - Removes margin added by some Android email clients
+            ======================================================== */
+            div[style*="margin: 16px 0;"] {
+                margin: 0 !important;
+            }
+        </style>
+        <!-- ========================================================
+             OUTLOOK (MSO) CONDITIONAL STYLES
+             - Targets Outlook 2007+ (mso 12 and later)
+             - Used for padding adjustments or MSO-specific tweaks
+        ========================================================= -->
+        <!--[if gte mso 12]>
+        <style>
+            .mso-right {
+                padding-left: 20px;
+            }
+        </style>
+        <![endif]--><style class="rock-media-styles">@media screen and (max-width: 600px) {
+  .small-12 { display: inline-block !important; width: 100% !important; }
+  .small-11 { display: inline-block !important; width: 91.6667% !important; }
+  .small-10 { display: inline-block !important; width: 83.3333% !important; }
+  .small-9 { display: inline-block !important; width: 75% !important; }
+  .small-8 { display: inline-block !important; width: 66.6667% !important; }
+  .small-7 { display: inline-block !important; width: 58.3333% !important; }
+  .small-6 { display: inline-block !important; width: 50% !important; }
+  .small-5 { display: inline-block !important; width: 41.6667% !important; }
+  .small-4 { display: inline-block !important; width: 33.3333% !important; }
+  .small-3 { display: inline-block !important; width: 25% !important; }
+  .small-2 { display: inline-block !important; width: 16.6667% !important; }
+  .small-1 { display: inline-block !important; width: 8.33333% !important; }
+  .spacer { display: none !important; width: 0px !important; }
+}
+</style></head>
+
+    <body class=""><style class="rock-styles">.padding-wrapper-for-row > tbody > tr > td { padding: 24px; }
+body, .email-wrapper > tbody > tr > td { font-size: 16px; color: rgb(54, 65, 83); line-height: 1.5; font-family: Arial, Helvetica, sans-serif; }
+.component-title h1 { font-size: 38px; font-weight: bold; color: rgb(3, 7, 18); line-height: 1.2; }
+.margin-wrapper-for-title-h1 > tbody > tr > td { margin: 0px; }
+.component-title h2 { font-size: 30px; font-weight: bold; color: rgb(3, 7, 18); line-height: 1.2; }
+.margin-wrapper-for-title-h2 > tbody > tr > td { margin: 0px; }
+.component-title h3 { font-size: 24px; font-weight: bold; color: rgb(3, 7, 18); line-height: 1.2; }
+.margin-wrapper-for-title-h3 > tbody > tr > td { margin: 0px; }
+.content-wrapper-for-text { font-size: 16px; color: rgb(54, 65, 83); line-height: 1.2; }
+.margin-wrapper-for-text > tbody > tr > td { margin: 0px; }
+.component-button .button-link { font-weight: bold; text-decoration: none; border-bottom-width: 0px; color: rgb(255, 255, 255); line-height: 1.2; padding: 15px; text-align: center; letter-spacing: normal; }
+.border-wrapper-for-button > tbody > tr > td { border-radius: 4px; }
+.padding-wrapper-for-divider > tbody > tr > td { border-style: solid none none; border-width: 1px 0px 0px; border-color: rgb(139, 139, 167) transparent transparent; }
+.margin-wrapper-for-divider > tbody > tr > td { padding: 12px 0px; }
+html, body { margin: 0px; padding: 0px; height: 100%; }
+.email-wrapper { width: 100%; height: 100%; background-color: rgb(231, 231, 231); }
+.border-wrapper-for-row { width: 100%; max-width: 600px; }
+.component:not([data-component-width="true"]) .border-wrapper-for-divider { width: 100%; }
+.border-wrapper-for-row:not([data-component-body-width="true"]) > tbody > tr > td { max-width: 600px; }
+.component:not([data-component-background-color="true"]) .padding-wrapper-for-row > tbody > tr > td { background-color: rgb(255, 255, 255); }
+.component-button:not([data-component-button-width="true"]) .button-shell, .component-rsvp:not([data-component-button-width="true"]) .rsvp-button-shell { max-width: 100%; }
+.component-button:not([data-component-button-width="true"]) .component-button .button-link, .component-rsvp:not([data-component-button-width="true"]) .rsvp-accept-link, .component-rsvp:not([data-component-button-width="true"]) .rsvp-decline-link { display: inline-block; }
+.component:not([data-component-background-color="true"]) .padding-wrapper-for-button > tbody > tr > td { background-color: rgb(33, 150, 243); }
+</style>
+        <div id="preheader-text" style="display: none; font-size: 1px; color: #ffffff; line-height: 1px; font-family: Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden; mso-hide: all; height: 0px; visibility: hidden;"> </div>
+        <table class="email-wrapper" border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" bgcolor="#e7e7e7" style="min-width: 100%; height: 100%; background-size: 100% auto;">
+            <tbody>
+                <tr>
+                    <td align="center" valign="top" style="height: 100%;">
+                        <div class="structure-dropzone"><table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="margin-wrapper margin-wrapper-for-row component component-row" data-state="component" data-version="v2-alpha"><tbody><tr><td align="center"><table border="0" cellpadding="0" cellspacing="0" role="presentation" class="border-wrapper border-wrapper-for-row" style="border-collapse: separate !important;" width="600"><tbody><tr><td style="overflow: hidden;"><table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-row" bgcolor="#ffffff"><tbody><tr><td><div class="dropzone"><table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="margin-wrapper margin-wrapper-for-title component component-title margin-wrapper-for-title-h1" data-state="component" data-version="v2-alpha"><tbody><tr><td><table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-title border-wrapper-for-title-h1" style="border-collapse: separate !important;"><tbody><tr><td style="overflow: hidden;"><table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-title padding-wrapper-for-title-h1"><tbody><tr><td><h1 class="rock-content-editable" style="margin: 0;">Communication #' + CAST(@CommIndex AS NVARCHAR(10)) + '</h1></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table><table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="margin-wrapper margin-wrapper-for-text component component-text" data-state="component" data-version="v2-alpha"><tbody><tr><td><table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="border-wrapper border-wrapper-for-text" style="border-collapse: separate !important;"><tbody><tr><td style="overflow: hidden;"><table border="0" cellpadding="0" cellspacing="0" width="100%" role="presentation" class="padding-wrapper padding-wrapper-for-text"><tbody><tr><td><div class="content-wrapper content-wrapper-for-text rock-content-editable"><p style="margin: 0; height: ' + CAST(@DynamicMessageHeight AS NVARCHAR(10)) + 'px;">{{ Person.NickName }}, This paragraph is ' + CAST(@DynamicMessageHeight AS NVARCHAR(10)) + 'px tall. ' + (SELECT TOP 1 [Text] FROM @LoremIpsum ORDER BY NEWID()) + '</p></div></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></div></td></tr></tbody></table></td></tr></tbody></table></td></tr></tbody></table></div>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    
+
+</body></html>'
 
         SET @Summary = (
             SELECT LEFT(STUFF((
@@ -520,9 +753,11 @@ BEGIN
         [Subject]
         , [FutureSendDateTime]
         , [Status]
+        , [ReviewedDateTime]
         , [Guid]
         , [CreatedDateTime]
         , [ModifiedDateTime]
+        , [CreatedByPersonAliasId]
         , [IsBulkCommunication]
         , [SenderPersonAliasId]
         , [ReviewerPersonAliasId]
@@ -544,16 +779,18 @@ BEGIN
         @Subject
         , @FutureSendDateTime
         , @CommStatus
+        , @ReviewedDateTime
         , NEWID()
         , @CommCreatedDateTime
         , @CommCreatedDateTime
+        , @SenderPersonAliasId
         , @IsBulk
-        , @SenderId
-        , @ReviewerId
+        , @SenderPersonAliasId
+        , @ReviewerPersonAliasId
         , @Name
         , @CommType
         , 'Rock Solid Church'
-        , 'noreply+' + CAST(NEWID() AS NVARCHAR(36)) + '@rocksolidchurchdemo.com'
+        , 'noreply+' + CAST(@CommIndex AS NVARCHAR(10)) + '@rocksolidchurchdemo.com'
         , @Message
         , @SMSMessage
         , @PushTitle
@@ -703,21 +940,29 @@ BEGIN
 
         SET @RecipientStatusNote = NULL;
 
-        -- 50% of email recipients whose delivery failed will recive a failure reason.
         IF @MediumEntityTypeId = @EmailMediumEntityTypeId
-            AND @RecipientStatus = @RecipientStatusFailed
-            AND ABS(CHECKSUM(NEWID())) % 2 = 0
         BEGIN
-            SET @RecipientStatusNote = (SELECT TOP 1 [Reason] FROM @FailedEmailReasons ORDER BY NEWID());
+            IF @RecipientStatus = @RecipientStatusDelivered
+            BEGIN
+                SET @RecipientStatusNote = CONCAT('Confirmed delivered by Mailgun at ', FORMAT(@SendDateTime, 'M/d/yyyy h:mm:ss tt'));
+            END
+            ELSE IF @RecipientStatus = @RecipientStatusFailed
+                AND ABS(CHECKSUM(NEWID())) % 2 = 0
+            BEGIN
+                -- 50% of email recipients whose delivery failed will recive a failure reason.
+                SET @RecipientStatusNote = (SELECT TOP 1 [Reason] FROM @FailedEmailReasons ORDER BY NEWID());
+            END
         END
 
         --------------------------
 
         SET @RecipientSendDateTime = NULL;
+        SET @DeliveredDateTime = NULL;
 
         IF @RecipientStatus = @RecipientStatusDelivered
         BEGIN
             SET @RecipientSendDateTime = @SendDateTime;
+            SET @DeliveredDateTime = @SendDateTime;
         END
 
         --------------------------
@@ -846,7 +1091,7 @@ BEGIN
               END
             , @UnsubscribeDateTime
             , @UnsubscribeLevel
-            , @RecipientSendDateTime
+            , @DeliveredDateTime
             , @SpamComplaintDateTime
         );
 

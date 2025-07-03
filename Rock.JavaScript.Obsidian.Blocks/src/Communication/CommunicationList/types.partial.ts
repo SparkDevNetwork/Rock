@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
+import { InferredCommunicationStatus } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
 import { NumberRangeModelValue } from "@Obsidian/Types/Controls/numberRangeBox";
 import { SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
 import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
@@ -48,11 +48,11 @@ export type GridSettingsOptions = {
 };
 
 export type Row = {
-    guid: Guid;
+    idKey: string;
     type: number;
     name?: string | null;
     summary?: string | null;
-    status: number;
+    inferredStatus: InferredCommunicationStatus;
     recipientCount: number;
     deliveredCount: number;
     openedCount: number;

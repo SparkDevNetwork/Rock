@@ -3,10 +3,10 @@
     <MobilePreview>
         <div class="sms-preview">
             <div class="sms-header">
-                <i class="fa fa-chevron-left fa-lg back-button"></i>
+                <i class="ti ti-chevron-left ti-lg back-button"></i>
                 <div class="sms-header-from">
                     <div>
-                        <i class="fas fa-user-circle-o fa-2x"></i>
+                        <i class="ti ti-user-circle ti-2x"></i>
                     </div>
                     <span class="text-xs">{{ smsFromNumberName }}</span>
                 </div>
@@ -77,7 +77,7 @@
     position: relative;
     border-radius: var(--rounded-xlarge);
     background-color: var(--color-info-strong);
-    color: var(--color-info-soft);
+    color: var(--color-interface-softest);
     padding: var(--spacing-small);
     font-size: var(--font-size-small);
     /* Set a minimum height twice the size of the font size to style empty messages. */
@@ -105,8 +105,8 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
-    import MobilePreview from "./mobilePreview.partial.obs";
-    import { BinaryFileAttachment } from "./types.partial";
+    import MobilePreview from "./MobilePreview/mobilePreview.partial.obs";
+    import { BinaryFileAttachment } from "./MobilePreview/types.partial";
 
     defineProps({
         smsMessage: {

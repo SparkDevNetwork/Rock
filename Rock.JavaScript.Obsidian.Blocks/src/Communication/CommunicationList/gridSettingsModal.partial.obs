@@ -115,6 +115,8 @@
 
     // #region Values
 
+    const isVisible = useVModelPassthrough(props, "visible", emit);
+
     const createdBy = ref(props.modelValue.createdBy);
     const hideDrafts = ref(props.modelValue.hideDrafts);
     const slidingDateRange = ref<SlidingDateRange | null>(props.modelValue.slidingDateRange ?? props.defaultSlidingDateRange);
@@ -122,7 +124,6 @@
     const topic = ref(props.modelValue.topic);
     const name = ref(props.modelValue.name);
     const content = ref(props.modelValue.content);
-    const isVisible = useVModelPassthrough(props, "visible", emit);
 
     // #endregion Values
 

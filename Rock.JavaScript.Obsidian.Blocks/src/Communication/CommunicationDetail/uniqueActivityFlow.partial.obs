@@ -1,0 +1,183 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="activityFlowElement" class="communication-analytics-performance-activity-flow">
+        <div ref="titleElement" class="communication-analytics-performance-activity-flow-title">
+            Unique Activity Flow
+        </div>
+        <SankeyDiagram v-if="showActivityFlow"
+                       :flowNodes="nodes"
+                       :flowEdges="activityFlow?.edges!"
+                       :settings="settings">
+
+            <template #legend>
+                <div ref="legendElement" class="communication-analytics-performance-activity-flow-legend">
+                    <div v-for="node in nodes" :key="node.id" :class="`communication-analytics-performance-activity-flow-legend-${toKebabCase(node.name ?? '')}`">
+                        <div class="communication-analytics-performance-activity-flow-legend-swatch" :style="`background-color: ${node.color};`"></div>
+                        {{ node.name }}
+                    </div>
+                </div>
+            </template>
+
+        </SankeyDiagram>
+    </div>
+</template>
+
+<style scoped>
+.communication-analytics-performance-activity-flow {
+    height: 100%;
+    width: 100%;
+}
+
+.communication-analytics-performance-activity-flow-title {
+    color: var(--color-interface-stronger);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+    text-align: center;
+}
+
+.communication-analytics-performance-activity-flow-legend {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-large);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.communication-analytics-performance-activity-flow-legend > div {
+    display: flex;
+    flex-wrap: nowrap;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-analytics-performance-activity-flow-legend-swatch {
+    height: var(--spacing-large);
+    width: var(--spacing-large);
+    border-radius: var(--rounded-tiny);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, onMounted, onUnmounted, PropType, ref } from "vue";
+    import { getCssVar } from "./utils.partial";
+    import SankeyDiagram from "@Obsidian/Controls/internal/SankeyDiagram/sankeyDiagram.obs";
+    import { toKebabCase } from "@Obsidian/Utility/stringUtils";
+    import { CommunicationActivityFlowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationActivityFlowBag";
+    import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
+    import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
+
+    let activityFlowElementResizeObserver: ResizeObserver | undefined;
+
+    const props = defineProps({
+        activityFlow: {
+            type: Object as PropType<CommunicationActivityFlowBag | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const activityFlowElement = ref<HTMLElement | null>(null);
+
+    const titleElement = ref<HTMLElement | null>(null);
+    const legendElement = ref<HTMLElement | null>(null);
+
+    const availableHeightPx = ref(0);
+    const availableWidthPx = ref(0);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const nodes = computed((): SankeyDiagramNodeBag[] => {
+        const n = props.activityFlow?.nodes
+            ?.map(n => ({
+                ...n,
+                color: getCssVar(n.color ?? "", "#555")
+            }))
+            ?? [];
+
+        return n;
+    });
+
+    const settings = computed((): SankeyDiagramSettingsBag | undefined => {
+        if (!availableHeightPx.value || !availableWidthPx.value) {
+            return undefined;
+        }
+
+        return {
+            chartHeight: availableHeightPx.value,
+            chartWidth: availableWidthPx.value
+        };
+    });
+
+    const showActivityFlow = computed((): boolean => {
+        return !!(
+            nodes.value.length
+            && props.activityFlow?.edges
+            && settings.value
+        );
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Observes the parent element for resize events.
+     */
+    function observeActivityFlowElementSize(): void {
+        if (!window.ResizeObserver || !activityFlowElement.value) {
+            return;
+        }
+
+        activityFlowElementResizeObserver = new ResizeObserver((_: ResizeObserverEntry[]) => {
+            nextTick(() => {
+                setAvailableDimensions();
+            });
+        });
+
+        // Start observing the element's size.
+        activityFlowElementResizeObserver.observe(activityFlowElement.value);
+    }
+
+    /**
+     * Sets the available dimensions for the sankey visual.
+     */
+    function setAvailableDimensions(): void {
+        if (!activityFlowElement.value) {
+            return;
+        }
+
+        let titleHeight = 0;
+        if (titleElement.value) {
+            titleHeight = (titleElement.value as HTMLElement).offsetHeight;
+        }
+
+        let legendHeight = 0;
+        if (legendElement.value) {
+            legendHeight = (legendElement.value as HTMLElement).offsetHeight;
+        }
+
+        const element = (activityFlowElement.value as HTMLElement);
+        availableHeightPx.value = element.offsetHeight - titleHeight - legendHeight;
+        availableWidthPx.value = element.offsetWidth;
+    }
+
+    // #endregion Functions
+
+    // #region Lifecycle Hooks
+
+    onMounted(() => {
+        setAvailableDimensions();
+        observeActivityFlowElementSize();
+    });
+
+    onUnmounted(() => {
+        if (activityFlowElementResizeObserver) {
+            activityFlowElementResizeObserver.disconnect();
+        }
+    });
+
+    // #endregion Lifecycle Hooks
+</script>

@@ -1,37 +1,37 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-cell-name-icon-container"
+    <div class="communication-list-display-name-cell-icon-container"
          :data-original-title="CommunicationTypeDescription[row.type]"
          :ref="applyTooltip">
         <i :class="iconCssClass"></i>
     </div>
-    <div class="grid-cell-name-details">
-        <div class="grid-cell-name-title">
+    <div class="communication-list-display-name-cell-details">
+        <div class="communication-list-display-name-cell-title">
             {{ row.name }}
         </div>
-        <div class="grid-cell-name-counts">
+        <div class="communication-list-display-name-cell-counts">
             <span v-if="showDeliveredCount"
                   :data-original-title="`Delivered: ${formattedDeliveredCount}`"
                   :ref="applyTooltip">
-                <i class="fa fa-check-circle text-success"></i> {{ formattedDeliveredCount }}
+                <i class="ti ti-circle-check text-success"></i> {{ formattedDeliveredCount }}
             </span>
             <span v-if="showOpenedCount"
                   :data-original-title="`Opened: ${formattedOpenedCount}`"
                   :ref="applyTooltip">
-                <i class="fa fa-eye text-info"></i> {{ formattedOpenedCount }}
+                <i class="ti ti-eye text-info"></i> {{ formattedOpenedCount }}
             </span>
             <span v-if="showFailedCount"
                   :data-original-title="`Failed: ${formattedFailedCount}`"
                   :ref="applyTooltip">
-                <i class="fa fa-exclamation-triangle text-warning"></i> {{ formattedFailedCount }}
+                <i class="ti ti-alert-triangle text-warning"></i> {{ formattedFailedCount }}
             </span>
             <span v-if="showUnsubscribedCount"
                   :data-original-title="`Unsubscribed: ${formattedUnsubscribedCount}`"
                   :ref="applyTooltip">
-                <i class="fa fa-minus-circle text-danger"></i> {{ formattedUnsubscribedCount }}
+                <i class="ti ti-circle-minus text-danger"></i> {{ formattedUnsubscribedCount }}
             </span>
         </div>
-        <div v-if="row.summary" class="grid-cell-name-summary">
+        <div v-if="row.summary" class="communication-list-display-name-cell-summary">
             <Hint v-if="showSummaryHint" :type="HintType.AI" />
             {{ row.summary }}
         </div>
@@ -39,7 +39,7 @@
 </template>
 
 <style scoped>
-.grid-cell-name-icon-container {
+.communication-list-display-name-cell-icon-container {
     align-self: start;
     flex-shrink: 0;
     width: 32px;
@@ -52,26 +52,26 @@
     margin-right: var(--spacing-medium);
 }
 
-.grid-cell-name-icon {
+.communication-list-display-name-cell-icon {
     color: var(--color-info-strong);
 }
 
-.grid-cell-name-title {
+.communication-list-display-name-cell-title {
     color: var(--color-interface-strong);
 }
 
-.grid-cell-name-counts,
-.grid-cell-name-summary {
+.communication-list-display-name-cell-counts,
+.communication-list-display-name-cell-summary {
     color: var(--color-interface-medium);
     font-size: var(--font-size-xsmall);
     margin-top: var(--spacing-tiny);
 }
 
-.grid-cell-name-summary .hint {
+.communication-list-display-name-cell-summary .hint {
     margin-right: var(--spacing-tiny);
 }
 
-.grid-cell-name-counts span:not(:last-of-type) {
+.communication-list-display-name-cell-counts span:not(:last-of-type) {
     margin-right: var(--spacing-xsmall);
 }
 </style>
@@ -100,20 +100,20 @@
 
         switch (props.row.type) {
             case CommunicationType.Email:
-                icon = "fa fa-envelope ";
+                icon = "ti ti-mail ";
                 break;
             case CommunicationType.SMS:
-                icon = "fa fa-sms ";
+                icon = "ti ti-message ";
                 break;
             case CommunicationType.PushNotification:
-                icon = "fa fa-mobile-alt ";
+                icon = "ti ti-device-mobile ";
                 break;
             case CommunicationType.RecipientPreference:
-                icon = "fa fa-user-circle ";
+                icon = "ti ti-user-circle ";
                 break;
         }
 
-        return `${icon}grid-cell-name-icon`;
+        return `${icon}communication-list-display-name-cell-icon`;
     });
 
     /** `true` if the communication type is SMS. */

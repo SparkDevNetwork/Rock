@@ -1,0 +1,254 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="allClientsCount" title="Top Clients">
+
+        <template #headerActions>
+            <div class="action">
+                <HighlightLabel>
+                    {{ allClientsCountLabel }}
+                </HighlightLabel>
+            </div>
+        </template>
+
+        <div class="communication-analytics-top-clients-chart">
+            <Chart v-if="chartData"
+                   type="bar"
+                   :data="chartData"
+                   :options="chartOptions" />
+        </div>
+
+        <template v-if="showList" #footerTray>
+            <div class="communication-analytics-top-clients-footer-actions">
+                <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.Small" @click="isListExpanded = !isListExpanded">
+                    See All Clients <i :class="seeAllClientsIconCssClass"></i>
+                </RockButton>
+                <TransitionVerticalCollapse>
+                    <div v-if="isListExpanded" class="communication-analytics-top-clients-list-items">
+                        <div v-for="dataPoint in allClientsDataPoints" :key="dataPoint.label!"
+                             class="communication-analytics-top-clients-list-item">
+                            <span>{{ dataPoint.label }}</span>
+                            <span>{{ `${asFormattedString(dataPoint.value, 1)}%` }}</span>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+            </div>
+        </template>
+
+    </Panel>
+</template>
+
+<style scoped>
+.communication-analytics-top-clients-chart {
+    height: 500px;
+}
+
+.communication-analytics-top-clients-footer-actions {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-small)
+}
+
+.communication-analytics-top-clients-footer-actions .btn {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    padding: 0;
+}
+
+.communication-analytics-top-clients-footer-actions .btn > i {
+    margin-left: var(--spacing-tiny);
+}
+
+.communication-analytics-top-clients-list-items {
+    width: 100%;
+    max-width: 690px;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-analytics-top-clients-list-item {
+    display: flex;
+    justify-content: space-between;
+    color: var(--color-interface-strong);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { getCssVar, useChartStyles } from "./utils.partial";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+
+    const chartStyles = useChartStyles();
+
+    const props = defineProps({
+        topClientsDataPoints: {
+            type: Array as PropType<ChartNumericDataPointBag[] | null | undefined>,
+            required: true
+        },
+
+        allClientsDataPoints: {
+            type: Array as PropType<ChartNumericDataPointBag[] | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Values
+
+    const isListExpanded = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const allClientsCount = computed((): number => {
+        return props.allClientsDataPoints?.length ?? 0;
+    });
+
+    const allClientsCountLabel = computed((): string => {
+        return `${asFormattedString(allClientsCount.value)} Total ${pluralize("Client", allClientsCount.value)}`;
+    });
+
+    const topClientsCount = computed((): number => {
+        return props.topClientsDataPoints?.length ?? 0;
+    });
+
+    const showList = computed((): boolean => {
+        return allClientsCount.value > topClientsCount.value;
+    });
+
+    const seeAllClientsIconCssClass = computed((): string => {
+        const direction = isListExpanded.value
+            ? "up"
+            : "down";
+
+        return `ti ti-chevron-${direction}`;
+    });
+
+    const topClientsDataPoints = computed((): ChartNumericDataPointBag[] => {
+        return props.topClientsDataPoints
+            ?.filter(dp =>
+                dp?.seriesName
+                && dp.label
+                && !isNullish(dp.value)
+                && dp.color
+            )
+            ?? [];
+    });
+
+    const chartData = computed((): ChartData | null => {
+        if (!topClientsDataPoints.value.length) {
+            return null;
+        }
+
+        const labels: string[] = [];
+        const data: number[] = [];
+        const backgroundColor: string[] = [];
+
+        topClientsDataPoints.value.forEach(dp => {
+            labels.push(dp.label!);
+            data.push(dp.value!);
+            backgroundColor.push(
+                getCssVar(dp.color!, chartStyles.value.fallbackColor)
+            );
+        });
+
+        return {
+            labels,
+            datasets: [{
+                label: topClientsDataPoints.value[0].seriesName!,
+                data,
+                backgroundColor
+            }]
+        };
+    });
+
+    const maxPercentage = computed((): number => {
+        if (!topClientsDataPoints.value.length) {
+            return 0;
+        }
+
+        return Math.max(
+            ...topClientsDataPoints.value
+                .map((dp => dp.value!))
+        );
+    });
+
+    const yStepSize = computed((): number => {
+        return maxPercentage.value > 50
+            ? 10
+            : 5;
+    });
+
+    const yMax = computed((): number => {
+        return maxPercentage.value > 50
+            ? Math.ceil(maxPercentage.value / 10) * 10 // Up to the nearest 10.
+            : 50;
+    });
+
+    const chartOptions = computed((): ChartOptions => {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        boxWidth: 0,
+                        font: {
+                            family: chartStyles.value.fontFamily,
+                            size: chartStyles.value.fontSize,
+                            weight: chartStyles.value.fontWeight
+                        },
+                        color: chartStyles.value.fontColor
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => {
+                            const value = context.parsed.y;
+                            return `${value}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                x: {
+                    grid: {
+                        drawOnChartArea: false
+                    }
+                },
+                y: {
+                    beginAtZero: true,
+                    max: yMax.value,
+                    title: {
+                        display: true,
+                        text: "Percent",
+                        font: {
+                            family: chartStyles.value.fontFamily,
+                            size: chartStyles.value.fontSize,
+                            weight: chartStyles.value.fontWeight
+                        },
+                        color: chartStyles.value.fontColor
+                    },
+                    ticks: {
+                        stepSize: yStepSize.value,
+                        callback: v => `${v}%`
+                    }
+                }
+            }
+        };
+    });
+
+    // #endregion Computed Values
+</script>
