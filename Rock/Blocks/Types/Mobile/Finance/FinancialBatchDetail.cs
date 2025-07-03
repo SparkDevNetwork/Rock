@@ -1,9 +1,12 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
 using Rock.Common.Mobile.Blocks.Finance.FinancialBatchDetail;
+using Rock.Common.Mobile.ViewModel;
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -21,16 +24,31 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [IconCssClass( "fa fa-money-bills" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
+    #region Block Attributes
+
     [LinkedPage( "Detail Page",
         Description = "Page to link to when user taps on a transaction list.",
         IsRequired = false,
         Key = AttributeKeys.DetailPage,
         Order = 1 )]
 
+    [AccountsField(
+        "Accounts",
+        Key = AttributeKeys.Accounts,
+        Description = "The accounts to display.",
+        Order = 2 )]
+
+    #endregion
+
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_FINANCE_FINANCIAL_BATCH_DETAIL_BLOCK_TYPE )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.MOBILE_FINANCE_FINANCIAL_BATCH_DETAIL )]
     public class FinancialBatchDetail : RockBlockType
     {
+        #region Properties
+
+        private List<Guid> Accounts => GetAttributeValue( AttributeKeys.Accounts ).SplitDelimitedValues().AsGuidList();
+
+        #endregion
         /// <summary>
         /// Keys for the attributes used in this block.
         /// </summary>
@@ -40,6 +58,11 @@ namespace Rock.Blocks.Types.Mobile.Finance
             /// The key for the Detail Page attribute.
             /// </summary>
             public const string DetailPage = "DetailPage";
+
+            /// <summary>
+            /// The key for the Accounts attribute.
+            /// </summary>
+            public const string Accounts = "Accounts";
         }
 
         private const string AuthorizationReopenBatch = "ReopenBatch";
@@ -117,6 +140,41 @@ namespace Rock.Blocks.Types.Mobile.Finance
                 .ToList();
 
             return transactions;
+        }
+
+        /// <summary>
+        /// Gets the available accounts in chunks to prevent SQL complexity errors.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        private List<ListItemViewModel> GetAvailableAccounts( RockContext rockContext )
+        {
+            if ( !Accounts.Any() )
+            {
+                // If no accounts are specified, return an empty list.
+                return new List<ListItemViewModel>();
+            }
+
+            var financialAccountService = new FinancialAccountService( rockContext );
+
+            var availableAccounts = financialAccountService.Queryable()
+            .Where( f =>
+                f.IsActive
+                    && f.IsPublic.HasValue
+                    && f.IsPublic.Value
+                    && ( f.StartDate == null || f.StartDate <= RockDateTime.Today )
+                    && ( f.EndDate == null || f.EndDate >= RockDateTime.Today ) )
+            .Include( f => f.ImageBinaryFile );
+            availableAccounts = availableAccounts.Where( a => Accounts.Contains( a.Guid ) );
+
+            var accounts = availableAccounts.OrderBy( f => f.Order )
+                .Select( a => new ListItemViewModel
+                {
+                    Text = a.Name,
+                    Value = a.Id.ToString(),
+                } )
+                .ToList();
+
+            return accounts;
         }
 
         #endregion
@@ -366,6 +424,23 @@ namespace Rock.Blocks.Types.Mobile.Finance
             return new Rock.Common.Mobile.Blocks.Finance.FinancialBatchDetail.Configuration
             {
                 TransactionDetailPageGuid = GetAttributeValue( AttributeKeys.DetailPage ).AsGuidOrNull(),
+                Accounts = GetAvailableAccounts( RockContext ),
+                CurrencyTypes = DefinedTypeCache.Get( SystemGuid.DefinedType.FINANCIAL_CURRENCY_TYPE.AsGuid() )
+                    .DefinedValues
+                    .Select( dv => new ListItemViewModel
+                    {
+                        Text = dv.Value,
+                        Value = dv.Id.ToString()
+                    } )
+                    .ToList(),
+                TransactionSources = DefinedTypeCache.Get( SystemGuid.DefinedType.FINANCIAL_SOURCE_TYPE.AsGuid() )
+                    .DefinedValues
+                    .Select( dv => new ListItemViewModel
+                    {
+                        Text = dv.Value,
+                        Value = dv.Id.ToString()
+                    } )
+                    .ToList(),
             };
         }
 
