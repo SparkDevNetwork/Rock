@@ -1,0 +1,88 @@
+.rocktheme-community {
+    .channel-member {
+        --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 120);
+        display: flex;
+        width: 100%;
+    }
+
+    .channel-member-pane-layout {
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+        height: 100%;
+        margin-top: 12px;
+        width: 100%;
+
+        .member-badges-layout {
+            display: flex;
+            gap: 4px;
+        }
+
+        .rock-channel-member-title {
+            font-size: var(--right-pane-info-title-font-size, 20px);
+            padding: 0;
+            margin: 0;
+            font-weight: 700;
+            color: var(--right-pane-info-title-color, #222);
+        }
+
+        .channel-member-header {
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 180);
+            gap: 4px;
+        }
+
+        .channel-member-header-title-layout {
+            display: flex;
+            align-items: center;
+            flex-direction: column;
+            gap: 4px;
+        }
+
+        .channel-member-actions-pane {
+            display: flex;
+            flex-direction: column;
+            gap: 0;
+            width: 100%;
+            margin-top: 16px;
+            border-top: 1px solid var(--color-interface-soft);
+            border-bottom: 1px solid var(--color-interface-soft);
+            background: var(--color-interface-softest);
+        }
+
+        .channel-member-action-btn {
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem 0;
+            background: none;
+            border: none;
+            border-bottom: 1px solid var(--color-interface-soft);
+            color: var(--color-interface--strong, #222);
+            font-size: 16px;
+            cursor: pointer;
+            font-weight: 600;
+            gap: 4px;
+
+            &:last-child {
+                border-bottom: none;
+            }
+
+            &:hover {
+                background: var(--color-interface-softest);
+            }
+
+            i {
+                margin-right: 0;
+            }
+        }
+
+        .channel-member-action-btn--danger {
+            color: var(--color-danger-strong);
+        }
+    }
+}

@@ -13,8 +13,8 @@ import { createContext, useContext } from "react";
 import { ChatViewStyle } from "../../ChatViewStyle";
 
 interface ChatConfigContextType {
-    sharedChannelTypeKey?: string;
-    directMessageChannelTypeKey?: string;
+    sharedChannelTypeKey: string;
+    directMessageChannelTypeKey: string;
     chatViewStyle: ChatViewStyle;
     refreshChat: () => void;
 }

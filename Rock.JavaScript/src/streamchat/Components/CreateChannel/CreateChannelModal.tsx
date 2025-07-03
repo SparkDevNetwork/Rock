@@ -143,12 +143,11 @@ const CreateChannelModal: React.FC = () => {
             </section>
 
             <footer className="create-channel-modal-footer">
-                <button onClick={hideModal}>Cancel</button>
+                <button onClick={hideModal} className="btn btn-secondary">Cancel</button>
                 <button
-                    className="create-channel-modal-create"
+                    className="create-channel-modal-create btn btn-primary"
                     onClick={handleCreateChannel}
-                    disabled={isSubmitDisabled}
-                >
+                    disabled={isSubmitDisabled}>
                     Create
                 </button>
             </footer>

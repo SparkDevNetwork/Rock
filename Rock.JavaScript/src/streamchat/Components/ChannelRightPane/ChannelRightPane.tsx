@@ -4,9 +4,10 @@ import { InfoPaneContent } from './ChannelInfo/InfoPaneContent';
 import { ThreadPaneContent } from './Thread/ThreadPaneContent';
 import { MessageSearchPaneContent } from './MessageSearch/MessageSearchContent';
 import { MentionsListPaneContent } from './MentionsList/MentionsListPaneContent';
+import { MembersPaneContent } from './Members/MembersPaneContent';
+import { ChannelMemberListProvider } from '../ChannelMemberList/ChannelMemberListContext';
 
 // Stub components for different views
-const MembersView = () => <div>Members Panel</div>;
 const MoreOptions = () => <div>More Options Panel</div>;
 
 export const ChannelRightPane: React.FC = () => {
@@ -20,7 +21,7 @@ export const ChannelRightPane: React.FC = () => {
             case 'threads': return <ThreadPaneContent />;
             case 'search': return <MessageSearchPaneContent />;
             case 'mentions': return <MentionsListPaneContent />;
-            case 'members': return <MembersView />;
+            case 'members': return <ChannelMemberListProvider><MembersPaneContent /></ChannelMemberListProvider>;
             case 'more': return <MoreOptions />;
             default: return null;
         }

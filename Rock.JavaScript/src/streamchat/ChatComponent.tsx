@@ -1,8 +1,6 @@
 import React, { useState } from "react";
 import {
     Chat,
-    Thread,
-    WithComponents,
 } from "stream-chat-react";
 import { ChannelSort, ChannelFilters } from "stream-chat";
 import { useCreateChatClient } from "stream-chat-react";
@@ -13,7 +11,6 @@ import type { ChatComponentProps } from "./ChatComponentProps";
 import { RockChannelPreview } from "./Components/ChannelPreview/RockChannelPreview";
 import { ChatConfigContext } from "./Components/Chat/ChatConfigContext";
 import ChannelListHeader from "./Components/ChannelListHeader/ChannelListHeader";
-import CreateChannelModal from "./Components/CreateChannel/CreateChannelModal";
 import { WrappedChannel } from "./Components/MessageAction/WrappedChannel";
 import { WrappedChannelList } from "./Components/ChannelList/WrappedChannelList";
 import { getRenderChannelsFn } from "./ChatUtils";
@@ -22,7 +19,6 @@ import { ChatViewStyle } from "./ChatViewStyle";
 import { ChannelRightPaneProvider } from "./Components/ChannelRightPane/ChannelRightPaneContext";
 import { RockChatWindow } from "./RockChatWindow";
 import { ModalProvider } from "./Components/Modal/ModalContext";
-import { Search } from "stream-chat-react/experimental";
 
 /**
  * The ChatComponent sets up and renders the Stream Chat UI
@@ -102,12 +98,11 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                 directMessageChannelTypeKey,
                 chatViewStyle: chatViewStyle || ChatViewStyle.Conversational,
                 refreshChat,
-            }}
-        >
-            <ModalProvider>
-                <ChannelListControllerContext.Provider value={{ refresh: refreshChannelList }}>
-                    <ChannelRightPaneProvider>
-                        <Chat client={chatClient} theme={theme} key={chatComponentKey}>
+            }}>
+            <ChannelListControllerContext.Provider value={{ refresh: refreshChannelList }}>
+                <ChannelRightPaneProvider>
+                    <Chat client={chatClient} theme={theme} key={chatComponentKey}>
+                        <ModalProvider>
                             <div style={chatContentStyle} className={theme}>
                                 {!channelId && (
                                     <div className="rock-channel-list">
@@ -129,11 +124,11 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                                     <RockChatWindow />
                                 </WrappedChannel>
                             </div>
-                        </Chat>
-                    </ChannelRightPaneProvider>
-                </ChannelListControllerContext.Provider>
-            </ModalProvider>
-        </ChatConfigContext.Provider>
+                        </ModalProvider>
+                    </Chat>
+                </ChannelRightPaneProvider>
+            </ChannelListControllerContext.Provider>
+        </ChatConfigContext.Provider >
     );
 };
 
