@@ -69,6 +69,16 @@ namespace Rock.Data
             */
         }
 
+#if REVIEW_NET5_0_OR_GREATER
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockContextReadOnly"/> class.
+        /// </summary>
+        public RockContextReadOnly( string nameOrConnectionString )
+            : base( nameOrConnectionString )
+        {
+        }
+#endif
+
 #if REVIEW_WEBFORMS
         /// <summary>
         /// Initializes a new instance of the <see cref="RockContextReadOnly"/> class.

@@ -182,6 +182,7 @@
     <PackageReference Include="System.Configuration.ConfigurationManager" Version="9.0.6" />
     <PackageReference Include="System.Data.SqlClient" Version="4.9.0" />
     <PackageReference Include="System.Diagnostics.PerformanceCounter" Version="9.0.6" />
+    <PackageReference Include="System.IO.Hashing" Version="9.0.6" />
     <PackageReference Include="System.Linq.Dynamic.Core" Version="1.6.6" />
     <PackageReference Include="System.Runtime.Caching" Version="9.0.6" />
     <PackageReference Include="Twilio" Version="7.11.3" />

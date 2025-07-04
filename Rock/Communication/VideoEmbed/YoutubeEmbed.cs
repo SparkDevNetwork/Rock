@@ -45,6 +45,9 @@ namespace Rock.Communication.VideoEmbed
         /// <returns>Thumbnail url</returns>
         public override string GetThumbnail( string videoUrl )
         {
+#if REVIEW_NET5_0_OR_GREATER
+            return string.Empty;
+#else
             var match = Regex.Match( videoUrl, RegexFilter );
             var videoId = match.Groups[5].Value;
 
@@ -70,14 +73,11 @@ namespace Rock.Communication.VideoEmbed
                 {
                     using ( var thumbnail = Image.FromStream( mem ) )
                     {
-#if REVIEW_NET5_0_OR_GREATER
-                        return OverlayImage( thumbnail, "YouTube_" + videoId, "/Assets/Images/youtube-overlay.png" );
-#else
                         return OverlayImage( thumbnail, "YouTube_" + videoId, HttpContext.Current.Server.MapPath( "~/Assets/Images/youtube-overlay.png" ) );
-#endif
                     }
                 }
             }
+#endif
         }
     }
 }

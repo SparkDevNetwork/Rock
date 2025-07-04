@@ -27,9 +27,13 @@ using System.Text;
 
 using Humanizer;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
+#if REVIEW_NET5_0_OR_GREATER
+using Rock.Configuration;
+#endif
 using Rock.Core;
 using Rock.Data;
 using Rock.Logging;
@@ -1076,7 +1080,7 @@ namespace Rock.Jobs
                 if ( ownerRoleId.HasValue )
                 {
                     var rockContext = new RockContext();
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
                     var personService = new PersonService( rockContext );
                     var memberService = new GroupMemberService( rockContext );
 
@@ -1367,6 +1371,7 @@ namespace Rock.Jobs
             var avatarCachePath = args.AvatarCachePath;
             var validationMessages = new List<string>();
 
+#if REVIEW_WEBFORMS
             if ( ( System.Web.Hosting.HostingEnvironment.IsHosted || args.HostName == "RockSchedulerIIS" ) && !args.IsUnitTest )
             {
                 if ( !string.IsNullOrEmpty( cacheDirectoryPath ) )
@@ -1379,6 +1384,7 @@ namespace Rock.Jobs
                     avatarCachePath = System.Web.Hosting.HostingEnvironment.MapPath( avatarCachePath );
                 }
             }
+#endif
 
             // Clean up cached image files.
             pathIsValid = ValidateCacheDirectory( cacheDirectoryPath, validationMessages );
@@ -1424,7 +1430,7 @@ namespace Rock.Jobs
             if ( auditExpireDays.HasValue )
             {
                 var auditLogRockContext = new Rock.Data.RockContext();
-                auditLogRockContext.Database.CommandTimeout = commandTimeout;
+                auditLogRockContext.Database.SetCommandTimeout( commandTimeout );
 
                 DateTime auditExpireDate = RockDateTime.Now.Add( new TimeSpan( auditExpireDays.Value * -1, 0, 0, 0 ) );
                 totalRowsDeleted += BulkDeleteInChunks( new AuditService( auditLogRockContext ).Queryable().Where( a => a.DateTime < auditExpireDate ), batchAmount, commandTimeout );
@@ -1445,7 +1451,7 @@ namespace Rock.Jobs
                 var exceptionLogRockContext = new Rock.Data.RockContext();
 
                 // Assuming a 10 minute minimum CommandTimeout for this process.
-                exceptionLogRockContext.Database.CommandTimeout = commandTimeout >= 600 ? commandTimeout : 600;
+                exceptionLogRockContext.Database.SetCommandTimeout( commandTimeout >= 600 ? commandTimeout : 600 );
                 DateTime exceptionExpireDate = RockDateTime.Now.Add( new TimeSpan( exceptionExpireDays.Value * -1, 0, 0, 0 ) );
                 var exceptionLogsToDelete = new ExceptionLogService( exceptionLogRockContext ).Queryable().Where( a => a.CreatedDateTime < exceptionExpireDate );
 
@@ -1664,7 +1670,7 @@ namespace Rock.Jobs
 
             using ( var bulkDeleteContext = new RockContext() )
             {
-                bulkDeleteContext.Database.CommandTimeout = commandTimeout;
+                bulkDeleteContext.Database.SetCommandTimeout( commandTimeout );
                 var keepDeleting = true;
                 while ( keepDeleting )
                 {
@@ -1706,7 +1712,7 @@ namespace Rock.Jobs
 
             using ( var bulkUpdateContext = new RockContext() )
             {
-                bulkUpdateContext.Database.CommandTimeout = commandTimeout;
+                bulkUpdateContext.Database.SetCommandTimeout( commandTimeout );
                 var keepUpdating = true;
                 while ( keepUpdating )
                 {
@@ -1762,6 +1768,7 @@ namespace Rock.Jobs
                     try
                     {
                         bool ignore = false;
+#if REVIEW_WEBFORMS
                         if ( entityType.Assembly != rockContextType.Assembly )
                         {
                             // If the model is from a custom project, verify that it is using RockContext, if not, ignore it since an
@@ -1769,6 +1776,7 @@ namespace Rock.Jobs
                             var entityContextType = Reflection.SearchAssembly( entityType.Assembly, typeof( System.Data.Entity.DbContext ) );
                             ignore = entityContextType.Any() && !entityContextType.First().Value.Equals( rockContextType );
                         }
+#endif
 
                         if ( !ignore )
                         {
@@ -1853,7 +1861,7 @@ namespace Rock.Jobs
             var rockContext = new Rock.Data.RockContext();
 
             // Set a 10 minute minimum timeout here.
-            rockContext.Database.CommandTimeout = commandTimeout >= 600 ? commandTimeout : 600;
+            rockContext.Database.SetCommandTimeout( commandTimeout >= 600 ? commandTimeout : 600 );
 
             DateTime transientCommunicationExpireDate = RockDateTime.Now.Add( new TimeSpan( 7 * -1, 0, 0, 0 ) );
             var communicationsToDelete = new CommunicationService( rockContext ).Queryable().Where( a => a.CreatedDateTime < transientCommunicationExpireDate && a.Status == CommunicationStatus.Transient );
@@ -2896,7 +2904,11 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
             var options = new PuppeteerSharp.BrowserFetcherOptions()
             {
                 Browser = PuppeteerSharp.SupportedBrowser.Chrome,
+#if REVIEW_WEBFORMS
                 Path = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/ChromeEngine" )
+#else
+                Path = RockApp.Current.MapPath( "~/App_Data/ChromeEngine" )
+#endif
             };
 
             var browserFetcher = new PuppeteerSharp.BrowserFetcher( options );
@@ -3395,7 +3407,7 @@ END
 ";
             using ( var rockContext = CreateRockContext() )
             {
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
                 int result = rockContext.Database.ExecuteSqlCommand( removePersistedDataViewValueSql );
                 return result;
             }
@@ -3568,7 +3580,7 @@ SET @UpdatedCampusCount = @CampusCount;
         {
             var rockContext = new RockContext();
 
-            rockContext.Database.CommandTimeout = commandTimeout;
+            rockContext.Database.SetCommandTimeout( commandTimeout );
 
             return rockContext;
         }

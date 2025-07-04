@@ -417,9 +417,11 @@ namespace Rock.CheckIn.v2
                         recatt.AttendanceId = att.IdKey;
                     }
 
+#if REVIEW_WEBFORMS
                     // This is a temporary call until the legacy v1 check-in is
                     // removed. This keeps the room counts in sync.
                     KioskLocationAttendance.AddAttendance( att );
+#endif
                 }
             }
 

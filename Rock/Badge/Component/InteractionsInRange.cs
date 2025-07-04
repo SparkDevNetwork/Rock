@@ -20,6 +20,9 @@ using System.IO;
 using System.Web;
 
 using Rock.Attribute;
+#if REVIEW_NET5_0_OR_GREATER
+using Rock.Configuration;
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -84,7 +87,11 @@ namespace Rock.Badge.Component
 
             var pageId = PageCache.Get( GetAttributeValue( badge, "DetailPage" ).AsGuid() )?.Id;
             var interactionChannel = InteractionChannelCache.Get( interactionChannelGuid.Value );
+#if REVIEW_WEBFORMS
             var detailPageUrl = VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?ChannelId={interactionChannel?.Id}" );
+#else
+            var detailPageUrl = RockApp.Current.ResolveRockUrl( $"~/page/{pageId}?ChannelId={interactionChannel?.Id}" );
+#endif
 
             return $@"
                 $.ajax({{

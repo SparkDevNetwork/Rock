@@ -44,7 +44,11 @@ namespace Rock.Data
         /// Initializes a new instance of the <see cref="RockContextAnalytics"/> class.
         /// </summary>
         public RockContextAnalytics()
+#if REVIEW_WEBFORMS
             : base( new RockContext( RockApp.Current.InitializationSettings.AnalyticsConnectionString ) )
+#else
+            : base( RockApp.Current.InitializationSettings.AnalyticsConnectionString )
+#endif
         {
             //
         }

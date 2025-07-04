@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -4142,3 +4143,4 @@ namespace Rock.Communication.Chat
         #endregion Supporting Members
     }
 }
+#endif

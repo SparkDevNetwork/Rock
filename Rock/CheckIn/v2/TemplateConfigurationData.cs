@@ -819,4 +819,27 @@ namespace Rock.CheckIn.v2
 
         #endregion
     }
+
+#if REVIEW_NET5_0_OR_GREATER
+    /// <summary>
+    /// Determines how controls are displayed in the block.
+    /// </summary>
+    public static class ControlOptions
+    {
+        /// <summary>
+        /// Hides the field from being displayed.
+        /// </summary>
+        public const string HIDE = "Hide";
+
+        /// <summary>
+        /// The field is display and the value is optional.
+        /// </summary>
+        public const string OPTIONAL = "Optional";
+
+        /// <summary>
+        /// The field is displayed and the value is required.
+        /// </summary>
+        public const string REQUIRED = "Required";
+    }
+#endif
 }

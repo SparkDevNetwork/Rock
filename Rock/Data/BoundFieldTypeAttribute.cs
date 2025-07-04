@@ -41,10 +41,12 @@ namespace Rock.Data
         /// <exception cref="Rock.Data.BoundFieldTypeException"></exception>
         public BoundFieldTypeAttribute( Type boundFieldType )
         {
+#if REVIEW_WEBFORMS
             if ( !( typeof( BoundField ).IsAssignableFrom( boundFieldType ) ) )
             {
                 throw new BoundFieldTypeException();
             }
+#endif
 
             this.BoundFieldType = boundFieldType;
         }

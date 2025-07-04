@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -196,7 +196,11 @@ namespace Rock.Communication.SmsActions
             {
                 if ( workflowAttributes.FieldType.Field is KeyValueListFieldType keyValueField )
                 {
+#if REVIEW_WEBFORMS
                     workflowAttributesSettings = keyValueField.GetValuesFromString( null,
+#else
+                    workflowAttributesSettings = keyValueField.GetValuesFromString(
+#endif
                         GetAttributeValue( action, AttributeKey.WorkflowAttributes ),
                         workflowAttributes.QualifierValues,
                         false );

@@ -74,6 +74,9 @@ namespace Rock.Communication.VideoEmbed
                 return string.Empty;
             }
 
+#if REVIEW_NET5_0_OR_GREATER
+            return string.Empty;
+#else
             string imageUrl = restResponse.Data.ThumbnailUrl;
 
             // Download thumbnail image from Vimeo
@@ -85,14 +88,11 @@ namespace Rock.Communication.VideoEmbed
                 {
                     using ( var thumbnail = Image.FromStream( mem ) )
                     {
-#if REVIEW_NET5_0_OR_GREATER
-                        return OverlayImage( thumbnail, $"Vimeo_{restResponse.Data.VideoId}", "/Assets/Images/vimeo-overlay.png" );
-#else
                         return OverlayImage( thumbnail, $"Vimeo_{restResponse.Data.VideoId}", HttpContext.Current.Server.MapPath( "~/Assets/Images/vimeo-overlay.png" ) );
-#endif
                     }
                 }
             }
+#endif
         }
     }
 

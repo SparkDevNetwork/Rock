@@ -20,6 +20,9 @@ using System.ComponentModel.Composition;
 using System.IO;
 using System.Text.Encodings.Web;
 using Rock.Attribute;
+#if REVIEW_NET5_0_OR_GREATER
+using Rock.Configuration;
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -92,7 +95,11 @@ namespace Rock.Badge.Component
             var pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "PageViewDetails" ) ) ).Id;
 
             // NOTE: Since this block shows a history of sites a person visited in Rock, use Person.Guid instead of Person.Id to reduce the risk of somebody manually editing the URL to see somebody else pageview history
+#if REVIEW_WEBFORMS
             var detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~/page/{pageId}?PersonGuid={person.Guid}&SiteId={siteId}" );
+#else
+            var detailPageUrl = RockApp.Current.ResolveRockUrl( $"~/page/{pageId}?PersonGuid={person.Guid}&SiteId={siteId}" );
+#endif
 
             return $@"
                 $.ajax({{

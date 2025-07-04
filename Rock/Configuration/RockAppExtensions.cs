@@ -93,6 +93,28 @@ namespace Rock.Configuration
         }
 
         /// <summary>
+        /// Maps a virtual path to a physical path within the application's context.
+        /// </summary>
+        /// <param name="app">The application instance used to resolve the path.</param>
+        /// <param name="path">The virtual path to be mapped. It must begin with a '~' character.</param>
+        /// <returns>The physical path corresponding to the specified virtual path.</returns>
+        public static string MapPath( this RockApp app, string path )
+        {
+            if ( path.StartsWith( "~" ) )
+            {
+                throw new ArgumentException( "The path must start with a '~' character.", nameof( path ) );
+            }
+
+#if REVIEW_WEBFORMS
+            return System.Web.VirtualPathUtility.ToAbsolute( path );
+#else
+            // TODO: This is a temporary solution until we have a way to specify
+            // the actual root path of the application.
+            return Environment.CurrentDirectory + path.TrimStart( '~' ).Replace( '/', System.IO.Path.DirectorySeparatorChar );
+#endif
+        }
+
+        /// <summary>
         /// Resolves the rock URL to the absolute path it refers to on this site.
         /// The name of the theme will be determined automatically, if it can't
         /// be determined then "Rock" will be used.

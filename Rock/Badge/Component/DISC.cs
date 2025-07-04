@@ -23,6 +23,9 @@ using System.IO;
 using System.Linq;
 
 using Rock.Attribute;
+#if REVIEW_NET5_0_OR_GREATER
+using Rock.Configuration;
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -113,7 +116,11 @@ namespace Rock.Badge.Component
                 if ( !String.IsNullOrEmpty( GetAttributeValue( badge, "DISCResultDetail" ) ) )
                 {
                     int pageId = PageCache.Get( Guid.Parse( GetAttributeValue( badge, "DISCResultDetail" ) ) ).Id;
+#if REVIEW_WEBFORMS
                     detailPageUrl = System.Web.VirtualPathUtility.ToAbsolute( String.Format( "~/page/{0}?Person={1}", pageId, person.UrlEncodedKey ) );
+#else
+                    detailPageUrl = RockApp.Current.ResolveRockUrl( String.Format( "~/page/{0}?Person={1}", pageId, person.UrlEncodedKey ) );
+#endif
                     writer.Write( "<a href='{0}'>", detailPageUrl );
                 }
 

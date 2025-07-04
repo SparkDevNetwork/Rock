@@ -24,6 +24,9 @@ using System.Linq;
 using System.Text;
 
 using Rock.Attribute;
+#if REVIEW_NET5_0_OR_GREATER
+using Rock.Configuration;
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -147,7 +150,11 @@ namespace Rock.Badge.Component
                 badgeIcons = i % 2 == 0 ? badgeRow1 : badgeRow2;
 
                 var assessmentType = assessmentTypes[i];
+#if REVIEW_WEBFORMS
                 var resultsPageUrl = System.Web.VirtualPathUtility.ToAbsolute( $"~{assessmentType.AssessmentResultsPath}?Person={person.GetPersonActionIdentifier( "Assessment" ) }" );
+#else
+                var resultsPageUrl = RockApp.Current.ResolveRockUrl( $"~{assessmentType.AssessmentResultsPath}?Person={person.GetPersonActionIdentifier( "Assessment" )}" );
+#endif
                 var assessmentTitle = assessmentType.Title;
                 var mergeFields = new Dictionary<string, object>();
                 var mergedBadgeSummaryLava = "Not requested";

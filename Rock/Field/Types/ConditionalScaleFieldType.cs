@@ -575,6 +575,7 @@ namespace Rock.Field.Types
             var selectedRangeGuidList = value.FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
             cblRangeRules.SetValues( selectedRangeGuidList );
         }
+#endif
 
         #region Classes
 
@@ -597,6 +598,7 @@ namespace Rock.Field.Types
             public decimal? LowValue { get; set; }
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// 
         /// </summary>
@@ -661,10 +663,10 @@ namespace Rock.Field.Types
                 conditionalScaleRulesControlsRepeater.DataBind();
             }
         }
+#endif
 
         #endregion
 
-#endif
         #endregion
     }
 }
