@@ -38,13 +38,19 @@ namespace Rock.Web.Utilities
         /// Returns the environment data as json.
         /// </summary>
         /// <returns>a JSON formatted string</returns>
+#if REVIEW_WEBFORMS
         public static string GetEnvDataAsJson( System.Web.HttpRequest request, string rockUrl )
+#else
+        public static string GetEnvDataAsJson( string rockUrl )
+#endif
         {
             var envData = new Dictionary<string, string>();
             envData.Add( "AppRoot", rockUrl );
             envData.Add( "Architecture", ( IntPtr.Size == 4 ) ? "32bit" : "64bit" );
             envData.Add( "AspNetVersion", RockApp.Current.HostingSettings.DotNetVersion );
+#if REVIEW_WEBFORMS
             envData.Add( "IisVersion", request.ServerVariables["SERVER_SOFTWARE"] );
+#endif
             envData.Add( "ServerOs", Environment.OSVersion.ToString() );
 
             try

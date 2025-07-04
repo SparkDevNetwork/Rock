@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System.Web;
 
 namespace Rock.Web
@@ -69,3 +70,4 @@ namespace Rock.Web
         }
     }
 }
+#endif

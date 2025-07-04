@@ -16,9 +16,11 @@
 //
 using System;
 using System.IO;
+#if REVIEW_WEBFORMS
 using System.Web;
 using System.Web.Caching;
 using System.Web.Hosting;
+#endif
 
 namespace Rock.Web
 {
@@ -44,6 +46,7 @@ namespace Rock.Web
                 rootRelativePath = rootRelativePath.Remove( rootRelativePath.IndexOf( '?' ) );
             }
 
+#if REVIEW_WEBFORMS
             if ( HttpRuntime.Cache[rootRelativePath] == null )
             {
                 string absolute = HostingEnvironment.MapPath( rootRelativePath );
@@ -64,6 +67,30 @@ namespace Rock.Web
             }
 
             return HttpRuntime.Cache[rootRelativePath] as string;
+#else
+            var cacheKey = $"Rock.Web.Fingerprint_{rootRelativePath}";
+
+            return Web.Cache.RockCache.GetOrAddExisting( cacheKey, () =>
+            {
+                var absolute = rootRelativePath.StartsWith( "~" )
+                    ? Rock.Configuration.RockApp.Current.HostingSettings.WebRootPath + rootRelativePath.Substring( 1 )
+                    : rootRelativePath;
+
+                if ( File.Exists( absolute ) )
+                {
+                    DateTime date = File.GetLastWriteTime( absolute );
+
+                    return rootRelativePath + "?v=" + date.Ticks;
+                }
+                else
+                {
+                    // If the file does not exist at the absolute path, log the failed attempt, and return the requested relative path.
+                    Model.ExceptionLogService.LogException(
+                        new Exception( string.Format( "Could not find the file at '{0}'.  Could not add fingerprint.", absolute ) ) );
+                    return rootRelativePath;
+                }
+            } ) as string;
+#endif
         }
     }
 }

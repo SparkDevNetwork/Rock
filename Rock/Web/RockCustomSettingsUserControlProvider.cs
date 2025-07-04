@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using System.Web.UI;
 using Rock.Attribute;
@@ -98,3 +99,4 @@ namespace Rock.Web
         #endregion
     }
 }
+#endif

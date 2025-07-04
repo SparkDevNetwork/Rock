@@ -23,17 +23,23 @@ namespace Rock.Web.HttpModules
     /// <summary>
     /// MEF Component for HTTP Modules
     /// </summary>
+#if REVIEW_WEBFORMS
     public abstract class HttpModuleComponent : Component, IHttpModule
+#else
+    public abstract class HttpModuleComponent : Component
+#endif
     {
         /// <summary>
         /// Disposes of the resources (other than memory) used by the module that implements <see cref="T:System.Web.IHttpModule" />.
         /// </summary>
         public abstract void Dispose();
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Initializes a module and prepares it to handle requests.
         /// </summary>
         /// <param name="context">An <see cref="T:System.Web.HttpApplication" /> that provides access to the methods, properties, and events common to all application objects within an ASP.NET application</param>
         public abstract void Init( HttpApplication context );
+#endif
     }
 }

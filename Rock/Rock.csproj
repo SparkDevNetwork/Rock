@@ -30,6 +30,19 @@
     <Compile Include="Web\UI\ContextAttribute.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Web\UI\Controls\ValueFilter.cs" />
+    <!-- Exclude all legacy check-in workflow actions. -->
+    <Compile Remove="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\CreateCheckoutLabels.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\CreateLabels.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\Filter*.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\Find*.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\Load*.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\ParseZebraLabel.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\PreSelectRecentAttendance.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\RemoveEmpty*.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\SaveAttendance.cs" />
+    <Compile Remove="Workflow\Action\CheckIn\SetAvailableSchedules.cs" />
   </ItemGroup>
 
   <ItemGroup>

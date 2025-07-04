@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System.Web;
 using Microsoft.AspNet.SignalR.Hubs;
 
@@ -44,4 +45,5 @@ namespace Rock.Web.HttpModules
         }
     }
 }
+#endif
 

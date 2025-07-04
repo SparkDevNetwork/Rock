@@ -14,22 +14,39 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System.ServiceModel.Web;
+#endif
 
 namespace Rock.Web
 {
     /// <summary>
     /// Exception for when a file upload fails.  We don't want these to go to the standard error page, this is why we have a special exception class
     /// </summary>
+#if REVIEW_WEBFORMS
     public class FileUploadException : WebFaultException<string>
     {
+#else
+    public class FileUploadException : System.Exception
+    {
+        /// <summary>
+        /// The status code of the exception.
+        /// </summary>
+        public System.Net.HttpStatusCode StatusCode { get; private set; }
+#endif
         /// <summary>
         /// Initializes a new instance of the <see cref="FileUploadException"/> class.
         /// </summary>
         /// <param name="detail">The detail.</param>
         /// <param name="statusCode">The status code.</param>
+#if REVIEW_WEBFORMS
         public FileUploadException( string detail, System.Net.HttpStatusCode statusCode ) : base( detail, statusCode ) 
         {
+#else
+        public FileUploadException( string detail, System.Net.HttpStatusCode statusCode ) : base( detail )
+        {
+            StatusCode = statusCode;
+#endif
         }
     }
 }

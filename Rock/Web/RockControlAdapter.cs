@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 
+#if REVIEW_WEBFORMS
 using System;
 using System.Web.UI.Adapters;
 
@@ -78,3 +79,4 @@ namespace Rock.Web
         }
     }
 }
+#endif

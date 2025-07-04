@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if REVIEW_WEBFORMS
 using System;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -373,3 +374,4 @@ namespace Rock.Web.HttpModules
         #endregion Geolocation
     }
 }
+#endif

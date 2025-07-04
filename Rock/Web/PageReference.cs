@@ -70,6 +70,7 @@ namespace Rock.Web
         /// </value>
         public NameValueCollection QueryString { get; set; } = new NameValueCollection();
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets or sets the bread crumbs.
         /// </summary>
@@ -77,6 +78,7 @@ namespace Rock.Web
         /// The bread crumbs.
         /// </value>
         public List<BreadCrumb> BreadCrumbs { get; set; } = new List<BreadCrumb>();
+#endif
 
         /// <summary>
         /// Gets a value indicating whether this instance is valid.
