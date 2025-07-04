@@ -20,6 +20,12 @@ using System.Data.Entity;
 using System.Data.Entity.Infrastructure;
 using Rock.Model;
 
+#if REVIEW_NET5_0_OR_GREATER
+using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using EFEntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
+#endif
+
 namespace Rock.Transactions
 {
     /// <summary>
@@ -39,7 +45,7 @@ namespace Rock.Transactions
         /// Initializes a new instance of the <see cref="StreakTypeExclusionChangeTransaction"/> class.
         /// </summary>
         /// <param name="entry">The entry.</param>
-        public StreakTypeExclusionChangeTransaction( DbEntityEntry entry )
+        public StreakTypeExclusionChangeTransaction( EFEntityEntry entry )
         {
             var isAdded = entry.State == EntityState.Added;
             var mapIsModified = entry.State == EntityState.Modified && entry.Property( "ExclusionMap" )?.IsModified == true;

@@ -16,7 +16,9 @@
 //
 using System;
 using System.Collections.Generic;
+#if REVIEW_WEBFORMS
 using System.Data.Entity.Validation;
+#endif
 using System.Linq;
 
 using Rock.Data;
@@ -46,7 +48,9 @@ namespace Rock.Transactions
         {
             if ( Audits != null && Audits.Count > 0 )
             {
+#if REVIEW_WEBFORMS
                 try {
+#endif
                     var auditsToAdd = Audits.Where( a => a.Details.Any() );
                     if ( auditsToAdd.Any() )
                     {
@@ -59,6 +63,7 @@ namespace Rock.Transactions
                             rockContext.SaveChanges( true );
                         }
                     }
+#if REVIEW_WEBFORMS
                 }
                 catch ( DbEntityValidationException devx )
                 {
@@ -76,7 +81,8 @@ namespace Rock.Transactions
 
                     throw new System.Exception( errorMessage, devx );
                 }
-            }
+#endif
+                }
         }
     }
 }

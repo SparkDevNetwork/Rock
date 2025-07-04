@@ -21,7 +21,9 @@ using System.Linq;
 using System.Net.Http;
 using System.Net;
 using System.Web;
+#if REVIEW_WEBFORMS
 using Rock.Common.Tv;
+#endif
 using Rock.Data;
 using Rock.Model;
 using Rock.Tv.Classes;
@@ -101,6 +103,7 @@ namespace Rock.Tv
         }
 
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Gets the TV person.
         /// </summary>
@@ -159,6 +162,7 @@ namespace Rock.Tv
                 Country = location.Country
             };
         }
+#endif
 
         /// <summary>
         /// Gets the authentication token.

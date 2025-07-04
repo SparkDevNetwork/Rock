@@ -24,6 +24,12 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+#if REVIEW_NET5_0_OR_GREATER
+using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using EFEntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
+#endif
+
 namespace Rock.Transactions
 {
     /// <summary>
@@ -41,7 +47,7 @@ namespace Rock.Transactions
         /// Initializes a new instance of the <see cref="StepChangeTransaction"/> class.
         /// </summary>
         /// <param name="entry">The entry.</param>
-        public StepChangeTransaction( DbEntityEntry entry )
+        public StepChangeTransaction( EFEntityEntry entry )
             : base( entry )
         {
         }
@@ -50,7 +56,7 @@ namespace Rock.Transactions
         /// Called when [capture entity change parameters].
         /// </summary>
         /// <param name="entry">The entry.</param>
-        protected override void OnCaptureEntityChangeParameters( DbEntityEntry entry )
+        protected override void OnCaptureEntityChangeParameters( EFEntityEntry entry )
         {
             var entity = ( Step ) entry.Entity;
 
@@ -258,7 +264,7 @@ namespace Rock.Transactions
         /// Execution is deferred until database updates are completed, so any change parameters required for the transaction must be captured during this initialization process.
         /// </summary>
         /// <param name="dbEntry">The Entity Framework object containing information about the change.</param>
-        protected abstract void OnCaptureEntityChangeParameters( DbEntityEntry dbEntry );
+        protected abstract void OnCaptureEntityChangeParameters( EFEntityEntry dbEntry );
 
         /// <summary>
         /// Get a list of triggers that may be fired by a state change in the entity being processed.
@@ -309,7 +315,7 @@ namespace Rock.Transactions
         /// </summary>
         /// <param name="dbEntry">The database entry.</param>
         /// <exception cref="Exception">EntityChangeWorkflowTriggerTransaction initialization failed. A target entity of Type \"{ typeof( TEntity ).Name }\" is required. [EntityType=\"{ dbEntry.Entity.GetType().Name }\"]</exception>
-        public EntityChangeWorkflowTriggerTransactionBase( DbEntityEntry dbEntry )
+        public EntityChangeWorkflowTriggerTransactionBase( EFEntityEntry dbEntry )
         {
             // Verify that the entity if of the expected type for this transaction.
             var targetEntity = dbEntry.Entity as TEntity;

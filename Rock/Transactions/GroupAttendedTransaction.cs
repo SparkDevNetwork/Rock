@@ -24,6 +24,12 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+#if REVIEW_NET5_0_OR_GREATER
+using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using EFEntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
+#endif
+
 namespace Rock.Transactions
 {
     /// <summary>
@@ -42,7 +48,7 @@ namespace Rock.Transactions
         /// Initializes a new instance of the <see cref="GroupAttendedTransaction"/> class.
         /// </summary>
         /// <param name="entry">The entry.</param>
-        public GroupAttendedTransaction( DbEntityEntry entry )
+        public GroupAttendedTransaction( EFEntityEntry entry )
         {
             if ( entry.State != EntityState.Deleted )
             {

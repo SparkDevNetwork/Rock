@@ -24,6 +24,12 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+#if REVIEW_NET5_0_OR_GREATER
+using EFEntityEntry = Microsoft.EntityFrameworkCore.ChangeTracking.EntityEntry;
+#else
+using EFEntityEntry = System.Data.Entity.Infrastructure.DbEntityEntry;
+#endif
+
 namespace Rock.Transactions
 {
     /// <summary>
@@ -49,7 +55,7 @@ namespace Rock.Transactions
         /// Initializes a new instance of the <see cref="GroupMemberChangeTransaction"/> class.
         /// </summary>
         /// <param name="entry">The entry.</param>
-        public GroupMemberChangeTransaction( DbEntityEntry entry )
+        public GroupMemberChangeTransaction( EFEntityEntry entry )
         {
             // If entity was a group member, save the values
             var groupMember = entry.Entity as GroupMember;

@@ -97,10 +97,20 @@ namespace Rock.Web.Cache
         {
 #if REVIEW_NET5_0_OR_GREATER
             bool cacheStatisticsEnabled = false;
+
+            var config = new CacheConfigurationBuilder( "InProcess" ).WithDictionaryHandle();
+
+            if ( cacheStatisticsEnabled )
+            {
+                config = config.EnableStatistics();
+            }
+            else
+            {
+                config = config.DisableStatistics();
+            }
 #else
             bool cacheStatisticsEnabled = Rock.Web.SystemSettings.GetValueFromWebConfig( SystemKey.SystemSetting.CACHE_MANAGER_ENABLE_STATISTICS )?.AsBoolean() ?? false;
 
-#endif
 
             var config = new ConfigurationBuilder( "InProcess" ).WithDictionaryHandle();
 
@@ -112,6 +122,7 @@ namespace Rock.Web.Cache
             {
                 config = config.DisablePerformanceCounters().DisableStatistics();
             }
+#endif
 
             return config.Build();
         }

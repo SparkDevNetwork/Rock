@@ -33,7 +33,9 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
+#if REVIEW_WEBFORMS
 using CheckInLabel = Rock.CheckIn.CheckInLabel;
+#endif
 using Rock.ViewModels.CheckIn.Labels;
 using Rock.ViewModels.Utility;
 
@@ -45,6 +47,7 @@ namespace Rock.Utility
     public static class ZebraPrint
     {
         #region Public Methods
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Prints the labels.
         /// </summary>
@@ -165,6 +168,7 @@ namespace Rock.Utility
 
             return messages;
         }
+#endif
 
         /// <summary>
         /// Prints a single label.
@@ -351,7 +355,6 @@ namespace Rock.Utility
 
             return messages;
         }
-#endif
 
         /// <summary>
         /// Handles printing labels for the given parameters using the
@@ -441,7 +444,6 @@ namespace Rock.Utility
             return (messages, printFromClient);
         }
 
-#if REVIEW_WEBFORMS
         /// <summary>
         /// Adds the label script, registering it to the given control.
         /// </summary>
@@ -564,6 +566,7 @@ namespace Rock.Utility
             }
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Printers the has cutter.
         /// </summary>
@@ -581,11 +584,13 @@ namespace Rock.Utility
 
             return hasCutter;
         }
+#endif
 
         #endregion
 
         #region Reprint Label Helper Methods & Classes
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Get a list of available check-in label types to reprint for the given person and attendanceIds.
         /// </summary>
@@ -661,6 +666,7 @@ namespace Rock.Utility
 
             return labelTypes;
         }
+#endif
 
         #endregion
     }
