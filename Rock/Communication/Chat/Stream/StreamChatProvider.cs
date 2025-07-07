@@ -718,25 +718,7 @@ namespace Rock.Communication.Chat
 
             var request = new AppSettingsRequest
             {
-                WebhookUrl = ChatHelper.WebhookUrl,
-                WebhookEvents = new List<string>
-                {
-                    WebhookEvent.ChannelCreated,
-                    WebhookEvent.ChannelUpdated,
-
-                    WebhookEvent.MemberAdded,
-                    WebhookEvent.MemberRemoved,
-
-                    WebhookEvent.ChannelMuted,
-                    WebhookEvent.ChannelUnmuted,
-
-                    WebhookEvent.UserBanned,
-                    WebhookEvent.UserUnbanned,
-
-                    WebhookEvent.UserDeleted
-                },
-
-                // Push version should be to set to v3. 
+                // Push version should be to set to v3.
                 PushConfig = new PushConfigRequest
                 {
                     Version = "v3"
