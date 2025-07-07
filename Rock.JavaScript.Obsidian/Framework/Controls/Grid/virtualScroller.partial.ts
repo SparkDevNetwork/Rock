@@ -97,7 +97,7 @@ export default class VirtualScroller {
 
     /**
      * When not `undefined` this contains the total height of all known items.
-     * It indicates that we need to keep woring to figure out an average height
+     * It indicates that we need to keep working to figure out an average height
      * until it becomes `undefined.
      */
     private firstRangeTotalHeight?: number = 0;

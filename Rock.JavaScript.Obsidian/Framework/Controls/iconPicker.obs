@@ -7,6 +7,7 @@
                            disableAutoCloseOnPrimaryAction
                            :pickerContentBoxHeight="useCustom ? '0' : '320px'"
                            pickerContentBoxWidth="310px"
+                           v-model:scrollContainer="scrollContainer"
                            iconCssClass=""
                            hideMainActionButtons
                            pickerClass="icon-picker-w-fit-content">
@@ -35,14 +36,18 @@
 
         <Loading v-if="!useCustom" :isLoading="loadingState.icons.isLoading.value">
 
-            <div class="d-flex gap-2 align-items-start flex-wrap">
-                <button v-for="iconOption in iconOptions" :key="iconOption.StyleClass ?? ''"
-                        class="btn btn-default icon-picker-select-btn"
-                        :class="icon === iconOption ? 'active' : ''"
-                        @click.prevent="selectIcon(iconOption)"
-                        :title="iconOption.Title ?? ''"
-                        v-html="iconOption.IconSvg ?? ''">
-                </button>
+            <div class="d-flex gap-2 align-items-start flex-wrap" ref="itemsContainer">
+                <div class="virtual-scroll-padding" :style="beforePadStyle"></div>
+                <template v-for="iconOption in virtualItems" :key="iconOption.StyleClass ?? ''">
+                    <button
+                            class="btn btn-default icon-picker-select-btn"
+                            :class="icon === iconOption ? 'active' : ''"
+                            @click.prevent="selectIcon(iconOption)"
+                            :title="iconOption.Title ?? ''"
+                            v-html="iconOption.IconSvg ?? ''">
+                    </button>
+                </template>
+                <div class="virtual-scroll-padding" :style="afterPadStyle"></div>
             </div>
         </Loading>
 
@@ -105,6 +110,13 @@
     margin-top: -4px;
     margin-right: 10px;
 }
+
+.virtual-scroll-padding {
+    flex: 0 0 100%;
+    width: 100%;
+    height: 10px;
+    background: transparent;
+}
 </style>
 
 <script setup lang="ts">
@@ -121,6 +133,7 @@
     import { type IconBag, type IconLibraryBag } from "@Obsidian/ViewModels/Controls/iconLibraryBag.d";
     import { containsRequiredRule } from "@Obsidian/ValidationRules";
     import { debounce } from "@Obsidian/Utility/util";
+    import { useVirtualScroller } from "@Obsidian/Utility/virtualScroll";
 
     type SearchableIcon = IconBag & {
         SearchableText: string; /* eslint-disable-line @typescript-eslint/naming-convention */
@@ -148,6 +161,8 @@
         return containsRequiredRule(props.rules);
     });
     const formFieldProps = useStandardRockFormFieldProps(props);
+    const scrollContainer = ref<HTMLElement | undefined>();
+    const itemsContainer = ref<HTMLElement | undefined>();
 
     // #endregion
 
@@ -171,7 +186,19 @@
     });
 
     const iconsForSelectedLibrary = computed(() => {
-        return icons.value[library.value] ?? [];
+        let theIcons: SearchableIcon[] = [];
+
+        // If not required, add a blank option
+        if (!isRequired.value) {
+            theIcons.push({
+                StyleClass: "",
+                IconSvg: "<svg height=16 width=16 viewbox=\"0 0 16 16\"></svg>",
+                Title: "None",
+                SearchableText: "none"
+            } as SearchableIcon);
+        }
+
+        return theIcons.concat(icons.value[library.value] ?? []);
     });
 
     const libraryPrefix = computed(() => {
@@ -203,6 +230,24 @@
         }
         return "";
     });
+
+    const {
+        virtualItems,
+        beforePadStyle,
+        afterPadStyle
+    } = useVirtualScroller<SearchableIcon>({
+        items: iconOptions,
+        itemsPerRow: 6,
+        scrollContainer: scrollContainer,
+        scrollContainerHeight: 320,
+        rowHeight: 48, // Height of each icon button + padding
+        visibleRowCount: 7
+    });
+
+    watch([virtualItems, beforePadStyle, afterPadStyle], () => {
+        // If the virtual rows change, update the icon options.
+        console.debug("Virtual rows updated", virtualItems.value?.length, beforePadStyle.value.height, afterPadStyle.value.height);
+    }, { immediate: true });
 
     watch(internalModelValue, (newValue) => {
         // Emit the new value to the parent control.
@@ -247,12 +292,14 @@
 
     watch(library, () => {
         icon.value = undefined;
-        if (iconsForSelectedLibrary.value.length == 0) {
+
+        // If the library isn't loaded, load it.
+        if ((icons.value[library.value] ?? [])?.length == 0) {
             getIcons();
         }
     });
 
-    watch([searchValue, iconsForSelectedLibrary, isRequired], debounce(() => {
+    watch([searchValue, iconsForSelectedLibrary], debounce(() => {
         iconOptions.value = getIconOptions();
     }, 150));
 
@@ -271,17 +318,7 @@
             });
         }
 
-        if (isRequired.value) {
-            return iconsForSelectedLibrary.value;
-        }
-
-        // Otherwise, filter the icons based on the search value.
-        return ([{
-            StyleClass: "",
-            IconSvg: "<svg height=16 width=16 viewbox=\"0 0 16 16\"></svg>",
-            Title: "None",
-            SearchableText: "none"
-        }] as SearchableIcon[]).concat(iconsForSelectedLibrary.value);
+        return iconsForSelectedLibrary.value;
     }
 
     // #endregion

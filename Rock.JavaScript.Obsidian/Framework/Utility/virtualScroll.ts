@@ -15,26 +15,7 @@
 // </copyright>
 //
 
-import { computed, onBeforeUnmount, onMounted, Ref, ref, watch } from "vue";
-
-// Originally from: https://github.com/tangbc/vue-virtual-scroll-list.
-// This is a conversion to TypeScript and also to simplify a few things that
-// we don't have a use for. It also reworks a few things to be a bit
-// more friendly to TypeScript style of doing things.
-
-/**
- * The type of size calculation type to be used.
- */
-const enum CalcType {
-    /** Initialization time, we have not determined what calculation type to use. */
-    Init = "init",
-
-    /** We have determined that fixed height is currently the best choice. */
-    Fixed = "fixed",
-
-    /** We have determined that dynamic height is the choice we must use. */
-    Dynamic = "dynamic"
-}
+import { computed, onBeforeUnmount, Ref, ref, watch } from "vue";
 
 /**
  * A range of items that should be displayed, including the padding that should
@@ -64,26 +45,21 @@ export type VirtualOptions = {
     visibleCount: number;
 
     /**
-     * The number of "off-screen" items before and after the edge of the sceen
-     * to keep rendered.
+     * The height of each item.
      */
-    bufferCount: number;
+    rowHeight: number;
 
     /**
-     * The estimated height of each item.
+     * The number of items.
      */
-    estimatedHeight: number;
-
-    /**
-     * The list of all unique identifiers representing all items in the list.
-     */
-    uniqueIds: string[];
+    totalRowCount: number;
 };
 
 /**
- * Helper class to handle virtual scrolling. There is no DOM interaction here.
- * This simply handles the logic of which items to scroll and how much buffer
- * space to prepend and append to the real list.
+ * Helper class to handle virtual scrolling. There is no DOM interaction here. This simply handles the logic of which
+ * items to scroll and how much buffer space to prepend and append to the real list. This was originally based off
+ * https://github.com/tangbc/vue-virtual-scroll-list like VirtualDataRows for the Grid, but there has been a lot of
+ * cleanup to simplify and make it less generalized.
  */
 export class VirtualScroller {
     // #region Properties
@@ -93,32 +69,6 @@ export class VirtualScroller {
 
     /** The callback function to call when the range has changed. */
     private readonly rangeUpdated: (range: Range) => void;
-
-    /** The hash table to map item identifiers to the known height. */
-    private readonly heights: Map<string, number> = new Map<string, number>();
-
-    /**
-     * When not `undefined` this contains the total height of all known items.
-     * It indicates that we need to keep working to figure out an average height
-     * until it becomes `undefined.
-     */
-    private firstRangeTotalHeight?: number = 0;
-
-    /** Contains the calculated average height of each row. */
-    private firstRangeAverageHeight: number = 0;
-
-    /** Tracks the highest most index whose position has been calculated. */
-    private highestCalculatedIndex: number = 0;
-
-    /** The type of item height calculation we are using. */
-    private calcType: CalcType = CalcType.Init;
-
-    /**
-     * Contains the currently known fixed height if {@link calcType} is
-     * {@link CalcType.Fixed}. Will be set to `undefined` if we are in
-     * dynamic mode.
-     */
-    private fixedHeightValue?: number = 0;
 
     /** Contains the last known scroll offset for this scroller. */
     private offset: number = 0;
@@ -143,14 +93,6 @@ export class VirtualScroller {
         this.checkRange(0, options.visibleCount - 1);
     }
 
-    /**
-     * Performs any cleanup on the virtual scroller that is needed. This should
-     * be called when the scroller will no longer be used.
-     */
-    destroy(): void {
-        this.heights.clear();
-    }
-
     // #endregion
 
     // #region Public Functions
@@ -171,62 +113,12 @@ export class VirtualScroller {
      * has changed. This should be called anytime anything about the list or
      * order gets modified.
      *
-     * @param uniqueIds The new list of unique identifiers in the list.
+     * @param totalRowCount The new total row count.
      */
-    public dataSourceChanged(uniqueIds: string[]): void {
-        this.heights.forEach((v, key) => {
-            if (!uniqueIds.includes(key)) {
-                this.heights.delete(key);
-            }
-        });
-
-        this.options.uniqueIds = uniqueIds;
-
-        if (uniqueIds.length > this.options.visibleCount) {
-            // Increase the visible count to show more rows
-            // when the page size is increased.
-            this.options.visibleCount = uniqueIds.length;
-        }
+    public dataSourceChanged(totalRowCount: number): void {
+        this.options.totalRowCount = totalRowCount;
 
         this.handleScroll(this.offset);
-    }
-
-    /**
-     * Informs the virtual scroller that the height of a single item has
-     * changed.
-     *
-     * @param id The identifier of the item whose height changed.
-     * @param height The new height of the item.
-     */
-    public updateHeight(id: string, height: number): void {
-        this.heights.set(id, height);
-
-        if (this.calcType === CalcType.Init) {
-            // This is the first height we have. Assume fixed size.
-            this.fixedHeightValue = height;
-            this.calcType = CalcType.Fixed;
-        }
-        else if (this.calcType === CalcType.Fixed && this.fixedHeightValue !== height) {
-            // We are currently fixed size, but we need to switch into
-            // dynamic size because the sizes are different.
-            this.calcType = CalcType.Dynamic;
-            this.fixedHeightValue = undefined;
-        }
-
-        // If we we are dynamic height and have not yet calculated enough
-        // heights to get a good average, then keep calculating.
-        if (this.calcType !== CalcType.Fixed && this.firstRangeTotalHeight !== undefined) {
-            if (this.heights.size < Math.min(this.options.visibleCount, this.options.uniqueIds.length)) {
-                // We need more data to get a good average sampling.
-                this.firstRangeTotalHeight = [...this.heights.values()].reduce((acc, val) => acc + val, 0);
-                this.firstRangeAverageHeight = Math.round(this.firstRangeTotalHeight / this.heights.size);
-            }
-            else {
-                // We got enough data, we can disable this logic now by
-                // setting the value to undefined.
-                this.firstRangeTotalHeight = undefined;
-            }
-        }
     }
 
     /**
@@ -245,23 +137,12 @@ export class VirtualScroller {
         let start = this.range.startIndex;
         let end = this.range.endIndex;
 
-        if (firstVisibleIndex - start < this.options.bufferCount) {
-            start = Math.max(firstVisibleIndex - (this.options.bufferCount * 2), 0);
-
-            // Only update the end range if we have too much buffer.
-            if (end - lastVisibleIndex > (this.options.bufferCount * 3)) {
-                end = Math.min(lastVisibleIndex + (this.options.bufferCount * 2), this.getLastIndex());
-            }
-        }
-
-        if (end - lastVisibleIndex < this.options.bufferCount) {
-            end = Math.min(lastVisibleIndex + (this.options.bufferCount * 2), this.getLastIndex());
-
-            // Only update start if we haven't already updated it and it has
-            // too much buffer.
-            if (start === this.range.startIndex && firstVisibleIndex - start > (this.options.bufferCount * 3)) {
-                start = Math.max(firstVisibleIndex - (this.options.bufferCount * 2), 0);
-            }
+        if (
+            firstVisibleIndex - start < this.options.visibleCount
+            || end - lastVisibleIndex < this.options.visibleCount
+        ) {
+            start = Math.max(firstVisibleIndex - this.options.visibleCount, 0);
+            end = Math.min(lastVisibleIndex + this.options.visibleCount, this.getLastIndex());
         }
 
         this.checkRange(start, end);
@@ -281,66 +162,7 @@ export class VirtualScroller {
             return 0;
         }
 
-        // A fixed height makes this super easy to determine.
-        if (this.isFixedType() && this.fixedHeightValue !== undefined) {
-            return Math.floor(this.offset / this.fixedHeightValue);
-        }
-
-        // Perform a search to find the first visible index.
-        let low = 0;
-        let middle = 0;
-        let high = this.options.uniqueIds.length;
-
-        while (low <= high) {
-            middle = low + Math.floor((high - low) / 2);
-            const middleOffset = this.getIndexOffset(middle);
-
-            if (middleOffset === this.offset) {
-                return middle;
-            }
-            else if (middleOffset < this.offset) {
-                low = middle + 1;
-            }
-            else if (middleOffset > this.offset) {
-                high = middle - 1;
-            }
-        }
-
-        return low > 0 ? --low : 0;
-    }
-
-    /**
-     * Calculates and returns the offset position of the given item.
-     *
-     * @param givenIndex The index of the item whose offset we need to calcualate.
-     *
-     * @returns The offset of the start of the item at this index.
-     */
-    private getIndexOffset(givenIndex: number): number {
-        if (givenIndex === 0) {
-            return 0;
-        }
-
-        let offset = 0;
-        for (let index = 0; index < givenIndex; index++) {
-            const indexSize = this.heights.get(this.options.uniqueIds[index]);
-            offset = offset + (typeof indexSize === "number" ? indexSize : this.getEstimatedItemHeight());
-        }
-
-        // Remember last calculated index.
-        this.highestCalculatedIndex = Math.max(this.highestCalculatedIndex, givenIndex - 1);
-        this.highestCalculatedIndex = Math.min(this.highestCalculatedIndex, this.getLastIndex());
-
-        return offset;
-    }
-
-    /**
-     * Checks if the current calculation type is a known fixed height.
-     *
-     * @returns `true` if the calculation type is currently a fixed height.
-     */
-    private isFixedType(): boolean {
-        return this.calcType === CalcType.Fixed;
+        return Math.floor(this.offset / this.options.rowHeight);
     }
 
     /**
@@ -349,7 +171,7 @@ export class VirtualScroller {
      * @returns The index of the last item.
      */
     private getLastIndex(): number {
-        return this.options.uniqueIds.length - 1;
+        return this.options.totalRowCount - 1;
     }
 
     /**
@@ -360,11 +182,11 @@ export class VirtualScroller {
      * @param end The requested ending index (inclusive).
      */
     private checkRange(start: number, end: number): void {
-        const total = this.options.uniqueIds.length;
+        const total = this.options.totalRowCount;
 
         // Total number of items is less than what we expect to fit on
         // screen plus buffering, just render everything.
-        if (total <= (this.options.visibleCount + this.options.bufferCount + this.options.bufferCount)) {
+        if (total <= (this.options.visibleCount * 3)) {
             start = 0;
             end = this.getLastIndex();
         }
@@ -394,12 +216,7 @@ export class VirtualScroller {
      * @returns The number of pixels to use as padding before the first item.
      */
     private getPadBefore(): number {
-        if (this.isFixedType()) {
-            return (this.fixedHeightValue ?? 0) * this.range.startIndex;
-        }
-        else {
-            return this.getIndexOffset(this.range.startIndex);
-        }
+       return this.options.rowHeight * this.range.startIndex;
     }
 
     /**
@@ -411,84 +228,68 @@ export class VirtualScroller {
         const end = this.range.endIndex;
         const lastIndex = this.getLastIndex();
 
-        if (this.isFixedType()) {
-            return (lastIndex - end) * (this.fixedHeightValue ?? 0);
-        }
-
-        // If it's all calculated, return the exact offset.
-        if (this.highestCalculatedIndex === lastIndex) {
-            return this.getIndexOffset(lastIndex) - this.getIndexOffset(end);
-        }
-        else {
-            // If not, estimate the remaining space.
-            return (lastIndex - end) * this.getEstimatedItemHeight();
-        }
-    }
-
-    /**
-     * Gets the estimated height of a single item.
-     *
-     * @returns The estimated height of a single item.
-     */
-    private getEstimatedItemHeight(): number {
-        return this.isFixedType()
-            ? this.fixedHeightValue ?? 0
-            : (this.firstRangeAverageHeight || this.options.estimatedHeight);
+        return (lastIndex - end) * (this.options.rowHeight);
     }
 
     // #endregion
 }
 
 
-
-
-
-
-
 type VirtualScrollOptions<RowItem> = {
     /** The data for each row in the list */
-    rows: Ref<RowItem[]>
-    /** The key property to uniquely identify each row */
-    rowKeyProp: keyof RowItem
-    /** The HTML element that wraps the list, marking the top and bottom of the list */
-    container: Ref<HTMLElement | null | undefined>
+    items: Ref<RowItem[]>
+    /** The number of items that are in a row, if it is a 2D grid. If not specified, defaults to 1 */
+    itemsPerRow?: number
+    /**
+     * The HTML element that wraps the list, marking the top and bottom of the list. This is only needed if the scroll
+     * container is the body (not provided).
+     */
+    container?: Ref<HTMLElement | null | undefined>
     /** The HTML element that can scroll. Defaults to the body */
     scrollContainer?: Ref<HTMLElement | null | undefined>
     /** The px height of the scroll container. Will calculate if not provided. */
     scrollContainerHeight?: number
     /** The height of each item in the list */
-    itemHeight: number,
+    rowHeight: number,
     /** The number of items that are visible in the scroll container at any one time. Is calculated if not provided. */
-    visibleCount?: number
-    /** The number of items to keep in the buffer above and below the visible area. Defaults to 1/3 of visibleCount */
-    bufferCount?: number
+    visibleRowCount?: number
 };
 
 type VirtualScrollReturns<RowItem> = {
-    virtualRows: Ref<RowItem[]>
+    virtualItems: Ref<RowItem[]>
     beforePadStyle: Ref<{ height:string }>
     afterPadStyle: Ref<{ height:string }>
-    hasRows: Ref<boolean>
 };
 
-export function useVirtualScroll<RowItem>(options: VirtualScrollOptions<RowItem>): VirtualScrollReturns<RowItem> {
-
+/**
+ * A composable function that provides the actual items to render, along with the spacer sizes above and below the items,
+ * given the options provided to produce a virtual scroller. This allows you to have a massive list of items, but only
+ * render a small subset so there the pure number of DOM elements doesn't bog down the performance of the browser.
+ *
+ * This implementation only works with fixed height items to simplify the logic, but allows it to be used with a 2D grid
+ * by allowing the number of items per row to be specified.
+ */
+export function useVirtualScroller<RowItem>(options: VirtualScrollOptions<RowItem>): VirtualScrollReturns<RowItem> {
     const scrollContainer = options.scrollContainer ?? ref(document.documentElement || document.body);
     const range = ref<Range>({ startIndex: 0, endIndex: 0, padBefore: 0, padAfter: 0 });
     let virtualScroller: VirtualScroller | undefined;
+    const itemsPerRow = options.itemsPerRow ?? 1;
 
 
     /** Contains the set of virtual rows to be rendered in the DOM. */
-    const virtualRows = computed((): RowItem[] => {
+    const virtualItems = computed((): RowItem[] => {
         const isInvalidRange = !range.value
-            || range.value.startIndex >= options.rows.value.length
-            || range.value.endIndex >= options.rows.value.length;
+            || range.value.startIndex >= options.items.value.length
+            || range.value.endIndex >= options.items.value.length;
 
         if (isInvalidRange) {
             return [];
         }
 
-        return options.rows.value.slice(range.value.startIndex, range.value.endIndex + 1);
+        const actualStartIndex = range.value.startIndex * itemsPerRow;
+        const actualEndIndex = Math.min((range.value.endIndex + 1) * itemsPerRow, options.items.value.length);
+
+        return options.items.value.slice(actualStartIndex, actualEndIndex);
     });
 
     /** Contains the CSS styles for the padding item before the rows. */
@@ -496,10 +297,6 @@ export function useVirtualScroll<RowItem>(options: VirtualScrollOptions<RowItem>
 
     /** Contains the CSS styles for the padding item after the rows. */
     const afterPadStyle = computed(() => ({  height: `${range.value.padAfter}px` }));
-
-    /** Whether or not there are any rows given */
-    const hasRows = computed(() => options.rows.value.length > 0);
-
 
     /**
      * Gets the current scroll offset.
@@ -527,13 +324,12 @@ export function useVirtualScroll<RowItem>(options: VirtualScrollOptions<RowItem>
      */
     function createVirtualScroller(): VirtualScroller {
         const scrollContainerHeight =  getClientHeight();
-        const visibleCount = Math.ceil(scrollContainerHeight / options.itemHeight);
+        const visibleCount = options.visibleRowCount ?? Math.ceil(scrollContainerHeight / options.rowHeight);
 
         return new VirtualScroller({
             visibleCount,
-            bufferCount: options.bufferCount ?? Math.round(visibleCount / 3),
-            estimatedHeight: options.itemHeight,
-            uniqueIds: options.rows.value.map(r => r?.[options.rowKeyProp]).filter(r => r !== undefined) as string[]
+            rowHeight: options.rowHeight,
+            totalRowCount: Math.ceil(options.items.value.length / itemsPerRow)
         }, range => onRangeChanged(range));
     }
 
@@ -561,47 +357,49 @@ export function useVirtualScroll<RowItem>(options: VirtualScrollOptions<RowItem>
             return;
         }
 
-        // Determine the offset inside the scrollable of our list. Meaning,
-        // the grid probably doesn't start at the top of the page. So if the
-        // grid starts 200 pixels down the page, our offset should be zero when
-        // they have scrolled down by 200 pixels. That is, the top edge of the
-        // grid is at the top edge of the scrollable.
-        const scrollableOffset = options.container.value
-            ? options.container.value.getBoundingClientRect().top + window.scrollY
-            : 0;
+        if (scrollContainer.value === document.documentElement || scrollContainer.value === document.body) {
+            // Determine the offset inside the scrollable of our list. Meaning,
+            // the grid probably doesn't start at the top of the page. So if the
+            // grid starts 200 pixels down the page, our offset should be zero when
+            // they have scrolled down by 200 pixels. That is, the top edge of the
+            // grid is at the top edge of the scrollable.
+            const scrollableOffset = options.container?.value
+                ? options.container.value.getBoundingClientRect().top + window.scrollY
+                : 0;
 
-        virtualScroller?.handleScroll(Math.floor(Math.max(0, offset - scrollableOffset)));
+            virtualScroller?.handleScroll(Math.floor(Math.max(0, offset - scrollableOffset)));
+        }
+        else {
+            // If the scroll container is not the body or html, then we can just use the offset directly.
+            virtualScroller?.handleScroll(offset);
+        }
     }
 
 
-    watch(options.rows, () => {
-        virtualScroller?.dataSourceChanged(options.rows.value.map(r => r?.[options.rowKeyProp]).filter(r => r !== undefined) as string[]);
+    watch(options.items, () => {
+        virtualScroller?.dataSourceChanged(Math.ceil(options.items.value.length / itemsPerRow));
     });
 
     onBeforeUnmount(() => {
-        document.removeEventListener("scroll", onScroll);
+        scrollContainer!.value!.removeEventListener("scroll", onScroll);
 
         if (virtualScroller) {
-            virtualScroller.destroy();
             virtualScroller = undefined;
         }
     });
 
-    onMounted(() => {
-        virtualScroller = createVirtualScroller();
-
-        if (getScrollOffset() > 0) {
+    watch(scrollContainer, () => {
+        if (scrollContainer.value && !virtualScroller) {
+            virtualScroller = createVirtualScroller();
             onScroll();
+            scrollContainer.value.addEventListener("scroll", onScroll, { passive: false });
         }
-
-        document.addEventListener("scroll", onScroll, { passive: false });
-    });
+    }, {immediate: true});
 
 
     return {
-        virtualRows,
+        virtualItems,
         beforePadStyle,
-        afterPadStyle,
-        hasRows,
+        afterPadStyle
     };
 }

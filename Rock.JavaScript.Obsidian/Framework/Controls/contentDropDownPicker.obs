@@ -46,7 +46,7 @@
 
                             <!-- Main Picker Content via default slot -->
                             <div class="scrollbar-thin picker-body" :style="pickerMenuInnerStyles" ref="scrollContainer">
-                                <slot :scrollContainer="scrollContainer" />
+                                <slot />
                             </div>
 
                             <!-- Actions Buttons -->
@@ -133,7 +133,7 @@
 </style>
 
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, onMounted, PropType, ref, watch } from "vue";
     import RockButton from "./rockButton.obs";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
@@ -309,12 +309,22 @@
             type: Boolean,
             default: false
         },
+
+        /**
+         * Element for the scroll container. This is a v-model, so that parents can do scroll
+         * manipulation, such as virtiual scrolling.
+         */
+        scrollContainer: {
+            type: Object as PropType<HTMLElement | undefined>,
+            default: undefined
+        }
     });
 
     const emit = defineEmits<{
         (e: "primaryButtonClicked" | "secondaryButtonClicked" | "clearButtonClicked"): void,
         (e: "update:showPopup", v: boolean): void,
         (e: "update:isFullscreen", v: boolean): void,
+        (e: "update:scrollContainer", v: HTMLElement | undefined): void,
     }>();
 
     // #region Values
@@ -409,6 +419,17 @@
     watch(() => props.disabled, () => {
         if (props.disabled) {
             internalShowPopup.value = false;
+        }
+    });
+
+    watch(scrollContainer, () => {
+        emit("update:scrollContainer", scrollContainer.value);
+    });
+
+    onMounted(() => {
+        // If the scrollContainer prop is set, we use that as the scroll container.
+        if (scrollContainer.value) {
+            emit("update:scrollContainer", scrollContainer.value);
         }
     });
 
