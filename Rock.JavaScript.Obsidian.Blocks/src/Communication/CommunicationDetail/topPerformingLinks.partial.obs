@@ -23,7 +23,7 @@
             </TransitionVerticalCollapse>
         </div>
 
-        <template v-if="anyRemainingLinks" #footerTray>
+        <template v-if="anyRemainingLinks" #footerContent>
             <div class="communication-analytics-links-footer-actions">
                 <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.Small" @click="areAllLinksVisible = !areAllLinksVisible">
                     See All Links <i :class="seeAllLinksIconCssClass"></i>

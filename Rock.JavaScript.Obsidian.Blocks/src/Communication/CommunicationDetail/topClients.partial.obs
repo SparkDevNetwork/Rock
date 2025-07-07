@@ -17,7 +17,7 @@
                    :options="chartOptions" />
         </div>
 
-        <template v-if="showList" #footerTray>
+        <template v-if="showList" #footerContent>
             <div class="communication-analytics-top-clients-footer-actions">
                 <RockButton :btnType="BtnType.Link" :btnSize="BtnSize.Small" @click="isListExpanded = !isListExpanded">
                     See All Clients <i :class="seeAllClientsIconCssClass"></i>
