@@ -26,9 +26,12 @@ export type AssetManagerGetFilesResultsBag<T> = {
     /** List of files to display */
     files?: T[] | null;
 
-    /** Whether or not this folder is restricted from having certain actions performed on it. */
+    /**
+     * roller
+     * Whether or not this folder is restricted from having certain actions performed on it.
+     */
     isFolderRestricted: boolean;
 
-    /** Whetehr or not this folder is restricted from having certain types of files uploaded to it. */
+    /** Whether or not this folder is restricted from having certain types of files uploaded to it. */
     isFolderUploadRestricted: boolean;
 };

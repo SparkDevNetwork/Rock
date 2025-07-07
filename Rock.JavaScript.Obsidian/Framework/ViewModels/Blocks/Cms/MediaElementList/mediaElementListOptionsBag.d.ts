@@ -23,6 +23,6 @@
 
 /** The additional configuration options for the Media Element List block. */
 export type MediaElementListOptionsBag = {
-    /** The name of the media folder to display. */
+    /** The name of the media folder to display media elements from. */
     mediaFolderName?: string | null;
 };
