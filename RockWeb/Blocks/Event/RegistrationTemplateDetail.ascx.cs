@@ -124,7 +124,7 @@ namespace RockWeb.Blocks.Event
     {% endif %}
     {% for payment in Registration.Payments %}
         Paid {{ payment.Amount | FormatAsCurrency }} on {{ payment.Transaction.TransactionDateTime| Date:'M/d/yyyy' }}
-        <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br/>
+        <small>(Acct #: {{ payment.Transaction.FinancialPaymentDetail.AccountNumberMasked }}, Ref #: {{ payment.Transaction.TransactionCode }})</small><br>
     {% endfor %}
 
     {% assign paymentCount = Registration.Payments | Size %}
@@ -136,7 +136,7 @@ namespace RockWeb.Blocks.Event
     {% assign paymentPlan = Registration.PaymentPlanFinancialScheduledTransaction %}
     
     {% if paymentPlan and paymentPlan.IsActive %}
-        Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} ×{{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})<br/>
+        Payment Plan: {{ paymentPlan.TotalAmount | FormatAsCurrency }} × {{ paymentPlan.NumberOfPayments }} ({{ paymentPlan.TransactionFrequencyValue | AsString }})<br>
     {% else %}
         Balance Due: {{ Registration.BalanceDue | FormatAsCurrency }}
     {% endif %}

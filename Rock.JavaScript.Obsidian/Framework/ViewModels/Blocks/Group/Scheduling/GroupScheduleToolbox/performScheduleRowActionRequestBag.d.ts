@@ -42,4 +42,7 @@ export type PerformScheduleRowActionRequestBag = {
 
     /** Gets or sets the selected person unique identifier. */
     selectedPersonGuid: Guid;
+
+    /** Gets or sets the existing confirmation status. */
+    existingConfirmationStatus: ToolboxScheduleRowConfirmationStatus;
 };
