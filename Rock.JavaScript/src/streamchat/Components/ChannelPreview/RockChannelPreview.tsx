@@ -12,6 +12,7 @@ import { RockChannelPreviewActionButtons } from './RockChannelActionButtons';
 import { DefaultChatChannelNamer } from '../ChannelNamer/DefaultChannelNamer';
 import { useChatConfig } from '../Chat/ChatConfigContext';
 import { ChatViewStyle } from '../../ChatViewStyle';
+import { useDirectoryContext } from '../Directory/DirectoryContext';
 const ChannelPreviewContent = (
     props: ChannelPreviewUIComponentProps
 ) => {
@@ -52,7 +53,10 @@ const ChannelPreviewContent = (
     const isDialogOpen = useDialogIsOpen(dialogId);
     const showActions = isHovered || isDialogOpen;
 
+    const { setShowDirectory } = useDirectoryContext();
+
     const onSelectChannel = (e: React.MouseEvent<HTMLButtonElement>) => {
+        setShowDirectory(false);
         if (customOnSelectChannel) {
             customOnSelectChannel(e);
         } else if (setActiveChannel && channel) {

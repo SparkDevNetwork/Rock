@@ -6,7 +6,7 @@
     --channel-list-header-action-gap: 4px;
     --channel-list-header-icon-btn-size: 28px;
     --channel-list-header-icon-btn-radius: 4px;
-    --channel-list-header-icon-btn-color: var(--color-interface-stronger);
+    --channel-list-header-icon-btn-color: var(--color-interface-strong);
     --channel-list-header-icon-font-size: 16px;
 
     .rock-channel-list-header-container {
@@ -55,6 +55,10 @@
             >i {
                 color: var(--channel-list-header-icon-btn-color);
                 font-size: var(--channel-list-header-icon-font-size);
+            }
+
+            &.active {
+                background: var(--color-interface-soft);
             }
         }
     }

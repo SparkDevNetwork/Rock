@@ -6,6 +6,7 @@ declare module "stream-chat" {
         rock_always_shown?: boolean;
         rock_campus_id?: number;
         rock_leaving_allowed?: boolean;
+        rock_public?: boolean;
     }
 
     interface CustomUserData extends DefaultUserData {

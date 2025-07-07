@@ -1,6 +1,7 @@
 .rocktheme-community {
     --channel-header-background-color: var(--color-interface-softer);
     --channel-header-text-color: var(--color-interface-stronger);
+    --channel-header-icon-color: var(--color-interface-strong);
     --channel-header-border-color: var(--color-interface-soft);
     --channel-header-avatar-size: calc(var(--str-chat__spacing-px) * 36);
     --channel-header-nav-button-size: 28px;
@@ -51,7 +52,7 @@
         .rock-channel-header-nav-button {
             background: none;
             border: none;
-            color: var(--channel-header-text-color);
+            color: var(--channel-header-icon-color);
             border-radius: 4px;
             cursor: pointer;
             font-size: 16px;

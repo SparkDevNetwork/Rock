@@ -3,8 +3,7 @@ import clsx from 'clsx';
 
 import type { LocalMessage, ThreadState } from 'stream-chat';
 import type { ComponentPropsWithoutRef } from 'react';
-import { useChatContext, useStateStore, useChannelPreviewInfo, useThreadsViewContext, Avatar, MessageText, renderText } from 'stream-chat-react';
-import { Timestamp } from '../Message/Timestamp';
+import { useChatContext, useStateStore, useChannelPreviewInfo, useThreadsViewContext, Avatar, renderText } from 'stream-chat-react';
 import { useChannelThreadListItemContext } from './ChannelThreadListItem';
 import { RockMessageTimestamp } from '../Message/RockMessageTimestamp';
 
@@ -70,7 +69,7 @@ export const ChannelThreadListItemUI = (props: ThreadListItemUIProps) => {
         [client],
     );
 
-    const { channel, deletedAt, latestReply, ownUnreadMessageCount, parentMessage } =
+    const { channel, parentMessage } =
         useStateStore(thread.state, selector);
 
     const { displayTitle: channelDisplayTitle } = useChannelPreviewInfo({ channel });
@@ -91,7 +90,7 @@ export const ChannelThreadListItemUI = (props: ThreadListItemUIProps) => {
 
     const parentMessageUser = parentMessage.user?.name || parentMessage.user?.id || 'Unknown sender';
 
-    const foo = () => {
+    const getChannelThreadComponent = () => {
         return (
             <button
                 aria-selected={activeThread === thread}
@@ -113,15 +112,6 @@ export const ChannelThreadListItemUI = (props: ThreadListItemUIProps) => {
                             <RockMessageTimestamp message={parentMessage} customClass="rock-channel-thread-list-item-parent-message-preview-created-at" isChannelThread />
                         </div>
 
-                        {/* <div className="rock-channel-thread-list-item-parent-message-preview-text">
-                            <p className="rock-channel-thread-list-item-parent-message-preview-text-inner">
-                                {getTitleFromMessage({
-                                    currentUserId: client.userID,
-                                    message: parentMessage,
-                                })}
-                            </p>
-                        </div> */}
-
                         <div className="str-chat__message-text" tabIndex={0}>
                             <div
                                 className={clsx('str-chat__message-text-inner')}>
@@ -137,5 +127,5 @@ export const ChannelThreadListItemUI = (props: ThreadListItemUIProps) => {
 
         )
     }
-    return foo();
+    return getChannelThreadComponent();
 };

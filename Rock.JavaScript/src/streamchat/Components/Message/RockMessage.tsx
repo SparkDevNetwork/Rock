@@ -489,31 +489,35 @@ const RockMessageWithContext = (props: RockMessageProps) => {
                             </div>
                         </div>
 
-                        <div className="rock-message-actions">
-                            {messageActions.map((action) => (
-                                <button
-                                    key={action.key}
-                                    ref={action.key === 'react' ? setReactionButtonRef : undefined}
-                                    className="rock-message-action"
-                                    title={action.title}
-                                    onClick={(e) => action.onClick(e)}
-                                    aria-expanded='true'
-                                    aria-haspopup='true'
-                                    aria-label="aria/Open Message Action Menu">
-                                    <i className={action.icon} />
-                                </button>
-                            ))}
+                        {/* Only show message actions if this is not a reply from a thread. */}
+                        {!showIsReplyInChannel && (
+                            <div className="rock-message-actions">
+                                {messageActions.map((action) => (
+                                    <button
+                                        key={action.key}
+                                        ref={action.key === 'react' ? setReactionButtonRef : undefined}
+                                        className="rock-message-action"
+                                        title={action.title}
+                                        onClick={(e) => action.onClick(e)}
+                                        aria-expanded='true'
+                                        aria-haspopup='true'
+                                        aria-label="aria/Open Message Action Menu">
+                                        <i className={action.icon} />
+                                    </button>
+                                ))}
 
-                            {reactionDialogIsOpen && (
-                                <DialogAnchor
-                                    id={reactionDialogId}
-                                    placement={"bottom-start"}
-                                    referenceElement={reactionButtonRef}
-                                    trapFocus={false}>
-                                    <ReactionSelector />
-                                </DialogAnchor>
-                            )}
-                        </div>
+                                {reactionDialogIsOpen && (
+                                    <DialogAnchor
+                                        id={reactionDialogId}
+                                        placement={"bottom-start"}
+                                        referenceElement={reactionButtonRef}
+                                        trapFocus={false}>
+                                        <ReactionSelector />
+                                    </DialogAnchor>
+                                )}
+                            </div>
+                        )}
+
                     </div>
                 </div>
             </>

@@ -5,7 +5,7 @@
     --message-badges-gap: 0.5rem;
     --message-author-font-size: 14px;
     --message-author-font-weight: 700;
-    --message-author-color: var(--color-interface-stronger);
+    --message-author-color: var(--color-interface-strong);
     --message-author-line-height: 1.25rem;
     --message-avatar-size: calc(var(--str-chat__spacing-px) * 36);
     --message-send-failed-color: var(--color-danger-strong);
@@ -30,6 +30,39 @@
     --message-timestamp-color: var(--color-interface-strong);
     --message-timestamp-line-height: 1.25rem;
     --message-layout-line-height: 120%;
+
+    a {
+        color: var(--color-info-strong);
+    }
+
+    .rock-message-thread-preview-wrapper {
+        .rock-message-thread-preview-button {
+            background: none;
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            border: none;
+            cursor: pointer;
+            color: var(--color-info-strong);
+            font-size: 14px;
+        }
+    }
+
+    .str-chat__attachment-list {
+        gap: 6px;
+
+        .str-chat__message-attachment-file--item {
+            background-color: var(--color-interface-softer);
+        }
+    }
+
+    .str-chat__quoted-message-preview .str-chat__quoted-message-bubble {
+        background-color: var(--color-interface-softer);
+
+        &:hover {
+            background-color: var(--color-interface-softest);
+        }
+    }
 
     .rock-message-container {
         display: flex;
@@ -99,6 +132,17 @@
             .rock-message-actions {
                 opacity: 1;
                 pointer-events: auto;
+            }
+
+            // Make quoted message background white on hover
+            .str-chat__quoted-message-preview .str-chat__quoted-message-bubble {
+                background-color: var(--color-interface-softest);
+            }
+
+            .str-chat__attachment-list {
+                .str-chat__message-attachment-file--item {
+                    background-color: var(--color-interface-softest);
+                }
             }
         }
     }

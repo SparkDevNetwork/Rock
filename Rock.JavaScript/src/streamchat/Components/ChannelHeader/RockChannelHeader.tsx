@@ -110,12 +110,12 @@ export const RockChannelHeader: React.FC = (props: ChannelHeaderProps) => {
             title: 'Members',
             onClick: () => setActivePane('members'),
         },
-        {
-            key: 'more',
-            iconClass: 'fas fa-ellipsis-h',
-            title: 'More Options',
-            onClick: () => setActivePane('more'),
-        },
+        // {
+        //     key: 'more',
+        //     iconClass: 'fas fa-ellipsis-h',
+        //     title: 'More Options',
+        //     onClick: () => setActivePane('more'),
+        // },
     ];
 
     /**

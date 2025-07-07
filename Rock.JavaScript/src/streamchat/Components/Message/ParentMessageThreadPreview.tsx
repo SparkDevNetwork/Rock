@@ -60,16 +60,15 @@ export const ParentMessageThreadPreview = () => {
     if (!message.parent_id || parentMessageText === null) return null;
 
     return (
-        <div className='str-chat__message-thread-preview-wrapper'>
+        <div className='rock-message-thread-preview-wrapper'>
             <button
-                className='str-chat__message-thread-preview-button'
+                className='rock-message-thread-preview-button'
                 onClick={async () => {
                     if (!parentMessageRef.current) {
                         await querySearchParent();
                         if (parentMessageRef.current) {
                             openThread(parentMessageRef.current);
                             setActivePane('threads');
-
                         } else {
                             parentMessageRef.current = null;
                         }
@@ -78,12 +77,11 @@ export const ParentMessageThreadPreview = () => {
 
                     openThread(parentMessageRef.current);
                     setActivePane('threads');
-
                 }}
                 type='button'
             >
                 <i className='fas fa-comments' />
-                <span className='str-chat__message-thread-preview-text'>
+                <span className='rock-message-thread-preview-text'>
                     {parentMessageText?.slice(0, 100) || '(no content)'}
                 </span>
             </button>

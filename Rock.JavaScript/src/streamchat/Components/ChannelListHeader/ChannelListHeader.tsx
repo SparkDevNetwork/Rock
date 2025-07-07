@@ -5,6 +5,8 @@ import { useChatContext } from "stream-chat-react";
 import { Avatar } from "stream-chat-react";
 import { useModal } from "../Modal/ModalContext";
 import CreateChannelModal from "../CreateChannel/CreateChannelModal";
+import { useDirectoryContext } from "../Directory/DirectoryContext";
+
 export interface ChannelListHeaderProps {
     onSearch?: () => void;
 }
@@ -14,6 +16,7 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
 }) => {
     const { chatViewStyle } = useChatConfig();
     const { showModal } = useModal();
+    const { showDirectory } = useDirectoryContext();
 
     const onNewMessage = () => {
         showModal({
@@ -67,7 +70,10 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
                             key={key}
                             onClick={action}
                             aria-label={ariaLabel}
-                            className="rock-channel-list-header-icon-button"
+                            className={
+                                "rock-channel-list-header-icon-button" +
+                                (key === "search" && showDirectory ? " active" : "")
+                            }
                         >
                             <i className={iconClass}></i>
                         </button>

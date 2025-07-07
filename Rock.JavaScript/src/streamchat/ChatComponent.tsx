@@ -19,6 +19,8 @@ import { ChatViewStyle } from "./ChatViewStyle";
 import { ChannelRightPaneProvider } from "./Components/ChannelRightPane/ChannelRightPaneContext";
 import { RockChatWindow } from "./RockChatWindow";
 import { ModalProvider } from "./Components/Modal/ModalContext";
+import { DirectoryProvider, useDirectoryContext } from "./Components/Directory/DirectoryContext";
+import { Directory } from "./Components/Directory/Directory";
 
 /**
  * The ChatComponent sets up and renders the Stream Chat UI
@@ -83,14 +85,6 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     const sort: ChannelSort = { last_message_at: -1 };
     const options = { limit: 20, messages_limit: 30 };
 
-    const chatContentStyle: React.CSSProperties = {
-        display: "flex",
-        width: "100%",
-        height: "100%",
-    };
-
-    const theme = chatViewStyle == ChatViewStyle.Community ? "rocktheme-community" : "rocktheme-conversational";
-
     return (
         <ChatConfigContext.Provider
             value={{
@@ -101,34 +95,72 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
             }}>
             <ChannelListControllerContext.Provider value={{ refresh: refreshChannelList }}>
                 <ChannelRightPaneProvider>
-                    <Chat client={chatClient} theme={theme} key={chatComponentKey}>
-                        <ModalProvider>
-                            <div style={chatContentStyle} className={theme}>
-                                {!channelId && (
-                                    <div className="rock-channel-list">
-                                        <ChannelListHeader onSearch={() => console.log("Search clicked")} />
-                                        <WrappedChannelList
-                                            selectedChannelId={selectedChannelId}
-                                            filters={finalFilter}
-                                            sort={sort}
-                                            options={options}
-                                            Preview={RockChannelPreview}
-                                            renderChannels={getRenderChannelsFn(chatViewStyle!, directMessageChannelTypeKey!, sharedChannelTypeKey!)}
-                                            setActiveChannelOnMount={!selectedChannelId}
-                                            showChannelSearch={false}
-                                        />
-                                    </div>
-                                )}
-
-                                <WrappedChannel channelId={channelId} jumpToMessageId={jumpToMessageId}>
-                                    <RockChatWindow />
-                                </WrappedChannel>
-                            </div>
-                        </ModalProvider>
-                    </Chat>
+                    <DirectoryProvider>
+                        <Chat client={chatClient} theme={chatViewStyle == ChatViewStyle.Community ? "rocktheme-community" : "rocktheme-conversational"} key={chatComponentKey}>
+                            <ModalProvider>
+                                <ChatComponentContent
+                                    channelId={channelId}
+                                    selectedChannelId={selectedChannelId}
+                                    finalFilter={finalFilter}
+                                    sort={sort}
+                                    options={options}
+                                    chatViewStyle={chatViewStyle}
+                                    directMessageChannelTypeKey={directMessageChannelTypeKey}
+                                    sharedChannelTypeKey={sharedChannelTypeKey}
+                                    jumpToMessageId={jumpToMessageId}
+                                />
+                            </ModalProvider>
+                        </Chat>
+                    </DirectoryProvider>
                 </ChannelRightPaneProvider>
             </ChannelListControllerContext.Provider>
         </ChatConfigContext.Provider >
+    );
+};
+
+// Extracted content to use DirectoryContext
+const ChatComponentContent: React.FC<any> = ({
+    channelId,
+    selectedChannelId,
+    finalFilter,
+    sort,
+    options,
+    chatViewStyle,
+    directMessageChannelTypeKey,
+    sharedChannelTypeKey,
+    jumpToMessageId
+}) => {
+    const { showDirectory, toggleShowDirectory } = useDirectoryContext();
+    const chatContentStyle: React.CSSProperties = {
+        display: "flex",
+        width: "100%",
+        height: "100%",
+    };
+    return (
+        <div style={chatContentStyle} className={chatViewStyle == ChatViewStyle.Community ? "rocktheme-community" : "rocktheme-conversational"}>
+            {!channelId && (
+                <div className="rock-channel-list">
+                    <ChannelListHeader onSearch={() => toggleShowDirectory()} />
+                    <WrappedChannelList
+                        selectedChannelId={selectedChannelId}
+                        filters={finalFilter}
+                        sort={sort}
+                        options={options}
+                        Preview={RockChannelPreview}
+                        renderChannels={getRenderChannelsFn(chatViewStyle!, directMessageChannelTypeKey!, sharedChannelTypeKey!)}
+                        setActiveChannelOnMount={!selectedChannelId}
+                        showChannelSearch={false} />
+                </div>
+            )}
+
+            {showDirectory ? (
+                <Directory />
+            ) : (
+                <WrappedChannel channelId={channelId} jumpToMessageId={jumpToMessageId}>
+                    <RockChatWindow />
+                </WrappedChannel>
+            )}
+        </div>
     );
 };
 
