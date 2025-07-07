@@ -45,8 +45,8 @@
                             </div>
 
                             <!-- Main Picker Content via default slot -->
-                            <div class="scrollbar-thin picker-body" :style="pickerMenuInnerStyles">
-                                <slot />
+                            <div class="scrollbar-thin picker-body" :style="pickerMenuInnerStyles" ref="scrollContainer">
+                                <slot :scrollContainer="scrollContainer" />
                             </div>
 
                             <!-- Actions Buttons -->
@@ -334,6 +334,7 @@
     const internalIsFullscreen = useVModelPassthrough(props, "isFullscreen", emit);
 
     const internalShowPopup = ref(false);
+    const scrollContainer = ref<HTMLElement>();
 
     // #endregion
 
