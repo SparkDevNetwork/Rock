@@ -4657,7 +4657,7 @@ namespace Rock.Blocks.Event
             scheduledTransaction.StartDate = paymentSchedule.StartDate;
             
             // Set the payment information.
-            scheduledTransaction.Summary = paymentInfo.Comment1;
+            scheduledTransaction.Summary = context.Registration.GetSummary();
             if ( scheduledTransaction.FinancialPaymentDetail == null )
             {
                 scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();
