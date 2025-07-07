@@ -1183,7 +1183,7 @@ namespace Rock.Communication.Chat
                     var saveChatChannelKeyByGroupIds = new Dictionary<int, string>();
 
                     // Keep track of the channels that should and should NOT trigger a group member sync.
-                    var channelsToTriggerGroupMemberSync = new List<ChatChannel>();
+                    var queryableKeysToTriggerGroupMemberSync = new HashSet<string>();
                     var queryableKeysToAvoidGroupMemberSync = new HashSet<string>();
 
                     // A mapping dictionary and local function to add a group to the outgoing results collection only AFTER
@@ -1287,13 +1287,13 @@ namespace Rock.Communication.Chat
                                     // If this channel was previously inactive and is now being reactivated, trigger a group member sync.
                                     if ( !existingChannel.IsActive && channel.IsActive )
                                     {
-                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                        queryableKeysToTriggerGroupMemberSync.Add( channel.QueryableKey );
                                     }
 
                                     // If the chat notification mode has changed, we need to re-sync all of the members.
                                     if ( HasChatNotificationModeChanged( existingChannel, channel ) )
                                     {
-                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                        queryableKeysToTriggerGroupMemberSync.Add( channel.QueryableKey );
                                     }
                                 }
                                 else
@@ -1303,7 +1303,7 @@ namespace Rock.Communication.Chat
 
                                     if ( syncConfig.ShouldSyncAllGroupMembers )
                                     {
-                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                        queryableKeysToTriggerGroupMemberSync.Add( channel.QueryableKey );
                                     }
                                 }
                             }
@@ -1362,9 +1362,7 @@ namespace Rock.Communication.Chat
                         if ( createdKeys?.Any() == true )
                         {
                             createdKeys.ForEach( key => AddGroupToResult( key, ChatSyncType.Create ) );
-                            channelsToTriggerGroupMemberSync.AddRange(
-                                channelsToCreate.Where( c => createdKeys.Contains( c.QueryableKey ) )
-                            );
+                            queryableKeysToTriggerGroupMemberSync.UnionWith( createdKeys );
                         }
 
                         if ( createdResult?.HasException == true )
@@ -1384,13 +1382,7 @@ namespace Rock.Communication.Chat
 
                             if ( syncConfig.ShouldSyncAllGroupMembers )
                             {
-                                channelsToTriggerGroupMemberSync.AddRange(
-                                    channelsToUpdate.Where( c =>
-                                        !queryableKeysToAvoidGroupMemberSync.Contains( c.QueryableKey )
-                                        && !channelsToTriggerGroupMemberSync.Contains( c )
-                                        && updatedKeys.Contains( c.QueryableKey )
-                                    )
-                                );
+                                queryableKeysToTriggerGroupMemberSync.UnionWith( updatedKeys );
                             }
                         }
 
@@ -1434,10 +1426,15 @@ namespace Rock.Communication.Chat
                     }
 
                     // Do we have any groups whose group members should be synced to channel members?
-                    foreach ( var channel in channelsToTriggerGroupMemberSync )
+                    foreach ( var queryableKey in queryableKeysToTriggerGroupMemberSync )
                     {
+                        if ( queryableKeysToAvoidGroupMemberSync.Contains( queryableKey ) )
+                        {
+                            continue;
+                        }
+
                         // Try to sync the group members.
-                        if ( groupIdByQueryableKeys.TryGetValue( channel.QueryableKey, out var groupId ) )
+                        if ( groupIdByQueryableKeys.TryGetValue( queryableKey, out var groupId ) )
                         {
                             var membersResult = await SyncGroupMembersToChatProviderAsync( groupId, syncConfig );
 
