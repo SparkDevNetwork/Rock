@@ -1217,6 +1217,7 @@ namespace Rock.Blocks.Group.Scheduling
                     }
                     else
                     {
+                        shouldTrySendingResponseEmails = false;
                         response.NewStatus = bag.ExistingConfirmationStatus;
                     }
 
