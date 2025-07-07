@@ -15,7 +15,7 @@
                     <InputGroupDropDown v-else :items="availableCountryCodeOptions" v-model="countryCode" inputGroupClasses="input-group-addon" />
                     <input v-model="number" :id="uniqueId" type="text" class="form-control" v-bind="field" />
                 </div>
-                <div v-if="showSmsOptIn ?? false">
+                <div v-if="(showSmsOptIn && !props.hideSms)">
                     <CheckBox
                               v-model="isMessagingEnabled"
                               label=""
@@ -49,6 +49,12 @@
         inputGroupClasses: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /** When this is enabled, the SMS option will be hidden regardless of server settings. */
+        hideSms: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         ...standardRockFormFieldProps
