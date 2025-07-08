@@ -1,6 +1,7 @@
 import React from "react";
 import { useChannelRightPane } from "./ChannelRightPaneContext";
 import { useChannelActionContext, useThreadsViewContext } from "stream-chat-react";
+import { useChannelMemberListContext } from "../ChannelMemberList/ChannelMemberListContext";
 
 interface ChannelPaneHeaderProps {
     title: string;
@@ -12,6 +13,7 @@ export const ChannelPaneHeader: React.FC<ChannelPaneHeaderProps> = ({ title, ico
 
     const { closeThread } = useChannelActionContext();
     const { setActiveThread } = useThreadsViewContext();
+    const { setSelectedUser } = useChannelMemberListContext();
 
     const close = () => {
         closePane();
@@ -20,6 +22,9 @@ export const ChannelPaneHeader: React.FC<ChannelPaneHeaderProps> = ({ title, ico
             closeThread();
             setActiveThread(undefined);
         }
+
+        // Clear selected user in member list context
+        setSelectedUser(null);
     }
 
     return (

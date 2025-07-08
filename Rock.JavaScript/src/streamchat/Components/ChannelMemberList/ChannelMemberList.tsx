@@ -23,7 +23,7 @@ export const ChannelMemberList: React.FC<ChannelMemberListProps> = ({
     const [searchTerm, setSearchTerm] = useState('');
     const [submittedTerm, setSubmittedTerm] = useState('');
     const debounceTimeout = useRef<NodeJS.Timeout | null>(null);
-    const { setSelectedMember } = useChannelMemberListContext();
+    const { setSelectedUser: setSelectedMember } = useChannelMemberListContext();
     const handleLoadMore = useCallback(async () => {
         const newOffset = offset + limit;
         setOffset(newOffset);
@@ -101,7 +101,12 @@ export const ChannelMemberList: React.FC<ChannelMemberListProps> = ({
     }, [searchTerm]);
 
     const handleClick = (member: ChannelMemberResponse) => {
-        setSelectedMember(member);
+        if (!member.user) {
+            console.warn('Member does not have a user associated with it.');
+            return;
+        }
+
+        setSelectedMember(member.user);
     }
 
     return (
@@ -119,7 +124,10 @@ export const ChannelMemberList: React.FC<ChannelMemberListProps> = ({
             {error && <div className="error">{error}</div>}
             {!loading && !error && results.length === 0 && (
                 <div className="message-search-no-results">
-                    No results found.
+                    <div className="message-search-no-results-inner">
+                        <i className="fas fa-search" aria-hidden="true" />
+                        <span>No results found.</span>
+                    </div>
                 </div>
             )}
             {results.length > 0 && !loading && (

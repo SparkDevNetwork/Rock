@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState, useCallback } from 'react';
 import { useChatContext } from 'stream-chat-react';
 import type { Channel, ChannelFilters, UserResponse } from 'stream-chat';
 import { DirectoryChannelResultItem } from './DirectoryChannelResultItem';
-import { useChatConfig } from '../Chat/ChatConfigContext';
+import { UserSearchResultItem } from './UserSearchResultItem';
 import { useDirectoryContext } from './DirectoryContext';
 
 interface DirectoryProps { }
@@ -38,17 +38,10 @@ const UserSearchResults: React.FC<{
     <ul className="directory-search-results" style={{ listStyle: 'none' }}>
         <li className="directory-search-result-header">
             <div className="directory-search-result-header-cell directory-search-result-item-name-cell">Name</div>
-            <div className="directory-search-result-header-cell directory-search-result-item-members-cell">ID</div>
+            <div className="directory-search-result-header-cell directory-search-result-item-members-cell">Last Active At</div>
         </li>
         {results.map((user) => (
-            <li className="directory-search-result-item" key={user.id}>
-                <div className="directory-search-result-item-container directory-search-result-item-name-cell">
-                    <span className="directory-channel-name">{user.name || user.id}</span>
-                </div>
-                <div className="directory-search-result-item-container directory-search-result-item-members-cell">
-                    <span>{user.id}</span>
-                </div>
-            </li>
+            <UserSearchResultItem user={user} key={user.id} />
         ))}
     </ul>
 );
@@ -160,12 +153,30 @@ export const Directory: React.FC<DirectoryProps> = () => {
         debounceTimeout.current = setTimeout(() => {
             setOffset(0);
             setHasMore(true);
+            if (searchTerm.trim() === '' && context === 'users') {
+                setUserResults([]);
+                setSubmittedTerm('');
+                setLoading(false);
+                return;
+            }
             fetchResults(searchTerm, 0);
         }, 400);
         return () => {
             if (debounceTimeout.current) clearTimeout(debounceTimeout.current);
         };
-    }, [searchTerm]);
+    }, [searchTerm, context]);
+
+    useEffect(() => {
+        // Clear all search state when switching segments
+        setChannelResults([]);
+        setUserResults([]);
+        setOffset(0);
+        setHasMore(true);
+        setError(null);
+        setLoading(false);
+        setSubmittedTerm('');
+        setSearchTerm('');
+    }, [context]);
 
     const handleClick = (channel: Channel) => {
         setActiveChannel(channel);
@@ -203,11 +214,6 @@ export const Directory: React.FC<DirectoryProps> = () => {
                 </label>
             </div>
             {error && <div className="error">{error}</div>}
-            {!loading && !error && submittedTerm && channelResults.length === 0 && (
-                <div className="directory-search-no-results">
-                    No results found.
-                </div>
-            )}
             {channelResults.length > 0 && context === 'channels' && (
                 <ChannelSearchResults
                     results={channelResults}
@@ -218,8 +224,15 @@ export const Directory: React.FC<DirectoryProps> = () => {
             {context === 'users' && userResults.length > 0 && (
                 <UserSearchResults results={userResults} />
             )}
-            {context === 'users' && userResults.length === 0 && !loading && submittedTerm && (
-                <div className="directory-search-no-results">No users found.</div>
+            {context === 'channels' && !loading && !error && submittedTerm && channelResults.length === 0 && (
+                <div className="directory-search-no-results">
+                    No channels found.
+                </div>
+            )}
+            {context === 'users' && !loading && !error && submittedTerm && userResults.length === 0 && (
+                <div className="directory-search-no-results">
+                    No users found.
+                </div>
             )}
         </div>
     );

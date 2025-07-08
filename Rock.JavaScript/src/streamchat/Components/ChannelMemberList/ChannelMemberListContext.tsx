@@ -1,9 +1,9 @@
 import React, { createContext, useContext, useState, ReactNode } from 'react';
-import type { ChannelMemberResponse } from 'stream-chat';
+import type { ChannelMemberResponse, UserResponse } from 'stream-chat';
 
 interface ChannelMemberListContextType {
-    selectedMember: ChannelMemberResponse | null;
-    setSelectedMember: (member: ChannelMemberResponse | null) => void;
+    selectedUser: UserResponse | null;
+    setSelectedUser: (user: UserResponse | null) => void;
 }
 
 const ChannelMemberListContext = createContext<ChannelMemberListContextType | undefined>(undefined);
@@ -21,10 +21,10 @@ interface ChannelMemberListProviderProps {
 }
 
 export const ChannelMemberListProvider: React.FC<ChannelMemberListProviderProps> = ({ children }) => {
-    const [selectedMember, setSelectedMember] = useState<ChannelMemberResponse | null>(null);
+    const [selectedUser, setSelectedUser] = useState<UserResponse | null>(null);
 
     return (
-        <ChannelMemberListContext.Provider value={{ selectedMember, setSelectedMember }}>
+        <ChannelMemberListContext.Provider value={{ selectedUser, setSelectedUser: setSelectedUser }}>
             {children}
         </ChannelMemberListContext.Provider>
     );

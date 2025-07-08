@@ -721,7 +721,7 @@
 .rocktheme-community .directory-search-segment {
   background: none;
   border: none;
-  color: var(--color-primary);
+  color: var(--color-interface-strong);
   font-size: 16px;
   font-weight: 600;
   padding: 0 0 4px 0;
@@ -846,6 +846,10 @@
   display: flex;
   gap: 12px;
   align-items: center;
+}
+.rocktheme-community .directory-search-results .directory-search-result-item-name-cell .directory-channel-avatar {
+  --str-chat__avatar-size: calc(var(--str-chat__spacing-px) * 36);
+  flex-shrink: 0;
 }
 .rocktheme-community .directory-search-results .directory-search-result-item-name-cell .directory-channel-name {
   font-weight: 600;
@@ -1132,6 +1136,28 @@
   /* optional, for a “…” indicator */
   text-overflow: ellipsis;
   word-break: break-word;
+}
+.rocktheme-community .message-search-no-results {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 120px;
+  text-align: center;
+  color: var(--color-interface-medium);
+}
+.rocktheme-community .message-search-no-results .message-search-no-results-inner {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  font-size: 16px;
+  color: var(--color-interface-medium);
+}
+.rocktheme-community .message-search-no-results .message-search-no-results-inner i.fas.fa-search {
+  font-size: 32px;
+  color: var(--color-interface-medium);
+  margin-bottom: 4px;
 }
 
 .rocktheme-community {

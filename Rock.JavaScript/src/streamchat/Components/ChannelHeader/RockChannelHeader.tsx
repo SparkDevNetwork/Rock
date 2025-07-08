@@ -6,6 +6,7 @@ import { ChatViewStyle } from '../../ChatViewStyle';
 import { useChannelListController } from '../ChannelList/ChannelListControllerContext';
 import { useChannelRightPane } from '../ChannelRightPane/ChannelRightPaneContext';
 import FavoriteChannelIcon from './FavoriteChannelIcon';
+import { useChannelMemberListContext } from '../ChannelMemberList/ChannelMemberListContext';
 
 /**
  * RockChannelHeader
@@ -67,6 +68,8 @@ export const RockChannelHeader: React.FC = (props: ChannelHeaderProps) => {
         );
     };
 
+    const { setSelectedUser } = useChannelMemberListContext();
+
     // Navigation items for the right pane (info, threads, search, etc.)
     const navItems = [
         {
@@ -81,9 +84,7 @@ export const RockChannelHeader: React.FC = (props: ChannelHeaderProps) => {
             title: 'Threads',
             onClick: () => {
                 // If already active, close the thread
-                console.log('Active pane:', activePane);
                 if (activePane == 'threads') {
-                    console.log('Closing thread');
                     closeThread();
                     setActiveThread(undefined);
                     setActivePane(null);
@@ -108,7 +109,14 @@ export const RockChannelHeader: React.FC = (props: ChannelHeaderProps) => {
             key: 'members',
             iconClass: 'fas fa-users',
             title: 'Members',
-            onClick: () => setActivePane('members'),
+            onClick: () => {
+                if (activePane == 'members') {
+                    setSelectedUser(null);
+                    setActivePane(null);
+                } else {
+                    setActivePane('members');
+                }
+            }
         },
         // {
         //     key: 'more',

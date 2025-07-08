@@ -134,11 +134,13 @@ export const MessageSearch: React.FC<SearchProps> = ({
                 </label>
             </div>
 
-            {loading && <div>Loading...</div>}
             {error && <div className="error">{error}</div>}
             {!loading && !error && submittedTerm && results.length === 0 && (
                 <div className="message-search-no-results">
-                    No results found.
+                    <div className="message-search-no-results-inner">
+                        <i className="fas fa-search" aria-hidden="true" />
+                        <span>No results found.</span>
+                    </div>
                 </div>
             )}
 

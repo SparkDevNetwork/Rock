@@ -21,7 +21,7 @@ export const ChannelRightPane: React.FC = () => {
             case 'threads': return <ThreadPaneContent />;
             case 'search': return <MessageSearchPaneContent />;
             case 'mentions': return <MentionsListPaneContent />;
-            case 'members': return <ChannelMemberListProvider><MembersPaneContent /></ChannelMemberListProvider>;
+            case 'members': return <MembersPaneContent />;
             case 'more': return <MoreOptions />;
             default: return null;
         }

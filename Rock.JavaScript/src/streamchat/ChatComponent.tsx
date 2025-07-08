@@ -21,6 +21,7 @@ import { RockChatWindow } from "./RockChatWindow";
 import { ModalProvider } from "./Components/Modal/ModalContext";
 import { DirectoryProvider, useDirectoryContext } from "./Components/Directory/DirectoryContext";
 import { Directory } from "./Components/Directory/Directory";
+import { ChannelMemberListProvider } from "./Components/ChannelMemberList/ChannelMemberListContext";
 
 /**
  * The ChatComponent sets up and renders the Stream Chat UI
@@ -94,25 +95,27 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                 refreshChat,
             }}>
             <ChannelListControllerContext.Provider value={{ refresh: refreshChannelList }}>
-                <ChannelRightPaneProvider>
-                    <DirectoryProvider>
-                        <Chat client={chatClient} theme={chatViewStyle == ChatViewStyle.Community ? "rocktheme-community" : "rocktheme-conversational"} key={chatComponentKey}>
-                            <ModalProvider>
-                                <ChatComponentContent
-                                    channelId={channelId}
-                                    selectedChannelId={selectedChannelId}
-                                    finalFilter={finalFilter}
-                                    sort={sort}
-                                    options={options}
-                                    chatViewStyle={chatViewStyle}
-                                    directMessageChannelTypeKey={directMessageChannelTypeKey}
-                                    sharedChannelTypeKey={sharedChannelTypeKey}
-                                    jumpToMessageId={jumpToMessageId}
-                                />
-                            </ModalProvider>
-                        </Chat>
-                    </DirectoryProvider>
-                </ChannelRightPaneProvider>
+                <ChannelMemberListProvider>
+                    <ChannelRightPaneProvider>
+                        <DirectoryProvider>
+                            <Chat client={chatClient} theme={chatViewStyle == ChatViewStyle.Community ? "rocktheme-community" : "rocktheme-conversational"} key={chatComponentKey}>
+                                <ModalProvider>
+                                    <ChatComponentContent
+                                        channelId={channelId}
+                                        selectedChannelId={selectedChannelId}
+                                        finalFilter={finalFilter}
+                                        sort={sort}
+                                        options={options}
+                                        chatViewStyle={chatViewStyle}
+                                        directMessageChannelTypeKey={directMessageChannelTypeKey}
+                                        sharedChannelTypeKey={sharedChannelTypeKey}
+                                        jumpToMessageId={jumpToMessageId}
+                                    />
+                                </ModalProvider>
+                            </Chat>
+                        </DirectoryProvider>
+                    </ChannelRightPaneProvider>
+                </ChannelMemberListProvider>
             </ChannelListControllerContext.Provider>
         </ChatConfigContext.Provider >
     );

@@ -88,11 +88,13 @@ export const MentionsList: React.FC<MentionsListProps> = ({
     return (
         <div className="message-search-container">
 
-            {loading && <div>Loading...</div>}
             {error && <div className="error">{error}</div>}
             {!loading && !error && results.length === 0 && (
                 <div className="message-search-no-results">
-                    No results found.
+                    <div className="message-search-no-results-inner">
+                        <i className="fas fa-search" aria-hidden="true" />
+                        <span>No results found.</span>
+                    </div>
                 </div>
             )}
 

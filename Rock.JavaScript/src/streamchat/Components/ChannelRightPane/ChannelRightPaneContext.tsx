@@ -21,7 +21,7 @@ export const ChannelRightPaneProvider: React.FC<{ children: ReactNode }> = ({ ch
     const [activePane, setPane] = useState<ChannelPaneView>(null);
 
     const setActivePane = (view: ChannelPaneView) => {
-        setPane(prev => (prev === view && view !== 'threads' ? null : view));
+        setPane(prev => (prev === view && view !== 'threads' && view !== 'members' ? null : view));
     };
 
     const closePane = () => {

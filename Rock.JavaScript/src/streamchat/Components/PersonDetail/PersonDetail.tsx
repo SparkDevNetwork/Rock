@@ -1,20 +1,20 @@
 import React from "react";
-import { ChannelMemberResponse } from "stream-chat";
+import { UserResponse } from "stream-chat";
 import { Avatar, useChatContext } from "stream-chat-react";
 import { useChatConfig } from "../Chat/ChatConfigContext";
 import { useChannelRightPane } from "../ChannelRightPane/ChannelRightPaneContext";
 import RockBadge from "../Badge/RockBadge";
 
-interface ChannelMemberProps {
-    member: ChannelMemberResponse;
+interface PersonDetailProps {
+    user: UserResponse;
 }
 
-export const ChannelMember: React.FC<ChannelMemberProps> = ({ member }) => {
-    if (!member || !member.user) {
+export const PersonDetail: React.FC<PersonDetailProps> = ({ user }) => {
+    if (!user) {
         return null;
     }
 
-    interface ChannelMemberAction {
+    interface PersonDetailAction {
         key: string;
         label: string;
         icon: string;
@@ -52,15 +52,15 @@ export const ChannelMember: React.FC<ChannelMemberProps> = ({ member }) => {
     }
 
     const shouldShowDirectMessageAction = (): boolean => {
-        if (!member.user) {
+        if (!user) {
             return false;
         }
 
-        if (member.user.id === client.userID) {
+        if (user.id === client.userID) {
             return false; // Don't allow DM with self
         }
 
-        const openDmAllowed = member.user!.rock_open_direct_message_allowed ?? false;
+        const openDmAllowed = user.rock_open_direct_message_allowed ?? false;
         if (!openDmAllowed) {
             return false; // Don't allow DM if user has not enabled it
         }
@@ -74,7 +74,7 @@ export const ChannelMember: React.FC<ChannelMemberProps> = ({ member }) => {
     }
 
     const getRockBadges = () => {
-        var streamBadges = member.user?.rock_badges;
+        var streamBadges = user?.rock_badges;
 
         // If the streamBadges object is an array, map through it and create a new array of RockBadge components
         if (!Array.isArray(streamBadges)) {
@@ -94,52 +94,47 @@ export const ChannelMember: React.FC<ChannelMemberProps> = ({ member }) => {
         return rockBadgeComponents
     }
 
-    const channelMemberActions = (): ChannelMemberAction[] => {
-        const actions: ChannelMemberAction[] = [];
-
-        if (!member.user?.id) {
-            return actions;
-        }
-
-        if (shouldShowDirectMessageAction()) {
-            actions.push({
-                key: 'send-message',
-                label: 'Send Message',
-                icon: 'fas fa-comment',
-                onClick: () => {
-                    initiateDirectMessage(member.user!.id);
-                },
-            });
-        }
-
-        return actions;
-    };
+    // Use a const for actions instead of a function
+    const channelMemberActions: PersonDetailAction[] = [];
+    if (user?.id && shouldShowDirectMessageAction()) {
+        channelMemberActions.push({
+            key: 'send-message',
+            label: 'Send Message',
+            icon: 'fas fa-comment',
+            onClick: () => {
+                initiateDirectMessage(user!.id);
+            },
+        });
+    }
 
     return (
         <div className="channel-member-pane-layout">
             <div className="channel-member-header">
-                <Avatar user={member.user} image={member.user.image} className="channel-member-avatar" />
+                <Avatar user={user} image={user.image} className="channel-member-avatar" />
 
                 <div className="channel-member-header-title-layout">
-                    <h6 className="rock-channel-member-title">{member.user.name || member.user.id}</h6>
+                    <h6 className="rock-channel-member-title">{user.name || user.id}</h6>
 
                     <div className="member-badges-layout">
                         {getRockBadges()}
                     </div>
                 </div>
             </div>
-            <div className="channel-member-actions-pane">
-                {channelMemberActions().map(action => (
-                    <button
-                        key={action.key}
-                        className={`channel-member-action-btn channel-member-action-btn--${action.key}` + (action.dangerous ? ' channel-member-action-btn--danger' : '')}
-                        onClick={action.onClick}
-                        type="button">
-                        <i className={action.icon} style={{ marginRight: 8 }} />
-                        {action.label}
-                    </button>
-                ))}
-            </div>
+            {/* Only render actions pane if there are actions */}
+            {channelMemberActions.length > 0 && (
+                <div className="channel-member-actions-pane">
+                    {channelMemberActions.map(action => (
+                        <button
+                            key={action.key}
+                            className={`channel-member-action-btn channel-member-action-btn--${action.key}` + (action.dangerous ? ' channel-member-action-btn--danger' : '')}
+                            onClick={action.onClick}
+                            type="button">
+                            <i className={action.icon} style={{ marginRight: 8 }} />
+                            {action.label}
+                        </button>
+                    ))}
+                </div>
+            )}
         </div>
     );
 };

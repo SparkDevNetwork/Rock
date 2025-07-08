@@ -24,6 +24,7 @@ import {
     DialogAnchor,
     ReactionSelector,
     useMessageComposer,
+    ReactEventHandler,
 
 
 } from 'stream-chat-react';
@@ -42,6 +43,7 @@ import { RockMessageThreadReplyContent } from './RockMessageThreadReplyContent';
 import { RockMessageTimestamp } from "./RockMessageTimestamp";
 import { useChannelRightPane } from "../ChannelRightPane/ChannelRightPaneContext";
 import { ParentMessageThreadPreview } from "./ParentMessageThreadPreview";
+import { useChannelMemberListContext } from "../ChannelMemberList/ChannelMemberListContext";
 
 type RockMessageProps = MessageContextValue;
 
@@ -123,7 +125,7 @@ const RockMessageWithContext = (props: RockMessageProps) => {
         handleClick = () => setEditedTimestampOpen((prev) => !prev);
     }
 
-    const { setActivePane, activePane } = useChannelRightPane();
+    const { setActivePane } = useChannelRightPane();
 
     const customHandleOpenThread = (e: React.BaseSyntheticEvent) => {
         handleOpenThread(e);
@@ -150,27 +152,6 @@ const RockMessageWithContext = (props: RockMessageProps) => {
             'str-chat__virtual-message__wrapper--end': endOfGroup,
             'str-chat__virtual-message__wrapper--first': firstOfGroup,
             'str-chat__virtual-message__wrapper--group': groupedByUser,
-        },
-    );
-
-    const communityRootClassName = clsx(
-        'rock-message',
-        `rock-message--${message.type}`,
-        `rock-message--${message.status}`,
-        isMyMessage()
-            ? 'rock-chat-message--me'
-            : 'rock-chat-message--other',
-        message.text ? 'rock-chat-message--has-text' : 'has-no-text',
-        {
-            'rock-chat-message--has-attachment': hasAttachment,
-            'rock-chat-message--highlighted': highlighted,
-            'rock-chat-message-pinned pinned-message': message.pinned,
-            'rock-chat-message--with-reactions': hasReactions,
-            'rock-chat-message-send-can-be-retried':
-                message?.status === 'failed' && message?.error?.status !== 403,
-            'rock-chat-message-send-failed':
-                message?.status === 'failed' && message?.error?.status !== 403,
-            'rock-chat-message-with-thread-link': showReplyCountButton,
         },
     );
 
@@ -395,6 +376,18 @@ const RockMessageWithContext = (props: RockMessageProps) => {
     const showIsReplyInChannel =
         !threadList && message.show_in_channel && message.parent_id;
 
+    const { setSelectedUser } = useChannelMemberListContext();
+
+    const showUserProfile = () => {
+        const user = message.user;
+
+        if (user) {
+            setSelectedUser(user);
+            setActivePane('members');
+        } else {
+            console.warn(`User not found for message ID: ${message.id}`);
+        }
+    };
     const communityComponent = () => {
         return (
             <>
@@ -419,7 +412,7 @@ const RockMessageWithContext = (props: RockMessageProps) => {
                                     <Avatar
                                         image={message.user.image}
                                         name={message.user.name || message.user.id}
-                                        onClick={onUserClick}
+                                        onClick={showUserProfile}
                                         onMouseOver={onUserHover}
                                         user={message.user}
                                     />

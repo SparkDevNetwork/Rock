@@ -6,6 +6,8 @@ import { Avatar } from "stream-chat-react";
 import { useModal } from "../Modal/ModalContext";
 import CreateChannelModal from "../CreateChannel/CreateChannelModal";
 import { useDirectoryContext } from "../Directory/DirectoryContext";
+import { useChannelRightPane } from "../ChannelRightPane/ChannelRightPaneContext";
+import { useChannelMemberListContext } from "../ChannelMemberList/ChannelMemberListContext";
 
 export interface ChannelListHeaderProps {
     onSearch?: () => void;
@@ -53,15 +55,28 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
         (item) => typeof item.action === "function"
     );
 
-    const { client } = useChatContext();
+    const { client, channel } = useChatContext();
     const profileImageSrc = client.user?.image
     const showProfileImage = chatViewStyle == ChatViewStyle.Community && profileImageSrc;
+    const { setActivePane } = useChannelRightPane();
+    const { setSelectedUser } = useChannelMemberListContext();
+
+    const showUserProfile = () => {
+
+        const user = client.user;
+
+        if (user) {
+            setSelectedUser(user);
+            setActivePane('members');
+        } else {
+        }
+    }
 
     return (
         <div className="rock-channel-list-header-container str-chat rocktheme-community">
             <div className="rock-channel-list-header">
                 {showProfileImage && (
-                    <Avatar image={profileImageSrc} name={client.user?.name || client.user?.id} className="rock-channel-list-header-avatar" />
+                    <Avatar image={profileImageSrc} name={client.user?.name || client.user?.id} className="rock-channel-list-header-avatar" onClick={showUserProfile} />
                 )}
 
                 <div className="rock-channel-list-header-actions">

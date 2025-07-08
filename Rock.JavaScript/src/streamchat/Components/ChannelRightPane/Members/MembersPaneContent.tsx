@@ -5,14 +5,14 @@ import { MessageSearch } from '../../MessageSearch/MessageSearch';
 import { MentionsList } from '../../MentionsList/MentionsList';
 import { ChannelMemberList } from '../../ChannelMemberList/ChannelMemberList';
 import { useChannelMemberListContext } from '../../ChannelMemberList/ChannelMemberListContext';
-import { ChannelMember } from '../../ChannelMember/ChannelMember';
+import { PersonDetail } from '../../PersonDetail/PersonDetail';
 
 
 export const MembersPaneContent: React.FC = () => {
     const { client, channel } = useChatContext();
-    const { selectedMember } = useChannelMemberListContext();
+    const { selectedUser } = useChannelMemberListContext();
 
-    const isMemberSelected = !!selectedMember;
+    const isMemberSelected = !!selectedUser;
     const channelPaneHeaderTitle = isMemberSelected ? 'Member Details' : 'Members';
     const channelPaneHeaderIcon = isMemberSelected ? 'fas fa-user' : 'fas fa-users';
 
@@ -20,8 +20,9 @@ export const MembersPaneContent: React.FC = () => {
         <div className="channel-members-content">
             <ChannelPaneHeader title={channelPaneHeaderTitle} icon={channelPaneHeaderIcon} />
 
-            {isMemberSelected && selectedMember && (
-                <ChannelMember member={selectedMember} />
+            {isMemberSelected && selectedUser && (
+                // <ChannelMember member={selectedMember} />
+                <PersonDetail user={selectedUser} />
             )}
 
             {!isMemberSelected && (
