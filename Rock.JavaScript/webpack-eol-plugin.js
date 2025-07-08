@@ -22,12 +22,23 @@ class WebpackEolPlugin {
                         }
 
                         const asset = compilation.getAsset(i);  // <- standardized version of asset object
-                        const source = asset.source.source(); // <- standardized way of getting asset source
+                        let source = asset.source.source(); // <- standardized way of getting asset source
+
+                        // Special case for SVG files. We know they are text
+                        // but because they are an asset, webpack treats them
+                        // as a binary blob.
+                        if (i.endsWith(".svg") && typeof source === "object" && source instanceof Buffer) {
+                            source = source.toString();
+                        }
+
+                        if (typeof source !== "string") {
+                            continue;
+                        }
 
                         // standardized way of updating asset source
                         compilation.updateAsset(
                             i,
-                            new sources.RawSource(eol.crlf(typeof source == "string" ? source : ""))
+                            new sources.RawSource(eol.crlf(source))
                         );
                     }
                 });
