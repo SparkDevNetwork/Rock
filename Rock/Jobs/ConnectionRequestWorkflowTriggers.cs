@@ -19,7 +19,10 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Web;using Rock.Data;
+using System.Text;
+using System.Web;
+
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -37,17 +40,6 @@ namespace Rock.Jobs
         private HttpContext _httpContext = null;
 
         #region Keys
-
-        /// <summary>
-        /// Keys to use for the attributes
-        /// </summary>
-        public static class AttributeKeys
-        {
-            /// <summary>
-            /// The number of days to look back
-            /// </summary>
-            public const string NumberOfDaysToLookBack = "NumberOfDaysToLookBack";
-        }
 
         #endregion Keys
 
@@ -86,7 +78,7 @@ namespace Rock.Jobs
 
             var futureFollowupWorkflowResult = TriggerFutureFollowupWorkFlow( futureFollowupDateWorkflows );
 
-            this.UpdateLastStatusMessage( $@"Future follow-up workflow triggered: {futureFollowupWorkflowResult}" );
+            this.UpdateLastStatusMessage( $@"Future follow-up workflow triggered:<br>{futureFollowupWorkflowResult}" );
         }
 
         /// <summary>
@@ -105,78 +97,91 @@ namespace Rock.Jobs
                 int recordsWithError = 0;
 
                 var rockContext = new RockContext();
-
                 DateTime midnightToday = RockDateTime.Today.AddDays( 1 );
 
                 var connectionRequestService = new ConnectionRequestService( rockContext );
                 var eligibleConnectionRequests = connectionRequestService
-                            .Queryable( "ConnectionRequestWorkflows" )
+                            .Queryable()
                             .AsNoTracking()
-                            .Where( c => c.ConnectionState == ConnectionState.FutureFollowUp &&
-                                        c.FollowupDate.HasValue &&
-                                        c.FollowupDate < midnightToday )
+                            .Where( cr => cr.ConnectionState == ConnectionState.FutureFollowUp &&
+                                        cr.FollowupDate.HasValue &&
+                                        cr.FollowupDate < midnightToday )
+                            .Select( cr => cr.Id )
                             .ToList();
 
-                foreach ( var connectionRequest in eligibleConnectionRequests )
+                // Fetch the FOLLOWUP_DATE_REACHED ConnectionActivityType
+                int? followupDateReachedActivityId = null;
+                if ( eligibleConnectionRequests.Any() )
+                {
+                    var guid = Rock.SystemGuid.ConnectionActivityType.FOLLOWUP_DATE_REACHED.AsGuid();
+                    followupDateReachedActivityId = new ConnectionActivityTypeService( rockContext )
+                        .Queryable()
+                        .Where( t => t.Guid == guid )
+                        .Select( t => t.Id )
+                        .FirstOrDefault();
+                }
+
+                // For each eligible connection request, update the state to Active and trigger any applicable workflows.
+                foreach ( var connectionRequestId in eligibleConnectionRequests )
                 {
                     try
                     {
                         using ( var updateRockContext = new RockContext() )
                         {
-                            // increase the timeout just in case.
-                            updateRockContext.Database.CommandTimeout = 180;
                             updateRockContext.SourceOfChange = SOURCE_OF_CHANGE;
-                            var connectionOpportunity = connectionRequest.ConnectionOpportunity;
-                            if ( connectionOpportunity != null )
+
+                            var updateConnectionRequest = new ConnectionRequestService( updateRockContext )
+                                .Queryable()
+                                .Include( cr => cr.ConnectionOpportunity )
+                                .Include( cr => cr.PersonAlias )
+                                .Include( cr => cr.PersonAlias.Person )
+                                .FirstOrDefault( cr => cr.Id == connectionRequestId );
+
+                            // Should not happen, unless someone just deleted it since the first query.
+                            if ( updateConnectionRequest == null )
                             {
-                                var opportunityWorkflows = futureFollowupDateWorkflows
-                                                        .Where( w =>
-                                                        ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == connectionOpportunity.Id ) ||
-                                                        ( w.ConnectionTypeId.HasValue && w.ConnectionTypeId.Value == connectionOpportunity.ConnectionTypeId ) );
+                                continue;
+                            }
 
-                                foreach ( var connectionWorkflow in opportunityWorkflows )
-                                {
-                                    LaunchWorkflow( updateRockContext, connectionRequest, connectionWorkflow, ConnectionWorkflowTriggerType.FutureFollowupDateReached.ConvertToString() );
-                                    triggerWorkflow += 1;
-                                }
+                            updateConnectionRequest.ConnectionState = ConnectionState.Active;
 
-                                new ConnectionRequestService( updateRockContext ).Attach( connectionRequest );
-                                connectionRequest.ConnectionState = ConnectionState.Active;
+                            var connectionOpportunity = updateConnectionRequest.ConnectionOpportunity;
+                            
+                            // Log the activity for the 'follow-up date reached' and the record set back to active.
+                            var connectionRequestActivity = new ConnectionRequestActivity
+                            {
+                                ConnectionRequestId = updateConnectionRequest.Id,
+                                ConnectionOpportunityId = updateConnectionRequest.ConnectionOpportunityId,
+                                ConnectionActivityTypeId = followupDateReachedActivityId.Value,
+                                Note = "Connection State changed to 'Active'."
+                            };
 
-                                var guid = Rock.SystemGuid.ConnectionActivityType.FOLLOWUP_DATE_REACHED.AsGuid();
-                                var followupDateReachedActivityId = new ConnectionActivityTypeService( rockContext )
-                                    .Queryable()
-                                    .Where( t => t.Guid == guid )
-                                    .Select( t => t.Id )
-                                    .FirstOrDefault();
+                            new ConnectionRequestActivityService( updateRockContext ).Add( connectionRequestActivity );
+                            updateRockContext.SaveChanges();
+                            recordsUpdated++;
 
-                                ConnectionRequestActivity connectionRequestActivity = new ConnectionRequestActivity();
-                                connectionRequestActivity.ConnectionRequestId = connectionRequest.Id;
-                                connectionRequestActivity.ConnectionOpportunityId = connectionRequest.ConnectionOpportunityId;
-                                connectionRequestActivity.ConnectionActivityTypeId = followupDateReachedActivityId;
-                                connectionRequestActivity.Note = "Connection State changed to 'Active'.";
-                                new ConnectionRequestActivityService( updateRockContext ).Add( connectionRequestActivity );
-                                updateRockContext.SaveChanges();
-                                recordsUpdated += 1;
+                            // Lastly, launch the workflows that are applicable to this connection request.
+                            var applicableWorkflows = futureFollowupDateWorkflows
+                                                    .Where( w =>
+                                                    ( w.ConnectionOpportunityId.HasValue && w.ConnectionOpportunityId.Value == connectionOpportunity.Id ) ||
+                                                    ( w.ConnectionTypeId.HasValue && w.ConnectionTypeId.Value == connectionOpportunity.ConnectionTypeId ) );
+
+                            foreach ( var connectionWorkflow in applicableWorkflows )
+                            {
+                                LaunchWorkflow( updateRockContext, updateConnectionRequest, connectionWorkflow, ConnectionWorkflowTriggerType.FutureFollowupDateReached.ConvertToString() );
+                                triggerWorkflow++;
                             }
                         }
                     }
                     catch ( Exception ex )
                     {
                         // Log exception and keep on trucking.
-                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to trigger future follow-up workflow: {connectionRequest.Id}.", ex ), _httpContext );
-                        recordsWithError += 1;
+                        ExceptionLogService.LogException( new Exception( $"Exception occurred trying to trigger future follow-up workflow: {connectionRequestId}.", ex ), _httpContext );
+                        recordsWithError++;
                     }
                 }
 
-                // Format the result message
-                string result = $"{recordsUpdated:N0} connection request records triggered {triggerWorkflow} workflows.";
-                if ( recordsWithError > 0 )
-                {
-                    result += $"{recordsWithError:N0} records logged an exception.";
-                }
-
-                return result;
+                return SetJobResultSummaryForTriggerFutureFollowup( recordsUpdated, triggerWorkflow, recordsWithError );
             }
             catch ( Exception ex )
             {
@@ -185,6 +190,28 @@ namespace Rock.Jobs
 
                 return ex.Messages().AsDelimited( "; " );
             }
+        }
+
+        /// <summary>
+        /// Builds a summary of the job results for the future follow-up workflow trigger section of this job.
+        /// </summary>
+        /// <param name="recordsUpdated"></param>
+        /// <param name="workflowsTriggered"></param>
+        /// <param name="recordsWithError"></param>
+        /// <returns></returns>
+        private string SetJobResultSummaryForTriggerFutureFollowup( int recordsUpdated, int workflowsTriggered, int recordsWithError )
+        {
+            StringBuilder jobSummaryBuilder = new StringBuilder();
+
+            jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {recordsUpdated:N0} connection {"request".PluralizeIf( recordsUpdated != 1 )} updated" );
+            jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {workflowsTriggered:N0} {"workflow".PluralizeIf( workflowsTriggered != 1 )} triggered" );
+
+            if ( recordsWithError > 0 )
+            {
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {recordsWithError:N0} {"record".PluralizeIf( recordsWithError != 1 )} logged an exception" );
+            }
+
+            return jobSummaryBuilder.ToString();
         }
 
         /// <summary>
