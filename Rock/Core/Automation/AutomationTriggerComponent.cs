@@ -74,7 +74,7 @@ namespace Rock.Core.Automation
         }
 
         /// <summary>
-        /// Gets the configuration details that describe the any configuration
+        /// Gets the configuration details that describe the configuration
         /// options that should be displayed on the Trigger Detail page. Each
         /// item will be displayed as a field in the UI with the Value property
         /// being the field title and the Text property being the text

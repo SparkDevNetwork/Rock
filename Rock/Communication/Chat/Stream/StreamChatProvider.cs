@@ -115,10 +115,12 @@ namespace Rock.Communication.Chat
             public const string Id = "id";
             public const string Member = "member";
             public const string Members = "members";
+            public const string Message = "message";
             public const string Mute = "mute";
             public const string Name = "name";
             public const string NotificationsMuted = "notifications_muted";
             public const string RequestInfo = "request_info";
+            public const string Text = "text";
             public const string Type = "type";
             public const string User = "user";
             public const string UserId = "user_id";
@@ -153,6 +155,9 @@ namespace Rock.Communication.Chat
             public const string UserUnbanned = "user.unbanned";
 
             public const string UserDeleted = "user.deleted";
+
+            public const string MessageNew = "message.new";
+            public const string MessageUpdated = "message.updated";
         }
 
         #endregion Keys & Constants
@@ -2038,7 +2043,7 @@ namespace Rock.Communication.Chat
             // 4) Update member push preferences. Always do this no matter what.
             // We are not tracking the result of this operation, just the exceptions.
             var pushPreferenceResult = await UpdateChatChannelMemberPushPreferencesAsync( chatChannelMembers.Select( kvp => kvp.Value ).ToList() );
-            if( pushPreferenceResult?.HasException == true )
+            if ( pushPreferenceResult?.HasException == true )
             {
                 exceptions.Add( pushPreferenceResult.Exception );
             }
@@ -3133,16 +3138,16 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public GetChatToRockSyncCommandsResult GetChatToRockSyncCommands( List<ChatWebhookRequest> webhookRequests )
+        public GetChatToRockWebhookResult GetChatToRockWebhooks( List<ChatWebhookRequest> webhookRequests )
         {
-            var result = new GetChatToRockSyncCommandsResult();
+            var result = new GetChatToRockWebhookResult();
 
             if ( webhookRequests?.Any() != true )
             {
                 return result;
             }
 
-            var operationName = nameof( GetChatToRockSyncCommands ).SplitCase();
+            var operationName = nameof( GetChatToRockWebhooks ).SplitCase();
             var structuredLog = "Payload: {@Payload}";
 
             foreach ( var request in webhookRequests )
@@ -3164,10 +3169,28 @@ namespace Rock.Communication.Chat
                         throw new ChatWebhookParseException( $"{PayloadPropMissingMsgPrefix} '{WebhookJsonProperty.Type}'." );
                     }
 
-                    var chatSyncType = TryGetChatSyncType( webhookEvent );
-                    if ( !chatSyncType.HasValue )
+                    // A local function to aid with getting the chat sync type based on the webhook event type.
+                    ChatSyncType GetChatSyncTypeOrThrow( string webhookEventType )
                     {
-                        throw new ChatWebhookParseException( $"{PayloadPropInvalidMsgPrefix} '{WebhookJsonProperty.Type}'." );
+                        var chatSyncType = TryGetChatSyncType( webhookEventType );
+                        if ( !chatSyncType.HasValue )
+                        {
+                            throw new ChatWebhookParseException( $"{PayloadPropInvalidMsgPrefix} '{WebhookJsonProperty.Type}'." );
+                        }
+
+                        return chatSyncType.Value;
+                    }
+
+                    // A local function to aid with getting the chat message event type based on the webhook event type.
+                    ChatMessageEventType GetChatMessageEventTypeOrThrow( string webhookEventType )
+                    {
+                        var chatMessageEventType = TryGetChatMessageEventType( webhookEventType );
+                        if ( !chatMessageEventType.HasValue )
+                        {
+                            throw new ChatWebhookParseException( $"{PayloadPropInvalidMsgPrefix} '{WebhookJsonProperty.Type}'." );
+                        }
+
+                        return chatMessageEventType.Value;
                     }
 
                     var syncCommands = new List<ChatToRockSyncCommand>();
@@ -3176,22 +3199,26 @@ namespace Rock.Communication.Chat
                     {
                         case WebhookEvent.ChannelCreated:
                         case WebhookEvent.ChannelUpdated:
-                            syncCommands.AddRange( GetSyncChatChannelAndMembersToRockCommands( chatSyncType.Value, json ) );
+                            syncCommands.AddRange( GetSyncChatChannelAndMembersToRockCommands( GetChatSyncTypeOrThrow( webhookEvent ), json ) );
                             break;
                         case WebhookEvent.MemberAdded:
                         case WebhookEvent.MemberRemoved:
-                            syncCommands.Add( GetSyncChatChannelMemberToRockCommand( chatSyncType.Value, json ) );
+                            syncCommands.Add( GetSyncChatChannelMemberToRockCommand( GetChatSyncTypeOrThrow( webhookEvent ), json ) );
                             break;
                         case WebhookEvent.ChannelMuted:
                         case WebhookEvent.ChannelUnmuted:
-                            syncCommands.Add( GetSyncChatChannelMutedStatusToRockCommand( chatSyncType.Value, json ) );
+                            syncCommands.Add( GetSyncChatChannelMutedStatusToRockCommand( GetChatSyncTypeOrThrow( webhookEvent ), json ) );
                             break;
                         case WebhookEvent.UserBanned:
                         case WebhookEvent.UserUnbanned:
-                            syncCommands.Add( GetSyncChatBannedStatusToRockCommand( chatSyncType.Value, json ) );
+                            syncCommands.Add( GetSyncChatBannedStatusToRockCommand( GetChatSyncTypeOrThrow( webhookEvent ), json ) );
                             break;
                         case WebhookEvent.UserDeleted:
                             syncCommands.Add( GetDeleteChatUserInRockCommand( json ) );
+                            break;
+                        case WebhookEvent.MessageNew:
+                        case WebhookEvent.MessageUpdated:
+                            result.MessageEvents.Add( GetChatToRockMessageEvent( GetChatMessageEventTypeOrThrow( webhookEvent ), json ) );
                             break;
                         default:
                             // Don't pollute the error log with unsupported events; log them as warnings instead.
@@ -3692,7 +3719,7 @@ namespace Rock.Communication.Chat
 
         #endregion Converters: From Stream DTOs to Rock Chat DTOs
 
-        #region Converters: From Stream Webhook Payload To Sync Commands
+        #region Converters: From Stream Webhook Payload To Rock Sync Commands
 
         /// <summary>
         /// Gets a list of channel-related <see cref="ChatToRockSyncCommand"/>s from a Stream webhook payload.
@@ -3870,7 +3897,7 @@ namespace Rock.Communication.Chat
         {
             var syncCommand = new SyncChatChannelMutedStatusToRockCommand( chatSyncType );
 
-            // Ensure the payload contains a chat user ID;
+            // Ensure the payload contains a chat user ID.
             var userId = json[WebhookJsonProperty.User]?[WebhookJsonProperty.Id]?.ToString();
             if ( userId.IsNullOrWhiteSpace() )
             {
@@ -3927,7 +3954,7 @@ namespace Rock.Communication.Chat
                 syncCommand.AttemptLimit = 1;
             }
 
-            // Ensure the payload contains a chat user ID;
+            // Ensure the payload contains a chat user ID.
             var userId = json[WebhookJsonProperty.User]?[WebhookJsonProperty.Id]?.ToString();
             if ( userId.IsNullOrWhiteSpace() )
             {
@@ -3950,7 +3977,7 @@ namespace Rock.Communication.Chat
         {
             var syncCommand = new DeleteChatPersonInRockCommand();
 
-            // Ensure the payload contains a chat user ID;
+            // Ensure the payload contains a chat user ID.
             var userId = json[WebhookJsonProperty.User]?[WebhookJsonProperty.Id]?.ToString();
             if ( userId.IsNullOrWhiteSpace() )
             {
@@ -4041,7 +4068,105 @@ namespace Rock.Communication.Chat
             return chatGroupIdentifiers;
         }
 
-        #endregion Converters: From Stream Webhook Payload To Sync Commands
+        #endregion Converters: From Stream Webhook Payload To Rock Sync Commands
+
+        #region Converters: From Stream Webhook Payload to Rock Events
+
+        /// <summary>
+        /// Tries to get the <see cref="ChatMessageEventType"/> for a Stream webhook event type.
+        /// </summary>
+        /// <param name="webhookEvent">The Stream webhook event type.</param>
+        /// <returns>The <see cref="ChatMessageEventType"/> or <see langword="null"/> if unable to parse.</returns>
+        private ChatMessageEventType? TryGetChatMessageEventType( string webhookEvent )
+        {
+            var eventParts = webhookEvent.Split( '.' );
+            if ( eventParts.Length != 2 )
+            {
+                return null;
+            }
+
+            switch ( eventParts[1] )
+            {
+                case "new":
+                    return ChatMessageEventType.New;
+                case "updated":
+                    return ChatMessageEventType.Update;
+                default:
+                    return null;
+            }
+        }
+
+        /// <summary>
+        /// Gets a <see cref="ChatToRockMessageEvent"/> from a Stream webhook payload.
+        /// </summary>
+        /// <param name="chatMessageEventType">The <see cref="ChatMessageEventType"/> for the Stream webhook event.</param>
+        /// <param name="json">The Stream webhook payload as a <see cref="JObject"/>.</param>
+        /// <returns>A <see cref="ChatToRockMessageEvent"/>.</returns>
+        /// <exception cref="ChatWebhookParseException">If the Stream webhook payload is missing expected values.</exception>
+        private ChatToRockMessageEvent GetChatToRockMessageEvent( ChatMessageEventType chatMessageEventType, JObject json )
+        {
+            var messageEvent = new ChatToRockMessageEvent( chatMessageEventType );
+
+            // Ensure the payload contains a chat group identifier.
+            var chatGroupIdentifiers = TryGetChatGroupIdentifiers( json );
+            messageEvent.ChatChannelKey = chatGroupIdentifiers.ChannelKey;
+
+            // Ensure the payload contains a chat channel type.
+            var channelType = json[WebhookJsonProperty.ChannelType]?.ToString();
+            if ( channelType.IsNullOrWhiteSpace() )
+            {
+                throw new ChatWebhookParseException( $"{PayloadPropMissingMsgPrefix} '{WebhookJsonProperty.ChannelType}'." );
+            }
+
+            // Assign the channel type to the message event.
+            messageEvent.ChatChannelTypeKey = channelType;
+
+            // Ensure the payload contains a chat user ID.
+            var userId = json[WebhookJsonProperty.User]?[WebhookJsonProperty.Id]?.ToString();
+            if ( userId.IsNullOrWhiteSpace() )
+            {
+                throw new ChatWebhookParseException( $"{PayloadPropMissingMsgPrefix} '{WebhookJsonProperty.User}.{WebhookJsonProperty.Id}'." );
+            }
+
+            // Assign the user ID to the message event.
+            messageEvent.ChatPersonKey = userId;
+
+            // Ensure the payload contains a message.
+            var messageText = json[WebhookJsonProperty.Message]?[WebhookJsonProperty.Text]?.ToString();
+            if ( messageText.IsNullOrWhiteSpace() )
+            {
+                throw new ChatWebhookParseException( $"{PayloadPropMissingMsgPrefix} '{WebhookJsonProperty.Message}.{WebhookJsonProperty.Text}'." );
+            }
+
+            // Assign the message text to the message event.
+            messageEvent.Message = messageText;
+
+            // Attempt to parse the list of chat user keys representing the members of this channel.
+            // Stream will send us - at most - 50 members: https://getstream.io/chat/docs/dotnet-csharp/webhook_events/.
+            if ( json[WebhookJsonProperty.Members] is JArray membersArray )
+            {
+                messageEvent.MemberChatPersonKeys = new HashSet<string>();
+
+                foreach ( var member in membersArray )
+                {
+                    if ( !( member is JObject memberJson ) )
+                    {
+                        // Fail silently and move on.
+                        continue;
+                    }
+
+                    var memberUserId = memberJson[WebhookJsonProperty.UserId]?.ToString();
+                    if ( memberUserId.IsNotNullOrWhiteSpace() )
+                    {
+                        messageEvent.MemberChatPersonKeys.Add( memberUserId );
+                    }
+                }
+            }
+
+            return messageEvent;
+        }
+
+        #endregion Converters: From Stream Webhook Payload to Rock Events
 
         #region Utilities
 
@@ -4069,7 +4194,7 @@ namespace Rock.Communication.Chat
             }
         }
 
-        #endregion
+        #endregion Utilities
 
         #endregion Private Methods
 

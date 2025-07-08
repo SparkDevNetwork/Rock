@@ -30,7 +30,7 @@ namespace Rock.Enums.Core.Automation.Triggers
         AnyChange = 0,
 
         /// <summary>
-        /// The critieria will match if the new value is equal to the
+        /// The criteria will match if the new value is equal to the
         /// UpdatedValue property. The OriginalValue property is ignored.
         /// ignored. This does not require that the value has changed.
         /// </summary>
@@ -53,7 +53,7 @@ namespace Rock.Enums.Core.Automation.Triggers
         ChangedToValue = 3,
 
         /// <summary>
-        /// The critieria will match if the old value is equal to the OriginalValue
+        /// The criteria will match if the old value is equal to the OriginalValue
         /// property and the new/current value is equal to the UpdatedValue
         /// property. This requires that the property value has actually been
         /// changed. Will not match if the entity is being added or deleted.

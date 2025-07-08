@@ -829,7 +829,7 @@ namespace Rock.Jobs
                 var syncCommand = new SyncChatChannelToRockCommand( ChatSyncType.Create )
                 {
                     AttemptLimit = 1,
-                    GroupTypeId = groupTypeId,
+                    GroupTypeId = groupTypeId.Value,
                     ChatChannelKey = chatChannel.Key,
                     GroupName = chatChannel.Name,
                     IsActive = chatChannel.IsActive

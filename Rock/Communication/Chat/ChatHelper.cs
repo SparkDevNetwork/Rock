@@ -2731,7 +2731,7 @@ namespace Rock.Communication.Chat
 
                 try
                 {
-                    var result = ChatProvider.GetChatToRockSyncCommands( webhookRequests );
+                    var result = ChatProvider.GetChatToRockWebhooks( webhookRequests );
                     if ( result == null || result?.HasException == true )
                     {
                         Logger.LogError( result?.Exception, logMessage );
@@ -2740,6 +2740,11 @@ namespace Rock.Communication.Chat
                     if ( result?.SyncCommands?.Any() == true )
                     {
                         await SyncFromChatToRockAsync( result.SyncCommands );
+                    }
+
+                    if ( result?.MessageEvents?.Any() == true )
+                    {
+                        TriggerMessageAutomations( result.MessageEvents );
                     }
                 }
                 catch ( Exception ex )
@@ -4133,33 +4138,23 @@ namespace Rock.Communication.Chat
                     syncCommand.ResetForSyncAttempt();
 
                     int? groupId = syncCommand.GroupId;
-                    int? groupTypeId = syncCommand.GroupTypeId;
-
                     if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
                     {
                         syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
                         continue;
                     }
 
-                    if ( !groupTypeId.HasValue )
+                    // Only allow sync operations to be performed against chat-enabled Rock group types.
+                    var groupTypeCache = GroupTypeCache.Get( syncCommand.GroupTypeId );
+                    if ( groupTypeCache == null )
                     {
-                        syncCommand.MarkAsUnrecoverable( "Rock group type ID is missing from sync command." );
+                        syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {syncCommand.GroupTypeId} could not be found." );
                         continue;
                     }
-                    else
+                    else if ( !groupTypeCache.IsChatAllowed )
                     {
-                        // Only allow sync operations to be performed against chat-enabled Rock group types.
-                        var groupTypeCache = GroupTypeCache.Get( groupTypeId.Value );
-                        if ( groupTypeCache == null )
-                        {
-                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} could not be found." );
-                            continue;
-                        }
-                        else if ( !groupTypeCache.IsChatAllowed )
-                        {
-                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} is not chat-enabled." );
-                            continue;
-                        }
+                        syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {syncCommand.GroupTypeId} is not chat-enabled." );
+                        continue;
                     }
 
                     // We'll use a new rock context to keep each command isolated.
@@ -4237,7 +4232,7 @@ namespace Rock.Communication.Chat
                             {
                                 ParentGroupId = ChatDirectMessagesGroupId,
                                 Name = groupName,
-                                GroupTypeId = groupTypeId.Value,
+                                GroupTypeId = syncCommand.GroupTypeId,
                                 ChatChannelKey = syncCommand.ChatChannelKey,
                                 IsActive = syncCommand.IsActive
                             };
@@ -5017,6 +5012,96 @@ namespace Rock.Communication.Chat
             foreach ( var recoverableCommand in recoverableCommands )
             {
                 new RequeueChatToRockSyncCommandTransaction( recoverableCommand ).Enqueue();
+            }
+        }
+
+        /// <summary>
+        /// Triggers message automations when message events are received from the external chat system.
+        /// </summary>
+        /// <param name="messageEvents">The list of message events.</param>
+        private void TriggerMessageAutomations( List<ChatToRockMessageEvent> messageEvents )
+        {
+            messageEvents = messageEvents
+                ?.Where( c => c != null )
+                .ToList();
+
+            if ( !IsChatEnabled || messageEvents?.Any() != true )
+            {
+                return;
+            }
+
+            var logMessagePrefix = $"{LogMessagePrefix} {nameof( TriggerMessageAutomations ).SplitCase()}";
+            string structuredLog;
+
+            var groupTypeService = new GroupTypeService( RockContext );
+            var groupService = new GroupService( RockContext );
+            var personService = new PersonService( RockContext );
+
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Trigger Message Automations" ) )
+            {
+                foreach ( var messageEvent in messageEvents )
+                {
+                    // Ensure the channel type references a Rock group type.
+                    var groupTypeId = GetGroupTypeId( messageEvent.ChatChannelTypeKey );
+                    if ( !groupTypeId.HasValue )
+                    {
+                        structuredLog = "{ChatChannelTypeKey}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group type with chat channel type key '{structuredLog}' could not be found.", messageEvent.ChatChannelTypeKey );
+                        continue;
+                    }
+
+                    // Only allow message automations to be triggered against chat-enabled Rock group types.
+                    var groupType = groupTypeService.Get( groupTypeId.Value );
+                    if ( groupType == null )
+                    {
+                        structuredLog = "{GroupTypeId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group type with ID {structuredLog} could not be found.", structuredLog );
+                        continue;
+                    }
+                    else if ( !groupType.IsChatAllowed )
+                    {
+                        structuredLog = "{GroupTypeId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group type with ID {structuredLog} is not chat-enabled.", structuredLog );
+                        continue;
+                    }
+
+                    // Assign the group type to the message event.
+                    messageEvent.ChannelType = groupType;
+
+                    // Try to find a group match.
+                    var group = groupService
+                        .GetChatChannelGroupsQuery()
+                        .FirstOrDefault( g => g.ChatChannelKey == messageEvent.ChatChannelKey );
+
+                    if ( group?.GetIsChatEnabled() == false )
+                    {
+                        // If a group match was found, ensure it's chat-enabled.
+                        structuredLog = "{GroupId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group with ID {structuredLog} is not chat-enabled.", structuredLog );
+                        continue;
+                    }
+
+                    // Assign the group to the message event (knowing that it might be null).
+                    messageEvent.Channel = group;
+
+                    // Try to find and assign the person.
+                    var person = personService.GetByChatUserKey( messageEvent.ChatPersonKey );
+                    messageEvent.Person = person;
+
+                    Core.Automation.Triggers.ChatMessageMonitor.ProcessMessageEvent( messageEvent );
+
+                    structuredLog = "Rock group type ID {GroupTypeId} ({GroupTypeName}), group ID {GroupId} ({GroupName}), person {PersonId} ({PersonFullName}), message: {Message}";
+                    Logger.LogDebug(
+                        $"{logMessagePrefix} succeeded for {structuredLog}",
+                        groupType.Id,
+                        groupType.Name,
+                        group?.Id,
+                        group?.Name,
+                        person?.Id,
+                        person?.FullName,
+                        messageEvent.Message
+                    );
+                }
             }
         }
 

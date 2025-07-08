@@ -14,19 +14,22 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Collections.Generic;
-
-namespace Rock.Communication.Chat.Sync
+namespace Rock.Enums.Communication.Chat
 {
     /// <summary>
-    /// Represents the result of transforming webhook requests from the external chat system into <see cref="ChatToRockSyncCommand"/>s.
+    /// The types of chat messages events that can be reported by the external chat system.
     /// </summary>
-    /// <see cref="ChatSyncResultBase"/>
-    internal class GetChatToRockSyncCommandsResult : ChatSyncResultBase
+    [Enums.EnumDomain( "Communication" )]
+    public enum ChatMessageEventType
     {
         /// <summary>
-        /// Gets the list of <see cref="ChatToRockSyncCommand"/>s received as webhooks from the external chat system.
+        /// A new message was added.
         /// </summary>
-        public List<ChatToRockSyncCommand> SyncCommands { get; } = new List<ChatToRockSyncCommand>();
+        New = 0,
+
+        /// <summary>
+        /// An existing message was updated.
+        /// </summary>
+        Update = 1
     }
 }

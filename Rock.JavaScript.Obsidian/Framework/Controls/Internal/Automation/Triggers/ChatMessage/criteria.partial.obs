@@ -20,11 +20,14 @@
           liveUpdates
           light
           @addItem="onAddCriteriaRuleClick">
-        <TextColumn name="property"
-                    title="Property"
-                    field="property" />
+        <Column name="filterType"
+                title="Filter Type">
+            <template #format="{ row }">
+                {{ getFilterType(row) }}
+            </template>
+        </Column>
 
-        <Column name="description"
+        <Column name="filterDescription"
                 title="Filter Description">
             <template #format="{ row }">
                 {{ getFilterDescription(row) }}
@@ -39,23 +42,24 @@
            title="Trigger Criteria"
            saveText="Save"
            @save="onSaveCriteriaRuleClick">
-        <EditSimpleRule v-model="editCriteriaBag"
-                        :properties="properties" />
+        <EditRule v-model="editCriteriaBag"
+                  :groupTypeGuids="groupTypeGuids" />
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import EditSimpleRule from "./editSimpleRule.partial.obs";
-    import Grid, { Column, DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
+    import { computed, PropType, ref, watch } from "vue";
+    import EditRule from "./editRule.partial.obs";
+    import Grid, { Column, DeleteColumn, EditColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import Toggle from "@Obsidian/Controls/toggle.obs";
-    import { EntityChangeSimpleCriteriaBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/entityChangeSimpleCriteriaBag";
-    import { EntityChangeSimpleCriteriaRuleBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/entityChangeSimpleCriteriaRuleBag";
-    import { computed, PropType, ref, watch } from "vue";
-    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
-    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ChatMessageCriteriaRuleTypeDescription } from "@Obsidian/Enums/Core/Automation/Triggers/chatMessageCriteriaRuleType";
+    import { Guid } from "@Obsidian/Types";
     import { updateRefValue } from "@Obsidian/Utility/component";
-    import { EntityChangeSimpleChangeType } from "@Obsidian/Enums/Core/Automation/Triggers/entityChangeSimpleChangeType";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ChatMessageCriteriaBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/chatMessageCriteriaBag";
+    import { ChatMessageCriteriaRuleBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/chatMessageCriteriaRuleBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
 
     const props = defineProps({
         /**
@@ -67,10 +71,10 @@
         },
 
         /**
-         * The list of properties that can be used in the rule.
+         * The list of group type Guids that can be used in the rule.
          */
-        properties: {
-            type: Array as PropType<string[]>,
+        groupTypeGuids: {
+            type: Array as PropType<Guid[]>,
             required: true
         }
     });
@@ -82,12 +86,12 @@
     // #region Values
 
     const triggerWhenAll = ref(true);
-    const criteriaData = ref<EntityChangeSimpleCriteriaRuleBag[]>([]);
+    const criteriaData = ref<ChatMessageCriteriaRuleBag[]>([]);
 
     const showCriteriaModal = ref(false);
-    const editCriteriaBag = ref<EntityChangeSimpleCriteriaRuleBag | null>(null);
+    const editCriteriaBag = ref<ChatMessageCriteriaRuleBag | null>(null);
 
-    // #endregion
+    // #endregion Values
 
     // #region Computed Values
 
@@ -103,34 +107,32 @@
      * Sets the values of the trigger based on the model value.
      */
     function setValues(): void {
-        const criteria = safeParseJson<EntityChangeSimpleCriteriaBag>(props.modelValue);
+        const criteria = safeParseJson<ChatMessageCriteriaBag>(props.modelValue);
 
         updateRefValue(triggerWhenAll, criteria?.areAllRulesRequired ?? true);
         updateRefValue(criteriaData, criteria?.rules ?? []);
     }
 
     /**
-     * Gets the content of the description column for the grid.
+     * Gets the content of the filter type column for the grid.
      *
-     * @param row The grid row to get the description for.
+     * @param row The grid row to get the filter type for.
+     *
+     * @returns The friendly type of the filter.
+     */
+    function getFilterType(row: ChatMessageCriteriaRuleBag): string {
+        return ChatMessageCriteriaRuleTypeDescription[row.ruleType];
+    }
+
+    /**
+     * Gets the content of the filter description column for the grid.
+     *
+     * @param row The grid row to get the filter description for.
      *
      * @returns The friendly description of the filter.
      */
-    function getFilterDescription(row: EntityChangeSimpleCriteriaRuleBag): string {
-        switch (row.changeType) {
-            case EntityChangeSimpleChangeType.AnyChange:
-                return `Any change`;
-            case EntityChangeSimpleChangeType.HasSpecificValue:
-                return `Has the value '${row.updatedValue ?? ""}'`;
-            case EntityChangeSimpleChangeType.ChangedFromValue:
-                return `Changed from '${row.originalValue ?? ""}'`;
-            case EntityChangeSimpleChangeType.ChangedToValue:
-                return `Changed to '${row.updatedValue ?? ""}'`;
-            case EntityChangeSimpleChangeType.ChangedFromValueToValue:
-                return `Changed from '${row.originalValue ?? ""}' to '${row.updatedValue ?? ""}'`;
-            default:
-                return "No filter set";
-        }
+    function getFilterDescription(row: ChatMessageCriteriaRuleBag): string {
+        return row.friendlyCriteriaValue ?? "No filter set";
     }
 
     // #endregion
@@ -208,7 +210,7 @@
     });
 
     watch([triggerWhenAll, criteriaData], () => {
-        const newValue: EntityChangeSimpleCriteriaBag = {
+        const newValue: ChatMessageCriteriaBag = {
             areAllRulesRequired: triggerWhenAll.value,
             rules: criteriaData.value
         };

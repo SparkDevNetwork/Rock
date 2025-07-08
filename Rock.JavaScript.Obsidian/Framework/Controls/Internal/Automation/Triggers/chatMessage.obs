@@ -1,0 +1,54 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <h4>Criteria</h4>
+
+    <Criteria v-model="criteria"
+              :groupTypeGuids="groupTypeGuids" />
+
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import Criteria from "./ChatMessage/criteria.partial.obs";
+    import { standardDynamicComponentProps, updateRefValue } from "@Obsidian/Utility/component";
+    import { Guid } from "@Obsidian/Types";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const enum ConfigurationKey {
+        Criteria = "criteria"
+    }
+
+    const enum OptionKey {
+        GroupTypeGuids = "groupTypeGuids",
+    }
+
+    const props = defineProps(standardDynamicComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const criteria = ref(props.modelValue[ConfigurationKey.Criteria] ?? "");
+
+    const groupTypeGuids = ref<Guid[]>(safeParseJson<Guid[]>(props.options[OptionKey.GroupTypeGuids]) ?? []);
+
+    // #endregion Values
+
+    watch(criteria, () => {
+        const newValues = { ...props.modelValue };
+
+        newValues[ConfigurationKey.Criteria] = criteria.value;
+
+        emit("update:modelValue", newValues);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(criteria, props.modelValue[ConfigurationKey.Criteria] ?? "");
+    });
+
+    watch(() => props.options[OptionKey.GroupTypeGuids], () => {
+        groupTypeGuids.value = safeParseJson<Guid[]>(props.options[OptionKey.GroupTypeGuids]) ?? [];
+    });
+</script>

@@ -95,7 +95,7 @@ namespace Rock.Core.Automation.Triggers
                 new AutomationValueDefinition
                 {
                     Key = "OriginalValues",
-                    Description = "The original values of the entity before it was modified. This is only vlaid if State is Modified.",
+                    Description = "The original values of the entity before it was modified. This is only valid if State is Modified.",
                     Type = typeof( IReadOnlyDictionary<string, object> )
                 },
                 new AutomationValueDefinition
@@ -107,7 +107,7 @@ namespace Rock.Core.Automation.Triggers
                 new AutomationValueDefinition
                 {
                     Key = "State",
-                    Description = "The state of the entity during the save opearation.",
+                    Description = "The state of the entity during the save operation.",
                     Type = typeof( EntityContextState )
                 }
             };

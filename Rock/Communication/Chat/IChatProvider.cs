@@ -413,19 +413,20 @@ namespace Rock.Communication.Chat
         Task<WebhookValidationResult> ValidateWebhookRequestAsync( HttpRequestMessage request );
 
         /// <summary>
-        /// Gets a list of <see cref="ChatToRockSyncCommand"/>s for the provided <see cref="ChatWebhookRequest"/>s.
+        /// Transforms webhook requests from the external chat system into commands and events Rock knows how to handle.
         /// </summary>
-        /// <param name="webhookRequests">The list of <see cref="ChatWebhookRequest"/>s for which to get
-        /// <see cref="ChatToRockSyncCommand"/>s.</param>
+        /// <param name="webhookRequests">
+        /// The list of <see cref="ChatWebhookRequest"/>s for which to get commands and events.
+        /// </param>
         /// <returns>
-        /// A <see cref="GetChatToRockSyncCommandsResult"/> that contains a list of <see cref="ChatToRockSyncCommand"/>s,
-        /// one for each valid <see cref="ChatWebhookRequest"/>.
+        /// A <see cref="GetChatToRockWebhookResult"/> that contains commands and events, one for each valid
+        /// <see cref="ChatWebhookRequest"/>.
         /// </returns>
         /// <remarks>
-        /// Invalid <see cref="ChatWebhookRequest"/>s will not have corresponding <see cref="ChatToRockSyncCommand"/>s,
-        /// with failure details instead being added to Rock Logs.
+        /// Invalid <see cref="ChatWebhookRequest"/>s will not have corresponding commands or events, with failure
+        /// details instead being added to Rock Logs.
         /// </remarks>
-        GetChatToRockSyncCommandsResult GetChatToRockSyncCommands( List<ChatWebhookRequest> webhookRequests );
+        GetChatToRockWebhookResult GetChatToRockWebhooks( List<ChatWebhookRequest> webhookRequests );
 
         #endregion Webhooks
     }

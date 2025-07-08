@@ -1,0 +1,76 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <AutomationEventHeader title="Send Fallback Chat Notification"
+                           description="Choose the system communication that will be sent as a fallback to Chat members who don't receive device notifications whenever the event executes."
+                           :mergeFields="props.mergeFields" />
+
+    <div class="row">
+        <div class="col-md-6">
+            <DropDownList v-model="systemCommunication"
+                          label="System Communication"
+                          :items="systemCommunicationItems"
+                          rules="required" />
+        </div>
+
+        <div class="col-md-6">
+            <NumberBox v-model="notificationSuppressionMinutes"
+                       label="Notification Suppression Minutes"
+                       help="The number of minutes the system will suppress notifications if the recipient has already received a recent notification and has not yet read the chat message that triggered it."
+                       :minimumValue="0" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import AutomationEventHeader from "@Obsidian/Controls/Internal/Automation/automationEventHeader.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { automationEventComponentProps } from "@Obsidian/Core/Core/Automation/component";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const enum ConfigurationKey {
+        SystemCommunication = "systemCommunication",
+        NotificationSuppressionMinutes = "notificationSuppressionMinutes",
+    }
+
+    const enum OptionKey {
+        SystemCommunicationItems = "systemCommunicationItems",
+    }
+
+    const props = defineProps(automationEventComponentProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const systemCommunication = ref(props.modelValue[ConfigurationKey.SystemCommunication] ?? "");
+    const notificationSuppressionMinutes = ref(toNumberOrNull(props.modelValue[ConfigurationKey.NotificationSuppressionMinutes]) ?? 60);
+
+    const systemCommunicationItems = ref(safeParseJson<ListItemBag[]>(props.options[OptionKey.SystemCommunicationItems]) ?? []);
+
+    // #endregion
+
+    watch([systemCommunication, notificationSuppressionMinutes], () => {
+        const newValues = { ...props.modelValue };
+
+        newValues[ConfigurationKey.SystemCommunication] = systemCommunication.value;
+        newValues[ConfigurationKey.NotificationSuppressionMinutes] = notificationSuppressionMinutes.value?.toString();
+
+        emit("update:modelValue", newValues);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(systemCommunication, props.modelValue[ConfigurationKey.SystemCommunication] ?? "");
+        updateRefValue(notificationSuppressionMinutes, toNumberOrNull(props.modelValue[ConfigurationKey.NotificationSuppressionMinutes]) ?? 60);
+    });
+
+    watch(() => props.options[OptionKey.SystemCommunicationItems], () => {
+        systemCommunicationItems.value = safeParseJson<ListItemBag[]>(props.options[OptionKey.SystemCommunicationItems]) ?? [];
+    });
+</script>

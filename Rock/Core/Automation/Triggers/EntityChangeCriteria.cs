@@ -140,7 +140,7 @@ namespace Rock.Core.Automation.Triggers
             {
                 var logger = RockLogger.LoggerFactory.CreateLogger<EntityChangeCriteria>();
 
-                logger.LogError( ex, "Error processing entity change critieria: {error}", ex.Message );
+                logger.LogError( ex, "Error processing entity change criteria: {error}", ex.Message );
 
                 return false;
             }
