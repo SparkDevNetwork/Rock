@@ -412,6 +412,7 @@
     <Compile Include="Web\Cache\RateLimiterCacheTests.cs" />
     <Compile Include="Web\Utilities\RockUpdateHelperTests.cs" />
     <Compile Include="Core\Workflow\Action\WorkflowActionReminderAddTests.cs" />
+    <Compile Include="Workflow\WorkflowPersonEntryProcessorTests.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
