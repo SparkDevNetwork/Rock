@@ -25,6 +25,7 @@
                                         :shortLinkGetPageId="shortLinkGetPageId"
                                         :shortLinkSites="shortLinkSites"
                                         :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                                        :usageType="usageType"
                                         :videoProviderNames="videoProviderNames"
                                         @clone="onCloneComponent"
                                         @complete="onCompleteComponent"
@@ -325,29 +326,30 @@
 
 <script setup lang="ts">
     import { computed, onMounted, PropType, ref, watch } from "vue";
+    import { useApi } from "./api";
     import ComponentPropertyPanel from "./componentPropertyPanel.partial.obs";
     import EmailSectionModal from "./emailSectionModal.partial.obs";
     import FlatPanel from "./flatPanel.partial.obs";
     import GlobalPropertyPanel from "./propertyPanels/globalPropertyPanel.partial.obs";
+    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName, ReplaceComponentRequest } from "./types.partial";
+    import { UsageType } from "./types";
+    import { getComponentIconHtml, getComponentTitle } from "./utils.partial";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import DropDownMenu from "@Obsidian/Controls/dropDownMenu.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { Guid } from "@Obsidian/Types";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
-    import { EmailEditorDeleteEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorDeleteEmailSectionOptionsBag";
-    import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, EditorComponentTypeName, ReplaceComponentRequest } from "./types.partial";
-    import { getComponentIconHtml, getComponentTitle } from "./utils.partial";
     import { Category } from "@Obsidian/SystemGuids/category";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Guid } from "@Obsidian/Types";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { isHTMLElement, isMouseEvent, isTouchEvent } from "@Obsidian/Utility/dom";
-    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { areEqual, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { destroyTooltip, showTooltip } from "@Obsidian/Utility/tooltip";
-    import { useApi } from "./api";
-    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { EmailEditorDeleteEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorDeleteEmailSectionOptionsBag";
+    import { EmailEditorEmailSectionBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorEmailSectionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     // #region Types
 
@@ -422,6 +424,11 @@
         recipientPersonIds: {
             type: Object as PropType<number[] | null | undefined>,
             required: true
+        },
+
+        usageType: {
+            type: String as PropType<UsageType>,
+            default: "email" as const
         },
 
         videoProviderNames: {
