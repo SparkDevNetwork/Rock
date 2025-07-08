@@ -96,7 +96,8 @@ RETURN
         #region SC: New SystemCommunication - Scheduling Confirmation Email (One Button)
         private void UpdateGroupTypeScheduleConfirmationEmailUp()
         {
-            Sql( @"DECLARE @CategoryId INT = (SELECT [Id] FROM [Category] WHERE [Guid] = 'FA8F586E-4F71-4EB9-823C-E5E9576397AC');
+            Sql( @"DECLARE @EntityTypeId_SystemCommunication INT = (SELECT [Id] FROM [EntityType] WHERE [Guid] = 'D0CAD7C0-10FE-41EF-B89D-E6F0D22456C4');
+DECLARE @CategoryId INT = (SELECT TOP 1 [Id] FROM [Category] WHERE [EntityTypeId] = @EntityTypeId_SystemCommunication AND [Name] = 'Groups');
 DECLARE @Guid UNIQUEIDENTIFIER = 'BA1716E0-6B31-4E93-ABA1-42B3C81FDBDC';
 DECLARE @Title NVARCHAR(100) = N'Scheduling Confirmation Email (One Button)';
 DECLARE @Subject NVARCHAR(1000) = N'Scheduling Confirmation';
