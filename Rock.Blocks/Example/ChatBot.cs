@@ -95,7 +95,6 @@ namespace Rock.Blocks.Example
                     && !s.RelatedEntityTypeId.HasValue
                     && !s.RelatedEntityId.HasValue )
                 .OrderBy( s => s.LastMessageDateTime )
-                .Take( 10 )
                 .Select( s => new
                 {
                     s.Id,
