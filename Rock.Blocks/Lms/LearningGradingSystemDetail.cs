@@ -390,7 +390,6 @@ namespace Rock.Blocks.Lms
                 var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
                 var breadCrumb = new BreadCrumbLink( learningGradingSystemName ?? "New Grading System", breadCrumbPageRef );
 
-                // Todo - Flip Show Name in Breadcrumb Bit in migration.
                 return new BreadCrumbResult
                 {
                     BreadCrumbs = new List<IBreadCrumb>
