@@ -229,6 +229,27 @@ namespace Rock.Blocks.Example
         }
 
         [BlockAction]
+        public BlockActionResult DeleteSession( int sessionId )
+        {
+            var sessionService = new AIAgentSessionService( RockContext );
+            var session = sessionService
+                .Queryable()
+                .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                    && s.Id == sessionId )
+                .FirstOrDefault();
+
+            if ( session == null )
+            {
+                return ActionBadRequest( "Session not found." );
+            }
+
+            sessionService.Delete( session );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        [BlockAction]
         public async Task<BlockActionResult> CreateAnchor( int sessionId, string entityTypeName, int entityId )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
