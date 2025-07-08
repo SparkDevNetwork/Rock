@@ -104,32 +104,11 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            return new DynamicComponentDefinitionBag
-            {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/personalDevicesFilter.obs" )
-            };
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
-        {
-            var data = new Dictionary<string, string>();
-
-            var settings = DataComponentSettingsHelper.DeserializeFilterSettings( selection, new FilterSettings() );
+            var options = new Dictionary<string, string>();
 
             var sites = SiteCache.GetAllActiveSites().ToList();
             var siteOptions = sites.Select( s => new ListItemBag { Text = s.Name, Value = s.Guid.ToString() } ).ToList();
-            data.Add( "sites", settings.SiteGuids.ToCamelCaseJson( false, true ) );
-            data.Add( "siteOptions", siteOptions.ToCamelCaseJson( false, true ) );
-
-            if ( settings.NotificationsEnabled != null )
-            {
-                data.Add( "notificationsEnabled", settings.NotificationsEnabled.Value.ToTrueFalse() );
-            }
-            else
-            {
-                data.Add( "notificationsEnabled", string.Empty );
-            }
+            options.Add( "siteOptions", siteOptions.ToCamelCaseJson( false, true ) );
 
             var platforms = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_PLATFORM.AsGuid() )
                 .DefinedValues
@@ -137,8 +116,7 @@ namespace Rock.Reporting.DataFilter.Person
                 .OrderBy( pdp => pdp.Order )
                 .ThenBy( pdp => pdp.Value ).ToList();
             var platformOptions = platforms.Select( pdp => new ListItemBag { Text = pdp.Value, Value = pdp.Guid.ToString() } ).ToList();
-            data.Add( "platforms", settings.DevicePlatformGuids.ToCamelCaseJson( false, true ) );
-            data.Add( "platformOptions", platformOptions.ToCamelCaseJson( false, true ) );
+            options.Add( "platformOptions", platformOptions.ToCamelCaseJson( false, true ) );
 
             var deviceTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.PERSONAL_DEVICE_TYPE.AsGuid() )
                 .DefinedValues
@@ -146,8 +124,26 @@ namespace Rock.Reporting.DataFilter.Person
                 .OrderBy( pdp => pdp.Order )
                 .ThenBy( pdp => pdp.Value ).ToList();
             var deviceTypeOptions = deviceTypes.Select( pdp => new ListItemBag { Text = pdp.Value, Value = pdp.Guid.ToString() } ).ToList();
-            data.Add( "deviceTypes", settings.DeviceTypeGuids.ToCamelCaseJson( false, true ) );
-            data.Add( "deviceTypeOptions", deviceTypeOptions.ToCamelCaseJson( false, true ) );
+            options.Add( "deviceTypeOptions", deviceTypeOptions.ToCamelCaseJson( false, true ) );
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/personalDevicesFilter.obs" ),
+                Options = options
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = DataComponentSettingsHelper.DeserializeFilterSettings( selection, new FilterSettings() );
+            var data = new Dictionary<string, string>
+            {
+                { "sites", settings.SiteGuids.ToCamelCaseJson( false, true ) },
+                { "platforms", settings.DevicePlatformGuids.ToCamelCaseJson( false, true ) },
+                { "deviceTypes", settings.DeviceTypeGuids.ToCamelCaseJson( false, true ) },
+                { "notificationsEnabled", settings.NotificationsEnabled?.ToTrueFalse() ?? string.Empty },
+            };
 
             return data;
         }

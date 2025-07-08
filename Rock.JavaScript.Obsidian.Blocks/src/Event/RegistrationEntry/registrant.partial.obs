@@ -9,7 +9,7 @@
                     </div>
                     <div v-if="isFamilyMembersDropDownVisible" class="row">
                         <div class="col-md-6">
-                            <DropDownList :modelValue="currentRegistrant.personGuid ?? ''" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" :label="isCreatingNewFamily ? 'Guest to Register' : 'Family Member to Register'" :showBlankItem="false" />
+                            <DropDownList :modelValue="currentRegistrant.personGuid ?? ''" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" :label="props.currentRegistrant.isNewFamily ? 'Guest to Register' : 'Family Member to Register'" :showBlankItem="false" />
                         </div>
                     </div>
                 </template>
@@ -157,7 +157,6 @@
     const signatureToken = ref<string>("");
     const formResetKey = ref<string>("");
     const isNextDisabled = ref<boolean>(false);
-    const isCreatingNewFamily = ref<boolean>(false);
 
     // #endregion
 
@@ -363,6 +362,14 @@
 
     /** The people that can be picked from because they are members of the same family. */
     const familyMemberOptions = computed<ListItemBag[]>(() => {
+        if (props.currentRegistrant.isNewFamily) {
+            return [
+                {
+                    text: "Guest",
+                    value: null
+                }
+            ];
+        }
 
         const usedFamilyMemberGuids = registrationEntryState.registrants
             .filter(r => r.personGuid && r.personGuid !== props.currentRegistrant.personGuid)
@@ -375,18 +382,12 @@
                 value: fm.guid
             })) ?? [];
 
-        let newPersonOptionText = "New Family Member";
-
-        if (isCreatingNewFamily.value) {
-            newPersonOptionText = "Guest";
-        }
-
-        let newPersonOptions = {
-            text: newPersonOptionText,
+        let newFamilyMemberOption = {
+            text: "New Family Member",
             value: null
         };
 
-        return [...familyMembers, newPersonOptions];
+        return [...familyMembers, newFamilyMemberOption];
     });
 
     const firstName = computed<string>(() => {
@@ -792,10 +793,10 @@
 
     function onSetFamilyGuid(familyGuid: Guid): void {
         if (familyGuid === newFamilyGuid) {
-            isCreatingNewFamily.value = true;
+            props.currentRegistrant.isNewFamily = true;
         }
         else {
-            isCreatingNewFamily.value = false;
+            props.currentRegistrant.isNewFamily = false;
         }
 
         if (familyGuid !== props.currentRegistrant.familyGuid) {

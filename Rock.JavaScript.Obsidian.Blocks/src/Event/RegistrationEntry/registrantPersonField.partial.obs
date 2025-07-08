@@ -4,7 +4,7 @@
     <NotificationBox v-else alertType="danger">Could not load the control for person field {{ fieldType }}.</NotificationBox>
 </template>
 <script setup lang="ts">
-    import { computed, PropType, ref, watch } from "vue";
+    import { computed, PropType, watch } from "vue";
     import { CurrentRegistrationEntryState, use } from "./utils.partial";
     import AddressControl from "@Obsidian/Controls/addressControl.obs";
     import BirthdayPicker from "@Obsidian/Controls/birthdayPicker.obs";
@@ -12,7 +12,6 @@
     import EmailBox from "@Obsidian/Controls/emailBox.obs";
     import GenderPicker from "@Obsidian/Controls/genderPicker.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
-    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
     import PhoneNumberBoxWithSms from "@Obsidian/Controls/phoneNumberBoxWithSms.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
@@ -82,17 +81,9 @@
                 return DropDownList;
 
             case RegistrationPersonFieldType.HomePhone:
-                return PhoneNumberBox;
-
             case RegistrationPersonFieldType.WorkPhone:
-                return PhoneNumberBox;
-
             case RegistrationPersonFieldType.MobilePhone:
-                if (registrationEntryState.viewModel?.showSmsOptIn ?? false) {
-                    return PhoneNumberBoxWithSms;
-                }
-
-                return PhoneNumberBox;
+                return PhoneNumberBoxWithSms;
 
             case RegistrationPersonFieldType.Race:
                 return DropDownList;
@@ -164,10 +155,12 @@
 
             case RegistrationPersonFieldType.HomePhone:
                 componentProps.label = "Home Phone";
+                componentProps.hideSms = true;
                 break;
 
             case RegistrationPersonFieldType.WorkPhone:
                 componentProps.label = "Work Phone";
+                componentProps.hideSms = true;
                 break;
 
             case RegistrationPersonFieldType.MobilePhone:

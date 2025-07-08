@@ -350,6 +350,8 @@ namespace Rock.UI {
             const plyrOptions: Plyr.Options = {
                 // Storage causes problems with things like auto-play. It will
                 // override whatever we set below which isn't what we want.
+                // We actually enable a fake storage provider when we create Plyr
+                // but we need to turn it off here for the constructor.
                 storage: {
                     enabled: false
                 },
@@ -445,6 +447,21 @@ namespace Rock.UI {
             }
 
             this.player = new Plyr(mediaElement, plyrOptions);
+
+            // Inject a fake storage provider that is in-memory only. This allows
+            // things like captions to work since the Plyr library stores the current
+            // selections in the storage.
+            let storageData: Record<string, unknown> = {};
+            (this.player as any).storage = {
+                enabled: true,
+                key: "plyr",
+                get(key: string): unknown {
+                    return storageData[key];
+                },
+                set(data: Record<string, unknown>): void {
+                    storageData = { ...storageData, ...data };
+                }
+            };
 
             // This is a hack to get playback events for youtube videos. Plyr has a bug
             // where it does not initialize the media event listers unless a custom UI
@@ -585,7 +602,6 @@ namespace Rock.UI {
             // https://www.youtube.com/watch?v=uQpLrumQP0E
             const youTubePattern = /https?:\/\/(?:www\.)youtube\.com\/watch(?:[?&]v=([^&]+))/i;
             const vimeoPattern = /https?:\/\/vimeo\.com\/([0-9]+)/i;
-            const vimeoHLSPattern = /https?:\/\/player\.vimeo\.com\/external\/([0-9]+)\.m3u8(\?.*)?/i;
 
             // Check if this URL looks like a standard YouTube link from the browser.
             let match = youTubePattern.exec(url);
@@ -595,12 +611,6 @@ namespace Rock.UI {
 
             // Check if this URL looks like a standard Vimeo link from the browser.
             match = vimeoPattern.exec(url);
-            if (match !== null) {
-                return `https://player.vimeo.com/video/${match[1]}`;
-            }
-
-            // Check if this URL looks like a standard Vimeo HLS link from the browser.
-            match = vimeoHLSPattern.exec(url);
             if (match !== null) {
                 return `https://player.vimeo.com/video/${match[1]}`;
             }

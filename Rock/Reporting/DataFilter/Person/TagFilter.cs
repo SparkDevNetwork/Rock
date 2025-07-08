@@ -74,9 +74,68 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var data = new Dictionary<string, string>();
+
+            int entityTypePersonId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) ) ?? 0;
+            var tagQry = new TagService( rockContext ).Queryable( "OwnerPersonAlias" ).Where( a => a.EntityTypeId == entityTypePersonId );
+            var personalTags = tagQry.Where( a => a.OwnerPersonAlias.PersonId == requestContext.CurrentPerson.Id )
+                .OrderBy( a => a.Name )
+                .Select( t => new ListItemBag { Text = t.Name, Value = t.Guid.ToString() } )
+                .ToList();
+            var orgTags = tagQry.Where( a => a.OwnerPersonAlias == null )
+                .OrderBy( a => a.Name )
+                .Select( t => new ListItemBag { Text = t.Name, Value = t.Guid.ToString() } )
+                .ToList();
+
+            string[] selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length >= 2 )
+            {
+                var tagType = selectionValues[0];
+
+                var selectedTagGuid = selectionValues[1];
+
+                if ( tagType == "1" && !personalTags.Where( t => t.Value == selectedTagGuid ).Any() )
+                {
+                    // The selected tag belongs to someone else's list of personal tags, so we need to include it under a "Current" category
+                    // so it can still appear on the list and file all the others as under the "Personal" category to keep them separate.
+                    var selectedTag = new TagService( rockContext ).Get( selectedTagGuid.AsGuid() );
+
+                    if ( selectedTag == null )
+                    {
+                        // I guess this tag doesn't actually exist, so no need to categorize
+                    }
+                    else
+                    {
+                        personalTags = personalTags.Select( t => new ListItemBag
+                        {
+                            Text = t.Text,
+                            Value = t.Value,
+                            Category = "Personal"
+                        } ).ToList();
+                        personalTags.Insert( 0, new ListItemBag
+                        {
+                            Text = string.Format( "{0} ( {1} )", selectedTag.Name, selectedTag.OwnerPersonAlias.Person ),
+                            Value = selectedTag.Guid.ToString(),
+                            Category = "Current"
+                        } );
+                    }
+                }
+            }
+
+            var tagsByType = new Dictionary<string, List<ListItemBag>>
+            {
+                { "1", personalTags },
+                { "2", orgTags },
+            };
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/tagFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/tagFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "tagOptionsByType", tagsByType.ToCamelCaseJson( false, true ) },
+                },
             };
         }
 
@@ -88,10 +147,6 @@ namespace Rock.Reporting.DataFilter.Person
             int entityTypePersonId = EntityTypeCache.GetId( typeof( Rock.Model.Person ) ) ?? 0;
             var tagQry = new TagService( rockContext ).Queryable( "OwnerPersonAlias" ).Where( a => a.EntityTypeId == entityTypePersonId );
             var personalTags = tagQry.Where( a => a.OwnerPersonAlias.PersonId == requestContext.CurrentPerson.Id )
-                .OrderBy( a => a.Name )
-                .Select( t => new ListItemBag { Text = t.Name, Value = t.Guid.ToString() } )
-                .ToList();
-            var orgTags = tagQry.Where( a => a.OwnerPersonAlias == null )
                 .OrderBy( a => a.Name )
                 .Select( t => new ListItemBag { Text = t.Name, Value = t.Guid.ToString() } )
                 .ToList();
@@ -124,18 +179,6 @@ namespace Rock.Reporting.DataFilter.Person
                     else
                     {
                         data.Add( "tag", selectedTagGuid );
-                        personalTags = personalTags.Select( t => new ListItemBag
-                        {
-                            Text = t.Text,
-                            Value = t.Value,
-                            Category = "Personal"
-                        } ).ToList();
-                        personalTags.Insert( 0, new ListItemBag
-                        {
-                            Text = string.Format( "{0} ( {1} )", selectedTag.Name, selectedTag.OwnerPersonAlias.Person ),
-                            Value = selectedTag.Guid.ToString(),
-                            Category = "Current"
-                        } );
                     }
                 }
                 else
@@ -143,13 +186,6 @@ namespace Rock.Reporting.DataFilter.Person
                     data.Add( "tag", selectedTagGuid );
                 }
             }
-
-            var tagsByType = new Dictionary<string, List<ListItemBag>>
-            {
-                { "1", personalTags },
-                { "2", orgTags },
-            };
-            data.Add( "tagOptionsByType", tagsByType.ToCamelCaseJson( false, true ) );
 
             return data;
         }

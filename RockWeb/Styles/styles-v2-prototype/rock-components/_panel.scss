@@ -175,6 +175,9 @@
 
     & .panel-title {
       font-size:          var(--font-size-h5);
+      overflow:           hidden;
+      text-overflow:      ellipsis;
+      white-space:        nowrap;
     }
   }
 

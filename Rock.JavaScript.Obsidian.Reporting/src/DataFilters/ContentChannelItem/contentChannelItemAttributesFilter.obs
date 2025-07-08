@@ -35,7 +35,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const contentChannelTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.contentChannelTypeOptions);
+    const contentChannelTypeOptions = safeParseJson<ListItemBag[]>(props.options.contentChannelTypeOptions);
     const contentChannelType = ref<Guid>(props.modelValue.contentChannelType ?? "");
     const fieldFilterSources = safeParseJson<Record<Guid, FieldFilterSourceBag[]>>(props.modelValue.fieldFilterSources) ?? {};
 

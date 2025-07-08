@@ -1,0 +1,33 @@
+<template>
+    <AccountPicker v-model="accounts" label="Account" multiple :help="help" />
+    <CheckBox v-model="useSundayDate" label="Use Sunday Date" help="Use the Sunday Date instead of the actual transaction date." />
+</template>
+
+<script setup lang="ts">
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const firstOrLast = props.options.firstOrLast ?? "first";
+    const help = `Pick accounts to show the ${firstOrLast} time the person made a contribution into any of those accounts. Leave blank if you don't want to limit it to specific accounts.`;
+
+    const accounts = ref<ListItemBag[]>(safeParseJson(props.modelValue.accounts) ?? []);
+    const useSundayDate = ref<boolean>(asBoolean(props.modelValue.useSundayDate));
+
+    watch([accounts, useSundayDate], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            accounts: JSON.stringify(accounts.value),
+            useSundayDate: asTrueOrFalseString(useSundayDate.value),
+        });
+    });
+</script>

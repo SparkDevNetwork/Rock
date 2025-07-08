@@ -72,24 +72,27 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var channelsWithComponents = new InteractionComponentService( rockContext ).Queryable()
+                .Select( icomp => icomp.InteractionChannel.Guid )
+                .Distinct()
+                .ToList();
+
+            var options = new Dictionary<string, string>
+            {
+                { "channelsWithComponents", channelsWithComponents.ToJson() }
+            };
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/interactionsFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/interactionsFilter.obs" ),
+                Options = options
             };
         }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var channelsWithComponents = new InteractionComponentService( rockContext ).Queryable()
-                .Select( icomp => icomp.InteractionChannel.Guid )
-                .Distinct()
-                .ToList();
-
-            var data = new Dictionary<string, string>
-            {
-                { "channelsWithComponents", channelsWithComponents.ToJson() }
-            };
+            var data = new Dictionary<string, string>();
 
             string[] selectionValues = selection.Split( '|' );
             if ( selection.IsNullOrWhiteSpace() || selectionValues[0].IsNullOrWhiteSpace() )

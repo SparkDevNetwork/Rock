@@ -1,0 +1,55 @@
+<template>
+    <DropDownList v-model="comparison" :items="comparisonOptions" disableLabel :showBlankItem="false" />
+
+    <AccountPicker v-model="accounts" label="Accounts" multiple enhanceForLongLists />
+
+    <SlidingDateRangePicker v-model="dateRange" label="Date Range"
+                            help="The date range that the note was created during." />
+
+    <CheckBox v-model="combineGiving" label="Combine Giving"
+              help="Combine individuals in the same giving group when calculating totals and reporting the list of individuals." />
+
+    <CheckBox v-model="useAnalytics" label="Use Analytics"
+              help="Using Analytics Data is MUCH faster than querying real-time data, but it may not include data that has been added or updated in the last 24 hours." />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import AccountPicker from "@Obsidian/Controls/accountPicker.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const comparisonOptions = safeParseJson<ListItemBag[]>(props.options.comparisonOptions) ?? [];
+    const comparison = ref<string>(props.modelValue.comparison ?? "");
+
+    const accounts = ref<ListItemBag[]>(safeParseJson<ListItemBag[]>(props.modelValue.accounts) ?? []);
+
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    const combineGiving = ref<boolean>(asBoolean(props.modelValue.combineGiving));
+
+    const useAnalytics = ref<boolean>(asBoolean(props.modelValue.useAnalytics));
+
+    watch([comparison, accounts, dateRange, combineGiving, useAnalytics], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            comparison: comparison.value,
+            accounts: JSON.stringify(accounts.value),
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+            combineGiving: asTrueOrFalseString(combineGiving.value),
+            useAnalytics: asTrueOrFalseString(useAnalytics.value),
+        });
+    });
+</script>

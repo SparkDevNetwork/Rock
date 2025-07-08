@@ -1,0 +1,239 @@
+<template>
+    <div v-if="person.personIdKey"
+         :class="['person-card', { 'selected': isSelected }]"
+         :style="{ borderLeftColor: getPersonBorderColor(person.gender) }"
+         @click="onPersonCardClick"
+         @mouseenter="togglePersonCardHover(true)"
+         @mouseleave="togglePersonCardHover(false)">
+        <div class="d-flex justify-content-between align-items-center person-row">
+            <div class="d-flex align-items-center w-100">
+                <div class="mr-3 flex-shrink-0"
+                     :style="{ 'width': '32px', 'height': '32px', 'border-radius': '18px', 'background-image': `url('${person.photoUrl}')`, 'background-size': 'cover' }">
+                </div>
+                <span :ref="(el) => addTooltipIfOverflow(el as HTMLElement, displayedPersonName)"
+                      class="overflow-ellipsis">
+                    {{ displayedPersonName }}
+                </span>
+            </div>
+            <div v-if="isGroupMemberCard && groupMember?.groupMemberIdKey"
+                 :class="['dropdown', 'dropdown-right', { 'open': openDropdownIndex === index }]">
+                <button type="button"
+                        class="btn btn-xs btn-link btn-overflow"
+                        data-toggle="dropdown"
+                        aria-haspopup="true"
+                        aria-expanded="false"
+                        @click.stop="togglePersonDropdown(index)">
+                    <i class="fa fa-ellipsis-v"></i>
+                </button>
+                <ul class="dropdown-menu">
+                    <li>
+                        <button type="button"
+                                class="dropdown-item btn-link"
+                                @click.stop="editGroupMember">
+                            Edit
+                        </button>
+                    </li>
+                    <li>
+                        <button type="button"
+                                class="dropdown-item btn-link"
+                                @click.stop="removeGroupMember">
+                            Remove
+                        </button>
+                    </li>
+                </ul>
+            </div>
+        </div>
+        <TransitionVerticalCollapse v-if="isTransitionEnabled">
+            <CardDetails v-if="isCardExpanded"
+                         :person="person"
+                         :isInstanceDisplayed="isInstanceDisplayed"
+                         :areFeesDisplayed="areFeesDisplayed"
+                         :groupMember="groupMember"
+                         :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                         :placementMode="placementMode"
+                         :isGroupMemberCard="isGroupMemberCard" />
+        </TransitionVerticalCollapse>
+        <template v-else>
+            <CardDetails v-if="isCardExpanded"
+                         :person="person"
+                         :isInstanceDisplayed="isInstanceDisplayed"
+                         :areFeesDisplayed="areFeesDisplayed"
+                         :groupMember="groupMember"
+                         :areSourceAttributesDisplayedOnDestinationGroupMembers="areSourceAttributesDisplayedOnDestinationGroupMembers"
+                         :placementMode="placementMode"
+                         :isGroupMemberCard="isGroupMemberCard" />
+        </template>
+    </div>
+</template>
+
+<style scoped>
+.person-card {
+    border: 1px solid var(--color-interface-soft);
+    border-left: 4px solid var(--color-interface-medium);
+    border-radius: 4px;
+    width: 100%;
+    color: var(--color-interface-strong);
+    cursor: grab;
+    background-color: var(--color-interface-softest);
+}
+
+.person-row {
+    padding: 10px;
+}
+
+.person-card.selected {
+    border-color: var(--color-primary) !important;
+    background-color: var(--color-interface-softest) !important;
+    color: var(--color-interface-stronger) !important;
+}
+
+.overflow-ellipsis {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+</style>
+
+<script setup lang="ts">
+    import { GroupMemberBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/groupMemberBag";
+    import { PersonBag } from "@Obsidian/ViewModels/Blocks/Group/GroupPlacement/personBag";
+    import { PlacementMode } from "@Obsidian/Enums/Group/placementMode";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { addTooltipIfOverflow } from "./types.partial";
+    import { Gender } from "@Obsidian/Enums/Crm/gender";
+    import { PropType, ref, computed } from "vue";
+    import CardDetails from "./cardDetails.partial.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+
+    const props = defineProps({
+        isCardExpanded: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        isTransitionEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        },
+        person: {
+            type: Object as PropType<PersonBag>,
+            required: true
+        },
+        index: {
+            type: Number as PropType<number>,
+            required: true
+        },
+        isSelected: {
+            type: Boolean as PropType<boolean>,
+            required: false
+        },
+        isInstanceDisplayed: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        areFeesDisplayed: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        isDetailHoverDisabled: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
+        isFirstNameLastName: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
+        isGenderHighlighting: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+        },
+        groupMember: {
+            type: Object as PropType<GroupMemberBag>,
+            required: false,
+        },
+        areSourceAttributesDisplayedOnDestinationGroupMembers: {
+            type: Boolean as PropType<boolean>,
+            default: false,
+            required: false
+        },
+        placementMode: {
+            type: Number as PropType<PlacementMode | null>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "toggleCardExpansion"): void;
+        (e: "toggleSelection"): void;
+        (e: "update:isCardExpanded", value: boolean): void;
+        (e: "editGroupMember", value: string): void;
+        (e: "removeGroupMember", value: string): void;
+        (e: "hover", value: boolean): void;
+    }>();
+
+    const openDropdownIndex = ref<number | null>(null);
+    const isCardExpanded = useVModelPassthrough(props, "isCardExpanded", emit);
+
+    const displayedPersonName = computed(() => {
+        // TODO - check if they want nickname or first name
+        if (props.isFirstNameLastName) {
+            return `${props.person.nickName} ${props.person.lastName}`;
+        }
+        return `${props.person.lastName}, ${props.person.nickName}`;
+    });
+
+    const isGroupMemberCard = computed(() => {
+        const gm = props.groupMember;
+        return !!gm && Object.keys(gm).length > 0;
+    });
+
+    function getPersonBorderColor(gender: Gender): string {
+        if (props.isGenderHighlighting) {
+            switch (gender) {
+                case Gender.Male:
+                    return "#1A8AE5";
+                case Gender.Female:
+                    return "#DE69CE";
+                case Gender.Unknown:
+                default:
+                    return "var(--color-interface-medium)";
+            }
+        }
+        return "var(--color-interface-medium)";
+    }
+
+    function onPersonCardClick(event: MouseEvent): void {
+        if (event.ctrlKey || event.metaKey) {
+            emit("toggleSelection");
+        }
+    }
+
+    function togglePersonDropdown(index: number): void {
+        openDropdownIndex.value = openDropdownIndex.value === index ? null : index;
+    }
+
+    function togglePersonCardHover(value: boolean): void {
+        emit("hover", value);
+        // toggleIsCardExpandedOnHover(value);
+    }
+
+    // TODO - talk with PO and determine if we want hover functionality
+    // function toggleIsCardExpandedOnHover(value: boolean) {
+    //     // We only want the hover behavior if the parent has set the cards to not be expanded.
+    //     if (!props.isCardExpanded && !props.isDetailHoverDisabled) {
+    //         isCardExpanded.value = value;
+    //     }
+    // }
+
+    function editGroupMember(): void {
+        // TOOD: When Group Member Detail is converted to Obsidian use idKey.
+        // emit("editGroupMember", groupMemberIdKey);
+        emit("editGroupMember", props.groupMember?.groupMemberId.toString() ?? "");
+        openDropdownIndex.value = null;
+    }
+    function removeGroupMember(): void {
+        emit("removeGroupMember", props.groupMember?.groupMemberIdKey ?? "");
+        openDropdownIndex.value = null;
+    }
+</script>

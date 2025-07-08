@@ -32,7 +32,7 @@
         { text: "Not Leader", value: "false" },
     ];
 
-    const memberStatuses = ref<ListItemBag[]>(safeParseJson(props.modelValue.memberStatuses) ?? []);
+    const memberStatuses = safeParseJson<ListItemBag[]>(props.options.memberStatuses) ?? [];
 
     const isLeader = ref<string>(props.modelValue.isLeader ?? "");
     const memberStatus = ref<string>(props.modelValue.memberStatus ?? "");

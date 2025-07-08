@@ -114,7 +114,7 @@
         }
         else {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
+                iconCssClass: "fa fa-lightbulb-o",
                 title: "Inactive",
                 type: "danger"
             });
@@ -177,7 +177,6 @@
 
             }
         }).on("mouseenter", (e: Event) => {
-            console.log(e);
             var target = e.target;
             $(target).popover("show");
             $(target).siblings(".popover").on("mouseleave", () => {

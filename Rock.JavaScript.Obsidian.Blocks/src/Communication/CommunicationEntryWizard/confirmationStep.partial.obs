@@ -213,12 +213,12 @@ dl:not(.dl-horizontal) dt:first-child {
     import { computed, onMounted, PropType, ref, watch } from "vue";
     import EmailPreview from "./emailPreview.partial.obs";
     import LoadingOverlay from "./loadingOverlay.partial.obs";
-    import PushNotificationMobilePreview from "./pushNotificationMobilePreview.partial.obs";
-    import SmsMobilePreview from "./smsMobilePreview.partial.obs";
     import { BinaryFileAttachment, BlockActionCallbacks } from "./types.partial";
     import { get, useBreakpointHelper } from "./utils.partial";
     import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import PushNotificationMobilePreview from "@Obsidian/Controls/Internal/pushNotificationMobilePreview.obs";
+    import SmsMobilePreview from "@Obsidian/Controls/Internal/smsMobilePreview.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -23,6 +24,11 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Security;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Rest.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Reporting.DataSelect.Person
@@ -33,7 +39,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Selects Interaction Date for a Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select the first or last Interaction date of a person" )]
-    [Rock.SystemGuid.EntityTypeGuid( "F6F153F3-B901-4796-A0EB-D055B234EED4")]
+    [Rock.SystemGuid.EntityTypeGuid( "F6F153F3-B901-4796-A0EB-D055B234EED4" )]
     public class InteractionDateSelect : DataSelectComponent
     {
         #region Properties
@@ -119,6 +125,117 @@ namespace Rock.Reporting.DataSelect.Person
         {
             // disable sorting on this column since it is an IEnumerable
             return string.Empty;
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var options = new Dictionary<string, string>();
+
+            var interactionChannelOptions = new InteractionChannelService( rockContext ).Queryable()
+                .OrderBy( a => a.Name )
+                .Select( a => new ListItemBag { Value = a.Guid.ToString(), Text = a.Name } )
+                .ToList();
+
+            options.Add( "interactionChannelOptions", interactionChannelOptions.ToCamelCaseJson( false, true ) );
+
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length >= 1 )
+            {
+                Guid? interactionChannelGuid = selectionValues[0].AsGuidOrNull();
+
+                if ( interactionChannelGuid.HasValue )
+                {
+                    var interactionComponentOptions = new InteractionComponentService( rockContext ).Queryable()
+                        .Where( a => a.InteractionChannel.Guid == interactionChannelGuid )
+                        .OrderBy( a => a.Name )
+                        .Select( a => new ListItemBag { Value = a.Guid.ToString(), Text = a.Name } )
+                        .ToList();
+
+                    options.Add( "interactionComponentOptions", interactionComponentOptions.ToCamelCaseJson( false, true ) );
+                }
+            }
+
+            var selectionModeOptions = Enum.GetValues( typeof( FirstLastInteraction ) )
+                .Cast<FirstLastInteraction>()
+                .Select( a => new ListItemBag
+                {
+                    Value = a.ConvertToInt().ToString(),
+                    Text = a.ConvertToString()
+                } )
+                .ToList();
+
+            options.Add( "selectionModeOptions", selectionModeOptions.ToCamelCaseJson( false, true ) );
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/interactionDateSelect.obs" ),
+                Options = options
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            string[] selectionValues = selection.Split( '|' );
+
+            if ( selectionValues.Length >= 1 )
+            {
+                data.Add( "interactionChannel", selectionValues[0] );
+            }
+
+            if ( selectionValues.Length >= 2 )
+            {
+                data.Add( "interactionComponent", selectionValues[1] );
+            }
+
+            if ( selectionValues.Length >= 3 )
+            {
+                data.Add( "operation", selectionValues[2] );
+            }
+
+            if ( selectionValues.Length >= 4 )
+            {
+                data.Add( "selectionMode", selectionValues[3] );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var interactionChannel = data.GetValueOrDefault( "interactionChannel", string.Empty );
+            var interactionComponent = data.GetValueOrDefault( "interactionComponent", string.Empty );
+            var operation = data.GetValueOrDefault( "operation", string.Empty );
+            var selectionMode = data.GetValueOrDefault( "selectionMode", "0" );
+
+            return $"{interactionChannel}|{interactionComponent}|{operation}|{selectionMode}";
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var action = request.GetValueOrNull( "action" );
+            var options = request.GetValueOrNull( "options" )?.FromJsonOrNull<InteractionCountSelectGetComponentsOptionsBag>();
+
+            if ( action == "GetComponents" && options != null && options.InteractionChannelGuid != null )
+            {
+                var interactionComponentOptions = new InteractionComponentService( rockContext ).Queryable()
+                    .Where( a => a.InteractionChannel.Guid == options.InteractionChannelGuid )
+                    .OrderBy( a => a.Name )
+                    .Select( a => new ListItemBag { Value = a.Guid.ToString(), Text = a.Name } )
+                    .ToList();
+
+                return new Dictionary<string, string> { ["interactionComponentOptions"] = interactionComponentOptions.ToCamelCaseJson( false, true ) };
+            }
+
+            return null;
         }
 
         #endregion

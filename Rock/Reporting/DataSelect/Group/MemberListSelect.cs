@@ -22,8 +22,14 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.Security;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Rest.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -35,7 +41,7 @@ namespace Rock.Reporting.DataSelect.Group
     [Description( "Select a comma-delimited list of members of the group" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Member List" )]
-    [Rock.SystemGuid.EntityTypeGuid( "42D54FD1-74AA-4D47-BE84-BF92334ECD33")]
+    [Rock.SystemGuid.EntityTypeGuid( "42D54FD1-74AA-4D47-BE84-BF92334ECD33" )]
     public class MemberListSelect : DataSelectComponent, IRecipientDataSelect
     {
         #region Properties
@@ -187,6 +193,115 @@ namespace Rock.Reporting.DataSelect.Group
             {
                 return "Member List";
             }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectedGroupTypeId = 0;
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length >= 2 )
+            {
+                selectedGroupTypeId = new GroupTypeService( rockContext ).GetId( selectionValues[1].AsGuid() ) ?? 0;
+            }
+
+            var showAsLinkTypes = new List<ListItemBag>
+            {
+                new ListItemBag { Text = "Show Name Only", Value = ShowAsLinkType.NameOnly.ConvertToInt().ToString() },
+                new ListItemBag { Text = "Show as Person Link", Value = ShowAsLinkType.PersonLink.ConvertToInt().ToString() },
+                new ListItemBag { Text = "Show as Group Member Link", Value = ShowAsLinkType.GroupMemberLink.ConvertToInt().ToString() },
+            };
+
+            var groupTypes = new GroupTypeService( rockContext ).Queryable().ToList().Select( gt => gt.ToListItemBag() ).ToList();
+
+            var groupRoles = new List<ListItemBag>();
+            if ( selectedGroupTypeId != 0 )
+            {
+                groupRoles = new GroupTypeRoleService( rockContext )
+                    .GetByGroupTypeId( selectedGroupTypeId )
+                    .Select( role => new ListItemBag { Text = role.Name, Value = role.Guid.ToString() } )
+                    .ToList();
+            }
+
+            var memberStatuses = new List<ListItemBag>();
+            foreach ( GroupMemberStatus memberStatus in Enum.GetValues( typeof( GroupMemberStatus ) ) )
+            {
+                memberStatuses.Add( new ListItemBag { Text = memberStatus.ConvertToString(), Value = memberStatus.ConvertToInt().ToString() } );
+            }
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Group/memberListSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "showAsLinkTypeOptions", showAsLinkTypes.ToCamelCaseJson(false, true) },
+                    { "groupTypeOptions", groupTypes.ToCamelCaseJson(false, true) },
+                    { "groupRoleOptions", groupRoles.ToCamelCaseJson(false, true) },
+                    { "memberStatusOptions", memberStatuses.ToCamelCaseJson(false, true) },
+                },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var result = new Dictionary<string, string>();
+
+            string[] selectionValues = selection.Split( '|' );
+            if ( selectionValues.Length >= 1 )
+            {
+                result.AddOrReplace( "showAsLinkType", selectionValues[0].ConvertToEnum<ShowAsLinkType>( ShowAsLinkType.NameOnly ).ConvertToInt().ToString() );
+
+                if ( selectionValues.Length >= 3 )
+                {
+                    result.AddOrReplace( "groupType", selectionValues[1] );
+
+                    result.AddOrReplace( "groupRoles", selectionValues[2].Split( new char[] { ',' }, StringSplitOptions.RemoveEmptyEntries ).ToJson() );
+
+                    result.AddOrReplace( "memberStatus", selectionValues[3] );
+                }
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var showAsLinkType = data.GetValueOrDefault( "showAsLinkType", string.Empty );
+            var groupType = data.GetValueOrDefault( "groupType", string.Empty );
+            var groupRoles = data.GetValueOrDefault( "groupRoles", "[]" ).FromJsonOrNull<List<string>>() ?? new List<string>();
+            var memberStatus = data.GetValueOrDefault( "memberStatus", string.Empty );
+
+            return $"{showAsLinkType}|{groupType}|{groupRoles.AsDelimited( "," )}|{memberStatus}";
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var action = request.GetValueOrNull( "action" );
+            var options = request.GetValueOrNull( "options" )?.FromJsonOrNull<MemberListSelectGetGroupRolesOptionsBag>();
+
+            if ( action == "GetGroupRoles" && options != null && options.GroupType != null )
+            {
+                var selectedGroupTypeId = new GroupTypeService( rockContext ).GetId( options.GroupType ) ?? 0;
+                var groupRoleOptions = new List<ListItemBag>();
+                if ( selectedGroupTypeId != 0 )
+                {
+                    groupRoleOptions = new GroupTypeRoleService( rockContext )
+                        .GetByGroupTypeId( selectedGroupTypeId )
+                        .Select( role => new ListItemBag { Text = role.Name, Value = role.Guid.ToString() } )
+                        .ToList();
+                }
+
+                return new Dictionary<string, string> { { "groupRoleOptions", groupRoleOptions.ToCamelCaseJson( false, true ) } };
+            }
+
+            return null;
         }
 
         #endregion
@@ -356,7 +471,7 @@ namespace Rock.Reporting.DataSelect.Group
             RockCheckBoxList cblRole = groupTypePicker.Parent.ControlsOfTypeRecursive<RockCheckBoxList>().FirstOrDefault( a => a.HasCssClass( "js-group-role" ) );
             if ( groupTypeId.HasValue )
             {
-//                cblRole.Items.Clear();
+                //                cblRole.Items.Clear();
                 foreach ( var item in new GroupTypeRoleService( new RockContext() ).GetByGroupTypeId( groupTypeId.Value ) )
                 {
                     cblRole.Items.Add( new ListItem( item.Name, item.Guid.ToString() ) );

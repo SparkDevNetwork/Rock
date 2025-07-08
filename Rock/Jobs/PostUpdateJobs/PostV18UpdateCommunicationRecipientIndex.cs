@@ -23,7 +23,7 @@ using Rock.Model;
 namespace Rock.Jobs
 {
     /// <summary>
-    /// Run once job for v17.1 to update an existing index on the CommunicationRecipient table.
+    /// Run once job for v18.0 to update an existing index on the CommunicationRecipient table.
     /// </summary>
     [DisplayName( "Rock Update Helper v18.0 - Update CommunicationRecipient Index" )]
     [Description( "This job will update an existing index on the CommunicationRecipient table." )]
@@ -61,7 +61,7 @@ CREATE NONCLUSTERED INDEX [IX_CommunicationId] ON [dbo].[CommunicationRecipient]
     [Status] ASC,
     [OpenedDateTime] ASC
 )
-INCLUDE ([PersonAliasId], [CausedUnsubscribe]);" );
+INCLUDE ([PersonAliasId], [UnsubscribeDateTime]);" );
 
             DeleteJob();
         }

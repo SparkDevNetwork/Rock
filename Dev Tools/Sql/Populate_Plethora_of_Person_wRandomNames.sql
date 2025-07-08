@@ -12039,6 +12039,25 @@ BEGIN
 		SET @connectionStatusValueId = (select top 1 id from DefinedValue where DefinedTypeId = @connectionStatusDefinedTypeId order by NEWID())
         SET @recordStatusValueId = (select top 1 id from DefinedValue where DefinedTypeId = @recordStatusDefinedTypeId order by NEWID())
 
+        -- Calculate age and age bracket for the adult
+        DECLARE @age INT = CASE 
+            WHEN @adultBirthYear IS NULL OR @month IS NULL OR @day IS NULL THEN NULL
+            ELSE DATEDIFF(YEAR, DATEFROMPARTS(@adultBirthYear, @month, @day), CAST(SYSDATETIME() AS DATE))
+                - CASE WHEN (MONTH(CAST(SYSDATETIME() AS DATE)) < @month OR (MONTH(CAST(SYSDATETIME() AS DATE)) = @month AND DAY(CAST(SYSDATETIME() AS DATE)) < @day)) THEN 1 ELSE 0 END
+        END;
+        DECLARE @ageBracket INT = CASE 
+            WHEN @age IS NULL OR @age < 0 THEN 0
+            WHEN @age BETWEEN 0 AND 5 THEN 1
+            WHEN @age BETWEEN 6 AND 12 THEN 2
+            WHEN @age BETWEEN 13 AND 17 THEN 3
+            WHEN @age BETWEEN 18 AND 24 THEN 4
+            WHEN @age BETWEEN 25 AND 34 THEN 5
+            WHEN @age BETWEEN 35 AND 44 THEN 6
+            WHEN @age BETWEEN 45 AND 54 THEN 7
+            WHEN @age BETWEEN 55 AND 64 THEN 8
+            ELSE 9
+        END;
+        
         INSERT INTO [Person] (
             [IsSystem]
             ,[FirstName]
@@ -12051,6 +12070,7 @@ BEGIN
             ,[Gender]
             ,[AgeClassification]
             ,[AgeBracket]
+            ,[Age]
             ,[Email]
             ,[IsEmailActive]
             ,[EmailPreference]
@@ -12072,7 +12092,8 @@ BEGIN
 			,@maritalStatusMarried
             ,@genderInt
             ,@ageClassificationAdult
-            ,0
+            ,@ageBracket
+            ,@age
             ,@email
             ,1
             ,0
@@ -12199,6 +12220,25 @@ BEGIN
         SET @connectionStatusValueId = (select top 1 id from DefinedValue where DefinedTypeId = @connectionStatusDefinedTypeId order by NEWID())
         SET @recordStatusValueId = (select top 1 id from DefinedValue where DefinedTypeId = @recordStatusDefinedTypeId order by NEWID())
 
+        -- Calculate age and age bracket for the spouse
+        DECLARE @spouseAge INT = CASE 
+            WHEN @adultBirthYear IS NULL OR @month IS NULL OR @day IS NULL THEN NULL
+            ELSE DATEDIFF(YEAR, DATEFROMPARTS(@adultBirthYear, @month, @day), CAST(SYSDATETIME() AS DATE))
+                - CASE WHEN (MONTH(CAST(SYSDATETIME() AS DATE)) < @month OR (MONTH(CAST(SYSDATETIME() AS DATE)) = @month AND DAY(CAST(SYSDATETIME() AS DATE)) < @day)) THEN 1 ELSE 0 END
+        END;
+        DECLARE @spouseAgeBracket INT = CASE 
+            WHEN @spouseAge IS NULL OR @spouseAge < 0 THEN 0
+            WHEN @spouseAge BETWEEN 0 AND 5 THEN 1
+            WHEN @spouseAge BETWEEN 6 AND 12 THEN 2
+            WHEN @spouseAge BETWEEN 13 AND 17 THEN 3
+            WHEN @spouseAge BETWEEN 18 AND 24 THEN 4
+            WHEN @spouseAge BETWEEN 25 AND 34 THEN 5
+            WHEN @spouseAge BETWEEN 35 AND 44 THEN 6
+            WHEN @spouseAge BETWEEN 45 AND 54 THEN 7
+            WHEN @spouseAge BETWEEN 55 AND 64 THEN 8
+            ELSE 9
+        END;
+        
         INSERT INTO [Person] (
             [IsSystem]
             ,[FirstName]
@@ -12211,6 +12251,7 @@ BEGIN
             ,[MaritalStatusValueId]
             ,[AgeClassification]
             ,[AgeBracket]
+            ,[Age]
             ,[Email]
             ,[IsEmailActive]
             ,[EmailPreference]
@@ -12232,7 +12273,8 @@ BEGIN
             ,@genderInt
             ,@maritalStatusMarried
             ,@ageClassificationAdult
-            ,0
+            ,@spouseAgeBracket
+            ,@spouseAge
             ,@email
             ,1
             ,0
@@ -12405,50 +12447,71 @@ BEGIN
                 WHERE #personFirstNames.number >= ROUND(rand() * @firstNameCount, 0)
                 AND gender = @genderInt
 
-			INSERT INTO [Person] (
-				[IsSystem]
-				,[FirstName]
-				,[NickName]
-				,[LastName]
-				,[BirthDay]
-				,[BirthMonth]
-				,[BirthYear]
-				,[Gender]
-				,[MaritalStatusValueId]
+            -- Calculate age and age bracket for the child
+            DECLARE @kidAge INT = CASE 
+                WHEN @childBirthYear IS NULL OR @month IS NULL OR @day IS NULL THEN NULL
+                ELSE DATEDIFF(YEAR, DATEFROMPARTS(@childBirthYear, @month, @day), CAST(SYSDATETIME() AS DATE))
+                    - CASE WHEN (MONTH(CAST(SYSDATETIME() AS DATE)) < @month OR (MONTH(CAST(SYSDATETIME() AS DATE)) = @month AND DAY(CAST(SYSDATETIME() AS DATE)) < @day)) THEN 1 ELSE 0 END
+            END;
+            DECLARE @kidAgeBracket INT = CASE 
+                WHEN @kidAge IS NULL OR @kidAge < 0 THEN 0
+                WHEN @kidAge BETWEEN 0 AND 5 THEN 1
+                WHEN @kidAge BETWEEN 6 AND 12 THEN 2
+                WHEN @kidAge BETWEEN 13 AND 17 THEN 3
+                WHEN @kidAge BETWEEN 18 AND 24 THEN 4
+                WHEN @kidAge BETWEEN 25 AND 34 THEN 5
+                WHEN @kidAge BETWEEN 35 AND 44 THEN 6
+                WHEN @kidAge BETWEEN 45 AND 54 THEN 7
+                WHEN @kidAge BETWEEN 55 AND 64 THEN 8
+                ELSE 9
+            END;
+            
+            INSERT INTO [Person] (
+                [IsSystem]
+                ,[FirstName]
+                ,[NickName]
+                ,[LastName]
+                ,[BirthDay]
+                ,[BirthMonth]
+                ,[BirthYear]
+                ,[Gender]
+                ,[MaritalStatusValueId]
                 ,[AgeClassification]
                 ,[AgeBracket]
-				,[Email]
-				,[IsEmailActive]
-				,[EmailPreference]
-				,[Guid]
-				,[RecordTypeValueId]
-				,[RecordStatusValueId]
+                ,[Age]
+                ,[Email]
+                ,[IsEmailActive]
+                ,[EmailPreference]
+                ,[Guid]
+                ,[RecordTypeValueId]
+                ,[RecordStatusValueId]
                 ,[ConnectionStatusValueId]
-				,[IsDeceased]
-				,[CreatedDateTime]
-				)
-			VALUES (
-				0
-				,@firstName
-				,@firstName
-				,@lastName
-				,@day
-				,@month
-				,@childBirthYear
-				,@genderInt
-				,@maritalStatusSingle
+                ,[IsDeceased]
+                ,[CreatedDateTime]
+                )
+            VALUES (
+                0
+                ,@firstName
+                ,@firstName
+                ,@lastName
+                ,@day
+                ,@month
+                ,@childBirthYear
+                ,@genderInt
+                ,@maritalStatusSingle
                 ,@ageClassificationChild
+                ,@kidAgeBracket
+                ,@kidAge
+                ,null
+                ,1
                 ,0
-				,null
-				,1
-				,0
-				,@kidPersonGuid
-				,@personRecordType
-				,@recordStatusValueId
+                ,@kidPersonGuid
+                ,@personRecordType
+                ,@recordStatusValueId
                 ,@connectionStatusValueId
-				,0
-				,SYSDATETIME()
-				)
+                ,0
+                ,SYSDATETIME()
+                )
 
 			SET @kidPersonId = SCOPE_IDENTITY()
 

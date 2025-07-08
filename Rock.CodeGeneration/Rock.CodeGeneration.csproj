@@ -149,6 +149,7 @@
     <Compile Include="Utility\EntityColumn.cs" />
     <Compile Include="Utility\GeneratedFileSaveState.cs" />
     <Compile Include="Utility\IndentedStringBuilder.cs" />
+    <Compile Include="Utility\InverseBooleanToVisibilityConverter.cs" />
     <Compile Include="Utility\RockGuidCodeGenerator.cs" />
     <Compile Include="Utility\AlertType.cs" />
     <Compile Include="Utility\BindingBase.cs" />
@@ -157,10 +158,13 @@
     <Compile Include="Utility\INavigation.cs" />
     <Compile Include="Utility\InverseBooleanConverter.cs" />
     <Compile Include="Utility\PropertyDeclaration.cs" />
+    <Compile Include="Utility\SettingsHelper.cs" />
     <Compile Include="Utility\SolutionHelper.cs" />
     <Compile Include="Utility\SupportTools.cs" />
     <Compile Include="Utility\TypeScriptImport.cs" />
     <Compile Include="ViewModels\AlertViewModel.cs" />
+    <Compile Include="ViewModels\GeneratedFilePreviewPageViewModel.cs" />
+    <Compile Include="ViewModels\ObsidianViewModelsPageViewModel.cs" />
     <Compile Include="XmlDoc\Comment.cs" />
     <Compile Include="XmlDoc\Comments.cs" />
     <Compile Include="XmlDoc\XmlDocId.cs" />

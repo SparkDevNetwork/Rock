@@ -48,8 +48,6 @@
         <NumberColumn name="currentStreakCount"
                       title="Current Streak"
                       field="currentStreakCount"
-                      headerClass="title-right"
-                      itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
                       width="5%" />
@@ -57,8 +55,6 @@
         <NumberColumn name="longestStreakCount"
                       title="Longest Streak"
                       field="longestStreakCount"
-                      headerClass="title-right"
-                      itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
                       width="5%" />
@@ -66,8 +62,6 @@
         <NumberColumn name="engagementCount"
                       title="Engagements"
                       field="engagementCount"
-                      headerClass="title-right"
-                      itemClass="justify-content-end text-right"
                       :filter="numberValueFilter"
                       visiblePriority="xs"
                       width="5%" />

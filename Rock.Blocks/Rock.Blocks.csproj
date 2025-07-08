@@ -22,7 +22,6 @@
   </ItemGroup>
 
   <ItemGroup>
-    <PackageReference Include="EntityFramework" Version="6.4.4" />
     <PackageReference Include="Microsoft.Extensions.Logging.Abstractions" Version="8.0.0" />
     <PackageReference Include="System.Diagnostics.DiagnosticSource" Version="8.0.0" />
     <PackageReference Include="System.IO.Compression" Version="4.3.0" />
@@ -35,6 +34,7 @@
     <ProjectReference Include="..\Rock.Lava.Shared\Rock.Lava.Shared.csproj" />
     <ProjectReference Include="..\Rock.NCOA\Rock.NCOA.csproj" />
     <ProjectReference Include="..\Rock.Rest\Rock.Rest.csproj" />
+    <ProjectReference Include="..\Rock.Slingshot\Rock.Slingshot.csproj" />
     <ProjectReference Include="..\Rock.Version\Rock.Version.csproj" />
     <ProjectReference Include="..\Rock.ViewModels\Rock.ViewModels.csproj" />
     <ProjectReference Include="..\Rock\Rock.csproj" />

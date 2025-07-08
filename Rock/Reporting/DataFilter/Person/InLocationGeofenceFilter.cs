@@ -74,9 +74,19 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var locationTypesOptions = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                .DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value )
+                .ToListItemBagList();
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/inLocationGeofenceFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/inLocationGeofenceFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "locationTypeOptions", locationTypesOptions.ToCamelCaseJson( false, true ) }
+                },
             };
         }
 
@@ -90,8 +100,6 @@ namespace Rock.Reporting.DataFilter.Person
                 .DefinedValues
                 .OrderBy( a => a.Order )
                 .ThenBy( a => a.Value );
-
-            data.AddOrReplace( "locationTypeOptions", locationTypes.ToListItemBagList().ToCamelCaseJson( false, true ) );
 
             if ( selectionValues.Length >= 2 )
             {

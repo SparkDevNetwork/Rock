@@ -85,7 +85,7 @@
                             ID="cbDisablePredictableIds"
                             runat="server"
                             Label="Disable Predictable IDs"
-                            Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs." />
+                            Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs.  Note: Enabling this may cause plugins that are not yet compatible with this feature to stop working correctly." />
                     </div>
                 </div>
                 <div class="row mt-3">

@@ -1,0 +1,97 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Modal v-model="isVisible"
+           title="New Personal Template"
+           saveText="Save"
+           @save="onSave">
+
+        <NotificationBox :alertType="AlertType.Info">
+            This will create a new personal communication template based off the current communication.
+        </NotificationBox>
+
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name" label="Template Name" rules="required" />
+            </div>
+            <div class="col-md-6">
+                <CategoryPicker v-model="category"
+                                label="Category"
+                                :entityTypeGuid="EntityType.CommunicationTemplate" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline"
+                 :rows=3 />
+
+    </Modal>
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch } from "vue";
+    import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CreatePersonalTemplateRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/createPersonalTemplateRequestBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "createPersonalTemplate", value: CreatePersonalTemplateRequestBag): void;
+        (e: "close"): void;
+    }>();
+
+    // #region Values
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+
+    const name = ref("");
+    const description = ref("");
+    const category = ref<ListItemBag | undefined>();
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    /**
+     * Called when the save button is clicked.
+     */
+    function onSave(): void {
+        const value: CreatePersonalTemplateRequestBag = {
+            name: name.value,
+            description: description.value,
+            categoryGuid: category.value?.value
+        };
+
+        emit("createPersonalTemplate", value);
+
+        isVisible.value = false;
+        name.value = "";
+        description.value = "";
+        category.value = undefined;
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(isVisible, () => {
+        if (!isVisible.value) {
+            emit("close");
+        }
+    });
+
+    // #endregion Watchers
+</script>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -41,10 +41,12 @@ namespace Rock.Workflow.Action
     [WorkflowTextOrAttribute( "Target URL", "Target Url",
         "The URL that the short link will redirect to. <span class='tip tip-lava'></span>",
         true, "", "", 2, "Url", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
+    [CategoryField( "Category", "The category to use for the generated short url", false, "Rock.Model.PageShortLink", "", "", false, "", "", 3, "Category" )]
+    [BooleanField( "Is Pinned", "This is the boolean value used to indicate if the short link is pinned.", false, "", 4, "IsPinned" )]
     [WorkflowAttribute( "Attribute", "The attribute to store the generated short link's URL to.",
-        false, "", "", 3, "Attribute", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
-    [IntegerField( "Random Token Length", "The number of characters to use when generating a random unique token.", false, 7, "", 4 )]
-    [BooleanField( "Allow Token Re-use", "If a short link already exists with the same token, should it be updated to the new URL? If this is not allowed, this action will fail due to existing short link.", true, "", 5, "Overwrite" )]
+        false, "", "", 5, "Attribute", new string[] { "Rock.Field.Types.TextFieldType", "Rock.Field.Types.UrlLinkFieldType" } )]
+    [IntegerField( "Random Token Length", "The number of characters to use when generating a random unique token.", false, 7, "", 6 )]
+    [BooleanField( "Allow Token Re-use", "If a short link already exists with the same token, should it be updated to the new URL? If this is not allowed, this action will fail due to existing short link.", true, "", 7, "Overwrite" )]
     [Rock.SystemGuid.EntityTypeGuid( "AA995907-DAC1-4B7A-ACEF-AEC6CD057E72")]
     public class CreateShortLink : ActionComponent
     {
@@ -90,6 +92,19 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
+            int? categoryId = GetAttributeValue( action, "Category", true ).AsIntegerOrNull();
+
+            if ( categoryId.HasValue )
+            {
+                var category = CategoryCache.Get( categoryId.Value );
+                if ( category == null || category.EntityTypeId != EntityTypeCache.GetId<PageShortLink>() )
+                {
+                    categoryId = null;
+                }
+            }
+
+            bool isPinned = GetAttributeValue( action, "IsPinned", true ).AsBoolean();
+
             // Save the short link
             var link = service.GetByToken( token, site.Id );
             if ( link != null )
@@ -110,6 +125,9 @@ namespace Rock.Workflow.Action
                 link.SiteId = site.Id;
                 link.Token = token;
                 link.Url = url;
+                link.CategoryId = categoryId;
+                link.IsPinned = isPinned;
+
                 service.Add( link );
             }
             rockContext.SaveChanges();

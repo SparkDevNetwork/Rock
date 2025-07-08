@@ -521,7 +521,6 @@ namespace Rock.Jobs
     /// Helper class for following suggestion notifications
     /// </summary>
     [LavaType( "SuggestionType", "Notices" )]
-    [DotLiquid.LiquidType( "SuggestionType", "Notices" )]
     public class FollowingSuggestionNotices
     {
         /// <summary>

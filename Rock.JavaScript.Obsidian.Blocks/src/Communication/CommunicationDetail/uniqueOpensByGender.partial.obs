@@ -1,0 +1,95 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Chart v-if="chartData"
+           type="doughnut"
+           :data="chartData"
+           :options="chartOptions" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { getCssVar, useChartStyles } from "./utils.partial";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+
+    const chartStyles = useChartStyles();
+
+    const props = defineProps({
+        chartDataPoints: {
+            type: Array as PropType<ChartNumericDataPointBag[] | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const dataPoints = computed((): ChartNumericDataPointBag[] => {
+        return props.chartDataPoints
+            ?.filter(dp =>
+                dp?.label
+                && !isNullish(dp.value)
+                && dp.color
+            )
+            ?? [];
+    });
+
+    const chartData = computed((): ChartData | null => {
+        if (!dataPoints.value.length) {
+            return null;
+        }
+
+        const labels: string[] = [];
+        const data: number[] = [];
+        const backgroundColor: string[] = [];
+
+        dataPoints.value.forEach(dp => {
+            labels.push(dp.label!);
+            data.push(dp.value!);
+            backgroundColor.push(
+                getCssVar(dp.color!, chartStyles.value.fallbackColor)
+            );
+        });
+
+        return {
+            labels,
+            datasets: [{
+                data,
+                backgroundColor
+            }]
+        };
+    });
+
+    const chartOptions = computed((): ChartOptions => {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    labels: {
+                        boxWidth: chartStyles.value.legendBoxSize,
+                        boxHeight: chartStyles.value.legendBoxSize,
+                        font: {
+                            family: chartStyles.value.fontFamily,
+                            size: chartStyles.value.fontSize,
+                            weight: chartStyles.value.fontWeight
+                        },
+                        color: chartStyles.value.fontColor
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => {
+                            const label = context.dataset.label ?? "";
+                            const value = context.raw;
+                            return `${label ? `${label}: ` : ""}${value}%`;
+                        }
+                    }
+                }
+            }
+        };
+    });
+
+    // #endregion Computed Values
+</script>

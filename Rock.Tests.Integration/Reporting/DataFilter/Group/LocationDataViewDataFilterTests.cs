@@ -38,9 +38,14 @@ namespace Rock.Tests.Integration.Reporting.DataFilter.Group
             TestDataHelper.Reporting.AddDataViewsForGroupsModule();
         }
 
-        [ClassCleanup]
+        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
         public static void Cleanup()
         {
+            if ( IsContainersEnabled )
+            {
+                return;
+            }
+
             TestDataHelper.Reporting.DeleteDataViewsByRecordTag( new RockContext(), "TestData" );
         }
 

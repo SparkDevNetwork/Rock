@@ -279,15 +279,15 @@ namespace Rock.Jobs
         /// If there are any existing <see cref="LearningClassActivityCompletion"/> records their
         /// NotificationCommunicationId property will be set to <c>true</c>.
         /// </summary>
-        /// <param name="personActivitiesByCourse">The list of activities grouped by course for this person.</param>
+        /// <param name="personProgramInfo">The list of activities grouped by class grouped by course for this person.</param>
         /// <param name="communicationId">The identifier of the communication that was sent to the person for this program.</param>
         /// <param name="rockContext">The context to use when accessing the database.</param>
-        private static void AddOrUpdateCompletionRecords( PersonProgramActivitiesByCourseInfo personActivitiesByCourse, int communicationId, RockContext rockContext )
+        private static void AddOrUpdateCompletionRecords( PersonProgramInfo personProgramInfo, int communicationId, RockContext rockContext )
         {
             var learningClassActivityCompletionService = new LearningClassActivityCompletionService( rockContext );
 
             // Get a list of all activities for simpler querying.
-            var activityInfos = personActivitiesByCourse.Courses.SelectMany( c => c.Activities );
+            var activityInfos = personProgramInfo.Courses.SelectMany( c => c.Classes ).SelectMany( c => c.Activities );
 
             // Get the list of all ActivityIds that were referenced in the person's email.
             var activityIdsToAdd = activityInfos
@@ -335,7 +335,7 @@ namespace Rock.Jobs
             // be created which causes a conflict.
             var participants = new LearningParticipantService( rockContext )
                 .Queryable()
-                .Where( lp => lp.PersonId == personActivitiesByCourse.Person.Id
+                .Where( lp => lp.PersonId == personProgramInfo.Person.Id
                     && learningClassIds.Contains( lp.LearningClassId ) )
                 .ToList();
 
@@ -377,22 +377,16 @@ namespace Rock.Jobs
         /// </summary>
         /// <param name="program">The program to generate notifications for.</param>
         /// <param name="rockContext">The context to use when accessing the database.</param>
-        /// <returns>A collection of <see cref="PersonProgramActivitiesByCourseInfo"/> objects.</returns>
-        private static List<PersonProgramActivitiesByCourseInfo> GetActivityNotificationsForProgram( LearningProgram program, RockContext rockContext )
+        /// <returns>A collection of <see cref="PersonProgramInfo"/> objects.</returns>
+        private static List<PersonProgramInfo> GetActivityNotificationsForProgram( LearningProgram program, RockContext rockContext )
         {
             var studentRoleGuid = SystemGuid.GroupRole.GROUPROLE_LMS_CLASS_STUDENT.AsGuid();
-
-            var courses = new LearningCourseService( rockContext )
-                .Queryable()
-                .AsNoTracking()
-                .Where( lc => lc.LearningProgramId == program.Id )
-                .ToList();
 
             var classes = GetActiveClassesForProgram( program.Id, rockContext );
 
             // Use a lookup for these so that the sub-methods can add new records
             // and also add new activities to existing records across classes.
-            var studentProgramLookup = new Dictionary<int, PersonProgramActivitiesByCourseInfo>();
+            var studentProgramLookup = new Dictionary<int, PersonProgramInfo>();
 
             foreach ( var learningClass in classes )
             {
@@ -444,7 +438,7 @@ namespace Rock.Jobs
         /// <param name="student">The student that we are going to generate notifications for.</param>
         /// <param name="completionsForClass">All activity completions for all students in this class.</param>
         /// <param name="studentLookup">The lookup dictionary that contains the student program notification details.</param>
-        private static void PopulateStudentProgramNotifications( LearningProgram program, LearningClass learningClass, List<LearningClassActivity> activities, LearningParticipant student, List<LearningClassActivityCompletion> completionsForClass, Dictionary<int, PersonProgramActivitiesByCourseInfo> studentLookup )
+        private static void PopulateStudentProgramNotifications( LearningProgram program, LearningClass learningClass, List<LearningClassActivity> activities, LearningParticipant student, List<LearningClassActivityCompletion> completionsForClass, Dictionary<int, PersonProgramInfo> studentLookup )
         {
             var activityNotifications = GetActivityNotificationsForStudent( learningClass, activities, student, completionsForClass );
 
@@ -454,33 +448,57 @@ namespace Rock.Jobs
             }
 
             // Look up an existing person program record if we have
-            // already queued some notifications from another class,
+            // already queued some notifications from another course,
             // otherwise create a new record.
             if ( !studentLookup.TryGetValue( student.PersonId, out var studentProgram ) )
             {
-                studentProgram = new PersonProgramActivitiesByCourseInfo
+                studentProgram = new PersonProgramInfo
                 {
                     Person = student.Person,
                     ProgramSystemCommunicationId = program.SystemCommunicationId,
-                    Courses = new List<ActivitiesByCourseInfo>(),
+                    Program = new ProgramInfo
+                    {
+                        ProgramId = program.Id,
+                        ProgramIdKey = program.IdKey,
+                        ProgramName = program.Name
+                    },
+                    Courses = new List<CourseInfo>(),
                     CommunicationPreference = student.CommunicationPreference
                 };
 
                 studentLookup.Add( student.PersonId, studentProgram );
             }
 
-            // If we had any activities that the student should be notified
-            // about then add this course (class) to their record.
-            studentProgram.Courses.Add( new ActivitiesByCourseInfo
+            var classInfo = new ClassInfo()
             {
                 Activities = activityNotifications,
                 ActivityCount = activityNotifications.Count,
-                CourseCode = learningClass.LearningCourse.CourseCode,
-                CourseId = learningClass.LearningCourseId,
-                CourseName = learningClass.LearningCourse.Name,
-                LearningParticipantId = student.Id,
-                ProgramName = program.Name
-            } );
+                ClassId = learningClass.Id,
+                ClassIdKey = learningClass.IdKey,
+                ClassName = learningClass.Name,
+                LearningParticipantId = student.Id
+            };
+
+            var existingCourse = studentProgram.Courses.FirstOrDefault( c => c.CourseId == learningClass.LearningCourseId );
+
+            if ( existingCourse != null )
+            {
+                // Course exists, add class to it
+                existingCourse.Classes.Add( classInfo );
+            }
+            else
+            {
+                // Course doesn't exist, create and add it with this class
+                studentProgram.Courses.Add( new CourseInfo
+                {
+                    Classes = new List<ClassInfo> { classInfo },
+                    CourseCode = learningClass.LearningCourse.CourseCode,
+                    CourseId = learningClass.LearningCourseId,
+                    CourseIdKey = learningClass.LearningCourse.IdKey,
+                    CourseName = learningClass.LearningCourse.Name,
+                    Order = learningClass.LearningCourse.Order
+                } );
+            }
         }
 
         /// <summary>
@@ -507,6 +525,7 @@ namespace Rock.Jobs
                 // Either always available semesters (no start date) or start date is in the past.
                 .Where( lc => !lc.LearningSemester.StartDate.HasValue
                     || lc.LearningSemester.StartDate <= now )
+                .Include( lc => lc.LearningCourse )
                 .ToList();
         }
 
@@ -552,9 +571,10 @@ namespace Rock.Jobs
                 activitiesToSend.Add( new ActivityInfo
                 {
                     LearningClassActivityId = activity.Id,
+                    LearningClassActivityIdKey = activity.IdKey,
                     LearningClassActivityCompletionId = null,
                     ActivityName = activity.Name,
-                    AvailableDate = null,
+                    AvailableDate = activity.AvailableDateCalculated,
                     DueDate = activity.DueDateCalculated,
                     Order = activity.Order
                 } );
@@ -625,17 +645,18 @@ namespace Rock.Jobs
         /// Sends the digest email for the specified person.
         /// </summary>
         /// <param name="systemCommunication">The details of the communication to be sent.</param>
-        /// <param name="personProgramActivitiesByCourse">The person and their activities to notify.</param>
+        /// <param name="personProgramInfo">The person and their activities to notify.</param>
         /// <returns><c>true</c> if the email was successfully sent; otherwise <c>false</c>.</returns>
-        private int? SendNotificationForPerson( SystemCommunication systemCommunication, PersonProgramActivitiesByCourseInfo personProgramActivitiesByCourse )
+        private int? SendNotificationForPerson( SystemCommunication systemCommunication, PersonProgramInfo personProgramInfo )
         {
             try
             {
                 // Add the merge objects to support this notification.
                 var mergeFields = LavaHelper.GetCommonMergeFields( null );
-                mergeFields.AddOrReplace( "Person", personProgramActivitiesByCourse.Person );
-                mergeFields.AddOrReplace( "ActivityCount", personProgramActivitiesByCourse.Courses.Sum( c => c.ActivityCount ) );
-                mergeFields.AddOrReplace( "Courses", personProgramActivitiesByCourse.Courses );
+                mergeFields.AddOrReplace( "Person", personProgramInfo.Person );
+                mergeFields.AddOrReplace( "ActivityCount", personProgramInfo.Courses.SelectMany( c => c.Classes ).Sum( c => c.ActivityCount ) );
+                mergeFields.AddOrReplace( "Program", personProgramInfo.Program );
+                mergeFields.AddOrReplace( "Courses", personProgramInfo.Courses );
 
                 // If the person's communication preference for their course is not SMS or Email then use their Person's communication preference.
                 var communicationPreference = personProgramActivitiesByCourse.CommunicationPreference;
@@ -643,8 +664,8 @@ namespace Rock.Jobs
                 {
                     communicationPreference = personProgramActivitiesByCourse.Person.CommunicationPreference;
                 }
-
-                var communicationId = SendCommunication( personProgramActivitiesByCourse.Person, communicationPreference, systemCommunication, mergeFields );
+                
+                var communicationId = SendCommunication( personProgramInfo.Person, systemCommunication, mergeFields );
 
                 if ( communicationId.HasValue )
                 {
@@ -656,7 +677,7 @@ namespace Rock.Jobs
             catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, HttpContext.Current );
-                _errors.Add( $"Unable to send Learning Activity Available Notifications to {personProgramActivitiesByCourse.Person.FullName}. '{ex.Message}'" );
+                _errors.Add( $"Unable to send Learning Activity Available Notifications to {personProgramInfo.Person.FullName}. '{ex.Message}'" );
             }
 
             return null;
@@ -801,7 +822,7 @@ namespace Rock.Jobs
         /// <summary>
         /// A POCO for a Person and all the courses with available activities requiring notification.
         /// </summary>
-        private class PersonProgramActivitiesByCourseInfo
+        private class PersonProgramInfo
         {
             public Person Person { get; set; }
 
@@ -811,66 +832,128 @@ namespace Rock.Jobs
             public int ProgramSystemCommunicationId { get; set; }
 
             /// <summary>
+            /// The learning program.
+            /// </summary>
+            public ProgramInfo Program { get; set; }
+
+            /// <summary>
             /// A list of courses with available activities for this <see cref="Person"/>.
             /// </summary>
-            public List<ActivitiesByCourseInfo> Courses { get; set; }
+            public List<CourseInfo> Courses { get; set; }
 
             public CommunicationType CommunicationPreference { get; set; }
         }
 
         /// <summary>
-        /// A POCO for a course with all of its related activities.
+        /// A POCO that represents a learning program for Lava templates, including its identifier and name.
         /// </summary>
-        private class ActivitiesByCourseInfo : LavaDataObject
+        private class ProgramInfo : LavaDataObject
         {
             /// <summary>
-            /// The learning program name of the activity.
+            /// The database ID of the program.
+            /// </summary>
+            public int ProgramId { get; set; }
+
+            /// <summary>
+            /// The IdKey of the program
+            /// </summary>
+            public string ProgramIdKey { get; set; }
+
+            /// <summary>
+            /// The name of the learning program.
             /// </summary>
             public string ProgramName { get; set; }
+        }
 
+        /// <summary>
+        /// A POCO that represents a learning course within a program, including classes and order.
+        /// </summary>
+        private class CourseInfo : LavaDataObject
+        {
             /// <summary>
-            /// The activities in the course.
-            /// </summary>
-            public List<ActivityInfo> Activities { get; set; }
-
-            /// <summary>
-            /// The identifier of the Person's <see cref="LearningParticipant"/> record specific to the <see cref="LearningClass"/>.
-            /// </summary>
-            public int LearningParticipantId { get; set; }
-
-            /// <summary>
-            /// The learning course code of the activity.
-            /// </summary>
-            public string CourseCode { get; set; }
-
-            /// <summary>
-            /// The identifier of the activity's learning course.
+            /// The database ID of the course.
             /// </summary>
             public int CourseId { get; set; }
 
             /// <summary>
-            /// The learning course name of the activity.
+            /// The IdKey of the course
+            /// </summary>
+            public string CourseIdKey { get; set; }
+
+            /// <summary>
+            /// The name of the course.
             /// </summary>
             public string CourseName { get; set; }
 
             /// <summary>
-            /// The total number of activities newly available for this course and person.
+            /// The learning course code.
+            /// </summary>
+            public string CourseCode { get; set; }
+
+            /// <summary>
+            /// The order of the course within the program.
+            /// </summary>
+            public int Order { get; set; }
+
+            /// <summary>
+            /// The list of classes under this course.
+            /// </summary>
+            public List<ClassInfo> Classes { get; set; }
+        }
+
+        /// <summary>
+        /// A POCO for a class with all of its related activities, tied to a person’s participation.
+        /// </summary>
+        private class ClassInfo : LavaDataObject
+        {
+            /// <summary>
+            /// The activities in the class.
+            /// </summary>
+            public List<ActivityInfo> Activities { get; set; }
+
+            /// <summary>
+            /// The name of the class.
+            /// </summary>
+            public string ClassName { get; set; }
+
+            /// <summary>
+            /// The database ID of the class.
+            /// </summary>
+            public int ClassId { get; set; }
+
+            /// <summary>
+            /// The IdKey of the class
+            /// </summary>
+            public string ClassIdKey { get; set; }
+
+            /// <summary>
+            /// The identifier of the person's <see cref="LearningParticipant"/> record specific to this class.
+            /// </summary>
+            public int LearningParticipantId { get; set; }
+
+            /// <summary>
+            /// The total number of activities newly available for this class and person.
             /// </summary>
             public int ActivityCount { get; set; }
         }
 
         /// <summary>
-        /// A POCO for an individual activity.
+        /// A POCO for an individual activity assigned in a class.
         /// </summary>
         private class ActivityInfo : LavaDataObject
         {
             /// <summary>
-            /// The Id of the <see cref="LearningClassActivity"/> the notification is for.
+            /// The Id of the <see cref="LearningClassActivity"/> this notification is for.
             /// </summary>
             public int LearningClassActivityId { get; set; }
 
             /// <summary>
-            /// The Id of the <see cref="LearningClassActivityCompletion"/> the notification is for (if any yet).
+            /// The IdKey of the <see cref="LearningClassActivity"/>
+            /// </summary>
+            public string LearningClassActivityIdKey { get; set; }
+
+            /// <summary>
+            /// The Id of the <see cref="LearningClassActivityCompletion"/> for this person (if any yet).
             /// </summary>
             /// <remarks>
             /// This is used by the job to mark notifications that have been sent.
@@ -893,7 +976,7 @@ namespace Rock.Jobs
             public DateTime? DueDate { get; set; }
 
             /// <summary>
-            /// The order of the activity.
+            /// The display order of the activity within the class.
             /// </summary>
             public int Order { get; set; }
         }

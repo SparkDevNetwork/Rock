@@ -264,7 +264,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( PersonGuid.PersonWithPrimaryEmailMediumAccountProtectionProfileGuid, Email.PrimaryEmailMedium, AccountProtectionProfile.Medium )]
         [DataRow( PersonGuid.PersonWithPrimaryEmailHighAccountProtectionProfileGuid, Email.PrimaryEmailHigh, AccountProtectionProfile.High )]
         [DataRow( PersonGuid.PersonWithPrimaryEmailExtremeAccountProtectionProfileGuid, Email.PrimaryEmailExtreme, AccountProtectionProfile.Extreme )]
-        public void PersonWithPrimaryEmailShouldHandleAccountProtectionProfileCorrectly( string personGuid, string emailSearch, int accountProtectionProfile )
+        public void PersonWithPrimaryEmailShouldHandleAccountProtectionProfileCorrectly( string personGuid, string emailSearch, AccountProtectionProfile accountProtectionProfile )
         {
             if ( !Bus.RockMessageBus.IsRockStarted )
             {

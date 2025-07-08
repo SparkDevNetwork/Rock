@@ -56,6 +56,7 @@
                                                           :editorHeight="185"
                                                           :isCharacterCountShown="true"
                                                           :mergeFields="mergeFields"
+                                                          :commonMergeFields="commonMergeFields"
                                                           rules="required"
                                                           :shortLinkCheckToken="shortLinkCheckToken"
                                                           :shortLinkGetPageId="shortLinkGetPageId"
@@ -82,10 +83,10 @@
                             </div>
 
                             <div class="col-xs-12 col-sm-7">
-                                <SmsPreview :class="breakpointHelper.breakpoint"
-                                            :smsAttachmentLinks="smsAttachmentLinks"
-                                            :smsFromNumberName="smsFromNumberName"
-                                            :smsMessage="internalMessage" />
+                                <SmsMobilePreview :class="breakpointHelper.breakpoint"
+                                                  :smsAttachmentLinks="smsAttachmentLinks"
+                                                  :smsFromNumberName="smsFromNumberName"
+                                                  :smsMessage="internalMessage" />
                             </div>
                         </div>
 
@@ -186,11 +187,11 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import LoadingOverlay from "./loadingOverlay.partial.obs";
-    import SmsPreview from "./smsMobilePreview.partial.obs";
     import { BinaryFileAttachment, BlockActionCallbacks } from "./types.partial";
     import { useBreakpointHelper } from "./utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import SmsMobilePreview from "@Obsidian/Controls/Internal/smsMobilePreview.obs";
     import FileUploader from "@Obsidian/Controls/fileUploader.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -352,6 +353,12 @@
     const internalSmsFromSystemPhoneNumberGuid = useVModelPassthrough(props, "smsFromSystemPhoneNumberGuid", emit);
     const internalTestSmsPhoneNumber = useVModelPassthrough(props, "testSmsPhoneNumber", emit);
     const internalSmsAttachmentBinaryFiles = useVModelPassthrough(props, "smsAttachmentBinaryFiles", emit);
+
+    const commonMergeFields = [
+        "Person.FirstName^First Name|fa fa-user",
+        "Person.NickName^Nick Name|fa fa-user",
+        "Person.FullName^Full Name|fa fa-user",
+    ];
 
     // #endregion
 

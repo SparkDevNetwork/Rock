@@ -238,6 +238,7 @@ internal class SendGridResponseAsync : IAsyncResult
                 case "delivered":
                     communicationRecipient.Status = CommunicationRecipientStatus.Delivered;
                     communicationRecipient.StatusNote = string.Format( "Confirmed delivered by SendGrid at {0}", timeStamp.ToString() );
+                    communicationRecipient.DeliveredDateTime = timeStamp;
                     break;
                 case "deferred":
                     // TODO: handle deferred.

@@ -28,6 +28,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
+
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -1850,10 +1851,23 @@ namespace RockWeb.Blocks.Reporting
                 {
                     if ( phDataSelectControls.Controls.Count >= 1 && phDataSelectControls.Controls[0] is ObsidianDynamicComponentWrapper obsidianWrapper )
                     {
-                        var requestContext = this.RockBlock()?.RockPage?.RequestContext;
+                        var requestContext = RockPage?.RequestContext;
                         var reportEntityType = EntityTypeCache.Get( etpEntityType.SelectedEntityTypeId.Value, rockContext ).GetEntityType();
 
-                        obsidianWrapper.ComponentData = dataSelectComponent.GetObsidianComponentData( reportEntityType, reportField.Selection ?? string.Empty, rockContext, requestContext );
+                        var definition = dataSelectComponent.GetComponentDefinition( reportEntityType, reportField.Selection, rockContext, requestContext );
+
+                        if ( definition != null )
+                        {
+                            obsidianWrapper.ComponentDefinition = definition;
+                            obsidianWrapper.ComponentData = dataSelectComponent.GetObsidianComponentData( reportEntityType, reportField.Selection, rockContext, requestContext );
+                        }
+                        else if ( dataSelectComponent.ObsidianFileUrl != null )
+                        {
+                            if ( dataSelectComponent.ObsidianFileUrl.Length > 0 )
+                            {
+                                obsidianWrapper.ComponentData = dataSelectComponent.GetObsidianComponentData( reportEntityType, reportField.Selection, rockContext, requestContext );
+                            }
+                        }
                     }
                     else
                     {
@@ -1867,7 +1881,7 @@ namespace RockWeb.Blocks.Reporting
         private string GetAttributeFieldListKey( Guid? attributeGuid )
         {
             //var settings = ReportingHelper.DeserializeAttributeReportFieldConfig( attributeConfigurationString, rockContext );
-            var key = "Attribute|" + attributeGuid.GetValueOrDefault().ToString("n");
+            var key = "Attribute|" + attributeGuid.GetValueOrDefault().ToString( "n" );
             return key;
         }
 

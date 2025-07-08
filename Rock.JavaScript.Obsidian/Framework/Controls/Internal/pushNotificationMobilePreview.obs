@@ -1,0 +1,120 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <MobilePreview>
+        <div class="push-preview">
+            <MobileBackground />
+
+            <div class="push-notification">
+                <div class="push-icon-container">
+                    <i class="push-icon ti ti-building"></i>
+                </div>
+
+                <div class="push-message">
+                    <div class="push-message-header">
+                        <div class="push-message-header-text">
+                            {{ pushTitle }}
+                        </div>
+                        <span class="push-message-header-time text-muted">9:41&nbsp;AM</span>
+                    </div>
+                    <div class="push-message-text">
+                        {{ pushMessage }}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </MobilePreview>
+</template>
+
+<style scoped>
+.push-preview {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(135deg, #ffe2dc 10%, #ffaeab 25%, #ffaeab 40%, #ffe2dc 50%, #e3c1c3 50%, #364161 75%, #002c47 100%);
+}
+
+.push-notification {
+    position: relative;
+    top: 186px;
+    margin-left: var(--spacing-medium);
+    margin-right: var(--spacing-medium);
+    padding: var(--spacing-medium);
+    display: flex;
+    gap: var(--spacing-medium);
+    background-color: rgba(242, 242, 247, 0.6);
+    border-radius: var(--rounded-xlarge);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+}
+
+.push-icon-container {
+    padding: var(--spacing-tiny);
+    background-color: var(--color-interface-medium);
+    border-radius: var(--rounded-medium);
+    width: 30px;
+    height: 30px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.push-icon {
+    color: var(--color-interface-softest);
+    width: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.push-message {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+
+    /* Stretch the message width to fill the parent notification width. */
+    flex: 1;
+}
+
+.push-message-header {
+    display: flex;
+    justify-content: space-between;
+    gap: var(--spacing-tiny);
+}
+
+.push-message-header-text {
+    font-weight: var(--font-weight-bold);
+    line-height: 1;
+    /* .push-message-header-time line-height should match this to center-align them. */
+    font-size: var(--font-size-regular);
+}
+
+.push-message-text {
+    font-size: var(--font-size-xsmall);
+}
+
+.push-message-header-time {
+    font-size: 9px;
+    /* .push-message-header-text font-size should match this to center-align them. */
+    line-height: var(--font-size-regular);
+}
+</style>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import MobileBackground from "./MobilePreview/mobileBackground.partial.obs";
+    import MobilePreview from "./MobilePreview/mobilePreview.partial.obs";
+
+    defineProps({
+        pushTitle: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        pushMessage: {
+            type: String as PropType<string>,
+            required: true
+        }
+    });
+</script>

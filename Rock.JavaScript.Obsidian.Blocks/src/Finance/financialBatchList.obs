@@ -161,9 +161,7 @@
                         width="165"
                         visiblePriority="md">
             <template #format="{ row }">
-                <div class="flex-grow-1 text-right">
-                    {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
-                </div>
+                {{ toCurrencyOrNull(row.totalAmount, config.options?.currencyInfo) }}
             </template>
         </CurrencyColumn>
 
@@ -421,7 +419,7 @@
             let varianceCount = 0;
 
             for (const account of row.accounts) {
-                totalAmount += account.amount;
+                totalAmount = sum(totalAmount, account.amount, 4);
             }
 
             row.totalAmount = totalAmount;
@@ -448,6 +446,26 @@
                 row.remoteSettlementAmountStatus = 2; // Success
             }
         }
+    }
+
+    /**
+     * Custom sum function to avoid JavaScript rounding issues.
+     *
+     * Adds two decimal numbers together with controlled precision by scaling, summing,
+     * and then rescaling. Useful for financial or scientific computations where
+     * floating-point rounding errors must be minimized.
+     *
+     * @param a The first number to be added.
+     * @param b The second number to be added.
+     * @param positions The number of decimal places to round to before summing.
+     *
+     * @returns The precise sum of `a` and `b`, rounded to the given decimal places.
+     */
+    function sum(a: number, b: number, positions: number): number {
+        const factor = Math.pow(10, positions);
+        const aFixed = parseFloat(a.toFixed(positions));
+        const bFixed = parseFloat(b.toFixed(positions));
+        return (aFixed * factor + bFixed * factor) / factor;
     }
 
     /**

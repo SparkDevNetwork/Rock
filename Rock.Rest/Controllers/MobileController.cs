@@ -538,7 +538,12 @@ namespace Rock.Rest.Controllers
             }
         }
 
-        
+        /// <summary>
+        /// Updates the location permission and if the beacon monitoring is enabled for the personal device.
+        /// </summary>
+        /// <param name="locationPermissionOptions"></param>
+        /// <param name="isBeaconMonitoringEnabled"></param>
+        /// <returns></returns>
         [System.Web.Http.Route( "api/mobile/UpdateLocationPermission" )]
         [HttpPut]
         [Rock.SystemGuid.RestActionGuid( "DF6065C9-A5F8-4549-AD00-F2C0823C9E0D" )]

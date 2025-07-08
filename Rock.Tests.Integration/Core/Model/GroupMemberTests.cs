@@ -35,7 +35,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( ElevatedSecurityLevel.None, AccountProtectionProfile.Low )]
         [DataRow( ElevatedSecurityLevel.High, AccountProtectionProfile.High )]
         [DataRow( ElevatedSecurityLevel.Extreme, AccountProtectionProfile.Extreme )]
-        public void PostSave_ShouldUpdatePersonAccountProtectionProfileToCorrectValue( int expectedElevatedSecurityLevel, int expectedAccountProtectionProfile )
+        public void PostSave_ShouldUpdatePersonAccountProtectionProfileToCorrectValue( ElevatedSecurityLevel expectedElevatedSecurityLevel, AccountProtectionProfile expectedAccountProtectionProfile )
         {
             var personGuid = Guid.NewGuid();
             var person = new Person
@@ -77,7 +77,7 @@ namespace Rock.Tests.Integration.Core.Model
         [DataRow( ElevatedSecurityLevel.None )]
         [DataRow( ElevatedSecurityLevel.High )]
         [DataRow( ElevatedSecurityLevel.Extreme )]
-        public void PostSave_ShouldNotUpdatePersonAccountProtectionProfileToLowerValue( int expectedElevatedSecurityLevel )
+        public void PostSave_ShouldNotUpdatePersonAccountProtectionProfileToLowerValue( ElevatedSecurityLevel expectedElevatedSecurityLevel )
         {
             var personGuid = Guid.NewGuid();
             var person = new Person

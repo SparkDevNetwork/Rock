@@ -120,6 +120,8 @@ export const DefinedType = {
     GrouptypeInactiveReasons: "EB5D9839-F770-4E22-8B56-0B09397307D9",
     /** Guid for GroupType Purpose */
     GrouptypePurpose: "B23F1E45-BC26-4E82-BEB3-9B191FE5CCC3",
+    /** Guid for the icon libraries */
+    IconLibraries: "EEFC6AA8-3946-47AB-8DAF-149EEF347DF3",
     /** Guid for the types of interaction service. */
     InteractionChannelMedium: "9bf5777a-961f-49a8-a834-45e5c2077967",
     /** Guid for the types of interaction intent. */

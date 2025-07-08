@@ -88,7 +88,11 @@
                     </div>
                 </TransitionVerticalCollapse>
 
-                <div class="drawer-pull" @click="onDrawerPullClick">
+                <div v-if="$slots.drawerToggle" @click="onDrawerPullClick" class="cursor-pointer">
+                    <slot name="drawerToggle" />
+                </div>
+
+                <div v-else class="drawer-pull" @click="onDrawerPullClick">
                     <i :class="isDrawerOpen ? 'fa fa-chevron-up fa-xs' : 'fa fa-chevron-down fa-xs'"></i>
                 </div>
             </div>
@@ -112,6 +116,10 @@
                     </div>
                 </div>
             </TransitionVerticalCollapse>
+
+            <div v-if="!slots.sidebar && isPanelOpen && $slots.footerContent" class="panel-footer-content">
+                <slot name="footerContent" />
+            </div>
         </div>
 
         <div v-if="slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="sidebar-footer">
@@ -125,8 +133,23 @@
                 </div>
             </div>
         </div>
+        <div v-if="slots.sidebar && $slots.footerContent" class="panel-footer-content panel-sidebar-footer-content">
+            <slot name="footerContent" />
+        </div>
     </Fullscreen>
 </template>
+
+<style scoped>
+.panel-footer-content {
+    padding: var(--panel-body-padding);
+    background: var(--color-interface-softer);
+    border-top: 1px solid var(--color-interface-soft);
+}
+
+.panel-sidebar-footer-content {
+    grid-column: 1 / span 4;
+}
+</style>
 
 <script lang="ts">
     // eslint-disable-next-line @typescript-eslint/no-explicit-any

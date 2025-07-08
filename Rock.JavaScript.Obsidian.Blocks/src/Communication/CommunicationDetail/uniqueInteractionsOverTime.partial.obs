@@ -1,0 +1,156 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Chart v-if="chartData"
+           type="line"
+           :data="chartData"
+           :options="chartOptions" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { getCssVar, useChartStyles } from "./utils.partial";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+
+    const props = defineProps({
+        chartDataPoints: {
+            type: Array as PropType<ChartNumericDataPointBag[]>,
+            required: true
+        }
+    });
+
+    const chartStyles = useChartStyles();
+
+    // #region Computed Values
+
+    const dataPoints = computed((): ChartNumericDataPointBag[] => {
+        return props.chartDataPoints
+            ?.filter(dp =>
+                dp?.seriesName
+                && dp.label
+                && !isNullish(dp.value)
+                && dp.color
+            )
+            ?? [];
+    });
+
+    const chartData = computed((): ChartData | null => {
+        if (!dataPoints.value.length) {
+            return null;
+        }
+
+        const labels = new Set<string>();
+        const seriesDataSets = new Map<string, {
+            label: string,
+            data: number[],
+            borderColor: string,
+            backgroundColor: string,
+            borderWidth: number
+        }>();
+
+        dataPoints.value.forEach(dp => {
+            const seriesName = dp.seriesName!;
+            let seriesDataSet = seriesDataSets.get(seriesName);
+
+            const color = getCssVar(dp.color!, chartStyles.value.fallbackColor);
+
+            if (!seriesDataSet) {
+                seriesDataSet = {
+                    label: dp.seriesName!,
+                    data: [],
+                    borderColor: color,
+                    backgroundColor: color,
+                    borderWidth: 1
+                };
+
+                seriesDataSets.set(seriesName, seriesDataSet);
+            }
+
+            labels.add(dp.label!);
+            seriesDataSet.data.push(dp.value!);
+        });
+
+        return {
+            labels: Array.from(labels),
+            datasets: Array.from(seriesDataSets.values())
+        };
+    });
+
+    const maxPercentage = computed((): number => {
+        if (!dataPoints.value.length) {
+            return 0;
+        }
+
+        return Math.max(
+            ...dataPoints.value
+                .map((dp => dp.value!))
+        );
+    });
+
+    const yStepSize = computed((): number => {
+        return maxPercentage.value > 50
+            ? 10
+            : 5;
+    });
+
+    const yMax = computed((): number => {
+        return maxPercentage.value > 50
+            ? 100
+            : 50;
+    });
+
+    const chartOptions = computed((): ChartOptions => {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: "Unique Interactions Over Time",
+                    color: chartStyles.value.fontColor,
+                    font: {
+                        family: chartStyles.value.fontFamily,
+                        size: chartStyles.value.fontSize,
+                        weight: chartStyles.value.fontWeight
+                    }
+                },
+                legend: {
+                    position: "bottom",
+                    labels: {
+                        boxWidth: chartStyles.value.legendBoxSize,
+                        boxHeight: chartStyles.value.legendBoxSize,
+                        font: {
+                            family: chartStyles.value.fontFamily,
+                            size: chartStyles.value.fontSize,
+                            weight: chartStyles.value.fontWeight
+                        },
+                        color: chartStyles.value.fontColor
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => {
+                            const label = context.dataset.label ?? "";
+                            const value = context.parsed.y;
+                            return `${label ? `${label}: ` : ""}${value}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: yMax.value,
+                    ticks: {
+                        stepSize: yStepSize.value,
+                        callback: v => `${v}%`
+                    }
+                }
+            }
+        };
+    });
+
+    // #endregion Computed Values
+</script>

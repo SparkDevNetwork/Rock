@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,12 +15,17 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
+using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 
 namespace Rock.Reporting.DataSelect.GroupMember
 {
@@ -31,7 +36,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Group Name" )]
     [BooleanField( "Show As Link", "", true )]
-    [Rock.SystemGuid.EntityTypeGuid( "9CF6163A-6E6A-47F3-B9E3-4558E75B1B9F")]
+    [Rock.SystemGuid.EntityTypeGuid( "9CF6163A-6E6A-47F3-B9E3-4558E75B1B9F" )]
     public class GroupLinkSelect : DataSelectComponent
     {
         /// <summary>
@@ -77,6 +82,39 @@ namespace Rock.Reporting.DataSelect.GroupMember
             }
         }
 
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/GroupMember/groupLinkSelect.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = selection.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+            return new Dictionary<string, string>
+            {
+                ["showAsLink"] = settings.GetValueOrDefault( "ShowAsLink", string.Empty ).AsBooleanOrNull().ToStringSafe()
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string>
+            {
+                ["ShowAsLink"] = data.GetValueOrDefault( "showAsLink", string.Empty ).AsBooleanOrNull().ToStringSafe()
+            }.ToJson();
+        }
+
+        #endregion
+
         /// <summary>
         /// Gets the grid field.
         /// </summary>
@@ -86,10 +124,10 @@ namespace Rock.Reporting.DataSelect.GroupMember
         public override System.Web.UI.WebControls.DataControlField GetGridField( Type entityType, string selection )
         {
             var result = new BoundField();
-            
+
             // Disable encoding of field content because the value contains markup.
             result.HtmlEncode = false;
-            
+
             return result;
         }
 

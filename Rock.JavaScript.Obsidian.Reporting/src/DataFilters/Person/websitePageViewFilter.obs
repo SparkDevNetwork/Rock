@@ -52,7 +52,7 @@
     const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
     const count = ref<number | null>(toNumberOrNull(props.modelValue.count));
     const sites = ref<Guid[]>(safeParseJson(props.modelValue.sites) ?? []);
-    const siteOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.siteOptions) ?? []);
+    const siteOptions = safeParseJson<ListItemBag[]>(props.options.siteOptions) ?? [];
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
 
     const comparisonItems = getFilteredComparisonTypeOptions(

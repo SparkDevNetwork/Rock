@@ -1,0 +1,61 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <span :class="`label label-${statusClassSource[row.inferredStatus]}`"
+          :data-original-title="approvedByTooltip"
+          :ref="applyTooltip">
+        {{ InferredCommunicationStatusDescription[row.inferredStatus] }}
+    </span>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { Row } from "./types.partial";
+    import { InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+
+    const statusClassSource: Record<number, string> = {
+        1: "default", // "Draft"
+        2: "default", // "Pending Approval"
+        3: "default", // "Approved"
+        4: "danger", // "Denied"
+        5: "warning", // "Sending"
+        6: "success" // "Sent"
+    };
+
+    const props = defineProps({
+        row: {
+            type: Object as PropType<Row>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /** The text to use for the "Approved by" tooltip. */
+    const approvedByTooltip = computed((): string => {
+        if (!props.row.reviewedByPersonFullName) {
+            return "";
+        }
+
+        return `Approved by ${props.row.reviewedByPersonFullName}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Applies a tooltip to an element. The element should have an
+     * `data-original-title` attribute containing the tooltip text.
+     *
+     * Typical use, `:ref="applyTooltip"`
+     */
+    function applyTooltip(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
+    }
+
+    // #endregion Functions
+</script>

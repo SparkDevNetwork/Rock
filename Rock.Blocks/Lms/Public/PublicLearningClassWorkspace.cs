@@ -637,8 +637,19 @@ namespace Rock.Blocks.Lms
                 return ActionBadRequest( $"No {LearningClassActivityCompletion.FriendlyTypeName} was found." );
             }
 
-            completion.BinaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( RockContext );
+            var binaryFileId = activityCompletionBag.BinaryFile.GetEntityId<BinaryFile>( RockContext );
+
+            completion.BinaryFileId = binaryFileId;
             completion.StudentComment = activityCompletionBag.StudentComment;
+
+            if ( binaryFileId.HasValue )
+            {
+                var binaryFile = new BinaryFileService( RockContext ).Get( binaryFileId.Value );
+                if ( binaryFile != null )
+                {
+                    binaryFile.IsTemporary = false;
+                }
+            }
 
             // It's important that the WasCompletedOnTime is set before the
             // IsStudentCompleted bool. Activity.IsLate property uses this bit.

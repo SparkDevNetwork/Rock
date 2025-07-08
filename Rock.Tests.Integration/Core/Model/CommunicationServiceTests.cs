@@ -46,9 +46,14 @@ namespace Rock.Tests.Integration.Core.Model
             CreateCommunicationsTestData( _expirationDays, _delayMinutes );
         }
 
-        [ClassCleanup]
+        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
         public static void TestCleanup()
         {
+            if ( IsContainersEnabled )
+            {
+                return;
+            }
+
             RemoveTestData();
         }
 

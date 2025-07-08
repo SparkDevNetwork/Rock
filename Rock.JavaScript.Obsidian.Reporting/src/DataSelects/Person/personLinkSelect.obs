@@ -1,0 +1,46 @@
+<template>
+    <DropDownList v-model="showAsLink"
+                  label="Show As Link"
+                  :items="booleanItems" />
+    <RadioButtonList v-model="displayOrder"
+                     label="Display Order"
+                     :items="displayOrderItems"
+                     rules="required"
+                     horizontal />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { ref, watch } from "vue";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const showAsLink = ref(props.modelValue.showAsLink ?? "");
+    const booleanItems: ListItemBag[] = [
+        { value: "False", text: "No" },
+        { value: "True", text: "Yes" }
+    ];
+
+    const displayOrder = ref(props.modelValue.displayOrder ?? "");
+    const displayOrderItems: ListItemBag[] = [
+        { value: "0", text: "FirstName LastName" },
+        { value: "1", text: "LastName, FirstName" }
+    ];
+
+    watch([showAsLink, displayOrder], () => {
+        const newData = {
+            ...props.modelValue,
+            showAsLink: showAsLink.value,
+            displayOrder: displayOrder.value
+        };
+
+        emit("update:modelValue", newData);
+    });
+</script>

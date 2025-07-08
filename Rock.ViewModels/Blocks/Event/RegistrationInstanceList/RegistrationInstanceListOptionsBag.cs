@@ -31,5 +31,10 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationInstanceList
         /// The name of the registration instance.
         /// </summary>
         public string RegistrationInstanceName { get; set; }
+
+        /// <summary>
+        /// Whether to show the details list column.
+        /// </summary>
+        public bool ShowDetailsColumn { get; set; }
     }
 }

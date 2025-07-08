@@ -18,13 +18,18 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Threading.Tasks;
 
-using Rock.Attribute;
 using Rock.Data;
+using Rock.Logging;
+using Rock.RealTime.Topics;
+using Rock.RealTime;
 using Rock.Reporting;
 using Rock.Utility;
 using Rock.Web.Cache;
 using Z.EntityFramework.Plus;
+using Microsoft.Extensions.Logging;
+using Rock.ViewModels.Group.GroupMember;
 
 namespace Rock.Model
 {
@@ -1111,6 +1116,222 @@ namespace Rock.Model
 
             return members.Where( m => attendedPersonIds.Contains( m.PersonId ) );
         }
+
+        #region RealTime Related
+
+        internal class GroupMemberUpdatedState
+        {
+            /// <inheritdoc cref="IEntity.Id"/>
+            public int Id { get; }
+
+            /// <inheritdoc cref="IEntity.Guid"/>
+            public Guid Guid { get; }
+
+            public EntityContextState State { get; }
+
+            /// <inheritdoc cref="GroupMember.PersonId"/>
+            public int PersonId { get; }
+
+            public int GroupId { get; }
+
+            public int GroupRoleId { get; }
+
+            public GroupMemberUpdatedState( GroupMember groupMember, EntityContextState state )
+            {
+                if ( groupMember == null )
+                {
+                    throw new ArgumentNullException( nameof( groupMember ) );
+                }
+
+                Id = groupMember.Id;
+                Guid = groupMember.Guid;
+                State = state;
+                PersonId = groupMember.PersonId;
+                GroupId = groupMember.GroupId;
+                GroupRoleId = groupMember.GroupRoleId;
+            }
+        }
+
+        /// <summary>
+        /// Sends the group member updated real time notifications for the specified
+        /// group member records.
+        /// </summary>
+        /// <param name="items">The data that describes each group member record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        internal static async Task SendGroupMemberUpdatedRealTimeNotificationsAsync( IList<GroupMemberUpdatedState> items )
+        {
+            if ( !items.Any() )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    await SendGroupMemberUpdatedRealTimeNotificationsAsync( rockContext, items );
+                }
+                catch ( Exception ex )
+                {
+                    RockLogger.LoggerFactory.CreateLogger<GroupMemberService>()
+                        .LogError( ex, ex.Message );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send group member updated real time notifications for the GroupMember
+        /// records.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="items">The additional data that describes each group member record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        private static async Task SendGroupMemberUpdatedRealTimeNotificationsAsync( RockContext rockContext, IList<GroupMemberUpdatedState> items )
+        {
+            var bags = GetGroupMemberUpdatedMessageBags( rockContext, items );
+
+            if ( !bags.Any() )
+            {
+                return;
+            }
+
+            var topicClients = RealTimeHelper.GetTopicContext<IGroupPlacement>().Clients;
+
+            var tasks = bags
+                .Select( b =>
+                {
+                    return Task.Run( () =>
+                    {
+                        var channels = GroupPlacementTopic.GetGroupMemberChannelsForBag( b );
+
+                        return topicClients
+                            .Channels( channels )
+                            .GroupMemberUpdated( b );
+                    } );
+                } )
+                .ToArray();
+
+            try
+            {
+                await Task.WhenAll( tasks );
+
+                /*
+                    06/20/2025 - KBH
+
+                    A real-time notification will now be sent every time a Group Member is added to a Group.
+                    To assist with troubleshooting and performance monitoring, debug-level logging has been
+                    added. This will help identify any potential slowdowns this new functionality may
+                    introduce on a church’s system.
+                 */
+                RockLogger.LoggerFactory.CreateLogger<GroupMemberService>()
+                    .LogDebug( "Sent {count} add notifications.", tasks.Count() );
+            }
+            catch ( Exception ex )
+            {
+                RockLogger.LoggerFactory.CreateLogger<GroupMemberService>()
+                    .LogError( ex, ex.Message );
+            }
+        }
+
+        /// <summary>
+        /// Sends the group member deleted real time notifications for the specified
+        /// group member records.
+        /// </summary>
+        /// <param name="items">The data that describes each group member record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        internal static async Task SendGroupMemberDeletedRealTimeNotificationsAsync( IList<GroupMemberUpdatedState> items )
+        {
+            if ( !items.Any() )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                try
+                {
+                    await SendGroupMemberDeletedRealTimeNotificationsAsync( rockContext, items );
+                }
+                catch ( Exception ex )
+                {
+                    RockLogger.LoggerFactory.CreateLogger<GroupMemberService>()
+                        .LogError( ex, ex.Message );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Send group member deleted real time notifications for the GroupMember
+        /// records.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="items">The additional data that describes each group member record when it was enqueued.</param>
+        /// <returns>A task that represents this operation.</returns>
+        private static async Task SendGroupMemberDeletedRealTimeNotificationsAsync( RockContext rockContext, IList<GroupMemberUpdatedState> items )
+        {
+            var bags = GetGroupMemberUpdatedMessageBags( rockContext, items );
+            var topicClients = RealTimeHelper.GetTopicContext<IGroupPlacement>().Clients;
+            var channel = GroupPlacementTopic.GetGroupMemberDeletedChannel();
+
+            foreach ( var item in items )
+            {
+                try
+                {
+                    var bag = bags.FirstOrDefault( b => b.GroupMemberGuid == item.Guid );
+
+                    await topicClients.Channel( channel ).GroupMemberDeleted( item.Guid, bag );
+                }
+                catch ( Exception ex )
+                {
+                    RockLogger.LoggerFactory.CreateLogger<GroupMemberService>()
+                        .LogError( ex, ex.Message );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the group member updated message bag for the group member record.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <param name="items">The additional data that describes each group member record when it was enqueued.</param>
+        /// <returns>A list of <see cref="GroupMemberUpdatedMessageBag"/> objects that represent the group member records.</returns>
+        private static List<GroupMemberUpdatedMessageBag> GetGroupMemberUpdatedMessageBags( RockContext rockContext, IList<GroupMemberUpdatedState> items )
+        {
+            var publicApplicationRoot = GlobalAttributesCache.Value( "PublicApplicationRoot" );
+
+            return items
+                .Select( item =>
+                {
+                    var group = GroupCache.Get( item.GroupId );
+                    var person = new PersonService( rockContext ).Get( item.PersonId );
+
+                    var bag = new GroupMemberUpdatedMessageBag
+                    {
+                        GroupIdKey = group.IdKey,
+                        GroupTypeIdKey = Rock.Utility.IdHasher.Instance.GetHash( group.GroupTypeId ),
+                        GroupGuid = group.Guid,
+                        GroupMemberId = item.Id,
+                        GroupMemberIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.Id ),
+                        GroupMemberGuid = item.Guid,
+                        GroupRoleIdKey = Rock.Utility.IdHasher.Instance.GetHash( item.GroupRoleId ),
+                        Person = new ViewModels.Blocks.Group.GroupPlacement.PersonBag
+                        {
+                            PersonIdKey = person.IdKey,
+                            FirstName = person.FirstName,
+                            LastName = person.LastName,
+                            NickName = person.NickName,
+                            Gender = person.Gender,
+                            PhotoUrl = $"{publicApplicationRoot}{person.PhotoUrl.TrimStart( '~', '/' )}"
+                        },
+                    };
+
+                    return bag;
+                } )
+                .Where( bag => bag != null )
+                .ToList();
+        }
+
+        #endregion
     }
 
     /// <summary>

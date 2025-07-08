@@ -32,6 +32,23 @@ namespace Rock.Web.UI.Controls
     public class ComponentPicker : RockDropDownList
     {
         /// <summary>
+        /// Initializes a new instance of the <see cref="ComponentPicker"/> class.
+        /// </summary>
+        public ComponentPicker()
+        {
+            // Default constructor keeps IncludeInactive as false.
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ComponentPicker"/> class.
+        /// </summary>
+        /// <param name="includeInactive">if set to <c>true</c> includes inactive items.</param>
+        public ComponentPicker( bool includeInactive )
+        {
+            IncludeInactive = includeInactive;
+        }
+
+        /// <summary>
         /// Gets or sets the type of the container.
         /// </summary>
         /// <value>
@@ -48,6 +65,25 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState["ContainerType"] = value;
                 BindItems();
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether inactive items are included. (defaults to False).
+        /// </summary>
+        /// <value>
+        ///     <c>true</c> if inactive items should be included; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeInactive
+        {
+            get
+            {
+                return ViewState["IncludeInactive"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["IncludeInactive"] = value;
             }
         }
 
@@ -105,14 +141,13 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// Binds the items to the drop down list.
+        /// Binds the active or active and inactive items to the picker based on the IncludeInactive property.
         /// </summary>
         protected virtual void BindItems()
         {
             Items.Clear();
             Items.Add( new ListItem() );
             var componentDictionary = GetComponentDictionary();
-
             if ( componentDictionary == null )
             {
                 return;
@@ -120,30 +155,53 @@ namespace Rock.Web.UI.Controls
 
             foreach ( var component in componentDictionary )
             {
-                if ( component.Value.Value.IsActive )
+                var isActive = component.Value.Value.IsActive;
+                if ( isActive || ( !isActive && IncludeInactive ) )
                 {
-                    var entityType = EntityTypeCache.Get( component.Value.Value.GetType() );
-                    if ( entityType != null )
-                    {
-                        var componentEntityType = EntityTypeCache.Get( entityType.Guid );
-                        var componentName = Rock.Reflection.GetDisplayName( componentEntityType.GetEntityType() );
-
-                        // If it has a DisplayName use it as is, otherwise use the original logic
-                        if ( string.IsNullOrWhiteSpace( componentName ) )
-                        {
-                            componentName = component.Value.Key;
-                            // If the component name already has a space then trust
-                            // that they are using the exact name formatting they want.
-                            if ( !componentName.Contains( ' ' ) )
-                            {
-                                componentName = componentName.SplitCase();
-                            }
-                        }
-
-                        Items.Add( new ListItem( componentName, entityType.Guid.ToString().ToUpper() ) );
-                    }
+                    AddComponentListItem( component, isActive );
                 }
             }
+        }
+
+        /// <summary>
+        /// Adds a component to the <see cref="ListControl.Items"/> collection, displaying its name
+        /// and marking it as " (inactive)" if applicable.
+        /// </summary>
+        /// <param name="component">
+        /// A <see cref="KeyValuePair{TKey, TValue}"/> where the key is the component's ID, 
+        /// and the value is another key-value pair with a string key (typically the component's name) 
+        /// and a <see cref="Component"/> instance.
+        /// </param>
+        /// <param name="isActive">
+        /// A <see cref="bool"/> indicating whether the component is active. If false, 
+        /// " (inactive)" is appended to the display name.
+        /// </param>
+        /// <remarks>
+        /// The component's display name is derived from its <see cref="Type"/> metadata if available,
+        /// otherwise it falls back to the internal name key, formatted via <c>SplitCase()</c> if needed.
+        /// </remarks>
+        private void AddComponentListItem( KeyValuePair<int, KeyValuePair<string, Component>> component, bool isActive )
+        {
+            var entityType = EntityTypeCache.Get( component.Value.Value.GetType() );
+            if ( entityType == null )
+            {
+                return;
+            }
+
+            var componentEntityType = EntityTypeCache.Get( entityType.Guid );
+            var componentName = Rock.Reflection.GetDisplayName( componentEntityType.GetEntityType() );
+
+            if ( string.IsNullOrWhiteSpace( componentName ) )
+            {
+                componentName = component.Value.Key;
+                if ( !componentName.Contains( ' ' ) )
+                {
+                    componentName = componentName.SplitCase();
+                }
+            }
+
+            var itemText = isActive ? componentName : $"{componentName} (inactive)";
+            Items.Add( new ListItem( itemText, entityType.Guid.ToString().ToUpper() ) );
         }
     }
 }

@@ -29,7 +29,7 @@
     }>();
 
     const address = ref<AddressControlBag>(safeParseJson(props.modelValue.address) ?? {});
-    const locationTypeOptions: ListItemBag[] = safeParseJson(props.modelValue.locationTypeOptions) ?? [];
+    const locationTypeOptions: ListItemBag[] = safeParseJson(props.options.locationTypeOptions) ?? [];
     const locationType = ref<string>(props.modelValue.locationType ?? "");
 
     watch([address, locationType], () => {

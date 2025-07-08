@@ -85,12 +85,12 @@ namespace Rock.Blocks.Communication
         Order = 7
          )]
 
-    [CustomCheckboxListField("Note Types",
+    [CustomCheckboxListField( "Note Types",
         Description = @"Optional list of note types to limit the note editor to. Note types must have the ""User Selectable"" property enabled and Person Entity Type selected.",
         ListSource = ListSource.SQL_SELECTABLE_PERSON_NOTE_TYPES,
         IsRequired = false,
         Order = 8,
-        Key = AttributeKey.NoteTypes)]
+        Key = AttributeKey.NoteTypes )]
 
     [IntegerField(
         "Database Timeout",
@@ -351,7 +351,7 @@ namespace Rock.Blocks.Communication
             while ( category != null )
             {
                 // If guids already contains this category Guid, we got a circular reference. So just return the path so far.
-                if (guids.Contains( category.Guid ) )
+                if ( guids.Contains( category.Guid ) )
                 {
                     return guids;
                 }
@@ -754,9 +754,18 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult SendMessageToNewRecipient( SendMessageBag bag )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            var smsSystemPhoneNumber = SelectedSystemPhoneNumber.HasValue
+                ? SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value )
+                : null;
+
+            if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || smsSystemPhoneNumber?.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) == false )
             {
                 return ActionBadRequest( "You are not authorized to send a message." );
+            }
+
+            if ( smsSystemPhoneNumber == null )
+            {
+                return ActionBadRequest( "A System Phone Number must be selected." );
             }
 
             var recipientPerson = FindRecipientFromPersonKey( bag.RecipientPersonAliasIdKey );
@@ -789,9 +798,18 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult SendMessageToExistingRecipient( SendMessageBag bag )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            var smsSystemPhoneNumber = SelectedSystemPhoneNumber.HasValue
+                ? SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value )
+                : null;
+
+            if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || smsSystemPhoneNumber?.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) == false )
             {
                 return ActionBadRequest( "You are not authorized to send a message." );
+            }
+
+            if ( smsSystemPhoneNumber == null )
+            {
+                return ActionBadRequest( "A System Phone Number must be selected." );
             }
 
             var recipientPerson = FindRecipientFromPersonKey( bag.RecipientPersonAliasIdKey );
@@ -817,14 +835,14 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult ToggleConversationReadStatus( ConversationBag bag )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( "You are not authorized to change the read status of a conversation." );
-            }
-
             var smsSystemPhoneNumber = SelectedSystemPhoneNumber.HasValue
                 ? SystemPhoneNumberCache.Get( SelectedSystemPhoneNumber.Value )
                 : null;
+
+            if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) || smsSystemPhoneNumber?.IsAuthorized( Rock.Security.Authorization.VIEW, RequestContext.CurrentPerson ) == false )
+            {
+                return ActionBadRequest( "You are not authorized to change the read status of a conversation." );
+            }
 
             if ( smsSystemPhoneNumber == null )
             {
@@ -1099,7 +1117,7 @@ namespace Rock.Blocks.Communication
         [BlockAction]
         public BlockActionResult InsertSnippet( Guid snippetGuid, string recipientPersonAliasIdKey )
         {
-            if ( !BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) || !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+            if ( !BlockCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
             {
                 return ActionBadRequest( "You are not authorized to insert a Snippet." );
             }

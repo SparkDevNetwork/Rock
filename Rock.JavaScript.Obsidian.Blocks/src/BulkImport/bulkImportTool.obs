@@ -1,0 +1,473 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+
+    <Panel :title="panelTitle" class="panel panel-block mt-4">
+
+        <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+        <TextBox v-model="foreignSystemKey"
+                 isre
+                 label="Foreign System Key"
+                 help="The Key used to uniquely identify the source system. For example, use the domain of the source system's website: 'somechurch.ccbchurch.com'. Click 'Check Foreign System Key' to see what keys have already been used or to see if the key has already been used."
+                 rules="required" />
+
+        <RockButton :btnSize="BtnSize.ExtraSmall"
+                    :btnType="BtnType.Action"
+                    @click="onCheckForeignSystemKey"
+                    class="margin-b-md">
+            Check Foreign System Key
+        </RockButton>
+
+        <NotificationBox v-if="foreignSystemKeyInfo" :alertType="foreignSystemKeyInfo.alertType" :dismissible="true" @dismiss="foreignSystemKeyInfo = null">
+            <div>
+                <div v-html="foreignSystemKeyInfo.message" />
+                <div v-if="foreignSystemKeyInfo.details">
+                    <RockButton :btnSize="BtnSize.ExtraSmall"
+                                :btnType="BtnType.Link"
+                                :class="{ 'btn-link': false }"
+                                style="padding: 0; border: none; background: none; text-decoration: underline;"
+                                @click="toggleForeignSystemDetails">
+                        {{ showForeignSystemDetails ? 'Hide Details' : 'Show Details' }}
+                    </RockButton>
+                    <div v-if="showForeignSystemDetails" class="margin-t-md">
+                        <div v-html="foreignSystemKeyInfo.details" />
+                    </div>
+                </div>
+            </div>
+        </NotificationBox>
+
+        <FileUploader v-model="slingshotFile"
+                      label="Select Slingshot File"
+                      displayMode="DropZone"
+                      :isBinaryFile="false"
+                      :rootFolder="config.rootFolder ?? ''"
+                      :uploadAsTemporary="false"
+                      :allowMultipleUploads="false"
+                      @update:modelValue="onFileUploaded"
+                      @fileRemoved="onFileRemoved" />
+
+        <div v-if="slingshotFileInfo" v-html="slingshotFileInfo" class="margin-b-md"></div>
+        <div v-if="additionalFilesInfo" v-html="additionalFilesInfo" class="margin-b-md"></div>
+
+        <Panel :isDrawerOpen="false" title="Advanced Settings" :hasCollapse="true">
+            <div class="form-group rock-control-wrapper">
+                <label class="control-label">Import Options</label>
+                <div>
+                    <RadioButton v-model="importUpdateType"
+                                 value="AlwaysUpdate"
+                                 label="Always Update"
+                                 name="importUpdateType"
+                                 help="All data from the import will be updated in Rock">
+                    </RadioButton>
+                </div>
+                <div>
+                    <RadioButton v-model="importUpdateType"
+                                 value="AddOnly"
+                                 label="Only Add New Records"
+                                 name="importUpdateType"
+                                 help="Only new records that don't exist in Rock will be added. Existing records will not be updated.">
+                    </RadioButton>
+                </div>
+
+                <RockButton :btnSize="BtnSize.ExtraSmall"
+                            :btnType="BtnType.Link"
+                            class="margin-t-md"
+                            @click="toggleAdditionalNotes">
+                    Show Additional Notes
+                </RockButton>
+
+                <div v-if="showAdditionalNotes" class="margin-t-md">
+                    <div class="js-additional-notes">
+                        <pre>{{ additionalNotes }}</pre>
+                    </div>
+                </div>
+            </div>
+        </Panel>
+
+        <NotificationBox v-if="progressMessage" :alertType="notificationMessageType">
+            <div v-html="progressMessage" />
+        </NotificationBox>
+
+        <div v-if="isImporting || importProgressMessage">
+            <h5>Progress</h5>
+        </div>
+        <NotificationBox v-if="isImporting || importProgressMessage" :alertType="importAlertType">
+            <div v-if="importProgressMessage" v-html="importProgressMessage" />
+        </NotificationBox>
+
+        <div v-if="importProgressResults" class="margin-t-md">
+            <h5>Details</h5>
+            <NotificationBox :alertType="alertTypeRef.Info">
+                <pre style="border: none; font-family: monospace; white-space: pre !important; display: block;"
+                     v-html="importProgressResults"></pre>
+            </NotificationBox>
+        </div>
+
+        <template #footerActions>
+            <RockButton :btnSize="BtnSize.Default"
+                        :btnType="BtnType.Primary"
+                        :disabled="isImporting"
+                        @click="onImport">
+                {{ isImporting ? 'Importing...' : 'Import' }}
+            </RockButton>
+            <RockButton :btnSize="BtnSize.Default"
+                        :btnType="BtnType.Primary"
+                        :disabled="isImporting"
+                        @click="onImportPhotos">
+                {{ isImporting ? 'Importing Photos...' : 'Import Photos' }}
+            </RockButton>
+        </template>
+    </Panel>
+
+    <RockButton :btnSize="BtnSize.Default"
+                :btnType="BtnType.Primary"
+                :disabled="isImporting"
+                @click="onDownloadLogClick">
+        Download Log
+    </RockButton>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RadioButton from "@Obsidian/Controls/radioButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { useConfigurationValues, useInvokeBlockAction, useBlockActionUrl } from "@Obsidian/Utility/block";
+    import { BulkImportToolBox } from "@Obsidian/ViewModels/Blocks/BulkImport/bulkImportToolBox";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { getTopic } from "@Obsidian/Utility/realTime";
+    import { TaskActivityProgressStatusBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressStatusBag";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+
+    const config = useConfigurationValues<BulkImportToolBox>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // #region Values
+
+    const errorMessage = ref("");
+    const foreignSystemKey = ref("");
+    const foreignSystemKeyInfo = ref<{ alertType: string; message: string; details?: string; } | null>(null);
+    const slingshotFile = ref<ListItemBag | null>(null);
+    const slingshotFileInfo = ref("");
+    const additionalFilesInfo = ref("");
+    const importUpdateType = ref("AlwaysUpdate");
+    const showAdditionalNotes = ref(false);
+    const progressMessage = ref("");
+    const showActions = ref(false);
+    const showNotificationBox = ref<boolean>(false);
+    const notificationMessageType = ref<string>("info");
+    const notificationMessage = ref<string>("");
+    const panelTitle = ref<string>("Bulk Import Tool");
+    const blockActionUrl = useBlockActionUrl();
+    const slingshotFullPath = ref<string>("");
+    const showForeignSystemDetails = ref<boolean>(false);
+
+    const importProgressMessage = ref<string>("");
+    const importProgressResults = ref<string>("");
+    const importAlertType = ref<AlertType>(AlertType.Info);
+    const isImporting = ref<boolean>(false);
+
+    const alertTypeRef = AlertType;
+
+    const additionalNotes = `
+Before Importing
+-- Backup the Customer's Database
+-- Verify that Rock > Home / General Settings / File Types / 'Person Image', has the Storage Type set to what you want. Slingshot will use that when importing Person and Family Photos
+-- Verify that Rock > Home / General Settings / File Types / 'Transaction Image', has the Storage Type set to what you want. Slingshot will use that when importing FinancialTransaction Images
+
+After Importing
+-- Go the General Settings / Group Types and filter by Check-in Template. This will show you the group types that already a Check-in Template
+-- Now, in a separate window, go to Power Tools / SQL Command
+
+// Use this SQL to figure out what GroupTypes were involved in the Attendance Import, and what their Parent Group Type is
+
+SELECT gt.NAME [GroupType.Name], gt.Id, max(gt.CreatedDateTime) [GroupType.CreateDateTime]
+    ,count(*) [AttendanceCount]
+    ,(
+        SELECT TOP 1 pgt.NAME
+        FROM GroupTypeAssociation gta
+        INNER JOIN GroupType pgt ON pgt.Id = gta.GroupTypeId
+        WHERE ChildGroupTypeId = gt.id
+    ) [Parent Group Type]
+FROM Attendance a
+INNER JOIN [Group] g ON g.Id = (SELECT GroupId from AttendanceOccurrence WHERE Id = a.OccurrenceId)
+INNER JOIN [GroupType] gt ON g.GroupTypeId = gt.id
+GROUP BY gt.NAME,gt.Id
+order by gt.Id desc
+
+// To see a break down by Group Name and Type, this SQL is handy
+
+SELECT gt.NAME [GroupType.Name]
+    ,gt.Id
+    ,g.Name [Group.Name]
+    ,count(*) [AttendanceCount]
+    ,MAX(PGT.NAME) [Parent Group Type]
+    ,MAX(PGT.GroupTypePurpose) [Parent Group Type Purpose]
+    ,max(gt.CreatedDateTime) [GroupType.CreateDateTime]
+FROM Attendance a
+INNER JOIN [Group] g ON g.Id = (SELECT GroupId from AttendanceOccurrence WHERE Id = a.OccurrenceId)
+INNER JOIN [GroupType] gt ON g.GroupTypeId = gt.id
+OUTER APPLY (
+    SELECT TOP 1
+        pgt.NAME
+        ,dv.Value [GroupTypePurpose]
+    FROM GroupTypeAssociation gta
+    INNER JOIN GroupType pgt ON pgt.Id = gta.GroupTypeId
+    LEFT JOIN DefinedValue dv ON pgt.GroupTypePurposeValueId = dv.Id
+    WHERE gta.ChildGroupTypeId = gt.id
+    ) PGT
+GROUP BY gt.NAME
+    ,gt.Id
+    ,g.Name
+order by Gt.Id, Gt.Name, g.Name
+
+-- Now, back to Rock > Home / General Settings / Group Types, select a Checkin-Template group type. For example, Weekly Service Check-in Area
+    -- Using the SQL Results, add the Child Group Types to the appropriate Checkin-Template group type.
+    -- Ones that sound like Weekend Check-in will go in Weekend Check-in GroupType, then the 'General' panelwidget | Child Group Types
+    -- Ones that sound like Volunteer Check-in will go in Volunteer Check-in GroupType, then the 'General' panelwidget | Child Group Types
+    -- Now Attendance Analytics will be able to show the import Attendance Data`;
+
+    let realTimeConnectionId = "";
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Initialize the real-time engine and start monitoring for updates to the
+     * proxy connection status messages.
+     */
+    async function startRealTime(): Promise<void> {
+        const topic = await getTopic("Rock.RealTime.Topics.TaskActivityProgressTopic");
+
+        topic.onDisconnected(async () => {
+            await startRealTime();
+        });
+
+        topic.onReconnected(async () => {
+            realTimeConnectionId = topic.connectionId ?? "";
+        });
+
+        topic.on("taskStarted", onImportStarted);
+        topic.on("taskCompleted", onImportCompleted);
+        topic.on("updateTaskProgress", (data: TaskActivityProgressStatusBag) => {
+            if (data?.message) {
+                importProgressMessage.value = data.message;
+            }
+        });
+        topic.on("updateTaskLog", (data) => {
+            if (data?.message) {
+                importProgressResults.value = data.message;
+            }
+        });
+
+        realTimeConnectionId = topic.connectionId ?? "";
+    }
+
+    function onImportStarted(_bag: TaskActivityProgressStatusBag): void {
+        isImporting.value = true;
+        importProgressMessage.value = "Starting import...";
+        importAlertType.value = AlertType.Info;
+        importProgressResults.value = "";
+    }
+
+    function onImportCompleted(bag: TaskActivityProgressStatusBag): void {
+        isImporting.value = false;
+        importProgressMessage.value = bag.message || "Import completed";
+
+        if (bag.errors?.length) {
+            importAlertType.value = AlertType.Danger;
+            importProgressResults.value = bag.errors.join("\n");
+        }
+        else if (bag.warnings?.length) {
+            importAlertType.value = AlertType.Warning;
+            importProgressResults.value = bag.warnings.join("\n");
+        }
+        else {
+            importAlertType.value = AlertType.Info;
+        }
+    }
+
+    async function onCheckForeignSystemKey(): Promise<void> {
+        if (!foreignSystemKey.value) {
+            return;
+        }
+
+        const result = await invokeBlockAction<{ hasBeenUsed: boolean; tables: string[]; usedKeys: string[]; }>("CheckForeignSystemKey", {
+            foreignSystemKey: foreignSystemKey.value
+        });
+
+        if (result.isSuccess && result.data) {
+            let message = "";
+            let alertType = "default";
+
+            if (result.data.hasBeenUsed) {
+                message = `Foreign System Key <strong>${foreignSystemKey.value}</strong> has already been used. Import again to insert any new records that are detected, and update any person records that have changed.`;
+                alertType = "info";
+            }
+            else {
+                message = `OK. Foreign System Key <strong>${foreignSystemKey.value}</strong> has not been used to import data.`;
+                alertType = "success";
+            }
+
+            if (result.data.usedKeys.length > 0) {
+                if (message) {
+                    message += "<br /><br />";
+                }
+                message += "The following ForeignSystemKeys have been used from previous imports:<br /><br />" + result.data.usedKeys.join("<br />");
+            }
+            else {
+                if (message) {
+                    message += "<br /><br />";
+                }
+                message += "No ForeignSystemKeys have been used from previous imports";
+            }
+
+            message += "<br />";
+
+            foreignSystemKeyInfo.value = {
+                alertType,
+                message,
+                details: result.data.tables.join("<br />")
+            };
+
+            showNotificationBox.value = true;
+            notificationMessageType.value = alertType;
+            notificationMessage.value = message;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while checking foreign system key.";
+        }
+    }
+
+    async function onFileUploaded(value: ListItemBag | undefined): Promise<void> {
+        if (!value?.text) {
+            slingshotFileInfo.value = "";
+            showActions.value = false;
+            return;
+        }
+
+        const fileName = value.text;
+        if (!fileName.toLowerCase().endsWith(".slingshot")) {
+            slingshotFileInfo.value = `<div class='alert alert-warning'>${fileName} is not a slingshot file. Please select a valid slingshot file.</div>`;
+            return;
+        }
+
+        if (fileName.toLowerCase().endsWith(".images.slingshot")) {
+            return;
+        }
+
+        const result = await invokeBlockAction<{ fileName: string; size: number; createdDateTime: string; extension: string; fullPath: string; }>("GetFileInfo", {
+            filePath: fileName
+        });
+
+        if (result.isSuccess && result.data) {
+            const date = new Date(result.data.createdDateTime);
+            const formattedDateTime = date.toLocaleString("en-US", {
+                month: "numeric",
+                day: "numeric",
+                year: "numeric",
+                hour: "numeric",
+                minute: "2-digit",
+                hour12: true
+            });
+
+            slingshotFileInfo.value = `<dl>
+                <dt>File Name</dt><dd>${result.data.fileName}</dd>
+                <dt>Date/Time</dt><dd>${formattedDateTime}</dd>
+                <dt>Size (MB)</dt><dd>${result.data.size.toFixed(2)}</dd>
+            </dl>`;
+
+            slingshotFullPath.value = result.data.fullPath;
+            showActions.value = true;
+
+            const mainFileNamePrefix = result.data.fileName.replace(".slingshot", "");
+            const imageFiles = await invokeBlockAction<string[]>("GetImageFiles", {
+                prefix: mainFileNamePrefix
+            });
+
+            if (imageFiles.isSuccess && imageFiles.data && imageFiles.data.length > 0) {
+                additionalFilesInfo.value = `<label>Additional Files</label>: ${imageFiles.data.join(", ")}`;
+            }
+            else {
+                additionalFilesInfo.value = "";
+            }
+        }
+        else {
+            slingshotFileInfo.value = `<div class='alert alert-warning'>Error getting file information: ${result.errorMessage}</div>`;
+            showActions.value = false;
+        }
+    }
+
+    function onFileRemoved(): void {
+        slingshotFileInfo.value = "";
+        additionalFilesInfo.value = "";
+        showActions.value = false;
+    }
+
+    async function startImport(importType: string): Promise<void> {
+        if (!slingshotFile.value) {
+            errorMessage.value = "Please select a slingshot file.";
+            return;
+        }
+
+        if (!foreignSystemKey.value) {
+            errorMessage.value = "Please enter a foreign system key.";
+            return;
+        }
+
+        errorMessage.value = "";
+
+        const result = await invokeBlockAction("StartImport", {
+            request: {
+                ForeignSystemKey: foreignSystemKey.value,
+                SlingshotFilePath: slingshotFullPath.value,
+                ImportType: importType,
+                ImportUpdateType: importUpdateType.value,
+                SessionId: realTimeConnectionId
+            }
+        });
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage ?? "Unknown error while starting import.";
+            importAlertType.value = AlertType.Danger;
+        }
+    }
+
+    function onImport(): void {
+        startImport("Import");
+    }
+
+    function onImportPhotos(): void {
+        startImport("Photos");
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+    // #endregion
+
+    /**
+     * Download the log file
+     */
+    function onDownloadLogClick(): void {
+        const url = blockActionUrl("DownloadLog");
+        window.location.href = url;
+    }
+
+    function toggleAdditionalNotes(): void {
+        showAdditionalNotes.value = !showAdditionalNotes.value;
+    }
+
+    function toggleForeignSystemDetails(): void {
+        showForeignSystemDetails.value = !showForeignSystemDetails.value;
+    }
+
+    // Initialize real-time connection when component mounts
+    startRealTime();
+</script>

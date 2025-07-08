@@ -1,0 +1,180 @@
+<template>
+    <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
+
+        <ConnectedListItem :aside="aside"
+                           :asideIconCssClass="asideIconCssClass"
+                           :badgeText="badgeText"
+                           :iconCssClass="iconCssClass"
+                           :iconLabelType="iconLabelCssClass || iconLabelType"
+                           :description="description"
+                           :primaryActions="primaryActions"
+                           :secondaryActions="secondaryActions"
+                           :title="title"
+                           :onClick="simulateNotClickable ? undefined : onClick">
+
+            <template v-if="simulatePrependSlot" #prepend>
+                Prepend Slot Content
+            </template>
+
+            <template v-if="simulateDescriptionSlot" #description>
+                <div>
+                    <i class="ti ti-clock"></i> {{ description }}
+                </div>
+            </template>
+
+        </ConnectedListItem>
+
+        <template #settings>
+            <div class="row">
+                <TextBox v-model="badgeText" formGroupClasses="col-md-4" label="Badge Text" />
+                <TextBox v-model="iconCssClass" formGroupClasses="col-md-4" label="Icon CSS Class" />
+                <DropDownList v-model="iconLabelType" :items="labelTypes" :showBlankItem="false" formGroupClasses="col-md-4" label="Icon Label Type" />
+                <TextBox v-if="iconLabelType === 'custom'" v-model="iconLabelCssClass" formGroupClasses="col-md-4 col-md-offset-8" label="Icon Label Custom Class" />
+            </div>
+
+            <div class="row">
+                <TextBox v-model="title" formGroupClasses="col-md-4" label="Title" />
+                <TextBox v-model="description" formGroupClasses="col-md-4" label="Description" />
+            </div>
+
+            <div class="row">
+                <TextBox v-model="asideIconCssClass" formGroupClasses="col-md-4" label="Aside Icon CSS Class" />
+                <TextBox v-model="aside" formGroupClasses="col-md-4" label="Aside" />
+            </div>
+
+            <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { MenuAction } from "@Obsidian/Types/Controls/dropDownMenu";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const labelTypes: ListItemBag[] = [
+        { text: "Default", value: "default" },
+        { text: "Primary", value: "primary" },
+        { text: "Success", value: "success" },
+        { text: "Info", value: "info" },
+        { text: "Warning", value: "warning" },
+        { text: "Danger", value: "danger" },
+        { text: "Custom", value: "custom" },
+    ];
+
+    const importCode = `import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";`;
+
+    const aside = ref<string>("hello@triumph.tech");
+    const asideIconCssClass = ref<string>("fa fa-user");
+    const badgeText = ref<string>("Step 3");
+    const iconCssClass = ref<string>("fa fa-chart-line");
+    const iconLabelType = ref<"default" | "primary" | "success" | "info" | "warning" | "danger" | "custom">("info");
+    const iconLabelCssClass = ref<string>("");
+    const description = ref<string>("This step calculates weekly growth based on new signups.");
+    const title = ref<string>("Growth Metrics");
+    const simulateValues = ref<string[]>([]);
+
+    const primaryActions = computed<MenuAction[] | null>(() => {
+        if (!simulateValues.value.includes("primaryActions")) {
+            return [];
+        }
+
+        return [
+            {
+                iconCssClass: "fa fa-edit",
+                title: "Edit",
+                type: "default",
+                handler: () => alert("Edit clicked"),
+            },
+            {
+                iconCssClass: "fa fa-copy",
+                title: "Duplicate",
+                type: "default",
+                handler: () => alert("Duplicate clicked"),
+            }
+        ];
+    });
+
+    const secondaryActions = computed<MenuAction[] | null>(() => {
+        if (!simulateValues.value.includes("secondaryActions")) {
+            return [];
+        }
+
+        return [
+            {
+                iconCssClass: "fa fa-trash",
+                title: "Delete",
+                type: "default",
+                handler: () => alert("Delete clicked"),
+            }
+        ];
+    });
+
+    const simulateOptions = [
+        {
+            value: "primaryActions",
+            text: "Primary Actions"
+        },
+        {
+            value: "secondaryActions",
+            text: "Secondary Actions"
+        },
+        {
+            value: "prepend",
+            text: "Prepend Slot"
+        },
+        {
+            value: "description",
+            text: "Description Slot"
+        },
+        {
+            value: "notClickable",
+            text: "Not Clickable"
+        }
+    ];
+
+    const simulatePrependSlot = computed((): boolean => simulateValues.value.includes("prepend"));
+
+    const simulateDescriptionSlot = computed((): boolean => simulateValues.value.includes("description"));
+
+    const anySlotsSimulated = computed((): boolean => {
+        return simulatePrependSlot.value || simulateDescriptionSlot.value;
+    });
+
+    const simulateNotClickable = computed((): boolean => simulateValues.value.includes("notClickable"));
+
+    const exampleCode = computed<string>(() => {
+        return `<ConnectedListItem aside="${aside.value}"
+                   asideIconCssClass="${asideIconCssClass.value}"
+                   badgeText="${badgeText.value}"
+                   iconCssClass="${iconCssClass.value}"
+                   iconLabelType="${iconLabelCssClass.value || iconLabelType.value}"
+                   description="${description.value}"
+                   :primaryActions="${JSON.stringify(primaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
+                   :secondaryActions="${JSON.stringify(secondaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
+                   title="${title.value}"${!simulateNotClickable.value ? `
+                   @click="onClick"` : ""}${anySlotsSimulated.value ? `>${simulatePrependSlot.value ? `
+    <template #prepend>
+        Prepend Slot Content
+    </template>` : ""}${simulateDescriptionSlot.value ? `
+    <template #description>
+        <i class="ti ti-clock"></i> ${description.value}
+    </template>` : ""}
+</ConnectedListItem>` : " />"}`;
+    });
+
+    function onClick(): void {
+        alert("Item clicked!");
+    }
+
+    watch(iconLabelType, (newValue) => {
+        if (newValue !== "custom") {
+            iconLabelCssClass.value = "";
+        }
+    });
+</script>

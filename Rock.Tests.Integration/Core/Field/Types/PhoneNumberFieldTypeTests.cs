@@ -19,12 +19,13 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 using Rock.Field.Types;
 using Rock.Tests.Integration.Crm;
 using Rock.Tests.Shared;
+using Rock.Tests.Shared.TestFramework;
 using Rock.Web.UI.Controls;
 
 namespace Rock.Tests.Integration.Core.Field.Types
 {
     [TestClass]
-    public class PhoneNumberFieldTypeTests
+    public class PhoneNumberFieldTypeTests : DatabaseTestsBase
     {
         [ClassInitialize]
         public static void ClassInitialize( TestContext testContext )
