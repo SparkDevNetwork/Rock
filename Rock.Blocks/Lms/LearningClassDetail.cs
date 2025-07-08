@@ -313,6 +313,7 @@ namespace Rock.Blocks.Lms
                 .ToList()
                 .Select( f => new LearningClassFacilitatorBag
                 {
+                    FacilitatorPersonId = f.PersonId,
                     IdKey = f.IdKey,
                     FacilitatorName = f.Name,
                     FacilitatorRole = f.RoleName,
