@@ -659,13 +659,13 @@ namespace Rock.Jobs
                 mergeFields.AddOrReplace( "Courses", personProgramInfo.Courses );
 
                 // If the person's communication preference for their course is not SMS or Email then use their Person's communication preference.
-                var communicationPreference = personProgramActivitiesByCourse.CommunicationPreference;
-                if ( personProgramActivitiesByCourse.CommunicationPreference != CommunicationType.SMS && personProgramActivitiesByCourse.CommunicationPreference != CommunicationType.Email )
+                var communicationPreference = personProgramInfo.CommunicationPreference;
+                if ( personProgramInfo.CommunicationPreference != CommunicationType.SMS && personProgramInfo.CommunicationPreference != CommunicationType.Email )
                 {
-                    communicationPreference = personProgramActivitiesByCourse.Person.CommunicationPreference;
+                    communicationPreference = personProgramInfo.Person.CommunicationPreference;
                 }
                 
-                var communicationId = SendCommunication( personProgramInfo.Person, systemCommunication, mergeFields );
+                var communicationId = SendCommunication( personProgramInfo.Person, communicationPreference, systemCommunication, mergeFields );
 
                 if ( communicationId.HasValue )
                 {
