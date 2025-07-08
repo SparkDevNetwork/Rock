@@ -42,7 +42,7 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         /// <summary>
         /// Gets or sets the available date for the activity instance.
         /// </summary>
-        public DateTime? AvailableDate { get; set; }
+        public DateTimeOffset? AvailableDate { get; set; }
 
         /// <summary>
         /// Gets or sets the binary file of the completion for use by the activity component.
@@ -58,12 +58,12 @@ namespace Rock.ViewModels.Blocks.Lms.LearningClassActivityCompletionDetail
         /// Gets or sets the date the student
         /// completed the related Rock.Model.LearningActivity.
         /// </summary>
-        public DateTime? CompletedDate { get; set; }
+        public DateTimeOffset? CompletedDate { get; set; }
 
         /// <summary>
         /// Gets or sets the due date for the activity instance.
         /// </summary>
-        public DateTime? DueDate { get; set; }
+        public DateTimeOffset? DueDate { get; set; }
 
         /// <summary>
         /// Gets or sets the facilitator's comment.

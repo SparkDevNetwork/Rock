@@ -2350,7 +2350,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                             gridViewRow.DataItem = dataItem;
                             this.OnRowDataBound( args );
                             columnCounter = 0;
-                            var gridViewRowCellLookup = gridViewRow.Cells.OfType<DataControlFieldCell>().ToDictionary( k => k.ContainingField, v => v );
+
+                            /*
+                                6/11/2025 - NA
+
+                                Updated grid logic to reference columns by index (gridColumn index) rather than
+                                by field instance, which may not be reliably preserved across RebindGrid() calls.
+
+                                Reason: Ensures grid consistency during rebinding. (Fixes ISSUE #6288)
+                            */
                             foreach ( var col in gridColumns )
                             {
                                 // Processing cell of data in row.
@@ -2358,14 +2366,15 @@ $('#{this.ClientID} .{GRID_SELECT_CELL_CSS_CLASS}').on( 'click', function (event
                                 columnCounter++;
 
                                 object exportValue = null;
-                                if ( col.Value is RockBoundField )
+
+                                if ( col.Value is RockBoundField rockBound )
                                 {
-                                    exportValue = ( col.Value as RockBoundField ).GetExportValue( gridViewRow );
+                                    exportValue = rockBound.GetExportValue( gridViewRow );
                                 }
-                                else if ( col.Value is RockTemplateField )
+                                else if ( col.Value is RockTemplateField rockTemplate )
                                 {
-                                    var fieldCell = gridViewRowCellLookup[col.Value];
-                                    exportValue = ( col.Value as RockTemplateField ).GetExportValue( gridViewRow, fieldCell );
+                                    var fieldCell = gridViewRow.Cells[col.Key] as DataControlFieldCell;
+                                    exportValue = rockTemplate.GetExportValue( gridViewRow, fieldCell );
                                 }
 
                                 ExcelHelper.SetExcelValue( worksheet.Cells[rowCounter, columnCounter], exportValue );

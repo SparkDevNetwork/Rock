@@ -81,7 +81,9 @@ namespace Rock.Jobs
             // Ensure an index is in place that will significantly improve the performance of this job, as well as
             // future queries against the History table. It might take a while (several minutes) to add this index for
             // Rock instances that have millions of records in the History table.
-            jobMigration.Sql( @"
+            using ( var activity = ObservabilityHelper.StartActivity( "Task: Add 'IX_EntityTypeId_Verb' [History] Index" ) )
+            {
+                jobMigration.Sql( @"
 IF NOT EXISTS (SELECT * FROM sys.indexes WHERE NAME = N'IX_EntityTypeId_Verb' AND object_id = OBJECT_ID('History'))
 BEGIN
     CREATE NONCLUSTERED INDEX [IX_EntityTypeId_Verb] ON [dbo].[History]
@@ -99,6 +101,7 @@ BEGIN
     -- Remove any preexisting history login records (most Rock instances won't have any).
     TRUNCATE TABLE [HistoryLogin];
 END" );
+            }
 
             // Delete preexisting [History] records in batches of 1500, ensuring the script runs at least once. If any
             // records are deleted within a given batch, we'll try at least once more.
@@ -118,7 +121,6 @@ WITH LoginHistoryToDelete AS (
     FROM [History]
     WHERE [Verb] = 'LOGIN'
         AND [EntityTypeId] = @PersonEntityTypeId
-    ORDER BY [Id]
 )
 DELETE h
 FROM [History] h

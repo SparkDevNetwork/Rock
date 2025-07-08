@@ -28,6 +28,23 @@ namespace Rock.Web.UI.Controls
     [ToolboxData( "<{0}:BackgroundCheckDocument runat=server></{0}:BackgroundCheckDocument>" )]
     public class BackgroundCheckDocument : CompositeControl
     {
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundCheckDocument"/> class.
+        /// </summary>
+        public BackgroundCheckDocument()
+        {
+            // Default constructor keeps IncludeInactive as false.
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="BackgroundCheckDocument"/> class.
+        /// </summary>
+        /// <param name="includeInactive">if set to <c>true</c> includes inactive items.</param>
+        public BackgroundCheckDocument( bool includeInactive )
+        {
+            IncludeInactive = includeInactive;
+        }
+
         #region Utilities        
         /// <summary>
         /// BackgroundCheck Types
@@ -36,7 +53,7 @@ namespace Rock.Web.UI.Controls
         {
             ProtectMyMinistry,
             Checkr,
-            Unknown
+            Other
         }
 
         /// <summary>
@@ -46,7 +63,6 @@ namespace Rock.Web.UI.Controls
         private BackgroundCheckTypes GetControlType()
         {
             EnsureChildControls();
-
 
             Guid? cpGuid = _componentPicker.SelectedValue.AsGuidOrNull();
             if ( cpGuid.HasValue )
@@ -61,9 +77,10 @@ namespace Rock.Web.UI.Controls
                 }
             }
 
-            return BackgroundCheckTypes.Unknown;
+            return BackgroundCheckTypes.Other;
         }
         #endregion
+
         #region Controls
         /// <summary>
         /// BackgroundChecker service selector
@@ -80,7 +97,27 @@ namespace Rock.Web.UI.Controls
         /// </summary>
         private RockTextBox _textBox;
         #endregion
+
         #region Properties
+        /// <summary>
+        /// Gets or sets a value indicating whether inactive items are included. (defaults to False).
+        /// </summary>
+        /// <value>
+        ///     <c>true</c> if inactive items should be included; otherwise, <c>false</c>.
+        /// </value>
+        public bool IncludeInactive
+        {
+            get
+            {
+                return ViewState["IncludeInactive"] as bool? ?? false;
+            }
+
+            set
+            {
+                ViewState["IncludeInactive"] = value;
+            }
+        }
+
         /// <summary>
         /// Gets or sets the binary file type GUID.
         /// </summary>
@@ -119,7 +156,17 @@ namespace Rock.Web.UI.Controls
             set
             {
                 EnsureChildControls();
-                var li = _componentPicker.Items.FindByValue( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.ToUpper() );
+                ListItem li;
+                // If have an Provider EntityType Guid use it, otherwise we assume it's the legacy PMM...
+                if ( ProviderEntityTypeGuid.HasValue )
+                {
+                    li = _componentPicker.Items.FindByValue( ProviderEntityTypeGuid.ToString().ToUpper() );
+                }
+                else
+                {
+                    li = _componentPicker.Items.FindByValue( Rock.SystemGuid.EntityType.PROTECT_MY_MINISTRY_PROVIDER.ToUpper() );
+                }
+
                 if ( li != null )
                 {
                     li.Selected = true;
@@ -127,6 +174,30 @@ namespace Rock.Web.UI.Controls
                 }
 
                 _fileUploader.BinaryFileId = value;
+            }
+        }
+
+        /// <summary>
+        /// Gets or sets the provider's entity type GUID.
+        /// </summary>
+        /// <value>
+        /// The binary file type GUID.
+        /// </value>
+        public Guid? ProviderEntityTypeGuid
+        {
+            get
+            {
+                return ViewState["ProviderEntityTypeGuid"] as Guid? ?? null;
+            }
+
+            set
+            {
+                EnsureChildControls();
+                ViewState["ProviderEntityTypeGuid"] = value;
+                if ( value != null )
+                {
+                    _componentPicker.SelectedValue = value.ToStringSafe().ToUpper();
+                }
             }
         }
 
@@ -181,7 +252,7 @@ namespace Rock.Web.UI.Controls
         {
             Controls.Clear();
 
-            _componentPicker = new ComponentPicker()
+            _componentPicker = new ComponentPicker( IncludeInactive )
             {
                 ContainerType = "Rock.Security.BackgroundCheckContainer"
             };
@@ -211,15 +282,14 @@ namespace Rock.Web.UI.Controls
         private void _componentPicker_SelectedIndexChanged( object sender, EventArgs e )
         {
             EnsureChildControls();
+            ProviderEntityTypeGuid = _componentPicker.SelectedValue.AsGuidOrNull();
+
             var type = GetControlType();
             switch ( type )
             {
-                case BackgroundCheckTypes.ProtectMyMinistry:
-                    _textBox.Visible = false;
-                    _textBox.Text = string.Empty;
-                    _fileUploader.Visible = true;
-                    break;
-
+                // Only Checkr will use a textbox instead of a local file uploader.
+                // The textbox will hold the remote RecordKey for the background check document
+                // that only Checkr stores.
                 case BackgroundCheckTypes.Checkr:
                     _fileUploader.Visible = false;
                     _fileUploader.BinaryFileId = null;

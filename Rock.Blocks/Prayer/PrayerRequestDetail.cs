@@ -119,6 +119,7 @@ namespace Rock.Blocks.Prayer
         private static class PageParameterKey
         {
             public const string PrayerRequestId = "PrayerRequestId";
+            public const string PersonId = "PersonId";
         }
 
         private static class NavigationUrlKey
@@ -245,13 +246,30 @@ namespace Rock.Blocks.Prayer
                     box.Entity.AllowComments = GetAttributeValue( AttributeKey.DefaultAllowCommentsChecked ).AsBooleanOrNull() ?? true;
                     box.Entity.IsPublic = GetAttributeValue( AttributeKey.DefaultToPublic ).AsBoolean();
 
-                    // if default the requester to the current person based on the block attribute
-                    var CurrentPerson = this.GetCurrentPerson();
-                    if ( CurrentPerson != null && GetAttributeValue( AttributeKey.SetCurrentPersonToRequester ).AsBoolean() )
+                    // Check for PersonId page 
+                    var personId = RequestContext.PageParameterAsId( PageParameterKey.PersonId );
+                    if ( personId > 0 )
                     {
-                        box.Entity.RequestedByPersonAlias = CurrentPerson.PrimaryAlias.ToListItemBag();
-                        box.Entity.FirstName = CurrentPerson.NickName;
-                        box.Entity.LastName = CurrentPerson.LastName;
+                        var person = new PersonService( rockContext ).Get( personId );
+                        if ( person != null )
+                        {
+                            box.Entity.RequestedByPersonAlias = person.PrimaryAlias.ToListItemBag();
+                            box.Entity.FirstName = person.NickName;
+                            box.Entity.LastName = person.LastName;
+                            box.Entity.Email = person.Email;
+                        }
+                    }
+                    else
+                    {
+                        // if no PersonId is specified, then set the current person as the requester if the block setting is enabled
+                        var CurrentPerson = this.GetCurrentPerson();
+                        if ( CurrentPerson != null && GetAttributeValue( AttributeKey.SetCurrentPersonToRequester ).AsBoolean() )
+                        {
+                            box.Entity.RequestedByPersonAlias = CurrentPerson.PrimaryAlias.ToListItemBag();
+                            box.Entity.FirstName = CurrentPerson.NickName;
+                            box.Entity.LastName = CurrentPerson.LastName;
+                            box.Entity.Email = CurrentPerson.Email;
+                        }
                     }
 
                     box.SecurityGrantToken = GetSecurityGrantToken( entity );
@@ -461,9 +479,17 @@ namespace Rock.Blocks.Prayer
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var qryParams = new Dictionary<string, string>();
+            var personId = PageParameter( PageParameterKey.PersonId );
+
+            if ( !string.IsNullOrWhiteSpace( personId ) )
+            {
+                qryParams.Add( PageParameterKey.PersonId, personId );
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl()
+                [NavigationUrlKey.ParentPage] = this.GetParentPageUrl( qryParams )
             };
         }
 
@@ -631,12 +657,20 @@ namespace Rock.Blocks.Prayer
                     entity.SaveAttributeValues( rockContext );
                 } );
 
-                if ( isNew )
+                var qryParams = new Dictionary<string, string>();
+                var personId = PageParameter( PageParameterKey.PersonId );
+
+                if ( !string.IsNullOrWhiteSpace( personId ) )
                 {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl() );
+                    qryParams.Add( PageParameterKey.PersonId, personId );
                 }
 
-                return ActionContent( System.Net.HttpStatusCode.OK, this.GetParentPageUrl() );
+                if ( isNew )
+                {
+                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetParentPageUrl( qryParams ) );
+                }
+
+                return ActionContent( System.Net.HttpStatusCode.OK, this.GetParentPageUrl( qryParams ) );
             }
         }
 
@@ -666,7 +700,15 @@ namespace Rock.Blocks.Prayer
                 entityService.Delete( entity );
                 rockContext.SaveChanges();
 
-                return ActionOk( this.GetParentPageUrl() );
+                var qryParams = new Dictionary<string, string>();
+                var personId = PageParameter( PageParameterKey.PersonId );
+
+                if ( !string.IsNullOrWhiteSpace( personId ) )
+                {
+                    qryParams.Add( PageParameterKey.PersonId, personId );
+                }
+
+                return ActionOk( this.GetParentPageUrl( qryParams ) );
             }
         }
 

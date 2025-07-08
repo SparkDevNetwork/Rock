@@ -126,7 +126,7 @@ namespace Rock.UniversalSearch.IndexModels
         public string LeaderList { get; set; }
 
         /// <summary>
-        /// Loads the by model.
+        /// Loads the indexable document from the Group.
         /// </summary>
         /// <param name="group">The group.</param>
         /// <returns></returns>

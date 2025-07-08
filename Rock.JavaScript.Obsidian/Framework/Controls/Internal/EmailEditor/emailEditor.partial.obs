@@ -14,6 +14,7 @@
                        :shortLinkGetPageId="shortLinkGetPageId"
                        :shortLinkSites="shortLinkSites"
                        :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                       :usageType="usageType"
                        :videoProviderNames="videoProviderNames"
                        @cloneComponent="onCloneComponent"
                        @completeComponent="onCompleteComponent"
@@ -48,6 +49,7 @@
                        :shortLinkGetPageId="shortLinkGetPageId"
                        :shortLinkSites="shortLinkSites"
                        :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                       :usageType="usageType"
                        :videoProviderNames="videoProviderNames"
                        @cloneComponent="onCloneComponent"
                        @completeComponent="onCompleteComponent"
@@ -94,7 +96,7 @@
     import EmailDesigner from "./emailDesigner.partial.obs";
     import SidePanel from "./sidePanel.partial.obs";
     import { CloneComponentRequest, CompleteComponentRequest, ComponentTypeDragEndRequest, ComponentTypeDragStartRequest, DeleteComponentRequest, ReplaceComponentRequest } from "./types.partial";
-    import { GetHtmlRequest } from "./types";
+    import { GetHtmlRequest, UsageType } from "./types";
     import { BinaryFiletype } from "@Obsidian/SystemGuids/binaryFiletype";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
@@ -168,6 +170,11 @@
 
         shortLinkTokenMinLength: {
             type: Number as PropType<number | null | undefined>
+        },
+
+        usageType: {
+            type: String as PropType<UsageType>,
+            default: "email" as const
         },
 
         /** Video component - the video provider names used to add context to the Source Video URL help text. */

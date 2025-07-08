@@ -229,7 +229,8 @@ namespace Rock.Blocks.Lms
                 return new LearningClassContentPage
                 {
                     Id = 0,
-                    Guid = Guid.Empty
+                    Guid = Guid.Empty,
+                    LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId )
                 };
             }
 

@@ -1233,7 +1233,12 @@ namespace Rock.Web.UI.Controls
             }
 
             person.FirstName = this.FirstName;
-            person.NickName = this.FirstName;
+
+            if ( string.IsNullOrWhiteSpace( person.NickName ) )
+            {
+                person.NickName = this.FirstName;
+            }
+
             person.LastName = this.LastName;
 
             if ( ShowSuffix && this.PersonSuffixValueId.IsNotNullOrZero() )
@@ -1319,7 +1324,6 @@ namespace Rock.Web.UI.Controls
             this.PersonTitleValueId = person.TitleValueId;
             this.PersonId = person.Id;
             this.FirstName = person.FirstName;
-            this.FirstName = person.NickName;
             this.LastName = person.LastName;
             this.PersonSuffixValueId = person.SuffixValueId;
             this.PersonGender = person.Gender;

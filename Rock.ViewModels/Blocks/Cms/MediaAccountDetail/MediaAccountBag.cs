@@ -56,5 +56,10 @@ namespace Rock.ViewModels.Blocks.Cms.MediaAccountDetail
         /// The metric data.
         /// </value>
         public string MetricData { get; set; }
+
+        /// <summary>
+        /// Gets or sets the value indicating whether manual entry is allowed for this media account.
+        /// </summary>
+        public bool ShowDownloadButton { get; set; }
     }
 }

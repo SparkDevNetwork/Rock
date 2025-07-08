@@ -514,7 +514,7 @@ namespace Rock.Mobile
                 OrganizationName = organizationName,
             };
 
-            if( ChatHelper.IsChatEnabled )
+            if ( ChatHelper.IsChatEnabled )
             {
                 var sharedChannelGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_SHARED_CHANNEL.AsGuid() );
                 var directMessagingChannelGroupTypeId = GroupTypeCache.GetId( Rock.SystemGuid.GroupType.GROUPTYPE_CHAT_DIRECT_MESSAGE.AsGuid() );
@@ -657,6 +657,11 @@ namespace Rock.Mobile
             if ( site.FavIconBinaryFileId.HasValue )
             {
                 package.AppearanceSettings.LogoUrl = FileUrlHelper.GetImageUrl( site.FavIconBinaryFileId.Value, imageUrlOptions );
+            }
+
+            if ( additionalSettings.DarkFavIconBinaryFileId.HasValue )
+            {
+                package.AppearanceSettings.DarkLogoUrl = FileUrlHelper.GetImageUrl( additionalSettings.DarkFavIconBinaryFileId.Value, imageUrlOptions );
             }
 
             // Load all the layouts.

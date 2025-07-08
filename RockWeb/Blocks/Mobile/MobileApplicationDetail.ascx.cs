@@ -268,6 +268,7 @@ namespace RockWeb.Blocks.Mobile
             ddlCssFramework.Items.Add( new ListItem( "Legacy (Xamarin Forms)", ( ( int ) MobileStyleFramework.Legacy ).ToString() ) );
 
             imgEditHeaderImage.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
+            imgEditHeaderDarkImage.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
             imgEditPreviewThumbnail.BinaryFileTypeGuid = Rock.SystemGuid.BinaryFiletype.DEFAULT.AsGuid();
 
             rblEditApplicationType.BindToEnum<ShellType>();
@@ -553,7 +554,7 @@ namespace RockWeb.Blocks.Mobile
             }
 
             site.LoadAttributes();
-            avcAttributes.AddEditControls(site, Rock.Security.Authorization.EDIT, CurrentPerson );
+            avcAttributes.AddEditControls( site, Rock.Security.Authorization.EDIT, CurrentPerson );
 
             //
             // Set the API Key.
@@ -648,6 +649,7 @@ namespace RockWeb.Blocks.Mobile
                 nbFontSizeDefault.Text = decimal.ToInt32( additionalSettings.DownhillSettings.FontSizeDefault ).ToStringSafe();
 
                 imgEditHeaderImage.BinaryFileId = site.FavIconBinaryFileId;
+                imgEditHeaderDarkImage.BinaryFileId = additionalSettings.DarkFavIconBinaryFileId;
             }
         }
 
@@ -1216,6 +1218,7 @@ namespace RockWeb.Blocks.Mobile
 
                 site.FavIconBinaryFileId = imgEditHeaderImage.BinaryFileId;
 
+                additionalSettings.DarkFavIconBinaryFileId = imgEditHeaderDarkImage.BinaryFileId;
                 additionalSettings.BarBackgroundColor = cpBarBackgroundColor.Value;
                 additionalSettings.IOSEnableBarTransparency = cbNavbarTransclucent.Checked;
                 additionalSettings.IOSBarBlurStyle = ddlNavbarBlurStyle.SelectedValueAsEnumOrNull<IOSBlurStyle>() ?? IOSBlurStyle.None;

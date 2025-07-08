@@ -4,9 +4,9 @@
            title="Decline Reason"
            modalWrapperClasses="schedule-toolbox-decline-reason"
            saveText="Save"
-           cancelText=""
+           cancelText="Cancel"
            :isSaveButtonDisabled="isSavingDeclineReason"
-           :isCloseButtonHidden="true"
+           :isCloseButtonHidden="false"
            @save="onSave">
 
         <p class="decline-reason-instructions">
@@ -75,6 +75,7 @@
 
     const emit = defineEmits<{
         (e: "update:isVisible"): void;
+        (e: "scheduleRowDeclined"): void;
     }>();
 
     // #region Values
@@ -119,17 +120,10 @@
             declineReasonNote: declineReasonNote.value
         };
 
-        try {
-            await invokeBlockAction("SaveDeclineReason", { bag });
-        }
-        finally {
-            // Since this is nice-to-have info, we'll just fail silently (by closing the modal)
-            // even if the response contains an error. The schedule row has already been marked
-            // as declined by a separate request.
-
-            isSavingDeclineReason.value = false;
-            isVisible.value = false;
-        }
+        await invokeBlockAction("SaveDeclineReason", { bag });
+        isSavingDeclineReason.value = false;
+        isVisible.value = false;
+        emit("scheduleRowDeclined");
     }
 
     // #endregion Event Handlers

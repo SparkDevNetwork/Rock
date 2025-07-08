@@ -257,19 +257,9 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="document">The document.</param>
-        /// <param name="indexName">Name of the index.</param>
-        /// <param name="mappingType">Type of the mapping.</param>
-        public override void IndexDocument<T>( T document, string indexName = null, string mappingType = null )
+        public override void IndexDocument<T>( T document )
         {
-            if ( indexName == null )
-            {
-                indexName = document.GetType().Name.ToLower();
-            }
-
-            if ( mappingType == null )
-            {
-                mappingType = document.GetType().Name.ToLower();
-            }
+            var indexName = document.GetType().Name.ToLower();
 
             // Check if index already exists.
             var existsResponse = _client.Indices.Exists( indexName );
@@ -288,17 +278,42 @@ namespace Rock.UniversalSearch.IndexComponents
         }
 
         /// <summary>
+        /// Indexes multiple documents.
+        /// </summary>
+        /// <typeparam name="T"></typeparam>
+        /// <param name="documents">The documents.</param>
+        public override void IndexDocuments<T>( IEnumerable<T> documents )
+        {
+            if ( documents == null || !documents.Any() )
+            {
+                return;
+            }
+
+            var indexName = documents.First().GetType().Name.ToLower();
+
+            // Check if index already exists.
+            var existsResponse = _client.Indices.Exists( indexName );
+            if ( !existsResponse.Exists )
+            {
+                CreateIndex( documents.First().GetType() );
+            }
+
+            var indexResult = _client.IndexManyAsync( documents, indexName ).ContinueWith( a =>
+            {
+                if ( a.Exception != null )
+                {
+                    ExceptionLogService.LogException( a.Exception );
+                }
+            } );
+        }
+
+        /// <summary>
         /// Deletes the type of the documents by.
         /// </summary>
         /// <typeparam name="T"></typeparam>
-        /// <param name="indexName">Name of the index.</param>
-        public override void DeleteDocumentsByType<T>( string indexName = null )
+        public override void DeleteDocumentsByType<T>()
         {
-            if ( indexName == null )
-            {
-                indexName = typeof( T ).Name.ToLower();
-            }
-
+            var indexName = typeof( T ).Name.ToLower();
             _client.DeleteByQueryAsync<T>( d => d.Index( indexName ).MatchAll() );
         }
 
@@ -307,14 +322,9 @@ namespace Rock.UniversalSearch.IndexComponents
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="document">The document.</param>
-        /// <param name="indexName">Name of the index.</param>
-        public override void DeleteDocument<T>( T document, string indexName = null )
+        public override void DeleteDocument<T>( T document )
         {
-            if ( indexName == null )
-            {
-                indexName = document.GetType().Name.ToLower();
-            }
-
+            var indexName = typeof( T ).Name.ToLower();
             _client.Delete<T>( document, d => d.Index( indexName ) );
         }
 

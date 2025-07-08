@@ -22,6 +22,7 @@
 //
 
 import { ToolboxScheduleRowActionType } from "@Obsidian/Enums/Blocks/Group/Scheduling/toolboxScheduleRowActionType";
+import { ToolboxScheduleRowConfirmationStatus } from "@Obsidian/Enums/Blocks/Group/Scheduling/toolboxScheduleRowConfirmationStatus";
 import { Guid } from "@Obsidian/Types";
 
 /**
@@ -39,6 +40,9 @@ export type PerformScheduleRowActionRequestBag = {
      * Otherwise, this value represents an attendance entity.
      */
     entityGuid: Guid;
+
+    /** Gets or sets the existing confirmation status. */
+    existingConfirmationStatus: ToolboxScheduleRowConfirmationStatus;
 
     /** Gets or sets the selected person unique identifier. */
     selectedPersonGuid: Guid;

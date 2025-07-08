@@ -65,6 +65,7 @@
                                                           :editorHeight="200"
                                                           :isCharacterCountShown="true"
                                                           :mergeFields="mergeFields"
+                                                          :commonMergeFields="commonMergeFields"
                                                           rules="required"
                                                           toolbarLabel="Push Message" />
                                     </div>
@@ -373,6 +374,12 @@
     const mobilePageQueryStringItems = ref<KeyValueItem[] | undefined>(recordAsKeyValueItems(internalPushData.value?.mobilePageQueryString));
     const internalPushOpenMessageJson = useVModelPassthrough(props, "pushOpenMessageJson", emit);
     const mobileApplicationGuidOrEmptyString = ref<string>(internalPushData.value?.mobileApplicationGuid ?? "");
+
+    const commonMergeFields = [
+        "Person.FirstName^First Name|fa fa-user",
+        "Person.NickName^Nick Name|fa fa-user",
+        "Person.FullName^Full Name|fa fa-user"
+    ];
 
     // #endregion
 

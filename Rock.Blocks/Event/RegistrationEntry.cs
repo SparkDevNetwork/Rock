@@ -2199,7 +2199,7 @@ namespace Rock.Blocks.Event
             switch ( field.PersonFieldType )
             {
                 case RegistrationPersonFieldType.FirstName:
-                    return person.NickName.IsNullOrWhiteSpace() ? person.FirstName : person.NickName;
+                    return person.FirstName;
 
                 case RegistrationPersonFieldType.LastName:
                     return person.LastName;
@@ -2271,19 +2271,16 @@ namespace Rock.Blocks.Event
                     }
 
                 case RegistrationPersonFieldType.HomePhone:
-                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() )?.Number;
+                    var homePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_HOME.AsGuid() );
+                    return CreatePhoneNumberBoxWithSmsControlBag( homePhone );
 
                 case RegistrationPersonFieldType.WorkPhone:
-                    return person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() )?.Number;
+                    var workPhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_WORK.AsGuid() );
+                    return CreatePhoneNumberBoxWithSmsControlBag( workPhone );
 
                 case RegistrationPersonFieldType.MobilePhone:
                     var mobilePhone = person.GetPhoneNumber( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
-                    if ( registrationContext.RegistrationSettings.ShowSmsOptIn )
-                    {
-                        return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
-                    }
-
-                    return mobilePhone?.Number;
+                    return CreatePhoneNumberBoxWithSmsControlBag( mobilePhone );
 
                 case RegistrationPersonFieldType.Race:
                     var race = person.RaceValueId.HasValue ? DefinedValueCache.Get( person.RaceValueId.Value ) : null;
@@ -2484,6 +2481,7 @@ namespace Rock.Blocks.Event
         private void SavePhone( object fieldValue, Person person, Guid phoneTypeGuid, History.HistoryChangeList changes )
         {
             string phoneNumber = string.Empty;
+            string countryCode = string.Empty;
             bool? isMessagingEnabled = null;
 
             var phoneData = fieldValue.ToStringSafe().FromJsonOrNull<PhoneNumberBoxWithSmsControlBag>();
@@ -2492,6 +2490,7 @@ namespace Rock.Blocks.Event
                 // We got the number and SMS selection, so set both.
                 phoneNumber = phoneData.Number;
                 isMessagingEnabled = phoneData.IsMessagingEnabled;
+                countryCode = phoneData.CountryCode;
             }
             else if ( fieldValue is string )
             {
@@ -2532,6 +2531,8 @@ namespace Rock.Blocks.Event
             }
 
             phone.Number = cleanNumber;
+            phone.CountryCode = countryCode;
+
             History.EvaluateChange( changes, $"{numberType.Value} Phone", oldPhoneNumber, phone.NumberFormattedWithCountryCode );
 
             if ( isMessagingEnabled != null )
@@ -4657,7 +4658,7 @@ namespace Rock.Blocks.Event
             scheduledTransaction.StartDate = paymentSchedule.StartDate;
             
             // Set the payment information.
-            scheduledTransaction.Summary = paymentInfo.Comment1;
+            scheduledTransaction.Summary = context.Registration.GetSummary();
             if ( scheduledTransaction.FinancialPaymentDetail == null )
             {
                 scheduledTransaction.FinancialPaymentDetail = new FinancialPaymentDetail();

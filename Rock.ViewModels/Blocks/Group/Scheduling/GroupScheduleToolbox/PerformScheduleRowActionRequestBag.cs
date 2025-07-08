@@ -45,5 +45,10 @@ namespace Rock.ViewModels.Blocks.Group.Scheduling.GroupScheduleToolbox
         /// Gets or sets the row action type to be performed.
         /// </summary>
         public ToolboxScheduleRowActionType ActionType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the existing confirmation status.
+        /// </summary>
+        public ToolboxScheduleRowConfirmationStatus ExistingConfirmationStatus { get; set; }
     }
 }

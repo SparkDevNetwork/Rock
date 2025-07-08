@@ -867,11 +867,11 @@ namespace RockWeb.Blocks.Groups
                 groupRequirement.CopyPropertiesFrom( groupRequirementState );
             }
 
-            var deletedSchedules = new List<int>();
-
             // Add/Update any group locations that were added or changed in the UI (we already removed the ones that were removed above).
             foreach ( var groupLocationState in GroupLocationsState )
             {
+                var deletedSchedules = new List<int>();
+
                 GroupLocation groupLocation = group.GroupLocations.Where( l => l.Guid == groupLocationState.Guid ).FirstOrDefault();
                 if ( groupLocation == null )
                 {
@@ -959,11 +959,14 @@ namespace RockWeb.Blocks.Groups
                     currentSchedulingConfig.MaximumCapacity = updatedSchedulingConfig.MaximumCapacity;
                 }
 
-                // Delete the scheduling configs
+                // Delete the scheduling configs for this group location only
                 foreach ( var deletedScheduleId in deletedSchedules )
                 {
                     var associatedConfig = groupLocation.GroupLocationScheduleConfigs.Where( cfg => cfg.Schedule != null && cfg.Schedule.Id == deletedScheduleId ).FirstOrDefault();
-                    groupLocation.GroupLocationScheduleConfigs.Remove( associatedConfig );
+                    if ( associatedConfig != null )
+                    {
+                        groupLocation.GroupLocationScheduleConfigs.Remove( associatedConfig );
+                    }
                 }
 
                 checkinDataUpdated = true;
