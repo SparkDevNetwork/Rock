@@ -59,10 +59,10 @@ namespace Rock.Lms
         #endregion
 
         /// <inheritdoc/>
-        public override string HighlightColor => "#644a88"; // TODO - Ask PO
+        public override string HighlightColor => "#e6c229";
 
         /// <inheritdoc/>
-        public override string IconCssClass => "ti ti-article"; // TODO - Maybe news icon?
+        public override string IconCssClass => "ti ti-article";
 
         /// <inheritdoc/>
         public override string Name => "Content Article";
