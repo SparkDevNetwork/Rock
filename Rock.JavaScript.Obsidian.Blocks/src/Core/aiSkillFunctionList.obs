@@ -108,7 +108,8 @@
                     v-model="editFunctionPromptParametersSchema"
                     label="Parameters Schema"
                     editor="monaco"
-                    mode="json" />
+                    mode="json"
+                    :rules="editFunctionPromptParametersSchemaRules" />
     </Modal>
 </template>
 
@@ -120,6 +121,7 @@
     import Modal from "@Obsidian/Controls/modal.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Validator } from "@Obsidian/Libs/jsonschema";
     import { onConfigurationValuesChanged, setPropertiesBoxValue, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FunctionType, FunctionTypeDescription } from "@Obsidian/Enums/Core/AI/Agent/functionType";
@@ -158,11 +160,185 @@
     const editFunctionMaxTokens = ref<number>();
     const editFunctionPrompt = ref("");
     const editFunctionPromptParametersSchema = ref("");
+    const editFunctionPromptParametersSchemaRules = [validateSchema];
 
     const editFunctionTypeItems = enumToListItemBag(FunctionTypeDescription);
 
     // They are not allowed to set a function type to C# code.
     editFunctionTypeItems.splice(editFunctionTypeItems.findIndex(i => i.value === FunctionType.ExecuteCode.toString()), 1);
+
+    const validationSchema = JSON.parse(`{
+    "$schema": "http://json-schema.org/draft-07/schema#",
+    "$id": "http://json-schema.org/draft-07/schema#",
+    "title": "Core schema meta-schema",
+    "definitions": {
+        "schemaArray": {
+            "type": "array",
+            "minItems": 1,
+            "items": { "$ref": "#" }
+        },
+        "nonNegativeInteger": {
+            "type": "integer",
+            "minimum": 0
+        },
+        "nonNegativeIntegerDefault0": {
+            "allOf": [
+                { "$ref": "#/definitions/nonNegativeInteger" },
+                { "default": 0 }
+            ]
+        },
+        "simpleTypes": {
+            "enum": [
+                "array",
+                "boolean",
+                "integer",
+                "null",
+                "number",
+                "object",
+                "string"
+            ]
+        },
+        "stringArray": {
+            "type": "array",
+            "items": { "type": "string" },
+            "uniqueItems": true,
+            "default": []
+        }
+    },
+    "type": ["object", "boolean"],
+    "properties": {
+        "$id": {
+            "type": "string",
+            "format": "uri-reference"
+        },
+        "$schema": {
+            "type": "string",
+            "format": "uri"
+        },
+        "$ref": {
+            "type": "string",
+            "format": "uri-reference"
+        },
+        "$comment": {
+            "type": "string"
+        },
+        "title": {
+            "type": "string"
+        },
+        "description": {
+            "type": "string"
+        },
+        "default": true,
+        "readOnly": {
+            "type": "boolean",
+            "default": false
+        },
+        "writeOnly": {
+            "type": "boolean",
+            "default": false
+        },
+        "examples": {
+            "type": "array",
+            "items": true
+        },
+        "multipleOf": {
+            "type": "number",
+            "exclusiveMinimum": 0
+        },
+        "maximum": {
+            "type": "number"
+        },
+        "exclusiveMaximum": {
+            "type": "number"
+        },
+        "minimum": {
+            "type": "number"
+        },
+        "exclusiveMinimum": {
+            "type": "number"
+        },
+        "maxLength": { "$ref": "#/definitions/nonNegativeInteger" },
+        "minLength": { "$ref": "#/definitions/nonNegativeIntegerDefault0" },
+        "pattern": {
+            "type": "string",
+            "format": "regex"
+        },
+        "additionalItems": { "$ref": "#" },
+        "items": {
+            "anyOf": [
+                { "$ref": "#" },
+                { "$ref": "#/definitions/schemaArray" }
+            ],
+            "default": true
+        },
+        "maxItems": { "$ref": "#/definitions/nonNegativeInteger" },
+        "minItems": { "$ref": "#/definitions/nonNegativeIntegerDefault0" },
+        "uniqueItems": {
+            "type": "boolean",
+            "default": false
+        },
+        "contains": { "$ref": "#" },
+        "maxProperties": { "$ref": "#/definitions/nonNegativeInteger" },
+        "minProperties": { "$ref": "#/definitions/nonNegativeIntegerDefault0" },
+        "required": { "$ref": "#/definitions/stringArray" },
+        "additionalProperties": { "$ref": "#" },
+        "definitions": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#" },
+            "default": {}
+        },
+        "properties": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#" },
+            "default": {}
+        },
+        "patternProperties": {
+            "type": "object",
+            "additionalProperties": { "$ref": "#" },
+            "propertyNames": { "format": "regex" },
+            "default": {}
+        },
+        "dependencies": {
+            "type": "object",
+            "additionalProperties": {
+                "anyOf": [
+                    { "$ref": "#" },
+                    { "$ref": "#/definitions/stringArray" }
+                ]
+            }
+        },
+        "propertyNames": { "$ref": "#" },
+        "const": true,
+        "enum": {
+            "type": "array",
+            "items": true,
+            "minItems": 1,
+            "uniqueItems": true
+        },
+        "type": {
+            "anyOf": [
+                { "$ref": "#/definitions/simpleTypes" },
+                {
+                    "type": "array",
+                    "items": { "$ref": "#/definitions/simpleTypes" },
+                    "minItems": 1,
+                    "uniqueItems": true
+                }
+            ]
+        },
+        "format": { "type": "string" },
+        "contentMediaType": { "type": "string" },
+        "contentEncoding": { "type": "string" },
+        "if": { "$ref": "#" },
+        "then": { "$ref": "#" },
+        "else": { "$ref": "#" },
+        "allOf": { "$ref": "#/definitions/schemaArray" },
+        "anyOf": { "$ref": "#/definitions/schemaArray" },
+        "oneOf": { "$ref": "#/definitions/schemaArray" },
+        "not": { "$ref": "#" }
+    },
+    "default": true
+}`);
 
     // #endregion
 
@@ -211,6 +387,43 @@
         else {
             await alert(result.errorMessage || "Unknown error while trying to load AI skill function for editing.");
         }
+    }
+
+    /**
+     * Validates the JSON string against the schema that describes a JSON schema.
+     * In other words, makes sure the JSON is actually a valid JSON schema.
+     *
+     * @param json The JSON string to validate.
+     *
+     * @returns `true` if the JSON is valid, or a string describing the error if it is not.
+     */
+    function validateSchema(json: string): boolean | string {
+        if (!json) {
+            return true;
+        }
+
+        let instance: unknown;
+
+        try {
+            instance = JSON.parse(editFunctionPromptParametersSchema.value);
+        }
+        catch (e) {
+            return "is not valid JSON.";
+        }
+
+        const validator = new Validator();
+        const validationResult = validator.validate(instance, validationSchema);
+
+        if (validationResult.errors.length > 0) {
+            const error = validationResult.errors[0];
+            const property = error.property.startsWith("instance.")
+                ? error.property.substring(9)
+                : error.property;
+
+            return `is invalid schema: path '${property}' ${error.message}.`;
+        }
+
+        return true;
     }
 
     // #endregion
