@@ -16,6 +16,10 @@
 //
 using System;
 
+using System.Collections.Generic;
+using System.Linq;
+
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -317,6 +321,38 @@ namespace Rock.Reporting
                 return $"{_message} [ReportFieldId: {_reportField?.Id}, ReportId: {_report?.Id}]";
             }
         }
+    }
+
+    /// <summary>
+    /// 
+    /// </summary>
+    /// <seealso cref="System.Exception" />
+    public sealed class RockCircularReferenceException : RockReportingException
+    {
+        private readonly string _message;
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="RockCircularReferenceException"/> class.
+        /// </summary>
+        /// <param name="message">The message that describes the error.</param>
+        /// <param name="trail">The list of DataView IDs that track the circular reference trail.</param>
+        /// <param name="otherDataViewId">The ID of the other DataView involved in the circular reference.</param>
+        public RockCircularReferenceException( string message, List<int> trail, int otherDataViewId )
+            : base( message )
+        {
+            var dataViewNames = trail.Select( id => DataViewCache.Get( id )?.Name ?? $"ID:{id}" ).ToList();
+            var otherDataViewName = DataViewCache.Get( otherDataViewId )?.Name ?? $"ID:{otherDataViewId}";
+
+            dataViewNames.Add( otherDataViewName );
+            var circularTrail = dataViewNames.AsDelimited( " -> " );
+
+            _message = $"{message}: {circularTrail}";
+        }
+
+        /// <summary>
+        /// Gets a message that describes the current exception, including details about the circular reference trail.
+        /// </summary>
+        public override string Message => _message;
     }
 
     /// <summary>
