@@ -889,7 +889,6 @@ namespace Rock.Reporting
         /// <returns></returns>
         public static List<FilterInfo> GetFilterInfoList( DataView dataView )
         {
-            var rockContext = new RockContext();
             try
             {
                 var filterList = new List<FilterInfo>();
@@ -942,7 +941,6 @@ namespace Rock.Reporting
         /// <param name="filter">The filter.</param>
         /// <param name="reportEntityType">Type of the report entity.</param>
         /// <param name="trail">The recursion trail of DataView IDs to detect circular references.</param>
-        /// <param name="rockContext">The rock context.</param>
         private static void GetFilterListRecursive( List<FilterInfo> filterList, DataViewFilter filter, EntityType reportEntityType, List<int> trail )
         {
             var entityType = EntityTypeCache.Get( filter.EntityTypeId ?? 0 );
