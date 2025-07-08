@@ -78,7 +78,7 @@ const CreateChannelModal: React.FC = () => {
             null,
             { members }
         );
-        await channel.create();
+        await channel.watch();
 
         hideModal();
         setActiveChannel(channel);

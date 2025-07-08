@@ -7,14 +7,13 @@ import { useChatContext, useStateStore, useChannelPreviewInfo, useThreadsViewCon
 import { useChannelThreadListItemContext } from './ChannelThreadListItem';
 import { RockMessageTimestamp } from '../Message/RockMessageTimestamp';
 
-
 export type ThreadListItemUIProps = ComponentPropsWithoutRef<'button'>;
 
 /**
- * TODO:
- * - maybe hover state? ask design
+ * attachmentTypeIconMap
+ *
+ * Maps attachment types to their corresponding emoji icons for display in thread previews.
  */
-
 export const attachmentTypeIconMap = {
     audio: '🔈',
     file: '📄',
@@ -23,7 +22,15 @@ export const attachmentTypeIconMap = {
     voiceRecording: '🎙️',
 } as const;
 
-// TODO: translations
+/**
+ * getTitleFromMessage
+ *
+ * Returns a preview string for a message, including attachment icons and special handling for deleted or voice messages.
+ *
+ * @param currentUserId - The current user's ID (for future use)
+ * @param message - The message to generate a title for
+ * @returns {string} The preview string for the message
+ */
 const getTitleFromMessage = ({
     currentUserId,
     message,
@@ -52,11 +59,27 @@ const getTitleFromMessage = ({
         message?.text || '');
 };
 
+/**
+ * ChannelThreadListItemUI
+ *
+ * Renders a single thread list item for the channel thread list. Shows a preview of the parent message,
+ * including avatar, sender, timestamp, and message preview. Handles selection and accessibility.
+ *
+ * - Uses context to get the current thread object.
+ * - Uses useStateStore to efficiently select thread state.
+ * - Handles empty state if no parent message exists.
+ * - Highlights the item if it is the active thread.
+ *
+ * @param props - Additional button props for accessibility and styling
+ * @returns {JSX.Element} The rendered thread list item UI
+ */
 export const ChannelThreadListItemUI = (props: ThreadListItemUIProps) => {
     const { client } = useChatContext();
+    // Get the current thread from context (non-null assertion for required context)
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const thread = useChannelThreadListItemContext()!;
 
+    // Selector for thread state (minimizes re-renders)
     const selector = useCallback(
         (nextValue: ThreadState) => ({
             channel: nextValue.channel,
@@ -69,15 +92,17 @@ export const ChannelThreadListItemUI = (props: ThreadListItemUIProps) => {
         [client],
     );
 
+    // Get channel and parent message from thread state
     const { channel, parentMessage } =
         useStateStore(thread.state, selector);
 
+    // Get display title for the channel
     const { displayTitle: channelDisplayTitle } = useChannelPreviewInfo({ channel });
 
+    // Get active thread and setter from context
     const { activeThread, setActiveThread } = useThreadsViewContext();
 
-    // The channel thread list item is really just going to be a preview 
-    // of the parent message.
+    // If no parent message, show empty state
     if (!parentMessage) {
         return (
             <div className='str-chat__thread-list-item str-chat__thread-list-item--empty'>
@@ -88,8 +113,17 @@ export const ChannelThreadListItemUI = (props: ThreadListItemUIProps) => {
         );
     }
 
+    // Get sender name or fallback
     const parentMessageUser = parentMessage.user?.name || parentMessage.user?.id || 'Unknown sender';
 
+    /**
+     * getChannelThreadComponent
+     *
+     * Renders the main thread list item button, including avatar, sender, timestamp, and message preview.
+     * Handles selection and click to activate the thread.
+     *
+     * @returns {JSX.Element} The rendered thread list item
+     */
     const getChannelThreadComponent = () => {
         return (
             <button
@@ -101,17 +135,21 @@ export const ChannelThreadListItemUI = (props: ThreadListItemUIProps) => {
                 {...props}>
 
                 <div className="rock-channel-thread-list-item-layout">
+                    {/* Avatar for the sender of the parent message */}
                     <Avatar {...parentMessage.user} className="rock-channel-thread-item-avatar" />
 
                     <div className="rock-channel-thread-list-item-parent-message-preview-content">
                         <div className="rock-channel-thread-list-item-parent-message-preview-title-layout">
+                            {/* Sender name */}
                             <p className="rock-channel-thread-list-item-parent-message-preview-created-by-text">
                                 {parentMessageUser}
                             </p>
 
+                            {/* Timestamp for the parent message */}
                             <RockMessageTimestamp message={parentMessage} customClass="rock-channel-thread-list-item-parent-message-preview-created-at" isChannelThread />
                         </div>
 
+                        {/* Message preview (text or attachment icon) */}
                         <div className="str-chat__message-text" tabIndex={0}>
                             <div
                                 className={clsx('str-chat__message-text-inner')}>
@@ -124,7 +162,6 @@ export const ChannelThreadListItemUI = (props: ThreadListItemUIProps) => {
                     </div>
                 </div>
             </button>
-
         )
     }
     return getChannelThreadComponent();
