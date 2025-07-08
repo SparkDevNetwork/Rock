@@ -52,34 +52,6 @@ namespace Rock.AI.Agent
 
         private readonly ILogger _logger;
 
-        private static readonly PropertyInfo _parameterDescriptionProperty;
-
-        private static readonly PropertyInfo _parameterIsRequiredProperty;
-
-        private static readonly PropertyInfo _parameterSchemaProperty;
-
-        static ChatAgentFactory()
-        {
-            try
-            {
-                // The properties for KernelParameterMetadata are init-only, which is
-                // not supported on C# 7.3. So we can't set them directly and are
-                // required to use reflection.
-                //
-                // Report here: https://github.com/microsoft/semantic-kernel/issues/12297
-                var parameterType = typeof( KernelParameterMetadata );
-                _parameterDescriptionProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.Description ) );
-                _parameterIsRequiredProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.IsRequired ) );
-                _parameterSchemaProperty = parameterType.GetProperty( nameof( KernelParameterMetadata.Schema ) );
-            }
-            catch
-            {
-                // Intentionally ignore, this will help prevent a crash too early
-                // to be seen by the user. We'll get an error later when we try
-                // to actually build an agent.
-            }
-        }
-
         public ChatAgentFactory( int agentId, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -268,11 +240,12 @@ namespace Rock.AI.Agent
                 else if ( function.FunctionType == FunctionType.ExecuteLava )
                 {
                     var functionParameters = new List<KernelParameterMetadata>();
-                    var parameter = new KernelParameterMetadata( "promptAsJson" );
-
-                    _parameterDescriptionProperty.SetValue( parameter, "A JSON object with the parameters defined in the schema." );
-                    _parameterIsRequiredProperty.SetValue( parameter, true );
-                    _parameterSchemaProperty.SetValue( parameter, ParseSchema( function.InputSchema ) );
+                    var parameter = new KernelParameterMetadata( "promptAsJson" )
+                    {
+                        Description = "A JSON object with the parameters defined in the schema.",
+                        IsRequired = true,
+                        Schema = ParseSchema( function.InputSchema )
+                    };
 
                     functionParameters.Add( parameter );
 
