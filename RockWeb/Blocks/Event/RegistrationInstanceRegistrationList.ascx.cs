@@ -160,7 +160,7 @@ namespace RockWeb.Blocks.Event
                     Rock.dialogs.confirm('Are you sure you want to delete this registration? All of the registrants will also be deleted!', function (result) {
                         if (result) {
                             if ( $hfHasPayments.val() == 'True' ) {
-                                Rock.dialogs.confirm('This registration also has payments. Are you really sure that you want to delete the registration?<br/><small>(payments will not be deleted, but they will no longer be associated with a registration)</small>', function (result) {
+                                Rock.dialogs.confirm('This registration also has payments. Are you really sure that you want to delete the registration?<br/><small>The payment plan will be deactivated and will no longer be associated with a registration.</small>', function (result) {
                                     if (result) {
                                         window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                                     }
@@ -460,6 +460,19 @@ namespace RockWeb.Blocks.Event
                     if ( !registrationService.CanDelete( registration, out errorMessage ) )
                     {
                         mdRegistrationsGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    // Call TryDeletePaymentPlan before deleting
+                    var success = registrationService.TryDeletePaymentPlan( registration, rockContext, out var error, out var warning );
+                    if ( !success )
+                    {
+                        mdDeleteWarning.Show( error ?? "An unknown error occurred while deactivating a payment plan. The registration was not deleted.", ModalAlertType.Warning );
+                        return;
+                    }
+                    if ( !string.IsNullOrWhiteSpace( warning ) )
+                    {
+                        mdDeleteWarning.Show( warning, ModalAlertType.Warning );
                         return;
                     }
 

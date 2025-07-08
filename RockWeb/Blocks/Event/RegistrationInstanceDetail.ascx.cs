@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using System.Web.UI;
 
 using Rock;
@@ -121,8 +122,8 @@ namespace RockWeb.Blocks.Event
         e.preventDefault();
         Rock.dialogs.confirm('Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!', function (result) {
             if (result) {
-                if ( $('input.js-instance-has-payments').val() == 'True' ) {
-                    Rock.dialogs.confirm('This registration instance also has registrations with payments. Are you sure that you want to delete the instance?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
+                if ( $('input.js-instance-has-payments').val() && $('input.js-instance-has-payments').val().toLowerCase() === 'true' ) {
+                    Rock.dialogs.confirm('This registration instance also has registrations with payments. Are you sure that you want to delete the instance?<br/><small>The payment plan will be deactivated and will no longer be associated with a registration.</small>', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
@@ -237,9 +238,38 @@ namespace RockWeb.Blocks.Event
                          registrationInstance.IsAuthorized( Authorization.EDIT, CurrentPerson ) ||
                          registrationInstance.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
                     {
+                        var registrationService = new RegistrationService( rockContext );
+                        var errors = new List<string>();
+                        var warnings = new List<string>();
+                        
+                        foreach ( var registration in registrationInstance.Registrations.ToList() )
+                        {
+                            var success = registrationService.TryDeletePaymentPlan( registration, rockContext, out var error, out var warning );
+                            string registrationInfo = $"Registration Id {registration.Id} ({registration.FirstName} {registration.LastName})";
+                            if ( !success )
+                            {
+                                errors.Add( $"{registrationInfo}: {error ?? "Unknown error"}" );
+                            }
+                            if ( !string.IsNullOrWhiteSpace( warning ) )
+                            {
+                                warnings.Add( $"{registrationInfo}: {warning}" );
+                            }
+                        }
+
+                        if ( errors.Any() )
+                        {
+                            mdDeleteWarning.Show( "The following registrations could not have their payment plans deleted:<br/>" + string.Join( "<br/>", errors ), ModalAlertType.Warning );
+                            return;
+                        }
+                        if ( warnings.Any() )
+                        {
+                            mdDeleteWarning.Show( "Warnings occurred for the following registrations:<br/>" + string.Join( "<br/>", warnings ), ModalAlertType.Warning );
+                            return;
+                        }
+
                         rockContext.WrapTransaction( () =>
                         {
-                            new RegistrationService( rockContext ).DeleteRange( registrationInstance.Registrations );
+                            registrationService.DeleteRange( registrationInstance.Registrations );
                             service.Delete( registrationInstance );
                             rockContext.SaveChanges();
                         } );
@@ -708,6 +738,9 @@ namespace RockWeb.Blocks.Event
             lDetails.Visible = !string.IsNullOrWhiteSpace( registrationInstance.Details );
             lDetails.Text = registrationInstance.Details;
             btnCopy.ToolTip = $"Copy { registrationInstance.Name }";
+
+            bool hasPayments = registrationInstance.Registrations.Any( r => r.Payments != null && r.Payments.Any() );
+            hfHasPayments.Value = hasPayments.ToString();
         }
 
         /// <summary>
