@@ -228,6 +228,7 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var service = new RegistrationInstanceService( rockContext );
+                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var registrationInstance = service.Get( hfRegistrationInstanceId.Value.AsInteger() );
 
                 if ( registrationInstance != null )
@@ -244,7 +245,7 @@ namespace RockWeb.Blocks.Event
                         
                         foreach ( var registration in registrationInstance.Registrations.ToList() )
                         {
-                            var success = registrationService.TryDeletePaymentPlan( registration, rockContext, out var error, out var warning );
+                            var success = registrationService.TryDeletePaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
                             string registrationInfo = $"Registration Id {registration.Id} ({registration.FirstName} {registration.LastName})";
                             if ( !success )
                             {
@@ -266,6 +267,10 @@ namespace RockWeb.Blocks.Event
                             mdDeleteWarning.Show( "Warnings occurred for the following registrations:<br/>" + string.Join( "<br/>", warnings ), ModalAlertType.Warning );
                             return;
                         }
+
+                        // If we got here, then all payment plans were deleted using TryDeletePaymentPlan above.
+                        // Now we officially delete them.
+                        rockContext.SaveChanges();
 
                         rockContext.WrapTransaction( () =>
                         {

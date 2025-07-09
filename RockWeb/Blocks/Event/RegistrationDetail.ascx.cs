@@ -405,64 +405,72 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-
-            if ( RegistrationId.HasValue )
+            using ( var rockContext = new RockContext() )
             {
-                var registrationService = new RegistrationService( rockContext );
-                Registration registration = registrationService.Get( RegistrationId.Value );
-
-                if ( registration != null )
+                if ( RegistrationId.HasValue )
                 {
-                    if ( !UserCanEdit &&
-                        !registration.IsAuthorized( "Register", CurrentPerson ) &&
-                        !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) &&
-                        !registration.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    var registrationService = new RegistrationService( rockContext );
+                    var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+
+                    Registration registration = registrationService.Get( RegistrationId.Value );
+
+                    if ( registration != null )
                     {
-                        mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
-                        return;
-                    }
+                        if ( !UserCanEdit &&
+                            !registration.IsAuthorized( "Register", CurrentPerson ) &&
+                            !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) &&
+                            !registration.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                        {
+                            mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
+                            return;
+                        }
 
-                    string errorMessage;
-                    if ( !registrationService.CanDelete( registration, out errorMessage ) )
-                    {
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
+                        string errorMessage;
+                        if ( !registrationService.CanDelete( registration, out errorMessage ) )
+                        {
+                            mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                            return;
+                        }
 
-                    var success = registrationService.TryDeletePaymentPlan( registration, rockContext, out var error, out var warning );
-                    if ( !success )
-                    {
-                        mdDeleteWarning.Show( error ?? "An unknown error occurred while deactivating a payment plan. The registration was not deleted.", ModalAlertType.Warning );
-                        return;
-                    }
-                    if ( !string.IsNullOrWhiteSpace( warning ) )
-                    {
-                        mdDeleteWarning.Show( warning, ModalAlertType.Warning );
-                        return;
-                    }
+                        var success = registrationService.TryDeletePaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
 
-                    var changes = new History.HistoryChangeList();
-                    changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
+                        if ( !success )
+                        {
+                            mdDeleteWarning.Show( error ?? "An unknown error occurred while deactivating a payment plan. The registration was not deleted.", ModalAlertType.Warning );
+                            return;
+                        }
+                        if ( !string.IsNullOrWhiteSpace( warning ) )
+                        {
+                            mdDeleteWarning.Show( warning, ModalAlertType.Warning );
+                            return;
+                        }
 
-                    rockContext.WrapTransaction( () =>
-                    {
-                        HistoryService.SaveChanges(
-                            rockContext,
-                            typeof( Registration ),
-                            Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                            registration.Id,
-                            changes );
-
-                        registrationService.Delete( registration );
-
+                        // If we got here, then all payment plans were deleted using TryDeletePaymentPlan above.
+                        // Now we officially delete them.
                         rockContext.SaveChanges();
-                    } );
-                }
 
-                var pageParams = new Dictionary<string, string>();
-                pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
-                NavigateToParentPage( pageParams );
+                        var changes = new History.HistoryChangeList();
+                        changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
+
+                        rockContext.WrapTransaction( () =>
+                        {
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Registration ),
+                                Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                                registration.Id,
+                                changes );
+
+                            registrationService.Delete( registration );
+
+                            rockContext.SaveChanges();
+                        } );
+                    }
+
+                    var pageParams = new Dictionary<string, string>();
+                    pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
+                    NavigateToParentPage( pageParams );
+                }
             }
         }
 
@@ -3459,32 +3467,39 @@ namespace RockWeb.Blocks.Event
             nbPaneAccountError.Visible = false;
             nbPaneAccountWarning.Visible = false;
 
-            var rockContext = new RockContext();
-            var registrationService = new Rock.Model.RegistrationService( new RockContext() );
-            var isSuccessfullyDeleted = registrationService.TryDeletePaymentPlan( this.Registration, rockContext, out var error, out var warning );
-
-            var hasError = error.IsNotNullOrWhiteSpace();
-            var hasWarning = warning.IsNotNullOrWhiteSpace();
-
-            if ( hasError )
+            using ( var rockContext = new RockContext() )
             {
-                nbPaneAccountError.Text = error;
-                nbPaneAccountError.Visible = true;
-            }
+                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+                var registrationService = new Rock.Model.RegistrationService( new RockContext() );
 
-            if ( hasWarning )
-            {
-                nbPaneAccountWarning.Text = warning;
-                nbPaneAccountWarning.Visible = true;
-            }
+                var isSuccessfullyDeleted = registrationService.TryDeletePaymentPlan( this.Registration, financialScheduledTransactionService, out var error, out var warning );
 
-            if ( isSuccessfullyDeleted )
-            {
-                // Reload the registration.
-                this.Registration = GetRegistration( this.RegistrationId );
-                
-                pnlPaymentPlanSummary.Visible = false;
-                mdDeletePaymentPlan.Hide();
+                var hasError = error.IsNotNullOrWhiteSpace();
+                var hasWarning = warning.IsNotNullOrWhiteSpace();
+
+                if ( hasError )
+                {
+                    nbPaneAccountError.Text = error;
+                    nbPaneAccountError.Visible = true;
+                }
+
+                if ( hasWarning )
+                {
+                    nbPaneAccountWarning.Text = warning;
+                    nbPaneAccountWarning.Visible = true;
+                }
+
+                if ( isSuccessfullyDeleted )
+                {
+                    // Delete the payment plan from the registration.
+                    rockContext.SaveChanges();
+
+                    // Reload the registration.
+                    this.Registration = GetRegistration( this.RegistrationId );
+
+                    pnlPaymentPlanSummary.Visible = false;
+                    mdDeletePaymentPlan.Hide();
+                }
             }
         }
 

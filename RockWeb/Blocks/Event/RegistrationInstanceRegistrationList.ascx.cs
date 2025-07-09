@@ -441,6 +441,8 @@ namespace RockWeb.Blocks.Event
             using ( var rockContext = new RockContext() )
             {
                 var registrationService = new RegistrationService( rockContext );
+                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+
                 var registration = registrationService.Get( e.RowKeyId );
                 if ( registration != null )
                 {
@@ -464,7 +466,7 @@ namespace RockWeb.Blocks.Event
                     }
 
                     // Call TryDeletePaymentPlan before deleting
-                    var success = registrationService.TryDeletePaymentPlan( registration, rockContext, out var error, out var warning );
+                    var success = registrationService.TryDeletePaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
                     if ( !success )
                     {
                         mdDeleteWarning.Show( error ?? "An unknown error occurred while deactivating a payment plan. The registration was not deleted.", ModalAlertType.Warning );
@@ -475,6 +477,10 @@ namespace RockWeb.Blocks.Event
                         mdDeleteWarning.Show( warning, ModalAlertType.Warning );
                         return;
                     }
+
+                    // If we got here, then all payment plans were deleted using TryDeletePaymentPlan above.
+                    // Now we officially delete them.
+                    rockContext.SaveChanges();
 
                     var changes = new History.HistoryChangeList();
                     changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
