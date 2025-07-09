@@ -29,8 +29,6 @@
                      :rows="inputRows"
                      :rules="isRequired ? 'required' : ''"
                      inputClasses="form-control" />
-
-            <!-- TODO - Ask PO if he wants character length on Note. -->
         </div>
     </div>
 </template>
