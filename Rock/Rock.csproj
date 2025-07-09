@@ -61,7 +61,7 @@
     <PackageReference Include="Microsoft.Owin" Version="4.2.2" />
     <PackageReference Include="Microsoft.Owin.Host.SystemWeb" Version="3.0.1" />
     <PackageReference Include="Microsoft.Owin.Security" Version="4.0.0" />
-    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.59.0" />
+    <PackageReference Include="Microsoft.SemanticKernel.Abstractions" Version="1.60.0" />
     <PackageReference Include="Microsoft.SqlServer.Types" Version="11.0.2" />
     <PackageReference Include="Microsoft.Web.Xdt" Version="2.1.1" />
     <PackageReference Include="NEST.JsonNetSerializer" Version="7.17.0" />
