@@ -475,11 +475,11 @@ namespace Rock.Blocks.Lms
                 box.CommunicationPreference = ( Rock.Enums.Communication.CommunicationType ) currentPerson.CommunicationPreference;
             }
 
-                // Allow historical access if the course allows it and the class is not over.
-                var canShowHistoricalAccess = course.AllowHistoricalAccess
-                    && participantData != null
-                    && ( !participantData.SemesterEndDate.HasValue
-                    || participantData.SemesterEndDate.Value.IsFuture() );
+            // Allow historical access if the course allows it and the class is not over.
+            var canShowHistoricalAccess = course.AllowHistoricalAccess
+                && participantData != null
+                && ( !participantData.SemesterEndDate.HasValue
+                || participantData.SemesterEndDate.Value.IsFuture() );
 
             var hasCompletedClass = participantData != null && participantData.LearningCompletionDateTime.HasValue;
             if ( !canShowHistoricalAccess && hasCompletedClass && !participantData.LearningCompletionDateTime.Value.IsToday() )
