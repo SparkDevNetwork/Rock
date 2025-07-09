@@ -41,15 +41,41 @@ namespace Rock.AI.Agent.Providers
         Description = "The API key for the Azure OpenAI service.",
         IsRequired = true,
         Order = 10,
-        Key = "ApiKey" )]
+        Key = AttributeKey.ApiKey )]
 
     [TextField( "Azure OpenAI Endpoint",
         Description = "The endpoint for the Azure OpenAI service.",
         IsRequired = true,
         Order = 11,
-        Key = "Endpoint" )]
+        Key = AttributeKey.Endpoint )]
+
+    [DecimalField( "Default Temperature",
+        Description = "The default temperature to use for chat completions and functions. This is a value between 0 and 1 where higher values will result in more creative responses.",
+        IsRequired = false,
+        DefaultDecimalValue = 0,
+        Order = 12,
+        Key = AttributeKey.DefaultTemperature )]
+
+    [DecimalField( "Default Top P",
+        Description = "The default top_p to use for chat completions and functions. This is an alternative to temperature where 0.1 means only the tokens comprising the top 10% probability mass are considered.",
+        IsRequired = false,
+        DefaultDecimalValue = 1,
+        Order = 13,
+        Key = AttributeKey.DefaultTopP )]
     internal class AzureOpenAIProvider : AgentProviderComponent
     {
+        #region Keys
+
+        private static class AttributeKey
+        {
+            public const string ApiKey = "ApiKey";
+            public const string Endpoint = "Endpoint";
+            public const string DefaultTemperature = "DefaultTemperature";
+            public const string DefaultTopP = "DefaultTopP";
+        }
+
+        #endregion
+
         private readonly Dictionary<ModelServiceRole, string> _modelToRoleMap = new Dictionary<ModelServiceRole, string>
         {
             { ModelServiceRole.Default, "gpt-4o-mini" },
@@ -63,8 +89,8 @@ namespace Rock.AI.Agent.Providers
             serviceCollection.AddAzureOpenAIChatCompletion(
                 serviceId: GetServiceKeyForRole( role ),
                 deploymentName: _modelToRoleMap[role],
-                endpoint: GetAttributeValue( "Endpoint" ),
-                apiKey: GetAttributeValue( "ApiKey" ) );
+                endpoint: GetAttributeValue( AttributeKey.Endpoint ),
+                apiKey: GetAttributeValue( AttributeKey.ApiKey ) );
         }
 
         /// <inheritdoc/>
@@ -97,7 +123,8 @@ namespace Rock.AI.Agent.Providers
             {
                 ServiceId = GetServiceKeyForRole( function.Role ),
                 ModelId = _modelToRoleMap[function.Role],
-                Temperature = function.Temperature,
+                Temperature = function.Temperature ?? GetAttributeValue( AttributeKey.DefaultTemperature ).AsDoubleOrNull(),
+                TopP = GetAttributeValue( AttributeKey.DefaultTopP ).AsDoubleOrNull(),
                 MaxTokens = function.MaxTokens
             };
         }
@@ -107,7 +134,9 @@ namespace Rock.AI.Agent.Providers
         {
             return new OpenAIPromptExecutionSettings()
             {
-                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto()
+                FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
+                Temperature = GetAttributeValue( AttributeKey.DefaultTemperature ).AsDoubleOrNull(),
+                TopP = GetAttributeValue( AttributeKey.DefaultTopP ).AsDoubleOrNull(),
             };
         }
     }
