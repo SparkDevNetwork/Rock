@@ -27,6 +27,7 @@ using System.Net;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
+
 using CsvHelper;
 
 using Rock;
@@ -962,7 +963,8 @@ namespace Rock.Slingshot
             {
                 var campusIdHasValue = ( slingshotFinancialBatch.CampusId.HasValue && this.CampusLookupByForeignId.ContainsKey( slingshotFinancialBatch.CampusId.Value ) );
                 int? campusId = campusIdHasValue ? this.CampusLookupByForeignId[slingshotFinancialBatch.CampusId.Value]?.Id : null;
-                var newFinancialBatchImport = BulkImporter.ConvertModelWithLogging<Model.FinancialBatchImport>( slingshotFinancialBatch, () => {
+                var newFinancialBatchImport = BulkImporter.ConvertModelWithLogging<Model.FinancialBatchImport>( slingshotFinancialBatch, () =>
+                {
                     var financialBatchImport = new Model.FinancialBatchImport()
                     {
                         FinancialBatchForeignId = slingshotFinancialBatch.Id,
@@ -2881,7 +2883,15 @@ namespace Rock.Slingshot
 
             // Group Attributes
             var groupAttributes = new AttributeService( rockContext ).Queryable().Where( a => a.EntityTypeId == entityTypeIdGroup ).Select( a => a.Id ).ToList().Select( a => AttributeCache.Get( a ) ).ToList();
-            this.GroupAttributeKeyLookup = groupAttributes.ToDictionary( k => k.Key, v => v, StringComparer.OrdinalIgnoreCase );
+            try
+            {
+                this.GroupAttributeKeyLookup = groupAttributes.ToDictionary( k => k.Key, v => v, StringComparer.OrdinalIgnoreCase );
+            }
+            catch ( System.ArgumentException ex )
+            {
+                var duplicateKey = groupAttributes.GroupBy( a => a.Key ).FirstOrDefault( g => g.Count() > 1 ).Key;
+                throw new Exception( $"Duplicate Group Attribute Key found existing in Rock: {duplicateKey}. Please ensure all Group Attributes have unique keys.", ex );
+            }
 
             // GroupTypes
             this.GroupTypeLookupByForeignId = new GroupTypeService( rockContext ).Queryable().Where( a => a.ForeignId.HasValue && a.ForeignKey == this.ForeignSystemKey ).ToList().Select( a => GroupTypeCache.Get( a ) ).ToDictionary( k => k.ForeignId.Value, v => v );
