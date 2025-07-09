@@ -342,6 +342,7 @@ namespace Rock.Model
                 .Select( p => new
                 {
                     p.Id,
+                    p.PersonId,
                     p.Person.Email,
                     IsFacilitator = p.GroupRole.IsLeader,
                     p.Person.NickName,
@@ -353,6 +354,7 @@ namespace Rock.Model
                 .ToList()
                 .Select( p => new LearningActivityParticipantBag
                 {
+                    PersonId = p.PersonId,
                     Email = p.Email,
                     Guid = p.Guid,
                     IdKey = Utility.IdHasher.Instance.GetHash( p.Id ),

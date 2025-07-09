@@ -2,22 +2,33 @@
 <template>
     <div v-if="[ComponentScreen.Configuration, ComponentScreen.Completion].includes(screenToShow)" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
-            <TextBox v-model="title"
-                     label="Title"
+            <TextBox v-model="label"
+                     label="Label"
                      :disabled="disabled"
                      inputClasses="form-control"
+                     help="Text displayed above the note field."
                      rules="required" />
 
-            <TextBox v-model="summary"
-                     :disabled="disabled"
-                     label="Description"
-                     textMode="multiline"
-                     inputClasses="form-control" />
+            <NumberBox v-model="inputRows"
+                       :disabled="disabled"
+                       :minimumValue="1"
+                       label="Input Rows"
+                       help="Number of visible rows in the note field. Determines its height." />
+
+            <div class="is-required-section">
+                <CheckBox v-model="isRequired"
+                          label="Is Required"
+                          :disabled="disabled" />
+            </div>
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Completion">
-            <h3>{{ title }}</h3>
-            <div class="text-muted">{{ summary }}</div>
+            <TextBox v-model="note"
+                     :label="label"
+                     textMode="multiline"
+                     :rows="inputRows"
+                     :rules="isRequired ? 'required' : ''"
+                     inputClasses="form-control" />
         </div>
     </div>
 </template>
@@ -25,8 +36,9 @@
 <script setup lang="ts">
     import { PropType, computed, ref, toValue, watch } from "vue";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { ComponentScreen } from "./learningActivity";
-    import { AssessmentItem } from "./assessmentLearningActivity.partial";
     import { ContentArticleItem } from "./contentArticleLearningActivity.partial";
 
     const props = defineProps({
@@ -37,7 +49,7 @@
 
         /** The assessment item's configuration. */
         modelValue: {
-            type: Object as PropType<AssessmentItem | ContentArticleItem>,
+            type: Object as PropType<ContentArticleItem>,
             required: true
         },
 
@@ -48,17 +60,21 @@
     });
 
     const emit = defineEmits<{
-        (event: "update:modelValue", value: AssessmentItem | ContentArticleItem): void
+        (event: "update:modelValue", value: ContentArticleItem): void
     }>();
 
-    const title = ref(props.modelValue.title ?? "");
-    const summary = ref(props.modelValue.summary ?? "");
+    const label = ref(props.modelValue.label ?? "");
+    const inputRows = ref(props.modelValue.inputRows ?? 3);
+    const isRequired = ref(props.modelValue.isRequired ?? false);
+    const note = ref(props.modelValue.note ?? "");
 
-    watch([title, summary], () => {
+    watch([label, inputRows, isRequired, note], () => {
         const newModelValue = {
             ...props.modelValue,
-            title: title.value,
-            summary: summary.value,
+            label: label.value,
+            inputRows: inputRows.value,
+            isRequired: isRequired.value,
+            note: note.value
         };
 
         emit("update:modelValue", newModelValue);

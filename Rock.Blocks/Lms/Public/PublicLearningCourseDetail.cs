@@ -250,7 +250,7 @@ namespace Rock.Blocks.Lms
                                         <div class=""text-muted"">You completed this class on {{
                                             classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}.</div>
 
-                                        {% if classInfo.StudentParticipant.LearningGradingSystemScale.Name != empty %}
+                                        {% if CourseInfo.IsCompletionOnly == false %}
                                         <div class=""mt-3"">
                                             <div class=""text-muted"">
                                                 <p class=""text-bold mb-0"">Grade</p>

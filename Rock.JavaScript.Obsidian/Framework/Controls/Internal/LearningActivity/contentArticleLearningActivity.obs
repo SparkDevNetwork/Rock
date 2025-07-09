@@ -1,0 +1,338 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel v-if="screenToShow === ComponentScreen.Configuration"
+           :title="panelTitle"
+           :hasFullscreen="false"
+           :class="containerClasses">
+
+        <StructuredContentEditor label="Header" v-model="header" :disabled="disabled" />
+
+        <div class="content-blocks-header">
+            <h4 class="m-0">Content Blocks</h4>
+
+            <RockButton :btnType="BtnType.Default"
+                        :btnSize="BtnSize.ExtraSmall"
+                        class="add-content-button"
+                        @click="addContentArticleItem(0)">
+                <i class="fa fa-plus" aria-hidden="true"></i> Add Item
+            </RockButton>
+        </div>
+
+        <div class="assessment-items-container" v-dragSource="dragOptions" v-dragTarget="dragOptions">
+            <div class="well well-sm assessment-item-container" v-for="(item, index) in items" :key="item.uniqueId">
+                <div class="assessment-item assessment-item-reorder-section">
+                    <i class="fa fa-bars reorder-handle" :style="reorderIconStyle"></i>
+
+                    <button aria-label="Remove this item" :disabled="disabled" class="btn btn-default btn-square remove-item-button" @click.prevent="items.splice(index, 1)">
+                        <i class="fa fa-times" aria-hidden="true"></i>
+                    </button>
+                </div>
+                <div class="assessment-item assessment-item-type-section">
+                    <DropDownList :modelValue="item.type?.toString() ?? ''" @update:modelValue="onItemTypeChanged(item, $event)" :disabled="disabled" :items="itemTypes" label="Type" :show-blank-item="false" />
+                </div>
+                <div class="assessment-item assessment-item-configuration-section">
+                    <ContentArticleItemText v-if="item.type === ContentArticleItemType.Text" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                    <AssessmentItemSection v-if="item.type === ContentArticleItemType.Section" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                    <ContentArticleItemVideo v-if="item.type === ContentArticleItemType.Video" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                    <ContentArticleItemNote v-if="item.type === ContentArticleItemType.Note" v-model="items[index]" :screenToShow="screenToShow" :disabled="disabled" />
+                </div>
+            </div>
+        </div>
+
+        <div v-if="items.length > 0" class="configuration-footer-buttons">
+            <RockButton :btnType="BtnType.Default"
+                        :btnSize="BtnSize.ExtraSmall"
+                        class="add-content-button"
+                        @click="addContentArticleItem(0)">
+                <i class="fa fa-plus" aria-hidden="true"></i> Add Item
+            </RockButton>
+        </div>
+    </Panel>
+
+    <Panel v-if="screenToShow === ComponentScreen.Summary"
+           :title="panelTitle"
+           :hasFullscreen="false"
+           :class="containerClasses">
+        <NotificationBox v-if="isCompleted" alertType="success">
+            {{ assignee?.name ?? defaultAssigneeDescription }} completed this activity {{ humanizedCompletionDate }}.
+        </NotificationBox>
+
+        <NotificationBox v-if="!isCompleted" alertType="warning">
+            {{ assignee?.name ?? defaultAssigneeDescription }} has not checked off this activity.
+        </NotificationBox>
+    </Panel>
+
+    <div v-if="screenToShow === ComponentScreen.Completion" :class="containerClasses">
+        <fieldset v-if="isStudentAssignedAndIncomplete || isStudentAssignedAndCompleted">
+            <div v-if="header" v-html="header"></div>
+
+            <div class="assessment-item-container assessment-items-section">
+                <div class="assessment-item" v-for="(item, index) in completedItems">
+                    <template v-if="item.type === ContentArticleItemType.Text">
+                        <ContentArticleItemText v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    </template>
+
+                    <template v-if="item.type === ContentArticleItemType.Section">
+                        <AssessmentItemSection v-model="completedItems[index]" :screenToShow="screenToShow" />
+                    </template>
+
+                    <template v-if="item.type === ContentArticleItemType.Video">
+                        <ContentArticleItemVideo v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
+                    </template>
+
+                    <template v-if="item.type === ContentArticleItemType.Note">
+                        <ContentArticleItemNote v-model="completedItems[index]" :screenToShow="screenToShow" :totalActivityPoints="activityBag.points" />
+                    </template>
+                </div>
+            </div>
+
+            <div v-if="showStudentComment" class="optional-comments-container">
+                <TextBox v-model="studentComment" label="Optional Comments" textMode="multiline" :rows="4" />
+            </div>
+
+            <div class="footer-content-section mt-3">
+                <RockButton :btnType="BtnType.Primary"
+                            @click="onCompletedAndClosed"
+                            :autoDisable="true"
+                            :disabled="areEmptyRequiredNotes || completeClicked">
+                    Complete
+                </RockButton>
+            </div>
+        </fieldset>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ContentArticleItem, ContentArticleItemType } from "./contentArticleLearningActivity.partial";
+    import { computed, ref, watch, toValue } from "vue";
+    import { debounce } from "@Obsidian/Utility/util";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import StructuredContentEditor from "@Obsidian/Controls/structuredContentEditor.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import ContentArticleItemText from "./contentArticleItemText.obs";
+    import AssessmentItemSection from "./assessmentItemSection.obs";
+    import ContentArticleItemVideo from "./contentArticleItemVideo.obs";
+    import ContentArticleItemNote from "./contentArticleItemNote.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
+    import { learningActivityEmits, learningActivityProps, ComponentScreen, useLearningComponent } from "./learningActivity";
+    import { DragSource as vDragSource, DragTarget as vDragTarget, useDragReorder } from "@Obsidian/Directives/dragDrop";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { isNullOrWhiteSpace, safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { AssignTo } from "@Obsidian/Enums/Lms/assignTo";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+
+    const enum SettingKey {
+        Header = "header",
+        Items = "items",
+    }
+
+    const enum CompletionKey {
+        CompletedItems = "completedItems",
+        PointsPossibleAtCompletion = "pointsPossibleAtCompletion",
+    }
+
+    // Get the required props and emits for learning activity components.
+    const props = defineProps({ ...learningActivityProps });
+    const emits = defineEmits({ ...learningActivityEmits });
+
+    const disabled = ref(props.disabled ?? false);
+    const completeClicked = ref(false);
+
+    // Get the bags directly from the props when needed (to support the useLearningComponent computedRefs).
+    const activityBag = computed(() => props.activityBag);
+    const completionBag = computed(() => props.completionBag ?? {} as LearningClassActivityCompletionBag);
+    const screenToShow = computed(() => props.screenToShow ?? ComponentScreen.Summary);
+    const showStudentComment = ref(activityBag.value?.isStudentCommentingEnabled);
+    const studentComment = ref(completionBag.value.studentComment ?? "");
+
+    const completedDate = ref(props.completionBag?.completedDate ?? "");
+
+    /** Initialize the base component and destructure the refs we need for use in this component. */
+    const {
+        assignee,
+        containerClasses,
+        defaultAssigneeDescription,
+        assignTo,
+        isCompleted,
+        panelTitle,
+    } = useLearningComponent(
+        activityBag,
+        completionBag,
+        screenToShow
+    );
+
+    const header = ref("");
+    const items = ref<(ContentArticleItem)[]>([]);
+    const completedItems = ref<(ContentArticleItem)[]>([]);
+    const content = ref("");
+    const pointsPossibleAtCompletion = ref<number>();
+
+    // Add drag reorder functionality, updating the order on successful drop.
+    const dragOptions = useDragReorder(items, () => {
+        // Update the order of the items based on the current order.
+        items.value.forEach((item, index) => item.order = index);
+    });
+
+    // Create the item types for use by the drop down.
+    const itemTypes: ListItemBag[] = [
+        {
+            value: ContentArticleItemType.Text.toString(),
+            text: "Text"
+        },
+        {
+            value: ContentArticleItemType.Section.toString(),
+            text: "Section"
+        },
+        {
+            value: ContentArticleItemType.Video.toString(),
+            text: "Video"
+        },
+        {
+            value: ContentArticleItemType.Note.toString(),
+            text: "Note"
+        },
+    ];
+
+    /** The time elapsed since the specified date in a human-readable format. */
+    const humanizedCompletionDate = computed((): string =>
+        RockDateTime.parseISO(completedDate.value)?.localDateTime.toElapsedString() ?? ""
+    );
+
+    /** Checks if there are any required notes that are empty. */
+    const areEmptyRequiredNotes = computed(() =>
+        (completedItems.value ?? []).some(i => i.type === ContentArticleItemType.Note && i.isRequired && isNullOrWhiteSpace(i.note))
+    );
+
+    const isStudentAssignedAndCompleted = computed(() =>
+        assignTo.value === AssignTo.Student && toValue(completionBag)?.isStudentCompleted === true
+    );
+
+    const isStudentAssignedAndIncomplete = computed(() =>
+        assignTo.value === AssignTo.Student && toValue(completionBag)?.isStudentCompleted !== true
+    );
+
+    /** Contains the custom style values to apply to the icon. */
+    const reorderIconStyle = computed((): Record<string, string> => {
+        const onlyOneItem = !(items.value?.length > 1);
+        const disableReordering = disabled.value === true || onlyOneItem;
+
+        // Use a not-allowed cursor to indicate to the user when reordering is disabled.
+        return {
+            cursor: disableReordering ? "not-allowed" : "grab",
+            opacity: disableReordering ? "0.25" : "1"
+        };
+    });
+
+    /** Adds an empty default item to the configuration. */
+    function addContentArticleItem(toIndex: number): void {
+        if (!Array.isArray(items.value)) {
+            items.value = [];
+        }
+
+        // Set the order to the specified index location or min/max if outside the bounds of the array.
+        const lastIndex = items.value?.length ?? 0;
+        const order = toIndex < 0 ? 0 : toIndex > lastIndex ? lastIndex : 0;
+
+        items.value.push({
+            type: ContentArticleItemType.Text,
+            order: order,
+            uniqueId: newGuid()
+        });
+    }
+
+    /**
+     * Gets a list of completion items for the individual.
+     * For complete activities this will take the configuration values from the
+     * completed activity; otherwise from the activity's configuration.
+     */
+    function getItemsForStudentCompletion(): ContentArticleItem[] {
+        return toValue((toValue(items.value) ?? [])
+            .map(i => {
+                const completedItem = toValue(completedItems.value?.find(c => c.uniqueId === i.uniqueId));
+                i.note = completedItem?.note ?? "";
+
+                return i;
+            }));
+    }
+
+    function updateLocalValues(): void {
+        if (props.screenToShow === ComponentScreen.Configuration) {
+            header.value = props.activityBag.componentSettings?.[SettingKey.Header] ?? "";
+            updateRefValue(items, safeParseJson<ContentArticleItem[]>(props.activityBag.componentSettings?.[SettingKey.Items]) ?? []);
+        }
+        else {
+            header.value = props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Header] ?? "";
+            updateRefValue(items, safeParseJson<ContentArticleItem[]>(props.activityBag.activityComponent?.componentConfiguration?.[SettingKey.Items]) ?? []);
+
+            updateRefValue(completedItems, safeParseJson<ContentArticleItem[]>(props.completionBag?.completionValues?.[CompletionKey.CompletedItems]) ?? []);
+            pointsPossibleAtCompletion.value = toNumberOrNull(props.completionBag?.completionValues?.[CompletionKey.PointsPossibleAtCompletion]) ?? props.activityBag.points;
+
+            studentComment.value = props.completionBag?.studentComment ?? "";
+        }
+    }
+
+    function onItemTypeChanged(item: ContentArticleItem, value: string | string[]): void {
+        if (typeof value === "string") {
+            item.type = Number(value) as ContentArticleItemType;
+        }
+    }
+
+
+    function onCompletedAndClosed(): void {
+        emits("completed", true);
+        completeClicked.value = true;
+
+        emits("closed");
+    }
+
+    /** Watch for modified component settings. */
+    const debouncedActivityBagEmits = debounce(() => {
+        const newValues = {
+            ...props.activityBag.componentSettings
+        };
+
+        newValues[SettingKey.Header] = header.value;
+        newValues[SettingKey.Items] = JSON.stringify(items.value);
+
+        emits("activitySettingsChanged", newValues);
+    });
+    watch([content, header, items], () => {
+        debouncedActivityBagEmits();
+    }, { deep: true });
+
+    watch(studentComment, () => {
+        emits("commentChanged", studentComment.value);
+    });
+
+    watch([completedItems, pointsPossibleAtCompletion], () => {
+        const newValues = {
+            ...props.completionBag?.completionValues
+        };
+
+        newValues[CompletionKey.CompletedItems] = JSON.stringify(completedItems.value);
+        newValues[CompletionKey.PointsPossibleAtCompletion] = pointsPossibleAtCompletion.value?.toString() ?? "";
+
+        emits("completionValuesChanged", newValues);
+    }, { deep: true });
+
+    watch(() => [props.activityBag, props.completionBag], () => {
+        updateLocalValues();
+    });
+
+    updateLocalValues();
+
+    // If the individual hasn't completed the content article ensure we are using
+    // the latest configuration; otherwise use the content article that was saved
+    // at the time of completion (In case the facilitator has since updated the content article).
+    if (isStudentAssignedAndCompleted.value !== true) {
+        completedItems.value = getItemsForStudentCompletion();
+    }
+</script>

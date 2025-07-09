@@ -80,8 +80,16 @@
   /* Change order for smaller screens */
   @media (max-width: 768px) {
    
-    .workspace-navigation-pane .custom-select-expand-icon {
+    .workspace-navigation-pane-container .custom-select-expand-icon {
       margin-right: var(--spacing-large);
+    }
+
+    .workspace-navigation-pane-container {
+      margin-bottom: var(--spacing-large);
+    }
+
+    .workspace-navigation-pane {
+        margin-bottom: 0;
     }
 
     .workspace-class-overview {
@@ -265,7 +273,7 @@
         display: flex;
     }
 
-    .workspace-navigation-pane {
+    .workspace-navigation-pane-container {
       width: 33%;
       margin-right: var(--spacing-large);
     }
@@ -275,10 +283,24 @@
     }
   }
 
+  .workspace-navigation-pane-container {
+      min-width: 300px;
+  }
+
   .workspace-navigation-pane {
       min-width: 300px;
       align-self: baseline;
       border-radius: var(--rounded-large) !important;
+      margin-bottom: var(--spacing-large);
+  }
+
+  .communication-preference-container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      border: 1px solid var(--color-interface-soft);
+      border-radius: var(--rounded-small);
+      padding: var(--spacing-small);
   }
 
   .workspace-main-content {
@@ -399,7 +421,19 @@
     margin-top: 0;
   }
 
+  .content-blocks-header {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin-bottom: var(--spacing-small);
+  }
 
+  .add-content-button {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-tiny);
+  }
 
     // 2.2.1 Assessment
     // -------------------------

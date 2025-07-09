@@ -463,6 +463,7 @@ namespace Rock.Jobs
                         ProgramName = program.Name
                     },
                     Courses = new List<CourseInfo>(),
+                    CommunicationPreference = student.CommunicationPreference
                 };
 
                 studentLookup.Add( student.PersonId, studentProgram );
@@ -657,7 +658,14 @@ namespace Rock.Jobs
                 mergeFields.AddOrReplace( "Program", personProgramInfo.Program );
                 mergeFields.AddOrReplace( "Courses", personProgramInfo.Courses );
 
-                var communicationId = SendCommunication( personProgramInfo.Person, systemCommunication, mergeFields );
+                // If the person's communication preference for their course is not SMS or Email then use their Person's communication preference.
+                var communicationPreference = personProgramInfo.CommunicationPreference;
+                if ( personProgramInfo.CommunicationPreference != CommunicationType.SMS && personProgramInfo.CommunicationPreference != CommunicationType.Email )
+                {
+                    communicationPreference = personProgramInfo.Person.CommunicationPreference;
+                }
+                
+                var communicationId = SendCommunication( personProgramInfo.Person, communicationPreference, systemCommunication, mergeFields );
 
                 if ( communicationId.HasValue )
                 {
@@ -679,34 +687,110 @@ namespace Rock.Jobs
         /// Send a single communication to the person.
         /// </summary>
         /// <param name="person">The person that will receive the communication.</param>
+        /// <param name="communicationPreference">The person's communication preference.</param>
         /// <param name="systemCommunication">The <see cref="SystemCommunication"/> that provides the content.</param>
         /// <param name="mergeFields">The merge fields used to prepare the content.</param>
         /// <returns>The identifier of the <see cref="Communication"/> that was sent.</returns>
-        private int? SendCommunication( Person person, SystemCommunication systemCommunication, Dictionary<string, object> mergeFields )
+        private int? SendCommunication( Person person, CommunicationType communicationPreference, SystemCommunication systemCommunication, Dictionary<string, object> mergeFields )
         {
             var logger = RockLogger.LoggerFactory.CreateLogger<CommunicationHelper>();
-            var createMessageResults = CommunicationHelper.CreateEmailMessage( person, mergeFields, systemCommunication, logger );
 
-            if ( createMessageResults.Message == null )
+            CommunicationType preferredCommunication;
+            if ( communicationPreference == CommunicationType.Email || communicationPreference == CommunicationType.SMS )
             {
-                _warnings.AddRange( createMessageResults.Warnings );
-                return null;
+                preferredCommunication = communicationPreference;
+            }
+            else
+            {
+                preferredCommunication = person.CommunicationPreference;
             }
 
-            if ( !( createMessageResults.Message is RockEmailMessage message ) )
+            CreateMessageResult createMessageResults;
+
+            if ( communicationPreference == CommunicationType.SMS )
             {
-                return null;
+                using ( var rockContext = new RockContext() )
+                {
+                    Rock.Model.Communication communication;
+                    var communicationService = new CommunicationService( rockContext );
+                    createMessageResults = CommunicationHelper.CreateSmsMessage( person, mergeFields, systemCommunication, logger );
+
+                    if ( createMessageResults.Message == null )
+                    {
+                        _warnings.AddRange( createMessageResults.Warnings );
+                        return null;
+                    }
+
+                    if ( !( createMessageResults.Message is RockSMSMessage smsMessage ) )
+                    {
+                        return null;
+                    }
+
+                    var recipient = smsMessage?.GetRecipients()?.FirstOrDefault();
+                    if ( recipient == null )
+                    {
+                        _warnings.Add( "Could not find the recipient." );
+                        return null;
+                    }
+
+                    Person recipientPerson = ( Person ) recipient.MergeFields.GetValueOrNull( "Person" );
+
+                    if ( smsMessage.CurrentPerson == null )
+                    {
+                        smsMessage.CurrentPerson = HttpContext.Current?.Items["CurrentPerson"] as Person;
+                    }
+
+                    if ( smsMessage.FromSystemPhoneNumber == null )
+                    {
+                        _errors.Add( "A From Number was not provided." );
+                        return null;
+                    }
+
+                    var createSMSCommunicationArgs = new CommunicationService.CreateSMSCommunicationArgs
+                    {
+                        FromPerson = smsMessage.CurrentPerson,
+                        ToPersonAliasId = recipientPerson?.PrimaryAliasId,
+                        Message = smsMessage.Message,
+                        FromSystemPhoneNumber = smsMessage.FromSystemPhoneNumber,
+                        CommunicationName = smsMessage.CommunicationName,
+                        ResponseCode = string.Empty,
+                        SystemCommunicationId = smsMessage.SystemCommunicationId
+                    };
+
+                    communication = communicationService.CreateSMSCommunication( createSMSCommunicationArgs );
+
+                    rockContext.SaveChanges();
+
+                    Rock.Model.Communication.Send( communication );
+
+                    return communication.Id;
+                }
             }
-
-            message.CreateCommunicationRecordImmediately = true;
-
-            if ( !message.Send( out var errorMessages ) )
+            else
             {
-                _errors.AddRange( errorMessages );
-                return null;
-            }
+                createMessageResults = CommunicationHelper.CreateEmailMessage( person, mergeFields, systemCommunication, logger );
 
-            return message.LastCommunicationId;
+                if ( createMessageResults.Message == null )
+                {
+                    _warnings.AddRange( createMessageResults.Warnings );
+                    return null;
+                }
+
+                if ( !( createMessageResults.Message is RockEmailMessage message ) )
+                {
+                    return null;
+                }
+
+                message.CreateCommunicationRecordImmediately = true;
+
+                if ( !message.Send( out var errorMessages ) )
+                {
+                    _errors.AddRange( errorMessages );
+                    return null;
+                }
+
+                return message.LastCommunicationId;
+            }
         }
 
         /// <summary>
@@ -756,6 +840,8 @@ namespace Rock.Jobs
             /// A list of courses with available activities for this <see cref="Person"/>.
             /// </summary>
             public List<CourseInfo> Courses { get; set; }
+
+            public CommunicationType CommunicationPreference { get; set; }
         }
 
         /// <summary>

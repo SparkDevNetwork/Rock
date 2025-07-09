@@ -2,31 +2,27 @@
 <template>
     <div v-if="[ComponentScreen.Configuration, ComponentScreen.Completion].includes(screenToShow)" :class="containerClasses">
         <div v-if="screenToShow === ComponentScreen.Configuration">
-            <TextBox v-model="title"
-                     label="Title"
-                     :disabled="disabled"
-                     inputClasses="form-control"
-                     rules="required" />
-
-            <TextBox v-model="summary"
-                     :disabled="disabled"
-                     label="Description"
-                     textMode="multiline"
-                     inputClasses="form-control" />
+            <MediaElementPicker v-model="video"
+                                label="Video File"
+                                media-element-label="Video"
+                                :disabled="disabled" />
         </div>
 
         <div v-if="screenToShow === ComponentScreen.Completion">
-            <h3>{{ title }}</h3>
-            <div class="text-muted">{{ summary }}</div>
+            <div class="video-section">
+                <MediaPlayer :mediaElementGuid="video?.value ?? ''"
+                             :autoResumeInDays="60"
+                             :combinePlayStatisticsInDays="60" />
+            </div>
         </div>
     </div>
 </template>
 
 <script setup lang="ts">
     import { PropType, computed, ref, toValue, watch } from "vue";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import MediaElementPicker from "@Obsidian/Controls/mediaElementPicker.obs";
+    import MediaPlayer from "@Obsidian/Controls/mediaPlayer.obs";
     import { ComponentScreen } from "./learningActivity";
-    import { AssessmentItem } from "./assessmentLearningActivity.partial";
     import { ContentArticleItem } from "./contentArticleLearningActivity.partial";
 
     const props = defineProps({
@@ -37,7 +33,7 @@
 
         /** The assessment item's configuration. */
         modelValue: {
-            type: Object as PropType<AssessmentItem | ContentArticleItem>,
+            type: Object as PropType<ContentArticleItem>,
             required: true
         },
 
@@ -48,17 +44,15 @@
     });
 
     const emit = defineEmits<{
-        (event: "update:modelValue", value: AssessmentItem | ContentArticleItem): void
+        (event: "update:modelValue", value: ContentArticleItem): void
     }>();
 
-    const title = ref(props.modelValue.title ?? "");
-    const summary = ref(props.modelValue.summary ?? "");
+    const video = ref(props.modelValue.video ?? {});
 
-    watch([title, summary], () => {
+    watch(video, () => {
         const newModelValue = {
             ...props.modelValue,
-            title: title.value,
-            summary: summary.value,
+            video: video.value
         };
 
         emit("update:modelValue", newModelValue);
