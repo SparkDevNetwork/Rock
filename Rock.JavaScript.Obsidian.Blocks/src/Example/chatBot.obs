@@ -35,6 +35,11 @@
                      :title="getTokenCounts(message)">
                     <span class="message-text" v-html="parse(message.message ?? '')"></span>
                 </div>
+
+                <div v-if="isSending"
+                     class="message-thinking">
+                    <span class="ti ti-loader fa fa-spin"></span>
+                </div>
             </div>
 
             <div v-if="sortedAnchors.length > 0" class="anchors-container">
@@ -168,6 +173,11 @@
     background-color: #dfdfdf;
     color: #333;
     margin-right: auto;
+}
+
+.message-thinking {
+    font-size: var(--font-size-h4);
+    opacity: 0.5;
 }
 
 .anchors-container {
@@ -353,6 +363,8 @@
 
         isSending.value = true;
         try {
+            nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
+
             const response = await invokeBlockAction<ChatMessageBag>("SendMessage", { message: msg, sessionId: sessionId.value });
 
             if (response.isSuccess && response.data) {
