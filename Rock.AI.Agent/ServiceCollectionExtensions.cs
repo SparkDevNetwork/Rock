@@ -23,7 +23,6 @@ namespace Rock.AI.Agent
     {
         public static IServiceCollection AddChatAgent( this IServiceCollection services )
         {
-            services.AddScoped<AgentRequestContext>();
             services.AddScoped<IChatAgentBuilder, ChatAgentBuilder>();
 
             return services;

@@ -40,6 +40,15 @@ namespace Rock.AI.Agent
     /// </summary>
     internal abstract class AgentSkillComponent : LightComponent
     {
+        #region Properties
+
+        /// <summary>
+        /// The context for this chat agent request. This will be null except
+        /// when the skill is being executed as part of a chat. Meaning any
+        /// method that is not a kernel function will not have a context.
+        /// </summary>
+        protected AgentRequestContext AgentRequestContext { get; private set; }
+
         /// <summary>
         /// The configuration values that were configured for this skill when it
         /// was added to the agent. These represent the private values. They are
@@ -47,14 +56,19 @@ namespace Rock.AI.Agent
         /// </summary>
         protected IReadOnlyDictionary<string, string> ConfigurationValues { get; private set; } = new Dictionary<string, string>();
 
+        #endregion
+
+        #region Methods
+
         /// <summary>
-        /// Sets the configuration values for this skill. This is used by Rock
-        /// to set the property value and should not be used by plugins.
+        /// Initializes the component for use with a chat agent.
         /// </summary>
         /// <param name="configurationValues">The configuration values.</param>
-        internal void SetConfigurationValues( IReadOnlyDictionary<string, string> configurationValues )
+        /// <param name="agentRequestContext">The context for this chat agent request.</param>
+        internal void Initialize( IReadOnlyDictionary<string, string> configurationValues, AgentRequestContext agentRequestContext )
         {
             ConfigurationValues = configurationValues;
+            AgentRequestContext = agentRequestContext;
         }
 
         /// <summary>
@@ -65,6 +79,8 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <returns>A collection of <see cref="AgentFunction"/> objects that represent the semantic functions.</returns>
         public virtual IReadOnlyCollection<AgentFunction> GetSemanticFunctions() => Array.Empty<AgentFunction>();
+
+        #endregion
 
         #region Configuration
 

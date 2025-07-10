@@ -36,26 +36,91 @@ namespace Rock.AI.Agent
 {
     internal class ChatAgent : IChatAgent
     {
+        #region Constants
+
+        /// <summary>
+        /// The core system prompt that is included in every chat session. This
+        /// cannot be removed or overridden by the agent configuration.
+        /// </summary>
+        private static readonly string CoreSystemPrompt = @"CoreSystem|
+                You are a chatbot for Rock RMS process the tasks given. When you're unsure or don't know please reply 
+                with I'm sorry I can't assist you with that. The context anchor is the entity (e.g. person, group, etc) that is currently 
+                being focused on. The id of this anchor can be used by functions for completing work.
+
+                If you don't know something, check the Knowledge Base.
+                ".NormalizeWhiteSpace();
+
+        /// <summary>
+        /// The prompt that will be used when asking the language model to
+        /// summarize the current chat history. This is used when the current
+        /// history grows beyond the threshold defined in the agent.
+        /// </summary>
         private const string AutoSummarizePrompt = "Provide a very brief summary of the following conversation, including only the most important details."
             + " This will be used when sending subsequent requests to the language model."
             + " It should reduce extra whitespace and doesn't need to be user-friendly:\n\n";
 
+        #endregion
+
+        #region Fields
+
+        /// <summary>
+        /// The configuration data for the agent.
+        /// </summary>
         private readonly AgentConfiguration _agentConfiguration;
 
+        /// <summary>
+        /// The <see cref="Kernel"/> instance that will be used to communicate
+        /// with the language model.
+        /// </summary>
         private readonly Kernel _kernel;
 
+        /// <summary>
+        /// The factory used when creating new <see cref="RockContext"/> objects.
+        /// </summary>
         private readonly IRockContextFactory _rockContextFactory;
 
+        /// <summary>
+        /// The object that will provide the current <see cref="RockRequestContext"/>
+        /// associated with the current request.
+        /// </summary>
         private readonly RockRequestContext _requestContext;
 
+        /// <summary>
+        /// The context for the current request. This is used to build up the
+        /// chat history, anchors and session context.
+        /// </summary>
+        private readonly AgentRequestContext _context;
+
+        /// <summary>
+        /// The tokenizer that will be used to count tokens when adding messages
+        /// when the provider doesn't give us a valid count.
+        /// </summary>
         private readonly Lazy<TiktokenTokenizer> _tokenizer = new Lazy<TiktokenTokenizer>( CreateTokenizer );
 
+        /// <summary>
+        /// Indicates whether the chat history needs to be summarized before
+        /// sending a new message to the language model.
+        /// </summary>
         private bool _historyNeedsSummary = false;
 
+        #endregion
+
+        #region Properties
+
+        /// <inheritdoc/>
         public int? SessionId { get; private set; }
 
-        public AgentRequestContext Context { get; }
+        #endregion
 
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChatAgent"/> class.
+        /// </summary>
+        /// <param name="kernel">The <see cref="Kernel"/> instance that will be used to communicate with the language model.</param>
+        /// <param name="agentConfiguration">The configuration data for the agent.</param>
+        /// <param name="rockContextFactory">The factory used when creating new <see cref="RockContext"/> objects.</param>
+        /// <param name="rockRequestContextAccessor">The object that will provide the current <see cref="RockRequestContext"/> associated with the current request.</param>
         public ChatAgent( Kernel kernel, AgentConfiguration agentConfiguration, IRockContextFactory rockContextFactory, IRockRequestContextAccessor rockRequestContextAccessor )
         {
             _kernel = kernel;
@@ -63,10 +128,16 @@ namespace Rock.AI.Agent
             _rockContextFactory = rockContextFactory;
             _requestContext = rockRequestContextAccessor.RockRequestContext;
 
-            Context = kernel.Services.GetRequiredService<AgentRequestContext>();
-            Context.AgentId = _agentConfiguration.AgentId;
+            _context = kernel.Services.GetRequiredService<AgentRequestContext>();
+            _context.AgentId = _agentConfiguration.AgentId;
+            _context.ChatAgent = this;
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <inheritdoc/>
         public Task StartNewSessionAsync( int? entityTypeId, int? entityId )
         {
             if ( _requestContext?.CurrentPerson?.PrimaryAliasId == null )
@@ -89,7 +160,7 @@ namespace Rock.AI.Agent
 
                 rockContext.SaveChanges();
 
-                Context.Clear();
+                _context.Clear();
                 AddSystemMessages();
 
                 SessionId = session.Id;
@@ -98,10 +169,15 @@ namespace Rock.AI.Agent
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public Task LoadSessionAsync( int sessionId )
         {
             using ( var rockContext = _rockContextFactory.CreateRockContext() )
             {
+                var session =  new AIAgentSessionService( rockContext ).Get( sessionId )
+                    ?? throw new Exception( "The specified session could not be found." );
+
+                // Get all the messages by either the user or the assistant.
                 var messages = new AIAgentSessionHistoryService( rockContext ).Queryable()
                     .Where( s => s.AIAgentSessionId == sessionId
                         && s.IsCurrentlyInContext )
@@ -115,6 +191,7 @@ namespace Rock.AI.Agent
                     } )
                     .ToList();
 
+                // Get all entity anchors that are still active.
                 var anchors = new AIAgentSessionAnchorService( rockContext ).Queryable()
                     .Where( a => a.AIAgentSessionId == sessionId
                         && a.IsActive )
@@ -126,13 +203,15 @@ namespace Rock.AI.Agent
                     } )
                     .ToList();
 
-                Context.Clear();
+                var contexts = session.GetSessionContextDictionary();
+
+                _context.Clear();
                 AddSystemMessages();
 
+                // Add all the entity anchors, skipping any duplicates.
                 var anchorEntities = new List<int>( anchors.Count );
                 foreach ( var anchor in anchors )
                 {
-                    // Skip duplicates.
                     if ( anchorEntities.Contains( anchor.EntityTypeId ) )
                     {
                         continue;
@@ -140,18 +219,25 @@ namespace Rock.AI.Agent
 
                     anchorEntities.Add( anchor.EntityTypeId );
 
-                    Context.AddAnchor( anchor.EntityTypeId, anchor.PayloadJson );
+                    _context.AddAnchor( anchor.EntityTypeId, anchor.PayloadJson );
                 }
 
+                // Add all session context data.
+                foreach ( var contextData in contexts )
+                {
+                    _context.AddSessionContext( contextData.Key, contextData.Value );
+                }
+
+                // Add all the user and assistant messages.
                 foreach ( var message in messages )
                 {
                     if ( message.MessageRole == AuthorRole.User )
                     {
-                        Context.AddUserMessage( message.Message );
+                        _context.AddUserMessage( message.Message );
                     }
                     else if ( message.MessageRole == AuthorRole.Assistant )
                     {
-                        Context.AddAssistantMessage( message.Message );
+                        _context.AddAssistantMessage( message.Message );
                     }
                 }
 
@@ -162,6 +248,7 @@ namespace Rock.AI.Agent
             return Task.CompletedTask;
         }
 
+        /// <inheritdoc/>
         public Task AddMessageAsync( AuthorRole role, string message )
         {
             if ( role != AuthorRole.User && role != AuthorRole.Assistant )
@@ -172,6 +259,7 @@ namespace Rock.AI.Agent
             return AddMessageAsync( role, message, CountTokens( message ), 0 );
         }
 
+        /// <inheritdoc/>
         async private Task AddMessageAsync( AuthorRole role, string message, int tokenCount, int consumedTokenCount )
         {
             if ( SessionId.HasValue )
@@ -208,14 +296,15 @@ namespace Rock.AI.Agent
 
             if ( role == AuthorRole.User )
             {
-                Context.AddUserMessage( message );
+                _context.AddUserMessage( message );
             }
             else
             {
-                Context.AddAssistantMessage( message );
+                _context.AddAssistantMessage( message );
             }
         }
 
+        /// <inheritdoc/>
         public Task<ContextAnchor> AddAnchorAsync( IEntity entity )
         {
             var entityTypeId = entity.TypeId;
@@ -244,12 +333,15 @@ namespace Rock.AI.Agent
                 }
             }
 
+            _context.AddAnchor( anchor.EntityTypeId, anchor.PayloadJson );
+
             return Task.FromResult( anchor.PayloadJson.FromJsonOrNull<ContextAnchor>() );
         }
 
+        /// <inheritdoc/>
         public Task RemoveAnchorAsync( int entityTypeId )
         {
-            Context.RemoveAnchor( entityTypeId );
+            _context.RemoveAnchor( entityTypeId );
 
             if ( SessionId.HasValue )
             {
@@ -259,6 +351,10 @@ namespace Rock.AI.Agent
             return Task.CompletedTask;
         }
 
+        /// <summary>
+        /// Inactivates any existing entity anchors for the specified entity type.
+        /// </summary>
+        /// <param name="entityTypeId">The identifier of the <see cref="EntityType"/> whose anchor should be marked inactive.</param>
         private void InactivateEntityAnchor( int entityTypeId )
         {
             using ( var rockContext = _rockContextFactory.CreateRockContext() )
@@ -276,14 +372,64 @@ namespace Rock.AI.Agent
             }
         }
 
+        /// <inheritdoc/>
+        public Task AddSessionContextAsync( string key, SessionContext context )
+        {
+            _context.AddSessionContext( key, context );
+
+            if ( SessionId.HasValue )
+            {
+                using ( var rockContext = _rockContextFactory.CreateRockContext() )
+                {
+                    var session = new AIAgentSessionService( rockContext ).Get( SessionId.Value );
+
+                    session.SetSessionContext( key, context );
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <inheritdoc/>
+        public string GetSessionContextContent( string key )
+        {
+            return _context.GetSessionContext( key )?.Content;
+        }
+
+        /// <inheritdoc/>
+        public Task RemoveSessionContextAsync( string key )
+        {
+            _context.RemoveSessionContext( key );
+
+            if ( SessionId.HasValue )
+            {
+                using ( var rockContext = _rockContextFactory.CreateRockContext() )
+                {
+                    var session = new AIAgentSessionService( rockContext ).Get( SessionId.Value );
+
+                    session.SetSessionContext( key, null );
+                    rockContext.SaveChanges();
+                }
+            }
+
+            return Task.CompletedTask;
+        }
+
+        /// <summary>
+        /// Adds the system messages to the chat context. This is used to
+        /// define the core personality and behavior of the assistant. It also
+        /// provides some common context information, such as the current
+        /// person.
+        /// </summary>
         private void AddSystemMessages()
         {
-            Context.AddSystemMessage( AgentRequestContext._coreSystemPrompt );
-            Context.AddSystemMessage( $"Persona|{_agentConfiguration.Persona}" );
+            _context.AddSystemMessage( CoreSystemPrompt );
+            _context.AddSystemMessage( $"Persona|{_agentConfiguration.Persona}" );
 
             if ( _requestContext?.CurrentPerson != null )
             {
-                Context.AddSystemMessage( $"CurrentPerson|The current person is {_requestContext.CurrentPerson.FullName} (id: {_requestContext.CurrentPerson.Id}) he is the Discipleship Pastor." );
+                _context.AddSystemMessage( $"CurrentPerson|The current person is {_requestContext.CurrentPerson.FullName} (id: {_requestContext.CurrentPerson.Id}) he is the Discipleship Pastor." );
             }
         }
 
@@ -345,12 +491,13 @@ namespace Rock.AI.Agent
             await LoadSessionAsync( SessionId.Value );
         }
 
+        /// <inheritdoc/>
         public async Task<ChatMessageContent> GetChatMessageContentAsync()
         {
             var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
 
             var result = await chat.GetChatMessageContentAsync(
-                Context.GetChatHistory(),
+                _context.GetChatHistory(),
                 executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
                 kernel: _kernel );
 
@@ -370,11 +517,18 @@ namespace Rock.AI.Agent
         //    return result;
         //}
 
+        /// <inheritdoc/>
         public UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
         {
             return _agentConfiguration.Provider.GetMetricUsageFromResult( result );
         }
 
+        /// <summary>
+        /// Creates the tokenizer for the GPT-4o-Mini model. This is called
+        /// lazily and is used to count tokens when adding messages to the
+        /// history if the provider didn't give us a valid count.
+        /// </summary>
+        /// <returns>A new instance of <see cref="TiktokenTokenizer"/>.</returns>
         private static TiktokenTokenizer CreateTokenizer()
         {
             try
@@ -387,6 +541,11 @@ namespace Rock.AI.Agent
             }
         }
 
+        /// <summary>
+        /// Counts the tokens in the specified text.
+        /// </summary>
+        /// <param name="text">The text to be tokenized.</param>
+        /// <returns>The number of tokens for <paramref name="text"/> or <c>0</c> if it could not be counted.</returns>
         private int CountTokens( string text )
         {
             try
@@ -398,5 +557,7 @@ namespace Rock.AI.Agent
                 return 0;
             }
         }
+
+        #endregion
     }
 }

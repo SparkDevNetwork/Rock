@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -23,7 +24,6 @@ namespace Rock.AI.Agent.Skills
     [EntityTypeGuid( "bed15fba-e033-4741-a894-e8ca6ca2b00a" )]
     internal class GroupManagerSkill : AgentSkillComponent
     {
-        private AgentRequestContext _requestContext;
         private RockContext _rockContext;
 
         #region Keys
@@ -35,9 +35,8 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        public GroupManagerSkill( AgentRequestContext requestContext, RockContext rockContext, ILogger<GroupManagerSkill> logger )
+        public GroupManagerSkill( RockContext rockContext, ILogger<GroupManagerSkill> logger )
         {
-            _requestContext = requestContext;
             _rockContext = rockContext;
         }
 
@@ -89,6 +88,21 @@ namespace Rock.AI.Agent.Skills
 
         #region Native Functions
 
+        [KernelFunction( "AddNoteToPerson" )]
+        [Description( "Adds a note to a person." )]
+        [AgentFunctionGuid( "eae482a7-4dde-4914-baa8-bcb4a103259a" )]
+        public async Task<string> AddNoteToPerson( int personId, string noteText )
+        {
+            await AgentRequestContext.ChatAgent.AddSessionContextAsync( "core.note", new
+            {
+                NoteId = 42,
+                PersonId = personId,
+                NoteText = noteText
+            }.ToJson() );
+
+            return "Note added to person successfully.";
+        }
+
         [KernelFunction( "GroupMemberOperations" )]
         [Description( @"Finds a group of people of a specific group type for a person.
 
@@ -117,7 +131,7 @@ This function may be called 2–3 times per user request and is responsible for 
             [Description( "The operation to preform (Add|Update|Delete)." )] GroupMemberOperation operation,
             [Description( "The role ID. Pass null if the correct value is not yet known. Do not guess." )] int? groupMemberRoleId = null )
         {
-            var test = _requestContext.GetChatHistory().FirstOrDefault().Content;
+            var test = AgentRequestContext.GetChatHistory().FirstOrDefault().Content;
             var currentPerson = RockRequestContextAccessor.Current.CurrentPerson;
 
             // Get the person and group to add them to
@@ -148,13 +162,13 @@ This function may be called 2–3 times per user request and is responsible for 
             if ( groupMemberRoleId == null || groupMemberRoleId == 0 )
             {
                 var validValues = group.GroupType.Roles.Select( r => new
-                    {
-                        RoleId = r.Id,
-                        RoleName = r.Name,
-                        r.IsLeader,
-                        IsDefaultRole = r.Id == group.GroupType.DefaultGroupRoleId
-                    } ).ToList().ToJson();
-                
+                {
+                    RoleId = r.Id,
+                    RoleName = r.Name,
+                    r.IsLeader,
+                    IsDefaultRole = r.Id == group.GroupType.DefaultGroupRoleId
+                } ).ToList().ToJson();
+
                 return $"The groups valid roles are: {validValues}. Use this list to find the best match to the request. If no role was specified by the user then call the GroupMemberOperations using the default role. If there is no default role then ask what role they would like to use.";
             }
 
@@ -245,7 +259,7 @@ Each group type has unique filters, so this must always be looked up before send
             // Ensure we have the correct search filters
             if ( searchFilters == null )
             {
-                var searchFilterConfiguration = GetGroupFinderSearchFilters( groupType);
+                var searchFilterConfiguration = GetGroupFinderSearchFilters( groupType );
 
                 var searchFilterConfigurationResults = searchFilterConfiguration.ToJson();
 
@@ -281,7 +295,7 @@ Example:
                 Ted Decker's Group Id: 26
                 Bill Marble's Group Id: 56";
         }
-        
+
 
         #endregion
 
@@ -417,7 +431,7 @@ Example:
         /// <returns></returns>
         private string AddPersonToGroup( Person person, Group group, GroupTypeRoleCache groupTypeRole, GroupMember groupMember = null )
         {
-            if( groupMember != null )
+            if ( groupMember != null )
             {
                 return $"{person.NickName} is already in the group with the role of {groupMember.GroupRole.Name}. Would you like for me to change their role?";
             }
@@ -467,7 +481,7 @@ Example:
             var groupMembers = groupMemberService.Queryable().Where( gm => gm.PersonId == person.Id && gm.GroupId == group.Id )
                 .ToList();
 
-            foreach( var groupMember in groupMembers )
+            foreach ( var groupMember in groupMembers )
             {
                 groupMemberService.Delete( groupMember );
             }

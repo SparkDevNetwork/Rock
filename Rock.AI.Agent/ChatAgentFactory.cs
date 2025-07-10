@@ -66,7 +66,7 @@ namespace Rock.AI.Agent
 
             // Register the ModelServiceRoles
             var kernelBuilder = Kernel.CreateBuilder();
-            kernelBuilder.Services.AddScoped<AgentRequestContext>();
+            kernelBuilder.Services.AddSingleton<AgentRequestContext>();
             kernelBuilder.Services.AddRockLogging();
 
             foreach ( ModelServiceRole role in Enum.GetValues( typeof( ModelServiceRole ) ) )
@@ -108,7 +108,7 @@ namespace Rock.AI.Agent
         /// <param name="kernel"></param>
         private void LoadPluginsForAgent( Kernel kernel, IServiceProvider serviceProvider )
         {
-            LoadNativeSkills( kernel.Plugins, serviceProvider );
+            LoadNativeSkills( kernel.Plugins, kernel.Services, _serviceProvider );
             LoadVirtualSkills( kernel.Plugins );
         }
 
@@ -117,7 +117,7 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="kernel"></param>
         /// <exception cref="InvalidOperationException"></exception>
-        private void LoadNativeSkills( KernelPluginCollection pluginCollection, IServiceProvider serviceProvider )
+        private void LoadNativeSkills( KernelPluginCollection pluginCollection, IServiceProvider kernelServiceProvider, IServiceProvider serviceProvider )
         {
             // Register native skills
             var nativeSkills = _agentConfiguration.Skills
@@ -130,7 +130,7 @@ namespace Rock.AI.Agent
                 var methods = skillConfiguration.NativeType.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static );
                 var pluginFunctions = new List<KernelFunction>();
 
-                skill.SetConfigurationValues( skillConfiguration.ConfigurationValues );
+                skill.Initialize( skillConfiguration.ConfigurationValues, kernelServiceProvider.GetRequiredService<AgentRequestContext>() );
 
                 // Register the C# method functions.
                 foreach ( var method in methods )

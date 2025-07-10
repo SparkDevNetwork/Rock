@@ -23,27 +23,66 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 namespace Rock.AI.Agent
 {
+    /// <summary>
+    /// A request context is used to build up the context for a single chat
+    /// request. This includes system messages, user messages, assistant
+    /// responses and any other details that should be sent to the LLM.
+    /// </summary>
     public class AgentRequestContext
     {
-        private List<ChatMessageContent> _systemMessages;
+        #region Fields
 
-        private Dictionary<int, string> _contextAnchors;
+        /// <summary>
+        /// The list of system messages that should be included in the chat.
+        /// </summary>
+        private readonly List<ChatMessageContent> _systemMessages = new List<ChatMessageContent>();
 
-        private List<ChatMessageContent> _chatMessages;
+        /// <summary>
+        /// The context anchors that should be included in the chat. The key is
+        /// the <see cref="Model.EntityType"/> identifier.
+        /// </summary>
+        private readonly Dictionary<int, string> _contextAnchors = new Dictionary<int, string>();
 
+        /// <summary>
+        /// The list of messages that have been exchanged in the chat.
+        /// </summary>
+        private readonly List<ChatMessageContent> _chatMessages = new List<ChatMessageContent>();
+
+        /// <summary>
+        /// The session context data that should be included in the chat.
+        /// </summary>
+        private readonly Dictionary<string, SessionContext> _sessionContext = new Dictionary<string, SessionContext>();
+
+        /// <summary>
+        /// The native Semantic Kernel object that holds the chat history. This
+        /// is built on demand when <see cref="GetChatHistory()"/> is called.
+        /// </summary>
         private ChatHistory _chatHistory = null;
 
-        public int? AgentId { get; internal set; } = null;
+        #endregion
 
-        //public IReadOnlyList<ChatMessageContent> ChatHistory => InternalChatHistory;
+        #region Properties
 
-        //public List<ContextAnchor> ContextAnchors { get; private set; } = new List<ContextAnchor>();
+        /// <summary>
+        /// The identifier of the <see cref="Model.AIAgent"/> that this request
+        /// is being processed by.
+        /// </summary>
+        public int? AgentId { get; internal set; }
+
+        /// <summary>
+        /// The chat agent instance that this request is being processed by.
+        /// </summary>
+        public IChatAgent ChatAgent { get; internal set; }
+
+        #endregion
+
+        #region Methods
 
         internal void Clear()
         {
-            _systemMessages = new List<ChatMessageContent>();
-            _contextAnchors = new Dictionary<int, string>();
-            _chatMessages = new List<ChatMessageContent>();
+            _systemMessages.Clear();
+            _contextAnchors.Clear();
+            _chatMessages.Clear();
             _chatHistory = null;
         }
 
@@ -77,6 +116,33 @@ namespace Rock.AI.Agent
             _chatHistory = null;
         }
 
+        internal void AddSessionContext( string key, SessionContext context )
+        {
+            if ( context.IsInternal )
+            {
+                return;
+            }
+
+            _sessionContext[key] = context;
+            _chatHistory = null;
+        }
+
+        internal SessionContext GetSessionContext( string key )
+        {
+            if ( _sessionContext.TryGetValue( key, out var context ) )
+            {
+                return context;
+            }
+
+            return null;
+        }
+
+        internal void RemoveSessionContext( string key )
+        {
+            _sessionContext.Remove( key );
+            _chatHistory = null;
+        }
+
         internal ChatHistory GetChatHistory()
         {
             if ( _chatHistory == null )
@@ -88,6 +154,20 @@ namespace Rock.AI.Agent
                     chatHistory.AddSystemMessage( $"ContextAnchor|{anchor.Value}" );
                 }
 
+                foreach ( var context in _sessionContext.Values.OrderBy( c => c.CreatedDateTime ) )
+                {
+                    // Expiration checking is handled when the session is loaded.
+                    // So we don't check it here.
+                    var content = context.Content;
+
+                    if ( context.HistoryContent.IsNotNullOrWhiteSpace() )
+                    {
+                        content = context.HistoryContent;
+                    }
+
+                    chatHistory.AddSystemMessage( $"Context|{content}" );
+                }
+
                 chatHistory.AddRange( _chatMessages );
 
                 _chatHistory = chatHistory;
@@ -96,34 +176,6 @@ namespace Rock.AI.Agent
             return _chatHistory;
         }
 
-        //internal void CopyFrom( AgentRequestContext other )
-        //{
-        //    AgentId = other.AgentId;
-        //    InternalChatHistory = new ChatHistory( other.InternalChatHistory );
-        //    ContextAnchors = new List<ContextAnchor>( other.ContextAnchors );
-
-        //    // If the last chat message is a tool call, then we are copying
-        //    // history for a currently executing function call. So we need to
-        //    // remove that message otherwise there will be an error when
-        //    // executing the new request.
-        //    if ( InternalChatHistory.Count > 0 )
-        //    {
-        //        var lastMessage = InternalChatHistory[InternalChatHistory.Count - 1];
-
-        //        if ( lastMessage.Items.Any( it => it is FunctionCallContent ) )
-        //        {
-        //            InternalChatHistory.RemoveAt( InternalChatHistory.Count - 1 );
-        //        }
-        //    }
-        //}
-
-        // TODO: This should move to a configuration object.
-        internal static string _coreSystemPrompt = @"CoreSystem|
-                You are a chatbot for Rock RMS process the tasks given. When you're unsure or don't know please reply 
-                with I'm sorry I can't assist you with that. The context anchor is the entity (e.g. person, group, etc) that is currently 
-                being focused on. The id of this anchor can be used by functions for completing work.
-
-                If you don't know something, check the Knowledge Base.
-                ".NormalizeWhiteSpace();
+        #endregion
     }
 }
