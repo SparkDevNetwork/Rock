@@ -171,7 +171,8 @@ namespace Rock.Blocks.Event
                 .AddDateTimeField( "endDateTime", a => a.EndDateTime )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "registrants", a => a.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count( r => !r.OnWaitList ) )
-                .AddField( "waitList", a => a.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count( r => r.OnWaitList ) );
+                .AddField( "waitList", a => a.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Count( r => r.OnWaitList ) )
+                .AddField( "hasPaymentPlans", a => a.Registrations.Any( r => r.PaymentPlanFinancialScheduledTransaction != null && r.PaymentPlanFinancialScheduledTransaction.IsActive ) );
         }
 
         private RegistrationTemplate GetRegistrationTemplate()
@@ -203,9 +204,9 @@ namespace Rock.Blocks.Event
         public BlockActionResult Delete( string key )
         {
             var entityService = new RegistrationInstanceService( RockContext );
-            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+            var registrationInstance = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
 
-            if ( entity == null )
+            if ( registrationInstance == null )
             {
                 return ActionBadRequest( $"{RegistrationInstance.FriendlyTypeName} not found." );
             }
@@ -215,15 +216,45 @@ namespace Rock.Blocks.Event
                 return ActionBadRequest( $"Not authorized to delete ${RegistrationInstance.FriendlyTypeName}." );
             }
 
-            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            if ( !entityService.CanDelete( registrationInstance, out var errorMessage ) )
             {
                 return ActionBadRequest( errorMessage );
             }
 
+            var registrationService = new RegistrationService( RockContext );
+            var financialScheduledTransactionService = new FinancialScheduledTransactionService( RockContext );
+            var errors = new List<string>();
+            var warnings = new List<string>();
+
+            foreach ( var registration in registrationInstance.Registrations.ToList() )
+            {
+                var success = registrationService.TryCancelPaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
+                string registrationInfo = $"Registration Id {registration.Id} ({registration.FirstName} {registration.LastName})";
+                if ( !success )
+                {
+                    errors.Add( $"{registrationInfo}: {error ?? "Unknown error"}" );
+                }
+                if ( !string.IsNullOrWhiteSpace( warning ) )
+                {
+                    warnings.Add( $"{registrationInfo}: {warning}" );
+                }
+            }
+
+            if ( errors.Any() )
+            {
+                return ActionBadRequest( "The following registrations could not have their payment plans canceled:\n" + string.Join( "\n", errors ) );
+            }
+            if ( warnings.Any() )
+            {
+                return ActionBadRequest( "Warnings occurred for the following registrations:\n" + string.Join( "\n", warnings ) );
+            }
+
+            RockContext.SaveChanges();
+
             RockContext.WrapTransaction( () =>
             {
-                new RegistrationService( RockContext ).DeleteRange( entity.Registrations );
-                entityService.Delete( entity );
+                registrationService.DeleteRange( registrationInstance.Registrations );
+                entityService.Delete( registrationInstance );
                 RockContext.SaveChanges();
             } );
 
