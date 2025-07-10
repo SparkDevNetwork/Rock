@@ -83,15 +83,21 @@ namespace RockWeb.Blocks.Event
             }
 
             string deleteScript = @"
-    $('table.js-grid-instances a.grid-delete-button').on('click', function( e ){
+    $('table.js-grid-instances a.grid-delete-button').click(function( e ){
         e.preventDefault();
+        var $row = $(this).closest('tr');
+        var hasPayments = $row.attr('instance-has-payments');
         Rock.dialogs.confirm('Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!', function (result) {
             if (result) {
-                Rock.dialogs.confirm('Are you really sure? ', function (result) {
-                    if (result) {
-                        window.location = e.target.href ? e.target.href : e.target.parentElement.href;
-                    }
-                });
+                if ( hasPayments == 'True' ) {
+                    Rock.dialogs.confirm('This instance also has registrations with payment plans. Are you sure that you want to delete the instance?<br/><small>The payment plans will be deactivated and will no longer be associated with a registration.</small>', function (result) {
+                        if (result) {
+                            window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                        }
+                    });
+                } else {
+                    window.location = e.target.href ? e.target.href : e.target.parentElement.href;
+                }
             }
         });
     });
@@ -137,6 +143,8 @@ namespace RockWeb.Blocks.Event
                 {
                     e.Row.AddCssClass( "inactive" );
                 }
+
+                e.Row.Attributes["instance-has-payments"] = instance.HasRegistrationsWithPaymentPlan.ToString();
             }
         }
 
@@ -190,25 +198,71 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs" /> instance containing the event data.</param>
         protected void DeleteInstance_Click( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            RockContext rockContext = new RockContext();
-            RegistrationInstanceService instanceService = new RegistrationInstanceService( rockContext );
-            RegistrationInstance instance = instanceService.Get( e.RowKeyId );
-            if ( instance != null )
+            using ( var rockContext = new RockContext() )
             {
-                string errorMessage;
-                if ( !instanceService.CanDelete( instance, out errorMessage ) )
-                {
-                    mdGridWarning.Show( errorMessage, ModalAlertType.Information );
-                    return;
-                }
 
-                rockContext.WrapTransaction( () =>
+                RegistrationInstanceService instanceService = new RegistrationInstanceService( rockContext );
+                RegistrationInstance registrationInstance = instanceService.Get( e.RowKeyId );
+                if ( registrationInstance != null )
                 {
-                    new RegistrationService( rockContext ).DeleteRange( instance.Registrations );
-                    instanceService.Delete( instance );
+                    string errorMessage;
+                    if ( !instanceService.CanDelete( registrationInstance, out errorMessage ) )
+                    {
+                        mdGridWarning.Show( errorMessage, ModalAlertType.Information );
+                        return;
+                    }
+
+                    var registrationService = new RegistrationService( rockContext );
+                    var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+                    var errors = new List<string>();
+                    var warnings = new List<string>();
+
+                    foreach ( var registration in registrationInstance.Registrations.ToList() )
+                    {
+                        var success = registrationService.TryDeletePaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
+                        string registrationInfo = $"Registration Id {registration.Id} ({registration.FirstName} {registration.LastName})";
+                        if ( !success )
+                        {
+                            errors.Add( $"{registrationInfo}: {error ?? "Unknown error"}" );
+                        }
+                        if ( !string.IsNullOrWhiteSpace( warning ) )
+                        {
+                            warnings.Add( $"{registrationInfo}: {warning}" );
+                        }
+                    }
+
+                    if ( errors.Any() )
+                    {
+                        mdGridWarning.Show( "The following registrations could not have their payment plans deleted:<br/>" + string.Join( "<br/>", errors ), ModalAlertType.Warning );
+                        return;
+                    }
+                    if ( warnings.Any() )
+                    {
+                        mdGridWarning.Show( "Warnings occurred for the following registrations:<br/>" + string.Join( "<br/>", warnings ), ModalAlertType.Warning );
+                        return;
+                    }
+
+                    /*
+                        7/7/2025 - MSE
+
+                        If we get here, then all payment plans are marked as cancelled in-memory via TryDeletePaymentPlan.
+
+                        The reason the database save operation was lifted out of TryDeletePaymentPlan and placed here is to ensure transactional consistency.
+                        If ANY payment plan fails to cancel (due to an error or warning), we skip saving everything --- preventing a scenario where some payment plans 
+                        are cancelled in the database, but the associated registration records are not removed (since we return early 
+                        if errors or warnings are present).
+
+                    */
+
                     rockContext.SaveChanges();
-                } );
 
+                    rockContext.WrapTransaction( () =>
+                    {
+                        registrationService.DeleteRange( registrationInstance.Registrations );
+                        instanceService.Delete( registrationInstance );
+                        rockContext.SaveChanges();
+                    } );
+                }
             }
 
             BindInstancesGrid();
@@ -277,68 +331,69 @@ namespace RockWeb.Blocks.Event
 
                 lHeading.Text = string.Format( "{0} Instances", _template.Name );
 
-                var rockContext = new RockContext();
-
-                var template = new RegistrationTemplateService( rockContext ).Get( _template.Id );
-
-                var waitListCol = gInstances.ColumnsOfType<RockBoundField>().Where( f => f.DataField == "WaitList" ).First();
-                waitListCol.Visible = template != null && template.WaitListEnabled;
-
-                var instanceService = new RegistrationInstanceService( rockContext );
-                var qry = instanceService.Queryable().AsNoTracking()
-                    .Where( i => i.RegistrationTemplateId == _template.Id );
-
-                // Date Range
-                var drp = new DateRangePicker();
-                drp.DelimitedValues = rFilter.GetFilterPreference( "Date Range" );
-                if ( drp.LowerValue.HasValue )
+                using ( var rockContext = new RockContext() )
                 {
-                    qry = qry.Where( i => i.StartDateTime >= drp.LowerValue.Value );
-                }
+                    var template = new RegistrationTemplateService( rockContext ).Get( _template.Id );
+                    var waitListCol = gInstances.ColumnsOfType<RockBoundField>().Where( f => f.DataField == "WaitList" ).First();
+                    waitListCol.Visible = template != null && template.WaitListEnabled;
 
-                if ( drp.UpperValue.HasValue )
-                {
-                    DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
-                    qry = qry.Where( i => i.StartDateTime < upperDate );
-                }
+                    var instanceService = new RegistrationInstanceService( rockContext );
+                    var qry = instanceService.Queryable().AsNoTracking()
+                        .Where( i => i.RegistrationTemplateId == _template.Id );
 
-                string statusFilter = rFilter.GetFilterPreference( "Active Status" );
-                if ( !string.IsNullOrWhiteSpace( statusFilter ) )
-                {
-                    if ( statusFilter == "inactive" )
+                    // Date Range
+                    var drp = new DateRangePicker();
+                    drp.DelimitedValues = rFilter.GetFilterPreference( "Date Range" );
+                    if ( drp.LowerValue.HasValue )
                     {
-                        qry = qry.Where( i => i.IsActive == false );
+                        qry = qry.Where( i => i.StartDateTime >= drp.LowerValue.Value );
+                    }
+
+                    if ( drp.UpperValue.HasValue )
+                    {
+                        DateTime upperDate = drp.UpperValue.Value.Date.AddDays( 1 );
+                        qry = qry.Where( i => i.StartDateTime < upperDate );
+                    }
+
+                    string statusFilter = rFilter.GetFilterPreference( "Active Status" );
+                    if ( !string.IsNullOrWhiteSpace( statusFilter ) )
+                    {
+                        if ( statusFilter == "inactive" )
+                        {
+                            qry = qry.Where( i => i.IsActive == false );
+                        }
+                        else
+                        {
+                            qry = qry.Where( i => i.IsActive == true );
+                        }
+                    }
+
+                    SortProperty sortProperty = gInstances.SortProperty;
+                    if ( sortProperty != null )
+                    {
+                        qry = qry.Sort( sortProperty );
                     }
                     else
                     {
-                        qry = qry.Where( i => i.IsActive == true );
+                        qry = qry.OrderByDescending( a => a.StartDateTime );
                     }
-                }
 
-                SortProperty sortProperty = gInstances.SortProperty;
-                if ( sortProperty != null )
-                {
-                    qry = qry.Sort( sortProperty );
-                }
-                else
-                {
-                    qry = qry.OrderByDescending( a => a.StartDateTime );
-                }
+                    var instanceQry = qry.Select( i => new
+                    {
+                        i.Id,
+                        i.Guid,
+                        i.Name,
+                        i.StartDateTime,
+                        i.EndDateTime,
+                        i.IsActive,
+                        Registrants = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => !r.OnWaitList ).Count(),
+                        WaitList = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => r.OnWaitList ).Count(),
+                        HasRegistrationsWithPaymentPlan = i.Registrations.Any( r => !r.IsTemporary && r.PaymentPlanFinancialScheduledTransactionId != null )
+                    } );
 
-                var instanceQry = qry.Select( i => new
-                {
-                    i.Id,
-                    i.Guid,
-                    i.Name,
-                    i.StartDateTime,
-                    i.EndDateTime,
-                    i.IsActive,
-                    Registrants = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => !r.OnWaitList ).Count(),
-                    WaitList = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => r.OnWaitList ).Count()
-                } );
-
-                gInstances.SetLinqDataSource( instanceQry );
-                gInstances.DataBind();
+                    gInstances.SetLinqDataSource( instanceQry );
+                    gInstances.DataBind();
+                }
             }
             else
             {

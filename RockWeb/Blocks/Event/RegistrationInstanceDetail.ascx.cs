@@ -268,8 +268,18 @@ namespace RockWeb.Blocks.Event
                             return;
                         }
 
-                        // If we got here, then all payment plans were deleted using TryDeletePaymentPlan above.
-                        // Now we officially delete them.
+                        /*
+                            7/7/2025 - MSE
+
+                            If we get here, then all payment plans are marked as cancelled in-memory via TryDeletePaymentPlan.
+
+                            The reason the database save operation was lifted out of TryDeletePaymentPlan and placed here is to ensure transactional consistency.
+                            If ANY payment plan fails to cancel (due to an error or warning), we skip saving everything --- preventing a scenario where some payment plans 
+                            are cancelled in the database, but the associated registration records are not removed (since we return early 
+                            if errors or warnings are present).
+
+                        */
+
                         rockContext.SaveChanges();
 
                         rockContext.WrapTransaction( () =>
