@@ -785,6 +785,7 @@
     <Compile Include="Communication\Chat\ChatConfiguration.cs" />
     <Compile Include="Field\Types\DeviceFieldType.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171PopulateAttendanceRootGroupType.cs" />
+    <Compile Include="Jobs\PostUpdateJobs\PostV173UpdateAttendanceOccurrenceIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171UpdateCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\PostUpdateJobs\PostV171AddCommunicationRecipientIndex.cs" />
     <Compile Include="Jobs\RunLava.cs" />
