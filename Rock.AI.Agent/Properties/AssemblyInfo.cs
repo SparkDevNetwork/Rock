@@ -16,3 +16,5 @@ using System.Runtime.InteropServices;
 [assembly: Guid("1261a2e5-5a12-4e54-8876-5ee7ab18561e")]
 
 [assembly: InternalsVisibleTo( "Rock.WebStartup" )]
+[assembly: InternalsVisibleTo( "Rock.AI.Agent.Tests" )]
+[assembly: InternalsVisibleTo( "DynamicProxyGenAssembly2" )]

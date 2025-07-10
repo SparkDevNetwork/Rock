@@ -28,6 +28,15 @@ namespace Rock.AI.Agent
     /// </summary>  
     internal abstract class AgentProviderComponent : Component
     {
+        public AgentProviderComponent()
+        {
+        }
+
+        internal AgentProviderComponent( bool updateAttributes )
+            : base( updateAttributes )
+        {
+        }
+
         /// <summary>
         /// Registers a chat completion service with service collection. This
         /// is used during the initialization of the chat agent and should not

@@ -28,16 +28,15 @@ using Microsoft.SemanticKernel;
 using Rock.Data;
 using Rock.Enums.Core.AI.Agent;
 using Rock.Logging;
+using Rock.Model;
 using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Web.Cache.Entities;
 
 namespace Rock.AI.Agent
 {
-    class ChatAgentFactory
+    internal class ChatAgentFactory
     {
-        private readonly int _agentId;
-
         private readonly IServiceProvider _serviceProvider;
 
         private readonly AgentConfiguration _agentConfiguration;
@@ -52,29 +51,24 @@ namespace Rock.AI.Agent
 
         private readonly ILogger _logger;
 
-        public ChatAgentFactory( int agentId, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
+        internal string ExecuteLavaParameterHint { get; set; } = "A JSON object with the parameters defined in the schema.";
+
+        private ChatAgentFactory( IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
         {
-            var sw = System.Diagnostics.Stopwatch.StartNew();
-            _agentId = agentId;
             _serviceProvider = serviceProvider; ;
             _requestContextAccessor = requestContextAccessor;
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
             _rockContextFactory = rockContextFactory;
+        }
+
+        public ChatAgentFactory( int agentId, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
+            : this( serviceProvider, rockContext, requestContextAccessor, loggerFactory, rockContextFactory )
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
 
             var provider = AgentProviderContainer.GetActiveComponent();
-
-            // Register the ModelServiceRoles
-            var kernelBuilder = Kernel.CreateBuilder();
-            kernelBuilder.Services.AddSingleton<AgentRequestContext>();
-            kernelBuilder.Services.AddRockLogging();
-
-            foreach ( ModelServiceRole role in Enum.GetValues( typeof( ModelServiceRole ) ) )
-            {
-                provider.AddChatCompletion( role, kernelBuilder.Services );
-            }
-
-            _kernelBuilder = kernelBuilder;
+            _kernelBuilder = CreateKernelBuilder( provider, null );
 
             var agent = AIAgentCache.Get( agentId, rockContext );
             var settings = agent.GetAdditionalSettings<AgentSettings>();
@@ -82,7 +76,36 @@ namespace Rock.AI.Agent
             _agentConfiguration = new AgentConfiguration( agentId, provider, string.Empty, settings, GetSkillConfigurations( agentId, rockContext ) );
             sw.Stop();
 
-            _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
+            _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
+        }
+
+        internal ChatAgentFactory( AgentProviderComponent provider, AgentConfiguration agentConfiguration, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory, Action<IServiceCollection> configureServices )
+            : this( serviceProvider, rockContext, requestContextAccessor, loggerFactory, rockContextFactory )
+        {
+            var sw = System.Diagnostics.Stopwatch.StartNew();
+
+            _kernelBuilder = CreateKernelBuilder( provider, configureServices );
+            _agentConfiguration = agentConfiguration;
+
+            sw.Stop();
+
+            _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
+        }
+
+        private static IKernelBuilder CreateKernelBuilder( AgentProviderComponent provider, Action<IServiceCollection> configureServices  )
+        {
+            var kernelBuilder = Kernel.CreateBuilder();
+            kernelBuilder.Services.AddSingleton<AgentRequestContext>();
+            kernelBuilder.Services.AddRockLogging();
+
+            configureServices?.Invoke( kernelBuilder.Services );
+
+            foreach ( ModelServiceRole role in Enum.GetValues( typeof( ModelServiceRole ) ) )
+            {
+                provider.AddChatCompletion( role, kernelBuilder.Services );
+            }
+
+            return kernelBuilder;
         }
 
         public IChatAgent Build()
@@ -91,13 +114,13 @@ namespace Rock.AI.Agent
             var kernel = _kernelBuilder.Build();
             sw.Stop();
 
-            _logger.LogInformation( "Kernel built in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
+            _logger.LogInformation( "Kernel built in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
 
             sw.Restart();
             LoadPluginsForAgent( kernel, _serviceProvider );
             sw.Stop();
 
-            _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentId );
+            _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
 
             return new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor );
         }
@@ -242,7 +265,7 @@ namespace Rock.AI.Agent
                     var functionParameters = new List<KernelParameterMetadata>();
                     var parameter = new KernelParameterMetadata( "promptAsJson" )
                     {
-                        Description = "A JSON object with the parameters defined in the schema.",
+                        Description = ExecuteLavaParameterHint,
                         IsRequired = true,
                         Schema = ParseSchema( function.InputSchema )
                     };

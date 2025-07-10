@@ -1,0 +1,6 @@
+<?xml version="1.0"?>
+<appSettings>
+    <add key="AzureOpenAIApiKey" value="" />
+    <add key="AzureOpenAIEndpoint" value="" />
+</appSettings>
+

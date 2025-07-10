@@ -162,6 +162,8 @@ Project("{54A90642-561A-4BB1-A94E-469ADEE60C69}") = "Rock.JavaScript.Obsidian.Re
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.AI.Agent", "Rock.AI.Agent\Rock.AI.Agent.csproj", "{1261A2E5-5A12-4E54-8876-5EE7AB18561E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.AI.Agent.Tests", "Rock.AI.Agent.Tests\Rock.AI.Agent.Tests.csproj", "{2FF1A64A-E057-4C81-9F5E-5D19DC079D0E}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -338,6 +340,10 @@ Global
 		{1261A2E5-5A12-4E54-8876-5EE7AB18561E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{1261A2E5-5A12-4E54-8876-5EE7AB18561E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{1261A2E5-5A12-4E54-8876-5EE7AB18561E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2FF1A64A-E057-4C81-9F5E-5D19DC079D0E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2FF1A64A-E057-4C81-9F5E-5D19DC079D0E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2FF1A64A-E057-4C81-9F5E-5D19DC079D0E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2FF1A64A-E057-4C81-9F5E-5D19DC079D0E}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -355,6 +361,7 @@ Global
 		{6FC5781E-C9FC-41E9-87FB-2A9CA8AA2088} = {7A0E1B93-44CB-4EB4-BF4D-433253A29D52}
 		{6519C205-3304-4D09-86BC-16BE8A0D9C41} = {7A0E1B93-44CB-4EB4-BF4D-433253A29D52}
 		{1261A2E5-5A12-4E54-8876-5EE7AB18561E} = {7A0E1B93-44CB-4EB4-BF4D-433253A29D52}
+		{2FF1A64A-E057-4C81-9F5E-5D19DC079D0E} = {7A0E1B93-44CB-4EB4-BF4D-433253A29D52}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {53C930BD-2ECB-48B7-BDE0-7F5BBDF7A427}

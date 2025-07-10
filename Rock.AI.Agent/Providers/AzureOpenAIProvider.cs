@@ -72,6 +72,9 @@ namespace Rock.AI.Agent.Providers
             public const string Endpoint = "Endpoint";
             public const string DefaultTemperature = "DefaultTemperature";
             public const string DefaultTopP = "DefaultTopP";
+
+            // This is only used for unit testing.
+            public const string Seed = "Seed";
         }
 
         #endregion
@@ -82,6 +85,15 @@ namespace Rock.AI.Agent.Providers
             { ModelServiceRole.Code, "gpt-4o-mini" },
             { ModelServiceRole.Research, "gpt-4o-mini" }
         };
+
+        public AzureOpenAIProvider()
+        {
+        }
+
+        internal AzureOpenAIProvider( bool updateAttributes )
+            : base( updateAttributes )
+        {
+        }
 
         /// <inheritdoc/>
         public override void AddChatCompletion( ModelServiceRole role, IServiceCollection serviceCollection )
@@ -125,7 +137,8 @@ namespace Rock.AI.Agent.Providers
                 ModelId = _modelToRoleMap[function.Role],
                 Temperature = function.Temperature ?? GetAttributeValue( AttributeKey.DefaultTemperature ).AsDoubleOrNull(),
                 TopP = GetAttributeValue( AttributeKey.DefaultTopP ).AsDoubleOrNull(),
-                MaxTokens = function.MaxTokens
+                Seed = GetSeed(),
+                MaxTokens = function.MaxTokens,
             };
         }
 
@@ -137,7 +150,15 @@ namespace Rock.AI.Agent.Providers
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
                 Temperature = GetAttributeValue( AttributeKey.DefaultTemperature ).AsDoubleOrNull(),
                 TopP = GetAttributeValue( AttributeKey.DefaultTopP ).AsDoubleOrNull(),
+                Seed = GetSeed(),
             };
+        }
+
+        private long? GetSeed()
+        {
+            return long.TryParse( GetAttributeValue( AttributeKey.Seed ), out var seed )
+                ? ( long? ) seed
+                : null;
         }
     }
 }
