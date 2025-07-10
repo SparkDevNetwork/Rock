@@ -35,13 +35,20 @@ namespace Rock.Model
         /// <param name="error">Set to an error message if the operation fails.</param>
         /// <param name="warning">Set to a warning message if the operation succeeds with a warning.</param>
         /// <returns>True if successful, false if there was an error.</returns>
-        public bool TryDeletePaymentPlan( Registration registration, FinancialScheduledTransactionService financialScheduledTransactionService, out string error, out string warning )
+        public bool TryCancelPaymentPlan( Registration registration, FinancialScheduledTransactionService financialScheduledTransactionService, out string error, out string warning )
         {
+            if ( registration?.PaymentPlanFinancialScheduledTransaction == null || !registration.PaymentPlanFinancialScheduledTransaction.IsActive )
+            {
+                error = null;
+                warning = null;
+                return true;
+            }
+
             var financialScheduledTransactionId = registration?.PaymentPlanFinancialScheduledTransactionId;
             if ( !financialScheduledTransactionId.HasValue )
             {
-                error = string.Empty;
-                warning = "This registration has no payment plan or it has already been deleted.";
+                error = null;
+                warning = "This registration has no payment plan or it has already been canceled.";
                 return true;
             }
 
@@ -49,8 +56,8 @@ namespace Rock.Model
 
             if ( financialScheduledTransaction == null )
             {
-                error = string.Empty;
-                warning = "The payment plan record could not be found. It may have already been deleted.";
+                error = null;
+                warning = "The payment plan record could not be found. It may have already been canceled.";
                 return true;
             }
 

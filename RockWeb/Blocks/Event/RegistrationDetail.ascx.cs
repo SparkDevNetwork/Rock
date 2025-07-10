@@ -432,7 +432,7 @@ namespace RockWeb.Blocks.Event
                             return;
                         }
 
-                        var success = registrationService.TryDeletePaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
+                        var success = registrationService.TryCancelPaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
 
                         if ( !success )
                         {
@@ -448,10 +448,10 @@ namespace RockWeb.Blocks.Event
                         /*
                             7/9/2025 - MSE
 
-                            At this point, the payment plan has been marked as cancelled in-memory by TryDeletePaymentPlan.
+                            At this point, the payment plan has been marked as cancelled in-memory by TryCancelPaymentPlan.
 
-                            The database save is intentionally performed here rather than inside TryDeletePaymentPlan to preserve transactional consistency.
-                            If TryDeletePaymentPlan encounters an error or warning, we exit early before the database save --- ensuring we don’t persist
+                            The database save is intentionally performed here rather than inside TryCancelPaymentPlan to preserve transactional consistency.
+                            If TryCancelPaymentPlan encounters an error or warning, we exit early before the database save --- ensuring we don’t persist
                             a cancelled payment plan without also deleting the associated registration record.
 
                             This placement avoids a scenario where the payment plan is cancelled but the registration remains.
@@ -1753,7 +1753,7 @@ namespace RockWeb.Blocks.Event
 
             BuildRegistrationControls( true );
 
-            bool anyPayments = registration.Payments.Any();
+            bool anyPayments = registration.PaymentPlanFinancialScheduledTransaction != null && registration.PaymentPlanFinancialScheduledTransaction.IsActive;
             hfHasPayments.Value = anyPayments.ToString();
             foreach ( RockWeb.Blocks.Finance.TransactionList block in RockPage.RockBlocks.Where( a => a is RockWeb.Blocks.Finance.TransactionList ) )
             {
@@ -3482,7 +3482,7 @@ namespace RockWeb.Blocks.Event
                 var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
                 var registrationService = new Rock.Model.RegistrationService( new RockContext() );
 
-                var isSuccessfullyDeleted = registrationService.TryDeletePaymentPlan( this.Registration, financialScheduledTransactionService, out var error, out var warning );
+                var success = registrationService.TryCancelPaymentPlan( this.Registration, financialScheduledTransactionService, out var error, out var warning );
 
                 var hasError = error.IsNotNullOrWhiteSpace();
                 var hasWarning = warning.IsNotNullOrWhiteSpace();
@@ -3499,7 +3499,7 @@ namespace RockWeb.Blocks.Event
                     nbPaneAccountWarning.Visible = true;
                 }
 
-                if ( isSuccessfullyDeleted )
+                if ( success )
                 {
                     // Delete the payment plan from the registration.
                     rockContext.SaveChanges();

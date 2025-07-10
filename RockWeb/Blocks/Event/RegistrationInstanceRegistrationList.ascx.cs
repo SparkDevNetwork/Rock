@@ -416,7 +416,7 @@ namespace RockWeb.Blocks.Event
                         paymentPlanIcon = "<i class='fa fa-calendar-day'></i>";
                     }
 
-                    lBalance.Text = $"<span class='label {balanceCssClass}'>{balanceDue.FormatAsCurrency()}{paymentPlanIcon}</span><input type='hidden' class='js-has-payments' value='{hasPayments.ToTrueFalse()}' />";
+                    lBalance.Text = $"<span class='label {balanceCssClass}'>{balanceDue.FormatAsCurrency()}{paymentPlanIcon}</span><input type='hidden' class='js-has-payments' value='{isPaymentPlanActive.ToTrueFalse()}' />";
                 }
             }
         }
@@ -465,11 +465,11 @@ namespace RockWeb.Blocks.Event
                         return;
                     }
 
-                    // Call TryDeletePaymentPlan before deleting
-                    var success = registrationService.TryDeletePaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
+                    var success = registrationService.TryCancelPaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
+
                     if ( !success )
                     {
-                        mdDeleteWarning.Show( error ?? "An unknown error occurred while deactivating a payment plan. The registration was not deleted.", ModalAlertType.Warning );
+                        mdDeleteWarning.Show( error ?? "An unknown error occurred while deactivating a payment plan. The registration was not cancelled.", ModalAlertType.Warning );
                         return;
                     }
                     if ( !string.IsNullOrWhiteSpace( warning ) )
@@ -481,10 +481,10 @@ namespace RockWeb.Blocks.Event
                     /*
                         7/9/2025 - MSE
 
-                        At this point, the payment plan has been marked as cancelled in-memory by TryDeletePaymentPlan.
+                        At this point, the payment plan has been marked as cancelled in-memory by TryCancelPaymentPlan.
 
-                        The database save is intentionally performed here rather than inside TryDeletePaymentPlan to preserve transactional consistency.
-                        If TryDeletePaymentPlan encounters an error or warning, we exit early before the database save --- ensuring we don’t persist
+                        The database save is intentionally performed here rather than inside TryCancelPaymentPlan to preserve transactional consistency.
+                        If TryCancelPaymentPlan encounters an error or warning, we exit early before the database save --- ensuring we don’t persist
                         a cancelled payment plan without also deleting the associated registration record.
 
                         This placement avoids a scenario where the payment plan is cancelled but the registration remains.

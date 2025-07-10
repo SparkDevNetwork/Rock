@@ -219,7 +219,7 @@ namespace RockWeb.Blocks.Event
 
                     foreach ( var registration in registrationInstance.Registrations.ToList() )
                     {
-                        var success = registrationService.TryDeletePaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
+                        var success = registrationService.TryCancelPaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
                         string registrationInfo = $"Registration Id {registration.Id} ({registration.FirstName} {registration.LastName})";
                         if ( !success )
                         {
@@ -233,21 +233,21 @@ namespace RockWeb.Blocks.Event
 
                     if ( errors.Any() )
                     {
-                        mdGridWarning.Show( "The following registrations could not have their payment plans deleted:<br/>" + string.Join( "<br/>", errors ), ModalAlertType.Warning );
+                        mdGridWarning.Show( "The following registrations could not have their payment plans canceled:\n" + string.Join( "\n", errors ), ModalAlertType.Warning );
                         return;
                     }
                     if ( warnings.Any() )
                     {
-                        mdGridWarning.Show( "Warnings occurred for the following registrations:<br/>" + string.Join( "<br/>", warnings ), ModalAlertType.Warning );
+                        mdGridWarning.Show( "Warnings occurred for the following registrations:\n" + string.Join( "\n", warnings ), ModalAlertType.Warning );
                         return;
                     }
 
                     /*
                         7/7/2025 - MSE
 
-                        If we get here, then all payment plans are marked as cancelled in-memory via TryDeletePaymentPlan.
+                        If we get here, then all payment plans are marked as cancelled in-memory via TryCancelPaymentPlan.
 
-                        The reason the database save operation was lifted out of TryDeletePaymentPlan and placed here is to ensure transactional consistency.
+                        The reason the database save operation was lifted out of TryCancelPaymentPlan and placed here is to ensure transactional consistency.
                         If ANY payment plan fails to cancel (due to an error or warning), we skip saving everything --- preventing a scenario where some payment plans 
                         are cancelled in the database, but the associated registration records are not removed (since we return early 
                         if errors or warnings are present).
@@ -388,7 +388,7 @@ namespace RockWeb.Blocks.Event
                         i.IsActive,
                         Registrants = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => !r.OnWaitList ).Count(),
                         WaitList = i.Registrations.Where( r => !r.IsTemporary ).SelectMany( r => r.Registrants ).Where( r => r.OnWaitList ).Count(),
-                        HasRegistrationsWithPaymentPlan = i.Registrations.Any( r => !r.IsTemporary && r.PaymentPlanFinancialScheduledTransactionId != null )
+                        HasRegistrationsWithPaymentPlan = i.Registrations.Any( r => r.PaymentPlanFinancialScheduledTransaction != null && r.PaymentPlanFinancialScheduledTransaction.IsActive )
                     } );
 
                     gInstances.SetLinqDataSource( instanceQry );
