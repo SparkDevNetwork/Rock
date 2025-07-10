@@ -75,6 +75,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./RegistrationInstanceList/types.partial";
     import { reactive, ref } from "vue";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
 
     const config = useConfigurationValues<ListBlockBox<RegistrationInstanceListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -184,7 +185,7 @@
 
     /**
      * Called when the Add button has been clicked by the individual.
-     */
+         */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
             window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
