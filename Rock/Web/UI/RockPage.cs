@@ -2403,12 +2403,24 @@ Obsidian.onReady(() => {{
                 Rock.Model.Person impersonatedPerson = personService.GetByImpersonationToken( impersonatedPersonKeyParam, true, this.PageId );
                 if ( impersonatedPerson != null )
                 {
-                    // Is the impersonated person the same as the person who's already logged in?
-                    // If so, don't ruin their existing session... just return true.
-                    if ( CurrentUser != null && impersonatedPerson.Id == CurrentUser.PersonId )
-                    {
-                        return true;
-                    }
+                    /*
+                        7/9/2025 - MSE
+
+                        Previously, if the PersonId matched the current individual, we would skip re-authentication even if the token in the URL
+                        differed from the current authentication ticket.
+                        This would cause the token in the authentication ticket and the URL to become out of sync,
+                        leading to runtime errors.
+
+                        Now, if the tokens differ (even for the same PersonId), we always force a sign-out and re-authenticate with the new token.
+
+                        Reason: Prevent session and token mismatches during impersonation
+
+                        Code Removed:
+                        if ( CurrentUser != null && impersonatedPerson.Id == CurrentUser.PersonId )
+                        {
+                            return true;
+                        }
+                    */
 
                     Authorization.SignOut();
 
