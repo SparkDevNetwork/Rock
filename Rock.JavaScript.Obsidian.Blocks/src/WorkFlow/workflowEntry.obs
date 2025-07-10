@@ -1,0 +1,283 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="row">
+        <div :class="primaryColumnClass">
+            <div class="panel panel-flex panel-block">
+                <div class="panel-heading">
+                    <h1 class="panel-title">
+                        <i :class="blockIconCssClass"></i>
+                        {{ blockTitle }}
+                    </h1>
+
+                    <div class="panel-labels d-flex gap-2 mr-3">
+                        <HighlightLabel v-if="currentAction?.prefixedId"
+                                        labelType="info">
+                            {{ currentAction.prefixedId }}
+                        </HighlightLabel>
+
+                        <HighlightLabel v-if="workflowDate"
+                                        labelType="default">
+                            Added: {{ workflowDate }}
+                        </HighlightLabel>
+                    </div>
+                </div>
+
+                <div class="panel-body">
+                    <InteractiveMessage v-if="actionMessage"
+                                        :message="actionMessage" />
+
+                    <component v-else-if="actionComponent"
+                               :is="actionComponent"
+                               :configuration="actionConfiguration"
+                               :data="actionData"
+                               :submit="onActionDataChanged" />
+                </div>
+            </div>
+        </div>
+
+        <div v-if="currentAction?.isNotesVisible === true" class="col-md-6">
+            <NotesContainer title="Notes"
+                            titleIconCssClass="fa fa-comment"
+                            :notes="currentAction.notes ?? []"
+                            :noteTypes="currentAction.noteTypes ?? []"
+                            descending
+                            :showAdd="isCurrentPersonKnown"
+                            showAlert
+                            @editNote="onEditNote"
+                            @watchNote="onWatchNote"
+                            @saveNote="onSaveNote"
+                            @deleteNote="onDeleteNote" />
+        </div>
+    </div>
+
+    <Captcha v-if="config.isCaptchaEnabled" ref="captchaElement"></Captcha>
+</template>
+
+<script setup lang="ts">
+    import Captcha from "@Obsidian/Controls/captcha.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import InteractiveMessage from "./WorkflowEntry/interactiveMessage.partial.obs";
+    import NotesContainer from "@Obsidian/Controls/Internal/notesContainer.obs";
+    import { InteractiveMessageType } from "@Obsidian/Enums/Workflow/interactiveMessageType";
+    import { useStore } from "@Obsidian/PageState";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { useSuspense } from "@Obsidian/Utility/suspense";
+    import { BlockActionContextBag } from "@Obsidian/ViewModels/Blocks/blockActionContextBag";
+    import { WorkflowEntryOptionsBag } from "@Obsidian/ViewModels/Blocks/Workflow/WorkflowEntry/workflowEntryOptionsBag";
+    import { InteractiveActionBag } from "@Obsidian/ViewModels/Workflow/interactiveActionBag";
+    import { InteractiveMessageBag } from "@Obsidian/ViewModels/Workflow/interactiveMessageBag";
+    import { Component, computed, ref } from "vue";
+    import { NoteEditBag } from "@Obsidian/ViewModels/Controls/noteEditBag";
+    import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
+    import { SaveNoteRequestBag } from "@Obsidian/ViewModels/Controls/saveNoteRequestBag";
+    import { InteractiveActionError } from "./WorkflowEntry/types";
+
+    const config = useConfigurationValues<WorkflowEntryOptionsBag>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const suspense = useSuspense();
+    const store = useStore();
+
+    // #region Values
+
+    const currentAction = ref<InteractiveActionBag | null>();
+    const actionMessage = ref<InteractiveMessageBag>();
+    const actionComponent = ref<Component>();
+    const actionConfiguration = ref<Record<string, string | null | undefined>>({});
+    const actionData = ref<Record<string, string | null | undefined>>({});
+
+    const captchaElement = ref<InstanceType<typeof Captcha> | undefined>();
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The title to display in the header of the block panel. */
+    const blockTitle = computed((): string => {
+        return currentAction.value?.title ?? "Workflow Entry";
+    });
+
+    /** The CSS icon to display in the header of the block panel. */
+    const blockIconCssClass = computed((): string => {
+        return currentAction.value?.iconCssClass ?? "fa fa-gear";
+    });
+
+    /** The string that contains the date the workflow was created. */
+    const workflowDate = computed((): string | undefined => {
+        if (!currentAction.value?.createdDateTime) {
+            return undefined;
+        }
+
+        return RockDateTime.parseISO(currentAction.value.createdDateTime)?.toASPString("d");
+    });
+
+    /** Determines the class width of the primary column on the screen. */
+    const primaryColumnClass = computed((): string => {
+        return currentAction.value?.isNotesVisible
+            ? "col-md-6"
+            : "col-md-12";
+    });
+
+    /** Determines if we have a known person logged in. */
+    const isCurrentPersonKnown = computed((): boolean => {
+        return !!store.state.currentPerson && !store.state.isAnonymousVisitor;
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Shows the specified action on screen. This updates all tracked values
+     * and dynamically loads the component if required.
+     *
+     * @param action The action to be shown.
+     */
+    async function showAction(action: InteractiveActionBag): Promise<void> {
+        currentAction.value = action;
+        actionMessage.value = undefined;
+        actionComponent.value = undefined;
+        actionConfiguration.value = {};
+        actionData.value = {};
+
+        if (action?.actionData?.message) {
+            actionMessage.value = action.actionData.message;
+        }
+        else if (action?.actionData?.componentUrl) {
+            actionComponent.value = (await import(action.actionData.componentUrl)).default;
+            actionConfiguration.value = action.actionData.componentConfiguration ?? {};
+            actionData.value = action.actionData.componentData ?? {};
+        }
+        else {
+            actionMessage.value = {
+                type: InteractiveMessageType.Error,
+                title: "Configuration error",
+                content: "We ran into something unexpected and can't proceed, please try again or contact an administrator."
+            };
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when a component emits data that should be sent to the server.
+     *
+     * @param componentData The data from the component that should be sent to the server.
+     */
+    async function onActionDataChanged(componentData: Record<string, string | null | undefined>): Promise<void> {
+        const data = {
+            workflowGuid: currentAction.value?.workflowGuid,
+            actionTypeGuid: currentAction.value?.actionTypeGuid,
+            componentData: componentData
+        };
+
+        const actionContext: BlockActionContextBag = {};
+
+        if (captchaElement.value) {
+            actionContext.captcha = await captchaElement.value.getToken();
+            captchaElement.value.refreshToken();
+        }
+
+        const response = await invokeBlockAction<InteractiveActionBag>("GetNextInteractiveAction", data, actionContext);
+
+        if (response.isSuccess && response.data) {
+            if (response.data.actionData?.exception) {
+                throw new InteractiveActionError(response.data.actionData.exception.code, response.data.actionData.exception.message ?? "");
+            }
+
+            showAction(response.data);
+
+            // Update the URL after the first form so we have a URL that can
+            // be copied.
+            if (response.data.url) {
+                window.history.replaceState(null, "", response.data.url);
+            }
+        }
+        else {
+            alert(response.errorMessage || "Unexpected error while trying to process workflow.");
+        }
+    }
+
+    /**
+     * Event handler for when a note needs start editing.
+     */
+    async function onEditNote(idKey: string): Promise<NoteEditBag> {
+        const request = {
+            idKey,
+            workflowGuid: currentAction.value?.workflowGuid
+        };
+
+        const result = await invokeBlockAction<NoteEditBag>("EditNote", request);
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage ?? "Unable to edit note.");
+    }
+
+    /**
+     * Event handler for when a note needs to be watched or unwatched.
+     */
+    async function onWatchNote(idKey: string, isWatching: boolean): Promise<void> {
+        const request = {
+            idKey,
+            isWatching,
+            workflowGuid: currentAction.value?.workflowGuid
+        };
+
+        const result = await invokeBlockAction("WatchNote", request);
+
+        if (!result.isSuccess) {
+            throw new Error(result.errorMessage ?? "Unable to update note.");
+        }
+    }
+
+    /**
+     * Event handler for when a note needs to be saved.
+     */
+    async function onSaveNote(note: SaveNoteRequestBag): Promise<NoteBag> {
+        const request = {
+            note,
+            workflowGuid: currentAction.value?.workflowGuid
+        };
+
+        const result = await invokeBlockAction<NoteBag>("SaveNote", request);
+
+        if (result.isSuccess && result.data) {
+            return result.data;
+        }
+
+        throw new Error(result.errorMessage ?? "Unable to save the note.");
+    }
+
+    /**
+     * Event handler for when a note needs to be deleted.
+     */
+    async function onDeleteNote(idKey: string): Promise<void> {
+        const request = {
+            idKey,
+            workflowGuid: currentAction.value?.workflowGuid
+        };
+
+        const result = await invokeBlockAction("DeleteNote", request);
+
+        if (!result.isSuccess) {
+            throw new Error(result.errorMessage ?? "Unable to delete note.");
+        }
+    }
+
+    // #endregion
+
+    if (config.initialAction) {
+        if (suspense) {
+            suspense.addOperation(showAction(config.initialAction));
+        }
+        else {
+            showAction(config.initialAction);
+        }
+    }
+</script>

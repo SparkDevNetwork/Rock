@@ -7,6 +7,7 @@
 
 <script setup lang="ts">
     import { Guid } from "@Obsidian/Types";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { standardAsyncPickerProps, useStandardAsyncPickerProps, useVModelPassthrough } from "@Obsidian/Utility/component";
     import { useHttp } from "@Obsidian/Utility/http";
     import { BinaryFilePickerGetBinaryFilesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/binaryFilePickerGetBinaryFilesOptionsBag";
@@ -37,6 +38,7 @@
 
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
     const standardProps = useStandardAsyncPickerProps(props);
+    const securityGrantToken = useSecurityGrantToken();
     const http = useHttp();
     const loadedItems = ref<ListItemBag[] | null>(null);
 
@@ -61,7 +63,8 @@
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: BinaryFilePickerGetBinaryFilesOptionsBag = {
-            binaryFileTypeGuid: toGuidOrNull(props.binaryFileTypeGuid) ?? emptyGuid
+            binaryFileTypeGuid: toGuidOrNull(props.binaryFileTypeGuid) ?? emptyGuid,
+            securityGrantToken: securityGrantToken.value
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/BinaryFilePickerGetBinaryFiles", undefined, options);
 

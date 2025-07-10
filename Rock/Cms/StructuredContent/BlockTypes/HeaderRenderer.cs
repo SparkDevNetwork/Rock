@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.IO;
 
 namespace Rock.Cms.StructuredContent.BlockTypes
@@ -32,6 +33,17 @@ namespace Rock.Cms.StructuredContent.BlockTypes
             var level = Math.Min( 6, Math.Max( 1, data.Level ) );
 
             writer.WriteLine( $"<h{level}>{data?.Text}</h{level}>" );
+        }
+
+        /// <inheritdoc/>
+        protected override HeaderData ResolveMergeFields( Dictionary<string, object> mergeFields, HeaderData data )
+        {
+            if ( data != null )
+            {
+                data.Text = data.Text.ResolveMergeFields( mergeFields );
+            }
+
+            return data;
         }
     }
 }

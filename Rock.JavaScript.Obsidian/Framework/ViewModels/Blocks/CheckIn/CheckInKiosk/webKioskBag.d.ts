@@ -35,8 +35,14 @@ export type WebKioskBag = {
     /** Gets or sets the kiosk identifier. This is used by the iPad app. */
     idNumber: number;
 
+    /** Determines if adding new families in registration mode is enabled. */
+    isAddingFamiliesEnabled: boolean;
+
     /** Gets or sets a value indicating whether this kiosk has the camera enabled. */
     isCameraEnabled: boolean;
+
+    /** Determines if editing new families in registration mode is enabled. */
+    isEditingFamiliesEnabled: boolean;
 
     /**
      * Gets or sets a value indicating whether this kiosk supports

@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 using Rock.Data;
 using Rock.Field.Types;
 using Rock.Model;
+using Rock.ViewModels.Reporting;
 using Rock.Web.Cache;
 
 namespace Rock.Field
@@ -328,6 +329,46 @@ namespace Rock.Field
         /// </value>
         [DataMember]
         public string ComparedToValue { get; set; }
+
+        /// <summary>
+        /// Gets the public <see cref="FieldFilterRuleBag"/> that represents
+        /// the values for an attribute filter. This is meant to be sent down
+        /// to a client and will not be valid for server-side filtering.
+        /// </summary>
+        /// <param name="attribute">The attribute to be filtered, this is used for value conversion.</param>
+        /// <param name="comparisonType">The type of comparison to be performed.</param>
+        /// <param name="comparedToValue">The private database value to be compared against.</param>
+        /// <returns>A new instance of <see cref="FieldFilterRuleBag"/> or <c>null</c> if the attribute was not valid.</returns>
+        public static FieldFilterRuleBag GetPublicRuleBag( AttributeCache attribute, ComparisonType comparisonType, string comparedToValue )
+        {
+            var filterValues = new List<string>();
+            var field = attribute?.FieldType?.Field;
+
+            if ( field == null )
+            {
+                return null;
+            }
+
+            var comparisonTypeValue = comparisonType.ConvertToString( false );
+            if ( comparisonTypeValue != null )
+            {
+                // only add the comparisonTypeValue if it is specified, just like
+                // the logic at https://github.com/SparkDevNetwork/Rock/blob/22f64416b2461c8a988faf4b6e556bc3dcb209d3/Rock/Field/FieldType.cs#L558
+                filterValues.Add( comparisonTypeValue );
+            }
+
+            filterValues.Add( comparedToValue );
+
+            var comparisonValue = field.GetPublicFilterValue( filterValues.ToJson(), attribute.ConfigurationValues );
+
+            return new FieldFilterRuleBag
+            {
+                ComparisonType = comparisonValue.ComparisonType ?? 0,
+                Value = comparisonValue.Value,
+                SourceType = Enums.Reporting.FieldFilterSourceType.Attribute,
+                AttributeGuid = attribute.Guid
+            };
+        }
 
         /// <summary>
         /// Returns a <see cref="System.String" /> that represents this instance.

@@ -87,5 +87,10 @@ namespace Rock.Security.Authentication.OneTimePasscode
         /// The encrypted state that was generated when the OTP was sent.
         /// </summary>
         public string State { get; set; }
+
+        /// <summary>
+        /// The unique identifier of the individual attempting authentication.
+        /// </summary>
+        public string UniqueIdentifier { get; set; }
     }
 }

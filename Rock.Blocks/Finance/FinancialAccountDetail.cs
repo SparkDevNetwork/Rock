@@ -192,6 +192,7 @@ namespace Rock.Blocks.Finance
                 PublicName = entity.PublicName,
                 StartDate = entity.StartDate,
                 Url = entity.Url,
+                UsesCampusChildAccounts = entity.UsesCampusChildAccounts,
                 AccountParticipants = GetAccountParticipantStateFromDatabase( entity.Id ),
                 ImageBinaryFile = entity.ImageBinaryFile.ToListItemBag(),
             };
@@ -278,6 +279,9 @@ namespace Rock.Blocks.Finance
             box.IfValidProperty( nameof( box.Bag.Url ),
                 () => entity.Url = box.Bag.Url );
 
+            box.IfValidProperty( nameof( box.Bag.UsesCampusChildAccounts ),
+                () => entity.UsesCampusChildAccounts = box.Bag.UsesCampusChildAccounts );
+
             box.IfValidProperty( nameof( box.Bag.ImageBinaryFile ),
                 () => entity.ImageBinaryFileId = box.Bag.ImageBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
 
@@ -288,6 +292,13 @@ namespace Rock.Blocks.Finance
 
                     entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
+
+            // It is not valid for a financial account to have a campus and
+            // be set to use campus child accounts.
+            if ( entity.UsesCampusChildAccounts && entity.CampusId.HasValue )
+            {
+                entity.CampusId = null;
+            }
 
             return true;
         }

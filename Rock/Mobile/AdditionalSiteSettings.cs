@@ -31,50 +31,72 @@ namespace Rock.Mobile
     {
         #region Private Fields
 
-        private const string _defaultFlyoutXaml = @"<ListView SeparatorVisibility=""None"" 
-    HasUnevenRows=""true"" 
-    ItemsSource=""{Binding MenuItems}"">
+        private const string _defaultFlyoutXaml = @"<CollectionView ItemsSource=""{Binding MenuItems}"" StyleClass=""bg-interface-softest""
+	    SelectionMode=""Single"">
+	    <CollectionView.Header>
+	        <StackLayout VerticalOptions=""FillAndExpand""
+	            Orientation=""Vertical"">
+	
+	            <Rock:LoginStatus Padding=""64 0 24 0""
+	                TitleTextColor=""{AppThemeBinding Light={Rock:PaletteColor Interface-Stronger}, Dark={Rock:PaletteColor Interface-Softest}}""
+	                NotLoggedInColor=""{AppThemeBinding Light={Rock:PaletteColor App-Primary-Strong}, Dark={Rock:PaletteColor App-Primary-Strong}}""
+	                NoProfileIconColor=""{AppThemeBinding Light={Rock:PaletteColor App-Primary-Strong}, Dark={Rock:PaletteColor App-Primary-Strong}}""
+	                SubTitleTextColor=""{AppThemeBinding Light={Rock:PaletteColor Interface-strong}, Dark={Rock:PaletteColor Interface-Soft}}""
+	                ImageSize=""75""
+	                ImageBorderColor=""{AppThemeBinding Light={Rock:PaletteColor Interface-Stronger}, Dark={Rock:PaletteColor Interface-Softest}}"" 
+	                ImageBorderSize=""5"" />
+	            
+	            <ContentView Padding=""0 0 24 0"">
+	                <BoxView HeightRequest=""1""
+	                    WidthRequest=""250""
+	                    BackgroundColor=""{AppThemeBinding Light={Rock:PaletteColor Interface-Soft}, Dark={Rock:PaletteColor Interface-Strong}}"" />
+	            </ContentView>
+	                
+	        </StackLayout>
+	    </CollectionView.Header>
+	
+	    <CollectionView.ItemTemplate>
+	        <DataTemplate>
+				<Grid StyleClass=""py-12, px-24"" 
+				    VerticalOptions =""Center"">
 
-    <ListView.Header>
-        <StackLayout VerticalOptions=""FillAndExpand""
-            Orientation=""Vertical"">
+					<VisualStateManager.VisualStateGroups>
+						<VisualStateGroup Name=""CommonStates"">
+							<VisualState Name=""Normal"" />
+							<VisualState Name=""Selected"">
+								<VisualState.Setters>
+									<Setter Property=""BackgroundColor"" Value=""{AppThemeBinding Light={Rock:PaletteColor App-Primary-Strong}, Dark={Rock:PaletteColor App-Primary-Strong}}"" />
+									<Setter TargetName=""TitleLabel"" Property=""Label.TextColor"" Value=""{AppThemeBinding Light={Rock:PaletteColor Interface-Softest}, Dark={Rock:PaletteColor Interface-Stronger}}"" />
+									<Setter TargetName=""fillTransformation"" Property=""Rock:FillColorTransformation.Color"" Value=""{AppThemeBinding Light={Rock:PaletteColor Interface-Softest}, Dark={Rock:PaletteColor Interface-Stronger}}"" />
+								</VisualState.Setters>
+							</VisualState>
+						</VisualStateGroup>
+					</VisualStateManager.VisualStateGroups>
 
-            <Rock:LoginStatus Padding=""20, 70, 20, 50"" 
-                ImageSize=""120"" 
-                ImageBorderColor=""rgba(255, 255, 255, 0.4)"" 
-                ImageBorderSize=""5"" />
-
-            <BoxView HeightRequest=""1"" BackgroundColor=""rgba(255, 255, 255, 0.2)""
-                HorizontalOptions=""FillAndExpand""/>
-
-        </StackLayout>
-    </ListView.Header>
-
-    <ListView.ItemTemplate>
-        <DataTemplate>
-            <Rock:ViewCell SelectedBackgroundColor=""rgba(255, 255, 255, 0.2)"">
-            
-                <StackLayout VerticalOptions=""FillAndExpand"" 
-                    Orientation=""Vertical"">
-
-                    <ContentView StyleClass=""pt-16, pb-12"">
-                        <Label StyleClass=""text-white, ml-32, flyout-menu-item""
-                            Text=""{Binding Title}"" 
-                            VerticalOptions=""Center"" 
-                            HorizontalOptions=""FillAndExpand"" />
-                    </ContentView>
-
-                    <BoxView HeightRequest=""1""
-                        BackgroundColor=""rgba(255, 255, 255, 0.4)""
-                        HorizontalOptions=""FillAndExpand"" />
-
-                </StackLayout>
-
-            </Rock:ViewCell>
-        </DataTemplate>
-    </ListView.ItemTemplate>
-
-</ListView>";
+					<Grid.ColumnDefinitions>
+						<ColumnDefinition Width=""24""/>
+						<ColumnDefinition Width=""*""/>
+					</Grid.ColumnDefinitions>
+						
+				
+					<Rock:Image Source=""{Binding IconUrl}""
+						Grid.Column=""0""
+						HeightRequest=""24""
+						WidthRequest=""24"">
+						<Rock:FillColorTransformation x:Name=""fillTransformation"" Color=""{AppThemeBinding Light={Rock:PaletteColor App-Primary-Strong}, Dark={Rock:PaletteColor App-Primary-Strong}}"" />
+					</Rock:Image>
+							
+					<Label x:Name=""TitleLabel"" 
+						StyleClass=""text-interface-stronger, title3, ml-16, bold, flyout-menu-item""
+						Grid.Column=""1""
+						Text=""{Binding Title}"" 
+						VerticalOptions=""Center"" 
+						HorizontalOptions=""FillAndExpand"" />
+				</Grid>
+	        </DataTemplate>
+	    </CollectionView.ItemTemplate>
+	</CollectionView>
+";
 
         #endregion
 

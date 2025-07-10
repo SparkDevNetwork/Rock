@@ -50,7 +50,6 @@
 
         </div>
 
-
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="3" />
 
         <Panel title="Step Attributes" :hasCollapse="true">

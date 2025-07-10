@@ -30,6 +30,9 @@
                              class="form-control input-md"
                              label="Highlight Color" />
             </div>
+        </div>
+
+        <div class="row" v-if="hasAttributes">
             <div class="col-md-6">
                 <Checkbox
                           v-model="deleteAttributeValues"
@@ -47,7 +50,7 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { PropType, ref, watch, computed } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import Checkbox from "@Obsidian/Controls/checkBox.obs";
@@ -101,6 +104,8 @@
     // #endregion
 
     // #region Computed Values
+
+    const hasAttributes = computed(() => Object.keys(attributes.value).length > 0);
 
     // #endregion
 

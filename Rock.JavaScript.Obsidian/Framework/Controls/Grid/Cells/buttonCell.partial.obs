@@ -20,10 +20,18 @@
     const isRunning = ref(false);
 
     const isDisabled = computed((): boolean => {
-        return isRunning.value;
+        if (typeof props.column.props.disabled === "function") {
+            return isRunning.value || props.column.props.disabled(props.row);
+        }
+
+        return isRunning.value || !!props.column.props.disabled;
     });
 
     const title = computed((): string | undefined => {
+        if (typeof props.column.props.tooltip === "string") {
+            return props.column.props.tooltip;
+        }
+
         if (typeof props.column.props.title === "string") {
             return props.column.props.title;
         }
@@ -70,4 +78,3 @@
     }
 
 </script>
-

@@ -266,6 +266,7 @@ namespace Rock.Communication.Transport
                                         devices = service.Queryable()
                                             .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.IsActive && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
                                             .Select( p => p.DeviceRegistrationId )
+                                            .Distinct()
                                             .ToList();
                                     }
 
@@ -627,6 +628,7 @@ namespace Rock.Communication.Transport
                                         devices = service.Queryable()
                                             .Where( p => p.PersonAliasId.HasValue && p.PersonAliasId.Value == personAlias && p.IsActive && p.NotificationsEnabled && !string.IsNullOrEmpty( p.DeviceRegistrationId ) )
                                             .Select( p => p.DeviceRegistrationId )
+                                            .Distinct()
                                             .ToList();
                                     }
 

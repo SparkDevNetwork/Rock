@@ -5,7 +5,8 @@
             <div class="col-md-6">
                 <TextBox v-model="name"
                          label="Name"
-                         rules="required" />
+                         rules="required"
+                         :maxLength="100" />
             </div>
 
         </div>
@@ -21,7 +22,8 @@
                               label="Layout File"
                               rules="required"
                               help="The layout file that this layout should use"
-                              :items="layoutFileOptions" />
+                              :items="layoutFileOptions"
+                              :disabled="isFilePickerDisabled" />
             </div>
         </div>
 
@@ -64,10 +66,11 @@
     const description = propertyRef(props.modelValue.description ?? "", "Description");
     const name = propertyRef(props.modelValue.name ?? "", "Name");
     const fileName = propertyRef(props.modelValue.fileName ?? "", "FileName");
+    const isSystem = propertyRef(props.modelValue.isSystem ?? false, "IsSystem");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, name, fileName];
+    const propRefs = [description, name, fileName, isSystem];
 
     // #endregion
 
@@ -75,6 +78,10 @@
 
     const layoutFileOptions = computed((): ListItemBag[] => {
         return props.options.layoutFileOptions ?? [];
+    });
+
+    const isFilePickerDisabled = computed((): boolean => {
+        return isSystem.value;
     });
 
     // #endregion
@@ -94,6 +101,7 @@
         updateRefValue(description, props.modelValue.description ?? "");
         updateRefValue(name, props.modelValue.name ?? "");
         updateRefValue(fileName, props.modelValue.fileName ?? "");
+        updateRefValue(isSystem, props.modelValue.isSystem ?? false);
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -104,7 +112,8 @@
             attributeValues: attributeValues.value,
             description: description.value,
             name: name.value,
-            fileName: fileName.value
+            fileName: fileName.value,
+            isSystem: isSystem.value
         };
 
         emit("update:modelValue", newValue);

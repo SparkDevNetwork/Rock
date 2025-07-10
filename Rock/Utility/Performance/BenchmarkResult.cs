@@ -31,12 +31,26 @@ namespace Rock.Utility.Performance
         public BenchmarkStatistics NormalizedStatistics { get; }
 
         /// <summary>
+        /// Gets the statistics for the total run. This includes all overhead as well.
+        /// </summary>
+        public BenchmarkStatistics Statistics { get; }
+
+        /// <summary>
+        /// Gets the statistics from the overhead calculation.
+        /// </summary>
+        public BenchmarkStatistics Overhead { get; }
+
+        /// <summary>
         /// Creates a new instance of <see cref="BenchmarkResult"/>.
         /// </summary>
+        /// <param name="normalizedStatistics">The normalized statistics from the measurement.</param>
         /// <param name="statistics">The overall statistics from the measurement.</param>
-        internal BenchmarkResult( BenchmarkStatistics statistics )
+        /// <param name="overhead">The overhead statistics from the measurement.</param>
+        internal BenchmarkResult( BenchmarkStatistics normalizedStatistics, BenchmarkStatistics statistics, BenchmarkStatistics overhead )
         {
-            NormalizedStatistics = statistics;
+            NormalizedStatistics = normalizedStatistics;
+            Statistics = statistics;
+            Overhead = overhead;
         }
     }
 }

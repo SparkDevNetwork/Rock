@@ -226,6 +226,7 @@
     <Compile Include="..\Rock.Version\AssemblySharedInfo.cs">
       <Link>AssemblySharedInfo.cs</Link>
     </Compile>
+    <Compile Include="Lava\Helpers\LavaAppendWatchesHelperTests.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Blocks\Mobile\Cms\DailyChallengeEntryTests.cs" />
     <Compile Include="CheckIn\v2\CheckInMockDatabase.cs" />
@@ -326,6 +327,7 @@
     <Compile Include="Utility\TimeIntervalTests.cs" />
     <Compile Include="Utility\MethodRetryTests.cs" />
     <Compile Include="Utility\WebRequestHelperTests.cs" />
+    <Compile Include="Web\Cache\GroupTypeCacheTests.cs" />
     <Compile Include="Web\UI\Controls\KeyValueListTests.cs" />
     <Compile Include="Web\Cache\PageShortLinkCacheTests.cs" />
   </ItemGroup>

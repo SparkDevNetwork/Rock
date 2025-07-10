@@ -1,0 +1,215 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="email-design-body">
+        <div class="row">
+            <template v-if="isFeatureEnabled('LAVA_FIELDS_FEATURE', version)">
+                <div class="col-md-3">
+                    <div class="side-panel">
+                        <div v-if="isLogoInMessage" class="row">
+                            <div class="col-md-6">
+                                <ImageUploader v-model="internalLogoBinaryFile"
+                                               help="Provide a PNG with a transparent background. (Image size: 200px x 50px)"
+                                               label="Logo"
+                                               @update:modelValue="onLogoUpdate" />
+                            </div>
+                        </div>
+
+                        <div v-for="(value, key) in internalLavaFieldValues"
+                             class="row"
+                             :key="key">
+                            <div class="col-md-12">
+                                <div class="lava-input-group">
+                                    <ColorPicker v-if="key.toLowerCase().endsWith('color')"
+                                                 v-model="internalLavaFieldValues[key]"
+                                                 :label="toTitleCase(splitCase(key))" />
+
+                                    <TextBox v-else
+                                             v-model="internalLavaFieldValues[key]"
+                                             :label="toTitleCase(splitCase(key))" />
+
+                                    <div v-if="internalLavaFieldValues[key] !== lavaFields[key]"
+                                         class="form-group">
+                                        <span class="input-group-btn">
+                                            <button aria-label="Revert"
+                                                    class="btn"
+                                                    style="background-color: transparent"
+                                                    title="Revert to default"
+                                                    @click.prevent="internalLavaFieldValues[key] = lavaFields[key]">
+                                                <i class="fa fa-undo"></i>
+                                            </button>
+                                        </span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <RockButton v-if="Object.keys(lavaFields).length"
+                                    btnSize="xs"
+                                    btnType="action"
+                                    @click="onUpdatePreview">Update</RockButton>
+                    </div>
+                </div>
+
+                <div class="col-md-9">
+                    <EmailPreviewIframe :mode="emailPreviewMode" :srcdoc="messagePreview" />
+                </div>
+            </template>
+
+            <template v-else>
+                <template v-if="isLogoInMessage">
+                    <div class="col-md-3">
+                        <div class="side-panel">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <ImageUploader
+                                                   v-model="internalLogoBinaryFile"
+                                                   help="Provide a PNG with a transparent background. (Image size: 200px x 50px)"
+                                                   label="Logo"
+                                                   @update:modelValue="onLogoUpdate" />
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="col-md-9">
+                        <EmailPreviewIframe :mode="emailPreviewMode" :srcdoc="messagePreview" />
+                    </div>
+                </template>
+                <template v-else>
+                    <div class="col-md-12">
+                        <EmailPreviewIframe :mode="emailPreviewMode" :srcdoc="messagePreview" />
+                    </div>
+                </template>
+            </template>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.lava-input-group {
+    display: flex;
+    flex-direction: row;
+    align-items: end;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, computed, watch, PropType } from "vue";
+    import EmailPreviewIframe from "./emailPreviewIframe.partial.obs";
+    import { isFeatureEnabled as isFeatureEnabled, useRecordUtils } from "./utils.partial";
+    import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { CommunicationTemplateVersion } from "@Obsidian/Enums/Communication/communicationTemplateVersion";
+    import { toTitleCase, splitCase } from "@Obsidian/Utility/stringUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationTemplateDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationTemplateDetail/communicationTemplateDetailInitializationBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        messagePreview: {
+            type: String as PropType<string>,
+            required: true
+        },
+        lavaFields: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+        lavaFieldValues: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+        logoBinaryFile: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: false
+        },
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        version: {
+            type: Number as PropType<CommunicationTemplateVersion>,
+            required: true
+        },
+        config: {
+            type: Object as PropType<CommunicationTemplateDetailInitializationBox>,
+            required: true
+        },
+        emailPreviewMode: {
+            type: String as PropType<"desktop" | "mobile">,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:lavaFieldValues", value: Record<string, string>): void;
+        (e: "update:logoBinaryFile", value: ListItemBag | null | undefined): void;
+        (e: "update:preview"): void;
+    }>();
+
+    const { areRecordsEqual } = useRecordUtils();
+
+    // #region Values
+
+    const internalLavaFieldValues = ref<Record<string, string>>({ ...props.lavaFieldValues });
+    const internalLogoBinaryFile = ref<ListItemBag | null | undefined>(props.logoBinaryFile);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const isLogoInMessage = computed<boolean>(() => {
+        const regex = /<img[^>]+id=['"]template-logo['"][^>]*>/i;
+        return regex.test(props.messagePreview);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function areListItemBagsEqual(bag1: ListItemBag | null | undefined, bag2: ListItemBag | null | undefined): boolean {
+        if (bag1 === bag2 || (isNullish(bag1) && isNullish(bag2))) {
+            return true;
+        }
+
+        if (!bag1 || !bag2) {
+            return false;
+        }
+
+        return bag1.value === bag2.value && bag1.text === bag2.text && bag1.category === bag2.category;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onUpdatePreview(): void {
+        emit("update:lavaFieldValues", internalLavaFieldValues.value);
+        emit("update:preview");
+    }
+
+    function onLogoUpdate(): void {
+        emit("update:logoBinaryFile", internalLogoBinaryFile.value);
+        emit("update:preview");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.lavaFieldValues, val => {
+        if (!areRecordsEqual(internalLavaFieldValues.value, val)) {
+            internalLavaFieldValues.value = { ...val };
+        }
+    });
+
+    watch(() => props.logoBinaryFile, val => {
+        if (!areListItemBagsEqual(internalLogoBinaryFile.value, val)) {
+            internalLogoBinaryFile.value = val;
+        }
+    });
+
+    // #endregion Watchers
+
+</script>

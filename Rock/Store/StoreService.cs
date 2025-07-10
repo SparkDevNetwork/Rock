@@ -87,7 +87,7 @@ namespace Rock.Store
 
             // setup REST call
             var client = new RestClient( _rockStoreUrl );
-            client.Timeout = _clientTimeout;
+            client.Timeout = 20000;
 
             string organizationKey = GetOrganizationKey();
             string encodedUserName = HttpUtility.UrlEncode( Convert.ToBase64String( Encoding.UTF8.GetBytes( username ) ) );
@@ -100,7 +100,8 @@ namespace Rock.Store
                 organizationKey,
                 username = encodedUserName,
                 password = encodedPassword,
-                packageId
+                packageId,
+                rockSemanticVersionNumber = Rock.VersionInfo.VersionInfo.GetRockSemanticVersionNumber()
             };
 
             var request = new RestRequest( requestUrl, Method.POST );

@@ -71,7 +71,7 @@ namespace Rock.Logging
         /// The log level.
         /// </value>
         [Obsolete( "Use StandardLogLevel instead." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public RockLogLevel LogLevel { get; set; }
 
         /// <summary>
@@ -80,7 +80,7 @@ namespace Rock.Logging
         /// <value>
         /// The maximum size of the file.
         /// </value>
-        public int MaxFileSize { get; set; }
+        public int MaxFileSize { get; set; } = 5;
 
         /// <summary>
         /// Gets or sets the number of log files.
@@ -88,7 +88,7 @@ namespace Rock.Logging
         /// <value>
         /// The number of log files.
         /// </value>
-        public int NumberOfLogFiles { get; set; }
+        public int NumberOfLogFiles { get; set; } = 5;
 
         /// <summary>
         /// Gets or sets the domains to log.
@@ -97,7 +97,7 @@ namespace Rock.Logging
         /// The domains to log.
         /// </value>
         [Obsolete( "Use StandardCategories instead." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public List<string> DomainsToLog { get; set; }
     }
 }

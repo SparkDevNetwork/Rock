@@ -22,19 +22,12 @@
 //
 
 import { Guid } from "@Obsidian/Types";
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 /**
  * The options that can be passed to the GetAccounts API action of
  * the ampusAccountAmountPicker control.
  */
 export type CampusAccountAmountPickerGetAccountsResultItemBag = {
-    /**
-     * List of the ACTUAL accounts to use (if using account-campus mapping logic) for each of the campuses.
-     * The Campus GUID is the key and a ListItemBag of the account details are the value.
-     */
-    campusAccounts?: Record<Guid, ListItemBag> | null;
-
     /** Name of the account */
     name?: string | null;
 

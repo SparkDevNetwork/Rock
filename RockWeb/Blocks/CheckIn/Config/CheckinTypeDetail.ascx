@@ -95,6 +95,9 @@
                                         Help="Should people who are inactive be excluded from being able to check-in?" />
                                     <Rock:RockCheckBox ID="cbPreventDuplicateCheckin" runat="server" Label="Prevent Duplicate Check-in"
                                         Help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
+
+                                    <Rock:RockCheckBox ID="cbEnableProximityCheckIn" runat="server" Label="Enable Proximity Check-in"
+                                        Help="Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application." />
                                 </div>
                             </div>
 

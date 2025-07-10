@@ -206,6 +206,7 @@ namespace Rock.CheckIn.v2
             familyMembers
                 .Select( fm => fm.Person )
                 .DistinctBy( p => p.Id )
+                .ToList()
                 .LoadAttributes( Session.RockContext );
 
             // Convert the raw database data into the bags that are understood
@@ -240,6 +241,8 @@ namespace Rock.CheckIn.v2
                             .ToList()
                     };
                 } )
+                .OrderBy( f => f.Name )
+                .ThenBy( f => f.Id )
                 .ToList();
 
             return families;

@@ -1076,7 +1076,7 @@ namespace Rock.Blocks.Crm
                     var homeLocationType = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.GROUP_LOCATION_TYPE_HOME.AsGuid() );
                     if ( homeLocationType != null )
                     {
-                        // Only save the location if it is valid according to the country's requirements.
+                        // Only save the location if it is valid according to the country's requirements, or the address is optional according to the block settings.
                         Location location = new Location()
                         {
                             Street1 = bag.Address.Street1,
@@ -1086,21 +1086,28 @@ namespace Rock.Blocks.Crm
                             PostalCode = bag.Address.PostalCode,
                             Country = bag.Address.Country,
                         };
-                        var isValid = LocationService.ValidateLocationAddressRequirements( location, out string validationMessage );
+
+                        var isOptional = GetFieldBag( AttributeKey.AdultAddress ).IsOptional;
+                        var isValid = isOptional || LocationService.ValidateLocationAddressRequirements( location, out string validationMessage );
 
                         if ( isValid )
                         {
                             // Find a location record for the address that was entered.
+                            // TODO: The default country should be removed once Obsidian has full country support.
                             location = new LocationService( rockContext ).Get(
-                                // TODO: The default country should be removed once Obsidian has full country support.
                                 bag.Address.Street1,
                                 bag.Address.Street2,
                                 bag.Address.City,
                                 bag.Address.State,
                                 bag.Address.PostalCode,
                                 bag.Address.Country ?? GlobalAttributesCache.Get().OrganizationCountry,
-                                primaryFamily,
-                                verifyLocation: true );
+                                new GetLocationArgs
+                                {
+                                    CreateNewLocation = true,
+                                    Group = primaryFamily,
+                                    ValidateLocation = !isOptional,
+                                    VerifyLocation = true,
+                                } );
                         }
                         else
                         {

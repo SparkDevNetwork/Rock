@@ -158,6 +158,13 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
+        protected override List<StreakType> GetListItems( IQueryable<StreakType> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( s => s.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<StreakType> GetGridBuilder()
         {
             return new GridBuilder<StreakType>()

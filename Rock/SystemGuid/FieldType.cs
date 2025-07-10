@@ -417,6 +417,11 @@ namespace Rock.SystemGuid
         public const string FINANCIAL_STATEMENT_TEMPLATE = "9E0CD807-D69F-4888-A9BE-BCD11DD083FE";
 
         /// <summary>
+        /// Financial Transaction field type
+        /// </summary>
+        public const string FINANCIAL_TRANSACTION = "04C66B8E-2DBD-4799-875E-FFFD818EDD91";
+
+        /// <summary>
         /// Gender field type
         /// </summary>
         public const string GENDER = "2E28779B-4C76-4142-AE8D-49EA31DDB503";

@@ -37,6 +37,20 @@ namespace Rock.Model
             /// </summary>
             protected override void PreSave()
             {
+                if ( PreSaveState == EntityContextState.Added )
+                {
+                    // If we have a group identifier but no root group type identifier
+                    // then we need to find it.
+                    if ( Entity.GroupId.HasValue && !Entity.RootGroupTypeId.HasValue )
+                    {
+                        var rootGroupType = GroupCache.Get( Entity.GroupId.Value, RockContext )
+                            ?.GetRootGroupTypes( RockContext )
+                            .FirstOrDefault();
+
+                        Entity.RootGroupTypeId = rootGroupType?.Id;
+                    }
+                }
+
                 // If we need to send a real-time notification then do so after
                 // this change has been committed to the database.
                 if ( ShouldSendRealTimeMessage() )

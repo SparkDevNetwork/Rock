@@ -147,7 +147,7 @@ namespace Rock.Jobs
                         var name = dataView.Name;
                         try
                         {
-                            this.UpdateLastStatusMessage( $"Updating {dataView.Name}" );
+                            this.UpdateLastStatusMessage( $"Updating \"{dataView.Name}\"" );
                             dataView.PersistResult( sqlCommandTimeout );
 
                             /*

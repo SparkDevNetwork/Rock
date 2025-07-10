@@ -32,7 +32,7 @@ namespace Rock.Logging
         /// The domain.
         /// </value>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public string Domain { get; set; }
 
         /// <summary>
@@ -78,7 +78,7 @@ namespace Rock.Logging
         /// The level.
         /// </value>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public RockLogLevel Level { get; set; }
 
         /// <summary>

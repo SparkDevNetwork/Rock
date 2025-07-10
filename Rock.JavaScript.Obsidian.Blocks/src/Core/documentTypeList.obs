@@ -43,7 +43,7 @@
                     :filter="textValueFilter"
                     visiblePriority="sm" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

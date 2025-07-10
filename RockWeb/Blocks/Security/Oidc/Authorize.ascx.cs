@@ -31,6 +31,7 @@ using Owin.Security.OpenIdConnect.Extensions;
 using Rock;
 using Rock.CheckIn;
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Oidc.Authorization;
 using Rock.Web.UI;
@@ -170,8 +171,26 @@ namespace RockWeb.Blocks.Security.Oidc
             var authClient = GetAuthClient();
             if ( authClient == null )
             {
-                DenyAuthorization( "Invalid+client" );
+                DenyAuthorization( "Invalid+client", LoginFailureReason.InvalidOidcClientId, authClient );
                 base.OnLoad( e );
+                return;
+            }
+
+            /*
+                12/19/2024 - JPH
+
+                The page this block is most-commonly placed on does not require individuals to be authenticated, so that
+                we can effectively validate the `client_id` (above) BEFORE automatically redirecting the individual to
+                the login page. This means that once we're sure the client ID is valid, we THEN need to ensure the
+                individual is authenticated with Rock, and redirect them to the login page at this time, if not.
+
+                Reason: Allow OIDC `client_id` verification before auto-redirect to login page.
+             */
+            if ( CurrentUser?.IsAuthenticated != true )
+            {
+                var loginUrl = RockPage.GetLoginUrlWithReturnUrl();
+                Response.Redirect( loginUrl );
+                ApplicationInstance.CompleteRequest();
                 return;
             }
 
@@ -187,7 +206,7 @@ namespace RockWeb.Blocks.Security.Oidc
             {
                 if (action == "deny" )
                 {
-                    DenyAuthorization( "The+user+declined+claim+permissions" );
+                    DenyAuthorization( "The+user+declined+claim+permissions", LoginFailureReason.Other, authClient );
                     base.OnLoad( e );
                     return;
                 }
@@ -212,8 +231,24 @@ namespace RockWeb.Blocks.Security.Oidc
         /// <summary>
         /// Denies the authorization.
         /// </summary>
-        private void DenyAuthorization( string errorDescription )
+        private void DenyAuthorization( string errorDescription, LoginFailureReason loginFailureReason, AuthClient authClient )
         {
+            // Only log explicit denials by the individual, as other failures (e.g. invalid client) will be logged by
+            // Rock's authorization provider OIDC implementation.
+            if ( loginFailureReason != LoginFailureReason.InvalidOidcClientId )
+            {
+                new HistoryLogin
+                {
+                    UserName = CurrentUser.UserName,
+                    UserLoginId = CurrentUser.Id,
+                    PersonAliasId = CurrentPersonAliasId,
+                    AuthClientClientId = PageParameter( PageParamKey.ClientId ),
+                    ExternalSource = authClient?.Name,
+                    LoginFailureReason = loginFailureReason,
+                    LoginFailureMessage = errorDescription.Replace( "+", " " )
+                }.SaveAfterDelay();
+            }
+
             // Notify the client that the authorization grant has been denied by the resource owner.
             var owinContext = Context.GetOwinContext();
             var redirectUri = owinContext.Request.Query["redirect_uri"];

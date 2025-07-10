@@ -34,7 +34,7 @@ namespace Rock.Data
     /// </summary>
     /// <typeparam name="T">The Type entity that is being referenced <example>Entity&lt;Person&gt;</example></typeparam>
     [DataContract]
-    public abstract class Entity<T> : IEntity, ILavaDataDictionary, Lava.ILiquidizable
+    public abstract class Entity<T> : IEntity, ILavaDataDictionary
         where T : Entity<T>, new()
     {
         #region Entity Properties

@@ -85,10 +85,14 @@
                         var groupListMode = <%=(int)GroupListGridMode%>;
 
                         if (groupListMode == 0) {
-
                             confirmMessage = 'Are you sure you want to ' + actionName + ' this person from this group?';
                         } else {
-                            confirmMessage = 'Are you sure you want to ' + actionName + ' this group?';
+                            var chatChannelWarning = "";
+                            if ($row.hasClass('js-has-chat-channel')) {
+                                chatChannelWarning = 'This group has a corresponding channel in the external chat system. ';
+                            }
+
+                            confirmMessage = chatChannelWarning + 'Are you sure you want to ' + actionName + ' this group?';
                         }
 
                         e.preventDefault();

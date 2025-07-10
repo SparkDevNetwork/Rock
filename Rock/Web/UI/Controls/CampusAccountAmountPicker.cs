@@ -137,12 +137,10 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
-        /// If enabled, the <seealso cref="SelectedAccountIds"/> will be determined as follows:
-        /// <list type="number">
-        ///   <item>If the selected account is not associated with a campus, the Selected Account will be the first matching active child account that is associated with the selected campus.</item>
-        ///   <item>If the selected account is not associated with a campus, but there are no active child accounts for the selected campus, the parent account (the one the user sees) will be returned.</item>
-        ///   <item>If the selected account is associated with a campus, that account will be returned regardless of campus selection (and it won't use the child account logic)</item>
-        /// </list>
+        /// If enabled, the <seealso cref="SelectedAccountIds"/> will be determined
+        /// by using campus mapping logic. See documentation on
+        /// <see cref="FinancialAccount.UsesCampusChildAccounts"/> for a description
+        /// of how that works.
         /// Default is true.
         /// </summary>
         public bool UseAccountCampusMappingLogic
@@ -441,7 +439,7 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         private FinancialAccountCache GetDisplayedAccountFromSelectedAccount( FinancialAccountCache selectedAccount )
         {
-            if ( !UseAccountCampusMappingLogic )
+            if ( !UseAccountCampusMappingLogic && selectedAccount?.ParentAccount?.UsesCampusChildAccounts != true )
             {
                 return selectedAccount;
             }
@@ -478,31 +476,14 @@ namespace Rock.Web.UI.Controls
         /// <returns></returns>
         private int GetBestMatchingAccountIdForCampusFromDisplayedAccount( int campusId, FinancialAccountCache displayedAccount )
         {
-            if ( !UseAccountCampusMappingLogic )
+            if ( !UseAccountCampusMappingLogic && displayedAccount?.UsesCampusChildAccounts != true )
             {
                 return displayedAccount.Id;
             }
 
-            if ( displayedAccount.CampusId.HasValue && displayedAccount.CampusId == campusId )
-            {
-                // displayed account is directly associated with selected campusId, so return it
-                return displayedAccount.Id;
-            }
-            else
-            {
-                // displayed account doesn't have a campus (or belongs to another campus). Find first active matching child account
-                var firstMatchingChildAccount = displayedAccount.ChildAccounts.Where( a => a.IsActive ).FirstOrDefault( a => a.CampusId.HasValue && a.CampusId == campusId );
-                if ( firstMatchingChildAccount != null )
-                {
-                    // one of the child accounts is associated with the campus so, return the child account
-                    return firstMatchingChildAccount.Id;
-                }
-                else
-                {
-                    // none of the child accounts is associated with the campus so, return the displayed account
-                    return displayedAccount.Id;
-                }
-            }
+            var campus = CampusCache.Get( campusId );
+
+            return displayedAccount.GetMappedAccountForCampus( campus ).Id;
         }
 
         /// <summary>

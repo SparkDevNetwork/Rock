@@ -32,6 +32,11 @@ namespace Rock.ViewModels.Rest.Controls
         public string FirstName { get; set; }
 
         /// <summary>
+        /// Person's nick name
+        /// </summary>
+        public string NickName { get; set; }
+
+        /// <summary>
         /// Person's last name
         /// </summary>
         public string LastName { get; set; }

@@ -74,12 +74,17 @@ namespace Rock.Services.NuGet
         [RockObsolete( "1.13.3" )]
         public void AddReference( string referencePath, Stream stream )
         {
-            // NOTE ********************************************************************
-            // There is a bug with current version of NuGet.Core resulting in the stream 
-            // parameter being null when this method is called.  Because of this The 
-            // ProjectManager_PackageReferenceAdded event hander has been added to the 
-            // WeProjectManager.cs class to handle assembly references
-            // *************************************************************************
+            /*
+                 3/27/2014 - DT
+
+                 There is a bug in the current version of NuGet.Core that results in the stream
+                 parameter being null when this method is called. To work around this issue,
+                 the ProjectManager_PackageReferenceAdded event handler has been added to the
+                 WeProjectManager.cs class to manage assembly references.
+
+                 Reason: Prevents null stream exceptions and ensures proper handling of
+                 assembly references during package operations.
+            */
             //string fileName = Path.GetFileName( referencePath );
             //string fullPath = this.GetFullPath( GetReferencePath( fileName ) );
             //this.AddFile( fullPath, stream );

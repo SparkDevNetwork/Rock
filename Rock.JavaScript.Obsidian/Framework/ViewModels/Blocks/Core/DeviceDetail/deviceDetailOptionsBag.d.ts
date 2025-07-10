@@ -41,4 +41,7 @@ export type DeviceDetailOptionsBag = {
 
     /** Gets or sets the print to options. */
     printToOptions?: ListItemBag[] | null;
+
+    /** The list of cloud print proxy devices that can be selected. */
+    proxyItems?: ListItemBag[] | null;
 };

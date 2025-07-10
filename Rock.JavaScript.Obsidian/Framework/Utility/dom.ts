@@ -205,7 +205,19 @@ export function isHTMLElement(el: unknown): el is HTMLElement {
     // This handles context mismatch when checking iframe elements.
     const elWindow = el?.["ownerDocument"]?.["defaultView"] as (Window & typeof globalThis);
 
-    return el instanceof HTMLElement || (!!elWindow && (el instanceof elWindow.HTMLElement));
+    // Check if the element is an instance of HTMLElement in the current window context.
+    return el instanceof HTMLElement
+
+        // Check if the element is an instance of HTMLElement in the window context of the element (applies to iframe elements).
+        || (!!elWindow && (el instanceof elWindow.HTMLElement))
+
+        // Check if the element has HTMLElement properties (applies to disconnected elements without an ancestor window).
+        || (
+            typeof el === "object"
+            && el !== null
+            && typeof (el as HTMLElement).tagName === "string"
+            && typeof (el as HTMLElement).classList === "object"
+        );
 }
 
 /**

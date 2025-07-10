@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using Rock.Enums.Communication.Chat;
 using Rock.Model;
 
 namespace Rock.Communication.Chat.DTO
@@ -49,6 +50,14 @@ namespace Rock.Communication.Chat.DTO
         /// </value>
         public string Name { get; set; }
 
+        /// <summary>
+        /// Gets or sets the URL of the avatar image to use for this channel in the external chat system.
+        /// </summary>
+        public string AvatarImageUrl { get; set; }
+
+        /// <inheritdoc cref="Group.CampusId"/>
+        public int? CampusId { get; set; }
+
         /// <inheritdoc cref="Group.GetIsLeavingChatChannelAllowed"/>
         public bool IsLeavingAllowed { get; set; }
 
@@ -57,6 +66,11 @@ namespace Rock.Communication.Chat.DTO
 
         /// <inheritdoc cref="Group.GetIsChatChannelAlwaysShown"/>
         public bool IsAlwaysShown { get; set; }
+
+        /// <summary>
+        /// Gets or sets the <see cref="ChatNotificationMode"/> that determines the notification behavior for this channel.
+        /// </summary>
+        public ChatNotificationMode ChatNotificationMode { get; set; }
 
         /// <summary>
         /// Gets or sets whether the channel is active.

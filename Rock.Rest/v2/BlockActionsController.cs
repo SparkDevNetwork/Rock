@@ -284,6 +284,12 @@ namespace Rock.Rest.v2
                                     rockBlock.RequestContext.SetPageParameters( actionContext.PageParameters );
                                 }
 
+                                // Restore the interaction session if we have one.
+                                if ( actionContext?.SessionGuid != null )
+                                {
+                                    requestContext.SessionGuid = actionContext.SessionGuid.Value;
+                                }
+
                                 if ( ( actionContext?.InteractionGuid ).HasValue )
                                 {
                                     requestContext.RelatedInteractionGuid = actionContext.InteractionGuid.Value;

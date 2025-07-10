@@ -60,5 +60,8 @@ namespace Rock.Communication.Chat.DTO
         /// One entry for each chat-related <see cref="DataView"/> for which this person qualifies.
         /// </value>
         public List<ChatBadge> Badges { get; set; }
+
+        /// <inheritdoc cref="Person.PrimaryCampusId"/>
+        public int? CampusId { get; set; }
     }
 }

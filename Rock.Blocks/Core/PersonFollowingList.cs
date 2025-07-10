@@ -38,7 +38,7 @@ namespace Rock.Blocks.Core
     [Category( "Follow" )]
     [Description( "Block for displaying people that current person follows." )]
     [IconCssClass( "fa fa-list" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "030b944d-66b5-4edb-aa38-10081e2acfb6" )]
     [Rock.SystemGuid.BlockTypeGuid( "18fa879f-1466-413b-8623-834d728f677b" )]
@@ -128,12 +128,14 @@ namespace Rock.Blocks.Core
             var marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
 
             return person.Members.Where( m =>
+                    person.MaritalStatusValue != null && 
                     person.MaritalStatusValue.Guid.Equals( marriedGuid ) &&
                     m.GroupRole.Guid.Equals( adultGuid ) )
                 .SelectMany( m => m.Group.Members )
                 .Where( m =>
                     m.PersonId != person.Id &&
                     m.GroupRole.Guid.Equals( adultGuid ) &&
+                    m.Person.MaritalStatusValue != null &&
                     m.Person.MaritalStatusValue.Guid.Equals( marriedGuid ) )
                 .Select( s => s.Person )
                 .FirstOrDefault();

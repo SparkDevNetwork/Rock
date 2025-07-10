@@ -1032,7 +1032,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
 
         /// <summary>
         /// Verifies that the PIN code is valid and can be used. This is used
-        /// by the UI to perform the initial login step to the admins creen.
+        /// by the UI to perform the initial login step to the admins screen.
         /// </summary>
         /// <param name="pinCode">The PIN code to validate.</param>
         /// <returns>A 200-OK status if the PIN code was valid.</returns>
@@ -1041,7 +1041,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
         {
             var director = new CheckInDirector( RockContext );
 
-            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage ) )
+            if ( !director.TryAuthenticatePin( pinCode, out var errorMessage, true ) )
             {
                 return ActionBadRequest( errorMessage );
             }
@@ -1138,11 +1138,6 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var printer = kiosk.PrinterDeviceId.HasValue
                 ? DeviceCache.Get( kiosk.PrinterDeviceId.Value, RockContext )
                 : null;
-
-            if ( printer == null )
-            {
-                return ActionBadRequest( "This kiosk does not have a printer defined." );
-            }
 
             var attendanceIdNumber = IdHasher.Instance.GetId( attendanceId );
 
@@ -1399,7 +1394,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 }
 
                 group.LoadAttributes( RockContext );
-                group.Members.Select( gm => gm.Person ).LoadAttributes( RockContext );
+                group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( RockContext );
             }
             else
             {
@@ -1421,7 +1416,11 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Kiosk not found." );
             }
 
-            if ( !kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean() )
+            if ( group.Id == 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+            else if ( group.Id != 0 && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
             {
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }
@@ -1500,6 +1499,7 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
             var template = GroupTypeCache.GetByIdKey( options.TemplateId, RockContext )
                 ?.GetCheckInConfiguration( RockContext );
             var kiosk = DeviceCache.GetByIdKey( options.KioskId, RockContext );
+            var familyId = options.Family?.Bag?.Id;
 
             if ( template == null )
             {
@@ -1511,7 +1511,11 @@ WHERE [RT].[Guid] = '" + SystemGuid.DefinedValue.PERSON_RECORD_TYPE_RESTUSER + "
                 return ActionBadRequest( "Kiosk not found." );
             }
 
-            if ( !kiosk.GetAttributeValue( "core_device_RegistrationMode" ).AsBoolean() )
+            if ( familyId.IsNullOrWhiteSpace() && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_ADDING_FAMILIES ).AsBoolean() )
+            {
+                return ActionBadRequest( "This kiosk does not support family registration." );
+            }
+            else if ( familyId.IsNotNullOrWhiteSpace() && !kiosk.GetAttributeValue( SystemKey.DeviceAttributeKey.DEVICE_KIOSK_ALLOW_EDITING_FAMILIES ).AsBoolean() )
             {
                 return ActionBadRequest( "This kiosk does not support family registration." );
             }

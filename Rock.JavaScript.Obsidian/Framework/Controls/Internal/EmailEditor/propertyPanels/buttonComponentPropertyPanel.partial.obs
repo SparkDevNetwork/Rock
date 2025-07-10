@@ -1,10 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :componentMigrationHelper="buttonComponentHelper"
                                 title="Button"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')">
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
         <template v-if="componentHelper?.linkButton">
             <AccordionGroup>
                 <Accordion title="Button Text">
@@ -108,6 +110,7 @@
         (e: "clone"): void;
         (e: "complete"): void;
         (e: "delete"): void;
+        (e: "migrate", value: Element): void;
     }>();
 
     // #region Values

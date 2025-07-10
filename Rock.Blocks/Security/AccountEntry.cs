@@ -576,7 +576,7 @@ namespace Rock.Blocks.Security
         /// <param name="userLogin">The user login to authenticate.</param>
         private void AuthenticateUser( UserLogin userLogin )
         {
-            UserLoginService.UpdateLastLogin( userLogin.UserName );
+            UserLoginService.UpdateLastLogin( new UpdateLastLoginArgs { UserName = userLogin.UserName } );
             var securitySettings = new SecuritySettingsService().SecuritySettings;
 
             // 2FA: An individual is authenticated after registering for a new person

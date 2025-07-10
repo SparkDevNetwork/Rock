@@ -95,6 +95,10 @@
 
                 <DeleteColumn name="removeRecipient" itemClass="grid-columncommand remove-button" :disableConfirmation="true" @click="onRemoveRecipientClicked" />
             </Grid>
+
+            <RockButton btnSize="xs"
+                        class="btn-primary btn-remove"
+                        @click="onRemoveAllClicked">Remove All</RockButton>
         </div>
     </Modal>
 </template>
@@ -122,16 +126,25 @@
 .recipient-manager-grid :deep(.grid-title-heading) {
     display: none;
 }
+
+.btn-remove,
+.btn-remove:hover,
+.btn-remove:active {
+    color: var(--color-primary);
+    border: 1px solid var(--color-primary);
+    background-color: white;
+}
 </style>
 
 <script setup lang="ts">
-    import { PropType, computed, ref, Ref, watch, nextTick } from "vue";
+    import { PropType, computed, ref, Ref, watch } from "vue";
     import { MediumType } from "./types.partial";
     import { useBreakpointHelper } from "./utils.partial";
     import Grid, { Column, DeleteColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -348,6 +361,10 @@
 
     function onCloseModal(): void {
         clear();
+    }
+
+    function onRemoveAllClicked(): void {
+        pendingItems.value = [];
     }
 
     //#endregion

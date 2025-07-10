@@ -44,16 +44,16 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
-        <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
+        <DeleteColumn v-if="config.isDeleteEnabled" :rowDisabled="onDeleteRowDisabled" @click="onDeleteClick" />
     </Grid>
 </template>
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, SelectColumn, BooleanColumn } from "@Obsidian/Controls/grid";
+    import Grid, { AttributeColumns, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, BooleanColumn } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { TvPageListOptionsBag } from "@Obsidian/ViewModels/Blocks/Tv/TvPageList/tvPageListOptionsBag";
@@ -153,6 +153,15 @@
         return result.isSuccess;
     }
 
+    /**
+    * Called when the delete button for a row wants to know if it should be
+    * disabled.
+    *
+    * @param row The row associated with the delete button.
+    */
+    function onDeleteRowDisabled(row: Record<string, unknown>): boolean {
+        return row.idKey === config.options?.defaultPageIdKey;
+    }
     // #endregion
 
     gridDataSource.value = loadGridData();

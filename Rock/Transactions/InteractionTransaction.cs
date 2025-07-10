@@ -25,6 +25,7 @@ using Rock;
 using Rock.Core;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Net.Geolocation;
 using Rock.Web.Cache;
 using Rock.Web.UI;
@@ -596,7 +597,9 @@ namespace Rock.Transactions
                 this.IPAddress = string.Empty;
             }
 
-            this.BrowserSessionId = this.BrowserSessionId ?? rockPage?.Session["RockSessionId"]?.ToString().AsGuidOrNull();
+            this.BrowserSessionId = this.BrowserSessionId
+                ?? rockPage?.Session["RockSessionId"]?.ToString().AsGuidOrNull()
+                ?? RockRequestContextAccessor.Current?.SessionGuid;
 
             this.PersonAliasId = this.PersonAliasId ?? rockPage?.CurrentPersonAliasId ?? rockPage?.CurrentVisitor?.Id;
 

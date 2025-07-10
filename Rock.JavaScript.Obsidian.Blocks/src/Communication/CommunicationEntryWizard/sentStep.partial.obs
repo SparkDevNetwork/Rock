@@ -12,7 +12,8 @@
                         label="Email Performance Analytics To Me"
                         :text="isEmailAnalyticsEnabled ? 'No' : 'Yes'" />
 
-                <template v-if="isEmailAnalyticsEnabled">
+                <RockForm v-if="isEmailAnalyticsEnabled"
+                          @submit="onSaveEmailAnayltics">
                     <NumberBox v-model="daysFromNow"
                                help="This date/time will be the trigger for the report to send. Required if enabled."
                                label="Days From Now"
@@ -23,8 +24,8 @@
 
                     <RockButton btnType="link"
                                 class="text-primary"
-                                @click="onSaveEmailAnayltics">Save</RockButton>
-                </template>
+                                type="submit">Save</RockButton>
+                </RockForm>
             </template>
             <template v-else>
                 <p>You will receive a reminder email in {{ daysFromNow }} {{ pluralize("day", daysFromNow) }} to assess the impact of your message in terms of opens and click-throughs.</p>
@@ -54,8 +55,9 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { pluralize } from "@Obsidian/Utility/stringUtils";
 

@@ -196,7 +196,7 @@ namespace Rock.CheckIn.v2
                 group.LoadAttributes( _rockContext );
             }
 
-            group.Members.Select( gm => gm.Person ).LoadAttributes( _rockContext );
+            group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( _rockContext );
 
             var bag = new RegistrationFamilyBag
             {
@@ -225,7 +225,7 @@ namespace Rock.CheckIn.v2
         /// <returns>An list of <see cref="RegistrationPersonBag"/> objects.</returns>
         public List<ValidPropertiesBox<RegistrationPersonBag>> GetFamilyMemberBags( Group group, List<GroupMember> canCheckInMembers )
         {
-            group.Members.Select( gm => gm.Person ).LoadAttributes( _rockContext );
+            group.Members.Select( gm => gm.Person ).ToList().LoadAttributes( _rockContext );
 
             var personBags = group.Members
                 .Select( gm => GetPersonBag( gm.Person, null ) )
@@ -254,6 +254,7 @@ namespace Rock.CheckIn.v2
         {
             members.Select( gm => gm.Person )
                 .DistinctBy( p => p.Id )
+                .ToList()
                 .LoadAttributes( _rockContext );
 
             foreach ( var member in members )
@@ -802,8 +803,12 @@ namespace Rock.CheckIn.v2
             registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.Gender ),
                 () => gender = registrationPerson.Bag.Gender );
 
+            // Don't convert to organization time zone, just take the
+            // raw date value from the client without any conversion. This
+            // effectively strips off the timezone and leaves us with the
+            // original date value as entered in the UI.
             registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.BirthDate ),
-                () => birthdate = registrationPerson.Bag.BirthDate?.ToOrganizationDateTime() );
+                () => birthdate = registrationPerson.Bag.BirthDate?.DateTime.Date );
 
             return new PersonService.PersonMatchQuery( registrationPerson.Bag.NickName,
                 registrationPerson.Bag.LastName,
@@ -891,7 +896,11 @@ namespace Rock.CheckIn.v2
             {
                 if ( registrationPerson.Bag.BirthDate.HasValue || saveEmptyValues )
                 {
-                    person.SetBirthDate( registrationPerson.Bag.BirthDate?.ToOrganizationDateTime() );
+                    // Don't convert to organization time zone, just take the
+                    // raw date value from the client without any conversion. This
+                    // effectively strips off the timezone and leaves us with the
+                    // original date value as entered in the UI.
+                    person.SetBirthDate( registrationPerson.Bag.BirthDate?.DateTime.Date );
                 }
             } );
 
@@ -919,8 +928,15 @@ namespace Rock.CheckIn.v2
                 registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.RecordStatus ),
                     () => person.RecordStatusValueId = GetDefinedValueId( registrationPerson.Bag.RecordStatus ) );
 
-                registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.ConnectionStatus ),
-                    () => person.ConnectionStatusValueId = GetDefinedValueId( registrationPerson.Bag.ConnectionStatus ) );
+                if ( registrationPerson.IsValidProperty( nameof( registrationPerson.Bag.ConnectionStatus ) ) )
+                {
+                    person.ConnectionStatusValueId = GetDefinedValueId( registrationPerson.Bag.ConnectionStatus );
+                }
+                else if ( person.Id == 0 )
+                {
+                    // Use configured default from the check-in template.
+                    person.ConnectionStatusValueId = DefinedValueCache.Get( _template.DefaultPersonConnectionStatusGuid, _rockContext )?.Id;
+                }
 
                 registrationPerson.IfValidProperty( nameof( registrationPerson.Bag.Ethnicity ),
                     () => person.EthnicityValueId = GetDefinedValueId( registrationPerson.Bag.Ethnicity ) );

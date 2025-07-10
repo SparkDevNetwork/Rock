@@ -16,7 +16,7 @@ using Rock.Reporting;
 using Rock.Security;
 using Rock.Utility;
 using Rock.ViewModels.Blocks.Communication.SmsConversations;
-using Rock.ViewModels.Blocks.Core.Notes;
+using Rock.ViewModels.Controls;
 using Rock.ViewModels.Rest.Controls;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
@@ -553,6 +553,7 @@ namespace Rock.Blocks.Communication
         {
             // Update person properties from PersonBasicEditorBag
             person.FirstName = personBag.FirstName;
+            person.NickName = personBag.NickName ?? personBag.FirstName;
             person.LastName = personBag.LastName;
             person.RecordTypeValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_TYPE_PERSON.AsGuid() ).Id;
             person.RecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE.AsGuid() ).Id;

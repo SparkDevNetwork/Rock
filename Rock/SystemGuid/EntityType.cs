@@ -2002,7 +2002,7 @@ namespace Rock.SystemGuid
         /// <summary>
         /// The EntityType Guid for <see cref="Rock.Web.HttpModules.RockGateway"/> 
         /// </summary>
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Use HTTP_MODULE_ROCK_GATEWAY instead." )]
         public const string HTTP_MODULE_OBSERVABILITY = "FE7A8295-9383-4FD8-9FB2-FF77A8042462";
 

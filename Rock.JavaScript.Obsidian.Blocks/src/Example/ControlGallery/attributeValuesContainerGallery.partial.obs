@@ -1,12 +1,10 @@
 <template>
-    <GalleryAndResult
-                      :value="{ attributes, modelValue: attributeValues }"
+    <GalleryAndResult :value="{ attributes, modelValue: attributeValues }"
                       hasMultipleValues
                       :importCode="importCode"
                       :exampleCode="exampleCode">
 
-        <AttributeValuesContainer
-                                  v-model="attributeValues"
+        <AttributeValuesContainer v-model="attributeValues"
                                   :attributes="attributes"
                                   :isEditMode="isEditMode"
                                   :showAbbreviatedName="showAbbreviatedName"

@@ -26,6 +26,8 @@ using Rock.Cms;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
+using Rock.Security;
+using Rock.Security.SecurityGrantRules;
 using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PageShortLinkDetail;
@@ -677,6 +679,23 @@ GROUP BY [Bucket], [Partition]";
                 .OrderBy( r => r.Bucket )
                 .ThenBy( r => r.Partition )
                 .ToList();
+        }
+
+        /// <inheritdoc/>
+        protected override SecurityGrant GetSecurityGrant( PageShortLink entity )
+        {
+            var securityGrant = base.GetSecurityGrant( entity );
+
+            var utmCampaignType = DefinedTypeCache.Get( SystemGuid.DefinedType.UTM_CAMPAIGN.AsGuid(), RockContext );
+            var utmMediumType = DefinedTypeCache.Get( SystemGuid.DefinedType.UTM_MEDIUM.AsGuid(), RockContext );
+            var utmSourceType = DefinedTypeCache.Get( SystemGuid.DefinedType.UTM_SOURCE.AsGuid(), RockContext );
+
+            securityGrant
+                .AddRule( new AddDefinedValueToTypeGrantRule( utmCampaignType.Id ) )
+                .AddRule( new AddDefinedValueToTypeGrantRule( utmMediumType.Id ) )
+                .AddRule( new AddDefinedValueToTypeGrantRule( utmSourceType.Id ) );
+
+            return securityGrant;
         }
 
         #endregion

@@ -34,4 +34,10 @@ export type EmailEditorCreateAttendanceOccurrenceOptionsBag = {
 
     /** Gets or sets the schedule identifier. */
     scheduleId?: number | null;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };

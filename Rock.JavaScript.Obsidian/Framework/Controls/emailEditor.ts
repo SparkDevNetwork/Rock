@@ -16,39 +16,13 @@
 //
 
 import EmailEditor from "./Internal/EmailEditor/emailEditor.partial.obs";
-import {
-    createBinaryFileImageFromElement,
-    createEmailSection,
-    createStarterSections,
-    deleteEmailSection,
-    getAllEmailSections,
-    getEmailSection,
-    registerRsvpRecipients,
-    updateEmailSection,
-    getAttendanceOccurrence,
-    getFutureAttendanceOccurrences,
-    createAttendanceOccurrence
-} from "./Internal/EmailEditor/api";
+import { EmailEditorApi } from "./Internal/EmailEditor/api";
 import { GetHtmlRequest, GetHtmlResponse } from "./Internal/EmailEditor/types";
 
 export default EmailEditor;
 
 export {
-    // Email Sections
-    createBinaryFileImageFromElement,
-    createEmailSection,
-    createStarterSections,
-    deleteEmailSection,
-    getAllEmailSections,
-    getEmailSection,
-    updateEmailSection,
-
-    // RSVP Block
-    registerRsvpRecipients,
-    getAttendanceOccurrence,
-    getFutureAttendanceOccurrences,
-    createAttendanceOccurrence,
-
+    EmailEditorApi,
     GetHtmlRequest,
     GetHtmlResponse
 };

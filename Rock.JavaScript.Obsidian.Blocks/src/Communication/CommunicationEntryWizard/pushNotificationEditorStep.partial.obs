@@ -2,9 +2,6 @@
 <template>
     <div class="push-notification-editor-step">
         <Panel :hasFullscreen="true"
-               :headerSecondaryActions="[{
-                   title: 'TBD', type: 'default'
-               }]"
                panelBodyCssClass="panel-body-wizard"
                type="block">
             <template #title>

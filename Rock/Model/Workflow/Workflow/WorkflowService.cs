@@ -14,17 +14,18 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.Data;
-using Rock.Web.Cache;
 using System.Collections.Generic;
 using System.Linq;
+
+using Rock.Data;
+using Rock.Web.Cache;
 
 namespace Rock.Model
 {
     /// <summary>
     /// Service/Data access class for <see cref="Rock.Model.Workflow"/> entity objects
     /// </summary>
-    public partial class WorkflowService 
+    public partial class WorkflowService
     {
         /// <summary>
         /// Determines whether this instance can delete the specified item.
@@ -90,7 +91,7 @@ namespace Rock.Model
             var workflowType = WorkflowTypeCache.Get( workflow.WorkflowTypeId );
             if ( workflowType != null && ( workflowType.IsActive ?? true ) )
             {
-                var rockContext = (RockContext)this.Context;
+                var rockContext = ( RockContext ) this.Context;
 
                 if ( workflow.IsPersisted )
                 {

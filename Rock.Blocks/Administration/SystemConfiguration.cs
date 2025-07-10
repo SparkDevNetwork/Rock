@@ -26,6 +26,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Rock.Attribute;
 using Rock.Configuration;
+using Rock.Enums.Observability;
 using Rock.Model;
 using Rock.Observability;
 using Rock.SystemKey;
@@ -168,12 +169,15 @@ namespace Rock.Blocks.Administration
         /// <returns></returns>
         private ObservabilityConfigurationBag InitializeObservabilityBag()
         {
+            var enabledFeatures = ObservabilityHelper.GetEnabledFeatures();
+
             return new ObservabilityConfigurationBag()
             {
-                EnableObservability = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENABLED ).AsBoolean(),
+                EnabledFeatures = enabledFeatures,
                 Endpoint = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT ),
                 EndpointHeaders = GetKeyValueListItems( Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS ) ),
                 EndpointProtocol = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL ),
+                TraceLevel = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_TRACE_LEVEL ).ConvertToEnum<TraceLevel>( TraceLevel.Minimal ),
                 IncludeQueryStatements = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_INCLUDE_QUERY_STATEMENTS ).AsBoolean(),
                 MaximumAttributeLength = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH ).AsIntegerOrNull(),
                 SpanCountLimit = Rock.Web.SystemSettings.GetValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT ).AsIntegerOrNull(),
@@ -610,15 +614,16 @@ namespace Rock.Blocks.Administration
         [BlockAction( "SaveObservabilityConfiguration" )]
         public BlockActionResult SaveObservabilityConfiguration( ObservabilityConfigurationBag bag )
         {
-            if ( bag.EnableObservability && bag.Endpoint.IsNullOrWhiteSpace() )
+            if ( bag.EnabledFeatures != 0 && bag.Endpoint.IsNullOrWhiteSpace() )
             {
                 return ActionOk( GetWarningResponseBag( "To enable observability, please provide a valid service endpoint. (e.g. https://otlp.nr-data.net:4317)" ) );
             }
 
-            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENABLED, bag.EnableObservability.ToString() );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENABLED, bag.EnabledFeatures.ConvertToInt().ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_PROTOCOL, bag.EndpointProtocol );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT_HEADERS, JoinKeyValueListItems( bag.EndpointHeaders ) );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_ENDPOINT, bag.Endpoint );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_TRACE_LEVEL, bag.TraceLevel.ConvertToInt().ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_SPAN_COUNT_LIMIT, bag.SpanCountLimit?.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_MAX_ATTRIBUTE_LENGTH, bag.MaximumAttributeLength.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.OBSERVABILITY_INCLUDE_QUERY_STATEMENTS, bag.IncludeQueryStatements.ToString() );

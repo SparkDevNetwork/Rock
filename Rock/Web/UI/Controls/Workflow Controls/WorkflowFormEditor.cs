@@ -48,6 +48,7 @@ namespace Rock.Web.UI.Controls
         {
             public const string ValidationGroup = "ValidationGroup";
             public const string EditingAttributeRowGuid = "EditingAttributeRowGuid";
+            public const string ModalManagerId = "ModalManagerId";
         }
 
         #region PersonEntry related
@@ -126,6 +127,18 @@ namespace Rock.Web.UI.Controls
             {
                 ViewState[ViewStateKey.EditingAttributeRowGuid] = value;
             }
+        }
+
+        /// <summary>
+        /// Specifies the modal manager (update panel) that the form editor
+        /// should use when closing modals. This fixes an issue where a modal
+        /// is closed by C# code but the "modal-open" CSS class is not removed.
+        /// This causes drop down controls to be clipped.
+        /// </summary>
+        public string ModalManagerId
+        {
+            get => ViewState[ViewStateKey.ModalManagerId] as string;
+            set => ViewState[ViewStateKey.ModalManagerId] = value;
         }
 
         /// <summary>
@@ -1113,7 +1126,7 @@ namespace Rock.Web.UI.Controls
             }
 
             attributeRow.VisibilityRules = fvre.GetFieldVisibilityRules();
-            _mdFieldVisibilityRules.Hide();
+            _mdFieldVisibilityRules.Hide( ModalManagerId );
         }
 
         /// <summary>

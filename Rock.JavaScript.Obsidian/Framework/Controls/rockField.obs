@@ -69,6 +69,18 @@
         isEscaped: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        /**
+         * If `true` then the field will be marked as required even if the
+         * attribute is not. If `false` then the field will not be required
+         * even if the attribute wants to be. If the default of `undefined` then
+         * the value from the attribute will be used.
+         */
+        requiredOverride: {
+            type: Boolean as PropType<boolean>,
+            default: undefined,
+            required: false
         }
     });
 
@@ -87,7 +99,13 @@
     const showValue = computed(() => props.showEmptyValue || field.value?.getTextValue(props.modelValue ?? "", props.attribute.configurationValues ?? {}) !== "");
 
     /** True if this field is required and must be filled in. */
-    const isRequired = computed(() => props.attribute.isRequired);
+    const isRequired = computed(() => {
+        if (props.requiredOverride !== undefined) {
+            return props.requiredOverride;
+        }
+
+        return props.attribute.isRequired;
+    });
 
     /** attribute Guid. */
     const attributeGuid = computed(() => props.attribute.attributeGuid);

@@ -14,14 +14,16 @@
                                  :videoProviderNames="videoProviderNames"
                                  @clone="$emit('clone')"
                                  @complete="$emit('complete')"
-                                 @delete="$emit('delete')" />
+                                 @delete="$emit('delete')"
+                                 @migrate="$emit('migrate', $event)" />
 
     <ButtonComponentPropertyPanel v-else-if="componentTypeName === 'button'"
                                   :componentElement="componentElement"
                                   :hasScrollableBody="true"
                                   @clone="$emit('clone')"
                                   @complete="$emit('complete')"
-                                  @delete="$emit('delete')" />
+                                  @delete="$emit('delete')"
+                                  @migrate="$emit('migrate', $event)" />
 
     <TextComponentPropertyPanel v-else-if="componentTypeName === 'text'"
                                 :componentElement="componentElement"
@@ -57,7 +59,8 @@
                                  :imageComponentBinaryFileTypeGuid="imageComponentBinaryFileTypeGuid"
                                  @clone="$emit('clone')"
                                  @complete="$emit('complete')"
-                                 @delete="$emit('delete')" />
+                                 @delete="$emit('delete')"
+                                 @migrate="$emit('migrate', $event)"  />
 
     <CodeComponentPropertyPanel v-else-if="componentTypeName === 'code'"
                                 :componentElement="componentElement"
@@ -65,7 +68,8 @@
                                 :mergeFields="mergeFields"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')" />
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)" />
 
     <RsvpComponentPropertyPanel v-else-if="componentTypeName === 'rsvp'"
                                 :componentElement="componentElement"
@@ -73,7 +77,8 @@
                                 :recipientPersonIds="recipientPersonIds"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')" />
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)" />
 
     <SectionComponentPropertyPanel v-else-if="componentTypeName === 'section'"
                                    :componentElement="componentElement"
@@ -90,7 +95,8 @@
                                :hasScrollableBody="true"
                                @clone="$emit('clone')"
                                @complete="$emit('complete')"
-                               @delete="$emit('delete')" />
+                               @delete="$emit('delete')"
+                               @migrate="$emit('migrate', $event)" />
 
     <div v-else>Unknown component type: {{ componentTypeName }}.</div>
 </template>

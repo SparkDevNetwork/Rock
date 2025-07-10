@@ -38,6 +38,12 @@ export type EmailEditorEmailSectionBag = {
     /** Gets or sets the email section name. */
     name?: string | null;
 
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
+
     /** Gets or sets the email section source markup. */
     sourceMarkup?: string | null;
 

@@ -41,6 +41,9 @@ export type CommunicationEntryInitializationBox = {
     /** Gets or sets the communication details being created/edited. */
     communication?: CommunicationEntryCommunicationBag | null;
 
+    /** Determines if the asset manager feature is enabled in the HTML editor control. */
+    enableAssetManager: boolean;
+
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.

@@ -79,7 +79,8 @@
 {% assign currentSeriesImageGuid = currentSeries | Attribute:'SeriesImage','RawValue' %}
 
 {% if Pagination.CurrentPage == 1 %}
-<a href="{{ LinkedPages.DetailPage }}?Item={{ currentSeries.Id }}">
+{% capture pageRouteParameters %}Series={{ currentSeries.Id }}{% endcapture %}
+<a href="{{ LinkedPages.DetailPageRoute | PageRoute:pageRouteParameters }}">
   <header class="current-series" style="background-image: url('/GetImage.ashx?guid={{ currentSeriesImageGuid }}')">
 	  <h1>Current Series</h1>
   </header>
@@ -91,7 +92,8 @@
 	{% assign seriesImageGuid = item | Attribute:'SeriesImage','RawValue' %}
 
 	<div class="col-md-4 col-sm-6 margin-b-md">
-		<a class="series-link" href="{{ LinkedPages.DetailPage }}?Item={{ item.Id }}">
+        {% capture pageRouteParameters %}Series={{ item.Id }}{% endcapture %}
+        <a class="series-link" href="{{ LinkedPages.DetailPageRoute | PageRoute:pageRouteParameters }}">
 		<article class="series">
 			{% if detailImageGuid != '' %}
 				<div class="series-image" style="background-image: url('/GetImage.ashx?guid={{ seriesImageGuid }}');" ></div>

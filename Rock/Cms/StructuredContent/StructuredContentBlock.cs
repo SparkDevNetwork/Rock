@@ -15,6 +15,13 @@
 // </copyright>
 //
 
+// NOTE: We only use JsonProperty to handle re-encoding so it uses the right
+// casing for JavaScript to understand. If we switch away from Newtonsoft
+// we will need to handle that in the new system.
+//
+// The Data property will automatically be encoded in the original casing
+// since it was never fully deserialized.
+
 namespace Rock.Cms.StructuredContent
 {
     /// <summary>
@@ -28,6 +35,7 @@ namespace Rock.Cms.StructuredContent
         /// <value>
         /// The unique identifier of the block.
         /// </value>
+        [Newtonsoft.Json.JsonProperty( "id" )]
         public string Id { get; set; }
 
         /// <summary>
@@ -36,6 +44,7 @@ namespace Rock.Cms.StructuredContent
         /// <value>
         /// The type of block.
         /// </value>
+        [Newtonsoft.Json.JsonProperty( "type" )]
         public string Type { get; set; }
 
         /// <summary>
@@ -44,6 +53,7 @@ namespace Rock.Cms.StructuredContent
         /// <value>
         /// The data.
         /// </value>
+        [Newtonsoft.Json.JsonProperty( "data" )]
         public dynamic Data { get; set; }
     }
 }

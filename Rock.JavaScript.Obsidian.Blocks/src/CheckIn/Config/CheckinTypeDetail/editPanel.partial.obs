@@ -42,28 +42,34 @@
                             <CheckBox v-model="allowCheckoutAtKiosk"
                                       label="Enable Check-out at Kiosk"
                                       help="Allows individuals to check-out using the kiosks." />
+                            <CheckBox v-model="enablePresence"
+                                      label="Enable Presence"
+                                      help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
+                            <CheckBox v-model="enableManager"
+                                      label="Enable Manager Option"
+                                      help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
                         </div>
                         <div class="col-md-6">
                             <CheckBox v-model="allowCheckoutInManager"
                                       label="Enable Check-out in Manager"
                                       help="Allows check-out to be enabled in the Check-in Manager." />
+                            <CheckBox v-model="enableRemoveFamilyKiosk"
+                                      label="Enable Remove From Family at Kiosk"
+                                      help="Only supported in next-gen check-in. Allows can check-in relationships to be removed at the kiosk without requiring a supervisor login. This action removes all known relationships marked as &quot;Can Check-in&quot;." />
+                            <CheckBox v-model="enableOverride"
+                                      label="Enable Override"
+                                      help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
                         </div>
                     </div>
-                    <CheckBox v-model="enablePresence"
-                              label="Enable Presence"
-                              help="When enabled, the attendance record will not be marked as being 'present' until the individual is set to 'Present' by the assistant using the Check-in Manager application." />
-                    <CheckBox v-model="enableManager"
-                              label="Enable Manager Option"
-                              help="Should an option be displayed on the check-in welcome screen that allows an individual to view the management screen (after entering a passcode)?" />
-                    <CheckBox v-model="enableOverride"
-                              label="Enable Override"
-                              help="Should an override button be displayed on the check-in Manager screen that allows a manager to check-in a person and ignore any age and/or grade requirements?" />
                     <DropDownList v-model="achievementTypes"
                                   label="Achievement Types"
                                   help="Select achievement types that will used for checkin celebrations."
                                   :items="achievementTypeOptions"
                                   multiple />
-
+                    <DropDownList v-model="promotionsContentChannelTypes"
+                                  label="Promotions Content Channel"
+                                  help="The content channel to use for displaying promotions on the kiosk welcome screen. Only supported by next-gen check-in."
+                                  :items="promotionsContentChannelTypeOptions" />
                 </div>
                 <div class="col-md-6">
                     <TextBox v-if="isFamilyType"
@@ -87,6 +93,9 @@
                               v-model="preventDuplicateCheckin"
                               label="Prevent Duplicate Check-in"
                               help="Should people be prevented from checking into a specifice service time (schedule) more than once?" />
+                    <CheckBox v-model="enableProximityCheckin"
+                              label="Enable Proximity Check-in"
+                              help="Makes this check-in configuration and all areas and groups available for proximity check-in with a native Rock Mobile application." />
                 </div>
             </div>
 
@@ -425,9 +434,12 @@
     const enablePresence = ref(props.modelValue?.bag?.generalSettings?.enablePresence ?? false);
     const enableManager = ref(props.modelValue?.bag?.generalSettings?.enableManager ?? false);
     const enableOverride = ref(props.modelValue?.bag?.generalSettings?.enableOverride ?? false);
+    const enableRemoveFamilyKiosk = ref(props.modelValue?.bag?.generalSettings?.enableRemoveFamilyKiosk ?? false);
+    const enableProximityCheckin = ref(props.modelValue?.bag?.generalSettings?.enableProximityCheckin ?? false);
     const achievementTypes = ref(props.modelValue?.bag?.generalSettings?.achievementTypes ?? []);
     const autoSelectDaysBack = ref(props.modelValue?.bag?.generalSettings?.autoSelectDaysBack ?? "");
     const autoSelectOptions = ref(props.modelValue?.bag?.generalSettings?.autoSelectOptions ?? "");
+    const promotionsContentChannelTypes = ref(props.modelValue?.bag?.generalSettings?.promotionsContentChannelTypes ?? "");
     const useSameOptions = ref(props.modelValue?.bag?.generalSettings?.useSameOptions ?? false);
     const preventInactivePeople = ref(props.modelValue?.bag?.generalSettings?.preventInactivePeople ?? false);
     const preventDuplicateCheckin = ref(props.modelValue?.bag?.generalSettings?.preventDuplicateCheckin ?? false);
@@ -503,6 +515,7 @@
     // Dropdown Options
     const nameSearch = ref(props.options.nameSearch ?? null);
     const achievementTypeOptions = ref(props.options.achievementTypeOptions ?? []);
+    const promotionsContentChannelTypeOptions = ref(props.options.promotionsContentChannelTypeOptions ?? []);
     const templateDisplayOptions = ref(props.options.templateDisplayOptions ?? []);
     const relationshipTypeOptions = ref(props.options.relationshipTypeOptions ?? []);
     const familyAttributeOptions = ref(props.options.familyAttributeOptions ?? []);
@@ -567,8 +580,8 @@
     // objects returned by propertyRef().
     const propRefs = [description, name, iconCssClass];
 
-    const generalSettingsRefs = [checkInType, allowCheckoutAtKiosk, allowCheckoutInManager, enablePresence, enableManager, enableOverride, achievementTypes,
-        autoSelectDaysBack, autoSelectOptions, useSameOptions, preventInactivePeople, preventDuplicateCheckin];
+    const generalSettingsRefs = [checkInType, allowCheckoutAtKiosk, allowCheckoutInManager, enablePresence, enableManager, enableOverride, enableRemoveFamilyKiosk, enableProximityCheckin, achievementTypes,
+        autoSelectDaysBack, autoSelectOptions, useSameOptions, preventInactivePeople, preventDuplicateCheckin, promotionsContentChannelTypes];
 
     const barcodeSettingsRefs = [codeAlphaLength, codeAlphaNumericLength, codeNumericLength, codeRandom, reuseCode];
 
@@ -700,12 +713,15 @@
         updateRefValue(enablePresence, props.modelValue?.bag?.generalSettings?.enablePresence ?? false);
         updateRefValue(enableManager, props.modelValue?.bag?.generalSettings?.enableManager ?? false);
         updateRefValue(enableOverride, props.modelValue?.bag?.generalSettings?.enableOverride ?? false);
+        updateRefValue(enableRemoveFamilyKiosk, props.modelValue?.bag?.generalSettings?.enableRemoveFamilyKiosk ?? false);
+        updateRefValue(enableProximityCheckin, props.modelValue?.bag?.generalSettings?.enableProximityCheckin ?? false);
         updateRefValue(achievementTypes, props.modelValue?.bag?.generalSettings?.achievementTypes ?? []);
         updateRefValue(autoSelectDaysBack, props.modelValue?.bag?.generalSettings?.autoSelectDaysBack ?? "");
         updateRefValue(autoSelectOptions, props.modelValue?.bag?.generalSettings?.autoSelectOptions ?? "");
         updateRefValue(useSameOptions, props.modelValue?.bag?.generalSettings?.useSameOptions ?? false);
         updateRefValue(preventInactivePeople, props.modelValue?.bag?.generalSettings?.preventInactivePeople ?? false);
         updateRefValue(preventDuplicateCheckin, props.modelValue?.bag?.generalSettings?.preventDuplicateCheckin ?? false);
+        updateRefValue(promotionsContentChannelTypes, props.modelValue?.bag?.generalSettings?.promotionsContentChannelTypes ?? "");
 
         // Barcode Settings
         updateRefValue(codeAlphaLength, props.modelValue?.bag?.barcodeSettings?.codeAlphaLength ?? "");
@@ -827,9 +843,12 @@
                 checkInType: checkInType.value,
                 allowCheckoutAtKiosk: allowCheckoutAtKiosk.value,
                 allowCheckoutInManager: allowCheckoutInManager.value,
+                enableRemoveFamilyKiosk: enableRemoveFamilyKiosk.value,
+                enableProximityCheckin: enableProximityCheckin.value,
                 enablePresence: enablePresence.value,
                 enableManager: enableManager.value,
                 enableOverride: enableOverride.value,
+                promotionsContentChannelTypes: promotionsContentChannelTypes.value,
                 achievementTypes: achievementTypes.value,
                 autoSelectDaysBack: autoSelectDaysBack.value,
                 autoSelectOptions: autoSelectOptions.value,

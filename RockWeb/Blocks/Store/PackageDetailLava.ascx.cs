@@ -34,7 +34,7 @@ using Rock.Security;
 
 namespace RockWeb.Blocks.Store
 {
-    [DisplayName( "Package Detail Lava" )]
+    [DisplayName( "Package Detail Lava (Legacy)" )]
     [Category( "Store" )]
     [Description( "Displays details for a specific package." )]
     [CodeEditorField( "Lava Template", "Lava template to use to display the package details.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~/Assets/Lava/Store/PackageDetail.lava' %}", "", 2 )]
@@ -117,7 +117,7 @@ namespace RockWeb.Blocks.Store
             }
 
             PackageService packageService = new PackageService();
-            var package = packageService.GetPackage( packageId );
+            var package = packageService.GetPackage( packageId, out _ );
 
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this.CurrentPerson );
 

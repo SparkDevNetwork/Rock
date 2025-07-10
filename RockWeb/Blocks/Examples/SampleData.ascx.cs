@@ -137,6 +137,8 @@ namespace RockWeb.Blocks.Examples
 
         private RockLoggerMemoryBuffer _logger;
 
+        private bool _isDebugEnabled = false;
+
         #endregion Fields
 
         #region Base Control Methods
@@ -168,17 +170,17 @@ namespace RockWeb.Blocks.Examples
             Server.ScriptTimeout = 1800;
             ScriptManager.GetCurrent( Page ).AsyncPostBackTimeout = 1800;
 
+            _isDebugEnabled = GetAttributeValue( AttributeKey.EnableStopwatch ).AsBoolean() || System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment;
+
+            if ( _isDebugEnabled )
+            {
+                nbMessage.Text += $"<br>Loading data from: {GetAttributeValue( AttributeKey.XMLDocumentURL )}";
+            }
+
             if ( !IsPostBack )
             {
                 tbPassword.Focus();
                 VerifyXMLDocumentExists();
-            }
-            else
-            {
-                if ( GetAttributeValue( AttributeKey.EnableStopwatch ).AsBoolean() )
-                {
-                    messageContainer.Attributes["style"] = "visibility: visible";
-                }
             }
 
             base.OnLoad( e );
@@ -191,7 +193,7 @@ namespace RockWeb.Blocks.Examples
         private void EventLoggedHandler( object sender, RockLoggerMemoryBuffer.EventLoggedArgs e )
         {
             var message = e.Event.Message;
-            if ( GetAttributeValue( AttributeKey.EnableStopwatch ).AsBoolean() )
+            if ( _isDebugEnabled )
             {
                 _sb.Append( message );
                 GetHubContext().Clients.All.receiveNotification( "sampleDataImport", message );
@@ -212,8 +214,10 @@ namespace RockWeb.Blocks.Examples
                 string xmlFileUrl = GetAttributeValue( AttributeKey.XMLDocumentURL );
                 if ( DownloadFile( xmlFileUrl, saveFile ) )
                 {
-                    if ( GetAttributeValue( AttributeKey.EnableStopwatch ).AsBoolean() )
+                    if ( _isDebugEnabled )
                     {
+                        messageContainer.Attributes["style"] = "visibility: visible";
+                        messageContainer.Attributes["style"] = "display: block";
                         GetHubContext().Clients.All.showLog();
                     }
 
@@ -236,7 +240,7 @@ namespace RockWeb.Blocks.Examples
             }
             catch ( Exception ex )
             {
-                if ( GetAttributeValue( AttributeKey.EnableStopwatch ).AsBoolean() )
+                if ( _isDebugEnabled )
                 {
                     GetHubContext().Clients.All.showLog();
                 }
@@ -298,8 +302,12 @@ namespace RockWeb.Blocks.Examples
         protected void Block_BlockUpdated( object sender, EventArgs e )
         {
             VerifyXMLDocumentExists();
-            nbMessage.Text = string.Empty;
-            nbMessage.Visible = false;
+            nbMessage.Text = "Never load sample data into your production (real) Rock system.  This sample data is for training and testing purposes only.";
+            if ( _isDebugEnabled )
+            {
+                nbMessage.Text += $"<br>Loading data from: {GetAttributeValue( AttributeKey.XMLDocumentURL )}";
+            }
+
             pnlInputForm.Visible = true;
         }
 
@@ -310,7 +318,7 @@ namespace RockWeb.Blocks.Examples
             // Configure a log device for the SampleDataManager.
             LogLevel logLevel = LogLevel.Information;
 
-            if ( GetAttributeValue( AttributeKey.EnableStopwatch ).AsBoolean() )
+            if ( _isDebugEnabled )
             {
                 logLevel = LogLevel.Trace;
             }
@@ -319,6 +327,7 @@ namespace RockWeb.Blocks.Examples
             _logger.EventLogged += EventLoggedHandler;
 
             var manager = new SampleDataManager( _logger );
+            manager.IsUnitTest = false;
             return manager;
         }
 
@@ -332,7 +341,7 @@ namespace RockWeb.Blocks.Examples
             {
                 Password = tbPassword.Text,
                 RandomizerSeed = GetAttributeValue( AttributeKey.RandomNumberSeed ).AsIntegerOrNull(),
-                EnableStopwatch = GetAttributeValue( AttributeKey.EnableStopwatch ).AsBoolean(),
+                EnableStopwatch = _isDebugEnabled,
                 CreatorPersonAliasId = CurrentPerson.PrimaryAliasId.GetValueOrDefault( 0 ),
                 DeleteExistingData = GetAttributeValue( AttributeKey.DeleteDataFirst ).AsBoolean(),
                 EnableGiving = GetAttributeValue( AttributeKey.EnableGiving ).AsBoolean(),

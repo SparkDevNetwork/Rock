@@ -27,4 +27,10 @@ import { Guid } from "@Obsidian/Types";
 export type EmailEditorGetEmailSectionOptionsBag = {
     /** Gets or sets the email section unique identifier. */
     emailSectionGuid: Guid;
+
+    /**
+     * Gets or sets the security grant token to use when performing
+     * authorization checks.
+     */
+    securityGrantToken?: string | null;
 };

@@ -39,7 +39,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>
@@ -55,7 +55,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./ConnectionTypeList/types.partial";
     import { computed, reactive, ref } from "vue";
-import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import { GridAction } from "@Obsidian/Types/Controls/grid";
 
     const config = useConfigurationValues<ListBlockBox<ConnectionTypeListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();

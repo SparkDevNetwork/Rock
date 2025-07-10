@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <RockFormField :modelValue="items" v-bind="{ ...fieldProps, ...$attrs }" name="attribute-matrix-editor" :rules="matrixRules" watchDeep>
-        <NotificationBox v-if="maxRows < Infinity && items.length > maxRows && !maxRowNotificationDismissed" alertType="warning" dismissible @dismiss="maxRowNotificationDismissed = true">{{ maxRowInvalidMessage }}</NotificationBox>
+        <NotificationBox v-if="!isNaN(parseInt(maxRows + '')) && maxRows < Infinity && items.length > maxRows && !maxRowNotificationDismissed" alertType="warning" dismissible @dismiss="maxRowNotificationDismissed = true">{{ maxRowInvalidMessage }}</NotificationBox>
         <NotificationBox v-if="minRows > 0 && items.length < minRows && !minRowNotificationDismissed" alertType="warning" dismissible @dismiss="minRowNotificationDismissed = true">{{ minRowInvalidMessage }}</NotificationBox>
 
         <Grid v-show="mode == 'grid'" :data="gridData" itemTerm="Item" keyField="key" liveUpdates light @addItem="onAddItem" @selectItem="onSelectItem">

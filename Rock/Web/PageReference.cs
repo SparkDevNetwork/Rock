@@ -907,13 +907,16 @@ namespace Rock.Web
                         var instance = ( IBreadCrumbBlock ) Activator.CreateInstance( compiledType );
 
                         // If the instance is a RockBlockType then we'll want to set the RockContext for use by the IBreadCrumb.GetBreadCrumbs.
-                        var instanceAsRockBlockType = instance as RockBlockType;
-                        if ( instanceAsRockBlockType != null )
+                        if ( instance is RockBlockType instanceAsRockBlockType )
                         {
                             // Use the shared RockContext we created earlier.
                             instanceAsRockBlockType.RockContext = rockContext;
                             instanceAsRockBlockType.BlockCache = block;
                             instanceAsRockBlockType.PageCache = page;
+                        }
+                        else if ( instance is RockBlock instanceAsRockBlock )
+                        {
+                            instanceAsRockBlock.SetBlock( page, block, false, false );
                         }
 
                         /*

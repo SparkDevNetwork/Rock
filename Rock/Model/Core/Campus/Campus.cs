@@ -218,6 +218,18 @@ namespace Rock.Model
         [DecimalPrecision( 8, 2 )]
         public decimal? TitheMetric { get; set; }
 
+        /// <summary>
+        /// The identifier of the beacon that is associated with this campus.
+        /// This is typically used with Bluetooth proximity beacons and allows
+        /// the <see cref="Campus"/> to be determined from a beacon.
+        /// </summary>
+        /// <remarks>
+        /// This is typically set automatically on creation to match the
+        /// identifier of the campus.
+        /// </remarks>
+        [DataMember]
+        public int? BeaconId { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

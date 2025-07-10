@@ -296,6 +296,16 @@ namespace Rock.Model
         [DataMember]
         public bool IsLoginRequired { get; set; }
 
+        /// <summary>
+        /// Gets or sets the slug.
+        /// </summary>
+        /// <value>
+        /// The slug.
+        /// </value>
+        [MaxLength( 400 )]
+        [DataMember]
+        public string Slug { get; set; }
+
         #endregion Entity Properties
 
         #region Navigation Properties

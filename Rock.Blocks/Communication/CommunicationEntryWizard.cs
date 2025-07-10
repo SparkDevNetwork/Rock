@@ -23,7 +23,7 @@ using System.Linq;
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
-using CommunicationEntryWizardCommunicationType = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.CommunicationType;
+using CommunicationEntryWizardCommunicationType = Rock.Enums.Communication.CommunicationType;
 using CommunicationType = Rock.Model.CommunicationType;
 using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
 using PushOpenAction = Rock.Utility.PushOpenAction;
@@ -173,7 +173,7 @@ namespace Rock.Blocks.Communication
 
     [Rock.SystemGuid.EntityTypeGuid( "26917C58-C8A2-4BF5-98CB-378A02761CD7" )]
     [Rock.SystemGuid.BlockTypeGuid( "9FFC7A4F-2061-4F30-AF79-D68C85EE9F27" )]
-    public partial class CommunicationEntryWizard : RockBlockType
+    public class CommunicationEntryWizard : RockBlockType
     {
         #region Attribute Keys
 
@@ -1039,6 +1039,7 @@ namespace Rock.Blocks.Communication
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.VIEW ) );
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.EDIT ) );
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
+            securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
 
             return securityGrant.ToToken();
         }
@@ -3389,7 +3390,19 @@ namespace Rock.Blocks.Communication
                 communication.PushOpenMessageJson = settings.Details.PushOpenMessageJson;
                 communication.PushTitle = settings.Details.PushTitle;
 
-                communication.CommunicationTopicValueId = settings.CommunicationTopicValueId;
+                if ( settings.CommunicationTopicValueId.HasValue )
+                {
+                    if ( settings.CommunicationTopicValueId != communication.CommunicationTopicValueId )
+                    {
+                        communication.CommunicationTopicValue = new DefinedValueService( rockContext ).Get( settings.CommunicationTopicValueId.Value );
+                        communication.CommunicationTopicValueId = communication.CommunicationTopicValue?.Id;
+                    }
+                }
+                else
+                {
+                    communication.CommunicationTopicValue = null;
+                    communication.CommunicationTopicValueId = null;
+                }
 
                 rockContext.SaveChanges();
 

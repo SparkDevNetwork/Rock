@@ -1,10 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :componentMigrationHelper="rsvpComponentHelper"
                                 title="RSVP"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')">
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
         <AccordionGroup>
             <Accordion title="Settings">
                 <div class="row">
@@ -58,9 +60,9 @@
                         <FontPropertyGroup :element="acceptButtonElement"
                                            :copyToElements="declineButtonElement ? [declineButtonElement] : undefined"
                                            :visibilityOptions="{
-                                               isColorHidden: true,
-                                               isJustifyTextHidden: true,
-                                           }" />
+                                            isColorHidden: true,
+                                            isJustifyTextHidden: true,
+                                        }" />
                     </div>
                 </div>
 
@@ -112,9 +114,9 @@
                         <BackgroundColorProperty :element="acceptButtonShellElement"
                                                  label="Background Color"
                                                  @update:backgroundColor="(value) => {
-                                                     acceptButtonBackgroundColor = value;
-                                                     updateRsvpHrefs();
-                                                 }" />
+                                                    acceptButtonBackgroundColor = value;
+                                                    updateRsvpHrefs();
+                                                }" />
                     </div>
                 </div>
 
@@ -124,9 +126,9 @@
                         <ColorProperty :element="acceptButtonElement"
                                        label="Text Color"
                                        @update:color="(value) => {
-                                           acceptButtonColor = value;
-                                           updateRsvpHrefs();
-                                       }" />
+                                        acceptButtonColor = value;
+                                        updateRsvpHrefs();
+                                    }" />
                     </div>
                 </div>
 
@@ -170,9 +172,9 @@
                         <BackgroundColorProperty :element="declineButtonShellElement"
                                                  label="Background Color"
                                                  @update:backgroundColor="(value) => {
-                                                     declineButtonBackgroundColor = value;
-                                                     updateRsvpHrefs();
-                                                 }" />
+                                                    declineButtonBackgroundColor = value;
+                                                    updateRsvpHrefs();
+                                                }" />
                     </div>
                 </div>
 
@@ -182,9 +184,9 @@
                         <ColorProperty :element="declineButtonElement"
                                        label="Text Color"
                                        @update:color="(value) => {
-                                           declineButtonColor = value;
-                                           updateRsvpHrefs();
-                                       }" />
+                                        declineButtonColor = value;
+                                        updateRsvpHrefs();
+                                    }" />
                     </div>
                 </div>
             </Accordion>
@@ -210,7 +212,7 @@
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import Accordion from "../accordion.partial.obs";
     import AccordionGroup from "../accordionGroup.partial.obs";
-    import { createAttendanceOccurrence, getFutureAttendanceOccurrences, registerRsvpRecipients } from "../api";
+    import { useApi } from "../api";
     import AlignAttributeProperty from "../properties/alignAttributeProperty.partial.obs";
     import BackgroundColorProperty from "../properties/backgroundColorProperty.partial.obs";
     import BorderRadiusProperty from "../properties/borderRadiusProperty.partial.obs";
@@ -220,6 +222,9 @@
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import DisplayProperty from "../properties/displayProperty.partial.obs";
     import TextContentProperty from "../properties/textContentProperty.partial.obs";
+    import { createButtonWidthValuesProvider } from "../providers.partial";
+    import { ButtonWidthValues, ValueProvider } from "../types.partial";
+    import { getRsvpComponentHelper } from "../utils.partial";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
@@ -233,8 +238,6 @@
     import { EmailEditorAttendanceOccurrenceBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorAttendanceOccurrenceBag";
     import { EmailEditorRegisterRsvpRecipientsOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorRegisterRsvpRecipientsOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-    import { createButtonWidthValuesProvider } from "../providers.partial";
-    import { ButtonWidthValues, ValueProvider } from "../types.partial";
 
     const props = defineProps({
         componentElement: {
@@ -252,7 +255,11 @@
         (e: "clone"): void;
         (e: "complete"): void;
         (e: "delete"): void;
+        (e: "migrate", value: Element): void;
     }>();
+
+    const rsvpComponentHelper = getRsvpComponentHelper();
+    const api = useApi();
 
     // #region Computed Props
 
@@ -461,7 +468,7 @@
                 personIds: props.recipientPersonIds
             };
 
-            const result = await registerRsvpRecipients(bag);
+            const result = await api.registerRsvpRecipients(bag);
 
             if (result?.isSuccess) {
                 areRsvpRecipientsRegistered.value = true;
@@ -504,7 +511,7 @@
 
         if (groupGuid) {
             // Get the future group occurrences.
-            const result = await getFutureAttendanceOccurrences({
+            const result = await api.getFutureAttendanceOccurrences({
                 groupGuid
             });
 
@@ -524,7 +531,7 @@
             isCreatingOccurrence.value = true;
             try {
                 // Create new occurrence.
-                const result = await createAttendanceOccurrence({
+                const result = await api.createAttendanceOccurrence({
                     groupId: data.groupId,
                     locationId: data.locationId,
                     occurrenceDate: data.occurrenceDate,
@@ -582,7 +589,7 @@
 
         if (groupGuid) {
             // Get the future group occurrences.
-            const result = await getFutureAttendanceOccurrences({
+            const result = await api.getFutureAttendanceOccurrences({
                 groupGuid
             });
             if (result?.isSuccess && result.data) {

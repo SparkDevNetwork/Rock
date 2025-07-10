@@ -3566,7 +3566,7 @@ namespace Rock.Model
         /// </summary>
         /// <param name="personId">The person identifier.</param>
         /// <returns></returns>
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Peer Networks can now be found in the PeerNetwork table, and are no longer tied to Groups." )]
         public Group GetPeerNetworkGroup( int personId )
         {
@@ -5387,6 +5387,23 @@ AND GroupTypeId = ${familyGroupType.Id}
                         ChatPersonAliasGuid = pa.Guid,
                     }
                 );
+        }
+
+        /// <summary>
+        /// Gets the Rock <see cref="Person"/> for the provided <see cref="ChatUser.Key"/>.
+        /// </summary>
+        /// <param name="chatUserKey">The <see cref="ChatUser.Key"/> of the <see cref="Person"/> to get.</param>
+        /// <returns>The Rock <see cref="Person"/> or <see langword="null"/> if no matching <see cref="Person"/> found.</returns>
+        internal Person GetByChatUserKey( string chatUserKey )
+        {
+            if ( chatUserKey == null )
+            {
+                return null;
+            }
+
+            return Queryable()
+                .Where( p => p.Aliases.Any( a => a.ForeignKey == chatUserKey ) )
+                .FirstOrDefault();
         }
     }
 }

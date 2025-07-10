@@ -21,7 +21,13 @@ using System.ComponentModel.Composition;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.ElectronicSignature;
+using Rock.Enums.Workflow;
 using Rock.Model;
+using Rock.Net;
+using Rock.Pdf;
+using Rock.ViewModels.Workflow;
+using Rock.Web.Cache;
 
 namespace Rock.Workflow.Action
 {
@@ -88,8 +94,10 @@ namespace Rock.Workflow.Action
         Order = 7 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "41491689-00BD-49A1-A3CD-A59FBBD2B2F8" )]
-    public class ElectronicSignature : ActionComponent
+    public class ElectronicSignature : ActionComponent, IInteractiveAction
     {
+        #region Keys
+
         /// <summary>
         /// Keys to use for Attributes
         /// </summary>
@@ -102,6 +110,384 @@ namespace Rock.Workflow.Action
             public const string SignedByPersonAlias = "SignedByPersonAlias";
             public const string SignatureDocument = "SignatureDocument";
             public const string SignatureDocumentName = "SignatureDocumentName";
+        }
+
+        private static class ComponentConfigurationKey
+        {
+            public const string SignatureType = "signatureType";
+
+            public const string DocumentTerm = "documentTerm";
+
+            public const string SignedByEmail = "signedByEmail";
+
+            public const string LegalName = "legalName";
+
+            public const string SendCopy = "sendCopy";
+
+            public const string ShowName = "showName";
+
+            public const string Content = "content";
+        }
+
+        private static class ComponentDataKey
+        {
+            public const string SignatureData = "signatureData";
+
+            public const string SignedByName = "signedByName";
+
+            public const string SignedByEmail = "signedByEmail";
+        }
+
+        #endregion
+
+        /// <summary>
+        /// Executes the specified workflow.
+        /// </summary>
+        /// <param name="rockContext">The rock context.</param>
+        /// <param name="action">The workflow action.</param>
+        /// <param name="entity">The entity.</param>
+        /// <param name="errorMessages">The error messages.</param>
+        /// <returns></returns>
+        public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
+        {
+            errorMessages = new List<string>();
+
+            // Always return false. Special logic for e-Signature will be handled in the WorkflowEntry block
+            return false;
+        }
+
+        #region IInteractiveAction
+
+        /// <inheritdoc/>
+        InteractiveActionResult IInteractiveAction.StartAction( WorkflowAction action, RockContext rockContext, RockRequestContext requestContext )
+        {
+            if ( action == null )
+            {
+                throw new ArgumentNullException( nameof( action ) );
+            }
+
+            if ( rockContext == null )
+            {
+                throw new ArgumentNullException( nameof( rockContext ) );
+            }
+
+            if ( requestContext == null )
+            {
+                throw new ArgumentNullException( nameof( requestContext ) );
+            }
+
+            return new InteractiveActionResult
+            {
+                IsSuccess = false,
+                ProcessingType = InteractiveActionContinueMode.Stop,
+                ActionData = GetSignatureFormData( action, rockContext, requestContext )
+            };
+        }
+
+        /// <inheritdoc/>
+        InteractiveActionResult IInteractiveAction.UpdateAction( WorkflowAction action, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
+        {
+            if ( action == null )
+            {
+                throw new ArgumentNullException( nameof( action ) );
+            }
+
+            if ( rockContext == null )
+            {
+                throw new ArgumentNullException( nameof( rockContext ) );
+            }
+
+            if ( requestContext == null )
+            {
+                throw new ArgumentNullException( nameof( requestContext ) );
+            }
+
+            if ( !CompleteDocumentSigning( action, componentData, rockContext, requestContext, out var errorMessage ) )
+            {
+                return new InteractiveActionResult
+                {
+                    IsSuccess = true,
+                    ProcessingType = InteractiveActionContinueMode.Continue,
+                    ActionData = new InteractiveActionDataBag
+                    {
+                        Message = new InteractiveMessageBag
+                        {
+                            Type = InteractiveMessageType.Error,
+                            Content = errorMessage
+                        }
+                    }
+                };
+            }
+
+            return new InteractiveActionResult
+            {
+                IsSuccess = true,
+                ProcessingType = InteractiveActionContinueMode.Continue,
+                ActionData = new InteractiveActionDataBag
+                {
+                    Message = new InteractiveMessageBag
+                    {
+                        Type = InteractiveMessageType.Information,
+                        Content = "Your signature has been submitted successfully."
+                    }
+                }
+            };
+        }
+
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Gets the data to be sent to a UI component in order to display.
+        /// the entry form.
+        /// </summary>
+        /// <param name="action">The action that represents the signature form to display.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that identifies the current request, must never be <c>null</c>.</param>
+        /// <returns>An dictionary of strings that represents the form to display.</returns>
+        private InteractiveActionDataBag GetSignatureFormData( WorkflowAction action, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var template = GetSignatureDocumentTemplate( rockContext, action );
+
+            if ( template == null )
+            {
+                return new InteractiveActionDataBag
+                {
+                    Message = new InteractiveMessageBag
+                    {
+                        Type = InteractiveMessageType.Error,
+                        Content = "Signature document was not found, please check workflow configuration."
+                    }
+                };
+            }
+
+            var signedByEmail = string.Empty;
+            var legalName = string.Empty;
+
+            var signedByPersonAliasId = GetSignedByPersonAliasId( rockContext, action, requestContext.CurrentPerson?.PrimaryAliasId );
+            if ( signedByPersonAliasId.HasValue )
+            {
+                var signedByPerson = new PersonAliasService( rockContext ).GetPerson( signedByPersonAliasId.Value );
+
+                // Set some sane default values.
+                signedByEmail = signedByPerson?.Email;
+                legalName = signedByPerson?.FullName;
+            }
+
+            // If not logged-in or the Workflow hasn't specified a SignedByPerson, show the name that was typed when on the Completion step
+            // TODO: escElectronicSignatureControl.ShowNameOnCompletionStepWhenInTypedSignatureMode = ( signedByPersonAliasId == null );
+
+            var content = GetDocumentHtml( action, template, requestContext );
+
+            return new InteractiveActionDataBag
+            {
+                ComponentUrl = requestContext.ResolveRockUrl( "~/Obsidian/Blocks/Workflow/WorkflowEntry/Actions/electronicSignature.obs" ),
+                ComponentConfiguration = new Dictionary<string, string>
+                {
+                    [ComponentConfigurationKey.SignatureType] = template.SignatureType.ConvertToInt().ToString(),
+                    [ComponentConfigurationKey.DocumentTerm] = template.DocumentTerm,
+                    [ComponentConfigurationKey.SignedByEmail] = signedByEmail,
+                    [ComponentConfigurationKey.LegalName] = legalName,
+                    [ComponentConfigurationKey.SendCopy] = template.CompletionSystemCommunicationId.HasValue.ToString(),
+                    [ComponentConfigurationKey.ShowName] = ( !signedByPersonAliasId.HasValue ).ToString(),
+                    [ComponentConfigurationKey.Content] = content
+                },
+                ComponentData = new Dictionary<string, string>()
+            };
+        }
+
+        /// <summary>
+        /// Complete the document signing by creating the signed document and
+        /// sending out any required notifications.
+        /// </summary>
+        /// <param name="action">The workflow action being processed.</param>
+        /// <param name="data">The data from the UI component.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="requestContext">The context that identifies the current request, must never be <c>null</c>.</param>
+        /// <param name="errorMessage">On return contains any error message to be displayed.</param>
+        /// <returns><c>true</c> if the operation completed successfully; otherwise <c>false</c>.</returns>
+        private bool CompleteDocumentSigning( WorkflowAction action, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext, out string errorMessage )
+        {
+            var template = GetSignatureDocumentTemplate( rockContext, action );
+            if ( template == null )
+            {
+                errorMessage = "Unable to determine Signature Template.";
+                return false;
+            }
+
+            var signatureData = data.GetValueOrNull( ComponentDataKey.SignatureData );
+            var signedByName = data.GetValueOrNull( ComponentDataKey.SignedByName );
+            var signedByEmail = data.GetValueOrNull( ComponentDataKey.SignedByEmail );
+
+            if ( signedByName.IsNullOrWhiteSpace() || signedByEmail.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "Incomplete signature data received.";
+                return false;
+            }
+
+            if ( template.SignatureType == SignatureType.Drawn && signatureData.IsNullOrWhiteSpace() )
+            {
+                errorMessage = "Incomplete signature data received.";
+                return false;
+            }
+
+            // Get the person that will be signing the document.
+            var signedByPersonAliasId = GetSignedByPersonAliasId( rockContext, action, requestContext.CurrentPerson?.PrimaryAliasId );
+            var signedByPerson = signedByPersonAliasId.HasValue
+                ? new PersonAliasService( rockContext ).GetPerson( signedByPersonAliasId.Value )
+                : null;
+
+            // Get the person the document applies to.
+            var appliesToPersonAliasId = GetAppliesToPersonAliasId( rockContext, action );
+
+            var content = GetDocumentHtml( action, template, requestContext );
+            var signatureDocumentName = GetSignatureDocumentName( action, template, requestContext );
+            var assignedToPersonAliasId = GetAssignedToPersonAliasId( rockContext, action );
+
+            // Create the document.
+            var document = rockContext.Set<SignatureDocument>().Create();
+            document.SignatureDocumentTemplateId = template.Id;
+            document.Status = SignatureDocumentStatus.Signed;
+            document.Name = signatureDocumentName;
+            document.EntityTypeId = EntityTypeCache.Get<Model.Workflow>( true, rockContext ).Id;
+            document.EntityId = action.Activity.Workflow.Id;
+            document.SignedByPersonAliasId = signedByPersonAliasId;
+            document.AssignedToPersonAliasId = assignedToPersonAliasId;
+            document.AppliesToPersonAliasId = appliesToPersonAliasId;
+            document.SignedDocumentText = content;
+            document.LastStatusDate = RockDateTime.Now;
+            document.SignedDateTime = RockDateTime.Now;
+            document.SignatureData = signatureData;
+            document.SignedName = signedByName;
+            document.SignedByEmail = signedByEmail;
+            document.SignedClientIp = requestContext.ClientInformation.IpAddress;
+            document.SignedClientUserAgent = requestContext.ClientInformation.UserAgent;
+
+            // This needs to be done before we generate the signed PDF.
+            document.SignatureVerificationHash = SignatureDocumentService.CalculateSignatureVerificationHash( document );
+
+            // Generate the PDF, if an error happened return the error message.
+            var pdfFile = CreateSignedDocumentPdf( template, document, signedByPerson, rockContext, out errorMessage );
+
+            if ( pdfFile == null )
+            {
+                return false;
+            }
+
+            // Save the signed document to the database.
+            document.BinaryFileId = pdfFile.Id;
+            new SignatureDocumentService( rockContext ).Add( document );
+            rockContext.SaveChanges();
+
+            SaveSignatureDocumentValuesToAttributes( rockContext, action, document );
+
+            if ( template.CompletionSystemCommunication != null )
+            {
+                ElectronicSignatureHelper.SendSignatureCompletionCommunication( document.Id, out _ );
+            }
+
+            errorMessage = null;
+
+            return true;
+        }
+
+        /// <summary>
+        /// Get the HTML that represents the document to be signed after any
+        /// lava merging has been completed.
+        /// </summary>
+        /// <param name="action">The workflow action being processed.</param>
+        /// <param name="template">The template representing the document to be signed.</param>
+        /// <param name="requestContext">The context that identifies the current request, must never be <c>null</c>.</param>
+        /// <returns>A string of HTML that should be displayed in an IFrame.</returns>
+        private string GetDocumentHtml( WorkflowAction action, SignatureDocumentTemplate template, RockRequestContext requestContext )
+        {
+            var mergeFields = requestContext.GetCommonMergeFields();
+            mergeFields.Add( "Action", action );
+            mergeFields.Add( "Activity", action.Activity );
+            mergeFields.Add( "Workflow", action.Activity.Workflow );
+
+            return template.LavaTemplate?.ResolveMergeFields( mergeFields );
+        }
+
+        /// <summary>
+        /// Gets the name of the document that will be saved to the database.
+        /// </summary>
+        /// <param name="action">The workflow action being processed.</param>
+        /// <param name="template">The template representing the document to be signed.</param>
+        /// <param name="requestContext">The context that identifies the current request, must never be <c>null</c>.</param>
+        /// <returns>The name to assign to <see cref="SignatureDocument.Name"/>.</returns>
+        private string GetSignatureDocumentName( WorkflowAction action, SignatureDocumentTemplate template, RockRequestContext requestContext )
+        {
+            var mergeFields = requestContext.GetCommonMergeFields();
+            mergeFields.Add( "Action", action );
+            mergeFields.Add( "Activity", action.Activity );
+            mergeFields.Add( "Workflow", action.Activity.Workflow );
+            mergeFields.Add( "SignatureDocumentTemplate", template );
+
+            var name = GetSignatureDocumentName( action, mergeFields );
+
+            if ( name.IsNullOrWhiteSpace() )
+            {
+                return "Signed Document";
+            }
+
+            return name;
+        }
+
+        /// <summary>
+        /// Creates a PDF document that represents the signed document and
+        /// then saves it to the database in a <see cref="BinaryFile"/>.
+        /// </summary>
+        /// <param name="template">The template representing the document to be signed.</param>
+        /// <param name="document">The document that has been populated with the signature data.</param>
+        /// <param name="signedByPerson">The person that is signing the document, may be <c>null</c>.</param>
+        /// <param name="rockContext">The context to use if access to the database is required.</param>
+        /// <param name="errorMessage">On return, contains any error message to be displayed.</param>
+        /// <returns>An instance of <see cref="BinaryFile"/> that has been saved to the database or <c>null</c> on error.</returns>
+        private BinaryFile CreateSignedDocumentPdf( SignatureDocumentTemplate template, SignatureDocument document, Person signedByPerson, RockContext rockContext, out string errorMessage )
+        {
+            var signatureInformationHtmlArgs = new GetSignatureInformationHtmlOptions
+            {
+                SignatureType = template.SignatureType,
+                SignedName = document.SignedName,
+                DrawnSignatureDataUrl = document.SignatureData,
+                SignedByPerson = signedByPerson,
+                SignedDateTime = document.SignedDateTime,
+                SignedClientIp = document.SignedClientIp,
+                SignatureVerificationHash = document.SignatureVerificationHash
+            };
+
+            // Helper takes care of generating HTML and combining SignatureDocumentHTML and signedSignatureDocumentHtml into the final Signed Document
+            var signatureInformationHtml = ElectronicSignatureHelper.GetSignatureInformationHtml( signatureInformationHtmlArgs );
+            var signedSignatureDocumentHtml = ElectronicSignatureHelper.GetSignedDocumentHtml( document.SignedDocumentText, signatureInformationHtml );
+
+            // PDF Generator to BinaryFile
+            BinaryFile pdfFile;
+            try
+            {
+                using ( var pdfGenerator = new PdfGenerator() )
+                {
+                    var binaryFileTypeId = template.BinaryFileTypeId
+                        ?? BinaryFileTypeCache.GetId( Rock.SystemGuid.BinaryFiletype.DIGITALLY_SIGNED_DOCUMENTS.AsGuid() );
+
+                    pdfFile = pdfGenerator.GetAsBinaryFileFromHtml( binaryFileTypeId ?? 0, document.Name, signedSignatureDocumentHtml );
+                }
+            }
+            catch ( PdfGeneratorException pdfGeneratorException )
+            {
+                ExceptionLogService.LogException( pdfGeneratorException );
+                errorMessage = pdfGeneratorException.Message;
+                return null;
+            }
+
+            pdfFile.IsTemporary = false;
+            new BinaryFileService( rockContext ).Add( pdfFile );
+            rockContext.SaveChanges();
+
+            errorMessage = null;
+
+            return pdfFile;
         }
 
         /// <summary>
@@ -251,20 +637,6 @@ namespace Rock.Workflow.Action
 
         }
 
-        /// <summary>
-        /// Executes the specified workflow.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="action">The workflow action.</param>
-        /// <param name="entity">The entity.</param>
-        /// <param name="errorMessages">The error messages.</param>
-        /// <returns></returns>
-        public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
-        {
-            errorMessages = new List<string>();
-
-            // Always return false. Special logic for e-Signature will be handled in the WorkflowEntry block
-            return false;
-        }
+        #endregion
     }
 }

@@ -52,6 +52,10 @@
 
     // #region Computed Values
 
+    const computedType = computed((): string => {
+        return props.allowLava || props.allowMultiple ? "text" : "email";
+    });
+
     const computedRules = computed((): ValidationRule[] => {
         const rules = normalizeRules(props.rules);
 
@@ -77,24 +81,23 @@
         return rules;
     });
 
-    const computedType = computed((): string => {
-        return props.allowLava || props.allowMultiple ? "text" : "email";
-    });
-
     // #endregion Computed Values
 
     // #region Functions
 
-    // Validation regex patterns
-    // eslint-disable-next-line no-control-regex
-    const emailAddressRegex = /\s*(?:[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[A-Za-z0-9-]*[A-Za-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])\s*/;
-    const lavaVariableRegex = /({{\s*[^}}]+\s*}})/;
-    const lavaTagRegex = /({%\s*[^%}]+\s*%})/;
-    const lavaBlockRegex = /(({%\s*(\w+)\s*).*%}).*({%\s*end\3\s*%})/;
-    const lavaShortcodeRegex = /({\[\s*[^\]}]+\s*\]})/;
+    const emailAddressRegex = String.raw`\s*(?:[A-Za-z0-9!#$%&'*+/=?^_` + "`" + String.raw`{|}~-]+(?:\.[A-Za-z0-9!#$%&'*+/=?^_` + "`" + String.raw`{|}~-]+)*|"(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21\x23-\x5b\x5d-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])*")@(?:(?:[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?\.)+[A-Za-z0-9](?:[A-Za-z0-9-]*[A-Za-z0-9])?|\[(?:(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9]))\.){3}(?:(2(5[0-5]|[0-4][0-9])|1[0-9][0-9]|[1-9]?[0-9])|[A-Za-z0-9-]*[A-Za-z0-9]:(?:[\x01-\x08\x0b\x0c\x0e-\x1f\x21-\x5a\x53-\x7f]|\\[\x01-\x09\x0b\x0c\x0e-\x7f])+)\])\s*`;
+
+    const lavaVariableRegex = String.raw`({{\s*[^}}]+\s*}})`;
+    const lavaTagRegex = String.raw`({%\s*[^%}]+\s*%})`;
+
+    // Note: JavaScript doesn't support named backreferences (\k<tagName>)
+    // So we’ll use a placeholder Lava block regex instead of the full tag-matching one.
+    const lavaBlockRegex = String.raw`({%\s*\w+\s*.*?%}[\s\S]*?{%\s*end\w+\s*%})`;
+
+    const lavaShortcodeRegex = String.raw`({\[\s*[^\]}]+\s*\]})`;
 
     // Zero or more repeating groups of Lava tags, or email addresses separated by whitespace or commas.
-    const validateMultipleWithLavaRegex = new RegExp(`(${lavaBlockRegex.source}|${lavaTagRegex.source}|${lavaShortcodeRegex.source}|${lavaVariableRegex.source}|${emailAddressRegex.source}|[\\s,]*)*`);
+    const validateMultipleWithLavaRegex = new RegExp(String.raw`^((${lavaBlockRegex}|${lavaTagRegex}|${lavaShortcodeRegex}|${lavaVariableRegex}|${emailAddressRegex}|[\s,]*)*)$`);
     const validateMultipleWithLava: ValidationRuleFunction = (value: unknown): boolean | string => {
         if (value && typeof value === "string") {
             if (!validateMultipleWithLavaRegex.test(value)) {
@@ -106,7 +109,7 @@
     };
 
     // One or more email addresses, separated by whitespace or commas.
-    const validateMultipleNoLavaRegex = new RegExp(`((${emailAddressRegex.source}|[\\s,]*)*)`);
+    const validateMultipleNoLavaRegex = new RegExp(String.raw`^((${emailAddressRegex}[\s,]*)*)$`);
     const validateMultipleNoLava: ValidationRuleFunction = (value: unknown): boolean | string => {
         if (value && typeof value === "string") {
             if (!validateMultipleNoLavaRegex.test(value)) {
@@ -118,7 +121,7 @@
     };
 
     // Zero or more repeating groups of Lava tags, or an email address.
-    const validateSingleWithLavaRegex = new RegExp(`^\\s*(${lavaBlockRegex.source}|${lavaTagRegex.source}|${lavaShortcodeRegex.source}|${lavaVariableRegex.source}|${emailAddressRegex.source})*\\s*$`);
+    const validateSingleWithLavaRegex = new RegExp(String.raw`^\s*((${lavaBlockRegex}|${lavaTagRegex}|${lavaShortcodeRegex}|${lavaVariableRegex}|${emailAddressRegex})*)\s*$`);
     const validateSingleWithLava: ValidationRuleFunction = (value: unknown): boolean | string => {
         if (value && typeof value === "string") {
             if (!validateSingleWithLavaRegex.test(value)) {
@@ -128,4 +131,6 @@
 
         return true;
     };
+
+    // #endregion Functions
 </script>

@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
@@ -23,7 +24,10 @@ using System.Web;
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Workflow;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Workflow;
 
 namespace Rock.Workflow.Action
 {
@@ -38,7 +42,7 @@ namespace Rock.Workflow.Action
     [CodeEditorField( "HTML", "The HTML to show. <span class='tip tip-lava'></span>", Rock.Web.UI.Controls.CodeEditorMode.Html, Rock.Web.UI.Controls.CodeEditorTheme.Rock, 200, true, "", "", 0 )]
     [BooleanField( "Hide Status Message", "Whether or not to hide the built-in status message.", false, "", 1 )]
     [Rock.SystemGuid.EntityTypeGuid( "FDDAE78D-B7B3-4DA2-9A92-CC129AAF15DE")]
-    public class ShowHtml : ActionComponent
+    public class ShowHtml : ActionComponent, IInteractiveAction
     {
         /// <summary>
         /// Executes the specified workflow.
@@ -52,12 +56,36 @@ namespace Rock.Workflow.Action
         {
             errorMessages = new List<string>();
 
+            // If we are being processed by the new Obsidian Workflow Entry
+            // block, then don't continue processing this action as it will be
+            // handled by the block. This specific case handles the scenario of
+            // a block action submitting a form and then eventually hitting
+            // this action.
+            if ( RockRequestContextAccessor.Current?.RequestUri?.AbsolutePath?.StartsWith( "/api/v2/BlockActions", StringComparison.OrdinalIgnoreCase ) == true )
+            {
+                return false;
+            }
+
             HttpContext httpContext = HttpContext.Current;
             if ( httpContext != null )
             {
                 System.Web.UI.Page page = httpContext.Handler as System.Web.UI.Page;
                 if ( page != null )
                 {
+                    var obsidianWorkflowEntryBlock = page.ControlsOfTypeRecursive<Rock.Web.UI.RockBlockTypeWrapper>()
+                        .Where( bw => bw.BlockCache?.BlockType?.Guid == new Guid( "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED" ) )
+                        .FirstOrDefault();
+
+                    // If we are being processed by the new Obsidian Workflow
+                    // Entry block, then don't continue processing this action
+                    // as it will be handled by the block. This specific case
+                    // handles the scenario of an initial page load causing the
+                    // workflow to process and hit here.
+                    if ( obsidianWorkflowEntryBlock != null )
+                    {
+                        return false;
+                    }
+
                     var workflowEntryBlock = page.ControlsOfTypeRecursive<Rock.Web.UI.RockBlock>().Where( x => x.BlockCache?.BlockType?.Guid == Rock.SystemGuid.BlockType.WORKFLOW_ENTRY.AsGuid() ).FirstOrDefault();
                     if ( workflowEntryBlock != null )
                     {
@@ -80,5 +108,36 @@ namespace Rock.Workflow.Action
 
             return true;
         }
+
+        #region IInteractiveAction
+
+        /// <inheritdoc/>
+        InteractiveActionResult IInteractiveAction.StartAction( WorkflowAction action, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var mergeFields = GetMergeFields( action, requestContext );
+            var content = GetAttributeValue( action, "HTML" ).ResolveMergeFields( mergeFields );
+
+            return new InteractiveActionResult
+            {
+                IsSuccess = true,
+                ProcessingType = InteractiveActionContinueMode.Continue,
+                ActionData = new InteractiveActionDataBag
+                {
+                    Message = new InteractiveMessageBag
+                    {
+                        Type = InteractiveMessageType.Html,
+                        Content = content
+                    }
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        InteractiveActionResult IInteractiveAction.UpdateAction( WorkflowAction action, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
+        {
+            throw new NotSupportedException();
+        }
+
+        #endregion
     }
 }

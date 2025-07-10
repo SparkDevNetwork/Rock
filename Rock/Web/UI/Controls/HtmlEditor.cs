@@ -410,6 +410,16 @@ namespace Rock.Web.UI.Controls
         }
 
         /// <summary>
+        /// Indicates if the asset manager should be enabled for this editor. If true, the person
+        /// must also have access to the Asset Manager page.
+        /// </summary>
+        public bool EnableAssetManager
+        {
+            get => ViewState[nameof( EnableAssetManager )] as bool? ?? true;
+            set => ViewState[nameof( EnableAssetManager )] = value;
+        }
+
+        /// <summary>
         /// Gets or sets the merge fields to make available.  This should include either a list of
         /// entity type names (full name), or other non-object string values
         /// </summary>
@@ -652,7 +662,7 @@ namespace Rock.Web.UI.Controls
         {
             bool rockMergeFieldEnabled = MergeFields.Any();
             bool rockFileBrowserEnabled = false;
-            bool rockAssetManagerEnabled = false;
+            bool rockAssetManagerEnabled = EnableAssetManager;
             var currentPerson = this.RockBlock().CurrentPerson;
 
             // only show the File/Image plugin if they have Auth to the file browser page
@@ -663,7 +673,7 @@ namespace Rock.Web.UI.Controls
             }
 
             var assetManagerPage = new Rock.Model.PageService( new RockContext() ).Get( Rock.SystemGuid.Page.HTMLEDITOR_ROCKASSETMANAGER_PLUGIN_FRAME.AsGuid() );
-            if ( assetManagerPage != null && currentPerson != null )
+            if ( assetManagerPage != null && currentPerson != null && rockAssetManagerEnabled )
             {
                 rockAssetManagerEnabled = assetManagerPage.IsAuthorized( Authorization.VIEW, currentPerson );
             }

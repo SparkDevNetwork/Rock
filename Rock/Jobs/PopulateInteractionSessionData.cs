@@ -67,14 +67,14 @@ namespace Rock.Jobs
             /// <summary>
             /// IP Address GeoCoding Component
             /// </summary>
-            [RockObsolete( "1.17" )]
+            [RockObsolete( "17.0" )]
             [Obsolete]
             public const string IPAddressGeoCodingComponent = "IPAddressGeoCodingComponent";
 
             /// <summary>
             /// Lookback Maximum in Days
             /// </summary>
-            [RockObsolete( "1.17" )]
+            [RockObsolete( "17.0" )]
             [Obsolete]
             public const string LookbackMaximumInDays = "LookbackMaximumInDays";
 
@@ -88,7 +88,7 @@ namespace Rock.Jobs
             /// <summary>
             /// How Many Records
             /// </summary>
-            [RockObsolete( "1.17" )]
+            [RockObsolete( "17.0" )]
             [Obsolete]
             public const string MaxRecordsToProcessPerRun = "HowManyRecords";
 

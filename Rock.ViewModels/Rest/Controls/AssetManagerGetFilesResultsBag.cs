@@ -29,13 +29,13 @@ namespace Rock.ViewModels.Rest.Controls
         /// </summary>
         public List<T> Files { get; set; } = null;
 
-        /// <summary>
+        /// <summary>ControlsController
         /// Whether or not this folder is restricted from having certain actions performed on it.
         /// </summary>
         public bool IsFolderRestricted { get; set; } = false;
 
         /// <summary>
-        /// Whetehr or not this folder is restricted from having certain types of files uploaded to it.
+        /// Whether or not this folder is restricted from having certain types of files uploaded to it.
         /// </summary>
         public bool IsFolderUploadRestricted { get; set; } = false;
     }

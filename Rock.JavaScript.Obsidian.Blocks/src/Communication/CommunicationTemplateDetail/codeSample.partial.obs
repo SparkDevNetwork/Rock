@@ -1,0 +1,64 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="code-sample-group">
+        <pre class="code-sample"><code v-html="styledCode"></code></pre>
+        <CopyButton :value="code" class="code-copy-button" btnSize="sm" btnType="link" />
+    </div>
+</template>
+
+<style scoped>
+.code-sample-group {
+    position: relative;
+}
+
+.code-sample {
+    padding-right: 3rem;
+    overflow-x: auto;
+}
+
+.code-copy-button {
+    position: absolute;
+    top: 1.4rem;
+    transform: translateY(-50%);
+    right: .5rem;
+    z-index: 1;
+}
+
+.code-copy-button::before {
+    content: "";
+    position: absolute;
+    top: -0.3rem;
+    right: -0.5rem;
+    bottom: -0.3rem;
+    left: -0.5rem;
+    background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
+    z-index: -1;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import CopyButton from "@Obsidian/Controls/copyButton.obs";
+    import HighlightJs from "@Obsidian/Libs/highlightJs";
+
+    const props = defineProps({
+        code: {
+            type: String,
+            default: ""
+        },
+        language: {
+            type: String,
+            default: "typescript"
+        }
+    });
+
+    const styledCode = computed((): string => {
+        if (!props.code) {
+            return "";
+        }
+
+        return HighlightJs.highlight(props.code, {
+            language: props.language
+        })?.value;
+    });
+</script>

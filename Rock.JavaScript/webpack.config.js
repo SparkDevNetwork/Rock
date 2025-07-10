@@ -18,6 +18,14 @@ module.exports = {
             import: "./src/plyr/index.ts",
             filename: "plyr.js"
         },
+        StreamChat: {
+            import: "./src/streamchat/index.tsx",
+            filename: "streamchat.js",
+            library: {
+                type: "assign-properties",
+                name: ["Rock", "StreamChat"]
+            }
+        }
     },
     output: {
         path: path.resolve(__dirname, "../RockWeb/Scripts/Rock"),
@@ -31,7 +39,7 @@ module.exports = {
     },
     resolve: {
         /* WebPack will process `.ts` and then if not found try `.js`. */
-        extensions: [".ts", ".js"]
+        extensions: [".ts", ".js", ".tsx"]
     },
     module: {
         rules: [
@@ -44,6 +52,10 @@ module.exports = {
             {
                 test: /\.css$/,
                 use: ["style-loader", "css-loader"]
+            },
+            {
+                test: /\.tsx$/,
+                use: ["babel-loader", "ts-loader"]
             },
         ],
     },

@@ -1,0 +1,568 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <fieldset>
+        <div class="row">
+            <div class="col-md-6">
+                <TextBox v-model="name"
+                         label="Name"
+                         rules="required" />
+            </div>
+        </div>
+
+        <TextBox v-model="description"
+                 label="Description"
+                 textMode="multiline" />
+
+        <NumberBox v-model="durationSeconds" inputGroupClasses="input-width-lg"
+                   label="Duration">
+            <template #inputGroupAppend>
+                <span class="input-group-addon">seconds</span>
+            </template>
+        </NumberBox>
+
+        <h6>Media Files</h6>
+        <Grid :data="mediaFileGridData"
+              light
+              keyField="index"
+              @addItem="onAddMediaFileItem"
+              emptyDataText="No Media Files"
+              canAdd>
+            <TextColumn name="quality"
+                        title="Quality"
+                        field="quality"
+                        visiblePriority="xs" />
+            <TextColumn name="format"
+                        title="Format"
+                        field="format"
+                        visiblePriority="xs" />
+            <TextColumn name="dimensions"
+                        title="Dimensions"
+                        field="dimensions"
+                        visiblePriority="xs" />
+            <TextColumn name="size"
+                        title="Size"
+                        field="size"
+                        visiblePriority="xs" />
+            <BooleanColumn name="allowDownload"
+                           title="Allow Download"
+                           field="allowDownload"
+                           visiblePriority="xs" />
+            <TextColumn name="link"
+                        title="Link"
+                        field="link"
+                        visiblePriority="xs" />
+            <EditColumn :onClick="editMediaFile" />
+            <DeleteColumn :onClick="deleteMediaFile" />
+        </Grid>
+
+        <h6>Thumbnail Files</h6>
+        <Grid :data="thumbnailGridData"
+              light
+              keyField="index"
+              @addItem="onAddThumbnailFileItem"
+              emptyDataText="No Thumbnail Files"
+              canAdd>
+            <TextColumn name="dimensions"
+                        title="Dimensions"
+                        field="dimensions"
+                        visiblePriority="xs" />
+            <TextColumn name="size"
+                        title="Size"
+                        field="size"
+                        visiblePriority="xs" />
+            <TextColumn name="link"
+                        title="Link"
+                        field="link"
+                        visiblePriority="xs" />
+            <EditColumn :onClick="editThumbnailFile" />
+            <DeleteColumn :onClick="deleteThumbnailFile" />
+        </Grid>
+    </fieldset>
+
+    <ThumbnailFileInfoModal
+                            v-model="showThumbnailModal"
+                            :initialData="currentThumbnail"
+                            @save="saveThumbnailFile" />
+
+    <MediaFileInfoModal
+                        v-model="showMediaFileModal"
+                        :initialData="currentMediaFile"
+                        @save="saveMediaFile" />
+</template>
+
+<script setup lang="ts">
+    import { PropType, ref, watch, computed } from "vue";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
+    import { MediaElementBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementBag";
+    import { MediaElementDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/MediaElementDetail/mediaElementDetailOptionsBag";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
+    import { watchPropertyChanges, setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import Grid, { TextColumn, BooleanColumn, EditColumn, DeleteColumn } from "@Obsidian/Controls/grid";
+    import { MediaElementQualityDescription } from "@Obsidian/Enums/Cms/mediaElementQuality";
+    import ThumbnailFileInfoModal from "./thumbnailFileInfoModal.partial.obs";
+    import MediaFileInfoModal from "./mediaFileInfoModal.partial.obs";
+    import { alert } from "@Obsidian/Utility/dialogs";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<ValidPropertiesBox<MediaElementBag>>,
+            required: true
+        },
+
+        options: {
+            type: Object as PropType<MediaElementDetailOptionsBag>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: ValidPropertiesBox<MediaElementBag>): void,
+        (e: "propertyChanged", value: string): void
+    }>();
+
+    // #region Values
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const durationSeconds = propertyRef(props.modelValue.bag?.durationSeconds ?? null, "DurationSeconds");
+    const thumbnailDataRef = propertyRef(props.modelValue.bag?.thumbnailDataJson ?? "", "ThumbnailDataJson");
+    const fileDataRef = propertyRef(props.modelValue.bag?.fileDataJson ?? "", "FileDataJson");
+
+    // Thumbnail Modal State
+    const showThumbnailModal = ref(false);
+    const currentThumbnail = ref<{
+        link?: string;
+        width?: number;
+        height?: number;
+        fileSize?: number;
+        index?: number;
+    }>({});
+
+    // Media File Modal State
+    const showMediaFileModal = ref(false);
+    const currentMediaFile = ref<{
+        publicName?: string;
+        link?: string;
+        allowDownload?: boolean;
+        quality?: number;
+        format?: string;
+        width?: number;
+        height?: number;
+        fps?: number;
+        fileSize?: number;
+        index?: number;
+    }>({});
+
+    // The properties that are being edited. This should only contain
+    // objects returned by propertyRef().
+    const propRefs = [description, name, durationSeconds, thumbnailDataRef, fileDataRef];
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** The data source for the media files grid */
+    const mediaFileGridData = computed(() => {
+        const fileDataJson = fileDataRef.value;
+        if (!fileDataJson) {
+            return { rows: [] };
+        }
+
+        try {
+            const rawData = JSON.parse(fileDataJson);
+
+            if (!Array.isArray(rawData)) {
+                return { rows: [] };
+            }
+
+            const result = rawData.map((item: Record<string, unknown>, index: number) => {
+                const qualityNumber = Number(item.Quality);
+                const qualityText = MediaElementQualityDescription[qualityNumber] || "Unknown";
+                // Only show size if it exists and is not zero
+                let displaySize = "";
+                if (item.Size && Number(item.Size) !== 0) {
+                    const sizeNum = Number(item.Size);
+                    displaySize = formatAsMemorySize(sizeNum);
+                }
+
+                return {
+                    publicName: item.PublicName,
+                    quality: qualityText,
+                    format: item.Format,
+                    dimensions: item.Width && item.Height ? `${item.Width}x${item.Height}` : "",
+                    size: displaySize,
+                    allowDownload: item.AllowDownload,
+                    link: item.Link,
+                    width: item.Width,
+                    height: item.Height,
+                    fps: item.FPS,
+                    fileSize: item.Size,
+                    quality_number: item.Quality,
+                    index
+                };
+            });
+
+            return { rows: result };
+        }
+        catch (error) {
+            return { rows: [] };
+        }
+    });
+
+    /** The data source for the thumbnail files grid */
+    const thumbnailGridData = computed(() => {
+        if (!thumbnailDataRef.value) {
+            return { rows: [] };
+        }
+
+        try {
+            const thumbnailData = JSON.parse(thumbnailDataRef.value);
+
+            if (!Array.isArray(thumbnailData)) {
+                return { rows: [] };
+            }
+
+            const result = thumbnailData.map((item: Record<string, unknown>, index: number) => {
+                let dimensions = "";
+                if (item.Dimensions) {
+                    dimensions = item.Dimensions as string;
+                }
+                else if (item.Width && item.Height) {
+                    dimensions = `${item.Width}x${item.Height}`;
+                }
+
+                let displaySize = "";
+                if (item.Size && Number(item.Size) !== 0) {
+                    const sizeNum = Number(item.Size);
+                    displaySize = formatAsMemorySize(sizeNum);
+                }
+
+                return {
+                    dimensions,
+                    size: displaySize,
+                    link: item.Link as string,
+                    width: item.Width as number,
+                    height: item.Height as number,
+                    fileSize: item.Size as number,
+                    index
+                };
+            });
+
+            return { rows: result };
+        }
+        catch (error) {
+            return { rows: [] };
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+      * Formats a number of bytes into a human-readable string
+      * @param bytes The size in bytes
+      * @returns A formatted string like "1234 bytes" or "1234.5 bytes"
+      */
+    function formatAsMemorySize(bytes: number): string {
+        if (bytes < 0) {
+            return "-" + formatAsMemorySize(-bytes);
+        }
+
+        if (bytes === 0) {
+            return "0 bytes";
+        }
+
+        if (bytes % 1 === 0) {
+            return `${bytes} bytes`;
+        }
+
+        return `${bytes.toFixed(1)} bytes`;
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Opens the modal to add a new thumbnail file
+     */
+    function onAddThumbnailFileItem(): void {
+        currentThumbnail.value = {};
+        showThumbnailModal.value = true;
+    }
+
+    /**
+     * Opens the modal to add a new media file
+     */
+    function onAddMediaFileItem(): void {
+        currentMediaFile.value = {};
+        showMediaFileModal.value = true;
+    }
+
+    /**
+     * Opens the modal to edit an existing thumbnail file
+     */
+    function editThumbnailFile(key: string): void {
+        const row = thumbnailGridData.value.rows?.find(r => r.index === Number(key));
+
+        if (row) {
+            currentThumbnail.value = {
+                link: row.link as string,
+                width: row.width as number,
+                height: row.height as number,
+                fileSize: row.fileSize as number,
+                index: row.index as number
+            };
+            showThumbnailModal.value = true;
+        }
+    }
+
+    /**
+     * Opens the modal to edit an existing media file
+     */
+    function editMediaFile(key: string): void {
+        const row = mediaFileGridData.value.rows?.find(r => r.index === Number(key));
+
+        if (row) {
+            currentMediaFile.value = {
+                publicName: row.publicName as string,
+                link: row.link as string,
+                allowDownload: row.allowDownload as boolean,
+                quality: row.quality_number as number,
+                format: row.format as string,
+                width: row.width as number,
+                height: row.height as number,
+                fps: row.fps as number,
+                fileSize: row.fileSize as number,
+                index: row.index as number
+            };
+            showMediaFileModal.value = true;
+        }
+    }
+
+    /**
+     * Deletes a thumbnail file
+     */
+    function deleteThumbnailFile(key: string): void {
+        if (!thumbnailDataRef.value) return;
+
+        try {
+            const thumbnailData = JSON.parse(thumbnailDataRef.value);
+            if (!Array.isArray(thumbnailData)) return;
+
+            const index = Number(key);
+
+            const newThumbnailData = [...thumbnailData];
+            newThumbnailData.splice(index, 1);
+
+            thumbnailDataRef.value = JSON.stringify(newThumbnailData);
+
+            const newValue: ValidPropertiesBox<MediaElementBag> = {
+                bag: {
+                    ...props.modelValue.bag
+                } as MediaElementBag
+            };
+
+            setPropertiesBoxValue(newValue, "thumbnailDataJson", thumbnailDataRef.value);
+
+            emit("update:modelValue", newValue);
+            emit("propertyChanged", "thumbnailDataJson");
+        }
+        catch (error) {
+            alert(`Error deleting thumbnail file: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    /**
+     * Deletes a media file
+     */
+    function deleteMediaFile(key: string): void {
+        if (!fileDataRef.value) return;
+
+        try {
+            const fileData = JSON.parse(fileDataRef.value);
+            if (!Array.isArray(fileData)) return;
+
+            const index = Number(key);
+
+            const newFileData = [...fileData];
+            newFileData.splice(index, 1);
+
+            fileDataRef.value = JSON.stringify(newFileData);
+
+            const newValue: ValidPropertiesBox<MediaElementBag> = {
+                bag: {
+                    ...props.modelValue.bag
+                } as MediaElementBag
+            };
+
+            setPropertiesBoxValue(newValue, "fileDataJson", fileDataRef.value);
+
+            emit("update:modelValue", newValue);
+            emit("propertyChanged", "fileDataJson");
+        }
+        catch (error) {
+            alert(`Error deleting media file: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    /**
+     * Saves the thumbnail file data from the modal
+     */
+    function saveThumbnailFile(data: { link: string; width: number | null; height: number | null; fileSize: number | null }): void {
+        let thumbnailData: Record<string, unknown>[] = [];
+
+        try {
+            if (thumbnailDataRef.value) {
+                const parsedData = JSON.parse(thumbnailDataRef.value);
+                if (Array.isArray(parsedData)) {
+                    thumbnailData = parsedData;
+                }
+            }
+
+            const thumbnailItem: Record<string, unknown> = {
+                Link: data.link,
+                Width: data.width || 0,
+                Height: data.height || 0,
+                Size: data.fileSize || 0,
+                LinkWithPlayButton: ""
+            };
+
+            let newThumbnailData: Record<string, unknown>[] = [];
+
+            if (currentThumbnail.value.index !== undefined) {
+                newThumbnailData = [...thumbnailData];
+                newThumbnailData[currentThumbnail.value.index] = thumbnailItem;
+            }
+            else {
+                newThumbnailData = [...thumbnailData, thumbnailItem];
+            }
+
+            thumbnailDataRef.value = JSON.stringify(newThumbnailData);
+
+            const newValue: ValidPropertiesBox<MediaElementBag> = {
+                bag: {
+                    ...props.modelValue.bag
+                } as MediaElementBag
+            };
+
+            setPropertiesBoxValue(newValue, "thumbnailDataJson", thumbnailDataRef.value);
+
+            emit("update:modelValue", newValue);
+            emit("propertyChanged", "thumbnailDataJson");
+
+            currentThumbnail.value = {};
+            showThumbnailModal.value = false;
+        }
+        catch (error) {
+            alert(`Error saving thumbnail file: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    /**
+     * Saves the media file data from the modal
+     */
+    function saveMediaFile(data: {
+        publicName: string;
+        link: string;
+        allowDownload: boolean;
+        quality: number;
+        format: string;
+        width: number | null;
+        height: number | null;
+        fps: number | null;
+        fileSize: number | null;
+    }): void {
+        let fileData: Record<string, unknown>[] = [];
+
+        try {
+            if (fileDataRef.value) {
+                const parsedData = JSON.parse(fileDataRef.value);
+                if (Array.isArray(parsedData)) {
+                    fileData = parsedData;
+                }
+            }
+
+            const fileItem: Record<string, unknown> = {
+                PublicName: data.publicName,
+                Link: data.link,
+                AllowDownload: data.allowDownload,
+                Quality: data.quality,
+                Format: data.format,
+                Width: data.width || 0,
+                Height: data.height || 0,
+                FPS: data.fps || 0,
+                Size: data.fileSize || 0
+            };
+
+            let newFileData: Record<string, unknown>[] = [];
+
+            if (currentMediaFile.value.index !== undefined) {
+                newFileData = [...fileData];
+                newFileData[currentMediaFile.value.index] = fileItem;
+            }
+            else {
+                newFileData = [...fileData, fileItem];
+            }
+
+            fileDataRef.value = JSON.stringify(newFileData);
+
+            const newValue: ValidPropertiesBox<MediaElementBag> = {
+                bag: {
+                    ...props.modelValue.bag
+                } as MediaElementBag
+            };
+
+            emit("update:modelValue", newValue);
+            emit("propertyChanged", "fileDataJson");
+
+            setPropertiesBoxValue(newValue, "fileDataJson", fileDataRef.value);
+
+            currentMediaFile.value = {};
+            showMediaFileModal.value = false;
+        }
+        catch (error) {
+            alert(`Error saving media file: ${error instanceof Error ? error.message : String(error)}`);
+        }
+    }
+
+    // #endregion
+
+    // #region Watchers
+    watch(() => props.modelValue, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(durationSeconds, props.modelValue.bag?.durationSeconds ?? null);
+        updateRefValue(thumbnailDataRef, props.modelValue.bag?.thumbnailDataJson ?? "");
+        updateRefValue(fileDataRef, props.modelValue.bag?.fileDataJson ?? "");
+    });
+
+    // Determines which values we want to track changes on (defined in the
+    // array) and then emit a new object defined as newValue.
+    watch([attributeValues, ...propRefs], () => {
+        const newValue: ValidPropertiesBox<MediaElementBag> = {
+            bag: { ...props.modelValue.bag } as MediaElementBag
+        };
+
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "durationSeconds", durationSeconds.value);
+        setPropertiesBoxValue(newValue, "thumbnailDataJson", thumbnailDataRef.value);
+        setPropertiesBoxValue(newValue, "fileDataJson", fileDataRef.value);
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+
+        emit("update:modelValue", newValue);
+
+    });
+
+    // Watch for any changes to props that represent properties and then
+    // automatically emit which property changed.
+    watchPropertyChanges(propRefs, emit);
+    // #endregion
+</script>

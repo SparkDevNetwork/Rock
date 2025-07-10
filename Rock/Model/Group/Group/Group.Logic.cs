@@ -448,7 +448,7 @@ namespace Rock.Model
             List<int> checkMemberRoleIds = new List<int>();
             if ( action == Authorization.VIEW )
             {
-                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView ).Select( a => a.Id ) );
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanView || a.CanTakeAttendance ).Select( a => a.Id ) );
             }
             else if ( action == Authorization.MANAGE_MEMBERS )
             {
@@ -457,6 +457,10 @@ namespace Rock.Model
             else if ( action == Authorization.EDIT )
             {
                 checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit ).Select( a => a.Id ) );
+            }
+            else if ( action == Authorization.TAKE_ATTENDANCE )
+            {
+                checkMemberRoleIds.AddRange( groupType.Roles.Where( a => a.CanEdit || a.CanTakeAttendance ).Select( a => a.Id ) );
             }
 
             if ( !checkMemberRoleIds.Any() )
@@ -479,7 +483,7 @@ namespace Rock.Model
                     var role = groupType.Roles.FirstOrDefault( r => r.Id == roleId );
                     if ( role != null )
                     {
-                        if ( action == Authorization.VIEW && role.CanView )
+                        if ( action == Authorization.VIEW && ( role.CanView || role.CanTakeAttendance ) )
                         {
                             return true;
                         }
@@ -490,6 +494,11 @@ namespace Rock.Model
                         }
 
                         if ( action == Authorization.EDIT && role.CanEdit )
+                        {
+                            return true;
+                        }
+
+                        if ( action == Authorization.TAKE_ATTENDANCE && ( role.CanEdit || role.CanTakeAttendance ) )
                         {
                             return true;
                         }
@@ -656,7 +665,8 @@ namespace Rock.Model
         /// will be used.
         /// </summary>
         /// <returns>Whether chat is enabled for this group.</returns>
-        internal bool GetIsChatEnabled()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatEnabled()
         {
             var groupTypeIsChatAllowed = false;
             var groupTypeIsChatEnabledForAllGroups = false;
@@ -687,7 +697,8 @@ namespace Rock.Model
         /// then the value of <see cref="GroupType.IsLeavingChatChannelAllowed"/> will be used.
         /// </summary>
         /// <returns>Whether individuals are allowed to leave this chat channel.</returns>
-        internal bool GetIsLeavingChatChannelAllowed()
+        [RockInternal( "17.1", true )]
+        public bool GetIsLeavingChatChannelAllowed()
         {
             if ( this.IsLeavingChatChannelAllowedOverride.HasValue )
             {
@@ -710,7 +721,8 @@ namespace Rock.Model
         /// <see cref="GroupType.IsChatChannelPublic"/> will be used.
         /// </summary>
         /// <returns>Whether this chat channel is public, and may be joined by any person.</returns>
-        internal bool GetIsChatChannelPublic()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatChannelPublic()
         {
             if ( this.IsChatChannelPublicOverride.HasValue )
             {
@@ -733,7 +745,8 @@ namespace Rock.Model
         /// <see cref="GroupType.IsChatChannelAlwaysShown"/> will be used.
         /// </summary>
         /// <returns>Whether this chat channel is always shown in the channel list, and may be joined by any person.</returns>
-        internal bool GetIsChatChannelAlwaysShown()
+        [RockInternal( "17.1", true )]
+        public bool GetIsChatChannelAlwaysShown()
         {
             if ( this.IsChatChannelAlwaysShownOverride.HasValue )
             {

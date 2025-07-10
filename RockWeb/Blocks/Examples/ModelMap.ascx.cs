@@ -402,7 +402,7 @@ namespace RockWeb.Blocks.Examples
                                 Required = p.IsDefined( typeof( RequiredAttribute ) ),
                                 Id = p.MetadataToken,
                                 Comment = GetComments( p, xmlComments, properties ),
-                                IsEnum = p.PropertyType.IsEnum,
+                                IsEnum = p.PropertyType.IsEnum || Nullable.GetUnderlyingType( p.PropertyType )?.IsEnum == true,
                                 IsDefinedValue = p.Name.EndsWith( "ValueId" ) && p.IsDefined( typeof( DefinedValueAttribute ) )
                             };
 #pragma warning restore CS0618 // LavaIncludeAttribute is obsolete
@@ -410,7 +410,8 @@ namespace RockWeb.Blocks.Examples
                             if ( property.IsEnum )
                             {
                                 property.KeyValues = new Dictionary<string, string>();
-                                var values = p.PropertyType.GetEnumValues();
+                                Type enumType = Nullable.GetUnderlyingType( p.PropertyType ) ?? p.PropertyType;
+                                var values = Enum.GetValues( enumType );
                                 foreach ( var value in values )
                                 {
                                     property.KeyValues.AddOrReplace( ( ( int ) value ).ToString(), value.ToString() );

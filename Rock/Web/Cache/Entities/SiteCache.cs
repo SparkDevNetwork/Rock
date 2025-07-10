@@ -23,6 +23,7 @@ using System.Web;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Oidc;
 
 namespace Rock.Web.Cache
 {
@@ -499,7 +500,7 @@ namespace Rock.Web.Cache
 
         /// <inheritdoc cref="Site.EnablePageViewGeoTracking" />
         [DataMember]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         [Obsolete( "Geolocation lookups are now performed on all interactions, regardless of this setting." )]
         public bool EnablePageViewGeoTracking { get; private set; }
 
@@ -675,22 +676,55 @@ namespace Rock.Web.Cache
         /// </summary>
         /// <param name="isChangePasswordRequired">if set to <c>true</c> [is change password required].</param>
         /// <param name="includeReturnUrl">if set to <c>true</c> [include return URL].</param>
+        [RockObsolete( "17.0" )]
+        [Obsolete( "Use the RedirectToChangePasswordPage method that takes a userLogin parameter instead." )]
         public void RedirectToChangePasswordPage( bool isChangePasswordRequired, bool includeReturnUrl )
+        {
+            RedirectToChangePasswordPage( isChangePasswordRequired, includeReturnUrl, null );
+        }
+
+        /// <summary>
+        /// Redirects to the change password page.
+        /// </summary>
+        /// <param name="isChangePasswordRequired">Whether a password change is required.</param>
+        /// <param name="includeReturnUrl">Whether to include the ReturnUrl parameter when redirecting.</param>
+        /// <param name="userLogin">The <see cref="UserLogin"/> of the individual whose password should be changed.</param>
+        /// <remarks>
+        /// If <paramref name="isChangePasswordRequired"/> is <see langword="true"/> and <paramref name="userLogin"/> is
+        /// provided, a <see cref="HistoryLogin"/> record will be saved.
+        /// </remarks>
+        public void RedirectToChangePasswordPage( bool isChangePasswordRequired, bool includeReturnUrl, UserLogin userLogin )
         {
             var context = HttpContext.Current;
 
             var pageReference = ChangePasswordPageReference;
 
             var parms = new Dictionary<string, string>();
+            var returnUrl = context.Request.QueryString["returnUrl"] ?? context.Server.UrlEncode( context.Request.RawUrl );
 
             if ( isChangePasswordRequired )
             {
                 parms.Add( "ChangeRequired", "True" );
+
+                if ( userLogin != null )
+                {
+                    var returnUrlInnerQueryParams = OidcHelper.GetInnerQueryParams( returnUrl );
+                    var oidcClientId = OidcHelper.GetClientId( returnUrlInnerQueryParams );
+
+                    new HistoryLogin
+                    {
+                        UserName = userLogin.UserName,
+                        UserLoginId = userLogin.Id,
+                        AuthClientClientId = oidcClientId,
+                        WasLoginSuccessful = false,
+                        LoginFailureReason = Enums.Security.LoginFailureReason.PasswordChangeRequired
+                    }.SaveAfterDelay();
+                }
             }
 
             if ( includeReturnUrl )
             {
-                parms.Add( "ReturnUrl", context.Request.QueryString["returnUrl"] ?? context.Server.UrlEncode( context.Request.RawUrl ) );
+                parms.Add( "ReturnUrl", returnUrl );
             }
 
             pageReference.Parameters = parms;

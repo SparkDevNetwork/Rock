@@ -147,6 +147,19 @@ namespace Rock.UniversalSearch.IndexModels
         }
 
         /// <summary>
+        /// Determines whether this instance can be viewed by the person. This is used
+        /// when the item name is used instead of the <see cref="FormatSearchResult(Person, Dictionary{string, object}, Dictionary{string, object})"/>
+        /// output.
+        /// </summary>
+        /// <param name="person">The person that is requesting access to view this item.</param>
+        /// <param name="rockContext">The context to use when accessing the database, this must not be <c>null</c> when called.</param>
+        /// <returns><c>true</c> if <paramref name="person"/> is allowed to view the item; otherwise <c>false</c>.</returns>
+        public virtual bool IsViewAllowed( Person person, RockContext rockContext )
+        {
+            return true;
+        }
+
+        /// <summary>
         /// Gets the document URL.
         /// </summary>
         /// <returns></returns>

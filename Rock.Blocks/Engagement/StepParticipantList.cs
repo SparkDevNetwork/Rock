@@ -103,9 +103,6 @@ namespace Rock.Blocks.Engagement
         #endregion Keys
 
         #region Fields
-
-        private StepType _stepType = null;
-
         #endregion Fields
 
         #region Methods
@@ -136,11 +133,11 @@ namespace Rock.Blocks.Engagement
             var options = new StepParticipantListOptionsBag()
             {
                 IsCampusColumnVisible = CampusCache.All( false ).Count > 1,
-                StepType = stepType.ToListItemBag(),
+                StepType = stepType?.ToListItemBag(),
                 IsNoteColumnVisible = GetAttributeValue( AttributeKey.ShowNoteColumn ).AsBoolean(),
                 IsDateStartedColumnVisible = stepType?.HasEndDate == true,
                 PersonProfilePageUrl = this.GetLinkedPageUrl( AttributeKey.ProfilePage, new Dictionary<string, string> { { PageParameterKey.PersonId, "((Key))" } } ),
-                StepStatusItems = stepType?.StepProgram?.StepStatuses?.OrderBy( x => x.Order ).ToListItemBagList(),
+                StepStatusItems = stepType != null ? GetStepTypeStatus( stepType )?.ToListItemBagList() : null,
                 StepStatusBackgroundColors = GetStepStatusBackgroundColors( stepType )
             };
             return options;
@@ -151,7 +148,7 @@ namespace Rock.Blocks.Engagement
         /// </summary>
         /// <param name="stepType">The Step Type.</param>
         /// <returns></returns>
-        private Dictionary<string, string> GetStepStatusBackgroundColors( StepType stepType )
+        private Dictionary<string, string> GetStepStatusBackgroundColors( StepTypeCache stepType )
         {
             if ( stepType == null )
             {
@@ -265,29 +262,34 @@ namespace Rock.Blocks.Engagement
         /// Gets the current step type.
         /// </summary>
         /// <returns></returns>
-        private StepType GetStepType()
+        private StepTypeCache GetStepType()
         {
-            if ( _stepType == null )
+            // if this block has a specific StepTypeId set, use that, otherwise, determine it from the PageParameters
+            var stepTypeGuid = GetAttributeValue( AttributeKey.StepType ).AsGuidOrNull();
+
+            if ( stepTypeGuid.HasValue )
             {
-                // if this block has a specific StepTypeId set, use that, otherwise, determine it from the PageParameters
-                var stepTypeGuid = GetAttributeValue( AttributeKey.StepType ).AsGuid();
-
-                int stepTypeId = 0;
-
-                if ( stepTypeGuid == Guid.Empty )
-                {
-                    stepTypeId = PageParameter( PageParameterKey.StepTypeId ).AsInteger();
-                }
-
-                if ( !( stepTypeId == 0 && stepTypeGuid == Guid.Empty ) )
-                {
-                    _stepType = new StepTypeService( RockContext ).Queryable()
-                                        .Where( g => g.Id == stepTypeId || g.Guid == stepTypeGuid )
-                                        .FirstOrDefault();
-                }
+                return StepTypeCache.Get( stepTypeGuid.Value );
             }
 
-            return _stepType;
+            return StepTypeCache.Get( PageParameter( PageParameterKey.StepTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
+        }
+
+        private List<StepStatus> GetStepTypeStatus( StepTypeCache stepType )
+        {
+            if (stepType == null)
+            {
+                return new List<StepStatus>();
+            }
+            
+            using (var rockContext = new RockContext())
+            {
+                var stepStatusService = new StepStatusService( rockContext );
+                return stepStatusService.Queryable()
+                    .AsNoTracking()
+                    .Where( ss => ss.StepProgramId == stepType.StepProgramId )
+                    .ToList();
+            }
         }
 
         /// <summary>

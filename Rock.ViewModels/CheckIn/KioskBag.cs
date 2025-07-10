@@ -46,5 +46,15 @@ namespace Rock.ViewModels.CheckIn
         /// </summary>
         /// <value><c>true</c> if this kiosk supports registration mode; otherwise, <c>false</c>.</value>
         public bool IsRegistrationModeEnabled { get; set; }
+
+        /// <summary>
+        /// Determines if adding new families in registration mode is enabled.
+        /// </summary>
+        public bool IsAddingFamiliesEnabled { get; set; }
+
+        /// <summary>
+        /// Determines if editing new families in registration mode is enabled.
+        /// </summary>
+        public bool IsEditingFamiliesEnabled { get; set; }
     }
 }

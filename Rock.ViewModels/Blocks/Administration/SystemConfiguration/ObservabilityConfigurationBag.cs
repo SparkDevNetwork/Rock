@@ -16,6 +16,8 @@
 //
 
 using System.Collections.Generic;
+
+using Rock.Enums.Observability;
 using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
@@ -26,12 +28,9 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
     public class ObservabilityConfigurationBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether [enable observability].
+        /// The individual features that are enabled for observability.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if [enable observability]; otherwise, <c>false</c>.
-        /// </value>
-        public bool EnableObservability { get; set; }
+        public FeatureFlags EnabledFeatures { get; set; }
 
         /// <summary>
         /// Gets or sets the endpoint.
@@ -56,6 +55,11 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
         /// The endpoint protocol.
         /// </value>
         public string EndpointProtocol { get; set; }
+
+        /// <summary>
+        /// The detail level of the trace information that will be generated.
+        /// </summary>
+        public TraceLevel TraceLevel { get; set; }
 
         /// <summary>
         /// Gets or sets the maximum length of the attribute.
