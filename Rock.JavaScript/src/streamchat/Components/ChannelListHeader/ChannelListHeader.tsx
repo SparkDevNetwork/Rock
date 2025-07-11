@@ -125,8 +125,10 @@ const ChannelListHeader: React.FC<ChannelListHeaderProps> = ({
         }
     }
 
+    const rootClassName = chatViewStyle == ChatViewStyle.Community ? "rocktheme-community" : "rocktheme-conversational"
+
     return (
-        <div className="rock-channel-list-header-container str-chat rocktheme-community">
+        <div className={`${rootClassName} rock-channel-list-header-container str-chat`}>
             <div className="rock-channel-list-header">
                 {/* User profile avatar (Community view only) */}
                 {showProfileImage && (

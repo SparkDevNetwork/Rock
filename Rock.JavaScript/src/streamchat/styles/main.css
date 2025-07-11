@@ -142,6 +142,18 @@
   --message-layout-line-height: 120%;
 }
 
+.rocktheme-conversational {
+  --channel-list-header-bg: var(--color-interface-softer);
+  --channel-list-header-border: var(--color-interface-soft);
+  --channel-list-header-width: var(--sidebar-width);
+  --channel-list-header-avatar-size: calc(var(--str-chat__spacing-px) * 28);
+  --channel-list-header-action-gap: 4px;
+  --channel-list-header-icon-btn-size: 28px;
+  --channel-list-header-icon-btn-radius: 4px;
+  --channel-list-header-icon-btn-color: var(--color-interface-strong);
+  --channel-list-header-icon-font-size: 16px;
+}
+
 .rocktheme-community .rock-channel-header {
   display: flex;
   align-items: center;
@@ -254,6 +266,42 @@
   font-size: var(--channel-list-header-icon-font-size);
 }
 .rocktheme-community .rock-channel-list-header > .rock-channel-list-header-actions > .rock-channel-list-header-icon-button.active {
+  background: var(--color-interface-soft);
+}
+
+.rocktheme-conversational .rock-channel-list-header {
+  background-color: var(--color-interface-softest);
+  display: flex;
+  align-items: center;
+  height: 64px;
+  border-bottom: 1px solid var(--color-interface-soft);
+  border-right: 1px solid var(--color-interface-soft);
+}
+.rocktheme-conversational .rock-channel-list-header .rock-channel-list-header-actions {
+  display: flex;
+  justify-content: end;
+  align-items: center;
+}
+.rocktheme-conversational .rock-channel-list-header > .rock-channel-list-header-actions > .rock-channel-list-header-icon-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  height: var(--channel-list-header-icon-btn-size);
+  width: var(--channel-list-header-icon-btn-size);
+  color: var(--channel-list-header-icon-btn-color);
+  border-radius: var(--channel-list-header-icon-btn-radius);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.rocktheme-conversational .rock-channel-list-header > .rock-channel-list-header-actions > .rock-channel-list-header-icon-button:hover {
+  background: var(--channel-list-header-border);
+}
+.rocktheme-conversational .rock-channel-list-header > .rock-channel-list-header-actions > .rock-channel-list-header-icon-button > i {
+  color: var(--channel-list-header-icon-btn-color);
+  font-size: var(--channel-list-header-icon-font-size);
+}
+.rocktheme-conversational .rock-channel-list-header > .rock-channel-list-header-actions > .rock-channel-list-header-icon-button.active {
   background: var(--color-interface-soft);
 }
 

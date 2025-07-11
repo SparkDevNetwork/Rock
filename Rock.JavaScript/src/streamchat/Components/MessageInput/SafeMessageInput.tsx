@@ -13,6 +13,7 @@ import {
     useChatContext,
     MessageInput,
     MessageInputProps,
+    MessageInputFlat,
 } from "stream-chat-react";
 import { useChatConfig } from "../Chat/ChatConfigContext";
 import { ChatViewStyle } from "../../ChatViewStyle";
@@ -31,7 +32,7 @@ export const SafeMessageInput: React.FC<MessageInputProps> = (props: MessageInpu
     const { client } = useChatContext();
     const { chatViewStyle } = useChatConfig();
 
-    const submitHandler: MessageInputProps["overrideSubmitHandler"] = useCallback(
+    const customSubmitHandler: MessageInputProps["overrideSubmitHandler"] = useCallback(
         async ({ localMessage, message, sendOptions }: {
             localMessage: LocalMessage;
             message: Message;
@@ -65,13 +66,16 @@ export const SafeMessageInput: React.FC<MessageInputProps> = (props: MessageInpu
     );
 
     const conversationalComponent = () => {
-        return <MessageInput {...props} overrideSubmitHandler={submitHandler} />;
+        return <MessageInput {...props}
+            Input={MessageInputFlat}
+            overrideSubmitHandler={customSubmitHandler} />;
     }
 
     const communityComponent = () => {
         return (
-            <MessageInput {...props} overrideSubmitHandler={submitHandler}
-                Input={CommunityMessageInput} />
+            <MessageInput {...props}
+                Input={CommunityMessageInput}
+                overrideSubmitHandler={customSubmitHandler} />
         )
     }
 

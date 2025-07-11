@@ -1,6 +1,7 @@
 import React, { useState } from "react";
 import {
     Chat,
+    Thread,
 } from "stream-chat-react";
 import { ChannelSort, ChannelFilters } from "stream-chat";
 import { useCreateChatClient } from "stream-chat-react";
@@ -163,6 +164,11 @@ const ChatComponentContent: React.FC<any> = ({
             ) : (
                 <WrappedChannel channelId={channelId} jumpToMessageId={jumpToMessageId}>
                     <RockChatWindow />
+
+
+                    {chatViewStyle == ChatViewStyle.Conversational && (
+                        <Thread />
+                    )}
                 </WrappedChannel>
             )}
         </div>

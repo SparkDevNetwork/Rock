@@ -17,13 +17,11 @@ import { RockMessageActionList } from "./RockMessageActionList";
 import { RockDateSeperator } from "../DateSeperator/DateSeperator";
 import { RockMessage } from "../Message/RockMessage";
 import { ChannelPaneHeader } from "../ChannelRightPane/ChannelPaneHeader";
-import { useChannelRightPane } from "../ChannelRightPane/ChannelRightPaneContext";
 import { useChatConfig } from "../Chat/ChatConfigContext";
 import { ChatReactionBag } from "src/streamchat/ChatComponentProps";
-import { CommunityMessageInput } from "../MessageInput/CommunityMessageInput";
 import { SafeMessageInput } from "../MessageInput/SafeMessageInput";
 import { EditMessageForm } from "../MessageInput/EditMessageForm";
-
+import { ChatViewStyle } from "../../ChatViewStyle";
 interface WrappedChannelProps {
     children: ReactNode;
     channelId?: string;
@@ -99,15 +97,18 @@ export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children, channe
         return reaction.reactionText;
     };
 
+    const { chatViewStyle } = useChatConfig();
+
     return (
-        <Channel CustomMessageActionsList={RockMessageActionList}
+        <Channel
+            CustomMessageActionsList={RockMessageActionList}
             Message={RockMessage}
             DateSeparator={RockDateSeperator}
             AttachmentSelectorInitiationButtonContents={CustomAttachmentSelectorInitiationButtonContents}
             EditMessageInput={EditMessageForm}
             Input={SafeMessageInput}
             reactionOptions={reactionOptions}
-            ThreadHeader={CustomThreadHeader}>
+            {...(chatViewStyle == ChatViewStyle.Community ? { ThreadHeader: CustomThreadHeader } : {})}>
             {children}
             {/* if there is a jumpToMessageId, we need to jump to it. this has to be done in the channel context which is why we have a nested component */}
             {jumpToMessageId && <JumpToMessage messageId={jumpToMessageId} />}
