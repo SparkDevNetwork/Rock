@@ -2,8 +2,8 @@
 <template>
     <div ref="dropdownElement" :class="dropDownClasses">
         <slot name="anchor" @click.prevent="onDropDownClick">
-            <button :class="`btn btn-link btn-overflow ${anchorButtonCssClass}`" type="button" @click.prevent="onDropDownClick">
-                <slot>
+            <button :class="`btn btn-link btn-overflow ${anchorButtonCssClass}`" :disabled="disabled" type="button" @click.prevent="onDropDownClick">
+                <slot v-bind="{ disabled }">
                     <i class="fa fa-ellipsis-v"></i>
                 </slot>
             </button>
@@ -11,7 +11,7 @@
 
         <ul class="dropdown-menu" :class="additionalDropDownMenuClasses">
             <li v-for="action in items" :class="getActionItemClasses(action)">
-                <button type="button" :class="getActionButtonClasses(action)" @click.prevent.stop="onActionClick(action, $event)">
+                <button :class="getActionButtonClasses(action)" :disabled="disabled" type="button" @click.prevent.stop="onActionClick(action, $event)">
                     <i v-if="action.iconCssClass" :class="action.iconCssClass"></i>
                     <i v-else-if="hasAnyIcons"></i>
                     {{ action.title }}
@@ -71,7 +71,15 @@ li.disabled > button {
         anchorButtonCssClass: {
             type: String as PropType<string | null | undefined>,
             required: false
-        }
+        },
+
+        /**
+         * Whether the drop down is disabled.
+         */
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
     });
 
     // #region Values

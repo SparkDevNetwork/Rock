@@ -1,0 +1,48 @@
+<template>
+    <Panel title="Flow Key Metrics">
+        <div v-if="!vertical"
+             class="row">
+            <div class="col-md-4">
+                <ConversionsKpi :messages="messages" />
+            </div>
+
+            <div class="col-md-4">
+                <MeanConversionTimeKpi :messages="messages" />
+            </div>
+
+            <div class="col-md-4">
+                <UnsubscribesKpi :messages="messages" />
+            </div>
+        </div>
+
+        <div v-else
+             class="row">
+            <div class="col-md-12">
+                <ConversionsKpi :messages="messages" />
+                <MeanConversionTimeKpi :messages="messages" />
+                <UnsubscribesKpi :messages="messages" />
+            </div>
+        </div>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { PropType } from "vue";
+    import ConversionsKpi from "./conversionsKpi.partial.obs";
+    import MeanConversionTimeKpi from "./meanConversionTimeKpi.partial.obs";
+    import UnsubscribesKpi from "./unsubscribesKpi.partial.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+
+    defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        },
+
+        vertical: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+</script>

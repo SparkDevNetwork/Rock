@@ -1,17 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span ref="anchorElement" @click.prevent="onAnchorClick">
-        <slot name="anchor">
+    <span ref="anchorElement" :disabled="disabled" @click.prevent="onAnchorClick">
+        <slot name="anchor" :disabled="disabled">
             <i class="fa fa-ellipsis-v"></i>
         </slot>
     </span>
 
-    <div v-if="isDropDownOpen" ref="dropdownElement" :style="floatingStyles" class="floating-dropdown">
+    <div v-if="isDropDownOpen" ref="dropdownElement" :style="floatingStyles" class="floating-dropdown" :class="{ 'allow-overflow': preventOverflowClipping }">
         <svg v-if="showArrow" ref="arrowElement" class="arrow">
             <path d="M0,7L5,0L10,7"></path>
         </svg>
         <div class="body">
-            <slot />
+            <slot :disabled="disabled" />
         </div>
     </div>
 </template>
@@ -26,6 +26,9 @@
     background-color: white;
     margin-top: 6px;
     border-radius: 4px;
+}
+
+.floating-dropdown:not(.allow-overflow) > .body {
     overflow: clip;
 }
 
@@ -48,6 +51,11 @@
             default: false
         },
 
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** If true then the arrow will be visible pointing to the anchor. */
         showArrow: {
             type: Boolean,
@@ -58,6 +66,11 @@
         preventCloseOnClickSelectors: {
             type: Object as PropType<string[]>,
             default: [".datepicker"]
+        },
+
+        preventOverflowClipping: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
 

@@ -1,0 +1,380 @@
+<template>
+    <Panel isFullscreen
+           isFullscreenPageOnly
+           panelBodyCssClass="email-builder-panel-body"
+           title="Create Email">
+        <template #headerActions>
+            <span class="action panel-action-preview clickable"
+                  @click="onPreviewClicked">
+                <i class="ti ti-eye" />
+            </span>
+        </template>
+
+        <template #default>
+            <div class="panel-body-contents">
+                <div class="email-form-container">
+                    <RockForm :id="createEmailFormId" @submit="onSaveEmailMessageClicked">
+                        <TextBox v-model="emailName"
+                                 :disabled="disabled"
+                                 label="Name"
+                                 rules="required" />
+
+                        <TextBox v-model="emailSubject"
+                                 :disabled="disabled"
+                                 help="This will be the internal name of the message."
+                                 label="Email Subject"
+                                 rules="required" />
+
+                        <TextBox v-model="emailFromName"
+                                 :disabled="disabled"
+                                 help="This name will appear in your recipients' inboxes. Use a name they'll recognize, such as your church or ministry."
+                                 label="From Name"
+                                 rules="required" />
+
+                        <EmailBox v-model="emailFromEmail"
+                                  :disabled="disabled"
+                                  help="This is the email address that will appear as the sender. Make sure it's an address your recipients can trust."
+                                  label="From Email"
+                                  rules="required" />
+
+                        <EmailBox v-model="emailReplyToAddress"
+                                  :disabled="disabled"
+                                  help="If your recipients reply to the email, this is the address where their responses will be sent."
+                                  label="Reply To Address"
+                                  rules="required" />
+
+                        <TextBox v-model="emailPreviewText"
+                                 :disabled="disabled"
+                                 help="Enter a brief description or summary of your email. This text will appear in the recipient's inbox preview, next to or below the subject line. Keep it clear and engaging to encourage opens!"
+                                 label="Preview Text"
+                                 :rows="4"
+                                 textMode="multiline"
+                                 @blur="onEmailPreviewBlurred" />
+
+                        <FileUploader :disabled="disabled" label="Attachments" />
+                    </RockForm>
+                </div>
+
+                <div class="email-editor-container">
+                    <EmailEditor :communicationTemplateGuid="communicationTemplate?.guid"
+                                 :communicationTemplates="communicationTemplateListItemsBags"
+                                 :disabled="disabled"
+                                 :getHtmlRequest="getHtmlRequest"
+                                 :html="message"
+                                 :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                                 :recipientPersonIds="undefined"
+                                 :videoProviderNames="undefined"
+                                 @emailDocumentUpdated="onEmailDocumentUpdated"
+                                 @update:communicationTemplateGuid="onCommunicationTemplateSelected" />
+                </div>
+            </div>
+        </template>
+
+        <template #footerActions>
+            <RockButton btnType="default" :disabled="disabled" @click="emit('close')">Cancel</RockButton>
+        </template>
+
+        <template #footerSecondaryActions>
+            <RockButton btnType="default" :disabled="disabled" @click="onSendTestClicked"><i class="ti ti-send"></i> Send Test</RockButton>
+            <RockButton btnType="primary" :disabled="disabled" :form="createEmailFormId" type="submit">Save</RockButton>
+        </template>
+    </Panel>
+
+    <Modal v-model="isSendTestConfirmationShown"
+           saveAutoLoading
+           saveLoadingText="Sending..."
+           saveText="Send"
+           title="Send Test Email"
+           @save="onSendTestConfirmed">
+        <NotificationBox v-if="sendTestError"
+                         alertType="danger"
+                         v-html="sendTestError" />
+
+        <TextBox v-model="testEmailAddress"
+                 label="Test Email"
+                 rules="required" />
+    </Modal>
+</template>
+
+<style scoped>
+:deep(.email-builder-panel-body) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+}
+
+:deep(.email-builder-panel-body .actions) {
+    margin: 0;
+}
+
+.panel-body-contents {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+}
+
+.email-form-container {
+    padding: var(--spacing-large);
+    overflow-y: auto;
+    width: 310px;
+}
+
+.email-editor-container {
+    flex: 1;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { getPreheaderTextFromDoc } from "./utils.partial";
+    import EmailEditor, { GetHtmlRequest } from "@Obsidian/Controls/emailEditor";
+    import EmailBox from "@Obsidian/Controls/emailBox.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { Guid } from "@Obsidian/Types";
+    import { areEqual, emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { CommunicationFlowDetailCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowDetailCommunicationTemplateBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { BlockActionCallbacks } from "./types.partial";
+
+    const props = defineProps({
+        communicationTemplate: {
+            type: Object as PropType<CommunicationFlowDetailCommunicationTemplateBag | null | undefined>,
+            required: true
+        },
+
+        communicationTemplates: {
+            type: Array as PropType<CommunicationFlowDetailCommunicationTemplateBag[]>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        testEmailAddress: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+        (e: "previewCommunicationTemplate", value: CommunicationFlowDetailCommunicationTemplateBag): void;
+        (e: "saveCommunicationTemplate", value: CommunicationFlowDetailCommunicationTemplateBag): void;
+        (e: "sendTest", value: { communicationTemplate: CommunicationFlowDetailCommunicationTemplateBag, testEmailAddress: string } & BlockActionCallbacks): void;
+    }>();
+
+    const createEmailFormId = `create-email-form-${newGuid()}`;
+
+    // #region Values
+
+    // UI state.
+    const iframeDocument = ref<Document | undefined>();
+    const getHtmlRequest = ref<GetHtmlRequest | null | undefined>();
+    const isSendTestConfirmationShown = ref<boolean>(false);
+    const testEmailAddress = ref<string>(props.testEmailAddress ?? "");
+    const isSendingTest = ref<boolean>(false);
+    const sendTestError = ref<string | null | undefined>();
+
+    // Entity state.
+    const guid = ref<Guid>(toGuidOrNull(props.communicationTemplate?.guid) ?? emptyGuid);
+    const message = ref<string>(props.communicationTemplate?.message ?? "");
+    const emailName = ref<string>(props.communicationTemplate?.name ?? "");
+    const emailSubject = ref<string>(props.communicationTemplate?.subject ?? "");
+    const emailFromName = ref<string>(props.communicationTemplate?.fromName ?? "");
+    const emailFromEmail = ref<string>(props.communicationTemplate?.fromEmail ?? "");
+    const emailReplyToAddress = ref<string>(props.communicationTemplate?.replyToEmail ?? "");
+    const emailPreviewText = ref<string>(""); // Initialized once the iframe is loaded.
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const communicationTemplateListItemsBags = computed<ListItemBag[]>(() => {
+        return Enumerable
+            .from(props.communicationTemplates)
+            // Find email templates only.
+            .where(c => !!c.fromEmail || !!c.message)
+            .select(x => ({
+                text: x.name,
+                value: x.guid
+            }))
+            .toArray();
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onSaveEmailMessageClicked(): void {
+        getHtmlRequest.value = {
+            onSuccess(response) {
+                // TODO JMH Handle communication creation.
+                message.value = response.html;
+                emit("saveCommunicationTemplate", {
+                    guid: guid.value,
+                    name: emailName.value,
+                    subject: emailSubject.value,
+                    fromName: emailFromName.value,
+                    fromEmail: emailFromEmail.value,
+                    replyToEmail: emailReplyToAddress.value,
+                    message: message.value,
+                    emailAttachmentBinaryFiles: []
+                });
+            },
+            onError(error) {
+                // TODO JMH Handle error.
+                console.error("Error getting HTML:", error);
+            }
+        };
+    }
+
+    let lastEmailPreviewText: string | undefined;
+
+    function onEmailPreviewBlurred(): void {
+        const newValue = emailPreviewText.value.trim();
+        if (newValue !== lastEmailPreviewText && iframeDocument.value) {
+            lastEmailPreviewText = newValue;
+            setPreheaderTextInDoc(iframeDocument.value, newValue);
+        }
+    }
+
+    function onEmailDocumentUpdated(doc: Document): void {
+        iframeDocument.value = doc;
+        emailPreviewText.value = getPreheaderTextFromDoc(doc) ?? "";
+    }
+
+    function onCommunicationTemplateSelected(communicationTemplateGuid: Guid | null | undefined): void {
+        communicationTemplateGuid = toGuidOrNull(communicationTemplateGuid);
+
+        if (isNullish(communicationTemplateGuid)) {
+            // Do nothing if the selection is cleared.
+            return;
+        }
+
+        const template = props.communicationTemplates.find(x => areEqual(x.guid, communicationTemplateGuid));
+        if (template) {
+            guid.value = template.guid;
+            message.value = template.message ?? "";
+            emailName.value = template.name ?? "";
+            emailSubject.value = template.subject ?? "";
+            emailFromName.value = template.fromName ?? "";
+            emailFromEmail.value = template.fromEmail ?? "";
+            emailReplyToAddress.value = template.replyToEmail ?? "";
+            // Preview text will be updated when the document is updated.
+            // emailPreviewText
+        }
+    }
+
+    function onPreviewClicked(): void {
+        getHtmlRequest.value = {
+            onSuccess(response) {
+                emit("previewCommunicationTemplate", {
+                    guid: guid.value,
+                    name: emailName.value,
+                    subject: emailSubject.value,
+                    fromName: emailFromName.value,
+                    fromEmail: emailFromEmail.value,
+                    replyToEmail: emailReplyToAddress.value,
+                    message: response.html,
+                    emailAttachmentBinaryFiles: []
+                });
+            },
+            onError(error) {
+                // TODO JMH Handle error.
+                console.error("Error getting HTML:", error);
+            }
+        };
+    }
+
+    function onSendTestClicked(): void {
+        isSendTestConfirmationShown.value = true;
+    }
+
+    async function onSendTestConfirmed(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            sendTestError.value = null;
+            isSendingTest.value = true;
+
+            getHtmlRequest.value = {
+                onSuccess(response) {
+                    emit(
+                        "sendTest",
+                        {
+                            communicationTemplate: {
+                                guid: guid.value,
+                                name: emailName.value,
+                                subject: emailSubject.value,
+                                fromName: emailFromName.value,
+                                fromEmail: emailFromEmail.value,
+                                replyToEmail: emailReplyToAddress.value,
+                                message: response.html,
+                                emailAttachmentBinaryFiles: []
+                            },
+                            testEmailAddress: testEmailAddress.value,
+                            onSuccess: () => {
+                                // This is called whether or not errors occur.
+                                isSendingTest.value = false;
+                                isSendTestConfirmationShown.value = false;
+                                resolve();
+                            },
+                            onError: (error) => {
+                                // TODO JMH Handle error.
+                                isSendingTest.value = false;
+                                sendTestError.value = error ?? "Error sending test email";
+                                reject(sendTestError.value);
+                            }
+                        });
+
+                },
+                onError(error) {
+                    // TODO JMH Handle error retrieving HTML from editor.
+                    console.error("Error getting HTML:", error);
+                    isSendingTest.value = false;
+                    reject("Error getting HTML: " + error);
+                }
+            };
+        });
+    }
+
+    // #endregion Event Handlers
+
+    // #region Methods
+
+    function setPreheaderTextInDoc(doc: Document, newText: string): void {
+        let preheader = doc.querySelector("#preheader-text");
+
+        if (preheader) {
+            // Use textContent for DOMParser-parsed documents.
+            preheader.textContent = newText;
+        }
+        else {
+            preheader = doc.createElement("div");
+            preheader.setAttribute("style", "display: none; font-size: 1px; color: #ffffff; line-height: 1px; font-family: Helvetica, Arial, sans-serif; max-height: 0px; max-width: 0px; opacity: 0; overflow: hidden;");
+            preheader.id = "preheader-text";
+            preheader.textContent = newText;
+
+            if (doc.body) {
+                doc.body.insertBefore(preheader, doc.body.firstChild);
+            }
+            else {
+                // Fallback if no <body>, add to the top of <html>
+                doc.documentElement.insertBefore(preheader, doc.documentElement.firstChild);
+            }
+        }
+    }
+
+    // #endregion Methods
+</script>

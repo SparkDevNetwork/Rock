@@ -1,0 +1,162 @@
+<template>
+    <Panel v-if="hasSentCommunications"
+           hasFullscreen
+           panelBodyCssClass="chart-container"
+           title="Total Flow Performance Over Time">
+        <Chart :data="totalFlowPerformanceOverTimeData"
+               :options="totalFlowPerformanceOverTimeOptions"
+               type="line" />
+    </Panel>
+
+    <NothingToShow v-else title="Total Flow Performance Over Time" />
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    /* eslint-disable @typescript-eslint/naming-convention */
+    import { computed, PropType } from "vue";
+    import NothingToShow from "./nothingToShow.partial.obs";
+    import { buildCumulativeRates, LineChartDataBuilder, LineChartOptionsBuilder } from "@Obsidian/Utility/chartUtils";
+    import { isRockDateTime, useRockDateTimeParser } from "./utils.partial";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+
+    const { parseRockDateTime } = useRockDateTimeParser();
+
+    enum SeriesName {
+        ConversionRate = "Conversion Rate",
+        UnsubscribeRate = "Unsubscribe Rate"
+    }
+
+    const props = defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        },
+
+        dateUnit: {
+            type: String as PropType<"day" | "month" | "week">,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const hasSentCommunications = computed<boolean>(() => {
+        // Check if there are any recipients with a sent date.
+        return Enumerable.from(props.messages).any(m => !!m.sentDateTime);
+    });
+
+    const totalFlowPerformanceOverTimeData = computed<ChartData<"line">>(() => {
+        return LineChartDataBuilder
+            .createFromData(dataPoints.value)
+            .withSeriesOrder([SeriesName.ConversionRate, SeriesName.UnsubscribeRate])
+            .build();
+    });
+
+    const totalFlowPerformanceOverTimeOptions = computed<ChartOptions<"line">>(() => {
+        return LineChartOptionsBuilder
+            .create()
+            .withXAxisAsDate({
+                timeUnit: props.dateUnit
+            })
+            .withYAxisAsPercent({
+                maxDecimalPlaces: 2
+            })
+            .withResponsiveSizing()
+            .build();
+    });
+
+    const dateFormatter = computed<(d: RockDateTime) => string>(() => {
+        return (d: RockDateTime) => {
+            return d.toASPString("yyyy-MM-dd");
+        };
+    });
+
+    const dateTransformer = computed<(d: RockDateTime) => RockDateTime>(() => {
+        return (d: RockDateTime) => {
+            switch (props.dateUnit) {
+                case "week":
+                    return d.startOfWeek();
+                case "month":
+                    return d.startOfMonth();
+                case "day":
+                default:
+                    return d;
+            }
+        };
+    });
+
+    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
+        const messageCount = Enumerable.from(props.messages).count(m => !!m.sentDateTime);
+
+        if (messageCount <= 0) {
+            return [];
+        }
+        const sentMessageEnumerable = Enumerable.from(props.messages).where(m => !!m.sentDateTime);
+
+        const conversionRateDataPoints = buildCumulativeRates(
+            // Conversion dates.
+            sentMessageEnumerable
+                .select(m => parseRockDateTime(m.convertedDateTime))
+                .ofType(isRockDateTime),
+            {
+                seriesName: SeriesName.ConversionRate,
+                color: "#68D391",
+                totalCount: messageCount,
+                dateTransformer: dateTransformer.value,
+                dateFormatter: dateFormatter.value
+            }
+        );
+
+        const unsubscribeRateDataPoints = buildCumulativeRates(
+            // Unsubscribe dates.
+            sentMessageEnumerable
+                .select(m => parseRockDateTime(m.unsubscribedDateTime))
+                .ofType(isRockDateTime),
+            {
+                seriesName: SeriesName.UnsubscribeRate,
+                color: "#FC8181",
+                totalCount: messageCount,
+                dateTransformer: dateTransformer.value,
+                dateFormatter: dateFormatter.value
+            });
+
+        const dataPoints = conversionRateDataPoints
+            .concat(unsubscribeRateDataPoints)
+            .orderBy(d => d.rockDateTime.toMilliseconds()) // Re-order so the data are all in chronological order.
+            .toArray();
+
+        // Ensure the data points include the earliest instance start date.
+        const earliestInstanceSentDate = sentMessageEnumerable
+            .select(m => parseRockDateTime(m.communicationFlowInstanceStartDateTime))
+            .ofType(isRockDateTime)
+            .orderBy(d => d.toMilliseconds())
+            .select(d => dateTransformer.value(d))
+            .firstOrDefault();
+
+        if (earliestInstanceSentDate && !dataPoints.some(d => d.rockDateTime.isEarlierThan(earliestInstanceSentDate))) {
+            dataPoints.unshift({
+                rockDateTime: earliestInstanceSentDate,
+                seriesName: SeriesName.ConversionRate,
+                color: "#68D391",
+                value: 0,
+                label: dateFormatter.value(earliestInstanceSentDate)
+            });
+        }
+
+        return dataPoints;
+    });
+
+    // #endregion Computed Values
+</script>

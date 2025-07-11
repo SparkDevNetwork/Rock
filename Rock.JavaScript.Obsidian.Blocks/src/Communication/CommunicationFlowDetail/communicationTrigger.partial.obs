@@ -1,0 +1,155 @@
+<template>
+    <div class="communication-trigger">
+        <DropDownContent class="communication-trigger-button"
+                         :disabled="disabled"
+                         preventOverflowClipping
+                         showArrow>
+            <template #anchor>
+                <RockButton btnSize="xs" :disabled="disabled">
+                    <template v-if="nonNullableDaysToWait">
+                        <i class="ti ti-clock"></i> <span class="text-muted">Wait</span> <strong>{{ nonNullableDaysToWait }}</strong> {{ nonNullableDaysToWait === 1 ? 'Day' : 'Days' }}, <span class="text-muted">Send at</span> <strong>{{ timeToSendAsString }}</strong> <i class="ti ti-chevron-down"></i>
+                    </template>
+
+                    <template v-else>
+                        <i class="ti ti-bolt"></i> <span class="text-muted">Start</span> <strong>Immediately</strong>, <span class="text-muted">Send at</span> <strong>{{ timeToSendAsString }}</strong> <i class="ti ti-chevron-down"></i>
+                    </template>
+                </RockButton>
+            </template>
+
+            <div class="communication-trigger-content">
+                <div class="communication-trigger-field">
+                    <label class="communication-trigger-field-label">Wait</label>
+                    <NumberBox v-model="nonNullableDaysToWait"
+                               inputGroupClasses="communication-trigger-field-control number-of-days"
+                               :disabled="disabled"
+                               :minimumValue="0">
+                        <template #inputGroupAppend>
+                            <span class="input-group-addon">Day(s)</span>
+                        </template>
+                    </NumberBox>
+                </div>
+
+                <div class="communication-trigger-field">
+                    <label class="communication-trigger-field-label">Send At</label>
+                    <TimePicker v-model="timeToSendAsPickerValue" :disabled="disabled" />
+                </div>
+            </div>
+        </DropDownContent>
+    </div>
+</template>
+
+<style scoped>
+.communication-trigger {
+    text-align: center;
+}
+
+.communication-trigger-content {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    padding: var(--spacing-large);
+    gap: var(--spacing-large);
+}
+
+.communication-trigger-field {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-trigger-field-label {
+    margin: 0;
+}
+
+:deep(.communication-trigger-field-control.number-of-days) {
+    width: 150px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import DropDownContent from "@Obsidian/Controls/dropDownContent.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TimePicker from "@Obsidian/Controls/timePicker.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { CommunicationFlowCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowCommunicationBag";
+    import { TimePickerValue } from "@Obsidian/ViewModels/Controls/timePickerValue";
+
+    const props = defineProps({
+        communication: {
+            type: Object as PropType<CommunicationFlowCommunicationBag>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "update:communication", value: CommunicationFlowCommunicationBag): void;
+        (e: "update:timeToSend", value: string): void;
+    }>();
+
+    // #region Values
+
+    const internalCommunication = useVModelPassthrough(props, "communication", emit);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const timeToSendAsPickerValue = computed<TimePickerValue>({
+        get() {
+            const values = /^(\d+):(\d+)/.exec(internalCommunication.value.timeToSend ?? "");
+
+            if (values !== null) {
+                return {
+                    hour: toNumber(values[1]),
+                    minute: toNumber(values[2])
+                };
+            }
+            else {
+                return {};
+            }
+        },
+        set(value: TimePickerValue) {
+            internalCommunication.value = {
+                ...internalCommunication.value,
+                timeToSend: value.hour !== undefined && value.minute !== undefined ? `${value.hour.toString().padStart(2, "0")}:${value.minute.toString().padStart(2, "0")}:00` : ""
+            };
+        }
+    });
+
+    const timeToSendAsString = computed<string>(() => {
+        const values = /^(\d+):(\d+)/.exec(internalCommunication.value.timeToSend ?? "");
+
+        if (values !== null) {
+            const hour = toNumber(values[1]);
+            const minute = toNumber(values[2]);
+
+            return `${hour}:${minute > 9 ? `${minute}` : `0${minute}`}${hour >= 12 ? "PM" : "AM"}`;
+        }
+        else {
+            return "";
+        }
+    });
+
+    const nonNullableDaysToWait = computed<number | null>({
+        get() {
+            return internalCommunication.value.daysToWait;
+        },
+        set(value: number | null) {
+            internalCommunication.value = {
+                ...internalCommunication.value,
+                daysToWait: value ?? 0
+            };
+        }
+    });
+
+    // #endregion Computed Values
+</script>

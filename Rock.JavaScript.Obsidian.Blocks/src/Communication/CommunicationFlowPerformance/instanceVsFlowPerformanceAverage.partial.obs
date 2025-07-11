@@ -1,0 +1,160 @@
+<template>
+    <Panel v-if="hasSentCommunications"
+           hasFullscreen
+           panelBodyCssClass="chart-container"
+           title="Instance vs. Flow Performance Average">
+        <Chart :data="chartData"
+               :options="chartOptions"
+               :plugins="[BarDatasetLabelsPlugin, BarValueLabelsPlugin]"
+               type="bar" />
+    </Panel>
+
+    <NothingToShow v-else title="Instance vs. Flow Performance Average" />
+</template>
+
+<style scoped>
+:deep(.chart-container) {
+    height: 265px;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import NothingToShow from "./nothingToShow.partial.obs";
+    import { BarDatasetLabelsPlugin, BarValueLabelsPlugin, BarChartDataBuilder, BarChartOptionsBuilder } from "@Obsidian/Utility/chartUtils";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    enum SeriesName {
+        Instance = "Instance",
+        Instances = "Instances",
+        Average = "Average"
+    }
+
+    const props = defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        },
+
+        allMessages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        },
+    });
+
+    // #region Computed Values
+
+    const hasSentCommunications = computed<boolean>(() => {
+        // Check if there are any recipients with a sent date.
+        return Enumerable.from(props.messages).any(m => !!m.sentDateTime);
+    });
+
+    const chartData = computed<ChartData<"bar">>(() => {
+        return BarChartDataBuilder
+            .createFromDataPoints(dataPoints.value)
+            .withSeriesOrder([SeriesName.Instance, SeriesName.Instances, SeriesName.Average])
+            .build();
+    });
+
+    const chartOptions = computed<ChartOptions<"bar">>(() => {
+        return BarChartOptionsBuilder
+            .create()
+            .withoutLegend()
+            .withResponsiveSizing()
+            .withYAxisAsPercent({
+                maxDecimalPlaces: 2
+            })
+            .withoutTooltips()
+            .withBarValueLabels({
+                isBackgroundDark: barColor => new RockColor(barColor).luminosity < .5
+            })
+            .build();
+    });
+
+    const allMessagesGroupedByInstance = computed<GroupedEnumerable<string, MessageBag>[]>(() => {
+        // Group messages by their instance ID.
+        return Enumerable.from(props.allMessages)
+            .groupBy(m => m.communicationFlowInstanceIdKey)
+            .ofType((g): g is GroupedEnumerable<string, MessageBag> => !isNullish(g))
+            .toArray();
+    });
+
+    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
+        // Calculate conversion and unsubscribe rates for each instance.
+        const allInstanceRates = Enumerable
+            .from(allMessagesGroupedByInstance.value)
+            .select(messagesByInstance => {
+                const messageCount = messagesByInstance.count(m => !!m.sentDateTime);
+                const conversionCount = messagesByInstance.count(m => !!m.sentDateTime && !!m.convertedDateTime);
+                const unsubscribeCount = messagesByInstance.count(m => !!m.sentDateTime && !!m.unsubscribedDateTime);
+
+                return {
+                    communicationFlowInstanceIdKey: messagesByInstance.key,
+                    rates: {
+                        conversionRate: messageCount ? conversionCount / messageCount : 0,
+                        unsubscribeRate: messageCount ? unsubscribeCount / messageCount : 0
+                    }
+                };
+            })
+            .toDictionary(ir => ir.communicationFlowInstanceIdKey, ir => ir.rates);
+
+        // If there are no instances, return an empty array.
+        if (allInstanceRates.size === 0) {
+            return [];
+        }
+
+        const selectedInstanceRates = Enumerable
+            .from(props.messages)
+            .select(m => m.communicationFlowInstanceIdKey)
+            .ofType((m): m is string => !isNullish(m))
+            .distinct()
+            .where(k => allInstanceRates.has(k))
+            .select(k => allInstanceRates.get(k)!)
+            .toArray();
+
+        const dataPoints: ChartNumericDataPointBag[] = [];
+
+        // Add data points for the average rates of selected instances.
+        if (selectedInstanceRates.length > 0) {
+            dataPoints.push({
+                seriesName: selectedInstanceRates.length > 1 ? SeriesName.Instances : SeriesName.Instance,
+                label: "Conversion Rate",
+                value: Enumerable.from(selectedInstanceRates).average(i => i.conversionRate),
+                color: "#38A169"
+            });
+
+            dataPoints.push({
+                seriesName: selectedInstanceRates.length > 1 ? SeriesName.Instances : SeriesName.Instance,
+                label: "Unsubscribe Rate",
+                value: Enumerable.from(selectedInstanceRates).average(i => i.unsubscribeRate),
+                color: "#E53E3E"
+            });
+        }
+
+        // Add data points for the average rates of all instances.
+        dataPoints.push({
+            seriesName: SeriesName.Average,
+            label: "Conversion Rate",
+            value: Enumerable.from(allInstanceRates.values()).average(i => i.conversionRate),
+            color: "#CDEAE1"
+        });
+
+        dataPoints.push({
+            seriesName: SeriesName.Average,
+            label: "Unsubscribe Rate",
+            value: Enumerable.from(allInstanceRates.values()).average(i => i.unsubscribeRate),
+            color: "#FAD8D8"
+        });
+
+        return dataPoints;
+    });
+
+    // #endregion Computed Values
+</script>

@@ -1,0 +1,56 @@
+<template>
+    <Kpi color="yellow"
+         :colorShade="700"
+         iconCssClass="ti ti-hand-finger"
+         isCard
+         label="Click-Through Rate"
+         :value="rate" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: Object as PropType<CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const rate = computed<string>(() => {
+        if (isNullish(clickThroughRatePercent.value)) {
+            return "N/A";
+        }
+
+        return `${(clickThroughRatePercent.value / 100).toLocaleString(undefined, { style: "percent", maximumFractionDigits: 2 })}`;
+    });
+
+    /**
+     * Computes the click-through rate percentage [0-100] for the selected flow instance communications.
+     */
+    const clickThroughRatePercent = computed<number | null | undefined>(() => {
+        if (isNullish(props.modelValue)) {
+            return null;
+        }
+
+        const recipientMetrics = props.modelValue.recipientMetrics ?? [];
+
+        const recipientCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.sentDate));
+        const clickCount = Enumerable.from(recipientMetrics).count(rm => !isNullish(rm.clickedDate));
+
+        if (recipientCount <= 0) {
+            return 0;
+        }
+        else {
+            return clickCount / recipientCount * 100;
+        }
+    });
+
+    // #endregion Computed Values
+</script>

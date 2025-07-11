@@ -1,0 +1,248 @@
+<template>
+    <Panel isFullscreen
+           isFullscreenPageOnly
+           panelBodyCssClass="sms-builder-panel-body"
+           title="Create SMS Message">
+        <template #default>
+            <div class="panel-body-contents">
+                <div class="sms-form-container">
+                    <RockForm :id="createSmsFormId" @submit="onSaveSmsMessageClicked">
+                        <TextBox v-model="name"
+                                 :disabled="disabled"
+                                 label="Name"
+                                 rules="required" />
+
+                        <DropDownList v-model="smsFromSystemNumberGuidOrEmptyString"
+                                      :disabled="disabled"
+                                      help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
+                                      :items="smsFromSystemPhoneNumbers"
+                                      label="From Phone"
+                                      rules="required"
+                                      :showBlankItem="false" />
+
+                        <SmsMessageEditor v-model="smsMessage"
+                                          :disabled="disabled"
+                                          :editorHeight="210"
+                                          :isCharacterCountShown="true"
+                                          :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
+                                          rules="required"
+                                          toolbarLabel="Message" />
+
+                        <FileUploader v-model="smsAttachmentBinaryFile"
+                                      :disabled="disabled"
+                                      label="Attachments" />
+                    </RockForm>
+                </div>
+
+                <div class="sms-editor-container">
+                    <SmsMobilePreview :smsFromNumberName="smsFromSystemPhoneNumber?.text ?? ''"
+                                      :smsMessage="smsMessage"
+                                      :smsAttachmentLinks="smsAttachmentLinks" />
+                </div>
+            </div>
+        </template>
+
+        <template #footerActions>
+            <RockButton btnType="default" :disabled="disabled" @click="emit('close')">Cancel</RockButton>
+        </template>
+
+        <template #footerSecondaryActions>
+            <RockButton btnType="default" :disabled="disabled" @click="onSendTestClicked"><i class="ti ti-send"></i> Send Test</RockButton>
+            <RockButton btnType="primary" :disabled="disabled" :form="createSmsFormId" type="submit">Save</RockButton>
+        </template>
+    </Panel>
+
+    <Modal v-model="isSendTestConfirmationShown"
+           saveAutoLoading
+           saveLoadingText="Sending..."
+           saveText="Send"
+           title="Send Test SMS"
+           @save="onSendTestConfirmed">
+        <NotificationBox v-if="sendTestError"
+                         alertType="danger"
+                         v-html="sendTestError" />
+
+        <PhoneNumberBox v-model="testSmsPhoneNumber"
+                        label="Test Phone Number"
+                        rules="required" />
+    </Modal>
+</template>
+
+<style scoped>
+:deep(.sms-builder-panel-body) {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    padding: 0;
+}
+
+:deep(.sms-builder-panel-body .actions) {
+    margin: 0;
+}
+
+.panel-body-contents {
+    flex: 1;
+    overflow: hidden;
+    display: flex;
+    flex-direction: row;
+}
+
+.sms-form-container {
+    width: 470px;
+    padding: var(--spacing-large);
+    overflow-y: auto;
+}
+
+.sms-editor-container {
+    flex: 1;
+    overflow-y: auto;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import FileUploader from "@Obsidian/Controls/fileUploader.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import PhoneNumberBox from "@Obsidian/Controls/phoneNumberBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import SmsMessageEditor from "@Obsidian/Controls/smsMessageEditor.obs";
+    import SmsMobilePreview from "./smsMobilePreview.partial.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { emptyGuid, newGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { CommunicationFlowDetailCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowDetailCommunicationTemplateBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { BinaryFileAttachment, BlockActionCallbacks } from "./types.partial";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        communicationTemplate: {
+            type: Object as PropType<CommunicationFlowDetailCommunicationTemplateBag | null | undefined>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        smsFromSystemPhoneNumbers: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        testSmsPhoneNumber: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "close"): void;
+        (e: "saveCommunicationTemplate", value: CommunicationFlowDetailCommunicationTemplateBag): void;
+        (e: "sendTestSms", value: { communicationTemplate: CommunicationFlowDetailCommunicationTemplateBag; testSmsPhoneNumber: string; } & BlockActionCallbacks): void;
+    }>();
+
+    const createSmsFormId = `create-sms-form-${newGuid()}`;
+
+    // #region Values
+
+    // UI state.
+    const isSendTestConfirmationShown = ref<boolean>(false);
+    const testSmsPhoneNumber = ref<string>(props.testSmsPhoneNumber ?? "");
+    const isSendingTest = ref<boolean>(false);
+    const sendTestError = ref<string | null | undefined>();
+
+    // Entity state.
+    const guid = ref<Guid>(toGuidOrNull(props.communicationTemplate?.guid) ?? emptyGuid);
+    const name = ref<string>(props.communicationTemplate?.name ?? "");
+    const smsMessage = ref<string>(props.communicationTemplate?.smsMessage ?? "");
+    const smsFromSystemPhoneNumber = ref<ListItemBag | null | undefined>(props.communicationTemplate?.smsFromSystemPhoneNumber);
+    const smsAttachmentBinaryFile = ref<ListItemBag | null | undefined>(props.communicationTemplate?.smsAttachmentBinaryFile);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const smsFromSystemNumberGuidOrEmptyString = computed<string>({
+        get() {
+            return toGuidOrNull(smsFromSystemPhoneNumber.value?.value) ?? "";
+        },
+        set(value: string) {
+            const guid = toGuidOrNull(value);
+
+            if (guid) {
+                smsFromSystemPhoneNumber.value = props.smsFromSystemPhoneNumbers.find(x => x.value === guid) ?? null;
+            }
+            else {
+                smsFromSystemPhoneNumber.value = null;
+            }
+        }
+    });
+
+    const smsAttachmentLinks = computed<BinaryFileAttachment[]>(() => {
+        if (smsAttachmentBinaryFile.value) {
+            const binaryFileGuid: Guid = toGuidOrNull(smsAttachmentBinaryFile.value.value) ?? emptyGuid;
+            return [
+                {
+                    fileName: smsAttachmentBinaryFile.value.text ?? "",
+                    binaryFileGuid,
+                    url: `/GetFile.ashx?guid=${binaryFileGuid}&fileName=${smsAttachmentBinaryFile.value.text}`
+                }
+            ];
+        }
+        else {
+            return [];
+        }
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onSaveSmsMessageClicked(): void {
+        emit("saveCommunicationTemplate", {
+            guid: guid.value,
+            name: name.value,
+            smsFromSystemPhoneNumber: smsFromSystemPhoneNumber.value,
+            smsMessage: smsMessage.value,
+            smsAttachmentBinaryFile: smsAttachmentBinaryFile.value
+        });
+    }
+
+    function onSendTestClicked(): void {
+        isSendTestConfirmationShown.value = true;
+    }
+
+    async function onSendTestConfirmed(): Promise<void> {
+        return new Promise<void>((resolve, reject) => {
+            isSendingTest.value = true;
+            sendTestError.value = null;
+
+            emit("sendTestSms", {
+                communicationTemplate: {
+                    guid: guid.value,
+                    name: name.value,
+                    smsFromSystemPhoneNumber: smsFromSystemPhoneNumber.value,
+                    smsMessage: smsMessage.value,
+                    smsAttachmentBinaryFile: smsAttachmentBinaryFile.value
+                },
+                testSmsPhoneNumber: testSmsPhoneNumber.value,
+                onSuccess: () => {
+                    isSendTestConfirmationShown.value = false;
+                    resolve();
+                },
+                onError: (error) => {
+                    sendTestError.value = error;
+                    reject(error);
+                }
+            });
+        });
+    }
+
+    // #endregion Event Handlers
+</script>

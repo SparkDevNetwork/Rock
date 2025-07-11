@@ -1,0 +1,15 @@
+<template>
+    <svg xmlns="http://www.w3.org/2000/svg" width="8" height="16" viewBox="0 1 8 16" fill="none">
+        <path class="down-arrow-path" d="M3.64645 16.3536C3.84171 16.5488 4.15829 16.5488 4.35355 16.3536L7.53553 13.1716C7.7308 12.9763 7.7308 12.6597 7.53553 12.4645C7.34027 12.2692 7.02369 12.2692 6.82843 12.4645L4 15.2929L1.17157 12.4645C0.97631 12.2692 0.659728 12.2692 0.464466 12.4645C0.269203 12.6597 0.269203 12.9763 0.464466 13.1716L3.64645 16.3536ZM3.5 1L3.5 16L4.5 16L4.5 1L3.5 1Z" />
+    </svg>
+</template>
+
+<style scoped>
+.down-arrow-path {
+    fill: var(--color-interface-soft);
+}
+</style>
+
+<script setup lang="ts">
+    // This is a simple down arrow icon that can be used in various components.
+</script>

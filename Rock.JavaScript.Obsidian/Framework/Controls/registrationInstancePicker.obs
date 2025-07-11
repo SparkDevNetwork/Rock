@@ -6,15 +6,18 @@
                                     label="Registration Template"
                                     :multiple="false"
                                     :disabled="disabled"
+                                    :rules="rules"
                                     showBlankItem
                                     autoExpand
                                     formGroupClasses="mt-0" />
         <RegistrationInstanceBasePicker v-if="internalTemplateGuid"
                                         v-model="internalValue"
+                                        :enhanceForLongLists="enhanceForLongLists"
                                         label="Registration Instance"
                                         :registrationTemplateGuid="internalTemplateGuid"
                                         :multiple="false"
                                         :disabled="disabled"
+                                        :rules="rules"
                                         showBlankItem
                                         :displayStyle="PickerDisplayStyle.Condensed" />
     </RockFormField>
@@ -33,6 +36,7 @@
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
     import { deepEqual } from "@Obsidian/Utility/util";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
 
     const props = defineProps({
         modelValue: {
@@ -48,6 +52,17 @@
 
         disabled: {
             type: Boolean,
+            default: false
+        },
+
+        rules: {
+            type: [Array, Object, String] as PropType<ValidationRule | ValidationRule[]>,
+            default: ""
+        },
+
+        /** Enhance the picker for dealing with long lists by providing a search mechanism. */
+        enhanceForLongLists: {
+            type: Boolean as PropType<boolean>,
             default: false
         }
     });

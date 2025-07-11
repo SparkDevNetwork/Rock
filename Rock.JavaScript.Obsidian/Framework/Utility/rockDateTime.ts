@@ -426,6 +426,40 @@ export class RockDateTime {
     }
 
     /**
+     * Creates a new RockDateTime instance that represents the first millisecond
+     * of the start of the week for this instance.
+     *
+     * @example
+     * new Date(2014, 2, 6).startOf("week").toISOString(); //=> '2014-03-03T00:00:00.000-05:00', weeks always start on Mondays
+     */
+    public startOfWeek(): RockDateTime {
+        const dateTime = this.dateTime.startOf("week");
+
+        if (!dateTime.isValid) {
+            throw "Operation produced an invalid date.";
+        }
+
+        return new RockDateTime(dateTime);
+    }
+
+    /**
+     * Creates a new RockDateTime instance that represents the first millisecond
+     * of the start of the month for this instance.
+     *
+     * @example
+     * new Date(2014, 2, 6).startOf("month").toISOString(); //=> '2014-03-01T00:00:00.000-05:00'
+     */
+    public startOfMonth(): RockDateTime {
+        const dateTime = this.dateTime.startOf("month");
+
+        if (!dateTime.isValid) {
+            throw "Operation produced an invalid date.";
+        }
+
+        return new RockDateTime(dateTime);
+    }
+
+    /**
      * Creates a new RockDateTime instance that represents the last millisecond
      * of the end of the month for this instance.
      *
@@ -623,7 +657,7 @@ export class RockDateTime {
      * Transforms the date into a human friendly elapsed time string.
      *
      * @example
-     * // Returns "21yrs"
+     * // Returns "25 Years Ago" if the current date is 2025-03-04 and this instance is 2000-03-04.
      * RockDateTime.fromParts(2000, 3, 4).toElapsedString();
      *
      * @returns A string that represents the amount of time that has elapsed.
@@ -772,6 +806,18 @@ export class RockDateTime {
         return this.dateTime.toMillis() < otherDateTime.dateTime.toMillis();
     }
 
+    public compareTo(otherDateTime: RockDateTime): number {
+        if (this.isEqualTo(otherDateTime)) {
+            return 0;
+        }
+        else if (this.isEarlierThan(otherDateTime)) {
+            return -1;
+        }
+        else {
+            return 1;
+        }
+    }
+
     /**
      * Obsolete. Use toElapsedString instead.
      * Calculates the elapsed time between this date and the reference date and
@@ -819,4 +865,8 @@ export class RockDateTime {
     }
 
     // #endregion
+}
+
+export function compareRockDateTimes(a: RockDateTime, b: RockDateTime): number {
+    return a.compareTo(b);
 }

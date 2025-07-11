@@ -28,8 +28,8 @@ namespace Rock.Enums.Communication
         Active = 1,
 
         /// <summary>
-        /// The recipient has unsubscribed from the communication flow instance and will no longer receive communications.
+        /// The recipient is inactive and will no longer receive communications in the communication flow instance.
         /// </summary>
-        Unsubscribe = 2
+        Inactive = 2
     }
 }

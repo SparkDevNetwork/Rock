@@ -1,0 +1,610 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="title" hasFullscreen>
+        <template #headerActions>
+            <HighlightLabel v-if="!isActive" class="mr-3">Inactive</HighlightLabel>
+        </template>
+
+        <RockForm :id="formId" @submit="$emit('nextStep')">
+            <GuideWell title="Crafting Your Flow"
+                       body="On this page, you get to configure each of the messages that compose your flow. For each message, you can set what kind of medium it is, when and how it is triggered, and what content you want to send." />
+
+            <fieldset>
+                <ConnectedList>
+                    <template v-for="communication in orderedCommunications" :key="communication.guid">
+                        <CommunicationTrigger :communication="communication"
+                                              :disabled="disabled"
+                                              @update:communication="onCommunicationUpdated(communication, $event)" />
+
+                        <ConnectedListItem :aside="getConnectedListItemAside(communication)"
+                                           :asideIconCssClass="getConnectedListItemAsideIconCssClass(communication)"
+                                           :badgeText="`Step ${communication.order + 1}`"
+                                           :description="getConnectedListItemDescription(communication)"
+                                           :iconCssClass="getConnectedListItemIconCssClass(communication)"
+                                           :title="communication.name"
+                                           :secondaryActions="[
+                                            {
+                                                type: 'default',
+                                                iconCssClass: 'ti ti-chevrons-up',
+                                                title: 'Move Up',
+                                                handler: () => onMoveUpClicked(communication)
+                                            },
+                                            {
+                                                type: 'default',
+                                                iconCssClass: 'ti ti-chevrons-down',
+                                                title: 'Move Down',
+                                                handler: () => onMoveDownClicked(communication)
+                                            },
+                                            {
+                                                type: 'default',
+                                                iconCssClass: 'ti ti-edit text-info',
+                                                title: 'Edit',
+                                                handler: () => onEditClicked(communication)
+                                            },
+                                            {
+                                                type: 'default',
+                                                iconCssClass: 'ti ti-trash text-danger',
+                                                title: 'Delete',
+                                                handler: () => onDeleteClicked(communication)
+                                            },
+                                        ]"
+                                           @click="onEditClicked(communication)" />
+                    </template>
+
+                    <ConnectedListAddButton addText="Add Message"
+                                            :actions="[
+                                                {
+                                                    actionCssClass: 'add-message-action',
+                                                    type: 'default',
+                                                    iconCssClass: 'ti ti-mail text-info',
+                                                    title: 'Email',
+                                                    handler: onAddEmailClicked
+                                                },
+                                                {
+                                                    actionCssClass: 'add-message-action',
+                                                    type: 'default',
+                                                    iconCssClass: 'ti ti-message text-info',
+                                                    title: 'SMS',
+                                                    handler: onAddSmsClicked
+                                                },
+                                                {
+                                                    actionCssClass: 'add-message-action',
+                                                    type: 'default',
+                                                    iconCssClass: 'ti ti-device-mobile text-info',
+                                                    title: 'Push Notification',
+                                                    handler: onAddPushClicked
+                                                }
+                                            ]" />
+                </ConnectedList>
+            </fieldset>
+        </RockForm>
+
+        <div class="exit-container">
+            <i class="ti ti-outbound fa-lg"></i>
+            <RockLabel>Recipients Exits Flow When</RockLabel>
+            <DropDownList v-model="exitConditionTypeAsString"
+                          :disabled="disabled"
+                          :items="exitConditionTypes"
+                          :showBlankItem="false" />
+        </div>
+
+        <template #footerActions>
+            <RockButton btnType="link"
+                        class="text-primary"
+                        type="button"
+                        @click="$emit('previousStep')">Back</RockButton>
+        </template>
+
+        <template #footerSecondaryActions>
+            <RockButton btnType="primary"
+                        :disabled="disabled"
+                        :form="formId"
+                        type="submit">Save</RockButton>
+        </template>
+    </Panel>
+
+    <CreateEmailMessageModal v-if="isEmailBuilderShown"
+                             :communicationTemplate="editEmailCommunication?.communicationTemplate"
+                             :communicationTemplates="communicationTemplates"
+                             :disabled="disabled"
+                             :testEmailAddress="testEmailAddress"
+                             @close="isEmailBuilderShown = false"
+                             @previewCommunicationTemplate="onPreviewEmailCommunicationTemplate($event, editEmailCommunication)"
+                             @saveCommunicationTemplate="onSaveCommunicationTemplate($event, CommunicationType.Email, editEmailCommunication)"
+                             @sendTest="onSendTest({ ...$event, communicationType: CommunicationType.Email, communication: editEmailCommunication })" />
+
+    <CreatePushMessageModal v-if="isPushBuilderShown"
+                            :communicationTemplate="editPushCommunication?.communicationTemplate"
+                            :disabled="disabled"
+                            :isRockMobilePushTransportConfigured="isRockMobilePushTransportConfigured"
+                            :pushMobileApplications="pushMobileApplications"
+                            @close="isPushBuilderShown = false"
+                            @saveCommunicationTemplate="onSaveCommunicationTemplate($event, CommunicationType.PushNotification, editPushCommunication)" />
+
+    <CreateSmsMessageModal v-if="isSmsBuilderShown"
+                           :communicationTemplate="editSmsCommunication?.communicationTemplate"
+                           :disabled="disabled"
+                           :smsFromSystemPhoneNumbers="smsFromSystemPhoneNumbers"
+                           :testSmsPhoneNumber="testSmsPhoneNumber"
+                           @close="isSmsBuilderShown = false"
+                           @saveCommunicationTemplate="onSaveCommunicationTemplate($event, CommunicationType.SMS, editSmsCommunication)"
+                           @sendTestSms="onSendTest({ ...$event, communicationType: CommunicationType.SMS, communication: editSmsCommunication })" />
+
+    <DeleteConfirmation v-if="deleteCommunication"
+                        v-model="isDeleteConfirmationVisible"
+                        :messageText="deleteMessageTextArgs"
+                        titleText="Delete Message"
+                        :warningText="deleteWarningText"
+                        @delete="onDeleteConfirmed(deleteCommunication)" />
+</template>
+
+<style scoped>
+.exit-container {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-small);
+    align-items: center;
+    border-top: 1px solid var(--color-interface-soft);
+    border-bottom: 1px solid var(--color-interface-soft);
+    padding: var(--panel-body-padding);
+    margin: var(--panel-body-padding) calc(0px - var(--panel-body-padding)) calc(0px - var(--panel-body-padding)) calc(0px - var(--panel-body-padding));
+    background-color: var(--color-interface-softer);
+}
+
+.exit-container label {
+    margin-bottom: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import CommunicationTrigger from "./communicationTrigger.partial.obs";
+    import CreateEmailMessageModal from "./createEmailMessageModal.partial.obs";
+    import CreatePushMessageModal from "./createPushMessageModal.partial.obs";
+    import CreateSmsMessageModal from "./createSmsMessageModal.partial.obs";
+    import DeleteConfirmation from "./deleteConfirmation.partial.obs";
+    import GuideWell from "./guideWell.partial.obs";
+    import { DeleteTextArgs, SendTestOptions } from "./types.partial";
+    import { getPreheaderText, isEnumValue, triggerTypeToText } from "./utils.partial";
+    import ConnectedList from "@Obsidian/Controls/connectedList.obs";
+    import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
+    import ConnectedListAddButton from "@Obsidian/Controls/connectedListAddButton.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { CommunicationFlowTriggerType } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { ExitConditionType } from "@Obsidian/Enums/Communication/exitConditionType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { CommunicationFlowCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowCommunicationBag";
+    import { CommunicationFlowDetailCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowDetailCommunicationTemplateBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { ConversionGoalType } from "@Obsidian/Enums/Communication/conversionGoalType";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const props = defineProps({
+        communications: {
+            type: Array as PropType<CommunicationFlowCommunicationBag[]>,
+            required: true
+        },
+
+        communicationTemplates: {
+            type: Array as PropType<CommunicationFlowDetailCommunicationTemplateBag[]>,
+            required: true
+        },
+
+        conversionGoalType: {
+            type: Number as PropType<ConversionGoalType | null | undefined>,
+            required: true
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        exitConditionType: {
+            type: Number as PropType<ExitConditionType>,
+            required: true
+        },
+
+        isActive: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        isRockMobilePushTransportConfigured: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        pushMobileApplications: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        smsFromSystemPhoneNumbers: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        testEmailAddress: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        testSmsPhoneNumber: {
+            type: String as PropType<string | null | undefined>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        triggerType: {
+            type: Number as PropType<CommunicationFlowTriggerType>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "nextStep"): void;
+        (e: "previousStep"): void;
+        (e: "previewEmailCommunicationTemplate", value: CommunicationFlowDetailCommunicationTemplateBag, communication: CommunicationFlowCommunicationBag | null | undefined): void;
+        (e: "saveCommunicationTemplate", value: CommunicationFlowDetailCommunicationTemplateBag, communicationType: CommunicationType, communication: CommunicationFlowCommunicationBag | null | undefined): void;
+        (e: "sendTest", options: SendTestOptions): void;
+        (e: "update:communications", value: CommunicationFlowCommunicationBag[]): void;
+        (e: "update:exitConditionType", value: ExitConditionType): void;
+    }>();
+
+    const formId = `communication-flow-detail-message-flow-${newGuid()}`;
+
+    // #region Values
+
+    // UI state.
+    const isEmailBuilderShown = ref<boolean>(false);
+    const editEmailCommunication = ref<CommunicationFlowCommunicationBag | null | undefined>();
+    const isSmsBuilderShown = ref<boolean>(false);
+    const editSmsCommunication = ref<CommunicationFlowCommunicationBag | null | undefined>();
+    const isPushBuilderShown = ref<boolean>(false);
+    const editPushCommunication = ref<CommunicationFlowCommunicationBag | null | undefined>();
+    const deleteCommunication = ref<CommunicationFlowCommunicationBag | null | undefined>();
+    const isDeleteConfirmationVisible = ref<boolean>(false);
+    const deleteMessageTextArgs = ref<DeleteTextArgs>({
+        typeName: "message"
+    });
+    const deleteWarningText = ref<string | null | undefined>();
+
+    // Entity state.
+    const internalExitConditionType = useVModelPassthrough(props, "exitConditionType", emit);
+    const internalCommunications = useVModelPassthrough(props, "communications", emit);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const orderedCommunications = computed<CommunicationFlowCommunicationBag[]>(() => {
+        return [...internalCommunications.value].sort((a, b) => a.order - b.order);
+    });
+
+    const exitConditionTypeAsString = computed<string>({
+        get() {
+            return `${internalExitConditionType.value}`;
+        },
+        set(value: string) {
+            const parsed = Number(value);
+            if (isEnumValue(ExitConditionType, parsed)) {
+                internalExitConditionType.value = parsed;
+            }
+            else {
+                internalExitConditionType.value = ExitConditionType.LastMessageSent;
+            }
+        }
+    });
+
+    const exitConditionTypes = computed<ListItemBag[]>(() => {
+        const items: ListItemBag[] = [
+            {
+                text: "Last Message Is Sent",
+                value: `${ExitConditionType.LastMessageSent}`
+            }
+        ];
+
+        if (internalCommunications.value.some(c => c.communicationType === CommunicationType.Email)) {
+            items.push({
+                text: "Any Email Is Opened",
+                value: `${ExitConditionType.AnyEmailOpened}`
+            });
+
+            items.push({
+                text: "Any Email Is Clicked Through",
+                value: `${ExitConditionType.AnyEmailClickedThrough}`
+            });
+        }
+
+        if (!isNullish(props.conversionGoalType)) {
+            items.push({
+                text: "Conversion Goal Achieved",
+                value: `${props.conversionGoalType}`
+            });
+        }
+
+        return items;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function getConnectedListItemAside(communication: CommunicationFlowCommunicationBag): string | null | undefined {
+        if (communication.communicationType === CommunicationType.Email) {
+            return communication.communicationTemplate?.fromEmail;
+        }
+        else if (communication.communicationType === CommunicationType.SMS) {
+            return communication.communicationTemplate?.smsFromSystemPhoneNumber?.text;
+        }
+        else if (communication.communicationType === CommunicationType.PushNotification) {
+            return communication.communicationTemplate?.pushMobileApplication?.text ?? "All Applications";
+        }
+        else {
+            return null;
+        }
+    }
+
+    function getConnectedListItemAsideIconCssClass(communication: CommunicationFlowCommunicationBag): string | null | undefined {
+        if (communication.communicationType === CommunicationType.Email) {
+            return "ti ti-address-book";
+        }
+        else if (communication.communicationType === CommunicationType.SMS) {
+            return "ti ti-phone";
+        }
+        else if (communication.communicationType === CommunicationType.PushNotification) {
+            return "ti ti-box";
+        }
+        else {
+            return null;
+        }
+    }
+
+    function getConnectedListItemIconCssClass(communication: CommunicationFlowCommunicationBag): string | null | undefined {
+        if (communication.communicationType === CommunicationType.Email) {
+            return "ti ti-mail fa-lg";
+        }
+        else if (communication.communicationType === CommunicationType.SMS) {
+            return "ti ti-message fa-lg";
+        }
+        else if (communication.communicationType === CommunicationType.PushNotification) {
+            return "ti ti-device-mobile fa-lg";
+        }
+        else {
+            return null;
+        }
+    }
+
+    function getConnectedListItemDescription(communication: CommunicationFlowCommunicationBag): string | null | undefined {
+        if (communication.communicationType === CommunicationType.Email) {
+            return getPreheaderText(communication.communicationTemplate?.message);
+        }
+        else if (communication.communicationType === CommunicationType.SMS) {
+            return communication.communicationTemplate?.smsMessage;
+        }
+        else if (communication.communicationType === CommunicationType.PushNotification) {
+            return communication.communicationTemplate?.pushMessage;
+        }
+        else {
+            return null;
+        }
+    }
+
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onCommunicationUpdated(message: CommunicationFlowCommunicationBag, newMessage: CommunicationFlowCommunicationBag): void {
+        const newCommunications = [...internalCommunications.value];
+        const index = newCommunications.findIndex(c => c.guid === message.guid);
+
+        if (index !== -1) {
+            newCommunications[index] = newMessage;
+
+            // Update the order if needed.
+            const oldOrder = message.order;
+            const newOrder = newMessage.order;
+
+            if (newOrder !== message.order) {
+                Enumerable.from(newCommunications)
+                    .where(c => c.guid !== message.guid)
+                    .forEach(c => {
+                        const cIndex = newCommunications.findIndex(n => n.guid === c.guid);
+
+                        if (c.order > oldOrder && c.order <= newOrder) {
+                            newCommunications[cIndex] = {
+                                ...c,
+                                order: c.order - 1
+                            };
+                        }
+                        else if (c.order < oldOrder && c.order >= newOrder) {
+                            newCommunications[cIndex] = {
+                                ...c,
+                                order: c.order + 1
+                            };
+                        }
+                    });
+            }
+
+            internalCommunications.value = newCommunications;
+        }
+    }
+
+    async function onDeleteClicked(communcation: CommunicationFlowCommunicationBag): Promise<void> {
+        let typeName = "";
+        let additionalMessage: string | undefined;
+        let deleteWarning: string | null | undefined;
+
+        if (!props.isActive) {
+            // Flow is Inactive
+
+            if (props.triggerType === CommunicationFlowTriggerType.OneTime) {
+                // One-time flow
+                typeName = "message from this flow";
+            }
+            else {
+                // Recurring or On-Demand flow
+                typeName = "message from this and any future instances";
+            }
+
+            additionalMessage = "The details and design will be lost.";
+        }
+        else {
+            // Flow is Active
+
+            if (props.triggerType === CommunicationFlowTriggerType.OneTime) {
+                // One-time flow
+                typeName = "message";
+            }
+            else {
+                // Recurring or On-Demand flow
+                typeName = "message from this and any future instances";
+            }
+
+            deleteWarning = `Warning: this ${triggerTypeToText(props.triggerType)} flow is currently Active.`;
+            additionalMessage = "The details and design will be lost. If this message has been sent to any recipients, you will also lose any performance data.";
+        }
+
+        deleteCommunication.value = communcation;
+        deleteMessageTextArgs.value = {
+            typeName,
+            additionalMessage
+        };
+        deleteWarningText.value = deleteWarning;
+        isDeleteConfirmationVisible.value = true;
+    }
+
+    async function onDeleteConfirmed(communcation: CommunicationFlowCommunicationBag): Promise<void> {
+        const newCommunications = [...internalCommunications.value];
+        const index = newCommunications.findIndex(c => c.guid === communcation.guid);
+
+        if (index !== -1) {
+            newCommunications.splice(index, 1);
+
+            // Update the order of the remaining communications.
+            newCommunications.forEach((c, i) => {
+                newCommunications[i] = {
+                    ...c,
+                    order: i
+                };
+            });
+
+            internalCommunications.value = newCommunications;
+        }
+    }
+
+    function onEditClicked(communication: CommunicationFlowCommunicationBag): void {
+        if (communication.communicationType === CommunicationType.Email) {
+            editEmailCommunication.value = communication;
+            isEmailBuilderShown.value = true;
+        }
+        else if (communication.communicationType === CommunicationType.SMS) {
+            editSmsCommunication.value = communication;
+            isSmsBuilderShown.value = true;
+        }
+        else if (communication.communicationType === CommunicationType.PushNotification) {
+            editPushCommunication.value = communication;
+            isPushBuilderShown.value = true;
+        }
+    }
+
+    function onAddEmailClicked(): void {
+        isEmailBuilderShown.value = true;
+        editEmailCommunication.value = null;
+    }
+
+    function onAddSmsClicked(): void {
+        isSmsBuilderShown.value = true;
+        editSmsCommunication.value = null;
+    }
+
+    function onAddPushClicked(): void {
+        isPushBuilderShown.value = true;
+        editPushCommunication.value = null;
+    }
+
+    function onPreviewEmailCommunicationTemplate(communicationTemplate: CommunicationFlowDetailCommunicationTemplateBag, communication: CommunicationFlowCommunicationBag | null | undefined): void {
+        emit("previewEmailCommunicationTemplate", communicationTemplate, communication);
+    }
+
+    function onSaveCommunicationTemplate(communicationTemplate: CommunicationFlowDetailCommunicationTemplateBag, communicationType: CommunicationType, communication: CommunicationFlowCommunicationBag | null | undefined): void {
+        isEmailBuilderShown.value = false;
+        editEmailCommunication.value = null;
+        isSmsBuilderShown.value = false;
+        editSmsCommunication.value = null;
+        isPushBuilderShown.value = false;
+        editPushCommunication.value = null;
+
+        emit("saveCommunicationTemplate", communicationTemplate, communicationType, communication);
+    }
+
+    function onSendTest(options: SendTestOptions): void {
+        emit("sendTest", options);
+    }
+
+    function onMoveUpClicked(communication: CommunicationFlowCommunicationBag): void {
+        const newCommunications = [...internalCommunications.value];
+        const communication1Index = newCommunications.findIndex(c => areEqual(c.guid, communication.guid));
+        const communication2Index = newCommunications.findIndex(c => c.order === communication.order - 1);
+
+        if (communication1Index !== -1 && communication2Index !== -1) {
+            const communication2 = newCommunications[communication2Index];
+
+            newCommunications[communication1Index] = {
+                ...communication,
+                order: communication.order - 1,
+                daysToWait: communication2.daysToWait,
+                timeToSend: communication2.timeToSend
+            };
+            newCommunications[communication2Index] = {
+                ...communication2,
+                order: communication2.order + 1,
+                daysToWait: communication.daysToWait,
+                timeToSend: communication.timeToSend
+            };
+
+            internalCommunications.value = newCommunications;
+        }
+    }
+
+    function onMoveDownClicked(communication: CommunicationFlowCommunicationBag): void {
+        const newCommunications = [...internalCommunications.value];
+        const communication1Index = newCommunications.findIndex(c => areEqual(c.guid, communication.guid));
+        const communication2Index = newCommunications.findIndex(c => c.order === communication.order + 1);
+
+        if (communication1Index !== -1 && communication2Index !== -1) {
+            const communication2 = newCommunications[communication2Index];
+
+            newCommunications[communication1Index] = {
+                ...communication,
+                order: communication.order + 1,
+                daysToWait: communication2.daysToWait,
+                timeToSend: communication2.timeToSend
+            };
+            newCommunications[communication2Index] = {
+                ...communication2,
+                order: communication2.order - 1,
+                daysToWait: communication.daysToWait,
+                timeToSend: communication.timeToSend
+            };
+
+            internalCommunications.value = newCommunications;
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

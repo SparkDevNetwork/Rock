@@ -1,0 +1,382 @@
+<template>
+    <Panel v-if="conversionGoalSummaryHtml">
+        <template #title>
+            Conversion Goal Progress <HighlightLabel :labelType="getConversionGoalStatusLabelType(conversionGoalStatus)">{{ conversionGoalStatus }}</HighlightLabel>
+        </template>
+
+        <div class="conversion-goal-progress-body">
+            <template v-if="hasSentMessages">
+                <div class="goal-summary">
+                    <HighlightLabel labelType="success"><i class="ti ti-target"></i></HighlightLabel> <span v-html="conversionGoalSummaryHtml"></span>
+                </div>
+
+                <EnhancedProgressBar :indicators="[conversionGoalTargetPercent ?? 0]"
+                                     :modelValue="{
+                                        value: averageInstanceConversionPercent * 100,
+                                        text: averageInstanceConversionPercent.toLocaleString(undefined, { style: 'percent' })
+                                    }"
+                                     :progressType="progressBarType"
+                                     :indicatorType="progressBarType" />
+            </template>
+
+            <template v-else>
+                <div class="goal-summary">
+                    <HighlightLabel labelType="default"><i class="ti ti-target"></i></HighlightLabel> <span>No data available yet.</span>
+                </div>
+
+                <EnhancedProgressBar :indicators="[conversionGoalTargetPercent ?? 0]"
+                                     :modelValue="null" />
+            </template>
+        </div>
+    </Panel>
+</template>
+
+<style scoped>
+.conversion-goal-progress-body {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.goal-summary {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.goal-summary i {
+    font-size: var(--font-size-h4);
+    font-weight: var(--font-weight-semibold);
+}
+
+.progress-wrapper {
+    /* Needed for absolute positioning of the target line */
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: 16px;
+}
+
+.progress-filled,
+.progress-empty {
+    height: 100%;
+    transition: width 0.4s ease-in-out;
+    will-change: width;
+    box-sizing: border-box;
+}
+
+.progress-filled {
+    font-size: var(--font-size-xsmall);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-interface-softest);
+    background-color: v-bind(progressBarType);
+    border: 1px solid v-bind(progressBarType);
+    border-right: none;
+    border-radius: 50px 0 0 50px;
+}
+
+.progress-empty {
+    background-color: var(--color-interface-softest);
+    border: 1px solid v-bind(progressBarType);
+    border-left: none;
+    border-radius: 0 50px 50px 0;
+}
+
+.progress-target {
+    position: absolute;
+    /* Overlap above the bar */
+    top: -3px;
+    height: 22px;
+    transform: translateX(-50%);
+    pointer-events: none;
+}
+
+.progress-target svg {
+    stroke: v-bind(progressBarType);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { ConversionGoalStatus } from "./types.partial";
+    import EnhancedProgressBar from "@Obsidian/Controls/enhancedProgressBar.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { ConversionGoalType } from "@Obsidian/Enums/Communication/conversionGoalType";
+    import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { prependSingularIndefiniteArticle } from "@Obsidian/Utility/stringUtils";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+    import { ConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/conversionGoalSettingsBag";
+    import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
+
+    const props = defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        },
+
+        conversionGoalType: {
+            type: Object as PropType<ConversionGoalType | null | undefined>,
+            required: true
+        },
+
+        conversionGoalTargetPercent: {
+            type: Object as PropType<number | null | undefined>,
+            required: true
+        },
+
+        conversionGoalTimeframeInDays: {
+            type: Object as PropType<number | null | undefined>,
+            required: true
+        },
+
+        conversionGoalSettings: {
+            type: Object as PropType<ConversionGoalSettingsBag | null | undefined>,
+            required: true
+        }
+    });
+
+    // #region Computed Properties
+
+    const conversionGoalSummaryHtml = computed<string | null>(() => {
+        const conversionGoalType = props.conversionGoalType;
+        const conversionGoalTargetPercent = (props.conversionGoalTargetPercent ?? 0) / 100;
+        const conversionGoalTimeframeInDays = props.conversionGoalTimeframeInDays;
+        const conversionGoalSettings = props.conversionGoalSettings;
+
+        if (isNullish(conversionGoalType)
+            || !conversionGoalSettings
+            || !conversionGoalTargetPercent
+            || isNullish(conversionGoalTimeframeInDays)
+            || conversionGoalTargetPercent <= 0
+            || conversionGoalTimeframeInDays <= 0) {
+            return null;
+        }
+
+        const timeSpan = RockTimeSpan.fromDays(conversionGoalTimeframeInDays);
+        const who = `At least ${strongify(conversionGoalTargetPercent.toLocaleString(undefined, { style: "percent" }))} of recipients`;
+        const when = `within ${strongify(timeSpan.toElapsedString().toLocaleLowerCase())} of the flow's launch`;
+
+        switch (conversionGoalType) {
+            case ConversionGoalType.CompletedForm: {
+                const workflowTypeText = conversionGoalSettings.completedFormSettings?.workflowType?.text;
+
+                if (!workflowTypeText) {
+                    return null;
+                }
+
+                // Only include "the" if the workflow type is not possessive
+                // Check for possessive (e.g., "John's Form")
+                const isPossessive = /['’]s\b/i.test(workflowTypeText) || /s['’]\b/i.test(workflowTypeText);
+                const prefix = isPossessive ? "" : "the ";
+
+                // Only include "form" if the workflow type doesn't end with "form"
+                const endsWithForm = /^form$/i.test(workflowTypeText) || / form$/i.test(workflowTypeText);
+                const suffix = endsWithForm ? "" : " form";
+
+                return `${who} completed ${prefix}${strongify(workflowTypeText)}${suffix} ${when}.`;
+            }
+
+            case ConversionGoalType.Registered: {
+                const registrationInstanceText = conversionGoalSettings.registeredSettings?.registrationInstance?.text;
+
+                if (!registrationInstanceText) {
+                    return null;
+                }
+
+                return `${who} registered for ${strongify(registrationInstanceText)} ${when}.`;
+            }
+
+            case ConversionGoalType.JoinedGroupType: {
+                const groupTypeText = conversionGoalSettings.joinedGroupTypeSettings?.groupType?.text;
+
+                if (!groupTypeText) {
+                    return null;
+                }
+
+                // Only include "group" if the group name doesn't end with "group"
+                const endsWithGroup = /^group$/i.test(groupTypeText) || / group$/i.test(groupTypeText);
+                const suffix = endsWithGroup ? "" : " group";
+
+                return `${who} joined ${prependSingularIndefiniteArticle(groupTypeText).replace(groupTypeText, strongify(groupTypeText))}${suffix} ${when}.`;
+            }
+
+            case ConversionGoalType.JoinedGroup: {
+                const groupText = conversionGoalSettings.joinedGroupSettings?.group?.text;
+
+                if (!groupText) {
+                    return null;
+                }
+
+                // Only include "the" if the group name is not possessive
+                // Check for possessive (e.g., "John's Group")
+                const isPossessive = /['’]s\b/i.test(groupText) || /s['’]\b/i.test(groupText);
+                const prefix = isPossessive ? "" : "the ";
+
+                // Only include "group" if the group name doesn't end with "group"
+                const endsWithGroup = /^group$/i.test(groupText) || / group$/i.test(groupText);
+                const suffix = endsWithGroup ? "" : " group";
+
+                return `${who} joined ${prefix}${strongify(groupText)}${suffix} ${when}.`;
+            }
+
+            case ConversionGoalType.TookStep: {
+                const stepTypeText = conversionGoalSettings.tookStepSettings?.stepType?.text;
+
+                if (!stepTypeText) {
+                    return null;
+                }
+
+                // Only include "the" if the step type is not possessive
+                // Check for possessive (e.g., "John's Step")
+                const isPossessive = /['’]s\b/i.test(stepTypeText) || /s['’]\b/i.test(stepTypeText);
+                const prefix = isPossessive ? "" : "the ";
+
+                // Only include "step" if the step type doesn't end with "step"
+                const endsWithStep = /^step$/i.test(stepTypeText) || / step$/i.test(stepTypeText);
+                const suffix = endsWithStep ? "" : " step";
+
+                return `${who} completed ${prefix}${strongify(stepTypeText)}${suffix} ${when}.`;
+            }
+
+            case ConversionGoalType.EnteredDataView: {
+                const dataViewText = conversionGoalSettings.enteredDataViewSettings?.dataView?.text;
+
+                if (!dataViewText) {
+                    return null;
+                }
+
+                // Only include "the" if the data view is not possessive
+                // Check for possessive (e.g., "John's Data View")
+                const isPossessive = /['’]s\b/i.test(dataViewText) || /s['’]\b/i.test(dataViewText);
+                const prefix = isPossessive ? "" : "the ";
+
+                // Only include "data view" if the data view doesn't end with "data view"
+                const endsWithStep = /^data view$/i.test(dataViewText) || / data view$/i.test(dataViewText);
+                const suffix = endsWithStep ? "" : " data view";
+
+                return `${who} entered ${prefix}${strongify(dataViewText)}${suffix} ${when}.`;
+            }
+
+            default:
+                // If the conversion goal type is not recognized, return null.
+                return null;
+        }
+    });
+
+    const progressBarType = computed<"danger" | "success" | "critical" | "warning" | "default">(() => {
+        switch (conversionGoalStatus.value) {
+            case "Achieved":
+                return "success";
+            case "Missed":
+                return "danger";
+            case "Pending":
+                return "warning";
+            case "Not Tracked":
+            default:
+                return "default";
+        }
+    });
+
+    const messagesGroupedByInstance = computed<GroupedEnumerable<string, MessageBag>[]>(() => {
+        return Enumerable
+            .from(props.messages)
+            .groupBy(m => m.communicationFlowInstanceIdKey)
+            .ofType((g): g is GroupedEnumerable<string, MessageBag> => !isNullish(g.key))
+            .toArray();
+    });
+
+    const conversionGoalStatus = computed<ConversionGoalStatus>(() => {
+        if (props.messages.length === 0) {
+            // No instance selected or no messages have been sent for the selected flow instances.
+            return "Not Tracked";
+        }
+        else {
+            const conversionGoalTargetFractionalPercent = (props.conversionGoalTargetPercent ?? 0) / 100;
+
+            const goalNotMetInstances = Enumerable
+                .from(messagesGroupedByInstance.value)
+                .where(messagesByInstance => {
+                    const messageCount = messagesByInstance.count(m => !!m.sentDateTime);
+                    const conversionCount = messagesByInstance.count(m => !!m.convertedDateTime);
+
+                    const conversionPercent = messageCount ? conversionCount / messageCount : 0;
+
+                    return conversionPercent < conversionGoalTargetFractionalPercent;
+                })
+                .toArray();
+
+            if (Enumerable.from(goalNotMetInstances).any()) {
+                if (Enumerable.from(goalNotMetInstances).any(messagesByInstance => messagesByInstance.any(m => !m.sentDateTime) || messagesByInstance.any(m => !m.communicationFlowInstanceCompletedDateTime))) {
+                    // At least one instance has unsent communications
+                    // and the conversion percent is below the target.
+                    return "Pending";
+                }
+                else {
+                    // All selected instances have sent communications,
+                    // but at least one has not met the conversion goal.
+                    return "Missed";
+                }
+            }
+            else {
+                // All selected instances have met the conversion goal.
+                return "Achieved";
+            }
+        }
+    });
+
+    const hasSentMessages = computed<boolean>(() => {
+        return props.messages.some(m => m.sentDateTime);
+    });
+
+    const averageInstanceConversionPercent = computed<number>(() => {
+        return Enumerable
+            .from(messagesGroupedByInstance.value)
+            .select(messagesByInstance => {
+                const messageCount = messagesByInstance.count(m => !!m.sentDateTime);
+                const conversionCount = messagesByInstance.count(m => !!m.sentDateTime && !!m.convertedDateTime);
+
+                if (messageCount) {
+                    return {
+                        communicationFlowInstanceIdKey: messagesByInstance.key,
+                        conversionPercent: conversionCount / messageCount
+                    };
+                }
+                else {
+                    return {
+                        communicationFlowInstanceIdKey: messagesByInstance.key,
+                        conversionPercent: 0
+                    };
+                }
+            })
+            .average(i => i.conversionPercent);
+    });
+
+    // #endregion Computed Properties
+
+    // #region Functions
+
+    function getConversionGoalStatusLabelType(conversionGoalStatus: ConversionGoalStatus): "success" | "danger" | "default" | "warning" {
+        switch (conversionGoalStatus) {
+            case "Achieved":
+                return "success";
+            case "Missed":
+                return "danger";
+            case "Pending":
+                return "warning";
+            case "Not Tracked":
+            default:
+                return "default";
+        }
+    }
+
+    function strongify(text: string): string {
+        return `<strong>${text}</strong>`;
+    }
+
+    // #endregion Functions
+</script>

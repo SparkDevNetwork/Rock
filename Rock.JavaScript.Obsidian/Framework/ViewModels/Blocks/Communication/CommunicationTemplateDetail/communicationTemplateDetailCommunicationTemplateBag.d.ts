@@ -21,8 +21,8 @@
 // </copyright>
 //
 
-import { PushOpenAction } from "@Obsidian/Enums/Blocks/Communication/CommunicationTemplateDetail/pushOpenAction";
 import { CommunicationTemplateVersion } from "@Obsidian/Enums/Communication/communicationTemplateVersion";
+import { PushOpenActionType } from "@Obsidian/Enums/Communication/pushOpenActionType";
 import { PageRouteValueBag } from "@Obsidian/ViewModels/Rest/Controls/pageRouteValueBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -86,7 +86,7 @@ export type CommunicationTemplateDetailCommunicationTemplateBag = {
     pushMobilePageQueryString?: Record<string, string> | null;
 
     /** Gets or sets the push open action. */
-    pushOpenAction: PushOpenAction;
+    pushOpenAction: PushOpenActionType;
 
     /** Gets or sets the push open message. */
     pushOpenMessage?: string | null;

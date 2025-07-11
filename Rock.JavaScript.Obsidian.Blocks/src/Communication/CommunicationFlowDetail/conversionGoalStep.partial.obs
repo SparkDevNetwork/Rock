@@ -1,0 +1,492 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="title" hasFullscreen>
+        <template #headerActions>
+            <HighlightLabel v-if="!isActive" class="mr-3">Inactive</HighlightLabel>
+        </template>
+
+        <RockForm :id="formId" @submit="$emit('nextStep')">
+            <GuideWell title="Measuring Success"
+                       body="A conversion goal is the desired outcome of your flow. It is a way to measure if your flow was successful or not. Below, define the goal in terms of the action your recipients take, the percent of recipients who take it, and when they take it." />
+
+            <fieldset>
+                <GoalSummary>{{ goalSummary }}</GoalSummary>
+
+                <div class="row">
+                    <div class="col-md-8">
+                        <RadioButtonList v-model="conversionGoalTypeAsString"
+                                         help="Defines the action that counts as a successful conversion for this flow."
+                                         horizontal
+                                         :items="conversionGoalTypes"
+                                         label="Conversion Type"
+                                         :repeatColumns="3"
+                                         rules="required" />
+                    </div>
+                </div>
+
+                <ConditionalWell v-if="conversionGoalType === ConversionGoalType.CompletedForm"
+                                 class="well-conversion-goal">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <WorkflowTypePicker v-model="workflowType"
+                                                label="Form/Workflow Type"
+                                                rules="required" />
+                        </div>
+                    </div>
+                </ConditionalWell>
+
+                <ConditionalWell v-else-if="conversionGoalType === ConversionGoalType.JoinedGroupType"
+                                 class="well-conversion-goal">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <GroupTypePicker v-model="groupType"
+                                             enhanceForLongLists
+                                             label="Group Type"
+                                             rules="required" />
+                        </div>
+                    </div>
+                </ConditionalWell>
+
+                <ConditionalWell v-else-if="conversionGoalType === ConversionGoalType.JoinedGroup"
+                                 class="well-conversion-goal">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <GroupTypeGroupPicker v-model="group"
+                                                  enhanceForLongLists
+                                                  rules="required" />
+                        </div>
+                    </div>
+                </ConditionalWell>
+
+                <ConditionalWell v-else-if="conversionGoalType === ConversionGoalType.Registered"
+                                 class="well-conversion-goal">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <RegistrationInstancePicker v-model="registrationInstance"
+                                                        enhanceForLongLists
+                                                        rules="required" />
+                        </div>
+                    </div>
+                </ConditionalWell>
+
+                <ConditionalWell v-else-if="conversionGoalType === ConversionGoalType.TookStep"
+                                 class="well-conversion-goal">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <StepProgramStepTypePicker v-model="stepType"
+                                                       enhanceForLongLists
+                                                       rules="required" />
+                        </div>
+                    </div>
+                </ConditionalWell>
+
+                <ConditionalWell v-else-if="conversionGoalType === ConversionGoalType.EnteredDataView"
+                                 class="well-conversion-goal">
+                    <div class="row">
+                        <div class="col-md-5">
+                            <DataViewPicker v-model="dataView"
+                                            label="Data View"
+                                            rules="required" />
+                        </div>
+                    </div>
+                </ConditionalWell>
+
+                <TransitionVerticalCollapse>
+                    <div v-if="conversionGoalTypeAsString" class="row">
+                        <div class="col-md-3">
+                            <NumberBox :modelValue="internalConversionGoalTargetPercent ?? null"
+                                       help="The percentage of recipients expected to complete the conversion goal."
+                                       label="Target %"
+                                       :minimumValue="0"
+                                       :maximumValue="100"
+                                       placeholder="% of recipients"
+                                       :rules="['required', 'gt:0']"
+                                       @update:modelValue="internalConversionGoalTargetPercent = $event">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">%</span>
+                                </template>
+                            </NumberBox>
+
+                            <NumberBox :modelValue="internalConversionGoalTimeframeInDays ?? null"
+                                       help="The timeframe for achieving the conversion goal. The goal is met if the target percentage of recipients completes the action within this number of days from the flow's start."
+                                       label="Within # Of Days After Launch"
+                                       :minimumValue="1"
+                                       rules="required"
+                                       @update:modelValue="internalConversionGoalTimeframeInDays = $event">
+                                <template #inputGroupAppend>
+                                    <span class="input-group-addon">Day(s)</span>
+                                </template>
+                            </NumberBox>
+                        </div>
+                    </div>
+                </TransitionVerticalCollapse>
+            </fieldset>
+        </RockForm>
+
+        <template #footerActions>
+            <RockButton btnType="link"
+                        class="text-primary"
+                        type="button"
+                        @click="$emit('previousStep')">Back</RockButton>
+        </template>
+
+        <template #footerSecondaryActions>
+            <RockButton btnType="primary"
+                        :form="formId"
+                        type="submit">Next</RockButton>
+        </template>
+    </Panel>
+</template>
+
+<style scoped>
+.well-conversion-goal {
+    margin-bottom: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, watch } from "vue";
+    import GoalSummary from "./goalSummary.partial.obs";
+    import GuideWell from "./guideWell.partial.obs";
+    import { isEnumValue, withIndefiniteArticle } from "./utils.partial";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import GroupTypeGroupPicker from "@Obsidian/Controls/groupTypeGroupPicker.obs";
+    import GroupTypePicker from "@Obsidian/Controls/groupTypePicker.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import RegistrationInstancePicker from "@Obsidian/Controls/registrationInstancePicker.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import StepProgramStepTypePicker from "@Obsidian/Controls/stepProgramStepTypePicker.obs";
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
+    import { ConversionGoalType } from "@Obsidian/Enums/Communication/conversionGoalType";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CommunicationFlowDetailConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowDetailConversionGoalSettingsBag";
+
+    const props = defineProps({
+        conversionGoalTargetPercent: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        },
+
+        conversionGoalTimeframeInDays: {
+            type: Number as PropType<number | null | undefined>,
+            required: true
+        },
+
+        conversionGoalType: {
+            type: Number as PropType<ConversionGoalType | null | undefined>,
+            required: true
+        },
+
+        conversionGoalSettings: {
+            type: Object as PropType<CommunicationFlowDetailConversionGoalSettingsBag | null | undefined>,
+            required: true
+        },
+
+        isActive: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+    });
+
+    const emit = defineEmits<{
+        (e: "nextStep"): void;
+        (e: "previousStep"): void;
+        (e: "update:conversionGoalSettings", value: CommunicationFlowDetailConversionGoalSettingsBag | null | undefined): void;
+        (e: "update:conversionGoalTargetPercent", value: number | null | undefined): void;
+        (e: "update:conversionGoalTimeframeInDays", value: number | null | undefined): void;
+        (e: "update:conversionGoalType", value: ConversionGoalType | null | undefined): void;
+    }>();
+
+    const conversionGoalTypes: ListItemBag[] = [
+        {
+            text: "Completed Form",
+            value: `${ConversionGoalType.CompletedForm}`,
+        },
+        {
+            text: "Registered",
+            value: `${ConversionGoalType.Registered}`,
+        },
+        {
+            text: "Joined Group Of Type",
+            value: `${ConversionGoalType.JoinedGroupType}`,
+        },
+        {
+            text: "Joined Specific Group",
+            value: `${ConversionGoalType.JoinedGroup}`,
+        },
+        {
+            text: "Completed Step",
+            value: `${ConversionGoalType.TookStep}`,
+        },
+        {
+            text: "Entered Data View",
+            value: `${ConversionGoalType.EnteredDataView}`,
+        },
+    ];
+
+    const formId = `communication-flow-detail-conversion-goal-${newGuid()}`;
+
+    // #region Values
+
+    // State values.
+    const internalConversionGoalTargetPercent = useVModelPassthrough(props, "conversionGoalTargetPercent", emit);
+    const internalConversionGoalTimeframeInDays = useVModelPassthrough(props, "conversionGoalTimeframeInDays", emit);
+    const internalConversionGoalType = useVModelPassthrough(props, "conversionGoalType", emit);
+    const internalConversionGoalSettings = useVModelPassthrough(props, "conversionGoalSettings", emit);
+
+    // #endregion
+
+    // #region Computed Values
+
+    const workflowType = computed<ListItemBag | null | undefined>({
+        get() {
+            return internalConversionGoalSettings.value?.completedFormSettings?.workflowType;
+        },
+        set(value: ListItemBag | null | undefined) {
+            internalConversionGoalSettings.value = {
+                completedFormSettings: {
+                    ...internalConversionGoalSettings.value?.completedFormSettings,
+                    workflowType: value
+                }
+                // Don't set the other settings here.
+            };
+        }
+    });
+
+    const groupType = computed<ListItemBag | null | undefined>({
+        get() {
+            return internalConversionGoalSettings.value?.joinedGroupTypeSettings?.groupType;
+        },
+        set(value: ListItemBag | null | undefined) {
+            internalConversionGoalSettings.value = {
+                joinedGroupTypeSettings: {
+                    ...internalConversionGoalSettings.value?.joinedGroupTypeSettings,
+                    groupType: value
+                }
+                // Don't set the other settings here.
+            };
+        }
+    });
+
+    const group = computed<ListItemBag | null>({
+        get() {
+            return internalConversionGoalSettings.value?.joinedGroupSettings?.group ?? null;
+        },
+        set(value: ListItemBag | null) {
+            internalConversionGoalSettings.value = {
+                joinedGroupSettings: {
+                    ...internalConversionGoalSettings.value?.joinedGroupSettings,
+                    group: value
+                }
+                // Don't set the other settings here.
+            };
+        }
+    });
+
+    const registrationInstance = computed<ListItemBag | null>({
+        get() {
+            return internalConversionGoalSettings.value?.registeredSettings?.registrationInstance ?? null;
+        },
+        set(value: ListItemBag | null) {
+            internalConversionGoalSettings.value = {
+                registeredSettings: {
+                    ...internalConversionGoalSettings.value?.registeredSettings,
+                    registrationInstance: value
+                }
+                // Don't set the other settings here.
+            };
+        }
+    });
+
+    const stepType = computed<ListItemBag | null | undefined>({
+        get() {
+            return internalConversionGoalSettings.value?.tookStepSettings?.stepType;
+        },
+        set(value: ListItemBag | null | undefined) {
+            internalConversionGoalSettings.value = {
+                tookStepSettings: {
+                    ...internalConversionGoalSettings.value?.tookStepSettings,
+                    stepType: value
+                }
+                // Don't set the other settings here.
+            };
+        }
+    });
+
+    const dataView = computed<ListItemBag | null | undefined>({
+        get() {
+            return internalConversionGoalSettings.value?.enteredDataViewSettings?.dataView;
+        },
+        set(value: ListItemBag | null | undefined) {
+            internalConversionGoalSettings.value = {
+                enteredDataViewSettings: {
+                    ...internalConversionGoalSettings.value?.enteredDataViewSettings,
+                    dataView: value
+                }
+                // Don't set the other settings here.
+            };
+        }
+    });
+
+    const conversionGoalTypeAsString = computed<string>({
+        get() {
+            return isNullish(internalConversionGoalType.value) ? "" : `${internalConversionGoalType.value}`;
+        },
+        set(value: string) {
+            const parsed = Number(value);
+
+            if (isEnumValue(ConversionGoalType, parsed)) {
+                internalConversionGoalType.value = parsed;
+            }
+            else {
+                internalConversionGoalType.value = null;
+            }
+        }
+    });
+
+    const goalSummary = computed<string>(() => {
+        if (!isNullish(internalConversionGoalType.value)) {
+            const conversionGoalTargetPercent = internalConversionGoalTargetPercent.value;
+            const conversionGoalTimeframeInDays = internalConversionGoalTimeframeInDays.value;
+
+            if (!conversionGoalTargetPercent
+                || isNullish(conversionGoalTimeframeInDays)
+                || conversionGoalTargetPercent <= 0
+                || conversionGoalTimeframeInDays <= 0) {
+                return "Set Goal...";
+            }
+
+            const who = `At least ${conversionGoalTargetPercent}% of recipients`;
+            const when = conversionGoalTimeframeInDays === 1
+                ? "within 1 day of the flow's launch"
+                : `within ${conversionGoalTimeframeInDays} days of the flow's launch`;
+
+            switch (internalConversionGoalType.value) {
+                case ConversionGoalType.CompletedForm: {
+                    if (!workflowType.value?.text) {
+                        return "Set Goal...";
+                    }
+
+                    const workflowTypeText = workflowType.value.text;
+
+                    // Only include "the" if the workflow type is not possessive
+                    // Check for possessive (e.g., "John's Form")
+                    const isPossessive = /['’]s\b/i.test(workflowTypeText) || /s['’]\b/i.test(workflowTypeText);
+                    const prefix = isPossessive ? "" : "the ";
+
+                    // Only include "form" if the workflow type doesn't end with "form"
+                    const endsWithForm = /^form$/i.test(workflowTypeText) || / form$/i.test(workflowTypeText);
+                    const suffix = endsWithForm ? "" : " form";
+
+                    return `${who} completed ${prefix}${workflowTypeText}${suffix} ${when}.`;
+                }
+
+                case ConversionGoalType.Registered: {
+                    if (!registrationInstance.value?.text) {
+                        return "Set Goal...";
+                    }
+
+                    return `${who} registered for ${registrationInstance.value.text} ${when}.`;
+                }
+
+                case ConversionGoalType.JoinedGroupType: {
+                    if (!groupType.value?.text) {
+                        return "Set Goal...";
+                    }
+
+                    const groupText = groupType.value.text;
+
+                    // Only include "group" if the group name doesn't end with "group"
+                    const endsWithGroup = /^group$/i.test(groupText) || / group$/i.test(groupText);
+                    const suffix = endsWithGroup ? "" : " group";
+
+                    return `${who} joined ${withIndefiniteArticle(groupText)}${suffix} ${when}.`;
+                }
+
+                case ConversionGoalType.JoinedGroup: {
+                    if (!group.value?.text) {
+                        return "Set Goal...";
+                    }
+
+                    const groupText = group.value.text;
+
+                    // Only include "the" if the group name is not possessive
+                    // Check for possessive (e.g., "John's Group")
+                    const isPossessive = /['’]s\b/i.test(groupText) || /s['’]\b/i.test(groupText);
+                    const prefix = isPossessive ? "" : "the ";
+
+                    // Only include "group" if the group name doesn't end with "group"
+                    const endsWithGroup = /^group$/i.test(groupText) || / group$/i.test(groupText);
+                    const suffix = endsWithGroup ? "" : " group";
+
+                    return `${who} joined ${prefix}${groupText}${suffix} ${when}.`;
+                }
+
+                case ConversionGoalType.TookStep: {
+                    if (!stepType.value?.text) {
+                        return "Set Goal...";
+                    }
+
+                    const stepTypeText = stepType.value.text;
+
+                    // Only include "the" if the step type is not possessive
+                    // Check for possessive (e.g., "John's Step")
+                    const isPossessive = /['’]s\b/i.test(stepTypeText) || /s['’]\b/i.test(stepTypeText);
+                    const prefix = isPossessive ? "" : "the ";
+
+                    // Only include "step" if the step type doesn't end with "step"
+                    const endsWithStep = /^step$/i.test(stepTypeText) || / step$/i.test(stepTypeText);
+                    const suffix = endsWithStep ? "" : " step";
+
+                    return `${who} completed ${prefix}${stepTypeText}${suffix} ${when}.`;
+                }
+
+                case ConversionGoalType.EnteredDataView: {
+                    if (!dataView.value?.text) {
+                        return "Set Goal...";
+                    }
+
+                    const dataViewText = dataView.value.text;
+
+                    // Only include "the" if the data view is not possessive
+                    // Check for possessive (e.g., "John's Data View")
+                    const isPossessive = /['’]s\b/i.test(dataViewText) || /s['’]\b/i.test(dataViewText);
+                    const prefix = isPossessive ? "" : "the ";
+
+                    // Only include "data view" if the data view doesn't end with "data view"
+                    const endsWithStep = /^data view$/i.test(dataViewText) || / data view$/i.test(dataViewText);
+                    const suffix = endsWithStep ? "" : " data view";
+
+                    return `${who} entered ${prefix}${dataViewText}${suffix} ${when}.`;
+                }
+            }
+        }
+
+        return "Set Goal...";
+    });
+
+    // #endregion Computed Values
+
+    // #region Watchers
+
+    watch(internalConversionGoalType, () => {
+        // Whenever the conversion goal type changes, we need to reset the settings.
+        internalConversionGoalSettings.value = {};
+    });
+
+    // #endregion Watchers
+</script>

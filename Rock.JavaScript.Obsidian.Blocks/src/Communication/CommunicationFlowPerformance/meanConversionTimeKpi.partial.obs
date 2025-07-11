@@ -1,0 +1,66 @@
+<template>
+    <Kpi color="gray"
+         :colorShade="700"
+         iconCssClass="ti ti-hourglass"
+         isCard
+         label="Avg. Time Before Conversion"
+         :value="averageTimeBeforeConversion" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { useRockDateTimeParser } from "./utils.partial";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+
+    const props = defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        }
+    });
+
+    const { parseRockDateTime } = useRockDateTimeParser();
+
+    // #region Computed Values
+
+    const averageTimeBeforeConversion = computed<string>(() => {
+        const messageEnumerable = Enumerable.from(props.messages);
+
+        if (!messageEnumerable.any()) {
+            // There are no recipients for the selected flow instances,
+            // so there is no average conversion time to calculate.
+            return "N/A";
+        }
+
+        const conversionTimesInMilliseconds = messageEnumerable
+            .select(message => {
+                const sentDate = parseRockDateTime(message.sentDateTime);
+                const convertedDate = parseRockDateTime(message.convertedDateTime);
+
+                if (sentDate && convertedDate) {
+                    return convertedDate.toMilliseconds() - sentDate.toMilliseconds();
+                }
+                else {
+                    // No conversion time for this recipient.
+                    return 0;
+                }
+            })
+            .where(conversionTime => conversionTime > 0)
+            .toArray();
+
+        if (conversionTimesInMilliseconds.length === 0) {
+            // There are no conversion times to average
+            // so return "N/A".
+            return "N/A";
+        }
+
+        const meanConversionTime = Enumerable.from(conversionTimesInMilliseconds).average(c => c);
+
+        return RockTimeSpan.fromMilliseconds(meanConversionTime).toElapsedString();
+    });
+
+    // #endregion Computed Values
+</script>

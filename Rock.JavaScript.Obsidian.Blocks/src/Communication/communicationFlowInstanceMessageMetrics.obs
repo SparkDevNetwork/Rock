@@ -1,0 +1,107 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel :title="`Message Metrics: ${config.flowCommunication?.flowCommunicationName}`">
+        <div class="row">
+            <div class="col-md-3">
+                <ConversionRateKpi :modelValue="selectedFlowInstanceCommunication" />
+            </div>
+
+            <div class="col-md-3">
+                <OpenRateKpi :modelValue="selectedFlowInstanceCommunication" />
+            </div>
+
+            <div class="col-md-3">
+                <ClickThroughRateKpi :modelValue="selectedFlowInstanceCommunication" />
+            </div>
+
+            <div class="col-md-3">
+                <UnsubscribeRateKpi :modelValue="selectedFlowInstanceCommunication" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <MessagePerformanceOverTime :modelValue="selectedFlowInstanceCommunication" />
+            </div>
+
+            <div class="col-md-6">
+                <MessageInstanceVsFlowAverage :modelValue="selectedFlowInstanceCommunication"
+                                              :flowInstanceCommunications="config.flowCommunication?.flowInstanceCommunications" />
+            </div>
+        </div>
+
+        <div class="row">
+            <div class="col-md-6">
+                <div class="communication-flow-performance-disclaimer">* Our data suggests a correlation between messages and conversions but not direct causation.</div>
+            </div>
+
+            <div class="col-md-6">
+                <div class="communication-flow-performance-updated-text">{{ dataLastUpdatedMessage }}</div>
+            </div>
+        </div>
+    </Panel>
+
+    <RecipientLogGrid :modelValue="selectedFlowInstanceCommunication?.recipientMetrics"
+                      @viewPerson="onViewPerson" />
+</template>
+
+<style scoped>
+.communication-flow-performance-disclaimer {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+}
+
+.communication-flow-performance-updated-text {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+    text-align: right;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed } from "vue";
+    import ClickThroughRateKpi from "./CommunicationFlowInstanceMessageMetrics/clickThroughRateKpi.partial.obs";
+    import ConversionRateKpi from "./CommunicationFlowInstanceMessageMetrics/conversionRateKpi.partial.obs";
+    import MessageInstanceVsFlowAverage from "./CommunicationFlowInstanceMessageMetrics/messageInstanceVsFlowAverage.partial.obs";
+    import MessagePerformanceOverTime from "./CommunicationFlowInstanceMessageMetrics/messagePerformanceOverTime.partial.obs";
+    import OpenRateKpi from "./CommunicationFlowInstanceMessageMetrics/openRateKpi.partial.obs";
+    import RecipientLogGrid from "./CommunicationFlowInstanceMessageMetrics/recipientLogGrid.partial.obs";
+    import UnsubscribeRateKpi from "./CommunicationFlowInstanceMessageMetrics/unsubscribeRateKpi.partial.obs";
+    import { RockDateTimeFormatter, provideRockDateTimeParser } from "./CommunicationFlowInstanceMessageMetrics/utils.partial";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { useStore } from "@Obsidian/PageState";
+    import { useConfigurationValues } from "@Obsidian/Utility/block";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag";
+    import { CommunicationFlowInstanceMessageMetricsInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsInitializationBox";
+    import { CommunicationFlowInstanceMessageMetricsRecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsRecipientMetricsBag";
+
+    const config = useConfigurationValues<CommunicationFlowInstanceMessageMetricsInitializationBox>();
+    const { getPageParameter } = useStore();
+    provideRockDateTimeParser();
+
+    // #region Computed Values
+
+    const selectedFlowInstanceCommunication = computed<CommunicationFlowInstanceMessageMetricsFlowInstanceCommunicationBag | null | undefined>(() => {
+        // Always select the instance communication that matches the page parameter.
+        const selectedInstanceCommunicationKey = getPageParameter("CommunicationFlowInstanceCommunication");
+
+        return config.flowCommunication?.flowInstanceCommunications?.find(ic => ic.flowInstanceCommunicationIdKey === selectedInstanceCommunicationKey);
+    });
+
+    const dataLastUpdatedMessage = computed<string>(() => {
+        return `Data Last Updated On:  ${RockDateTimeFormatter.format_JanDot_1_1970(RockDateTime.now())}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onViewPerson(selectedRow: CommunicationFlowInstanceMessageMetricsRecipientMetricsBag): void {
+        if (selectedRow.person?.idKey) {
+            window.location.href = `/Person/${selectedRow.person.idKey}`;
+        }
+    }
+
+    // #endregion Event Handlers
+</script>

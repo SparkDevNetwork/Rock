@@ -1,0 +1,185 @@
+<template>
+    <Grid :definition="gridDefinition ?? undefined"
+          :data="messageRows"
+          :entityTypeGuid="EntityType.CommunicationFlowCommunication"
+          :keyField="keyField"
+          itemTerm="Message"
+          stickyHeader
+          @selectItem="onViewMessage"
+          :isCountMessageVisible="false"
+          :isSearchVisible="false"
+          :showExport="false"
+          :showMergeTemplate="false"
+          disablePaging
+          isFooterHidden>
+        <Column v-if="hasMultipleInstanceMessages"
+                :field="getField('communicationFlowInstanceStartDate')"
+                :name="getField('communicationFlowInstanceStartDate')"
+                title="Instance Start Date">
+            <template #format="{ row }">
+                <span>
+                    {{ RockDateTimeFormatter.format_1_1_1970_1_00_AM(parseRockDateTime(getRow(row).communicationFlowInstanceStartDate)) }}
+                </span>
+            </template>
+        </Column>
+
+        <TextColumn :field="getField('communicationFlowCommunicationName')"
+                    :name="getField('communicationFlowCommunicationName')"
+                    title="Message Name"
+                    width="300px" />
+
+        <Column :field="getField('communicationType')"
+                :name="getField('communicationType')"
+                title="Medium">
+            <template #format="{ row }">
+                <HighlightLabel labelType="info">
+                    <template v-if="getRow(row).communicationType === CommunicationType.Email"><i class="ti ti-mail"></i> Email</template>
+                    <template v-else-if="getRow(row).communicationType === CommunicationType.SMS"><i class="ti ti-message"></i> SMS</template>
+                    <template v-else-if="getRow(row).communicationType === CommunicationType.PushNotification"><i class="ti ti-device-mobile"></i> Push</template>
+                </HighlightLabel>
+            </template>
+        </Column>
+
+        <Column :field="getField('sent')"
+                :name="getField('sent')"
+                title="Sent">
+            <template #format="{ row }">
+                <span>
+                    {{ asLocaleString(getRow(row).sent) }}
+                </span>
+            </template>
+        </Column>
+
+        <Column :field="getField('conversions')"
+                :name="getField('conversions')"
+                title="Conversions">
+            <template #format="{ row }">
+                <template v-if="!isNullish(getRow(row).conversions)">
+                    <span>
+                        {{ asLocaleString(getRow(row).conversions) }}
+                    </span>
+                    <span>
+                        {{ `&nbsp;(${asLocalePercent(getRow(row).sent === 0 ? 0 : getRow(row).conversions / getRow(row).sent)})` }}
+                    </span>
+                </template>
+            </template>
+        </Column>
+
+        <Column :field="getField('unsubscribes')"
+                :name="getField('unsubscribes')"
+                title="Unsubscribes">
+            <template #format="{ row }">
+                <span>
+                    {{ asLocaleString(getRow(row).unsubscribes) }}
+                </span>
+            </template>
+        </Column>
+
+        <Column :field="getField('opens')"
+                :name="getField('opens')"
+                title="Open Rate">
+            <template #format="{ row }">
+                {{ asLocalePercent(getRow(row).sent === 0 ? 0 : getRow(row).opens / getRow(row).sent) }}
+            </template>
+        </Column>
+
+        <Column :field="getField('clicks')"
+                :name="getField('clicks')"
+                title="Click Rate">
+            <template #format="{ row }">
+                {{ asLocalePercent(getRow(row).sent === 0 ? 0 : getRow(row).clicks / getRow(row).sent) }}
+            </template>
+        </Column>
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { asLocalePercent, asLocaleString, RockDateTimeFormatter, useRockDateTimeParser } from "./utils.partial";
+    import Grid, { TextColumn, Column } from "@Obsidian/Controls/grid";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
+    import { useGetTypeMemberName } from "@Obsidian/Utility/objectUtils";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { GridDefinitionBag } from "@Obsidian/ViewModels/Core/Grid/gridDefinitionBag";
+    import { GridRowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/gridRowBag";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+
+    const getField = useGetTypeMemberName<GridRowBag>();
+    const getRow = (v: unknown): GridRowBag => v as GridRowBag;
+    const { parseRockDateTime } = useRockDateTimeParser();
+
+    const props = defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        },
+
+        gridDefinition: {
+            type: Object as PropType<GridDefinitionBag | null | undefined>,
+            required: true
+        },
+
+        onViewMessage: {
+            type: Function as PropType<((communicationFlowInstanceCommunicationIdKey: string) => void) | undefined>
+        }
+    });
+
+    const keyField = getField("communicationFlowInstanceCommunicationIdKey");
+
+    // #region Computed Values
+
+    const gridRows = computed((): GridRowBag[] => {
+        const messageEnumerable = Enumerable.from(props.messages);
+
+        if (!messageEnumerable.any()) {
+            return [];
+        }
+
+        return messageEnumerable
+            .groupBy(m => m.communicationFlowInstanceCommunicationIdKey)
+            .ofType((g): g is GroupedEnumerable<string, MessageBag> => !isNullish(g.key))
+            .where(g => g.any())
+            .select<GridRowBag>(messagesByInstance => {
+                const key = messagesByInstance.key;
+                const firstMessage = messagesByInstance.first();
+
+                return {
+                    communicationFlowCommunicationIdKey: key,
+                    communicationFlowInstanceCommunicationIdKey: firstMessage.communicationFlowInstanceCommunicationIdKey,
+                    communicationFlowCommunicationName: firstMessage.communicationFlowCommunicationName,
+                    communicationType: firstMessage.communicationType,
+                    clicks: messagesByInstance.count(m => !!m.sentDateTime && !!m.clickedDateTime),
+                    opens: messagesByInstance.count(m => !!m.sentDateTime && !!m.openedDateTime),
+                    sent: messagesByInstance.count(m => !!m.sentDateTime),
+                    conversions: messagesByInstance.count(m => !!m.sentDateTime && !!m.convertedDateTime),
+                    unsubscribes: messagesByInstance.count(m => !!m.sentDateTime && !!m.unsubscribedDateTime),
+                    communicationFlowInstanceIdKey: firstMessage.communicationFlowInstanceIdKey,
+                    communicationFlowInstanceStartDateTime: firstMessage.communicationFlowInstanceStartDateTime,
+                };
+            })
+            .toArray();
+    });
+
+    const messageRows = computed((): GridDataBag | undefined => {
+        if (!gridRows.value || gridRows.value.length === 0) {
+            return;
+        }
+
+        return {
+            rows: gridRows.value
+        };
+    });
+
+    const hasMultipleInstanceMessages = computed((): boolean => {
+        return Enumerable.from(gridRows.value)
+            .select(m => m.communicationFlowInstanceIdKey)
+            .distinct()
+            .count() > 1;
+    });
+
+    // #endregion Computed Values
+</script>

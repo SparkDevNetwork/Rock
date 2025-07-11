@@ -1,0 +1,38 @@
+<template>
+    <Kpi color="green"
+         :colorShade="700"
+         iconCssClass="ti ti-bolt"
+         isCard
+         label="Conversions*"
+         :value="conversionCount" />
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { asLocaleString } from "./utils.partial";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+
+    const props = defineProps({
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const conversionCount = computed<string>(() => {
+        const messageEnumerable = Enumerable.from(props.messages);
+
+        if (!messageEnumerable.any()) {
+            return "N/A";
+        }
+        else {
+            return asLocaleString(messageEnumerable.where(i => !!i.sentDateTime && !!i.convertedDateTime).count());
+        }
+    });
+
+    // #endregion Computed Values
+</script>

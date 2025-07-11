@@ -1,0 +1,318 @@
+<template>
+    <Panel title="Generate Sample Recurring Flow"
+           type="block"
+           iconCssClass="fa fa-calendar-plus">
+        <p>
+            This tool will generate a sample flow that can be used to test the performance of recurring flows.
+        </p>
+
+        <RockForm :id="generateFlowFormId"
+                  @submit="onGenerateFlow">
+            <NotificationBox v-if="generateFlowError"
+                             alertType="danger"
+                             v-html="generateFlowError" />
+            <div class="row">
+                <div class="col-md-3">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <DropDownList v-model="smsFromSystemNumberGuidOrEmptyString"
+                                          :disabled="isGeneratingFlow"
+                                          help="The number to originate message from (configured under Admin Tools > Communications > System Phone Numbers)."
+                                          :items="config.smsFromSystemPhoneNumbers ?? []"
+                                          label="From Phone"
+                                          rules="required"
+                                          :showBlankItem="false" />
+
+                            <NumberBox v-model="approximateUnsubscribeRate"
+                                       :disabled="isGeneratingFlow"
+                                       label="Approximate Unsubscribe Rate (%)"
+                                       :minimumValue="0"
+                                       :maximumValue="100"
+                                       help="The approximate unsubscribe rate for the flow instances. This is used to determine how many people will be unsubscribed from the flow after each run."
+                                       rules="required" />
+
+                            <NumberBox v-model="approximateConversionRate"
+                                       :disabled="isGeneratingFlow"
+                                       label="Approximate Conversion Rate (%)"
+                                       :minimumValue="0"
+                                       :maximumValue="100"
+                                       help="The approximate conversion rate for the flow. This is used to determine how many people will be converted to the next step in the flow after each run."
+                                       rules="required" />
+
+                            <NumberBox v-model="targetConversionRate"
+                                       :disabled="isGeneratingFlow"
+                                       label="Target Conversion Rate (%)"
+                                       :minimumValue="0"
+                                       :maximumValue="100"
+                                       help="The target conversion rate for the flow. This is used to determine how many people will be converted to the next step in the flow after each run."
+                                       rules="required" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-3">
+                    <TabbedContent v-model:selectedTab="triggerType"
+                                   :tabs="triggerTypeItems">
+                        <template #tabpane="{ item, selectedTab }">
+                            <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.Recurring]"
+                                 class="row">
+                                <div class="col-md-12">
+                                    <ScheduleBuilder v-model="iCalendarContent"
+                                                     :disabled="isGeneratingFlow"
+                                                     label="Schedule Builder"
+                                                     :rules="['required', validateRecurringSchedule]" />
+
+                                    <DataViewPicker v-model="targetAudienceDataView"
+                                                    :disabled="isGeneratingFlow"
+                                                    :entityTypeGuid="EntityType.Person"
+                                                    help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active."
+                                                    label="Target Audience"
+                                                    rules="required" />
+                                </div>
+                            </div>
+
+                            <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.OneTime]"
+                                 class="row">
+                                <div class="col-md-12">
+                                    <DateTimePicker v-model="startDateTimeIsoString"
+                                                    help="Defines when the flow will start. Automation and messaging will begin based on this date and time."
+                                                    label="Flow Start Date & Time"
+                                                    rules="required" />
+
+                                    <DataViewPicker v-model="targetAudienceDataView"
+                                                    :disabled="isGeneratingFlow"
+                                                    :entityTypeGuid="EntityType.Person"
+                                                    help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active."
+                                                    label="Target Audience"
+                                                    rules="required" />
+                                </div>
+                            </div>
+
+                            <div v-if="selectedTab === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.OnDemand]"
+                                 class="row">
+                                <div class="col-md-12">
+                                    <DataViewPicker v-model="targetAudienceDataView"
+                                                    :disabled="isGeneratingFlow"
+                                                    :entityTypeGuid="EntityType.Person"
+                                                    help="Filters the audience for this flow based on the selected data view. Only people in this data view will receive messages when the flow is active. Although not required for on-demand flows, it is required for this sample data generation."
+                                                    label="Target Audience"
+                                                    rules="required" />
+                                </div>
+                            </div>
+                        </template>
+                    </TabbedContent>
+                </div>
+            </div>
+        </RockForm>
+
+        <template #footerActions>
+            <RockButton btnType="primary"
+                        :disabled="isGeneratingFlow"
+                        :form="generateFlowFormId"
+                        type="submit">Generate Sample {{ triggerType }} Flow</RockButton>
+
+            <a v-if="newFlowUrl" :href="newFlowUrl">View Flow Performance</a>
+        </template>
+    </Panel>
+</template>
+
+<script setup lang="ts">
+    import { ref } from "vue";
+    import DataViewPicker from "@Obsidian/Controls/dataViewPicker.obs";
+    import DateTimePicker from "@Obsidian/Controls/dateTimePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import ScheduleBuilder from "@Obsidian/Controls/scheduleBuilder.obs";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { ValidationResult, ValidationRuleFunction } from "@Obsidian/ValidationRules";
+    import { Calendar } from "@Obsidian/Utility/internetCalendar";
+    import { areEqual, newGuid } from "@Obsidian/Utility/guid";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { CommunicationFlowTriggerType, CommunicationFlowTriggerTypeDescription } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
+
+    const config = useConfigurationValues<{ smsFromSystemPhoneNumbers: ListItemBag[] | null | undefined; }>();
+    const invokeBlockAction = useInvokeBlockAction();
+    const generateFlowFormId = `recurringFlowForm-${newGuid()}`;
+
+    const supportedTriggerTypes: CommunicationFlowTriggerType[] = [
+        CommunicationFlowTriggerType.Recurring,
+        CommunicationFlowTriggerType.OnDemand,
+        CommunicationFlowTriggerType.OneTime,
+    ];
+
+    const triggerTypeItems: string[] = supportedTriggerTypes.map(t => {
+        return CommunicationFlowTriggerTypeDescription[t];
+    });
+
+    // #region Values
+
+    const triggerType = ref<string>(`${CommunicationFlowTriggerType.Recurring}`);
+
+    const isGeneratingFlow = ref<boolean>(false);
+    const generateFlowError = ref<string | null | undefined>();
+    const iCalendarContent = ref<string>("");
+    const startDateTimeIsoString = ref<string | null>(RockDateTime.now().toISOString());
+    const targetAudienceDataView = ref<ListItemBag | null | undefined>();
+    const smsFromSystemNumberGuidOrEmptyString = ref<string>(config.smsFromSystemPhoneNumbers?.[0]?.value ?? "");
+    const approximateUnsubscribeRate = ref<number>(5); // Default to 5% unsubscribe rate
+    const approximateConversionRate = ref<number>(10); // Default to 10% conversion rate
+    const targetConversionRate = ref<number>(10); // Default to 10% conversion rate
+    const newFlowUrl = ref<string | null | undefined>();
+
+    // #endregion Values
+
+    async function onGenerateFlow(): Promise<void> {
+        if (triggerType.value === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.Recurring]) {
+            await onGenerateRecurringFlow();
+        }
+        else if (triggerType.value === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.OneTime]) {
+            await onGenerateOneTimeFlow();
+        }
+        else if (triggerType.value === CommunicationFlowTriggerTypeDescription[CommunicationFlowTriggerType.OnDemand]) {
+            await onGenerateOnDemandFlow();
+        }
+        else {
+            alert(`Only ${asCommaAnd(Enumerable.from(supportedTriggerTypes).select(t => CommunicationFlowTriggerTypeDescription[t]).toArray())} flow generation is currently supported.`);
+        }
+    }
+
+    async function onGenerateOneTimeFlow(): Promise<void> {
+        if (isGeneratingFlow.value) {
+            alert("A sample flow is already being generated. Please wait for it to complete.");
+            return;
+        }
+
+        try {
+            newFlowUrl.value = null;
+            generateFlowError.value = null;
+            isGeneratingFlow.value = true;
+            const result = await invokeBlockAction("GenerateOneTimeFlow", {
+                startDateTime: startDateTimeIsoString.value,
+                targetAudienceDataView: targetAudienceDataView.value,
+                smsFromSystemPhoneNumber: config.smsFromSystemPhoneNumbers?.find(p => areEqual(p.value, smsFromSystemNumberGuidOrEmptyString.value)),
+                approximateUnsubscribeRate: approximateUnsubscribeRate.value,
+                approximateConversionRate: approximateConversionRate.value,
+                targetConversionRate: targetConversionRate.value
+            });
+
+            if (result.isSuccess) {
+                alert("Sample one-time flow generated successfully. Check console for response data.");
+                console.log("Sample one-time flow generated:", result.data);
+                const guid = result.data?.["guid"] || result.data?.["Guid"];
+                newFlowUrl.value = guid ? `/CommunicationFlows/${guid}/Performance` : null;
+            }
+            else {
+                generateFlowError.value = `Error generating sample one-time flow: ${result.errorMessage}`;
+            }
+        }
+        catch (e) {
+            generateFlowError.value = `Error while generating sample one-time flow: ${e}`;
+        }
+        finally {
+            isGeneratingFlow.value = false;
+        }
+    }
+
+    async function onGenerateOnDemandFlow(): Promise<void> {
+        if (isGeneratingFlow.value) {
+            alert("A sample flow is already being generated. Please wait for it to complete.");
+            return;
+        }
+
+        try {
+            newFlowUrl.value = null;
+            generateFlowError.value = null;
+            isGeneratingFlow.value = true;
+            const result = await invokeBlockAction("GenerateOnDemandFlow", {
+                targetAudienceDataView: targetAudienceDataView.value,
+                smsFromSystemPhoneNumber: config.smsFromSystemPhoneNumbers?.find(p => areEqual(p.value, smsFromSystemNumberGuidOrEmptyString.value)),
+                approximateUnsubscribeRate: approximateUnsubscribeRate.value,
+                approximateConversionRate: approximateConversionRate.value,
+                targetConversionRate: targetConversionRate.value
+            });
+
+            if (result.isSuccess) {
+                alert("Sample on-demand flow generated successfully. Check console for response data.");
+                console.log("Sample on-demand flow generated:", result.data);
+                const guid = result.data?.["guid"] || result.data?.["Guid"];
+                newFlowUrl.value = guid ? `/CommunicationFlows/${guid}/Performance` : null;
+            }
+            else {
+                generateFlowError.value = `Error generating sample on-demand flow: ${result.errorMessage}`;
+            }
+        }
+        catch (e) {
+            generateFlowError.value = `Error while generating sample on-demand flow: ${e}`;
+        }
+        finally {
+            isGeneratingFlow.value = false;
+        }
+    }
+
+    async function onGenerateRecurringFlow(): Promise<void> {
+        if (isGeneratingFlow.value) {
+            alert("A sample flow is already being generated. Please wait for it to complete.");
+            return;
+        }
+
+        try {
+            newFlowUrl.value = null;
+            generateFlowError.value = null;
+            isGeneratingFlow.value = true;
+            const result = await invokeBlockAction("GenerateRecurringFlow", {
+                iCalendarContent: iCalendarContent.value,
+                targetAudienceDataView: targetAudienceDataView.value,
+                smsFromSystemPhoneNumber: config.smsFromSystemPhoneNumbers?.find(p => areEqual(p.value, smsFromSystemNumberGuidOrEmptyString.value)),
+                approximateUnsubscribeRate: approximateUnsubscribeRate.value,
+                approximateConversionRate: approximateConversionRate.value,
+                targetConversionRate: targetConversionRate.value
+            });
+
+            if (result.isSuccess) {
+                alert("Sample recurring flow generated successfully. Check console for response data.");
+                console.log("Sample recurring flow generated:", result.data);
+                const guid = result.data?.["guid"] || result.data?.["Guid"];
+                newFlowUrl.value = guid ? `/CommunicationFlows/${guid}/Performance` : null;
+            }
+            else {
+                generateFlowError.value = `Error generating sample recurring flow: ${result.errorMessage}`;
+            }
+        }
+        catch (e) {
+            generateFlowError.value = `Error while generating sample recurring flow: ${e}`;
+        }
+        finally {
+            isGeneratingFlow.value = false;
+        }
+    }
+
+    // #region Functions
+
+    const validateRecurringSchedule: ValidationRuleFunction = (value: unknown): ValidationResult => {
+        if (!value
+            || typeof value !== "string") {
+            return true;
+        }
+
+        // Validate that the schedule is not a one-time schedule.
+        const calendar = new Calendar(value);
+        const event = calendar.events?.[0];
+
+        if (event?.recurrenceRules?.length || event?.recurrenceDates?.length) {
+            return true;
+        }
+
+        return "must be recurring";
+    };
+
+    // #endregion Functions
+</script>

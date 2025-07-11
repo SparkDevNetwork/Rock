@@ -1,0 +1,229 @@
+﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <RockFormField v-model="internalValue"
+                   :formGroupClasses="`rock-tile-radio-button-list ${formGroupClasses}`"
+                   #default="{ uniqueId }"
+                   name="tileradiobuttonlist">
+        <div class="control-wrapper">
+            <slot name="prepend" :isInputGroupSupported="false" />
+            <div class="controls rocktileradiobuttonlist" :class="containerClasses">
+                <span class="tile-radio-container">
+                    <label v-for="item in actualItems"
+                           :key="item.value ?? undefined"
+                           class="tile-radio"
+                           :class="item.value === internalValue ? 'selected' : ''"
+                           :for="getItemUniqueId(uniqueId, item)">
+                        <span class="tile-content">
+                            <span class="label-icon-and-text">
+                                <span class="label-icon"><i class="fa-2x" :class="item.iconCssClass"></i></span>
+                                <span class="label-text">{{ item.text }}</span>
+                            </span>
+                            <span class="label-subtext">{{ item.subtext }}</span>
+                        </span>
+                        <i class="radio-mark"
+                           :class="item.value === internalValue ? 'ti ti-circle-dot selected' : 'ti ti-circle'"></i>
+                        <input :id="getItemUniqueId(uniqueId, item)" :name="uniqueId" type="radio" :value="item.value" v-model="internalValue" :disabled="isItemDisabled(item)" />
+                    </label>
+                </span>
+            </div>
+            <slot name="append" :isInputGroupSupported="false" />
+        </div>
+    </RockFormField>
+</template>
+
+<style scoped>
+.tile-radio-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-large);
+}
+
+.rocktileradiobuttonlist-horizontal .tile-radio-container {
+    flex-direction: row;
+}
+
+.rocktileradiobuttonlist-vertical .tile-radio-container {
+    flex-direction: column;
+}
+
+.tile-radio {
+    display: flex;
+    flex-direction: column;
+    width: 230px;
+    height: 230px;
+    border-radius: var(--border-radius-base);
+    border: 1px solid var(--color-interface-strong);
+    padding: var(--spacing-large) var(--spacing-medium);
+    gap: var(--spacing-large);
+    cursor: pointer;
+}
+
+.tile-radio.selected {
+    border: var(--focus-state-border);
+    box-shadow: var(--focus-state-shadow);
+}
+
+.tile-content {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-medium);
+    padding-top: var(--spacing-tiny);
+}
+
+.label-icon-and-text {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xsmall);
+    align-items: center;
+    color: var(--color-interface-strong);
+}
+
+.label-text {
+    font-size: var(--font-size-h5);
+}
+
+.label-subtext {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-regular);
+    line-height: var(--line-height-tight);
+    text-align: center;
+}
+
+.tile-radio i {
+    text-align: center;
+}
+
+.tile-radio.selected .radio-mark {
+    color: var(--color-primary);
+}
+
+.tile-radio input[type="radio"] {
+    position: absolute;
+    opacity: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, watch } from "vue";
+    import { TileListItemBag } from "./types.partial";
+    import RockFormField from "@Obsidian/Controls/rockFormField.obs";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { defaultControlCompareValue } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+
+    const props = defineProps({
+        items: {
+            type: Array as PropType<TileListItemBag[]>,
+            default: []
+        },
+
+        modelValue: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        disabled: {
+            type: Boolean as PropType<boolean>,
+            required: false,
+            default: false
+        },
+
+        formGroupClasses: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        repeatColumns: {
+            type: Number as PropType<number>,
+            default: 0
+        },
+
+        vertical: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        showBlankItem: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        compareValue: {
+            type: Function as PropType<((value: string, itemValue: string) => boolean)>,
+            default: defaultControlCompareValue
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+    }>();
+
+    const internalValue = useVModelPassthrough(props, "modelValue", emit);
+
+    const containerClasses = computed((): string => {
+        const classes: string[] = [];
+
+        if (props.repeatColumns > 0) {
+            classes.push(`in-columns in-columns-${props.repeatColumns}`);
+        }
+
+        if (!props.vertical) {
+            classes.push("rocktileradiobuttonlist-horizontal");
+        }
+        else {
+            classes.push("rocktileradiobuttonlist-vertical");
+        }
+
+        return classes.join(" ");
+    });
+
+    const actualItems = computed((): TileListItemBag[] => {
+        const items = [...props.items];
+
+        if (props.showBlankItem) {
+            items.splice(0, 0, {
+                value: "",
+                text: "None"
+            });
+        }
+
+        return items;
+    });
+
+    function isItemDisabled(item: ListItemBag): boolean {
+        return item.category === "disabled" || props.disabled;
+    }
+
+    const getItemUniqueId = (uniqueId: string, item: ListItemBag): string => {
+        const key = (item.value ?? "").replace(" ", "-");
+
+        return `${uniqueId}-${key}`;
+    };
+
+    const syncInternalValue = (): void => {
+        let value = internalValue.value;
+
+        if (value) {
+            // Ensure it is a valid value, if not then set it to blank.
+            const selectedOption = props.items.find(o => props.compareValue(value as string, o.value ?? "")) || null;
+
+            if (!selectedOption) {
+                value = "";
+            }
+            else {
+                value = selectedOption.value ?? "";
+            }
+
+            internalValue.value = value;
+        }
+    };
+
+    watch([internalValue, () => props.items], () => {
+        syncInternalValue();
+    });
+
+    syncInternalValue();
+</script>

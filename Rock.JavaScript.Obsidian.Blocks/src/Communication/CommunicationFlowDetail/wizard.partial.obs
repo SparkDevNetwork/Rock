@@ -1,0 +1,39 @@
+<template>
+    <div class="wizard">
+        <div v-for="(item, index) in items"
+             :key="item.value"
+             class="wizard-item"
+             :class="{
+                'complete': index < activeIndex,
+                'active': index === activeIndex,
+            }">
+            <div class="wizard-item-icon">
+                <i :class="item.iconCssClass"></i>
+            </div>
+            <div class="wizard-item-label">
+                {{ item.text }}
+            </div>
+        </div>
+    </div>
+
+    <slot></slot>
+</template>
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { WizardItem, WizardItemValue } from "./types.partial";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<WizardItemValue>,
+            required: true
+        },
+        items: {
+            type: Array as PropType<WizardItem[]>,
+            required: true
+        }
+    });
+
+    const activeIndex = computed(() => {
+        return props.items.findIndex(item => item.value === props.modelValue);
+    });
+</script>

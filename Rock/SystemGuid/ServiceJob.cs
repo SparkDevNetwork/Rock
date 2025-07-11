@@ -513,5 +513,9 @@ namespace Rock.SystemGuid
         /// The job to run Post v18.0 Data Migrations to populate the newly-added [CommunicationRecipient].[DeliveredDateTime] field.
         /// </summary>
         public const string DATA_MIGRATIONS_180_POPULATE_COMMUNICATIONRECIPIENT_DELIVEREDDATETIME = "EF2CF0AC-7A83-4BEB-8824-41D3B5B8B832";
+
+        /// The job for processing communication flows. <see cref="Rock.Jobs.ProcessCommunicationFlows"/>
+        /// </summary>
+        public const string PROCESS_COMMUNICATION_FLOWS = "8D79FB3B-F0B1-4B57-A8DA-EEE46B38A08B";
     }
 }

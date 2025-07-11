@@ -49,10 +49,22 @@ namespace Rock.Model
         public int CommunicationFlowId { get; set; }
         
         /// <summary>
-        /// Gets or sets the time to send this communication flow communication.
+        /// Gets or sets the time to send the first Communication for this Communication Flow Instance.
         /// </summary>
         [DataMember]
-        public DateTime StartDate { get; set; }
+        public DateTime StartDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time that this Communication Flow Instance was completed.
+        /// </summary>
+        /// <value>When this is not <see langword="null"/>, then no more messages will be sent for this flow.</value>
+        [DataMember]
+        public DateTime? CompletedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time that this Communication Flow Instance was last processed by the Process Communication Flows job.
+        /// </summary>
+        public DateTime? LastProcessedDateTime { get; set; }
 
         #endregion Entity Properties
 

@@ -1,0 +1,389 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Panel title="Flow Performance" type="block">
+        <template #headerActions v-if="config.flowPerformance && CommunicationFlowTriggerTypeDescription[config.flowPerformance.triggerType]">
+            <div>
+                <HighlightLabel>{{ CommunicationFlowTriggerTypeDescription[config.flowPerformance.triggerType] }}</HighlightLabel>
+            </div>
+        </template>
+
+        <template #default>
+            <div v-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.Recurring"
+                 class="row">
+                <div class="col-md-3">
+                    <DropDownList v-model="selectedRecurringFlowInstanceIdKeyOrEmptyString"
+                                  help="For recurring flows, each instance is named based on the start date and time of its initial message."
+                                  :items="recurringFlowInstances"
+                                  label="Flow Instance"
+                                  :showBlankItem="false" />
+                </div>
+            </div>
+
+            <div v-else-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OnDemand"
+                 class="row">
+                <div class="col-md-6">
+                    <SlidingDateRangePicker v-model="selectedOnDemandSlidingDateRange"
+                                            label="Select Date Range"
+                                            :enabledTimeUnits="[TimeUnitType.Day, TimeUnitType.Week, TimeUnitType.Month, TimeUnitType.Year]"
+                                            :enabledSlidingDateRangeUnits="[RangeType.Last, RangeType.Previous, RangeType.Current, RangeType.DateRange]" />
+                </div>
+            </div>
+
+            <div v-else-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OneTime"
+                 class="row">
+                <div class="col-md-3">
+                    <StaticFormControl :modelValue="format_Thursday_JanDot_1_1970(parseRockDateTime(config.flowPerformance?.messages?.[0]?.communicationFlowInstanceStartDateTime))"
+                                       help="For One-time flows, this is the start date and time of the initial message."
+                                       label="Flow Instance" />
+                </div>
+            </div>
+
+            <ConversionGoalProgress :conversionGoalSettings="config.flowPerformance?.conversionGoalSettings"
+                                    :conversionGoalTargetPercent="config.flowPerformance?.conversionGoalTargetPercent"
+                                    :conversionGoalTimeframeInDays="config.flowPerformance?.conversionGoalTimeframeInDays"
+                                    :conversionGoalType="config.flowPerformance?.conversionGoalType"
+                                    :messages="selectedMessages" />
+
+            <template v-if="!isNullish(config.flowPerformance?.conversionGoalType)">
+                <template v-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OneTime">
+                    <div class="row">
+                        <div class="col-md-4">
+                            <FlowKeyMetrics :messages="selectedMessages"
+                                            :flowPerformance="config.flowPerformance"
+                                            vertical />
+                        </div>
+
+                        <div class="col-md-8">
+                            <TotalFlowPerformanceOverTime :messages="selectedMessages"
+                                                          :flowPerformance="config.flowPerformance"
+                                                          :dateUnit="dateUnit" />
+                        </div>
+                    </div>
+                </template>
+
+                <template v-else>
+                    <FlowKeyMetrics :messages="selectedMessages" />
+
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TotalFlowPerformanceOverTime :messages="selectedMessages"
+                                                          :dateUnit="dateUnit" />
+                        </div>
+                        <div class="col-md-6">
+                            <InstanceVsFlowPerformanceAverage :messages="selectedMessages"
+                                                              :allMessages="config.flowPerformance?.messages ?? []" />
+                        </div>
+                    </div>
+                </template>
+            </template>
+
+            <template v-else>
+                <div class="row">
+                    <div class="col-md-4">
+                        <UnsubscribesKpi :messages="selectedMessages" />
+                    </div>
+                </div>
+            </template>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="communication-flow-performance-disclaimer">* Our data suggests a correlation between messages and conversions but not direct causation.</div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="communication-flow-performance-updated-text" v-html="dataLastUpdatedMessage"></div>
+                </div>
+            </div>
+        </template>
+    </Panel>
+
+    <MessageListGrid :messages="selectedMessages"
+                     :gridDefinition="config.gridDefinition"
+                     @viewMessage="onViewMessage" />
+</template>
+
+<style scoped>
+.communication-flow-performance-disclaimer {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+}
+
+.communication-flow-performance-updated-text {
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
+    text-align: right;
+}
+</style>
+
+<script setup lang="ts">
+    /* eslint-disable @typescript-eslint/naming-convention */
+    import { computed, ref } from "vue";
+    import ConversionGoalProgress from "./CommunicationFlowPerformance/conversionGoalProgress.partial.obs";
+    import FlowKeyMetrics from "./CommunicationFlowPerformance/flowKeyMetrics.partial.obs";
+    import MessageListGrid from "./CommunicationFlowPerformance/messageListGrid.partial.obs";
+    import TotalFlowPerformanceOverTime from "./CommunicationFlowPerformance/totalFlowPerformanceOverTime.partial.obs";
+    import InstanceVsFlowPerformanceAverage from "./CommunicationFlowPerformance/instanceVsFlowPerformanceAverage.partial.obs";
+    import { provideRockDateTimeParser, RockDateTimeFormatter } from "./CommunicationFlowPerformance/utils.partial";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import StaticFormControl from "@Obsidian/Controls/staticFormControl.obs";
+    import { CommunicationFlowTriggerType, CommunicationFlowTriggerTypeDescription } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
+    import { TimeUnitType } from "@Obsidian/Enums/Controls/timeUnitType";
+    import { onConfigurationValuesChanged, useConfigurationValues, useReloadBlock } from "@Obsidian/Utility/block";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { calculateSlidingDateRange, RangeType, SlidingDateRange, TimeUnit } from "@Obsidian/Utility/slidingDateRange";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { InitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/initializationBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { NavigationUrlKey } from "./CommunicationFlowPerformance/types.partial";
+    import UnsubscribesKpi from "./CommunicationFlowPerformance/unsubscribesKpi.partial.obs";
+    import { useStore } from "@Obsidian/PageState";
+    import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
+    import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
+
+    type ViewMessageIdKeys = {
+        instanceIdKey: string;
+        instanceCommunicationIdKey: string;
+    };
+
+    const config = useConfigurationValues<InitializationBox>();
+    const {
+        format_Thursday_JanDot_1_1970,
+        format_JanDot_1_1970
+    } = RockDateTimeFormatter;
+
+    // This is used to get the "CommunicationFlowInstance" page parameter
+    // so we can preselect the flow instance in the dropdown
+    // if the page was loaded with a specific instance.
+    const { getPageParameter } = useStore();
+    const reloadBlock = useReloadBlock();
+    const { parseRockDateTime } = provideRockDateTimeParser();
+
+    const initialCommunicationFlowInstanceIdKey = getPageParameter("CommunicationFlowInstance") as string | undefined ?? undefined;
+
+    // #region Values
+
+    const selectedRecurringFlowInstanceIdKeyOrEmptyString = ref<string>(initialCommunicationFlowInstanceIdKey ?? "");
+    const selectedOnDemandSlidingDateRange = ref<SlidingDateRange | null>(findSelectedOnDemandDateRange(initialCommunicationFlowInstanceIdKey));
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const recurringFlowInstances = computed<ListItemBag[]>(() => {
+        const messages = config.flowPerformance?.messages ?? [];
+
+        return Enumerable.from(messages)
+            .distinctBy(x => x.communicationFlowInstanceIdKey)
+            .select(m => ({
+                instanceIdKey: m.communicationFlowInstanceIdKey,
+                instanceStartDateTime: parseRockDateTime(m.communicationFlowInstanceStartDateTime)
+            }))
+            .ofType((m): m is {
+                instanceIdKey: string;
+                instanceStartDateTime: RockDateTime;
+            } => {
+                return !isNullish(m.instanceIdKey) && !isNullish(m.instanceStartDateTime);
+            })
+            .orderByDescending(x => x.instanceStartDateTime.toMilliseconds())
+            .select<ListItemBag>(x => {
+                return {
+                    value: x.instanceIdKey,
+                    // Format the date as "Tuesday, Jun. 3, 2024"
+                    text: format_Thursday_JanDot_1_1970(x.instanceStartDateTime)
+                };
+            })
+            .toArray();
+    });
+
+    const selectedMessages = computed<MessageBag[]>(() => {
+        const allMessages = config.flowPerformance?.messages ?? [];
+
+        if (config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OnDemand) {
+            // For on-demand flows, filter instances by the selected date range.
+            if (!selectedOnDemandSlidingDateRange.value) {
+                return allMessages;
+            }
+
+            const { start: startDate, end: endDate } = calculateSlidingDateRange(selectedOnDemandSlidingDateRange.value);
+            if (!startDate && !endDate) {
+                return allMessages;
+            }
+            else {
+                return Enumerable
+                    .from(allMessages)
+                    .where(m => {
+                        const instanceStartDate = parseRockDateTime(m.communicationFlowInstanceStartDateTime);
+
+                        if (!instanceStartDate) {
+                            return false;
+                        }
+
+                        if (startDate) {
+                            if (instanceStartDate.isEarlierThan(startDate)) {
+                                return false;
+                            }
+                        }
+
+                        if (endDate) {
+                            if (instanceStartDate.isLaterThan(endDate)) {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    })
+                    .toArray();
+            }
+        }
+        else if (config.flowPerformance?.triggerType === CommunicationFlowTriggerType.Recurring) {
+            if (!selectedRecurringFlowInstanceIdKeyOrEmptyString.value) {
+                return [];
+            }
+            else {
+                return Enumerable
+                    .from(allMessages)
+                    .where(m => m.communicationFlowInstanceIdKey === selectedRecurringFlowInstanceIdKeyOrEmptyString.value)
+                    .toArray();
+            }
+        }
+        else {
+            return allMessages;
+        }
+    });
+
+    const dateUnit = computed<"day" | "month" | "week">(() => {
+        switch (config.flowPerformance?.triggerType) {
+            case CommunicationFlowTriggerType.OnDemand: {
+                // For On-Demand flows, determine the date unit based on the selected date range.
+                const timeUnit = selectedOnDemandSlidingDateRange.value?.timeUnit;
+
+                if (timeUnit === TimeUnit.Month) {
+                    // Display data in weeks when filtering by months.
+                    return "week";
+                }
+                else if (timeUnit === TimeUnit.Year) {
+                    // Display data in months when filtering by years.
+                    return "month";
+                }
+                else {
+                    return "day";
+                }
+            }
+            default: {
+                // For One-time and Recurring flows, always display data in days.
+                return "day";
+            }
+        }
+    });
+
+    const dataLastUpdatedMessage = computed<string>(() => {
+        return `Data Last Updated On:&nbsp;&nbsp;${format_JanDot_1_1970(RockDateTime.now())}`;
+    });
+
+    const onViewMessage = computed<((key: string) => void) | undefined>(() => {
+        const messagePerformanceUrl = config.navigationUrls?.[NavigationUrlKey.MessageMetricsPage];
+
+        if (isNullish(messagePerformanceUrl)) {
+            // The message performance page URL is not configured.
+            return;
+        }
+
+        const firstCommunicationFlowInstanceCommunicationIdKey = Enumerable
+            .from(selectedMessages.value)
+            .select(m => m.communicationFlowInstanceCommunicationIdKey)
+            .where(k => !isNullish(k))
+            .firstOrDefault();
+
+        if (isNullish(firstCommunicationFlowInstanceCommunicationIdKey)) {
+            // Grid data has not been loaded yet or
+            // there are no flow communications to select from.
+            return;
+        }
+
+        // Check if the necessary ID keys can be retrieved for the first communication.
+        // If so, then we can create a "view message" handler for all of the communications.
+        // If not, then we cannot create a "view message" handler.
+        const { instanceIdKey, instanceCommunicationIdKey } = getViewMessageIdKeys(firstCommunicationFlowInstanceCommunicationIdKey);
+
+        if (!instanceIdKey || !instanceCommunicationIdKey) {
+            return;
+        }
+
+        return (communicationFlowCommunicationIdKey: string): void => {
+            // Given the selected instance, find the instance communication associated with
+            // the communication flow communication key.
+            const { instanceIdKey, instanceCommunicationIdKey } = getViewMessageIdKeys(communicationFlowCommunicationIdKey);
+
+            if (instanceIdKey && instanceCommunicationIdKey) {
+                window.location.href = messagePerformanceUrl
+                    .replace("((CommunicationFlowInstanceKey))", instanceIdKey ?? "")
+                    .replace("((Key))", instanceCommunicationIdKey ?? "");
+            }
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function findSelectedOnDemandDateRange(communicationFlowInstanceIdKey: string | undefined): SlidingDateRange {
+        if (!isNullish(communicationFlowInstanceIdKey)) {
+            const messageEnumerable = Enumerable.from(config.flowPerformance?.messages ?? []);
+
+            // Find the first message that matches the instance ID key.
+            const instanceStartDate = messageEnumerable
+                .where(m => m.communicationFlowInstanceIdKey === communicationFlowInstanceIdKey)
+                .select(m => parseRockDateTime(m.communicationFlowInstanceStartDateTime))
+                .firstOrDefault();
+
+            if (!isNullish(instanceStartDate)) {
+                // Starting from now, calculate the best time value and time unit
+                // to use for the date range based on the instance start date.
+                const now = RockDateTime.now();
+                const timeDifference = RockTimeSpan.fromMilliseconds(now.toMilliseconds() - instanceStartDate.toMilliseconds());
+                // Although it seems weird, since using RangeType.Last treats timeValue: 1 as the current time unit,
+                // we need to add 1 to the timeValue.
+                if (timeDifference.totalDays > 365) {
+                    return { rangeType: RangeType.Last, timeValue: Math.ceil(timeDifference.totalDays / 365) + 1, timeUnit: TimeUnit.Year };
+                }
+                else if (timeDifference.totalDays > 30) {
+                    return { rangeType: RangeType.Last, timeValue: Math.ceil(timeDifference.totalDays / 30) + 1, timeUnit: TimeUnit.Month };
+                }
+                else if (timeDifference.totalDays > 7) {
+                    return { rangeType: RangeType.Last, timeValue: Math.ceil(timeDifference.totalDays / 7) + 1, timeUnit: TimeUnit.Week };
+                }
+                else {
+                    return { rangeType: RangeType.Last, timeValue: Math.ceil(timeDifference.totalDays) + 1, timeUnit: TimeUnit.Day };
+                }
+            }
+        }
+
+        // Otherwise, return a default date range of the last month.
+        return { rangeType: RangeType.Last, timeValue: 1, timeUnit: TimeUnit.Month };
+    }
+
+    function getViewMessageIdKeys(communicationFlowInstanceCommunicationIdKey: string): ViewMessageIdKeys {
+        return Enumerable
+            .from(selectedMessages.value)
+            .where(m => m.communicationFlowInstanceCommunicationIdKey === communicationFlowInstanceCommunicationIdKey)
+            .select(i => ({
+                instanceIdKey: i.communicationFlowInstanceIdKey,
+                instanceCommunicationIdKey: i.communicationFlowInstanceCommunicationIdKey
+            }))
+            .ofType((k): k is ViewMessageIdKeys => {
+                return !isNullish(k.instanceIdKey) && !isNullish(k.instanceCommunicationIdKey);
+            })
+            .firstOrDefault({
+                instanceIdKey: "",
+                instanceCommunicationIdKey: ""
+            });
+    }
+
+    // #endregion Functions
+
+    onConfigurationValuesChanged(reloadBlock);
+</script>

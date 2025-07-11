@@ -1,0 +1,521 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div ref="communicationFlowDetailElement"
+         class="communication-flow-detail">
+        <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
+
+        <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
+
+        <Wizard v-if="!config.isStepIndicatorHidden"
+                :modelValue="step"
+                :items="wizardItems" />
+
+        <GettingStartedStep v-if="step === 'gettingStarted'"
+                            v-model:attributeValues="attributeValues"
+                            v-model:attributes="attributes"
+                            v-model:category="category"
+                            v-model:description="description"
+                            v-model:iCalendarContent="iCalendarContent"
+                            v-model:isActive="isActive"
+                            v-model:isGoalTrackingEnabled="isGoalTrackingEnabled"
+                            v-model:name="name"
+                            v-model:targetAudienceDataView="targetAudienceDataView"
+                            v-model:triggerType="triggerType"
+                            v-model:unsubscribeMessage="unsubscribeMessage"
+                            title="1. Flow Overview"
+                            @nextStep="onNextStepClicked"
+                            @update:name="onNameUpdated"
+                            @update:unsubscribeMessage="onUnsubscribeMessageUpdated" />
+
+        <ConversionGoalStep v-else-if="step === 'conversionGoal'"
+                            v-model:conversionGoalSettings="conversionGoalSettings"
+                            v-model:conversionGoalTargetPercent="conversionGoalTargetPercent"
+                            v-model:conversionGoalTimeframeInDays="conversionGoalTimeframeInDays"
+                            v-model:conversionGoalType="conversionGoalType"
+                            v-model:exitConditionType="exitConditionType"
+                            :isActive="isActive"
+                            :title="wizardItem.text"
+                            @nextStep="onNextStepClicked"
+                            @previousStep="onPreviousStepClicked" />
+
+        <MessageFlowStep v-else-if="step === 'messageFlow'"
+                         v-model:communications="communications"
+                         v-model:exitConditionType="exitConditionType"
+                         :communicationTemplates="communicationTemplates"
+                         :conversionGoalType="conversionGoalType"
+                         :disabled="isSavingCommunicationTemplate"
+                         :isActive="isActive"
+                         :isRockMobilePushTransportConfigured="config.isRockMobilePushTransportConfigured"
+                         :pushMobileApplications="config.pushMobileApplications ?? []"
+                         :smsFromSystemPhoneNumbers="config.smsFromSystemPhoneNumbers ?? []"
+                         :testEmailAddress="config.testEmailAddress"
+                         :testSmsPhoneNumber="config.testSmsPhoneNumber"
+                         :title="wizardItem.text"
+                         :triggerType="triggerType"
+                         @nextStep="onSave"
+                         @previousStep="onPreviousStepClicked"
+                         @previewEmailCommunicationTemplate="onPreviewEmailCommunicationTemplate"
+                         @saveCommunicationTemplate="onSaveCommunicationTemplate"
+                         @sendTest="onSendTest" />
+    </div>
+
+    <Modal v-model="isEmailPreviewModalVisible" title="Email Preview">
+        <div class="preview">
+            <ButtonGroup v-model="emailPreviewDevice"
+                         :items="[
+                            { text: 'Desktop', value: 'desktop' },
+                            { text: 'Mobile', value: 'mobile' }
+                        ]" />
+
+            <EmailPreviewIframe :mode="emailPreviewDevice" :srcdoc="emailPreviewHtml" />
+        </div>
+    </Modal>
+</template>
+
+<style scoped>
+.preview {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: var(--spacing-medium);
+}
+
+.preview > .btn-group {
+    width: 100%;
+}
+
+.device-browser {
+    height: 568px;
+    position: relative;
+}
+
+.device-mobile {
+    height: 693px;
+    position: relative;
+}
+
+.preview iframe {
+    width: 100%;
+    height: 100%;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, nextTick, ref, watch } from "vue";
+    import ConversionGoalStep from "./CommunicationFlowDetail/conversionGoalStep.partial.obs";
+    import EmailPreviewIframe from "./CommunicationFlowDetail/emailPreviewIframe.partial.obs";
+    import GettingStartedStep from "./CommunicationFlowDetail/gettingStartedStep.partial.obs";
+    import MessageFlowStep from "./CommunicationFlowDetail/messageFlowStep.partial.obs";
+    import { SendTestOptions, WizardItem, WizardItemValue } from "./CommunicationFlowDetail/types.partial";
+    import Wizard from "./CommunicationFlowDetail/wizard.partial.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { CommunicationFlowTriggerType } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { ConversionGoalType } from "@Obsidian/Enums/Communication/conversionGoalType";
+    import { ExitConditionType } from "@Obsidian/Enums/Communication/exitConditionType";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationFlowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowBag";
+    import { CommunicationFlowCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowCommunicationBag";
+    import { CommunicationFlowDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowDetailInitializationBox";
+    import { CommunicationFlowDetailCommunicationTemplateBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowDetailCommunicationTemplateBag";
+    import { CommunicationFlowDetailConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowDetail/communicationFlowDetailConversionGoalSettingsBag";
+    import { scrollElementStartToTop } from "@Obsidian/Utility/dom";
+    import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
+    import { Calendar, Event } from "@Obsidian/Utility/internetCalendar";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
+
+    const config = useConfigurationValues<CommunicationFlowDetailInitializationBox>();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    provideSecurityGrant(securityGrant);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const stepTransitions: Record<WizardItemValue, () => WizardItemValue | null> = {
+        "gettingStarted": () => isGoalTrackingEnabled.value ? "conversionGoal" : "messageFlow",
+        "conversionGoal": () => "messageFlow",
+        "messageFlow": () => null
+    };
+
+    // #region Values
+
+    // UI state.
+    const communicationFlowDetailElement = ref<HTMLElement | undefined>();
+    const blockError = ref("");
+    const errorMessage = ref("");
+
+    const steps: WizardItemValue[] = [];
+    const previousSteps: WizardItemValue[] = steps.length > 1 ? steps.slice(0, steps.length - 1) : [];
+    const step = ref<WizardItemValue>(steps.length ? steps[steps.length - 1] : "gettingStarted");
+    const wasNextButtonClickedOnce = ref<boolean>(false);
+
+    const isGoalTrackingEnabled = ref<boolean>(!isNullish(config.entity?.conversionGoalType));
+    const isCustomUnsubscribeMessage = ref<boolean>(!!config.entity?.unsubscribeMessage);
+    const isSavingCommunicationTemplate = ref<boolean>(false);
+
+    const emailPreviewDevice = ref<"desktop" | "mobile">("desktop");
+    const emailPreviewHtml = ref<string>("");
+    const isEmailPreviewModalVisible = ref<boolean>(false);
+    const isEmailPreviewLoading = ref<boolean>(false);
+
+    // Entity state.
+    const attributeValues = ref<Record<string, string> | null | undefined>(config.entity?.attributeValues);
+    const attributes = ref<Record<string, PublicAttributeBag> | null | undefined>(config.entity?.attributes);
+    const category = ref<ListItemBag | null | undefined>(config.entity?.category);
+    const communications = ref<CommunicationFlowCommunicationBag[]>(config.entity?.communications ?? []);
+    const communicationTemplates = ref<CommunicationFlowDetailCommunicationTemplateBag[]>(config.communicationTemplates ?? []);
+    const conversionGoalSettings = ref<CommunicationFlowDetailConversionGoalSettingsBag | null | undefined>(config.entity?.conversionGoalSettings);
+    const conversionGoalTargetPercent = ref<number | null | undefined>(config.entity?.conversionGoalTargetPercent);
+    const conversionGoalTimeframeInDays = ref<number | null | undefined>(config.entity?.conversionGoalTimeframeInDays);
+    const conversionGoalType = ref<ConversionGoalType | null | undefined>(config.entity?.conversionGoalType);
+    const description = ref<string | null | undefined>(config.entity?.description);
+    const exitConditionType = ref<ExitConditionType>(config.entity?.exitConditionType ?? ExitConditionType.LastMessageSent);
+    const iCalendarContent = ref<string | null | undefined>(config.entity?.iCalendarContent);
+    const idKey = ref<string | null | undefined>(config.entity?.idKey);
+    // The individual will activate the communication flow after setup is complete.
+    // Initialize to false for now to avoid sending communications prematurely.
+    const isActive = ref<boolean>(config.entity?.isActive ?? false);
+    const name = ref<string | null | undefined>(config.entity?.name);
+    const targetAudienceDataView = ref<ListItemBag | null | undefined>(config.entity?.targetAudienceDataView);
+    const triggerType = ref(config.entity?.triggerType ?? CommunicationFlowTriggerType.Recurring);
+    const unsubscribeMessage = ref<string | null | undefined>(config.entity?.unsubscribeMessage ?? generateUnsubscribeMessage(name.value));
+
+    // #endregion
+
+    // #region Computed Values
+
+    const wizardItem = computed<WizardItem>(() => {
+        return wizardItems.value.find((item) => item.value === step.value)!;
+    });
+
+    const nextStep = computed<WizardItemValue | null>(() => {
+        return stepTransitions[step.value]?.();
+    });
+
+    const wizardItems = computed<WizardItem[]>(() => {
+        if (isGoalTrackingEnabled.value) {
+            return [
+                {
+                    iconCssClass: "ti ti-rocket",
+                    text: "1. Getting Started",
+                    value: "gettingStarted"
+                },
+                {
+                    iconCssClass: "ti ti-target",
+                    text: "2. Conversion Goal",
+                    value: "conversionGoal"
+                },
+                {
+                    iconCssClass: "ti ti-git-branch",
+                    text: "3. Message Flow",
+                    value: "messageFlow"
+                }
+            ];
+        }
+        else {
+            return [
+                {
+                    iconCssClass: "ti ti-rocket",
+                    text: "1. Getting Started",
+                    value: "gettingStarted"
+                },
+                {
+                    iconCssClass: "ti ti-git-branch",
+                    text: "2. Message Flow",
+                    value: "messageFlow"
+                }
+            ];
+        }
+    });
+
+    // #endregion
+
+    // #region Functions
+
+    function generateUnsubscribeMessage(name: string | null | undefined): string {
+        return `Only unsubscribe from the ${name ? `${name} ` : ""}flow.`;
+    }
+
+    function moveToNextStep(): void {
+        if (nextStep.value) {
+            setStep(nextStep.value);
+        }
+    }
+
+    function setStep(value: WizardItemValue): void {
+        if (value !== step.value) {
+            previousSteps.push(step.value);
+            step.value = value;
+            nextTick(scrollToTopOfBlock);
+        }
+    }
+
+    function scrollToTopOfBlock(): void {
+        if (communicationFlowDetailElement.value) {
+            scrollElementStartToTop(communicationFlowDetailElement.value);
+        }
+    }
+
+    function toTimeOfDayString(rockDateTime: RockDateTime): string {
+        return rockDateTime.toASPString("HH:mm:ss");
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onNameUpdated(newName: string | null | undefined): void {
+        name.value = newName;
+
+        if (!isCustomUnsubscribeMessage.value) {
+            unsubscribeMessage.value = generateUnsubscribeMessage(newName);
+        }
+    }
+
+    function onTriggerTypeUpdated(newTriggerType: CommunicationFlowTriggerType): void {
+        if (newTriggerType === CommunicationFlowTriggerType.OneTime || newTriggerType === CommunicationFlowTriggerType.Recurring) {
+            // Clear the recurring schedule if the trigger type is one-time.
+            const calendar = iCalendarContent.value ? new Calendar(iCalendarContent.value) : new Calendar();
+
+            if (calendar) {
+                if (calendar.events?.length) {
+                    calendar.events = calendar.events.slice(0, 1);
+                }
+                else {
+                    calendar.events = [new Event()];
+                }
+
+                const event = calendar.events[0];
+
+                event.excludedDates = [];
+                event.recurrenceDates = [];
+                event.recurrenceRules = [];
+
+                iCalendarContent.value = calendar.build();
+            }
+        }
+        else {
+            // Clear the target audience and schedule if the
+            // trigger type is neither recurring nor one-time.
+            iCalendarContent.value = null;
+            targetAudienceDataView.value = null;
+        }
+    }
+
+    function onUnsubscribeMessageUpdated(newUnsubscribeMessage: string | null | undefined): void {
+        unsubscribeMessage.value = newUnsubscribeMessage;
+        isCustomUnsubscribeMessage.value = !isNullish(newUnsubscribeMessage);
+    }
+
+    function onNextStepClicked(): void {
+        wasNextButtonClickedOnce.value = true;
+        moveToNextStep();
+    }
+
+    function onPreviousStepClicked(): void {
+        step.value = previousSteps.pop() ?? "gettingStarted";
+        // After the step is rendered, scroll to the top of the window.
+        nextTick(scrollToTopOfBlock);
+    }
+
+    /**
+     * Event handler for the panel's Save event. Send the data to the server
+     * to be saved and then leave edit mode or redirect to target page.
+     *
+     * @returns true if the panel should leave edit mode; false if it should stay in edit mode; or a string containing a redirect URL.
+     */
+    async function onSave(): Promise<void> {
+        errorMessage.value = "";
+
+        const bag: CommunicationFlowBag = {
+            idKey: idKey.value,
+            attributeValues: attributeValues.value,
+            attributes: attributes.value,
+            category: category.value,
+            communications: communications.value,
+            conversionGoalSettings: conversionGoalSettings.value,
+            conversionGoalTargetPercent: conversionGoalTargetPercent.value,
+            conversionGoalTimeframeInDays: conversionGoalTimeframeInDays.value,
+            conversionGoalType: conversionGoalType.value,
+            description: description.value,
+            exitConditionType: exitConditionType.value,
+            iCalendarContent: iCalendarContent.value,
+            isActive: isActive.value,
+            name: name.value,
+            targetAudienceDataView: targetAudienceDataView.value,
+            triggerType: triggerType.value,
+            unsubscribeMessage: unsubscribeMessage.value,
+        };
+
+        const result = await invokeBlockAction<string>("Save", {
+            bag
+        });
+
+        if (result.isSuccess && result.data) {
+            // If there is a parent page URL, redirect to it. Otherwise, redirect to the result URL.
+            if (config.navigationUrls?.["ParentPage"]) {
+                window.location.href = config.navigationUrls["ParentPage"];
+            }
+            else {
+                window.location.href = result.data;
+            }
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while trying to save communication flow.";
+        }
+    }
+
+    async function onPreviewEmailCommunicationTemplate(template: CommunicationFlowDetailCommunicationTemplateBag, communication: CommunicationFlowCommunicationBag | null | undefined): Promise<void> {
+        try {
+            isEmailPreviewLoading.value = true;
+
+            const bag: CommunicationFlowCommunicationBag = {
+                guid: communication?.guid ?? emptyGuid,
+                communicationTemplate: template,
+                communicationType: CommunicationType.Email,
+                daysToWait: -1,
+                name: template.name,
+                order: -1,
+                timeToSend: toTimeOfDayString(RockDateTime.now()),
+            };
+
+            const result = await invokeBlockAction<string>("GetEmailPreviewHtml", {
+                bag
+            });
+
+            if (result.isSuccess && result.data) {
+                emailPreviewHtml.value = result.data;
+                isEmailPreviewModalVisible.value = true;
+            }
+        }
+        finally {
+            isEmailPreviewLoading.value = false;
+        }
+    }
+
+    async function onSaveCommunicationTemplate(updatedCommunicationTemplate: CommunicationFlowDetailCommunicationTemplateBag, communicationType: CommunicationType, originalCommunication: CommunicationFlowCommunicationBag | null | undefined): Promise<void> {
+        try {
+            isSavingCommunicationTemplate.value = true;
+
+            // Create a real, persisted communication template and add a new runtime communication to the flow.
+            // The flow and its communications are saved when the user clicks "Save" on the panel.
+            const result = await invokeBlockAction<CommunicationFlowDetailCommunicationTemplateBag>("SaveCommunicationTemplate", {
+                bag: updatedCommunicationTemplate
+            });
+
+            if (result.isSuccess && result.data) {
+                if (originalCommunication) {
+                    // Copy updated template data to the existing communication.
+                    const updatedCommunication = {
+                        ...originalCommunication,
+                        communicationTemplate: result.data,
+                        name: result.data.name
+                    };
+
+                    // Add a new communication with this template to the list of communications
+                    // or update the existing communication if it was already in the list.
+                    const newCommunications = [...communications.value];
+
+                    const index = newCommunications.findIndex(c => c.guid === originalCommunication.guid);
+                    if (index === -1) {
+                        // If the communication was not already in the list, add it.
+                        newCommunications.push(updatedCommunication);
+                    }
+                    else {
+                        // If the communication was already in the list, update it.
+                        newCommunications[index] = updatedCommunication;
+                    }
+
+                    communications.value = newCommunications;
+                }
+                else {
+                    // Add a new communication to the list.
+                    const newCommunications = [...communications.value];
+                    const now = RockDateTime.now();
+
+                    const newCommunication: CommunicationFlowCommunicationBag = {
+                        guid: emptyGuid,
+                        communicationType: communicationType,
+                        // First message defaults to 0 days to wait while subsequent messages default to 1 day to wait.
+                        daysToWait: !newCommunications.length ? 0 : 1,
+                        order: newCommunications.length,
+                        communicationTemplate: result.data,
+                        // Copy the template's name to the new communication.
+                        name: result.data.name,
+                        // First message defaults to an hour from "now", while subsequent messages default to 8 AM.
+                        timeToSend: !newCommunications.length ? toTimeOfDayString(now.addHours(1)) : toTimeOfDayString(now.date.addHours(8)),
+                    };
+
+                    newCommunications.push(newCommunication);
+                    communications.value = newCommunications;
+                }
+
+                // Add the template to the list of available templates.
+                const newCommunicationTemplates = [...communicationTemplates.value];
+                const index = newCommunicationTemplates.findIndex(t => areEqual(t.guid, result.data?.guid));
+                if (index === -1) {
+                    newCommunicationTemplates.push(result.data);
+                }
+                else {
+                    newCommunicationTemplates[index] = result.data;
+                }
+                communicationTemplates.value = newCommunicationTemplates;
+            }
+            else {
+                errorMessage.value = result.errorMessage ?? "Unknown error while trying to create communication template.";
+            }
+        }
+        finally {
+            isSavingCommunicationTemplate.value = false;
+        }
+    }
+
+    async function onSendTest(options: SendTestOptions): Promise<void> {
+        const bag: CommunicationFlowCommunicationBag = {
+            guid: options.communication?.guid ?? emptyGuid,
+            name: options.communicationTemplate.name,
+            communicationTemplate: options.communicationTemplate,
+            communicationType: options.communicationType,
+            daysToWait: -1,
+            order: -1,
+            timeToSend: toTimeOfDayString(RockDateTime.now()),
+            testEmailAddress: options.communicationType === CommunicationType.Email ? options.testEmailAddress : null,
+            testSmsPhoneNumber: options.communicationType === CommunicationType.SMS ? options.testSmsPhoneNumber : null
+        };
+
+        const result = await invokeBlockAction<CommunicationFlowDetailCommunicationTemplateBag>("SendTest", {
+            bag
+        });
+
+        if (result.isSuccess && result.data) {
+            options.onSuccess?.();
+        }
+        else {
+            options.onError?.(result.errorMessage ?? "Unknown error while trying to send test message.");
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(triggerType, onTriggerTypeUpdated);
+
+    // #endregion Watchers
+
+    // Handle any initial error conditions or the need to go into edit mode.
+    if (config.errorMessage) {
+        blockError.value = config.errorMessage;
+    }
+    else if (!config.entity) {
+        blockError.value = "The specified communication flow could not be viewed.";
+    }
+</script>

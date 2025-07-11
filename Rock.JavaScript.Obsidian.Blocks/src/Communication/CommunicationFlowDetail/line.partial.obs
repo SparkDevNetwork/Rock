@@ -1,0 +1,16 @@
+<template>
+    <svg xmlns="http://www.w3.org/2000/svg" width="8" height="16" viewBox="0 0 8 16" fill="none">
+        <path d="M3.5 0L3.5 16L4.5 16L4.5 0L3.5 0Z" class="line-path" />
+    </svg>
+
+</template>
+
+<style scoped>
+.line-path {
+    fill: var(--color-interface-soft);
+}
+</style>
+
+<script setup lang="ts">
+    // This is a simple down arrow icon that can be used in various components.
+</script>

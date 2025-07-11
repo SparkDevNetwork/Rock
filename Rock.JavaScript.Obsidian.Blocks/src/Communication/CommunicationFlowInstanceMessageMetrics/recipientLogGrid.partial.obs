@@ -1,0 +1,79 @@
+<template>
+    <Grid :data="gridDataSource"
+          itemTerm="Recipient"
+          :keyField="getField('personAliasIdKey')"
+          :showExport="false"
+          title="Recipient Log">
+        <PersonColumn :field="getField('person')"
+                      :name="getField('person')"
+                      title="Name" />
+
+        <DateTimeColumn :field="getField('sentDate')"
+                        :name="getField('sentDate')"
+                        title="Sent Date" />
+
+        <DateTimeColumn :field="getField('openedDate')"
+                        :name="getField('openedDate')"
+                        title="Opened Date" />
+
+        <DateTimeColumn :field="getField('clickedDate')"
+                        :name="getField('clickedDate')"
+                        title="Clicked Date" />
+
+        <DateTimeColumn :field="getField('conversionDate')"
+                        :name="getField('conversionDate')"
+                        title="Conversion Date" />
+
+        <DateTimeColumn :field="getField('unsubscribeDate')"
+                        :name="getField('unsubscribeDate')"
+                        title="Unsubscribed Date" />
+
+        <ButtonColumn name="viewPerson"
+                      iconClass="ti ti-user"
+                      @click="onPersonClicked" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Grid, { PersonColumn, ButtonColumn, DateTimeColumn } from "@Obsidian/Controls/grid";
+    import { useGetTypeMemberName } from "@Obsidian/Utility/objectUtils";
+    import { CommunicationFlowInstanceMessageMetricsRecipientMetricsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceMessageMetricsRecipientMetricsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+
+    const getField = useGetTypeMemberName<CommunicationFlowInstanceMessageMetricsRecipientMetricsBag>();
+
+    const props = defineProps({
+        modelValue: {
+            type: Array as PropType<CommunicationFlowInstanceMessageMetricsRecipientMetricsBag[] | null | undefined>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "viewPerson", row: CommunicationFlowInstanceMessageMetricsRecipientMetricsBag): void;
+    }>();
+
+    // #region Computed Values
+
+    const gridDataSource = computed<GridDataBag>(() => {
+        return {
+            rows: props.modelValue
+        };
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    function onPersonClicked(rowKey: string): void {
+        const row = props.modelValue?.find(r => r.personAliasIdKey === rowKey);
+
+        if (row) {
+            emit("viewPerson", row);
+        }
+    }
+
+    // #endregion Event Handlers
+
+</script>

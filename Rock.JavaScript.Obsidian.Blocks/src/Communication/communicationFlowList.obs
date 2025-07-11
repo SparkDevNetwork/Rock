@@ -1,0 +1,204 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <Grid :definition="config.gridDefinition ?? undefined"
+          :data="gridDataSource"
+          keyField="idKey"
+          itemTerm="Communication Flow"
+          :entityTypeGuid="EntityType.CommunicationFlow"
+          stickyHeader
+          liveUpdates
+          delete
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
+          @selectItem="onSelectItem">
+        <TextColumn name="name"
+                    title="Name"
+                    field="name"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <Column name="triggerType"
+                title="Type"
+                field="triggerType"
+                :filter="pickExistingValueFilter"
+                :quickFilterValue="getTriggerTypeTextValue"
+                :sortValue="getTriggerTypeTextValue"
+                visiblePriority="xs">
+            <template #format="{ row }">
+                <HighlightLabel v-if="row.triggerType === CommunicationFlowTriggerType.Recurring"
+                                labelType="info">
+                    <i class="ti ti-refresh"></i> {{ getTriggerTypeTextValue(row) }}
+                </HighlightLabel>
+                <HighlightLabel v-else-if="row.triggerType === CommunicationFlowTriggerType.OnDemand"
+                                labelType="info">
+                    <i class="ti ti-stack-2"></i> {{ getTriggerTypeTextValue(row) }}
+                </HighlightLabel>
+                <HighlightLabel v-else-if="row.triggerType === CommunicationFlowTriggerType.OneTime"
+                                labelType="info">
+                    <i class="ti ti-clock"></i> {{ getTriggerTypeTextValue(row) }}
+                </HighlightLabel>
+            </template>
+        </Column>
+
+        <TextColumn name="category"
+                    title="Category"
+                    field="category"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <TextColumn name="conversionRate"
+                    title="Conversion Rate"
+                    field="conversionRate"
+                    :filter="textValueFilter"
+                    visiblePriority="xs" />
+
+        <DateColumn name="lastTriggered"
+                    title="Last Triggered"
+                    field="lastTriggered"
+                    :filter="dateValueFilter"
+                    visiblePriority="xs" />
+
+        <LabelColumn name="status"
+                     title="Status"
+                     field="status"
+                     :classSource="{ 'Active': 'success' }"
+                     :filter="pickExistingValueFilter"
+                     visiblePriority="xs" />
+
+        <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
+
+        <ButtonColumn name="edit"
+                      iconClass="ti ti-pencil"
+                      @click="onEditItem" />
+
+        <DeleteColumn v-if="config.isDeleteEnabled"
+                      :additionalMessage="_row => 'You will lose all details and communication designs, as well as access to any metrics.'"
+                      :rowDisabled="row => row.status !== 'Inactive'"
+                      @click="onDeleteClick" />
+    </Grid>
+</template>
+
+<script setup lang="ts">
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { AttributeColumns, Column, DateColumn, ButtonColumn, LabelColumn, pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, dateValueFilter } from "@Obsidian/Controls/grid";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
+    import { CommunicationFlowListOptionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowList/communicationFlowListOptionsBag";
+    import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
+    import { NavigationUrlKey } from "./CommunicationFlowList/types.partial";
+    import { reactive, ref } from "vue";
+    import { CommunicationFlowTriggerType } from "@Obsidian/Enums/Communication/communicationFlowTriggerType";
+    import { isEnumValue } from "./CommunicationFlowList/utils.partial";
+
+    const config = useConfigurationValues<ListBlockBox<CommunicationFlowListOptionsBag>>();
+    const invokeBlockAction = useInvokeBlockAction();
+
+    // All blocks auto reload when changing block settings unless there is an
+    // explicit reason not to (like using a custom reload function instead),
+    // in which case you can remove this code.
+    onConfigurationValuesChanged(useReloadBlock());
+
+    // #region Values
+
+    const gridDataSource = ref<Promise<GridDataBag>>();
+    let gridData: GridDataBag | undefined;
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Called when the grid is requesting the row data be loaded.
+     */
+    async function loadGridData(): Promise<GridDataBag> {
+        const result = await invokeBlockAction<GridDataBag>("GetGridData");
+
+        if (result.isSuccess && result.data) {
+            gridData = reactive(result.data);
+            return gridData;
+        }
+        else {
+            throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    function getTriggerTypeTextValue(row: Record<string, unknown>): string {
+        const triggerType = row["triggerType"];
+
+        if (isEnumValue(CommunicationFlowTriggerType, triggerType)) {
+            switch (triggerType) {
+                case CommunicationFlowTriggerType.Recurring:
+                    return "Recurring";
+                case CommunicationFlowTriggerType.OnDemand:
+                    return "On-Demand";
+                case CommunicationFlowTriggerType.OneTime:
+                    return "One-Time";
+            }
+        }
+
+        return "";
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when an edit button has been clicked by the individual.
+     *
+     * @param key The key of the row that was clicked.
+     */
+    function onEditItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row has been selected by the individual.
+     *
+     * @param key The key of the row that was selected.
+     */
+    function onSelectItem(key: string): void {
+        if (config.navigationUrls?.[NavigationUrlKey.PerformancePage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.PerformancePage].replace("((Key))", key);
+        }
+    }
+
+    /**
+     * Called when a row's delete button has been clicked by the individual. This
+     * happens only if they have confirmed the delete action.
+     */
+    async function onDeleteClick(key: string): Promise<void> {
+        const result = await invokeBlockAction<string>("Delete", {
+            key
+        });
+
+        if (result.isSuccess) {
+            if (gridData && gridData.rows) {
+                const index = gridData.rows.findIndex(r => r["idKey"] === key);
+
+                if (index !== -1) {
+                    gridData.rows?.splice(index, 1);
+                }
+            }
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to delete communication flow.");
+        }
+    }
+
+    /**
+     * Called when the Add button has been clicked by the individual.
+     */
+    function onAddItem(): void {
+        if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", "0");
+        }
+    }
+
+    // #endregion
+
+    gridDataSource.value = loadGridData();
+</script>
