@@ -239,13 +239,13 @@
             return;
         }
 
-        const queryParams = new URLSearchParams(window.location.search);
+        const location = new URL(window.location.href);
         const selectedTabName = selectedTab.value ?? "";
-        const queryParamValue = queryParams.get(selectedTabQueryParameterKey.value) ?? "";
+        const queryParamValue = location.searchParams.get(selectedTabQueryParameterKey.value) ?? "";
 
         if (queryParamValue !== selectedTabName) {
-            queryParams.set(selectedTabQueryParameterKey.value, selectedTabName);
-            history.pushState(null, "", "?" + queryParams.toString());
+            location.searchParams.set(selectedTabQueryParameterKey.value, selectedTabName);
+            history.pushState(null, "", location.toString());
         }
     }
 

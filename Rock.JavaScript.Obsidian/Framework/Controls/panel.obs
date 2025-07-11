@@ -97,6 +97,11 @@
                 </div>
             </div>
 
+            <TabbedBar v-if="tabs && tabs.length > 0"
+                       v-model="selectedTab"
+                       :tabs="tabs"
+                       selectedTabQueryParameterKey="tab" />
+
             <template v-if="$slots.preBody">
                 <slot name="preBody" />
             </template>
@@ -166,6 +171,7 @@
     import Fullscreen from "./fullscreen.obs";
     import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import TabbedBar from "./tabbedBar.obs";
 
     const props = defineProps({
         /** True if the panel content is shown when hasCollapse is also true. */
@@ -240,6 +246,26 @@
             default: ""
         },
 
+        /**
+         * The array of optional tabs that will be displayed. It is the
+         * responsibility of the parent component to provide the content for
+         * each tab as well as swap the content when the tab is selected. See
+         * the `selectedTab` prop and `update:selectedTab` event.
+         */
+        tabs: {
+            type: Array as PropType<string[]>,
+            default: []
+        },
+
+        /**
+         * The currently selected tab. This is used in combination with the
+         * `tabs` prop to determine which tab is currently selected.
+         */
+        selectedTab: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
         /** A list of action items to be included in the ellipsis. */
         headerSecondaryActions: {
             type: Array as PropType<PanelAction[]>,
@@ -262,7 +288,8 @@
     const emit = defineEmits([
         "update:modelValue",
         "update:isDrawerOpen",
-        "update:isFullscreen"
+        "update:isFullscreen",
+        "update:selectedTab",
     ]);
 
     const slots = useSlots();
@@ -275,6 +302,8 @@
 
     /** True if the panel should be shown in full screen mode. */
     const isFullscreen = useVModelPassthrough(props, "isFullscreen", emit);
+
+    const selectedTab = useVModelPassthrough(props, "selectedTab", emit);
 
     /** The HTML Element that is the main panel div. */
     const panelElement = ref<HTMLElement | null>(null);
