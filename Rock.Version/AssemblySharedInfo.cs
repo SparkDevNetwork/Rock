@@ -42,13 +42,13 @@ using System.Reflection;
 // The AssemblyVersion number should change only when we are
 // making a breaking change and need the runtime binding to fail if it does not
 // match the correct version exactly.
-[assembly: AssemblyVersion( "17.2.1" )]
+[assembly: AssemblyVersion( "17.3.1" )]
 
-[assembly: AssemblyFileVersion( "17.2.1" )]
+[assembly: AssemblyFileVersion( "17.3.1" )]
 
 // This is the "official" product name that will be shown to people. 
 // It's shown in the SystemInfo details and perhaps the RockUpdate page.
-[assembly: AssemblyInformationalVersion( "Rock McKinley 17.2" )]
+[assembly: AssemblyInformationalVersion( "Rock McKinley 17.3" )]
 
   
 

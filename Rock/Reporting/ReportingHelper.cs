@@ -506,7 +506,7 @@ namespace Rock.Reporting
                 {
                     // only include overrides that are different than the saved dataview's filter
                     var filters = GetFilterInfoList( dataView );
-                    foreach ( var dataViewFilterOverride in dataViewFilterOverrideList.ToList().Where( a => a.IncludeFilter == true ) )
+                    foreach ( var dataViewFilterOverride in dataViewFilterOverrideList.ToList() )
                     {
                         var originalFilter = filters.FirstOrDefault( a => a.Guid == dataViewFilterOverride.DataFilterGuid );
                         if ( originalFilter != null )
@@ -516,7 +516,7 @@ namespace Rock.Reporting
                                 // the filter override is the same as the saved dataview, so no need to override it
                                 dataViewFilterOverrideList.Remove( dataViewFilterOverride );
                             }
-                            else
+                            else if ( originalFilter.Selection != dataViewFilterOverride.Selection )
                             {
                                 // if the selection has changed, and it is from a 'other data view'  filter, add the other dataview and the dataviews it impacts to the list of dataviews that should not use the persisted values
                                 if ( originalFilter.ImpactedDataViews?.Any() == true )
@@ -889,24 +889,49 @@ namespace Rock.Reporting
         /// <returns></returns>
         public static List<FilterInfo> GetFilterInfoList( DataView dataView )
         {
-            List<FilterInfo> filterList = new List<FilterInfo>();
-            GetFilterListRecursive( filterList, dataView.DataViewFilter, dataView.EntityType );
-
-            // now that we have the full filter list, set the AllFilterList of all the filters
-            foreach ( var filter in filterList )
+            try
             {
-                filter.AllFilterList = filterList;
-            }
+                var filterList = new List<FilterInfo>();
+                var dataViewIdTrail = new List<int> { dataView.Id }; // Initialize a trail with the current DataView ID to detect circular references
 
-            // set FromDataView from this dataview's datafilters
-            var dataViewDataFilters = filterList.Where( a => a.ParentFilter != null && a.ParentFilter.Guid == dataView.DataViewFilter.Guid ).ToList();
-            foreach ( var dataViewDataFilter in dataViewDataFilters )
+                GetFilterListRecursive( filterList, dataView.DataViewFilter, dataView.EntityType, dataViewIdTrail );
+
+                // Deduplicate filters
+                var uniqueFilters = new List<FilterInfo>();
+                var seenGuids = new HashSet<Guid>();
+
+                foreach ( var filter in filterList )
+                {
+                    if ( seenGuids.Add( filter.Guid ) )
+                    {
+                        uniqueFilters.Add( filter );
+                    }
+                }
+
+                // now that we have the full filter list, set the AllFilterList of all the filters
+                foreach ( var filter in uniqueFilters )
+                {
+                    filter.AllFilterList = uniqueFilters;
+                }
+
+                // set FromDataView from this dataview's datafilters
+                var dataViewDataFilters = uniqueFilters.Where( a => a.ParentFilter != null && a.ParentFilter.Guid == dataView.DataViewFilter.Guid ).ToList();
+                foreach ( var dataViewDataFilter in dataViewDataFilters )
+                {
+                    dataViewDataFilter.FromDataView = dataView;
+                }
+
+                return uniqueFilters;
+            }
+            catch ( RockCircularReferenceException  )
             {
-                dataViewDataFilter.FromDataView = dataView;
+                throw;
             }
-
-
-            return filterList;
+            catch ( Exception ex )
+            {
+                ExceptionLogService.LogException( ex );
+                throw;
+            }
         }
 
         /// <summary>
@@ -915,10 +940,9 @@ namespace Rock.Reporting
         /// <param name="filterList">The filter list.</param>
         /// <param name="filter">The filter.</param>
         /// <param name="reportEntityType">Type of the report entity.</param>
-        private static void GetFilterListRecursive( List<FilterInfo> filterList, DataViewFilter filter, EntityType reportEntityType )
+        /// <param name="trail">The recursion trail of DataView IDs to detect circular references.</param>
+        private static void GetFilterListRecursive( List<FilterInfo> filterList, DataViewFilter filter, EntityType reportEntityType, List<int> trail )
         {
-            var result = new Dictionary<Guid, string>();
-
             var entityType = EntityTypeCache.Get( filter.EntityTypeId ?? 0 );
             var reportEntityTypeCache = EntityTypeCache.Get( reportEntityType );
             var reportEntityTypeModel = reportEntityTypeCache.GetEntityType();
@@ -967,8 +991,26 @@ namespace Rock.Reporting
                 var otherDataView = otherDataViewFilter.GetSelectedDataView( filterInfo.Selection );
                 if ( otherDataView != null )
                 {
+                    /*
+                    6/23/2025 - MSE
+
+                    Circular reference detection to prevent infinite recursion.
+                    If a RockCircularReferenceException is thrown, it is caught in the Dynamic Report block to
+                    display a detailed error message.
+
+                    Reason: Rock would crash due when selecting a report with an underlying dataview with circular referencing ( <==> ).
+                    */
+
+                    if ( trail.Contains( otherDataView.Id ) )
+                    {
+                        throw new RockCircularReferenceException( "A circular reference was detected", trail, otherDataView.Id );
+                    }
+
+                    var newTrail = new List<int>( trail ) { otherDataView.Id };
                     var otherDataViewFilterList = new List<FilterInfo>();
-                    GetFilterListRecursive( otherDataViewFilterList, otherDataView.DataViewFilter, reportEntityType );
+
+                    GetFilterListRecursive( otherDataViewFilterList, otherDataView.DataViewFilter, reportEntityType, newTrail );
+
                     foreach ( var otherFilter in otherDataViewFilterList )
                     {
                         if ( otherFilter.FromDataView == null )
@@ -983,11 +1025,9 @@ namespace Rock.Reporting
 
             foreach ( var childFilter in filter.ChildFilters )
             {
-                GetFilterListRecursive( filterList, childFilter, reportEntityType );
+                GetFilterListRecursive( filterList, childFilter, reportEntityType, trail );
             }
         }
-
-        #endregion
 
         /// <summary>
         /// Creates an Attribute report field configuration settings object from a settings string.
@@ -1038,6 +1078,8 @@ namespace Rock.Reporting
 
             return info;
         }
+
+        #endregion
 
         /// <summary>
         /// A data entry view model for an instance of an Attribute Report Field.
