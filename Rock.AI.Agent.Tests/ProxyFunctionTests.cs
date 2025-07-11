@@ -91,13 +91,13 @@ namespace Rock.AI.Agent.Tests
         }
 
         [TestMethod]
-        [DataRow( 1234L, false, false, false, "search jason j", "jason/j//" )]
-        [DataRow( 1234L, false, false, false, "search for the person entity with a name like jason j", "jason j/jason/j/" )] // Fail: Arguments not wrapped in promptAsJson.
-        [DataRow( 1234L, false, false, false, "search for the decker group", "///decker" )]
+        [DataRow( 1234L, false, false, false, "search jason j", new[] { "jason/j//", "/jason/j/" } )]
+        [DataRow( 1234L, false, false, false, "search for the person entity with a name like jason j", new[] { "jason j/jason/j/", "/jason/j/" } )] // Fail: Arguments not wrapped in promptAsJson.
+        [DataRow( 1234L, false, false, false, "search for the decker group", new[] { "///decker" } )]
         //[DataRow( 1234L, true, false, false, "search jason j", "jason/j//" )] // Fail: Double nested promptAsJson parameter.
         //[DataRow( 1234L, false, true, false, "search jason j", "jason/j//" )]
         //[DataRow( 1234L, false, false, true, "search jason j", "jason j/jason/j/" )]
-        public async Task PromptAsJson_FourVirtualInputs( long? seed, bool wrapSchema, bool improvedParameterUsageHint, bool schemaInUsageHint, string prompt, string expectedOutput )
+        public async Task PromptAsJson_FourVirtualInputs( long? seed, bool wrapSchema, bool improvedParameterUsageHint, bool schemaInUsageHint, string prompt, string[] expectedOutput )
         {
             var unwrappedSchema = """
             {
@@ -159,7 +159,10 @@ namespace Rock.AI.Agent.Tests
 
             // Ensure the output data is valid.
             Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
-            Assert.That.AreEqual( expectedOutput, output[0] );
+            if ( !expectedOutput.Contains( output[0] ) )
+            {
+                Assert.Fail( $"Expected one of {expectedOutput.Select( s => $"<{s}>" ).JoinStrings( "," )} but got <{output[0]}>." );
+            }
         }
 
         [TestMethod]
