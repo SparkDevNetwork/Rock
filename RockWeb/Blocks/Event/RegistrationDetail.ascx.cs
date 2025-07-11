@@ -3378,6 +3378,18 @@ namespace RockWeb.Blocks.Event
 
                     ReferenceNumber = financialGatewayComponent.GetReferenceNumber( financialScheduledTransaction, out var getReferenceNumberError ),
                     TransactionTypeValueId = transactionType.Id,
+                    InitialCurrencyTypeValue = financialScheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId.HasValue ?  DefinedValueCache.Get( financialScheduledTransaction.FinancialPaymentDetail.CurrencyTypeValueId.Value ) : null,
+                    InitialCreditCardTypeValue = financialScheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId.HasValue ? DefinedValueCache.Get( financialScheduledTransaction.FinancialPaymentDetail.CreditCardTypeValueId.Value ) : null,
+                    MaskedAccountNumber = financialScheduledTransaction.FinancialPaymentDetail.AccountNumberMasked,
+                    PaymentExpirationDate = financialScheduledTransaction.FinancialPaymentDetail.ExpirationDate.AsDateTime(),
+                    FirstName = financialScheduledTransaction.FinancialPaymentDetail.NameOnCard,
+                    // Address
+                    Street1 = financialScheduledTransaction.FinancialPaymentDetail.BillingLocation?.Street1,
+                    Street2 = financialScheduledTransaction.FinancialPaymentDetail.BillingLocation?.Street2,
+                    City = financialScheduledTransaction.FinancialPaymentDetail.BillingLocation?.City,
+                    State = financialScheduledTransaction.FinancialPaymentDetail.BillingLocation?.State,
+                    PostalCode = financialScheduledTransaction.FinancialPaymentDetail.BillingLocation?.PostalCode,
+                    Country = financialScheduledTransaction.FinancialPaymentDetail.BillingLocation?.Country
                 };
 
                 if ( getReferenceNumberError.IsNotNullOrWhiteSpace() )
@@ -3393,6 +3405,19 @@ namespace RockWeb.Blocks.Event
                 var originalGatewayScheduleId = financialScheduledTransaction.GatewayScheduleId;
                 try
                 {
+                    /*
+                        07/11/2025 - NA
+
+                        Some gateways do not properly populate the FinancialPaymentDetail record they create 
+                        during the UpdateScheduledPayment() method. To compensate, we're preserving existing 
+                        values to restore them if needed.
+
+                        Reason: Expedites resolution of issue #6367 by ensuring payment details remain complete.
+                    */
+                    string savedNameOnCard = financialScheduledTransaction.FinancialPaymentDetail.NameOnCard;
+                    int? savedExpirationMonth = financialScheduledTransaction.FinancialPaymentDetail.ExpirationMonth;
+                    int? savedExpirationYear = financialScheduledTransaction.FinancialPaymentDetail.ExpirationYear;
+
                     // We are using the existing payment method; DO NOT clear out the FinancialPaymentDetail record.
                     // financialScheduledTransaction.FinancialPaymentDetail.ClearPaymentInfo();
 
@@ -3404,7 +3429,35 @@ namespace RockWeb.Blocks.Event
                         return false;
                     }
 
+                    /*
+                        07/11/2025 - NA
+
+                        After the transaction is processed, the gateway should populate the FinancialPaymentDetail 
+                        since it has more data than Rock (as the gateway collects the payment information directly). 
+                        However, if paymentPlanPaymentInfo contains additional values, we’ll attempt to merge those 
+                        into FinancialPaymentDetail.
+
+                        Reason: This mirrors similar logic used in the TransactionEntryV2 block.
+                    */
+
                     financialScheduledTransaction.FinancialPaymentDetail.SetFromPaymentInfo( paymentPlanPaymentInfo, financialGatewayComponent as GatewayComponent, rockContext );
+
+                    // See engineering note above for these three items:
+                    if ( string.IsNullOrEmpty( financialScheduledTransaction.FinancialPaymentDetail.NameOnCard )
+                        && !string.IsNullOrWhiteSpace( savedNameOnCard ) )
+                    {
+                        financialScheduledTransaction.FinancialPaymentDetail.NameOnCard = savedNameOnCard;
+                    }
+
+                    if ( financialScheduledTransaction.FinancialPaymentDetail.ExpirationMonth == null && savedExpirationMonth.HasValue )
+                    {
+                        financialScheduledTransaction.FinancialPaymentDetail.ExpirationMonth = savedExpirationMonth;
+                    }
+
+                    if ( financialScheduledTransaction.FinancialPaymentDetail.ExpirationYear == null && savedExpirationYear.HasValue )
+                    {
+                        financialScheduledTransaction.FinancialPaymentDetail.ExpirationYear = savedExpirationYear;
+                    }
 
                     var scheduledTransactionDetail = financialScheduledTransaction.ScheduledTransactionDetails.FirstOrDefault();
                     if ( scheduledTransactionDetail == null )
