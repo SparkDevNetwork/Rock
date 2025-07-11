@@ -61,8 +61,14 @@
 
     watch(() => props.tabs, () => {
         const tabsLength = props.tabs.length;
-        const indexOfSelectedTab = props.tabs.findIndex(t => t.toLowerCase() === selectedTab.value?.toLowerCase()) ?? 0;
-        selectedTab.value = tabsLength > 0 ? props.tabs[indexOfSelectedTab] : "";
+
+        if (props.tabs.length > 0) {
+            const indexOfSelectedTab = props.tabs.findIndex(t => t.toLowerCase() === selectedTab.value?.toLowerCase());
+            selectedTab.value = indexOfSelectedTab >= 0 ? props.tabs[indexOfSelectedTab] : "";
+        }
+        else {
+            selectedTab.value = "";
+        }
 
         classes.value = props.tabs.map(item => {
             let list = "tab-pane fade";
