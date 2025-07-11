@@ -221,7 +221,7 @@ export const InfoPaneContent: React.FC = () => {
                     {/* Channel title */}
                     <h6 className="rock-channel-info-title">{title}</h6>
                     {/* Pin/favorite icon */}
-                    <FavoriteChannelIcon isPinned={isPinned} onToggle={handleToggle} large />
+                    <FavoriteChannelIcon channel={channel} large />
                 </div>
             </div>
 

@@ -134,7 +134,8 @@ const ChatComponentContent: React.FC<any> = ({
     chatViewStyle,
     directMessageChannelTypeKey,
     sharedChannelTypeKey,
-    jumpToMessageId
+    jumpToMessageId,
+    channelListKey
 }) => {
     const { showDirectory, toggleShowDirectory } = useDirectoryContext();
     const chatContentStyle: React.CSSProperties = {
@@ -152,6 +153,7 @@ const ChatComponentContent: React.FC<any> = ({
                         filters={finalFilter}
                         sort={sort}
                         options={options}
+                        key={channelListKey}
                         Preview={RockChannelPreview}
                         renderChannels={getRenderChannelsFn(chatViewStyle!, directMessageChannelTypeKey!, sharedChannelTypeKey!)}
                         setActiveChannelOnMount={!selectedChannelId}

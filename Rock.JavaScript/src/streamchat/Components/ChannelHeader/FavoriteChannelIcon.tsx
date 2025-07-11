@@ -1,15 +1,18 @@
 import React from 'react';
+import type { Channel } from 'stream-chat';
+import { useChannelListController } from '../ChannelList/ChannelListControllerContext';
+import { useChannelMembershipState, useChatContext } from 'stream-chat-react';
 
 /**
  * Props for the FavoriteChannelIcon component.
  *
  * @property {boolean} isPinned - Indicates if the channel is currently pinned (favorited) by the user.
- * @property {() => Promise<void>} onToggle - Async callback to toggle the pin state. Should handle pin/unpin logic and any side effects (e.g., UI refresh).
+ * @property {Channel} channel - The Stream Chat channel instance.
+ * @property {() => void} refresh - Callback to refresh the channel list after pin/unpin.
  * @property {boolean} [large] - Optional. If true, renders a larger version of the icon for emphasis or different UI contexts.
  */
 interface FavoriteChannelIconProps {
-    isPinned: boolean;
-    onToggle: () => Promise<void>;
+    channel: Channel;
     large?: boolean;
 }
 
@@ -17,31 +20,45 @@ interface FavoriteChannelIconProps {
  * FavoriteChannelIcon
  *
  * Renders a star icon that visually represents the pin (favorite) state of a channel.
- *
- * - If `isPinned` is true, the icon appears filled (active); otherwise, it appears outlined (inactive).
- * - Clicking the icon triggers the `onToggle` callback, which should handle the pin/unpin logic asynchronously.
- * - The `large` prop optionally increases the icon size for use in different UI contexts.
- *
- * Accessibility & Usability:
- * - The icon has a tooltip (title) that changes based on the pin state ("Favorite" or "Unfavorite").
- * - Uses `stopPropagation` to prevent click events from bubbling up to parent elements (avoiding accidental UI triggers).
+ * Handles pin/unpin logic internally.
  *
  * @param {FavoriteChannelIconProps} props - The component props.
  * @returns {JSX.Element} The rendered favorite (star) icon.
  */
-export const FavoriteChannelIcon: React.FC<FavoriteChannelIconProps> = ({ isPinned, onToggle, large }) => {
+export const FavoriteChannelIcon: React.FC<FavoriteChannelIconProps> = ({ channel, large }) => {
+
+    const { refresh } = useChannelListController();
+    const { client } = useChatContext();
+    const membershipState = useChannelMembershipState(channel);
+    const isPinned = !!membershipState?.pinned_at;
+
+    const handleToggle = async (e: React.MouseEvent) => {
+        e.stopPropagation();
+        try {
+            const shouldAddUser = !membershipState || !membershipState.user_id;
+
+            // If the user is not a member, join the channel first
+            if (shouldAddUser) {
+                await channel.addMembers([client.userID!]);
+            }
+
+            console.log(membershipState);
+            if (isPinned) {
+                await channel.unpin();
+            } else {
+                await channel.pin();
+            }
+
+            refresh();
+        } catch (error) {
+            console.error("Failed to toggle pin state", error);
+        }
+    };
     return (
         <div
-            // CSS classes: base class, optional large modifier, and active state if pinned
             className={`rock-channel-header-favorite${large ? '-lg' : ''} ${isPinned ? 'rock-channel-header-favorite--active' : ''}`}
-            // Handle click: prevent event bubbling and call async toggle handler
-            onClick={async (e) => {
-                e.stopPropagation();
-                await onToggle();
-            }}
-            // Tooltip for accessibility and user feedback
+            onClick={handleToggle}
             title={isPinned ? 'Unfavorite' : 'Favorite'}>
-            {/* FontAwesome star icon: filled if pinned, outlined if not */}
             <i className={isPinned ? 'fas fa-star' : 'far fa-star'} />
         </div>
     );

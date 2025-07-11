@@ -34,7 +34,6 @@ export const RockChannelHeader: React.FC<ChannelHeaderProps> = (props) => {
     }
 
     const membershipState = useChannelMembershipState(channel);
-    const { refresh } = useChannelListController();
     const { setActivePane, activePane } = useChannelRightPane();
     const { closeThread } = useChannelActionContext();
     const { setActiveThread } = useThreadsViewContext();
@@ -65,21 +64,10 @@ export const RockChannelHeader: React.FC<ChannelHeaderProps> = (props) => {
     // Favorite (pin/unpin) icon logic
     const getFavoriteIcon = () => {
         if (!membershipState) return null;
-        const isPinned = !!membershipState.pinned_at;
-        const handleToggle = async () => {
-            try {
-                if (!channel) return;
-                if (isPinned) {
-                    await channel.unpin();
-                } else {
-                    await channel.pin();
-                }
-                refresh();
-            } catch (error) {
-                console.error("Failed to toggle pin state", error);
-            }
-        };
-        return <FavoriteChannelIcon isPinned={isPinned} onToggle={handleToggle} />;
+
+        return (
+            <FavoriteChannelIcon channel={channel} />
+        );
     };
 
     // Navigation items for the right pane

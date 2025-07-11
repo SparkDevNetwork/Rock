@@ -14,7 +14,7 @@ export function getRenderChannelsFn(
         channels: Channel[],
         channelPreview: (channel: Channel) => React.ReactNode
     ): React.ReactNode => {
-        if (chatViewStyle === ChatViewStyle.Conversational) {
+        if (chatViewStyle == ChatViewStyle.Conversational) {
             return <>{channels.map(channel => channelPreview(channel))}</>;
         }
 
@@ -31,7 +31,10 @@ export function getRenderChannelsFn(
             }
         }
 
-        const sharedChannels = notPinned.filter(c => c.type != directMessageChannelTypeKey);
+        // We need to filter shared channels by:
+        // 1. User is a member OR Channel has rock_always_shown set to true
+        // 2. Channel type is not a DM
+        const sharedChannels = notPinned.filter(c => c.type != directMessageChannelTypeKey && (c.data?.rock_always_shown || c.state.membership));
         const dmChannels = notPinned.filter(c => c.type == directMessageChannelTypeKey);
 
         console.log(channels)
