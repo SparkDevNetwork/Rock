@@ -3904,6 +3904,43 @@ namespace Rock.Lava
         }
 
         /// <summary>
+        /// Converts meters to miles, rounding to the specified number of decimal places.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="input"></param>
+        /// <param name="precision"></param>
+        /// <returns></returns>
+        public static double? MetersToMiles( ILavaRenderContext context, object input, int precision = 1 )
+        {
+            var meters = input.ToStringSafe().AsDoubleOrNull();
+
+            if ( meters == null )
+            {
+                return 0;
+            }
+
+            return Math.Round( meters.Value / 1609.34, precision );
+        }
+
+        /// <summary>
+        /// Converts miles to meters.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int? MilesToMeters( ILavaRenderContext context, object input )
+        {
+            var miles = input.ToStringSafe().AsDoubleOrNull();
+
+            if ( miles == null )
+            {
+                return 0;
+            }
+
+            return ( int ) ( miles.Value * 1609.34 );
+        }
+
+        /// <summary>
         /// Casts the input as a string value.
         /// </summary>
         /// <param name="input">The input value to be parsed into string form.</param>
