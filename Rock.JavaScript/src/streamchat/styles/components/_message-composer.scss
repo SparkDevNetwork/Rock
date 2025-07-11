@@ -1,4 +1,15 @@
 .rocktheme-community {
+
+    .str-chat__send-to-channel-checkbox__field label {
+        margin-bottom: 0;
+    }
+
+    .str-chat__send-to-channel-checkbox__container {
+        margin-inline: var(--message-composer-margin-inline);
+        margin-right: var(--message-composer-margin-right);
+        padding: 0;
+    }
+
     .rock-message-composer {
         display: flex;
         flex-direction: column;
@@ -88,6 +99,10 @@
         display: flex;
         flex-direction: column;
         gap: var(--message-composer-gap);
+
+        div[role="presentation"] {
+            width: 100%;
+        }
     }
 
     .rock-message-input-container {

@@ -1,6 +1,6 @@
 // ComunityMessageInput.tsx
 import React from 'react';
-import { AttachmentSelector, CooldownTimer, MessageInputProps, QuotedMessagePreview, TextareaComposer, useMessageComposer, WithDragAndDropUpload } from 'stream-chat-react';
+import { AttachmentSelector, CooldownTimer, MessageInputProps, QuotedMessagePreview, QuotedMessagePreviewHeader, TextareaComposer, useMessageComposer, WithDragAndDropUpload } from 'stream-chat-react';
 import {
     AttachmentPreviewList,
     useMessageInputContext,
@@ -200,11 +200,12 @@ export const CommunityMessageInput = () => {
 
 
     return (
-        <div className="rock-community-message-input">
+        <div className="rock-community-message-input str-chat__message-input">
             <SendToChannelCheckbox />
             <WithDragAndDropUpload>
                 <div className="rock-message-composer">
                     <div className="rock-message-composer-input">
+                        <QuotedMessagePreviewHeader />
                         <QuotedMessagePreview />
                         <AttachmentPreviewList />
                         <TextareaComposer containerClassName="rock-message-input-container" maxRows={16} />

@@ -117,16 +117,8 @@ export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children, channe
 };
 
 export const CustomThreadHeader = (props: ThreadHeaderProps) => {
-    const { channel } = useChannelStateContext('');
-    const { displayTitle } = useChannelPreviewInfo({
-        channel,
-    });
-
-    const memberCount = Object.keys(channel?.state?.members || {}).length;
-    const titleText = memberCount <= 2 ? 'Direct Message' : displayTitle;
-
     return (
-        <ChannelPaneHeader title={`Thread in ${titleText}`} icon="fas fa-comment-dots" />
+        <ChannelPaneHeader title={`Thread`} icon="fas fa-comment-dots" />
     );
 };
 
