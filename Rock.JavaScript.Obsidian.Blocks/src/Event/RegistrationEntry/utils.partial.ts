@@ -81,7 +81,8 @@ export function getDefaultRegistrantInfo(currentPerson: CurrentPersonBag | null,
         fieldValues: {},
         feeItemQuantities: {},
         guid: newGuid(),
-        personGuid: null
+        personGuid: null,
+        isNewFamily: false
     };
 
     return registrantBag;

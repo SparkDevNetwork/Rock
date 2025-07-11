@@ -590,34 +590,47 @@ INNER JOIN @DuplicateRecipients dr
                 https://github.com/SparkDevNetwork/Rock/issues/5651
             */
 
+            /*
+                7/3/2025 - MSE
+
+                Fixed a bug where merging person records prior to the communication being sent
+                caused individuals to be removed from communication records entirely.
+
+                The logic ensures that for each person, at least one recipient record is retained (preferably the one with the primary alias).
+
+                Reason: Prevent loss of valid recipients in scheduled communications due to person merges.
+            */
+
             using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Remove Non-Primary Person Alias Recipients" ) )
             {
-                var communicationRecipientService = new CommunicationRecipientService( rockContext );
-
                 var recipientsQry = GetRecipientsQry( rockContext );
 
                 int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
                 if ( smsMediumEntityTypeId.HasValue )
                 {
-                    var duplicateSMSRecipientsQuery = recipientsQry
-                        .Where( a =>
-                            a.MediumEntityTypeId == smsMediumEntityTypeId.Value
-                            && a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId
+                    var smsRecipientsToDelete = recipientsQry
+                        .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId.Value )
+                        .GroupBy( r => r.PersonAlias.PersonId )
+                        .SelectMany( g => g
+                            .OrderByDescending( r => r.PersonAlias.PersonId == r.PersonAlias.AliasPersonId ? 1 : 0 )
+                            .ThenBy( r => r.Id )
+                            .Skip( 1 )
                         );
-
-                    rockContext.BulkDelete<CommunicationRecipient>( duplicateSMSRecipientsQuery );
+                    rockContext.BulkDelete( smsRecipientsToDelete );
                 }
 
                 int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
                 if ( emailMediumEntityTypeId.HasValue )
                 {
-                    var duplicateEmailRecipientsQry = recipientsQry
-                        .Where( a =>
-                            a.MediumEntityTypeId == emailMediumEntityTypeId.Value
-                            && a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId
+                    var emailRecipientsToDelete = recipientsQry
+                        .Where( r => r.MediumEntityTypeId == emailMediumEntityTypeId.Value )
+                        .GroupBy( r => r.PersonAlias.PersonId )
+                        .SelectMany( g => g
+                            .OrderByDescending( r => r.PersonAlias.PersonId == r.PersonAlias.AliasPersonId ? 1 : 0 )
+                            .ThenBy( r => r.Id )
+                            .Skip( 1 )
                         );
-
-                    rockContext.BulkDelete<CommunicationRecipient>( duplicateEmailRecipientsQry );
+                    rockContext.BulkDelete( emailRecipientsToDelete );
                 }
             }
         }

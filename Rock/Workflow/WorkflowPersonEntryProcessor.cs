@@ -98,12 +98,12 @@ namespace Rock.Workflow
         /// <summary>
         /// Saves the person entry to attribute values.
         /// </summary>
+        /// <param name="form">The form configuration data.</param>
         /// <param name="personEntryPersonId">The person entry person identifier.</param>
         /// <param name="personEntryPersonSpouseId">The person entry person spouse identifier.</param>
         /// <param name="primaryFamily">The primary family.</param>
-        private void SavePersonEntryToAttributeValues( int personEntryPersonId, int? personEntryPersonSpouseId, Group primaryFamily )
+        private void SavePersonEntryToAttributeValues( WorkflowActionFormCache form, int personEntryPersonId, int? personEntryPersonSpouseId, Group primaryFamily )
         {
-            var form = _action.ActionTypeCache.WorkflowForm;
             var workflow = _action.Activity.Workflow;
             var personAliasService = new PersonAliasService( _rockContext );
 
@@ -147,17 +147,11 @@ namespace Rock.Workflow
         /// <summary>
         /// Updates the person from the values entered on the form.
         /// </summary>
+        /// <param name="form">The form configuration data.</param>
         /// <param name="person">The person to be updated.</param>
         /// <param name="personBag">The bag that describes the changes to make to <paramref name="person"/>.</param>
-        private void UpdatePersonFromEntryValues( Person person, PersonBasicEditorBag personBag )
+        private void UpdatePersonFromEntryValues( WorkflowActionFormCache form, Person person, PersonBasicEditorBag personBag )
         {
-            var form = _action.ActionTypeCache?.WorkflowForm;
-
-            if ( form == null )
-            {
-                return;
-            }
-
             person.FirstName = personBag.FirstName;
             person.LastName = personBag.LastName;
 
@@ -202,24 +196,62 @@ namespace Rock.Workflow
         /// <summary>
         /// Creates or updates person from person form.
         /// </summary>
-        /// <param name="existingPersonId">The existing person identifier.</param>
+        /// <param name="form">The form configuration data.</param>
+        /// <param name="existingPerson">The existing person to potentially update.</param>
         /// <param name="limitMatchToFamily">Limit matches to people in specified family</param>
         /// <param name="personBag">The person values.</param>
         /// <returns></returns>
-        private Person CreateOrUpdatePersonFromEntryValues( int? existingPersonId, Group limitMatchToFamily, PersonBasicEditorBag personBag )
+        private Person CreateOrUpdatePersonFromEntryValues( WorkflowActionFormCache form, Person existingPerson, Group limitMatchToFamily, PersonBasicEditorBag personBag )
         {
             var personService = new PersonService( _rockContext );
             Person personEntryPerson;
-            var form = _action.ActionTypeCache.WorkflowForm;
 
             // If we have an existing person, just update and return.
-            if ( existingPersonId.HasValue )
+            if ( existingPerson != null )
             {
-                // Update Person from person personValues.
-                personEntryPerson = personService.Get( existingPersonId.Value );
-                UpdatePersonFromEntryValues( personEntryPerson, personBag );
+                // Check if the values entered match the existing person, this determines
+                // if we can use the existing person or not.
+                var firstNameMatchesExistingFirstOrNickName = personBag.FirstName.Equals( existingPerson.FirstName, StringComparison.OrdinalIgnoreCase )
+                        || personBag.FirstName.Equals( existingPerson.NickName, StringComparison.OrdinalIgnoreCase );
+                var lastNameMatchesExistingLastName = personBag.LastName.Equals( existingPerson.LastName, StringComparison.OrdinalIgnoreCase );
 
-                return personEntryPerson;
+                if ( !firstNameMatchesExistingFirstOrNickName || !lastNameMatchesExistingLastName )
+                {
+                    /*  10-07-2021 MDP
+
+                    Special Logic if AutoFill CurrentPerson is enabled, but the Person Name fields were changed:
+
+                    If the existing person (the one that used to auto-fill the fields) changed the FirstName or LastName PersonEditor,
+                    then assume they mean they mean to create (or match) a new person. Note that if this happens, this matched or new person won't
+                    be added to Ted Decker's family. PersonEntry isn't smart enough to figure that out and isn't intended to be a family editor. Here are a few examples
+                    to clarify what this means:
+
+                    Example 1: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to Noah Decker, then we'll see if we have enough to make a match
+                    to the existing Noah Decker. However, a match to the existing Noah Decker would need to match Noah's email and/or cell phone too, so it could easily create a new Noah Decker.
+
+                    Example 2: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to NewBaby Decker, we'll have to do the same thing as Example 1
+                    even though Ted might be thinking he is adding his new baby to the family. So NewBaby Decker will probably be a new person in a new family.
+
+                    Example 3: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to Bob Smith (Ted's Neighbor), we also do the same thing as Example 1. However,
+                    in this case, we are mostly doing what Ted expected to happen.
+
+                    Summary. PersonEntry is not a family editor, it just collects data to match or create a person (and spouse if enabled).
+
+                    Note: The logic for Spouse entry is slightly different. See notes below...
+
+                    */
+
+                    existingPerson = null;
+                }
+
+                // Update Person from person personValues.
+                if ( existingPerson != null )
+                {
+                    personEntryPerson = personService.Get( existingPerson.Id );
+                    UpdatePersonFromEntryValues( form, personEntryPerson, personBag );
+
+                    return personEntryPerson;
+                }
             }
 
             // Match or Create Person from personValues
@@ -287,12 +319,12 @@ namespace Rock.Workflow
             if ( personEntryPerson != null )
             {
                 // if a match was found, update that person
-                UpdatePersonFromEntryValues( personEntryPerson, personBag );
+                UpdatePersonFromEntryValues( form, personEntryPerson, personBag );
             }
             else
             {
                 personEntryPerson = new Person();
-                UpdatePersonFromEntryValues( personEntryPerson, personBag );
+                UpdatePersonFromEntryValues( form, personEntryPerson, personBag );
             }
 
             return personEntryPerson;
@@ -312,16 +344,32 @@ namespace Rock.Workflow
                 return;
             }
 
-            int? campusId = null;
-            int? maritalStatusId = null;
-
             _action.GetPersonEntryPeople( _rockContext, currentPersonId, out var existingPerson, out var existingSpouse );
+
+            SetFormPersonEntryValues( form, currentPersonId, personEntryValues, existingPerson, existingSpouse );
+        }
+
+        /// <summary>
+        /// Sets the form person entry values based on the provided
+        /// <paramref name="personEntryValues"/> and existing person/spouse.
+        /// </summary>
+        /// <param name="form">The form configuration data.</param>
+        /// <param name="currentPersonId">The identifier of the current person submitting this change.</param>
+        /// <param name="personEntryValues">The values that describe the UI selections.</param>
+        /// <param name="existingPerson">The existing person to potentially be updated.</param>
+        /// <param name="existingSpouse">The existing spouse to potentially be updated.</param>
+        internal void SetFormPersonEntryValues( WorkflowActionFormCache form, int? currentPersonId, PersonEntryValuesBag personEntryValues, Person existingPerson, Person existingSpouse )
+        {
+            if ( form == null )
+            {
+                throw new ArgumentNullException( nameof( form ) );
+            }
 
             // If we have a person and the person entry was set to hide if known, then
             // we just store the current person and spouse values.
             if ( currentPersonId.HasValue && form.PersonEntryHideIfCurrentPersonKnown )
             {
-                SavePersonEntryToAttributeValues( existingPerson.Id, existingSpouse?.Id, existingPerson.PrimaryFamily );
+                SavePersonEntryToAttributeValues( form, existingPerson.Id, existingSpouse?.Id, existingPerson.PrimaryFamily );
                 return;
             }
 
@@ -331,44 +379,8 @@ namespace Rock.Workflow
                 return;
             }
 
-            // Check if the values entered match the existing person, this determines
-            // if we can use the existing person or not.
-            if ( existingPerson != null )
-            {
-                var firstNameMatchesExistingFirstOrNickName = personEntryValues.Person.FirstName.Equals( existingPerson.FirstName, StringComparison.OrdinalIgnoreCase )
-                        || personEntryValues.Person.FirstName.Equals( existingPerson.NickName, StringComparison.OrdinalIgnoreCase );
-                var lastNameMatchesExistingLastName = personEntryValues.Person.LastName.Equals( existingPerson.LastName, StringComparison.OrdinalIgnoreCase );
-
-                if ( !firstNameMatchesExistingFirstOrNickName || !lastNameMatchesExistingLastName )
-                {
-                    /*  10-07-2021 MDP
-
-                    Special Logic if AutoFill CurrentPerson is enabled, but the Person Name fields were changed:
-
-                    If the existing person (the one that used to auto-fill the fields) changed the FirstName or LastName PersonEditor,
-                    then assume they mean they mean to create (or match) a new person. Note that if this happens, this matched or new person won't
-                    be added to Ted Decker's family. PersonEntry isn't smart enough to figure that out and isn't intended to be a family editor. Here are a few examples
-                    to clarify what this means:
-
-                    Example 1: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to Noah Decker, then we'll see if we have enough to make a match
-                    to the existing Noah Decker. However, a match to the existing Noah Decker would need to match Noah's email and/or cell phone too, so it could easily create a new Noah Decker.
-
-                    Example 2: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to NewBaby Decker, we'll have to do the same thing as Example 1
-                    even though Ted might be thinking he is adding his new baby to the family. So NewBaby Decker will probably be a new person in a new family.
-
-                    Example 3: If Ted Decker is auto-filled because Ted Decker is logged in, but he changes the fields to Bob Smith (Ted's Neighbor), we also do the same thing as Example 1. However,
-                    in this case, we are mostly doing what Ted expected to happen.
-
-                    Summary. PersonEntry is not a family editor, it just collects data to match or create a person (and spouse if enabled).
-
-                    Note: The logic for Spouse entry is slightly different. See notes below...
-
-                    */
-
-                    existingPerson = null;
-                    existingSpouse = null;
-                }
-            }
+            int? campusId = null;
+            int? maritalStatusId = null;
 
             // Translate our Guid values into Id values.
             if ( personEntryValues.CampusGuid.HasValue )
@@ -385,7 +397,7 @@ namespace Rock.Workflow
                 ?? form.PersonEntryRecordSourceValueId
                 ?? DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_WORKFLOW.AsGuid() )?.Id;
 
-            var personEntryPerson = CreateOrUpdatePersonFromEntryValues( existingPerson?.Id, null, personEntryValues.Person );
+            var personEntryPerson = CreateOrUpdatePersonFromEntryValues( form, existingPerson, null, personEntryValues.Person );
             if ( personEntryPerson.Id == 0 )
             {
                 personEntryPerson.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
@@ -420,7 +432,7 @@ namespace Rock.Workflow
 
             if ( personEntryValues.Spouse != null )
             {
-                var personEntryPersonSpouse = CreateOrUpdatePersonFromEntryValues( existingSpouse?.Id, primaryFamily, personEntryValues.Spouse );
+                var personEntryPersonSpouse = CreateOrUpdatePersonFromEntryValues( form, existingSpouse, primaryFamily, personEntryValues.Spouse );
                 if ( personEntryPersonSpouse.Id == 0 )
                 {
                     personEntryPersonSpouse.ConnectionStatusValueId = form.PersonEntryConnectionStatusValueId;
@@ -456,7 +468,7 @@ namespace Rock.Workflow
                 personEntryPersonSpouseId = personEntryPersonSpouse.Id;
             }
 
-            SavePersonEntryToAttributeValues( personEntryPerson.Id, personEntryPersonSpouseId, primaryFamily );
+            SavePersonEntryToAttributeValues( form, personEntryPerson.Id, personEntryPersonSpouseId, primaryFamily );
 
             if ( form.PersonEntryCampusIsVisible )
             {

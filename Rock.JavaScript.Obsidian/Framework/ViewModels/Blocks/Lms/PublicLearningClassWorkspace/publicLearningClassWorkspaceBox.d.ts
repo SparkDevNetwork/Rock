@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
 import { ConfigurationMode } from "@Obsidian/Enums/Lms/configurationMode";
 import { LearningCompletionStatus } from "@Obsidian/Enums/Lms/learningCompletionStatus";
 import { Guid } from "@Obsidian/Types";
@@ -48,6 +49,9 @@ export type PublicLearningClassWorkspaceBox = {
 
     /** Gets or sets the id for the class. */
     classIdKey?: string | null;
+
+    /** Gets or sets the communication preference */
+    communicationPreference: CommunicationType;
 
     /** Gets or sets the custom content pages for the class. */
     contentPages?: LearningClassContentPageBag[] | null;

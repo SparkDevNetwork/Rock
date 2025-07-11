@@ -162,6 +162,14 @@
                                         </div>
                                     </div>
                                 </template>
+                                <div class="d-flex flex-column gap-1">
+                                    <RockLabel>
+                                        Communication Preference
+                                    </RockLabel>
+                                    <ButtonGroup v-model="selectedCommunicationPreference"
+                                                 :btnSize="BtnSize.Small"
+                                                 :items="communicationPreferences" />
+                                </div>
 
                                 <div class="view-all-button" :class="notificationsOverflowContainerClass" v-if="hasNotificationsOverflow">
                                     <RockButton
@@ -182,48 +190,59 @@
 
                 </div>
                 <template v-if="activities.length > 0">
-                    <CustomSelect
-                                  v-model="viewingCompletionBag"
-                                  :items="activities"
-                                  wrapperClass="workspace-navigation-pane"
-                                  itemKey="learningClassActivityIdKey"
-                                  :itemClass="getActivityContainerClasses"
-                                  :disabledKey="isActivityUnavailable"
-                                  :mobileThreshold="767"
-                                  selectedClass="is-selected">
-                        <template #placeholder>
-                            <p class="text-muted">Tap here to select an activity</p>
-                        </template>
+                    <div class="workspace-navigation-pane-container">
+                        <CustomSelect
+                                      v-model="viewingCompletionBag"
+                                      :items="activities"
+                                      wrapperClass="workspace-navigation-pane"
+                                      itemKey="learningClassActivityIdKey"
+                                      :itemClass="getActivityContainerClasses"
+                                      :disabledKey="isActivityUnavailable"
+                                      :mobileThreshold="767"
+                                      selectedClass="is-selected">
+                            <template #placeholder>
+                                <p class="text-muted">Tap here to select an activity</p>
+                            </template>
 
-                        <template #default="{ item }">
-                            <div class="activity-item-content"
-                                 :ref="(el) => addTooltip(el as Element)"
-                                 data-toggle="tooltip"
-                                 data-placement="auto"
-                                 data-container="body"
-                                 :data-original-title="getActivityTooltip(item)">
-                                <div class="activity-item-completion-container">
-                                    <i v-if="isCompleted(item)" class="fa fa-check-circle fa-2x text-success"></i>
-                                    <i v-if="!isCompleted(item)" class="fa fa-circle-o fa-2x is-incomplete"></i>
-                                </div>
-                                <div class="activity-item-detail-container">
-                                    <h5 class="activity-name">{{ item?.classActivityBag?.name }}</h5>
-                                    <div class="activity-item-time" v-if="getActivityTimeText(item)">
-                                        <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
+                            <template #default="{ item }">
+                                <div class="activity-item-content"
+                                     :ref="(el) => addTooltip(el as Element)"
+                                     data-toggle="tooltip"
+                                     data-placement="auto"
+                                     data-container="body"
+                                     :data-original-title="getActivityTooltip(item)">
+                                    <div class="activity-item-completion-container">
+                                        <i v-if="isCompleted(item)" class="fa fa-check-circle fa-2x text-success"></i>
+                                        <i v-if="!isCompleted(item)" class="fa fa-circle-o fa-2x is-incomplete"></i>
                                     </div>
-                                    <div class="activity-label-container" v-if="getActivityTimeText(item)" v-html="getActivityLabel(item)">
+                                    <div class="activity-item-detail-container">
+                                        <h5 class="activity-name">{{ item?.classActivityBag?.name }}</h5>
+                                        <div class="activity-item-time" v-if="getActivityTimeText(item)">
+                                            <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
+                                        </div>
+                                        <div class="activity-label-container" v-if="getActivityTimeText(item)" v-html="getActivityLabel(item)">
+                                        </div>
+                                    </div>
+                                    <div class="activity-item-grade-container">
+                                        <div class="activity-item-grade-content">
+                                            <span v-if="isCompleted(item) && !item.requiresScoring" class="badge badge-grade" :style="getGradeBageStyles(item)">
+                                                {{ getBadgeText(item) }}
+                                            </span>
+                                        </div>
                                     </div>
                                 </div>
-                                <div class="activity-item-grade-container">
-                                    <div class="activity-item-grade-content">
-                                        <span v-if="isCompleted(item) && !item.requiresScoring" class="badge badge-grade" :style="getGradeBageStyles(item)">
-                                            {{ getBadgeText(item) }}
-                                        </span>
-                                    </div>
-                                </div>
-                            </div>
-                        </template>
-                    </CustomSelect>
+                            </template>
+                        </CustomSelect>
+
+                        <div v-if="config.programConfigurationMode === ConfigurationMode.OnDemandLearning" class="communication-preference-container">
+                            <RockLabel>
+                                Communication Preference
+                            </RockLabel>
+                            <ButtonGroup v-model="selectedCommunicationPreference"
+                                         :btnSize="BtnSize.Small"
+                                         :items="communicationPreferences" />
+                        </div>
+                    </div>
 
                     <div class="workspace-main-content">
                         <div v-if="showCompletedScreen"
@@ -281,6 +300,8 @@
     import ProgressBar from "@Obsidian/Controls/progressBar.obs";
     import CustomSelect from "@Obsidian/Controls/customSelect.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
     import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
     import { LearningClassActivityCompletionBag } from "@Obsidian/ViewModels/Blocks/Lms/LearningClassActivityCompletionDetail/learningClassActivityCompletionBag";
     import { PublicLearningClassWorkspaceBox } from "@Obsidian/ViewModels/Blocks/Lms/PublicLearningClassWorkspace/publicLearningClassWorkspaceBox";
@@ -294,6 +315,8 @@
     import { PromiseCompletionSource } from "@Obsidian/Utility/promiseUtils";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { useStore } from "@Obsidian/PageState";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
 
     const config = useConfigurationValues<PublicLearningClassWorkspaceBox>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -338,6 +361,18 @@
     const contentTabs = ref((config.contentPages ?? []).filter(c => (c.content ?? "").length > 0));
 
     const activityTypeComponent = ref<Component | null>(null);
+
+    const selectedCommunicationPreference = ref<string>(config.communicationPreference.toString());
+    const communicationPreferences = [
+        {
+            text: "Email",
+            value: CommunicationType.Email.toString()
+        },
+        {
+            text: "SMS",
+            value: CommunicationType.SMS.toString()
+        }
+    ];
 
     // #endregion
 
@@ -508,7 +543,11 @@
     }
 
     /** The CSS classes to apply to the activity container. */
-    function getActivityContainerClasses(activity: LearningClassActivityCompletionBag): string {
+    function getActivityContainerClasses(activity: LearningClassActivityCompletionBag | null): string {
+        if (!activity) {
+            return "";
+        }
+
         const classes = activity.isAvailable === true ? ["available"] : ["not-available"];
 
         classes.push("activity-navigation-item-container");
@@ -718,6 +757,19 @@
         return false;
     }
 
+    async function onCommunicationPreferenceChanged(): Promise<void> {
+        const newCommunicationPreference = parseInt(selectedCommunicationPreference.value) as CommunicationType;
+
+        const result = await invokeBlockAction("UpdateCommunicationPreference", {
+            communicationType: newCommunicationPreference,
+            learningClassIdKey: config.classIdKey
+        });
+
+        if (result.isError) {
+            console.error(result.errorMessage ?? "An unknown error occurred while updating your communication preference");
+        }
+    }
+
     /** Called when a new tab is selected by the individual.  */
     function onSelectTab(tabName: string): void {
         const queryParams = new URLSearchParams(window.location.search);
@@ -765,6 +817,10 @@
         }
 
         showCompletedScreen.value = false;
+    });
+
+    watch(selectedCommunicationPreference, () => {
+        onCommunicationPreferenceChanged();
     });
 
     // Handle any initial error conditions or the need to go into edit mode.

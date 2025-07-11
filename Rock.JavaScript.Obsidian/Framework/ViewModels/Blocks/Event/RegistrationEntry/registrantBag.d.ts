@@ -43,6 +43,9 @@ export type RegistrantBag = {
     /** Gets or sets the unique identifier. */
     guid: Guid;
 
+    /** Gets or sets the boolean value that determines if the current registrant is a new family. */
+    isNewFamily: boolean;
+
     /** Gets or sets a value indicating whether this instance is on wait list. */
     isOnWaitList: boolean;
 

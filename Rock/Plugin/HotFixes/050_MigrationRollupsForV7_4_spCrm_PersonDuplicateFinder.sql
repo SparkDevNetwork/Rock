@@ -1,5 +1,4 @@
-﻿
-/*
+﻿/*
 <doc>
  <summary>
    This stored procedure detects potential duplicate person records and stores the results in [PersonDuplicate]

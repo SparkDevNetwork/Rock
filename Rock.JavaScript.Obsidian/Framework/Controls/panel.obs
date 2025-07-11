@@ -117,8 +117,8 @@
                 </div>
             </TransitionVerticalCollapse>
 
-            <div v-if="!slots.sidebar && isPanelOpen && $slots.footerTray" class="panel-footer-tray">
-                <slot name="footerTray" />
+            <div v-if="!slots.sidebar && isPanelOpen && $slots.footerContent" class="panel-footer-content">
+                <slot name="footerContent" />
             </div>
         </div>
 
@@ -133,20 +133,20 @@
                 </div>
             </div>
         </div>
-        <div v-if="slots.sidebar && $slots.footerTray" class="panel-footer-tray panel-sidebar-footer-tray">
-            <slot name="footerTray" />
+        <div v-if="slots.sidebar && $slots.footerContent" class="panel-footer-content panel-sidebar-footer-content">
+            <slot name="footerContent" />
         </div>
     </Fullscreen>
 </template>
 
 <style scoped>
-.panel-footer-tray {
+.panel-footer-content {
     padding: var(--panel-body-padding);
     background: var(--color-interface-softer);
     border-top: 1px solid var(--color-interface-soft);
 }
 
-.panel-sidebar-footer-tray {
+.panel-sidebar-footer-content {
     grid-column: 1 / span 4;
 }
 </style>

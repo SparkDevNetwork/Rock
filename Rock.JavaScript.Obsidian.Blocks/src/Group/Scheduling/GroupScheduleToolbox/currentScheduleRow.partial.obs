@@ -80,7 +80,8 @@
                    :attendanceGuid="row.entityGuid"
                    :wasSchedulePreviouslyConfirmed="wasSchedulePreviouslyConfirmed"
                    :isDeclineNoteVisible="isDeclineNoteVisible"
-                   :isDeclineNoteRequired="isDeclineNoteRequired" />
+                   :isDeclineNoteRequired="isDeclineNoteRequired"
+                   @scheduleRowDeclined="onScheduleRowDeclined" />
 </template>
 
 <style scoped>
@@ -246,6 +247,13 @@
     // #region Event Handlers
 
     /**
+     * Handles the scheduleRowDeclined event of the declineReason component.
+     */
+    async function onScheduleRowDeclined(): Promise<void> {
+        props.row.confirmationStatus = ToolboxScheduleRowConfirmationStatus.Declined;
+    }
+
+    /**
      * Handles the `click` event of schedule row action buttons.
      *
      * @param actionType The action type to be performed.
@@ -261,7 +269,8 @@
         const bag: PerformScheduleRowActionRequestBag = {
             selectedPersonGuid: toGuidOrNull(selectedPersonGuid?.value) ?? emptyGuid,
             entityGuid: toGuidOrNull(props.row.entityGuid) ?? emptyGuid,
-            actionType
+            actionType,
+            existingConfirmationStatus: props.row.confirmationStatus
         };
 
         const result = await invokeBlockAction<PerformScheduleRowActionResponseBag>("PerformScheduleRowAction", { bag });

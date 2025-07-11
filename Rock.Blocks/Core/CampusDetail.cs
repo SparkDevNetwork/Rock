@@ -500,7 +500,7 @@ namespace Rock.Blocks.Core
                 IsActive = !entity.IsActive.HasValue || entity.IsActive.Value,
                 IsSystem = entity.IsSystem,
                 LeaderPersonAlias = entity.LeaderPersonAlias.ToListItemBag(),
-                Location = entity.Location.ToListItemBag( entity.Location.Name ),
+                Location = entity.Location.ToListItemBag( entity.Location?.Name ),
                 Name = entity.Name,
                 ServiceTimes = ConvertServiceTimesToBags( entity.ServiceTimes ),
                 ShortCode = entity.ShortCode,
