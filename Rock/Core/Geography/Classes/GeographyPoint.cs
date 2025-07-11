@@ -19,7 +19,7 @@ using System;
 using System.Data.Entity.Spatial;
 using Newtonsoft.Json;
 
-namespace Rock.Geography.Classes
+namespace Rock.Core.Geography.Classes
 {
     /// <summary>
     /// Represents a geographical point with latitude and longitude coordinates, used in various location-related operations.
@@ -30,13 +30,11 @@ namespace Rock.Geography.Classes
         /// <summary>
         /// The latitude and longitude coordinates of the geographical point.
         /// </summary>
-        [JsonProperty( "latitude" )]
         public double Latitude { get; set; }
 
         /// <summary>
         /// The latitude and longitude coordinates of the geographical point.
         /// </summary>
-        [JsonProperty( "longitude" )]
         public double Longitude { get; set; }
 
         #endregion
@@ -59,26 +57,6 @@ namespace Rock.Geography.Classes
         {
             Latitude = latitude;
             Longitude = longitude;
-        }
-
-        /// <summary>
-        /// Initializes a new instance of the GeographyPoint class from a DbGeography point.
-        /// </summary>
-        /// <param name="dbGeography">A DbGeography point with valid Latitude and Longitude.</param>
-        public GeographyPoint( DbGeography dbGeography )
-        {
-            if ( dbGeography == null )
-            {
-                throw new ArgumentNullException( nameof( dbGeography ) );
-            }
-
-            if ( !dbGeography.Latitude.HasValue || !dbGeography.Longitude.HasValue )
-            {
-                throw new ArgumentException( "The DbGeography must have both Latitude and Longitude values." );
-            }
-
-            Latitude = dbGeography.Latitude.Value;
-            Longitude = dbGeography.Longitude.Value;
         }
 
         /// <summary>
@@ -112,6 +90,32 @@ namespace Rock.Geography.Classes
 
             Latitude = latitude;
             Longitude = longitude;
+        }
+
+        #endregion
+
+        #region Static Methods
+
+        /// <summary>
+        /// Creates a GeographyPoint from a DbGeography object.
+        /// </summary>
+        /// <param name="dbGeography"></param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentNullException"></exception>
+        /// <exception cref="ArgumentException"></exception>
+        public static GeographyPoint FromDatabase( DbGeography dbGeography )
+        {
+            if ( dbGeography == null )
+            {
+                throw new ArgumentNullException( nameof( dbGeography ) );
+            }
+
+            if ( !dbGeography.Latitude.HasValue || !dbGeography.Longitude.HasValue )
+            {
+                throw new ArgumentException( "The DbGeography must have both Latitude and Longitude values." );
+            }
+
+            return new GeographyPoint( dbGeography.Latitude.Value, dbGeography.Longitude.Value );
         }
 
         #endregion
@@ -237,7 +241,7 @@ namespace Rock.Geography.Classes
         /// Converts the GeographyPoint to a DbGeography point.
         /// </summary>
         /// <returns>A DbGeography point representing this location.</returns>
-        public DbGeography ToDbGeography()
+        public DbGeography ToDatabase()
         {
             if ( Latitude < -90 || Latitude > 90 || Longitude < -180 || Longitude > 180 )
             {

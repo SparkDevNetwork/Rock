@@ -18,14 +18,14 @@
 using System.Collections.Generic;
 using Newtonsoft.Json;
 
-using Rock.Geography.Classes;
+using Rock.Core.Geography.Classes;
 
-namespace Rock.Geography.GeographyExtensions.GoogleMaps.Classes
+namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps.Classes
 {
     /// <summary>
     /// Represents a waypoint in the Google Maps Distance Matrix API request, which includes a geographical location.
     /// </summary>
-    public class Waypoint
+    internal class Waypoint
     {
         /// <summary>
         /// The geographical location of the waypoint, represented by latitude and longitude coordinates.
@@ -49,7 +49,7 @@ namespace Rock.Geography.GeographyExtensions.GoogleMaps.Classes
     /// <summary>
     /// Represents an origin or destination in the Google Maps Distance Matrix API request.
     /// </summary>
-    public class OriginDestination
+    internal class OriginDestination
     {
         /// <summary>
         /// The name of the origin or destination, which can be a full address, place ID, or other identifier.
@@ -61,7 +61,7 @@ namespace Rock.Geography.GeographyExtensions.GoogleMaps.Classes
     /// <summary>
     /// Represents a request to the Google Maps Distance Matrix API for calculating travel distances and durations between multiple origins and destinations.
     /// </summary>
-    public class RouteMatrixRequest
+    internal class RouteMatrixRequest
     {
         /// <summary>
         /// A list of origins and destinations for the distance matrix request.

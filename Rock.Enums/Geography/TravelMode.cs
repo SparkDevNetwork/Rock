@@ -15,24 +15,26 @@
 // </copyright>
 //
 
-namespace Rock.Core.Geography.Classes
+namespace Rock.Enums.Geography
 {
     /// <summary>
-    /// Represents the result of a driving distance calculation between an origin and a destination.
+    /// Represents the mode of travel for distance calculations.
     /// </summary>
-    public class DistanceResult
+    public enum TravelMode
     {
         /// <summary>
-        /// The destination point.
+        /// Travel by driving a vehicle.
         /// </summary>
-        public GeographyPoint DestinationPoint { get; set; }
+        Drive,
+
         /// <summary>
-        /// The driving distance in miles.
+        /// Travel by walking.
         /// </summary>
-        public double DistanceInMeters { get; set; }
+        Walk,
+
         /// <summary>
-        /// The driving duration in minutes.
+        /// Travel by riding a bicycle.
         /// </summary>
-        public int TravelTimeInMinutes { get; set; }
+        Bicycle
     }
 }

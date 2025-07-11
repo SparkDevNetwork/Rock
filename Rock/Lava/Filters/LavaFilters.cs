@@ -3916,7 +3916,7 @@ namespace Rock.Lava
 
             if ( meters == null )
             {
-                return 0;
+                return null;
             }
 
             return Math.Round( meters.Value / 1609.34, precision );
@@ -3934,7 +3934,7 @@ namespace Rock.Lava
 
             if ( miles == null )
             {
-                return 0;
+                return null;
             }
 
             return ( int ) ( miles.Value * 1609.34 );

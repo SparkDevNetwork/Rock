@@ -27,7 +27,7 @@ using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
 using Rock.Data;
-using Rock.Geography.Classes;
+using Rock.Core.Geography.Classes;
 using Rock.Model.Groups.Group.Options;
 using Rock.Web.Cache;
 
@@ -414,6 +414,20 @@ namespace Rock.Model
         /// <param name="returnOnlyClosestLocationPerGroup"></param>
         /// <param name="maxDistance"></param>
         /// <returns></returns>
+        public IQueryable<GroupLocation> GetNearestGroups( DbGeography point, int groupTypeId, int maxResults = 10, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
+        {
+            return GetNearestGroups( GeographyPoint.FromDatabase( point ) , new List<int> { groupTypeId }, maxResults, returnOnlyClosestLocationPerGroup, maxDistance );
+        }
+
+        /// <summary>
+        /// Get's a list of the nearest groups to the person.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="groupTypeId"></param>
+        /// <param name="maxResults"></param>
+        /// <param name="returnOnlyClosestLocationPerGroup"></param>
+        /// <param name="maxDistance"></param>
+        /// <returns></returns>
         public IQueryable<GroupLocation> GetNearestGroups( GeographyPoint point, int groupTypeId, int maxResults = 10, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
         {
             return GetNearestGroups( point, new List<int> { groupTypeId }, maxResults, returnOnlyClosestLocationPerGroup, maxDistance );
@@ -438,7 +452,7 @@ namespace Rock.Model
             }
 
             // Convert GeographyPoint to DbGeography
-            var efPoint = point.ToDbGeography();
+            var efPoint = point.ToDatabase();
 
             // Get all locations for the selected group type(s)
             var groupLocation = this.Queryable()

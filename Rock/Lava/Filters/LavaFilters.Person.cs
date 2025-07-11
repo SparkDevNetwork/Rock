@@ -45,8 +45,8 @@ using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Enums.Core;
 using Rock.Enums.Geography;
-using Rock.Geography;
-using Rock.Geography.Classes;
+using Rock.Core.Geography;
+using Rock.Core.Geography.Classes;
 using Rock.Lava.Filters.Internal;
 using Rock.Logging;
 using Rock.Model;
@@ -1144,7 +1144,7 @@ namespace Rock.Lava
                 {
                     return null;
                 }
-                point = new GeographyPoint( personLocation );
+                point = GeographyPoint.FromDatabase( personLocation );
             }
             else
             {
@@ -1158,7 +1158,7 @@ namespace Rock.Lava
             var selectedTravelMode = travelMode.ConvertToEnumOrNull<TravelMode>();
 
             // Get results and shape for return
-            var sourcePoint = point.ToDbGeography();
+            var sourcePoint = point.ToDatabase();
             var results = new GroupService( rockContext )
                 .GetNearestGroups( point, numericalGroupTypeId.Value, numericalMaxResults, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
                 .Select( g => new GroupProximityResult

@@ -18,35 +18,31 @@
 using System;
 using Newtonsoft.Json;
 
-namespace Rock.Geography.GeographyExtensions.GoogleMaps.Classes
+namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps.Classes
 {
     /// <summary>
     /// Represents an element in the route matrix response from the Google Maps Distance Matrix API.
     /// </summary>
-    public class RouteMatrixElement
+    internal class RouteMatrixElement
     {
         /// <summary>
         /// The index of the origin in the request that this element corresponds to.
         /// </summary>
-        [JsonProperty( "originIndex" )]
         public int OriginIndex { get; set; }
 
         /// <summary>
         /// The index of the destination in the request that this element corresponds to.
         /// </summary>
-        [JsonProperty( "destinationIndex" )]
         public int DestinationIndex { get; set; }
 
         /// <summary>
         /// The distance in meters between the origin and destination.
         /// </summary>
-        [JsonProperty( "distanceMeters" )]
         public int DistanceMeters { get; set; }
 
         /// <summary>
         /// The duration in seconds between the origin and destination.
         /// </summary>
-        [JsonProperty( "duration" )]
         public string Duration { get; set; }
 
         /// <summary>

@@ -21,8 +21,8 @@ using System.IO;
 using System.Linq;
 using System.Text.RegularExpressions;
 using System.Threading.Tasks;
-using Rock.Geography;
-using Rock.Geography.Classes;
+using Rock.Core.Geography;
+using Rock.Core.Geography.Classes;
 using Rock.Data;
 using Rock.Lava.Filters.Internal;
 using Rock.Model;
@@ -156,7 +156,7 @@ attribute with the specified key.
 
 <pre>{[ groupfinder grouptypeids:'25' ]}
 	
-	[[ filter type:'attribute' operator:'eq' key:'AllowsChildren' ]]true[[ endfilter ]]
+    [[ filter type:'attribute' operator:'eq' key:'AllowsChildren' ]]true[[ endfilter ]]
 
     &lt;ul&gt;
     {% for result in MatchedGroups %}
@@ -185,7 +185,7 @@ You can filter by a comma-separated list of campus IDs. This filter doesn’t us
 
 <pre>{[ groupfinder grouptypeids:'25' ]}
 	
-	[[ filter type:'campus' ]]12,16[[ endfilter ]]
+    [[ filter type:'campus' ]]12,16[[ endfilter ]]
 
     &lt;ul&gt;
     {% for result in MatchedGroups %}
@@ -201,7 +201,7 @@ If your group type supports scheduling, you can filter by day of week using name
 
 <pre>{[ groupfinder grouptypeids:'25' ]}
 	
-	[[ filter type:'dayofweek' ]]Monday,Wednesday[[ endfilter ]]
+    [[ filter type:'dayofweek' ]]Monday,Wednesday[[ endfilter ]]
 
     &lt;ul&gt;
     {% for result in MatchedGroups %}
@@ -217,8 +217,8 @@ You can filter by time using multiple filters for ranges. Supported operators in
 
 <pre>{[ groupfinder grouptypeids:'25' ]}
 	
-	[[ filter type:'timeofday' ]]5:00 PM[[ endfilter ]]
-	[[ filter type:'timeofday' operator:'lte' ]]9:00 PM[[ endfilter ]]
+    [[ filter type:'timeofday' ]]5:00 PM[[ endfilter ]]
+    [[ filter type:'timeofday' operator:'lte' ]]9:00 PM[[ endfilter ]]
 
     &lt;ul&gt;
     {% for result in MatchedGroups %}
@@ -257,12 +257,12 @@ You can filter by time using multiple filters for ranges. Supported operators in
 <p>Here’s a full example using several filters and options:</p>
 
 <pre>{[ groupfinder origin:'{{ CurrentPerson.Id }}' grouptypeids:'25' travelmode:'walk' maxresults:'5' maxdistance:'20000' include:'Group.Schedule' ]}
-	[[ filter type:'dayofweek' ]]Monday, Tuesday[[ endfilter ]]
-	[[ filter type:'timeofday' ]]5:00 PM[[ endfilter ]]
-	[[ filter type:'timeofday' operator:'lte' ]]9:00 PM[[ endfilter ]]
+    [[ filter type:'dayofweek' ]]Monday, Tuesday[[ endfilter ]]
+    [[ filter type:'timeofday' ]]5:00 PM[[ endfilter ]]
+    [[ filter type:'timeofday' operator:'lte' ]]9:00 PM[[ endfilter ]]
 	
-	[[ filter type:'attribute' operator:'eq' key:'AllowsChildren' ]]true[[ endfilter ]]
-	[[ filter type:'attribute' operator:'in' key:'SupportOptions' ]]1,3[[ endfilter ]]
+    [[ filter type:'attribute' operator:'eq' key:'AllowsChildren' ]]true[[ endfilter ]]
+    [[ filter type:'attribute' operator:'in' key:'SupportOptions' ]]1,3[[ endfilter ]]
 
     &lt;ul&gt;
     {% for result in MatchedGroups %}
@@ -377,7 +377,7 @@ You may have noticed that distance values are returned in meters. If you're more
             ApplyFilters( groupQuery, options, childElements );
 
             // Convert out origin point to a DbGeography for use in EF queries
-            var sourcePoint = options.OriginPoint.ToDbGeography();
+            var sourcePoint = options.OriginPoint.ToDatabase();
 
             // Run query to get the results.
             var results = groupQuery.Select( g => new GroupProximityResult
@@ -501,7 +501,10 @@ You may have noticed that distance values are returned in meters. If you're more
                 return groupQuery; 
             }
 
-            switch ( setting.Parameters.GetValueOrNull( "operator" )?.ToString() )
+            // Default the operator to 'eq' if not specified
+            var filterOperator = setting.Parameters.GetValueOrNull( "operator" ) ?? "eq";
+
+            switch ( filterOperator )
             {
                 case "con":
                     {
@@ -614,9 +617,13 @@ You may have noticed that distance values are returned in meters. If you're more
                     {
                         return groupQuery.Where( gl => gl.Group.GroupAttributeValues.Any( a => a.Key == key && a.Value != value ) );
                     }
-                default:
+                case "eq":
                     {
                         return groupQuery.Where( gl => gl.Group.GroupAttributeValues.Any( a => a.Key == key && a.Value == value ) );
+                    }
+                default:
+                    {
+                        throw new Exception( "Incorrect filter operator provided. Valid values are eq,ne,sw,ew,con,in." );
                     }
             }
         }
@@ -669,7 +676,10 @@ You may have noticed that distance values are returned in meters. If you're more
             var time = DateTime.Parse( setting.Content );
             var timeSpan = time.TimeOfDay;
 
-            switch ( setting.Parameters.GetValueOrNull( "operator" )?.ToString() )
+            // Default the operator to 'gte' if not specified
+            var filterOperator = setting.Parameters.GetValueOrNull( "operator" ) ?? "gte";
+
+            switch ( filterOperator )
             {
                 case "lte":
                     {
@@ -691,9 +701,13 @@ You may have noticed that distance values are returned in meters. If you're more
                     {
                         return groupQuery.Where( g => g.Group.Schedule.WeeklyTimeOfDay.HasValue && g.Group.Schedule.WeeklyTimeOfDay.Value != timeSpan );
                     }
-                default:
+                case "gte":
                     {
                         return groupQuery.Where( g => g.Group.Schedule.WeeklyTimeOfDay.HasValue && g.Group.Schedule.WeeklyTimeOfDay.Value >= timeSpan );
+                    }
+                default:
+                    {
+                        throw new Exception( "Incorrect filter operator provided. Valid values are eq,ne,lte,lt,gte,gt." );
                     }
             }
         }
@@ -789,7 +803,7 @@ You may have noticed that distance values are returned in meters. If you're more
                 {
                     return null;
                 }
-                return new GeographyPoint( personLocation );
+                return GeographyPoint.FromDatabase( personLocation );
             }
 
             // Check if it's a lat/long if so return it

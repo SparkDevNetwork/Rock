@@ -18,11 +18,11 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
-using Rock.Geography.Classes;
-using Rock.Geography.GeographyExtensions.GoogleMaps;
+using Rock.Core.Geography.Classes;
+using Rock.Core.Geography.GeographyExtensions.GoogleMaps;
 using Rock.Enums.Geography;
 
-namespace Rock.Geography
+namespace Rock.Core.Geography
 {
     /// <summary>
     /// Provides helper methods for location-related operations, such as retrieving driving distances and durations.

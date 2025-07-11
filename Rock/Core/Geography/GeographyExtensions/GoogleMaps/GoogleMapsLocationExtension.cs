@@ -25,19 +25,19 @@ using System.Threading.Tasks;
 
 using Newtonsoft.Json;
 
-using Rock.Geography.Classes;
-using Rock.Geography.GeographyExtensions.GoogleMaps.Classes;
+using Rock.Core.Geography.Classes;
+using Rock.Core.Geography.GeographyExtensions.GoogleMaps.Classes;
 using Rock.Enums.Geography;
 using Rock.Web.Cache;
 
 using Twilio.Types;
 
-namespace Rock.Geography.GeographyExtensions.GoogleMaps
+namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
 {
     /// <summary>
     /// Provides methods to interact with the Google Maps Distance Matrix API for calculating driving distances and durations.
     /// </summary>
-    public class GoogleMapsLocationExtension
+    internal class GoogleMapsLocationExtension
     {
         private string _apiKey;
 

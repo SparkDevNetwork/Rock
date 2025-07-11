@@ -17,7 +17,7 @@
 
 using System.Collections.Generic;
 
-using Rock.Geography.Classes;
+using Rock.Core.Geography.Classes;
 using Rock.Enums.Geography;
 
 namespace Rock.Lava.Filters.Internal
