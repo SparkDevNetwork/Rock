@@ -262,26 +262,27 @@ namespace Rock.AI.Agent
 
                 else if ( function.FunctionType == FunctionType.ExecuteLava )
                 {
-                    var functionParameters = new List<KernelParameterMetadata>();
-                    var parameter = new KernelParameterMetadata( "promptAsJson" )
-                    {
-                        Description = ExecuteLavaParameterHint,
-                        IsRequired = true,
-                        Schema = ParseSchema( function.InputSchema )
-                    };
+                    //var functionParameters = new List<KernelParameterMetadata>();
+                    //var parameter = new KernelParameterMetadata( "promptAsJson" )
+                    //{
+                    //    Description = ExecuteLavaParameterHint,
+                    //    IsRequired = true,
+                    //    Schema = ParseSchema( function.InputSchema )
+                    //};
 
-                    functionParameters.Add( parameter );
+                    //functionParameters.Add( parameter );
 
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
-                        ( Func<Kernel, string, string> ) ( ( Kernel kernel, string promptAsJson ) =>
+                        ( Func<Kernel, KernelArguments, string> ) ( ( Kernel kernel, KernelArguments args ) =>
                         {
                             // Create a LavaSkill instance that will be used to run the function.
                             var proxySkill = new ProxyFunction( kernel.Services.GetRequiredService<AgentRequestContext>(), requestContext );
-                            return proxySkill.ExecuteLava( function, promptAsJson );
+                            return proxySkill.ExecuteLava( function, args );
                         } ),
                         functionName: function.Key,
                         description: function.UsageHint,
-                        parameters: functionParameters,
+                        parameters: ParseSchemaParameters( function.InputSchema ),
+                        //parameters: functionParameters,
                         loggerFactory: _loggerFactory
                     );
 
@@ -313,6 +314,45 @@ namespace Rock.AI.Agent
             {
                 return null;
             }
+        }
+
+        private static List<KernelParameterMetadata> ParseSchemaParameters( string inputSchema )
+        {
+            var schema = ParseSchema( inputSchema );
+
+            if ( schema?.RootElement == null )
+            {
+                return new List<KernelParameterMetadata>();
+            }
+
+            if ( !schema.RootElement.TryGetProperty( "properties", out var properties ) || properties.ValueKind != JsonValueKind.Object )
+            {
+                return new List<KernelParameterMetadata>();
+            }
+
+            var requiredParameters = schema.RootElement.TryGetProperty( "required", out var requiredProperty )
+                ? requiredProperty.EnumerateArray().Select( p => p.GetString() ).ToList()
+                : new List<string>();
+            var parameters = new List<KernelParameterMetadata>();
+
+            foreach ( var property in properties.EnumerateObject() )
+            {
+                if ( property.Value.ValueKind != JsonValueKind.Object )
+                {
+                    continue;
+                }
+
+                var parameter = new KernelParameterMetadata( property.Name )
+                {
+                    Description = property.Value.TryGetProperty( "description", out var description ) ? description.GetString() : string.Empty,
+                    IsRequired = requiredParameters.Contains( property.Name ),
+                    Schema = JsonSerializer.Deserialize<KernelJsonSchema>( property.Value )
+                };
+
+                parameters.Add( parameter );
+            }
+
+            return parameters;
         }
 
         private static List<SkillConfiguration> GetSkillConfigurations( int agentId, RockContext rockContext )

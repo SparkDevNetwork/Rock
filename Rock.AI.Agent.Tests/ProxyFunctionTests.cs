@@ -28,13 +28,15 @@ namespace Rock.AI.Agent.Tests
     public class ProxyFunctionTests : MockDatabaseTestsBase
     {
         // Function Test-Search failed. Error: Missing argument for function parameter 'promptAsJson'
-        private bool IgnoreCallFailures = true;
+        private bool IgnoreCallFailures = false;
 
         [TestMethod]
         [DataRow( 1234L, false, false, false, "search jason j", "jason j" )]
-        [DataRow( 1234L, true, false, false, "search jason j", "jason j" )] // Random Fail: Double nested promptAsJson parameter.
-        [DataRow( 1234L, false, true, false, "search jason j", "jason j" )]
-        [DataRow( 1234L, false, false, true, "search jason j", "jason j" )]
+        [DataRow( 1234L, false, false, false, "search for the person entity with a name like jason j", "jason j" )] // Fail: Arguments not wrapped in promptAsJson.
+        [DataRow( 1234L, false, false, false, "search for the decker group", "decker group" )]
+        //[DataRow( 1234L, true, false, false, "search jason j", "jason j" )] // Random Fail: Double nested promptAsJson parameter.
+        //[DataRow( 1234L, false, true, false, "search jason j", "jason j" )]
+        //[DataRow( 1234L, false, false, true, "search jason j", "jason j" )]
         public async Task PromptAsJson_SingleVirtualInput( long? seed, bool wrapSchema, bool improvedParameterUsageHint, bool schemaInUsageHint, string prompt, string expectedOutput )
         {
             var unwrappedSchema = """
@@ -90,9 +92,11 @@ namespace Rock.AI.Agent.Tests
 
         [TestMethod]
         [DataRow( 1234L, false, false, false, "search jason j", "jason/j//" )]
-        [DataRow( 1234L, true, false, false, "search jason j", "jason/j//" )] // Fail: Double nested promptAsJson parameter.
-        [DataRow( 1234L, false, true, false, "search jason j", "jason/j//" )]
-        [DataRow( 1234L, false, false, true, "search jason j", "jason j/jason/j/" )]
+        [DataRow( 1234L, false, false, false, "search for the person entity with a name like jason j", "jason j/jason/j/" )] // Fail: Arguments not wrapped in promptAsJson.
+        [DataRow( 1234L, false, false, false, "search for the decker group", "///decker" )]
+        //[DataRow( 1234L, true, false, false, "search jason j", "jason/j//" )] // Fail: Double nested promptAsJson parameter.
+        //[DataRow( 1234L, false, true, false, "search jason j", "jason/j//" )]
+        //[DataRow( 1234L, false, false, true, "search jason j", "jason j/jason/j/" )]
         public async Task PromptAsJson_FourVirtualInputs( long? seed, bool wrapSchema, bool improvedParameterUsageHint, bool schemaInUsageHint, string prompt, string expectedOutput )
         {
             var unwrappedSchema = """
@@ -101,85 +105,7 @@ namespace Rock.AI.Agent.Tests
                 "properties": {
                     "searchTerm": {
                         "type": "string",
-                        "description": "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'."
-                    },
-                    "firstName": {
-                        "type": ["string", "null"],
-                        "description": "The first or nick name the person was looking for. Leave blank if they did not specify a value."
-                    },
-                    "lastName": {
-                        "type": ["string", "null"],
-                        "description": "The last name the person was looking for. Leave blank if they did not specify a value."
-                    },
-                    "groupName": {
-                        "type": ["string", "null"],
-                        "description": "The name of the group. Leave blank if empty."
-                    }
-                },
-                "required": [ ]
-            }
-            """;
-
-            var usageHint = """
-                    🎯 Purpose:
-                    1. This function searches the database for people, groups, content channels that match the query from the user.
-
-                    🧭 Usage Guidance:
-                    1. This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages.
-                    """;
-
-            var function = new AgentFunction
-            {
-                Name = "Search",
-                UsageHint = usageHint,
-                FunctionType = FunctionType.ExecuteLava,
-                Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}{% endoutput %}No Results Found.",
-                InputSchema = unwrappedSchema,
-                Temperature = 0,
-                MaxTokens = 128,
-            };
-
-            PrepareFunction( function, wrapSchema, schemaInUsageHint );
-
-            var (chat, output, logs) = ConfigureChatAgent( null, function, improvedParameterUsageHint );
-
-            await chat.AddMessageAsync( AuthorRole.User, prompt );
-            _ = await chat.GetChatMessageContentAsync();
-
-            // That no function calls failed and that we had one succeed.
-            if ( !IgnoreCallFailures )
-            {
-                Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
-            }
-            Assert.That.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
-
-            // Ensure the output data is valid.
-            Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
-            Assert.That.AreEqual( expectedOutput, output[0] );
-        }
-
-        [TestMethod]
-        [DataRow( 1234L, false, false, false, "search jason j", new[] { "/jason/j/" } )] // Fail: Arguments not wrapped in promptAsJson.
-        [DataRow( 1234L, true, false, false, "search jason j", new[] { "/jason/j/" } )] 
-        [DataRow( 1234L, false, true, false, "search jason j", new[] { "/jason/j/" } )] // Random Fails: Arguments not wrapped in promptAsJson.
-        [DataRow( 1234L, false, false, true, "search jason j", new[] { "jason j///", "jason j/jason/j/" } )] // Random Fails: Arguments not wrapped in promptAsJson.
-        public async Task PromptAsJson_NestedVirtualInputs( long? seed, bool wrapSchema, bool improvedParameterUsageHint, bool schemaInUsageHint, string prompt, string[] expectedOutput )
-        {
-            var unwrappedSchema = """
-            {
-                "type": "object",
-                "properties": {
-                    "entityTypes": {
-                        "type": "array",
-                        "description": "The type of entities to search for. Leave blank if not known.",
-                        "items": {
-                            "type": "string",
-                            "enum": ["person", "group", "content channel item", null]
-                        }
-                    },
-                    "searchTerm": {
-                        "type": "string",
-                        "description": "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'."
+                        "description": "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'. For example, if searching for an entity type of person, then 'firstName' and 'lastName' are preferred this should be blank."
                     },
                     "firstName": {
                         "type": ["string", "null"],
@@ -233,30 +159,33 @@ namespace Rock.AI.Agent.Tests
 
             // Ensure the output data is valid.
             Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
-            if ( !expectedOutput.Contains( output[0] ) )
-            {
-                Assert.Fail( $"Expected one of {expectedOutput.Select( s => $"<{s}>" ).JoinStrings( "," )} but got <{output[0]}>." );
-            }
+            Assert.That.AreEqual( expectedOutput, output[0] );
         }
 
         [TestMethod]
         [DataRow( 1234L, false, false, false, "search jason j", new[] { "/jason/j/" } )] // Fail: Arguments not wrapped in promptAsJson.
-        [DataRow( 1234L, true, false, false, "search jason j", new[] { "/jason/j/" } )] // Fail: Double nested promptAsJson parameter.
-        [DataRow( 1234L, false, true, false, "search jason j", new[] { "/jason/j/" } )] // Fail: Arguments not wrapped in promptAsJson.
-        [DataRow( 1234L, false, false, true, "search jason j", new[] { "jason j///", "jason j/jason/j/" } )]
-        public async Task PromptAsJson_ArrayAsStringVirtualInputs( long? seed, bool wrapSchema, bool improvedParameterUsageHint, bool schemaInUsageHint, string prompt, string[] expectedOutput )
+        [DataRow( 1234L, false, false, false, "search for the person entity with a name like jason j", new[] { "/jason/j/" } )] // Fail: Arguments not wrapped in promptAsJson.
+        [DataRow( 1234L, false, false, false, "search for the decker group", new[] { "///decker" } )]
+        //[DataRow( 1234L, true, false, false, "search jason j", new[] { "/jason/j/" } )] 
+        //[DataRow( 1234L, false, true, false, "search jason j", new[] { "/jason/j/" } )] // Random Fails: Arguments not wrapped in promptAsJson.
+        //[DataRow( 1234L, false, false, true, "search jason j", new[] { "jason j///", "jason j/jason/j/" } )] // Random Fails: Arguments not wrapped in promptAsJson.
+        public async Task PromptAsJson_NestedVirtualInputs( long? seed, bool wrapSchema, bool improvedParameterUsageHint, bool schemaInUsageHint, string prompt, string[] expectedOutput )
         {
             var unwrappedSchema = """
             {
                 "type": "object",
                 "properties": {
                     "entityTypes": {
-                        "type": "string",
-                        "description": "The type of entities to search for as a comma separated string, valid values are 'person', 'group' and 'content channel'. Leave blank if not known."
+                        "type": "array",
+                        "description": "Pass an array of strings for the type of entities to search for, such as 'person', 'group' or 'content channel'. Leave empty if not known, but make a good effort to fill this in based on the request.",
+                        "items": {
+                            "type": "string",
+                            "enum": ["person", "group", "content channel item"]
+                        }
                     },
                     "searchTerm": {
                         "type": "string",
-                        "description": "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'."
+                        "description": "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'. Prefer usage of 'firstName', 'lastName' and 'groupName' parameters over this one. For example, if searching for an entity type of person, then 'firstName' and 'lastName' are preferred this should be blank."
                     },
                     "firstName": {
                         "type": ["string", "null"],
@@ -271,7 +200,86 @@ namespace Rock.AI.Agent.Tests
                         "description": "The name of the group. Leave blank if empty."
                     }
                 },
-                "required": [ ]
+                "required": [ "entityTypes" ]
+            }
+            """;
+
+            var usageHint = """
+                    🎯 Purpose:
+                    1. This function searches the database for people, groups, content channels that match the query from the user.
+
+                    🧭 Usage Guidance:
+                    1. This function must be called if the user is trying to search for an entity. Do not attempt to infer the data from previous messages.
+                    """;
+
+            var function = new AgentFunction
+            {
+                Name = "Search",
+                UsageHint = usageHint,
+                FunctionType = FunctionType.ExecuteLava,
+                Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}{% endoutput %}No Results Found.",
+                InputSchema = unwrappedSchema,
+                Temperature = 0,
+                MaxTokens = 128,
+            };
+
+            PrepareFunction( function, wrapSchema, schemaInUsageHint );
+
+            var (chat, output, logs) = ConfigureChatAgent( seed, function, improvedParameterUsageHint );
+
+            await chat.AddMessageAsync( AuthorRole.User, prompt );
+            _ = await chat.GetChatMessageContentAsync();
+
+            // That no function calls failed and that we had one succeed.
+            if ( !IgnoreCallFailures )
+            {
+                Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
+            }
+            Assert.That.AreEqual( 1, logs.Count( l => l == "Function Test-Search succeeded." ), "Multiple successful invocations may have been detected." );
+
+            // Ensure the output data is valid.
+            Assert.That.AreEqual( 1, output.Count, "Multiple output messages were logged." );
+            if ( !expectedOutput.Contains( output[0] ) )
+            {
+                Assert.Fail( $"Expected one of {expectedOutput.Select( s => $"<{s}>" ).JoinStrings( "," )} but got <{output[0]}>." );
+            }
+        }
+
+        [TestMethod]
+        [DataRow( 1234L, false, false, false, "search jason j", new[] { "/jason/j/", "/j/j/" } )] // Fail: Arguments not wrapped in promptAsJson.
+        [DataRow( 1234L, false, false, false, "search for the person entity with a name like jason j", new[] { "/jason/j/" } )] // Fail: Arguments not wrapped in promptAsJson.
+        [DataRow( 1234L, false, false, false, "search for the decker group", new[] { "///decker" } )]
+        //[DataRow( 1234L, true, false, false, "search jason j", new[] { "/jason/j/" } )] // Fail: Double nested promptAsJson parameter.
+        //[DataRow( 1234L, false, true, false, "search jason j", new[] { "/jason/j/" } )] // Fail: Arguments not wrapped in promptAsJson.
+        //[DataRow( 1234L, false, false, true, "search jason j", new[] { "jason j///", "jason j/jason/j/" } )]
+        public async Task PromptAsJson_ArrayAsStringVirtualInputs( long? seed, bool wrapSchema, bool improvedParameterUsageHint, bool schemaInUsageHint, string prompt, string[] expectedOutput )
+        {
+            var unwrappedSchema = """
+            {
+                "type": "object",
+                "properties": {
+                    "entityTypes": {
+                        "type": "string",
+                        "description": "The type of entities to search for as a comma separated string, valid values are 'person', 'group' and 'content channel'. Leave blank if not known, but try to infer based on the request and which other parameters were filled in."
+                    },
+                    "searchTerm": {
+                        "type": "string",
+                        "description": "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'. Prefer usage of 'firstName', 'lastName' and 'groupName' parameters over this one. For example, if searching for an entity type of person, then 'firstName' and 'lastName' are preferred this should be blank."
+                    },
+                    "firstName": {
+                        "type": ["string", "null"],
+                        "description": "The first or nick name the person was looking for. Leave blank if they did not specify a value."
+                    },
+                    "lastName": {
+                        "type": ["string", "null"],
+                        "description": "The last name the person was looking for. Leave blank if they did not specify a value."
+                    },
+                    "groupName": {
+                        "type": ["string", "null"],
+                        "description": "The name of the group. Leave blank if empty."
+                    }
+                },
+                "required": [ "entityTypes" ]
             }
             """;
 

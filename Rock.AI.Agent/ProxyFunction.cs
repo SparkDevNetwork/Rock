@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Microsoft.SemanticKernel;
+
 using Rock.Net;
 
 namespace Rock.AI.Agent
@@ -33,41 +35,74 @@ namespace Rock.AI.Agent
             _rockRequestContext = rockRequestContext;
         }
 
-        public string ExecuteLava( AgentFunction function, string promptAsJson )
+        public string ExecuteLava( AgentFunction function, KernelArguments args )
         {
-            var promptAsDictionary = promptAsJson?.FromJsonOrNull<Dictionary<string, object>>();
+            //var promptAsDictionary = promptAsJson?.FromJsonOrNull<Dictionary<string, object>>();
+            //var mergeFields = _rockRequestContext.GetCommonMergeFields();
+
+            //mergeFields["AgentContext"] = _agentRequestContext;
+
+            //if ( promptAsDictionary != null )
+            //{
+            //    foreach ( var kvp in promptAsDictionary )
+            //    {
+            //        if ( kvp.Value is string stringValue )
+            //        {
+            //            mergeFields.TryAdd( kvp.Key, stringValue );
+            //        }
+            //        else if ( kvp.Value is bool boolValue )
+            //        {
+            //            mergeFields.TryAdd( kvp.Key, boolValue );
+            //        }
+            //        else if ( kvp.Value is int intValue )
+            //        {
+            //            mergeFields.TryAdd( kvp.Key, intValue );
+            //        }
+            //        else if ( kvp.Value is double doubleValue )
+            //        {
+            //            mergeFields.TryAdd( kvp.Key, doubleValue );
+            //        }
+            //        else if ( kvp.Value is null )
+            //        {
+            //            mergeFields.TryAdd( kvp.Key, null );
+            //        }
+            //        else
+            //        {
+            //            mergeFields.TryAdd( kvp.Key, kvp.Value.ToStringSafe() );
+            //        }
+            //    }
+            //}
+
+            //var promptAsDictionary = promptAsJson?.FromJsonOrNull<Dictionary<string, object>>();
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
 
             mergeFields["AgentContext"] = _agentRequestContext;
 
-            if ( promptAsDictionary != null )
+            foreach ( var kvp in args )
             {
-                foreach ( var kvp in promptAsDictionary )
+                if ( kvp.Value is string stringValue )
                 {
-                    if ( kvp.Value is string stringValue )
-                    {
-                        mergeFields.TryAdd( kvp.Key, stringValue );
-                    }
-                    else if ( kvp.Value is bool boolValue )
-                    {
-                        mergeFields.TryAdd( kvp.Key, boolValue );
-                    }
-                    else if ( kvp.Value is int intValue )
-                    {
-                        mergeFields.TryAdd( kvp.Key, intValue );
-                    }
-                    else if ( kvp.Value is double doubleValue )
-                    {
-                        mergeFields.TryAdd( kvp.Key, doubleValue );
-                    }
-                    else if ( kvp.Value is null )
-                    {
-                        mergeFields.TryAdd( kvp.Key, null );
-                    }
-                    else
-                    {
-                        mergeFields.TryAdd( kvp.Key, kvp.Value.ToStringSafe() );
-                    }
+                    mergeFields.TryAdd( kvp.Key, stringValue );
+                }
+                else if ( kvp.Value is bool boolValue )
+                {
+                    mergeFields.TryAdd( kvp.Key, boolValue );
+                }
+                else if ( kvp.Value is int intValue )
+                {
+                    mergeFields.TryAdd( kvp.Key, intValue );
+                }
+                else if ( kvp.Value is double doubleValue )
+                {
+                    mergeFields.TryAdd( kvp.Key, doubleValue );
+                }
+                else if ( kvp.Value is null )
+                {
+                    mergeFields.TryAdd( kvp.Key, null );
+                }
+                else
+                {
+                    mergeFields.TryAdd( kvp.Key, kvp.Value.ToStringSafe() );
                 }
             }
 
