@@ -2731,7 +2731,7 @@ namespace Rock.Communication.Chat
 
                 try
                 {
-                    var result = ChatProvider.GetChatToRockWebhooks( webhookRequests );
+                    var result = ChatProvider.TransformChatToRockWebhooks( webhookRequests );
                     if ( result == null || result?.HasException == true )
                     {
                         Logger.LogError( result?.Exception, logMessage );
@@ -3771,6 +3771,100 @@ namespace Rock.Communication.Chat
 
                 return rockChatGroupMembers;
             }
+        }
+
+        /// <summary>
+        /// Gets a list of <see cref="RockChatFallbackNotificationPerson"/>s who need to receive a fallback notification
+        /// to alert them of recent chat activity.
+        /// </summary>
+        /// <param name="config">The configuration object to provide filters when querying.</param>
+        /// <returns>
+        /// A list of <see cref="RockChatFallbackNotificationPerson"/>s who need to receive a fallback notification.
+        /// </returns>
+        /// <remarks>
+        /// This will target members of the specified channel who either don't have a personal device or don't have any
+        /// personal devices with notifications currently enabled.
+        /// </remarks>
+        internal List<RockChatFallbackNotificationPerson> GetPeopleNeedingFallbackChatNotifications( FallbackChatNotificationsConfig config )
+        {
+            if ( config == null
+                || config.SystemCommunicationId <= 0
+                || ( !config.GroupId.HasValue && config.MemberChatUserKeys?.Any() != true ) ) // We need one or the other.
+            {
+                return new List<RockChatFallbackNotificationPerson>();
+            }
+
+            IQueryable<RockChatFallbackNotificationPerson> qry = null;
+
+            if ( config.GroupId.HasValue )
+            {
+                // If channel (group) is defined, we'll treat Rock as the system of truth and operate against
+                // the group member people.
+                qry = new GroupMemberService( RockContext )
+                    .Queryable()
+                    .Include( gm => gm.Person.PhoneNumbers )
+                    .Where( gm => gm.GroupId == config.GroupId.Value )
+                    .Select( gm => new RockChatFallbackNotificationPerson
+                    {
+                        RecipientPerson = gm.Person,
+                        GroupMemberCommunicationPreference = gm.CommunicationPreference
+                    } );
+            }
+            else if ( config.MemberChatUserKeys?.Any() == true )
+            {
+                // Otherwise, we'll rely on the list of chat user keys provided by the external chat system.
+                qry = new PersonService( RockContext )
+                    .GetPersonByChatUserKeysQuery( config.MemberChatUserKeys )
+                    .Include( p => p.PhoneNumbers )
+                    .Select( p => new RockChatFallbackNotificationPerson
+                    {
+                        RecipientPerson = p,
+                        GroupMemberCommunicationPreference = null
+                    } );
+            }
+
+            if ( qry == null )
+            {
+                // This should never happen.
+                return new List<RockChatFallbackNotificationPerson>();
+            }
+
+            // Limit the query to people who either:
+            //  1) Don't have a personal device.
+            //  2) Don't have any personal devices with notifications enabled.
+            var personIdsWithEnabledDeviceQry = new PersonalDeviceService( RockContext )
+                .Queryable()
+                .Where( pd => pd.IsActive && pd.NotificationsEnabled )
+                .Select( pd => pd.PersonAlias.PersonId )
+                .Distinct();
+
+            qry = qry.Where( p => !personIdsWithEnabledDeviceQry.Contains( p.RecipientPerson.Id ) );
+
+            if ( config.NotificationSuppressionMinutes > 0 )
+            {
+                // Limit the query to people who haven't already received a fallback notification within the suppression window.
+                var suppressOnOrAfterDateTime = RockDateTime.Now.AddMinutes( -config.NotificationSuppressionMinutes );
+                var personIdsAlreadyNotifiedQry = new CommunicationRecipientService( RockContext )
+                    .Queryable()
+                    .Where( cr =>
+                        cr.PersonAliasId != null
+                        && cr.SendDateTime >= suppressOnOrAfterDateTime
+                        && cr.Communication.SystemCommunicationId == config.SystemCommunicationId
+                    )
+                    .Select( cr => cr.PersonAlias.PersonId )
+                    .Distinct();
+
+                qry = qry.Where( p => !personIdsAlreadyNotifiedQry.Contains( p.RecipientPerson.Id ) );
+            }
+
+            return qry
+                .AsEnumerable() // Materialize the query so we can deduplicate in memory if needed.
+                .GroupBy( p => p.RecipientPerson.Id )
+                .Select( g => g
+                    .OrderByDescending( p => p.GroupMemberCommunicationPreference.HasValue )
+                    .First()
+                )
+                .ToList();
         }
 
         #endregion Rock Model CRUD
@@ -5090,16 +5184,16 @@ namespace Rock.Communication.Chat
 
                     Core.Automation.Triggers.ChatMessageMonitor.ProcessMessageEvent( messageEvent );
 
-                    structuredLog = "Rock group type ID {GroupTypeId} ({GroupTypeName}), group ID {GroupId} ({GroupName}), person {PersonId} ({PersonFullName}), message: {Message}";
+                    structuredLog = "Rock group type ID {GroupTypeId} ({GroupTypeName}), group ID {GroupId} ({GroupName}), chat message sender person ID {ChatMessageSenderPersonId} ({ChatMessageSenderPersonFullName})";
+
                     Logger.LogDebug(
-                        $"{logMessagePrefix} succeeded for {structuredLog}",
+                        $"{logMessagePrefix} succeeded for {structuredLog}.",
                         groupType.Id,
                         groupType.Name,
                         group?.Id,
                         group?.Name,
                         person?.Id,
-                        person?.FullName,
-                        messageEvent.Message
+                        person?.FullName
                     );
                 }
             }

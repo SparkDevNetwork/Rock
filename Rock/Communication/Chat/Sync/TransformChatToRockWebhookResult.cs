@@ -23,7 +23,7 @@ namespace Rock.Communication.Chat.Sync
     /// Rock knows how to handle.
     /// </summary>
     /// <see cref="ChatSyncResultBase"/>
-    internal class GetChatToRockWebhookResult : ChatSyncResultBase
+    internal class TransformChatToRockWebhookResult : ChatSyncResultBase
     {
         /// <summary>
         /// Gets the list of <see cref="ChatToRockSyncCommand"/>s received as webhooks from the external chat system.

@@ -88,7 +88,11 @@ namespace Rock.Core.Automation.Events
 
             if ( systemCommunicationGuid.HasValue )
             {
-                return new SendFallbackChatNotificationExecutor( systemCommunicationGuid.Value, notificationSuppressionMinutes ?? 60 );
+                return new SendFallbackChatNotificationExecutor(
+                    automationEventId,
+                    systemCommunicationGuid.Value,
+                    notificationSuppressionMinutes ?? 60
+                );
             }
 
             return null;

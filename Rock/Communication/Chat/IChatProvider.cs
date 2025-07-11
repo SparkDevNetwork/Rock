@@ -419,14 +419,14 @@ namespace Rock.Communication.Chat
         /// The list of <see cref="ChatWebhookRequest"/>s for which to get commands and events.
         /// </param>
         /// <returns>
-        /// A <see cref="GetChatToRockWebhookResult"/> that contains commands and events, one for each valid
+        /// A <see cref="TransformChatToRockWebhookResult"/> that contains commands and events, one for each valid
         /// <see cref="ChatWebhookRequest"/>.
         /// </returns>
         /// <remarks>
         /// Invalid <see cref="ChatWebhookRequest"/>s will not have corresponding commands or events, with failure
         /// details instead being added to Rock Logs.
         /// </remarks>
-        GetChatToRockWebhookResult GetChatToRockWebhooks( List<ChatWebhookRequest> webhookRequests );
+        TransformChatToRockWebhookResult TransformChatToRockWebhooks( List<ChatWebhookRequest> webhookRequests );
 
         #endregion Webhooks
     }

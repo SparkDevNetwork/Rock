@@ -3138,16 +3138,16 @@ namespace Rock.Communication.Chat
         }
 
         /// <inheritdoc/>
-        public GetChatToRockWebhookResult GetChatToRockWebhooks( List<ChatWebhookRequest> webhookRequests )
+        public TransformChatToRockWebhookResult TransformChatToRockWebhooks( List<ChatWebhookRequest> webhookRequests )
         {
-            var result = new GetChatToRockWebhookResult();
+            var result = new TransformChatToRockWebhookResult();
 
             if ( webhookRequests?.Any() != true )
             {
                 return result;
             }
 
-            var operationName = nameof( GetChatToRockWebhooks ).SplitCase();
+            var operationName = nameof( TransformChatToRockWebhooks ).SplitCase();
             var structuredLog = "Payload: {@Payload}";
 
             foreach ( var request in webhookRequests )

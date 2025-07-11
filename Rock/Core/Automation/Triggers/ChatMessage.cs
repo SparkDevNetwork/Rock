@@ -51,6 +51,15 @@ namespace Rock.Core.Automation.Triggers
             public const string GroupTypeGuids = "groupTypeGuids";
         }
 
+        internal static class AutomationRequestValueKey
+        {
+            public const string ChannelType = "ChannelType";
+            public const string Channel = "Channel";
+            public const string Person = "Person";
+            public const string Message = "Message";
+            public const string MemberChatPersonKeys = "MemberChatPersonKeys";
+        }
+
         #endregion Keys
 
         #region Methods
@@ -62,25 +71,25 @@ namespace Rock.Core.Automation.Triggers
             {
                 new AutomationValueDefinition
                 {
-                    Key = "ChannelType",
+                    Key = AutomationRequestValueKey.ChannelType,
                     Description = "The channel type of the channel where the message was sent.",
                     Type = typeof( GroupType )
                 },
                 new AutomationValueDefinition
                 {
-                    Key = "Channel",
+                    Key = AutomationRequestValueKey.Channel,
                     Description = "The channel where the message was sent.",
                     Type = typeof( Group )
                 },
                 new AutomationValueDefinition
                 {
-                    Key = "Person",
+                    Key = AutomationRequestValueKey.Person,
                     Description = "The person who sent the message.",
                     Type = typeof( Person )
                 },
                 new AutomationValueDefinition
                 {
-                    Key = "Message",
+                    Key = AutomationRequestValueKey.Message,
                     Description = "The message that was sent.",
                     Type = typeof( string )
                 }

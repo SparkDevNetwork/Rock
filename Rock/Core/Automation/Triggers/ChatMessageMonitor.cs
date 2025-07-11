@@ -85,11 +85,11 @@ namespace Rock.Core.Automation.Triggers
             {
                 Values = new Dictionary<string, object>
                 {
-                    ["ChannelType"] = messageEvent.ChannelType,
-                    ["Channel"] = messageEvent.Channel,
-                    ["Person"] = messageEvent.Person,
-                    ["Message"] = messageEvent.Message,
-                    ["MemberChatPersonKeys"] = messageEvent.MemberChatPersonKeys
+                    [ChatMessage.AutomationRequestValueKey.ChannelType] = messageEvent.ChannelType,
+                    [ChatMessage.AutomationRequestValueKey.Channel] = messageEvent.Channel,
+                    [ChatMessage.AutomationRequestValueKey.Person] = messageEvent.Person,
+                    [ChatMessage.AutomationRequestValueKey.Message] = messageEvent.Message,
+                    [ChatMessage.AutomationRequestValueKey.MemberChatPersonKeys] = messageEvent.MemberChatPersonKeys
                 }
             };
 
