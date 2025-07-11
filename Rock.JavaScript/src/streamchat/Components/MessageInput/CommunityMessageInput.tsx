@@ -15,11 +15,6 @@ const SendButtonWithCooldown = () => {
     const { handleSubmit, cooldownRemaining, setCooldownRemaining, hideSendButton } =
         useMessageInputContext();
 
-    console.log("SendButtonWithCooldown", {
-        cooldownRemaining,
-        hideSendButton,
-    });
-
     if (hideSendButton) {
         return null;
     }

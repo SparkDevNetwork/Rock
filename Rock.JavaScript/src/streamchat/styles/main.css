@@ -986,11 +986,24 @@
 }
 .rocktheme-community .str-chat__send-to-channel-checkbox__field label {
   margin-bottom: 0;
+  color: var(--color-interface-medium);
+  font-weight: 500;
 }
 .rocktheme-community .str-chat__send-to-channel-checkbox__container {
   margin-inline: var(--message-composer-margin-inline);
   margin-right: var(--message-composer-margin-right);
+  margin-bottom: 2px;
   padding: 0;
+}
+.rocktheme-community .str-chat__message-input {
+  padding: 0;
+  align-items: start;
+}
+.rocktheme-community .str-chat__send-to-channel-checkbox__container {
+  padding: 0;
+}
+.rocktheme-community input#send-to-channel-checkbox {
+  accent-color: var(--color-interface-medium);
 }
 .rocktheme-community .rock-message-composer {
   display: flex;

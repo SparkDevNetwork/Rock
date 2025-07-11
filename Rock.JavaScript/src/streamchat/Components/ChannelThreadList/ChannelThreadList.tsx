@@ -55,7 +55,6 @@ export const ChannelThreadList = ({ virtuosoProps }: ThreadListProps) => {
     const { activeThread, setActiveThread } = useThreadsViewContext();
     const { openThread } = useChannelActionContext();
 
-    console.log(activeThread);
     useThreadList();
 
     return (
@@ -74,14 +73,11 @@ export const ChannelThreadList = ({ virtuosoProps }: ThreadListProps) => {
                 itemContent={(_, thread) => <ChannelThreadListItem thread={thread} threadListItemUIProps={
                     {
                         onClick: () => {
-                            console.log('Thread clicked:', thread);
                             setActiveThread(thread);
                             openThread(thread.state.getLatestValue().parentMessage);
                         },
                     }
                 } />}
-                // TODO: handle visibility (for a button that scrolls to the unread thread)
-                // itemsRendered={(items) => console.log({ items })}
                 {...virtuosoProps}
             />
         </div>

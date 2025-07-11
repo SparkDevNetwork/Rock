@@ -34,8 +34,6 @@ export const PersonDetail: React.FC<PersonDetailProps> = ({ user }) => {
             members: [currentUser, memberId]
         });
 
-        console.log(channel);
-
         try {
             await channel.watch();
 

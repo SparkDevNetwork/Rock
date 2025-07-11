@@ -41,7 +41,6 @@ const CreateChannelModal: React.FC = () => {
                     u.id !== currentUserId && !selectedUsers.some(sel => sel.id === u.id)
                 );
 
-                console.log("Fetched users:", filteredUsers);
                 setUserResults(filteredUsers);
             } catch (err) {
                 console.error("Error fetching users:", err);

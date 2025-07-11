@@ -42,7 +42,6 @@ export const FavoriteChannelIcon: React.FC<FavoriteChannelIconProps> = ({ channe
                 await channel.addMembers([client.userID!]);
             }
 
-            console.log(membershipState);
             if (isPinned) {
                 await channel.unpin();
             } else {

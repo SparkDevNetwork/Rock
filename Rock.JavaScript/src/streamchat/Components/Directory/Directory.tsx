@@ -4,6 +4,7 @@ import type { Channel, ChannelFilters, UserResponse } from 'stream-chat';
 import { DirectoryChannelResultItem } from './DirectoryChannelResultItem';
 import { UserSearchResultItem } from './UserSearchResultItem';
 import { useDirectoryContext } from './DirectoryContext';
+import { useChatConfig } from '../Chat/ChatConfigContext';
 
 interface DirectoryProps { }
 
@@ -34,15 +35,25 @@ const ChannelSearchResults: React.FC<{
 
 const UserSearchResults: React.FC<{
     results: UserResponse[];
-}> = ({ results }) => (
+    lastItemRef: (node: HTMLLIElement | null) => void;
+    handleClick: (user: UserResponse) => void;
+}> = ({ results, lastItemRef, handleClick }) => (
     <ul className="directory-search-results" style={{ listStyle: 'none' }}>
         <li className="directory-search-result-header">
             <div className="directory-search-result-header-cell directory-search-result-item-name-cell">Name</div>
             <div className="directory-search-result-header-cell directory-search-result-item-members-cell">Last Active At</div>
         </li>
-        {results.map((user) => (
-            <UserSearchResultItem user={user} key={user.id} />
-        ))}
+        {results.map((user, idx) => {
+            const isLast = idx === results.length - 1;
+            return (
+                <UserSearchResultItem
+                    key={user.id}
+                    user={user}
+                    ref={isLast ? lastItemRef : undefined}
+                    onClick={() => handleClick(user)}
+                />
+            );
+        })}
     </ul>
 );
 
@@ -183,6 +194,21 @@ export const Directory: React.FC<DirectoryProps> = () => {
         setShowDirectory(false);
     };
 
+    const { directMessageChannelTypeKey } = useChatConfig();
+    const handleUserClick = async (user: UserResponse) => {
+        // Create a direct message channel with the user
+        const currentUserId = client.userID!;
+        const channel = client.channel(directMessageChannelTypeKey, {
+            members: [currentUserId, user.id]
+        });
+        await channel.watch();
+        // Set the active channel to the newly created DM channel
+        if (channel.initialized) {
+            setActiveChannel(channel);
+            setShowDirectory(false);
+        }
+    }
+
     return (
         <div className="directory-search-container str-chat rocktheme-community">
             <div className="directory-search-title">Directory</div>
@@ -222,7 +248,11 @@ export const Directory: React.FC<DirectoryProps> = () => {
                 />
             )}
             {context === 'users' && userResults.length > 0 && (
-                <UserSearchResults results={userResults} />
+                <UserSearchResults
+                    results={userResults}
+                    lastItemRef={lastItemRef}
+                    handleClick={handleUserClick}
+                />
             )}
             {context === 'channels' && !loading && !error && submittedTerm && channelResults.length === 0 && (
                 <div className="directory-search-no-results">

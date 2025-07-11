@@ -37,7 +37,6 @@ export function getRenderChannelsFn(
         const sharedChannels = notPinned.filter(c => c.type != directMessageChannelTypeKey && (c.data?.rock_always_shown || c.state.membership));
         const dmChannels = notPinned.filter(c => c.type == directMessageChannelTypeKey);
 
-        console.log(channels)
         return (
             <div className="rock-channel-list-container">
                 {pinned.length > 0 && (

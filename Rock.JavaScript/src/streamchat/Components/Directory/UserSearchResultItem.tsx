@@ -1,9 +1,10 @@
-import React from 'react';
+import React, { forwardRef } from 'react';
 import type { UserResponse } from 'stream-chat';
 import { Avatar } from 'stream-chat-react';
 
 interface UserSearchResultItemProps {
     user: UserResponse;
+    onClick?: () => void; // Optional: add a click handler prop
 }
 
 function formatLastActiveAt(user: UserResponse): string {
@@ -22,16 +23,18 @@ function formatLastActiveAt(user: UserResponse): string {
     });
 }
 
-export const UserSearchResultItem: React.FC<UserSearchResultItemProps> = ({ user }) => (
-    <li className="directory-search-result-item">
-        <div className="directory-search-result-item-container directory-search-result-item-name-cell">
-            <div className="directory-channel-name-layout">
-                <Avatar image={user.image} name={user.name || user.id} className="directory-channel-avatar" />
-                <span className="directory-channel-name">{user.name || user.id}</span>
+export const UserSearchResultItem = forwardRef<HTMLLIElement, UserSearchResultItemProps>(
+    ({ user, onClick }, ref) => (
+        <li className="directory-search-result-item" ref={ref} onClick={onClick}>
+            <div className="directory-search-result-item-container directory-search-result-item-name-cell">
+                <div className="directory-channel-name-layout">
+                    <Avatar image={user.image} name={user.name || user.id} className="directory-channel-avatar" />
+                    <span className="directory-channel-name">{user.name || user.id}</span>
+                </div>
             </div>
-        </div>
-        <div className="directory-search-result-item-container directory-search-result-item-members-cell">
-            <span>{formatLastActiveAt(user)}</span>
-        </div>
-    </li>
+            <div className="directory-search-result-item-container directory-search-result-item-members-cell">
+                <span>{formatLastActiveAt(user)}</span>
+            </div>
+        </li>
+    )
 );
