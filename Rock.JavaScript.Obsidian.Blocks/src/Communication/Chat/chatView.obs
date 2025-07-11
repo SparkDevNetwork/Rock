@@ -63,6 +63,7 @@
     import { ChatViewConfigurationBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatView/chatViewConfigurationBag";
     import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
     import { ChatViewStyle } from "@Obsidian/Enums/Communication/Chat/chatViewStyle";
+    import { ChatReactionBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatView/chatReactionBag";
 
     const invokeBlockAction = useInvokeBlockAction();
     const configurationValues = useConfigurationValues<ChatViewInitializationBox>();
@@ -190,6 +191,8 @@
         cfg: ChatViewConfigurationBag,
         data: ChatPersonDataBag
     ) {
+        let reactions = cfg.reactions;
+        console.log("Reactions:", reactions);
         reactComponentInstance = lib.mount("chat-container", {
             apiKey: cfg.publicApiKey!,
             userId: data.userId!,
@@ -200,7 +203,8 @@
             selectedChannelId: cfg.selectedChannelId ?? undefined,
             channelId: cfg.channelId ?? undefined,
             jumpToMessageId: cfg.jumpToMessageId ?? undefined,
-            chatViewStyle: cfg.chatStyle
+            chatViewStyle: cfg.chatStyle,
+            reactions: reactions ?? []
         });
         suspense?.completeAsyncOperation(mountGuid);
     }
@@ -221,6 +225,7 @@
         selectedChannelId?: string;
         jumpToMessageId?: string;
         chatViewStyle?: ChatViewStyle
+        reactions: ChatReactionBag[]
     }
 </script>
 

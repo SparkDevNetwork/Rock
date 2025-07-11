@@ -126,6 +126,7 @@
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationInitializationBox.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatView\ChatPersonDataBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatView\ChatPersonSettingsBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatView\ChatReactionBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatView\ChatViewConfigurationBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatView\ChatViewInitializationBox.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationEntryWizardGetEmailPreviewHtmlBag.cs" />

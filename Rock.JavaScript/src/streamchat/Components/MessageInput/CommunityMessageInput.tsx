@@ -1,6 +1,6 @@
 // ComunityMessageInput.tsx
 import React from 'react';
-import { AttachmentSelector, CooldownTimer, QuotedMessagePreview, TextareaComposer, useMessageComposer, WithDragAndDropUpload } from 'stream-chat-react';
+import { AttachmentSelector, CooldownTimer, MessageInputProps, QuotedMessagePreview, TextareaComposer, useMessageComposer, WithDragAndDropUpload } from 'stream-chat-react';
 import {
     AttachmentPreviewList,
     useMessageInputContext,
@@ -12,8 +12,17 @@ import { SendToChannelCheckbox } from './SendToChannelCheckbox';
 // import { AttachmentSelector } from './AttachmentSelector';
 
 const SendButtonWithCooldown = () => {
-    const { handleSubmit, cooldownRemaining, setCooldownRemaining } =
+    const { handleSubmit, cooldownRemaining, setCooldownRemaining, hideSendButton } =
         useMessageInputContext();
+
+    console.log("SendButtonWithCooldown", {
+        cooldownRemaining,
+        hideSendButton,
+    });
+
+    if (hideSendButton) {
+        return null;
+    }
 
     return cooldownRemaining ? (
         <CooldownTimer

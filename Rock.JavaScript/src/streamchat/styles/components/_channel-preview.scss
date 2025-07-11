@@ -1,24 +1,4 @@
 .rocktheme-community {
-    --channel-preview-bg: var(--color-interface-softer);
-    --channel-preview-bg-hover: var(--color-interface-soft);
-    --channel-preview-color: var(--color-interface-strong);
-    --channel-preview-title-color: var(--color-interface-stronger);
-    --channel-preview-box-shadow: var(--str-chat__channel-preview-box-shadow);
-    --channel-preview-border-radius: var(--str-chat__channel-preview-border-radius);
-    --channel-preview-border-block-start: var(--str-chat__channel-preview-border-block-start);
-    --channel-preview-border-block-end: var(--str-chat__channel-preview-border-block-end);
-    --channel-preview-border-inline-start: var(--str-chat__channel-preview-border-inline-start);
-    --channel-preview-border-inline-end: var(--str-chat__channel-preview-border-inline-end);
-    --channel-preview-avatar-size: calc(var(--str-chat__spacing-px) * 28);
-    --channel-preview-title-font-size: 14px;
-    --channel-preview-title-font-weight: var(--font-weight-regular, 400);
-    --channel-preview-title-line-height: 150%;
-    --channel-preview-content-gap: 6px;
-    --channel-preview-content-padding-top: 4px;
-    --channel-preview-content-padding-bottom: 4px;
-    --channel-preview-content-padding-left: 16px;
-    --channel-preview-content-padding-inline: 16px;
-
     .rock-channel-preview {
         background: var(--channel-preview-bg);
         color: var(--channel-preview-color);

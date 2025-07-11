@@ -1,18 +1,4 @@
 .rocktheme-community {
-    --channel-header-background-color: var(--color-interface-softer);
-    --channel-header-text-color: var(--color-interface-stronger);
-    --channel-header-icon-color: var(--color-interface-strong);
-    --channel-header-border-color: var(--color-interface-soft);
-    --channel-header-avatar-size: calc(var(--str-chat__spacing-px) * 36);
-    --channel-header-nav-button-size: 28px;
-    --channel-header-favorite-color: #FFD700;
-    --channel-header-title-font-size: 16px;
-    --channel-header-title-font-weight: 700;
-    --channel-header-title-padding: 0;
-    --channel-header-title-margin: 0;
-    --channel-header-favorite-font-size: 14px;
-    --channel-header-favorite-lg-size: 20px;
-
     .rock-channel-header {
         display: flex;
         align-items: center;

@@ -11,12 +11,14 @@
  */
 import { createContext, useContext } from "react";
 import { ChatViewStyle } from "../../ChatViewStyle";
+import { ChatReactionBag } from "src/streamchat/ChatComponentProps";
 
 interface ChatConfigContextType {
     sharedChannelTypeKey: string;
     directMessageChannelTypeKey: string;
     chatViewStyle: ChatViewStyle;
     refreshChat: () => void;
+    reactions: ChatReactionBag[]
 }
 
 /**

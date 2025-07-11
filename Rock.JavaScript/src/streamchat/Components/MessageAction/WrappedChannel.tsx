@@ -2,6 +2,9 @@ import React, { ReactNode, useEffect, useState } from "react";
 import {
     Channel,
     CloseIcon,
+    ReactionOptions,
+    SpriteImage,
+    StreamEmoji,
     ThreadHeaderProps,
     useChannelActionContext,
     useChannelPreviewInfo,
@@ -15,6 +18,11 @@ import { RockDateSeperator } from "../DateSeperator/DateSeperator";
 import { RockMessage } from "../Message/RockMessage";
 import { ChannelPaneHeader } from "../ChannelRightPane/ChannelPaneHeader";
 import { useChannelRightPane } from "../ChannelRightPane/ChannelRightPaneContext";
+import { useChatConfig } from "../Chat/ChatConfigContext";
+import { ChatReactionBag } from "src/streamchat/ChatComponentProps";
+import { CommunityMessageInput } from "../MessageInput/CommunityMessageInput";
+import { SafeMessageInput } from "../MessageInput/SafeMessageInput";
+import { EditMessageForm } from "../MessageInput/EditMessageForm";
 
 interface WrappedChannelProps {
     children: ReactNode;
@@ -25,6 +33,7 @@ interface WrappedChannelProps {
 export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children, channelId, jumpToMessageId }) => {
     const { client, setActiveChannel } = useChatContext();
     const [channelReady, setChannelReady] = useState(false);
+    const { reactions } = useChatConfig();
 
     useEffect(() => {
         const loadChannel = async () => {
@@ -51,11 +60,53 @@ export const WrappedChannel: React.FC<WrappedChannelProps> = ({ children, channe
 
     if (!channelReady) return null;
 
+    // const defaultReactionOptions: ReactionOptions = [
+    //     { type: 'haha', Component: () => <></>, name: 'Joy' },
+    //     { type: 'like', Component: () => <StreamEmoji fallback='👍' type='like' />, name: 'Thumbs up' },
+    //     { type: 'love', Component: () => <StreamEmoji fallback='❤️' type='love' />, name: 'Heart' },
+    //     { type: 'sad', Component: () => <StreamEmoji fallback='😔' type='sad' />, name: 'Sad' },
+    //     { type: 'wow', Component: () => <StreamEmoji fallback='😲' type='wow' />, name: 'Astonished' },
+    // ];
+
+
+    // Loop over the configuration and create the reaction options
+    const reactionOptions: ReactionOptions = reactions
+        .filter(reaction => typeof reaction.key === "string")
+        .map(reaction => ({
+            type: reaction.key as string,
+            Component: () => <CustomReactionComponent reaction={reaction} />,
+        }));
+
+    /**
+     * CustomReactionComponent
+     *
+     * Renders a custom reaction option. If an image is provided (imageUrlSmall or imageUrl),
+     * it displays the image. Otherwise, it displays the reaction text.
+     *
+     * @param reaction - The reaction configuration object
+     * @returns {JSX.Element}
+     */
+    const CustomReactionComponent: React.FC<{ reaction: ChatReactionBag }> = ({ reaction }) => {
+        const imageSrc = reaction.imageUrlSmall || reaction.imageUrlMedium || reaction.imageUrl;
+        if (imageSrc) {
+            return (
+                <div className="rock-reaction-option">
+                    <img className="rock-reaction-image" src={imageSrc} alt={reaction.key || 'Unknown'} />
+                </div>
+            );
+        }
+        // Fallback: show reaction text if no image
+        return reaction.reactionText;
+    };
+
     return (
         <Channel CustomMessageActionsList={RockMessageActionList}
             Message={RockMessage}
             DateSeparator={RockDateSeperator}
             AttachmentSelectorInitiationButtonContents={CustomAttachmentSelectorInitiationButtonContents}
+            EditMessageInput={EditMessageForm}
+            Input={SafeMessageInput}
+            reactionOptions={reactionOptions}
             ThreadHeader={CustomThreadHeader}>
             {children}
             {/* if there is a jumpToMessageId, we need to jump to it. this has to be done in the channel context which is why we have a nested component */}

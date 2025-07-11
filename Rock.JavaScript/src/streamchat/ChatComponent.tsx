@@ -38,7 +38,8 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
     channelId,
     selectedChannelId,
     jumpToMessageId,
-    chatViewStyle
+    chatViewStyle,
+    reactions
 }) => {
 
     const [, setChannelListKey] = useState(0);
@@ -93,6 +94,7 @@ const ChatComponent: React.FC<ChatComponentProps> = ({
                 directMessageChannelTypeKey,
                 chatViewStyle: chatViewStyle || ChatViewStyle.Conversational,
                 refreshChat,
+                reactions: reactions || []
             }}>
             <ChannelListControllerContext.Provider value={{ refresh: refreshChannelList }}>
                 <ChannelMemberListProvider>

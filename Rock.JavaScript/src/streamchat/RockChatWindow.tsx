@@ -1,9 +1,7 @@
 import React from 'react';
 import {
     MessageList,
-    Thread,
-    ThreadList,
-    Window
+    Window,
 } from 'stream-chat-react';
 
 import { RockChannelHeader } from './Components/ChannelHeader/RockChannelHeader';
@@ -37,6 +35,7 @@ export const RockChatWindow: React.FC = () => {
                                 'reply'
                             ]}
                             noGroupByUser
+                            hideDeletedMessages
                         />
                         <SafeMessageInput />
                     </div>

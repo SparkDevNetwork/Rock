@@ -1,6 +1,6 @@
 // Message Reactions Variables
 .rocktheme-community {
-    --reaction-option-size: calc(var(--str-chat__spacing-px) * 24);
+    --reaction-option-size: calc(var(--str-chat__spacing-px) * 36);
     --reaction-emoji-size: 16px;
     --reaction-options-border: 1px solid var(--color-interface-soft);
     --reaction-options-bg: var(--color-interface-softest);
@@ -27,5 +27,28 @@
         .str-chat__message-reactions {
             gap: var(--reaction-gap);
         }
+    }
+
+    .str-chat__message-reaction-emoji {
+        font-size: 18px;
+        height: auto;
+    }
+
+    .str-chat__message-reaction button {
+        line-height: 1;
+    }
+
+    .str-chat__message-reaction-emoji {
+        height: auto;
+    }
+
+    .rock-reaction-image {
+        width: 20px;
+        height: 20px;
+    }
+
+    .rock-reaction-option {
+        display: flex;
+        align-items: center;
     }
 }

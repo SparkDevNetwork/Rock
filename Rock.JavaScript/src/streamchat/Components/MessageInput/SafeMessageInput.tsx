@@ -64,36 +64,6 @@ export const SafeMessageInput: React.FC<MessageInputProps> = (props: MessageInpu
         [sendMessage],
     );
 
-
-    // /**
-    //  * Ensures the current user is a channel member before sending.
-    //  *
-    //  * @param {MessageToSend} message - The message to be sent.
-    //  */
-    // const overrideSubmitHandler = async (message: MessageToSend) => {
-    //     const userId = client.userID;
-
-    //     if (!userId) {
-    //         console.error("User ID is not available. Cannot send message.");
-    //         return;
-    //     }
-
-    //     const cid = channel.cid;
-    //     const isMember = !!channel.state.members[userId];
-
-    //     if (!isMember) {
-    //         try {
-    //             await channel.addMembers([userId]);
-    //             console.log(`User ${userId} added to channel ${cid}`);
-    //         } catch (error) {
-    //             console.error(`Failed to add user ${userId} to channel ${cid}:`, error);
-    //             return;
-    //         }
-    //     }
-
-    //     sendMessage(message);
-    // };
-
     const conversationalComponent = () => {
         return <MessageInput {...props} overrideSubmitHandler={submitHandler} />;
     }

@@ -1,36 +1,4 @@
 .rocktheme-community {
-    --message-gap: 6px;
-    --message-title-gap: 4px;
-    --message-content-gap: 6px;
-    --message-badges-gap: 0.5rem;
-    --message-author-font-size: 14px;
-    --message-author-font-weight: 700;
-    --message-author-color: var(--color-interface-strong);
-    --message-author-line-height: 1.25rem;
-    --message-avatar-size: calc(var(--str-chat__spacing-px) * 36);
-    --message-send-failed-color: var(--color-danger-strong);
-    --message-send-failed-font-size: 16px;
-    --message-wrapper-padding-inline: 1.5rem !important;
-    --message-wrapper-padding-right: 1.5rem !important;
-    --message-wrapper-bg-hover: var(--color-interface-softer);
-    --message-reaction-bg: var(--color-interface-softer);
-    --message-reaction-bg-hover: var(--color-interface-softest);
-    --message-actions-gap: 0.25rem;
-    --message-actions-bg: var(--color-interface-softest);
-    --message-actions-border: 1px solid var(--color-interface-soft);
-    --message-actions-border-radius: 4px;
-    --message-actions-padding: 2px;
-    --message-actions-margin-right: 1.5rem;
-    --message-action-color: var(--color-interface-stronger);
-    --message-action-font-size: 14px;
-    --message-action-size: 24px;
-    --message-action-border-radius: 4px;
-    --message-action-bg-active: var(--color-interface-soft);
-    --message-timestamp-font-size: 12px;
-    --message-timestamp-color: var(--color-interface-strong);
-    --message-timestamp-line-height: 1.25rem;
-    --message-layout-line-height: 120%;
-
     a {
         color: var(--color-info-strong);
     }
@@ -182,10 +150,51 @@
         }
     }
 
+    .rock-message-more-actions {
+        display: flex;
+        flex-direction: column;
+        background-color: var(--color-interface-softest);
+        border-radius: 4px;
+        align-items: center;
+        justify-content: start;
+        border: 1px solid var(--color-interface-soft);
+
+        .rock-message-more-action {
+            background: none;
+            border: none;
+            color: var(--color-interface-strong);
+            width: 100%;
+            display: flex;
+            align-items: center;
+            justify-content: start;
+            gap: 6px;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 4px 8px;
+
+            &:hover {
+                background: var(--color-interface-softer);
+            }
+
+            &--destructive {
+                color: var(--color-danger-strong);
+            }
+        }
+
+        // Add border between items except the last
+        .rock-message-more-action:not(:last-child) {
+            border-bottom: 1px solid var(--color-interface-soft);
+        }
+    }
+
     .rock-message-simple-timestamp {
         font-size: var(--message-timestamp-font-size);
         color: var(--message-timestamp-color);
         line-height: var(--message-timestamp-line-height);
+    }
+
+    .str-chat__edit-message-form-options {
+        gap: 6px;
     }
 
     /* Replies Content */

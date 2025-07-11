@@ -187,8 +187,7 @@ export const ConversationalMessage = (props: MessageContextValue) => {
                 <Modal
                     className='str-chat__edit-message-modal'
                     onClose={clearEditingState}
-                    open={editing}
-                >
+                    open={editing}>
                     <MessageInput
                         clearEditingState={clearEditingState}
                         hideSendButton

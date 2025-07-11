@@ -1,14 +1,4 @@
 .rocktheme-community {
-    --channel-list-header-bg: var(--color-interface-softer);
-    --channel-list-header-border: var(--color-interface-soft);
-    --channel-list-header-width: var(--sidebar-width);
-    --channel-list-header-avatar-size: calc(var(--str-chat__spacing-px) * 28);
-    --channel-list-header-action-gap: 4px;
-    --channel-list-header-icon-btn-size: 28px;
-    --channel-list-header-icon-btn-radius: 4px;
-    --channel-list-header-icon-btn-color: var(--color-interface-strong);
-    --channel-list-header-icon-font-size: 16px;
-
     .rock-channel-list-header-container {
         background-color: var(--channel-list-header-bg);
     }

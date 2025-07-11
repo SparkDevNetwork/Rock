@@ -22,6 +22,7 @@
 //
 
 import { ChatViewStyle } from "@Obsidian/Enums/Communication/Chat/chatViewStyle";
+import { ChatReactionBag } from "@Obsidian/ViewModels/Blocks/Communication/Chat/ChatView/chatReactionBag";
 
 /** A bag of settings for the chat view block. */
 export type ChatViewConfigurationBag = {
@@ -42,6 +43,9 @@ export type ChatViewConfigurationBag = {
 
     /** Gets or sets the public API key for the chat service. */
     publicApiKey?: string | null;
+
+    /** Gets or sets the supported reactions. */
+    reactions?: ChatReactionBag[] | null;
 
     /** Gets or sets the selected channel ID. */
     selectedChannelId?: string | null;

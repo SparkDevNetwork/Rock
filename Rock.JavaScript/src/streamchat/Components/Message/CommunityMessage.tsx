@@ -1,4 +1,4 @@
-import React, { useMemo, useState } from "react";
+import React, { useLayoutEffect, useMemo, useState } from "react";
 import {
     MessageContextValue,
     useChatContext,
@@ -21,8 +21,6 @@ import {
     ReactionSelector,
     useMessageComposer,
 } from 'stream-chat-react';
-import { isMessageBlocked } from './utils';
-import { MessageBlocked as DefaultMessageBlocked } from './MessageBlocked';
 import { MessageBouncePrompt as DefaultMessageBouncePrompt } from './MessageBouncePrompt';
 import { MessageBounceModal } from './MessageBounceModal';
 import RockBadge from '../Badge/RockBadge';
@@ -31,6 +29,8 @@ import { RockMessageTimestamp } from "./RockMessageTimestamp";
 import { useChannelRightPane } from "../ChannelRightPane/ChannelRightPaneContext";
 import { ParentMessageThreadPreview } from "./ParentMessageThreadPreview";
 import { useChannelMemberListContext } from "../ChannelMemberList/ChannelMemberListContext";
+import type { Placement } from '@popperjs/core';
+import { useModal } from "../Modal/ModalContext";
 
 /**
  * CommunityMessage
@@ -57,12 +57,15 @@ export const CommunityMessage = (props: MessageContextValue) => {
         editing,
         handleAction,
         handleOpenThread,
+        handleEdit,
+        handleDelete,
         handleRetry,
         isMessageAIGenerated,
         message,
         onUserHover,
         renderText,
         threadList,
+        isMyMessage
     } = props;
 
     // Chat client and context
@@ -88,13 +91,169 @@ export const CommunityMessage = (props: MessageContextValue) => {
         [isMessageAIGenerated, message],
     );
 
-    // Handle deleted or blocked messages
-    if (message.deleted_at || message.type === 'deleted') {
-        return <MessageDeleted message={message} />;
+    // Reaction dialog state
+    const reactionDialogId = `reaction-selector--${message.id}`;
+    const reactionDialog = useDialog({ id: reactionDialogId });
+    const reactionDialogIsOpen = useDialogIsOpen(reactionDialogId);
+    const [reactionButtonRef, setReactionButtonRef] = useState<HTMLButtonElement | null>(null);
+
+    // More actions dialog state
+    const moreActionsDialogId = `message-more-actions--${message.id}`;
+    const moreActionsDialog = useDialog({ id: moreActionsDialogId });
+    const moreActionsDialogIsOpen = useDialogIsOpen(moreActionsDialogId);
+    const [moreActionsButtonRef, setMoreActionsButtonRef] = useState<HTMLButtonElement | null>(null);
+
+    // Verify delete modal state
+    const [deleteModalOpen, setDeleteModalOpen] = useState(false);
+    const { showModal, hideModal } = useModal();
+
+    // Message actions for the action bar
+    interface MessageAction {
+        key: string;
+        icon: string;
+        title: string;
+        onClick: (e: React.BaseSyntheticEvent) => void;
+        destructive?: boolean;
     }
-    if (isMessageBlocked(message)) {
-        return <DefaultMessageBlocked />;
+    const composer = useMessageComposer();
+    const handleQuote = () => {
+        composer.setQuotedMessage(message);
+        const elements = message.parent_id
+            ? document.querySelectorAll('.str-chat__thread .str-chat__textarea__textarea')
+            : document.getElementsByClassName('str-chat__textarea__textarea');
+        const textarea = elements.item(0);
+        if (textarea instanceof HTMLTextAreaElement) {
+            textarea.focus();
+        }
+    };
+    const getSupportedMessageActions = (): MessageAction[] => {
+        const actions: MessageAction[] = [
+            {
+                key: 'react',
+                icon: 'fas fa-smile',
+                title: 'Add Reaction',
+                onClick: () => reactionDialog.toggle(),
+            },
+            {
+                key: 'quote',
+                icon: 'fas fa-quote-right',
+                title: 'Quote',
+                onClick: () => handleQuote(),
+            },
+        ];
+        // Only show the thread reply action if not currently in a thread
+        if (!threadList) {
+            actions.push({
+                key: 'reply',
+                icon: 'fas fa-reply',
+                title: 'Reply in Thread',
+                onClick: (e) => customHandleOpenThread(e),
+            });
+        }
+
+        if (isMyMessage()) {
+            actions.push({
+                key: 'more',
+                icon: 'fas fa-ellipsis-v',
+                title: 'More Options',
+                onClick: () => moreActionsDialog.toggle(),
+            });
+        }
+
+        return actions;
+    };
+    const messageActions = getSupportedMessageActions();
+
+    const getMoreActionsMessageActions = (): MessageAction[] => {
+        var actions: MessageAction[] = [];
+
+        // Add the edit action if the user composed the message
+        if (isMyMessage()) {
+            actions.push({
+                key: 'edit',
+                icon: 'fas fa-pencil-alt',
+                title: 'Edit Message',
+                onClick: (e) => {
+                    handleEdit(e);
+                }
+            });
+
+            actions.push({
+                key: 'delete',
+                icon: 'fas fa-trash',
+                title: 'Delete Message',
+                onClick: (e) => {
+                    showModal({
+                        title: 'Delete Message',
+                        content: (
+                            <div className="delete-message-modal-content">
+                                <p className="delete-message-modal-text">Are you sure you want to delete this message?</p>
+
+                                <div className="delete-message-modal-actions">
+                                    <button
+                                        className="btn btn-secondary"
+                                        onClick={() => hideModal()}>
+                                        Cancel
+                                    </button>
+
+                                    <button
+                                        className="btn btn-danger"
+                                        onClick={async () => {
+                                            try {
+                                                await handleDelete(e);
+                                                hideModal();
+                                            } catch (error) {
+                                                console.error("Failed to delete message", error);
+                                            }
+                                        }}>
+                                        Delete
+                                    </button>
+                                </div>
+                            </div>
+                        )
+                    })
+                },
+                destructive: true,
+            });
+        }
+
+        return actions;
     }
+    const moreActionsMessageActions: MessageAction[] = getMoreActionsMessageActions();
+
+    // Show reply-in-channel preview if this is a reply
+    const showIsReplyInChannel = !threadList && message.show_in_channel && message.parent_id;
+
+    // User profile popup logic
+    const { setSelectedUser } = useChannelMemberListContext();
+    const showUserProfile = () => {
+        const user = message.user;
+        if (user) {
+            setSelectedUser(user);
+            setActivePane('members');
+        } else {
+            console.warn(`User not found for message ID: ${message.id}`);
+        }
+    };
+
+    function determineVerticalPlacement(el: HTMLElement): Placement {
+        const rect = el.getBoundingClientRect();
+        const spaceAbove = rect.top;
+        const spaceBelow = window.innerHeight - rect.bottom;
+        // If there’s more room below, place “bottom”, otherwise “top”
+        return spaceBelow >= spaceAbove ? 'bottom-start' : 'top-start';
+    }
+
+    // In your component:
+    const [placement, setPlacement] = useState<Placement>('bottom');
+    useLayoutEffect(() => {
+        if (moreActionsButtonRef) {
+            setPlacement(determineVerticalPlacement(moreActionsButtonRef));
+        }
+    }, [moreActionsButtonRef, moreActionsDialogIsOpen]);
+
+    // Poll support
+    const poll = message.poll_id && client.polls.fromState(message.poll_id);
 
     // Reply, retry, and bounce logic
     const showReplyCountButton = !threadList && !!message.reply_count;
@@ -118,9 +277,6 @@ export const CommunityMessage = (props: MessageContextValue) => {
         handleOpenThread(e);
         setActivePane('threads');
     };
-
-    // Poll support
-    const poll = message.poll_id && client.polls.fromState(message.poll_id);
 
     /**
      * getRockBadges
@@ -146,81 +302,13 @@ export const CommunityMessage = (props: MessageContextValue) => {
         return <></>;
     }
 
-    // Reaction dialog state
-    const reactionDialogId = `reaction-selector--${message.id}`;
-    const reactionDialog = useDialog({ id: reactionDialogId });
-    const reactionDialogIsOpen = useDialogIsOpen(reactionDialogId);
-    const [reactionButtonRef, setReactionButtonRef] = useState<HTMLButtonElement | null>(null);
-
-    // Message actions for the action bar
-    interface MessageAction {
-        key: string;
-        icon: string;
-        title: string;
-        onClick: (e: React.BaseSyntheticEvent) => void;
-    }
-    const composer = useMessageComposer();
-    const handleQuote = () => {
-        composer.setQuotedMessage(message);
-        const elements = message.parent_id
-            ? document.querySelectorAll('.str-chat__thread .str-chat__textarea__textarea')
-            : document.getElementsByClassName('str-chat__textarea__textarea');
-        const textarea = elements.item(0);
-        if (textarea instanceof HTMLTextAreaElement) {
-            textarea.focus();
-        }
-    };
-    const getSupportedMessageActions = (): MessageAction[] => [
-        {
-            key: 'react',
-            icon: 'fas fa-smile',
-            title: 'Add Reaction',
-            onClick: () => reactionDialog.toggle(),
-        },
-        {
-            key: 'quote',
-            icon: 'fas fa-quote-right',
-            title: 'Quote',
-            onClick: () => handleQuote(),
-        },
-        {
-            key: 'reply',
-            icon: 'fas fa-reply',
-            title: 'Reply in Thread',
-            onClick: (e) => customHandleOpenThread(e),
-        },
-        {
-            key: 'more',
-            icon: 'fas fa-ellipsis-v',
-            title: 'More Options',
-            onClick: () => { /* Add more options logic here */ },
-        },
-    ];
-    const messageActions = getSupportedMessageActions();
-
-    // Show reply-in-channel preview if this is a reply
-    const showIsReplyInChannel = !threadList && message.show_in_channel && message.parent_id;
-
-    // User profile popup logic
-    const { setSelectedUser } = useChannelMemberListContext();
-    const showUserProfile = () => {
-        const user = message.user;
-        if (user) {
-            setSelectedUser(user);
-            setActivePane('members');
-        } else {
-            console.warn(`User not found for message ID: ${message.id}`);
-        }
-    };
-
     // Main render
     return (
         <>
             <div
                 className="rock-message-wrapper"
-                data-dialog-open={reactionDialogIsOpen || undefined}
-                onClick={handleClick}
-            >
+                data-dialog-open={reactionDialogIsOpen || moreActionsDialogIsOpen || undefined}
+                onClick={handleClick}>
                 {/* Edit message modal */}
                 {editing && (
                     <EditMessageModal additionalMessageInputProps={additionalMessageInputProps} />
@@ -311,7 +399,13 @@ export const CommunityMessage = (props: MessageContextValue) => {
                             {messageActions.map((action) => (
                                 <button
                                     key={action.key}
-                                    ref={action.key === 'react' ? setReactionButtonRef : undefined}
+                                    ref={
+                                        action.key === 'react'
+                                            ? setReactionButtonRef
+                                            : action.key === 'more'
+                                                ? setMoreActionsButtonRef
+                                                : undefined
+                                    }
                                     className="rock-message-action"
                                     title={action.title}
                                     onClick={(e) => action.onClick(e)}
@@ -324,10 +418,35 @@ export const CommunityMessage = (props: MessageContextValue) => {
                             {reactionDialogIsOpen && (
                                 <DialogAnchor
                                     id={reactionDialogId}
-                                    placement={"bottom-start"}
+                                    placement={placement}
                                     referenceElement={reactionButtonRef}
                                     trapFocus={false}>
                                     <ReactionSelector />
+                                </DialogAnchor>
+                            )}
+
+                            {moreActionsDialogIsOpen && (
+                                <DialogAnchor
+                                    id={moreActionsDialogId}
+                                    placement={placement}
+
+                                    referenceElement={moreActionsButtonRef}
+                                    trapFocus={false}>
+                                    <div className="rock-message-more-actions">
+                                        {moreActionsMessageActions.map((action) => (
+                                            <button
+                                                key={action.key}
+                                                className={`rock-message-more-action ${action.destructive ? 'rock-message-more-action--destructive' : ''}`}
+                                                onClick={(e) => {
+                                                    e.stopPropagation();
+                                                    action.onClick(e);
+                                                }}
+                                            >
+                                                <i className={action.icon} />
+                                                {action.title}
+                                            </button>
+                                        ))}
+                                    </div>
                                 </DialogAnchor>
                             )}
                         </div>

@@ -59,6 +59,11 @@ namespace Rock.SystemGuid
         public const string CAMPUS_TYPE = "8C2260A8-6130-414A-BD32-22743FEAB256";
 
         /// <summary>
+        /// GUID for the Chat Reaction defined type.
+        /// </summary>
+        public const string CHAT_REACTION = "879C25EE-8BF3-46CE-8549-DB4CAF4074E9";
+
+        /// <summary>
         /// The types of static color swatches supported
         /// </summary>
         public const string COLOR_PICKER_SWATCHES = "CC1400B3-E161-45E3-BF49-49825D3D6467";

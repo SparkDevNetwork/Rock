@@ -1,19 +1,5 @@
 /* Right Pane */
 .rocktheme-community {
-    --right-pane-width: 280px;
-    --right-pane-width-md: 500px;
-    --right-pane-width-lg: 600px;
-
-    --right-pane-bg: var(--color-interface-softest);
-    --right-pane-border: 1px solid var(--color-interface-soft);
-    --right-pane-header-bg: var(--color-interface-softest);
-    --right-pane-header-border: 1px solid var(--color-interface-soft);
-    --right-pane-header-title-color: var(--color-interface-stronger);
-    --right-pane-header-title-font-size: 12px;
-    --right-pane-header-title-font-weight: 600;
-    --right-pane-header-close-hover-bg: var(--color-interface-soft);
-    --right-pane-info-title-color: var(--color-interface-stronger);
-    --right-pane-info-title-font-size: 20px;
 
     .rock-chat-window--with-pane .rock-chat-window-content-right {
         display: flex;
