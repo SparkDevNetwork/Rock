@@ -58,6 +58,12 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public CommunicationFlowInstanceRecipientStatus Status { get; set; }
+        
+        /// <summary>
+        /// Gets or sets the inactive reason for this Communication Flow Instance Recipient.
+        /// </summary>
+        [DataMember]
+        public CommunicationFlowInstanceRecipientInactiveReason? InactiveReason { get; set; }
 
         /// <summary>
         /// Gets or sets the identifier of the Communication Recipient that was unsubscribed.

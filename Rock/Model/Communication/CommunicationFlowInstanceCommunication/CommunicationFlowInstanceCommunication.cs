@@ -16,6 +16,8 @@
 //
 
 using System;
+using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -80,6 +82,24 @@ namespace Rock.Model
         /// </summary>
         [DataMember]
         public virtual Communication Communication { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Communication Flow Instance Conversion Histories for this Communication Flow Instance Communication.
+        /// </summary>
+        [DataMember]
+        public virtual ICollection<CommunicationFlowInstanceConversionHistory> CommunicationFlowInstanceConversionHistories
+        {
+            get
+            {
+                return _communicationFlowInstanceConversionHistories ?? ( _communicationFlowInstanceConversionHistories = new Collection<CommunicationFlowInstanceConversionHistory>() );
+            }
+            set
+            {
+                _communicationFlowInstanceConversionHistories = value;
+            }
+        }
+
+        private ICollection<CommunicationFlowInstanceConversionHistory> _communicationFlowInstanceConversionHistories;
 
         #endregion Navigation Properties
     }

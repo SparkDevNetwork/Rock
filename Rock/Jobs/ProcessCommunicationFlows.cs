@@ -249,6 +249,13 @@ namespace Rock.Jobs
             bool AddConversions( CommunicationFlowInstance instance );
         }
 
+        private class ConversionInfo
+        {
+            public int PersonAliasId { get; set; }
+
+            public DateTime ConversionDateTime { get; set; }
+        }
+
         private static class ConversionGoalProcessorFactory
         {
             public static IConversionGoalProcessor Create( RockContext rockContext, CommunicationFlow flow )
@@ -268,7 +275,7 @@ namespace Rock.Jobs
 
         private abstract class ConversionGoalProcessorBase : IConversionGoalProcessor
         {
-            protected delegate CommunicationFlowCommunication GetConversionCommunicationDelegate( int personAliasId, DateTime conversionDateTime );
+            protected delegate ( CommunicationFlowInstanceCommunication, CommunicationRecipient ) GetInstanceCommunicationForConversionDelegate( ConversionInfo conversionInfo );
 
             public bool AddConversions( CommunicationFlowInstance instance )
             {
@@ -282,13 +289,14 @@ namespace Rock.Jobs
                         .Where( r => r.PersonAliasId.HasValue && ( r.SendDateTime.HasValue || c.Communication.SendDateTime.HasValue ) )
                         .Select( r => new
                         {
-                            c.CommunicationFlowCommunication,
+                            CommunicationFlowInstanceCommunication = c,
                             PersonAliasId = r.PersonAliasId.Value,
-                            SentDateTime =  r.SendDateTime ?? c.Communication.SendDateTime.Value 
+                            SentDateTime =  r.SendDateTime ?? c.Communication.SendDateTime.Value,
+                            CommunicationRecipient = r
                         } )
                     )
                     // Order the recipient info by the intended send order of the messages ( newest first ), then by the actual send date/time of the message ( newest first ).
-                    .OrderByDescending( r => r.CommunicationFlowCommunication.Order )
+                    .OrderByDescending( r => r.CommunicationFlowInstanceCommunication.CommunicationFlowCommunication.Order )
                     .ThenByDescending( r => r.SentDateTime )
                     .ToList();
 
@@ -305,32 +313,75 @@ namespace Rock.Jobs
                 var flowInstanceStartDateTime = instance.StartDateTime;
                 var flowInstanceConversionEndDateTime = instance.StartDateTime.AddDays( instance.CommunicationFlow.ConversionGoalTimeframeInDays.Value );
 
-                CommunicationFlowCommunication GetConversionCommunication( int personAliasId, DateTime conversionDateTime )
+                ( CommunicationFlowInstanceCommunication, CommunicationRecipient ) GetInstanceCommunicationForConversion( int personAliasId, DateTime conversionDateTime )
                 {
                     // Find the first communication that was sent on or before the conversion date/time.
                     return recipientInfo
                         .Where( r => r.PersonAliasId == personAliasId && r.SentDateTime <= conversionDateTime )
-                        .Select( r => r.CommunicationFlowCommunication )
+                        .Select( r => ( r.CommunicationFlowInstanceCommunication, r.CommunicationRecipient ) )
                         .FirstOrDefault();
                 }
 
                 // Call the template method implemented by extending classes to get the conversions.
-                var conversionHistories = GetConversionHistories( instance, flowInstanceStartDateTime, flowInstanceConversionEndDateTime, personAliasIds, GetConversionCommunication );
+                var conversionInfos = GetConversionInfo( instance, flowInstanceStartDateTime, flowInstanceConversionEndDateTime, personAliasIds );
 
-                if ( conversionHistories?.Any() != true )
+                if ( conversionInfos?.Any() != true )
+                {
+                    return false;
+                }
+
+                // TODO JMH Don't allow conversions to be duplicated across subsequent instance messages in this job execution run.
+                // This could happen if multiple messages for the same instance
+                // have not been processed since the last time the job ran.
+                var conversionHistories = conversionInfos
+                    .Select( c =>
+                    {
+                        var (conversionInstanceCommunication, communicationRecipient) = GetInstanceCommunicationForConversion( c.PersonAliasId, c.ConversionDateTime );
+
+                        if ( conversionInstanceCommunication == null || communicationRecipient == null )
+                        {
+                            return null;
+                        }
+
+                        return new CommunicationFlowInstanceConversionHistory
+                        {
+                            CommunicationFlowInstanceCommunicationId = conversionInstanceCommunication.Id,
+                            CommunicationFlowInstanceCommunication = conversionInstanceCommunication,
+                            CommunicationRecipientId = communicationRecipient.Id,
+                            CommunicationRecipient = communicationRecipient,
+                            Date = c.ConversionDateTime,
+                            PersonAliasId = c.PersonAliasId
+                        };
+                    } )
+                    .Where( FilterConversionHistory )
+                    .ToList();
+
+                if ( !conversionHistories.Any() )
                 {
                     return false;
                 }
 
                 foreach ( var conversionHistory in conversionHistories )
                 {
-                    instance.CommunicationFlowInstanceConversionHistories.Add( conversionHistory );
+                    conversionHistory.CommunicationFlowInstanceCommunication.CommunicationFlowInstanceConversionHistories.Add( conversionHistory );
                 }
 
                 return true;
             }
 
-            protected abstract List<CommunicationFlowInstanceConversionHistory> GetConversionHistories( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds, GetConversionCommunicationDelegate getConversionCommunication );
+            protected abstract List<ConversionInfo> GetConversionInfo( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds );
+
+            protected virtual bool FilterConversionHistory( CommunicationFlowInstanceConversionHistory conversionHistory )
+            {
+                // Filter out conversions that already exist in the current instance.
+                return conversionHistory != null
+                    && !conversionHistory.CommunicationFlowInstanceCommunication.CommunicationFlowInstanceConversionHistories.Any( h =>
+                        h.CommunicationFlowInstanceCommunicationId == conversionHistory.CommunicationFlowInstanceCommunicationId
+                        && h.CommunicationRecipientId == conversionHistory.CommunicationRecipientId
+                        && h.PersonAliasId == conversionHistory.PersonAliasId
+                        && h.Date == conversionHistory.Date
+                    );
+            }
         }
 
         private sealed class CompletedFormConversionGoalProcessor : ConversionGoalProcessorBase
@@ -342,7 +393,7 @@ namespace Rock.Jobs
                 _workflowService = workflowService ?? throw new ArgumentNullException( nameof( workflowService ) );
             }
 
-            protected override List<CommunicationFlowInstanceConversionHistory> GetConversionHistories( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds, GetConversionCommunicationDelegate getConversionCommunication )
+            protected override List<ConversionInfo> GetConversionInfo( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds )
             {
                 var workflowTypeGuid = instance.CommunicationFlow.GetConversionGoalSettings()?.CompletedFormSettings?.WorkflowTypeGuid;
 
@@ -351,7 +402,7 @@ namespace Rock.Jobs
                     return null;
                 }
 
-                var completedFormConversions = _workflowService
+                return _workflowService
                     .Queryable()
                     .Where( w =>
                         w.WorkflowType.Guid == workflowTypeGuid.Value
@@ -361,51 +412,11 @@ namespace Rock.Jobs
                         && w.InitiatorPersonAliasId.HasValue
                         && personAliasIds.Contains( w.InitiatorPersonAliasId.Value )
                     )
-                    .Select( p => new
+                    .Select( p => new ConversionInfo
                     {
                         PersonAliasId = p.InitiatorPersonAliasId.Value,
                         ConversionDateTime = p.CompletedDateTime.Value
                     } )
-                    .ToList();
-
-                if ( !completedFormConversions.Any() )
-                {
-                    return null;
-                }
-
-                // TODO JMH Don't allow conversions to be duplicated across subsequent instance messages in this job execution run.
-                // This could happen if multiple messages for the same instance
-                // have not been processed since the last time the job ran.
-                return completedFormConversions
-                    .Select( c =>
-                    {
-                        var conversionCommunication = getConversionCommunication( c.PersonAliasId, c.ConversionDateTime );
-
-                        if ( conversionCommunication == null )
-                        {
-                            return null;
-                        }
-
-                        return new CommunicationFlowInstanceConversionHistory
-                        {
-                            CommunicationFlowCommunicationId = conversionCommunication.Id,
-                            CommunicationFlowCommunication = conversionCommunication,
-                            CommunicationFlowInstanceId = instance.Id,
-                            CommunicationFlowInstance = instance,
-                            Date = c.ConversionDateTime,
-                            PersonAliasId = c.PersonAliasId
-                        };
-                    } )
-                    // Filter out conversions that already exist in the current instance.
-                    .Where( conversionHistory =>
-                        conversionHistory != null
-                        && !instance.CommunicationFlowInstanceConversionHistories.Any( h =>
-                            h.CommunicationFlowCommunicationId == conversionHistory.CommunicationFlowCommunicationId
-                            && h.CommunicationFlowInstanceId == conversionHistory.CommunicationFlowInstanceId
-                            && h.PersonAliasId == conversionHistory.PersonAliasId
-                            && h.Date == conversionHistory.Date
-                        )
-                    )
                     .ToList();
             }
         }
@@ -421,7 +432,7 @@ namespace Rock.Jobs
                 _personService = personService ?? throw new ArgumentNullException( nameof( personService ) );
             }
 
-            protected override List<CommunicationFlowInstanceConversionHistory> GetConversionHistories( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds, GetConversionCommunicationDelegate getConversionCommunication )
+            protected override List<ConversionInfo> GetConversionInfo( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds )
             {
                 var dataViewGuid = instance.CommunicationFlow.GetConversionGoalSettings()?.EnteredDataViewSettings?.DataViewGuid;
 
@@ -435,64 +446,35 @@ namespace Rock.Jobs
                 // Only process the data view if it exists and has a last run date that is within the flow instance's start and end dates.
                 if ( dataView == null
                      || !dataView.LastRunDateTime.HasValue
-                     || flowInstanceStartDateTime > dataView.LastRunDateTime
-                     || dataView.LastRunDateTime > flowInstanceConversionEndDateTime )
+                     || flowInstanceStartDateTime > dataView.LastRunDateTime.Value
+                     || dataView.LastRunDateTime.Value > flowInstanceConversionEndDateTime )
                 {
                     return null;
                 }
 
                 // TODO JMH Test this. I'm not convinced that this will work.
-                var enteredDataViewConversions = _personService.GetQueryUsingDataView( dataView )
+                return _personService.GetQueryUsingDataView( dataView )
                     .Where( p =>
                         p.PrimaryAliasId.HasValue
                         && personAliasIds.Contains( p.PrimaryAliasId.Value )
                     )
-                    .Select( p => new
+                    .Select( p => new ConversionInfo
                     {
-                        PersonAliasId = p.PrimaryAliasId.Value
+                        PersonAliasId = p.PrimaryAliasId.Value,
+                        ConversionDateTime = dataView.LastRunDateTime.Value
                     } )
                     .ToList();
+            }
 
-                if ( !enteredDataViewConversions.Any() )
-                {
-                    return null;
-                }
-
-                return enteredDataViewConversions
-                    .Select( c =>
-                    {
-                        var conversionCommunication = getConversionCommunication( c.PersonAliasId, dataView.LastRunDateTime.Value );
-
-                        if ( conversionCommunication == null )
-                        {
-                            return null;
-                        }
-
-                        return new CommunicationFlowInstanceConversionHistory
-                        {
-                            CommunicationFlowCommunicationId = conversionCommunication.Id,
-                            CommunicationFlowCommunication = conversionCommunication,
-                            CommunicationFlowInstanceId = instance.Id,
-                            CommunicationFlowInstance = instance,
-                            Date = dataView.LastRunDateTime.Value,
-                            PersonAliasId = c.PersonAliasId
-                        };
-                    } )
-                    // Filter out conversions that already exist in the current conversions.
-                    .Where( conversionHistory =>
-                        conversionHistory != null
-                        && !instance.CommunicationFlowInstanceConversionHistories.Any( h =>
-                            h.CommunicationFlowCommunicationId == conversionHistory.CommunicationFlowCommunicationId
-                            && h.CommunicationFlowInstanceId == conversionHistory.CommunicationFlowInstanceId
-                            && h.PersonAliasId == conversionHistory.PersonAliasId
-                            // Don't check Date here because once we have a conversion history
-                            // for a given CommunicationFlowCommunicationId, CommunicationFlowInstanceId, and PersonAliasId,
-                            // we don't care about the date anymore.
-                            // We only care about the first conversion date for the Entered Data View goal.
-                            // && h.Date == conversionHistory.Date 
-                        )
-                    )
-                    .ToList();
+            protected override bool FilterConversionHistory( CommunicationFlowInstanceConversionHistory conversionHistory )
+            {
+                return conversionHistory != null
+                    && !conversionHistory.CommunicationFlowInstanceCommunication.CommunicationFlowInstanceConversionHistories.Any( h =>
+                        // For Entered DataView conversions, we only need to check the PersonAliasId and CommunicationFlowInstanceCommunicationId
+                        // since the conversion is based on the DataView's last run date, which keeps advancing whenever the data view is run.
+                        h.CommunicationFlowInstanceCommunicationId == conversionHistory.CommunicationFlowInstanceCommunicationId
+                        && h.PersonAliasId == conversionHistory.PersonAliasId
+                    );
             }
         }
 
@@ -505,7 +487,7 @@ namespace Rock.Jobs
                 _groupMemberService = groupMemberService ?? throw new ArgumentNullException( nameof( groupMemberService ) );
             }
 
-            protected override List<CommunicationFlowInstanceConversionHistory> GetConversionHistories( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds, GetConversionCommunicationDelegate getConversionCommunication )
+            protected override List<ConversionInfo> GetConversionInfo( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds )
             {
                 var groupGuid = instance.CommunicationFlow.GetConversionGoalSettings()?.JoinedGroupSettings?.GroupGuid;
 
@@ -514,7 +496,7 @@ namespace Rock.Jobs
                     return null;
                 }
 
-                var joinedGroupConversions = _groupMemberService
+                return _groupMemberService
                     .Queryable()
                     .Where( gm =>
                         gm.Group.Guid == groupGuid.Value
@@ -524,48 +506,11 @@ namespace Rock.Jobs
                         && gm.Person.PrimaryAliasId.HasValue
                         && personAliasIds.Contains( gm.Person.PrimaryAliasId.Value )
                     )
-                    .Select( gm => new
+                    .Select( gm => new ConversionInfo
                     {
                         PersonAliasId = gm.Person.PrimaryAliasId.Value,
                         ConversionDateTime = gm.DateTimeAdded.Value
                     } )
-                    .ToList();
-
-                if ( !joinedGroupConversions.Any() )
-                {
-                    return null;
-                }
-
-                return joinedGroupConversions
-                    .Select( c =>
-                    {
-                        var conversionCommunication = getConversionCommunication( c.PersonAliasId, c.ConversionDateTime );
-
-                        if ( conversionCommunication == null )
-                        {
-                            return null;
-                        }
-
-                        return new CommunicationFlowInstanceConversionHistory
-                        {
-                            CommunicationFlowCommunicationId = conversionCommunication.Id,
-                            CommunicationFlowCommunication = conversionCommunication,
-                            CommunicationFlowInstanceId = instance.Id,
-                            CommunicationFlowInstance = instance,
-                            Date = c.ConversionDateTime,
-                            PersonAliasId = c.PersonAliasId
-                        };
-                    } )
-                    // Filter out conversions that already exist in the current conversions.
-                    .Where( conversionHistory =>
-                        conversionHistory != null
-                        && !instance.CommunicationFlowInstanceConversionHistories.Any( h =>
-                            h.CommunicationFlowCommunicationId == conversionHistory.CommunicationFlowCommunicationId
-                            && h.CommunicationFlowInstanceId == conversionHistory.CommunicationFlowInstanceId
-                            && h.PersonAliasId == conversionHistory.PersonAliasId
-                            && h.Date == conversionHistory.Date 
-                        )
-                    )
                     .ToList();
             }
         }
@@ -579,7 +524,7 @@ namespace Rock.Jobs
                 _groupMemberService = groupMemberService ?? throw new ArgumentNullException( nameof( groupMemberService ) );
             }
 
-            protected override List<CommunicationFlowInstanceConversionHistory> GetConversionHistories( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds, GetConversionCommunicationDelegate getConversionCommunication )
+            protected override List<ConversionInfo> GetConversionInfo( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds )
             {
                 var groupTypeGuid = instance.CommunicationFlow.GetConversionGoalSettings()?.JoinedGroupTypeSettings?.GroupTypeGuid;
 
@@ -588,7 +533,7 @@ namespace Rock.Jobs
                     return null;
                 }
 
-                var joinedGroupTypeConversions = _groupMemberService
+                return _groupMemberService
                     .Queryable()
                     .Where( gm =>
                         gm.Group.GroupType.Guid == groupTypeGuid.Value
@@ -598,48 +543,11 @@ namespace Rock.Jobs
                         && gm.Person.PrimaryAliasId.HasValue
                         && personAliasIds.Contains( gm.Person.PrimaryAliasId.Value )
                     )
-                    .Select( gm => new
+                    .Select( gm => new ConversionInfo
                     {
                         PersonAliasId = gm.Person.PrimaryAliasId.Value,
                         ConversionDateTime = gm.DateTimeAdded.Value
                     } )
-                    .ToList();
-
-                if ( !joinedGroupTypeConversions.Any() )
-                {
-                    return null;
-                }
-
-                return joinedGroupTypeConversions
-                    .Select( c =>
-                    {
-                        var conversionCommunication = getConversionCommunication( c.PersonAliasId, c.ConversionDateTime );
-
-                        if ( conversionCommunication == null )
-                        {
-                            return null;
-                        }
-
-                        return new CommunicationFlowInstanceConversionHistory
-                        {
-                            CommunicationFlowCommunicationId = conversionCommunication.Id,
-                            CommunicationFlowCommunication = conversionCommunication,
-                            CommunicationFlowInstanceId = instance.Id,
-                            CommunicationFlowInstance = instance,
-                            Date = c.ConversionDateTime,
-                            PersonAliasId = c.PersonAliasId
-                        };
-                    } )
-                    // Filter out conversions that already exist in the current conversions.
-                    .Where( conversionHistory =>
-                        conversionHistory != null
-                        && !instance.CommunicationFlowInstanceConversionHistories.Any( h =>
-                            h.CommunicationFlowCommunicationId == conversionHistory.CommunicationFlowCommunicationId
-                            && h.CommunicationFlowInstanceId == conversionHistory.CommunicationFlowInstanceId
-                            && h.PersonAliasId == conversionHistory.PersonAliasId
-                            && h.Date == conversionHistory.Date 
-                        )
-                    )
                     .ToList();
             }
         }
@@ -653,7 +561,7 @@ namespace Rock.Jobs
                 _registrationRegistrantService = registrationRegistrantService ?? throw new ArgumentNullException( nameof( registrationRegistrantService ) );
             }
 
-            protected override List<CommunicationFlowInstanceConversionHistory> GetConversionHistories( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds, GetConversionCommunicationDelegate getConversionCommunication )
+            protected override List<ConversionInfo> GetConversionInfo( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds )
             {
                 var registrationInstanceGuid = instance.CommunicationFlow.GetConversionGoalSettings()?.RegisteredSettings?.RegistrationInstanceGuid;
 
@@ -662,7 +570,7 @@ namespace Rock.Jobs
                     return null;
                 }
 
-                var registeredConversions = _registrationRegistrantService
+                return _registrationRegistrantService
                     .Queryable()
                     .Where( rr =>
                         rr.Registration.RegistrationInstance.Guid == registrationInstanceGuid.Value
@@ -672,48 +580,12 @@ namespace Rock.Jobs
                         && rr.PersonAliasId.HasValue
                         && personAliasIds.Contains( rr.PersonAliasId.Value )
                     )
-                    .Select( rr => new
+                    .Select( rr => new ConversionInfo
                     {
                         PersonAliasId = rr.PersonAliasId.Value,
                         ConversionDateTime = rr.CreatedDateTime.Value
                     } )
                     .ToList();
-
-                if ( !registeredConversions.Any() )
-                {
-                    return null;
-                }
-
-                return registeredConversions
-                    .Select( c =>
-                    {
-                        var conversionCommunication = getConversionCommunication( c.PersonAliasId, c.ConversionDateTime );
-
-                        if ( conversionCommunication == null )
-                        {
-                            return null;
-                        }
-
-                        return new CommunicationFlowInstanceConversionHistory
-                        {
-                            CommunicationFlowCommunicationId = conversionCommunication.Id,
-                            CommunicationFlowCommunication = conversionCommunication,
-                            CommunicationFlowInstanceId = instance.Id,
-                            CommunicationFlowInstance = instance,
-                            Date = c.ConversionDateTime,
-                            PersonAliasId = c.PersonAliasId
-                        };
-                    } )
-                    // Filter out conversions that already exist in the current conversions.
-                    .Where( conversionHistory =>
-                        conversionHistory != null
-                        && !instance.CommunicationFlowInstanceConversionHistories.Any( h =>
-                            h.CommunicationFlowCommunicationId == conversionHistory.CommunicationFlowCommunicationId &&
-                            h.CommunicationFlowInstanceId == conversionHistory.CommunicationFlowInstanceId &&
-                            h.PersonAliasId == conversionHistory.PersonAliasId &&
-                            h.Date == conversionHistory.Date
-                        )
-                    ).ToList();
             }
         }
 
@@ -726,7 +598,7 @@ namespace Rock.Jobs
                 _stepService = stepService ?? throw new ArgumentNullException( nameof( stepService ) );
             }
 
-            protected override List<CommunicationFlowInstanceConversionHistory> GetConversionHistories( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds, GetConversionCommunicationDelegate getConversionCommunication )
+            protected override List<ConversionInfo> GetConversionInfo( CommunicationFlowInstance instance, DateTime flowInstanceStartDateTime, DateTime flowInstanceConversionEndDateTime, IEnumerable<int> personAliasIds )
             {
                 var stepTypeGuid = instance.CommunicationFlow.GetConversionGoalSettings()?.TookStepSettings?.StepTypeGuid;
 
@@ -735,7 +607,7 @@ namespace Rock.Jobs
                     return null;
                 }
 
-                var tookStepConversions = _stepService
+                return _stepService
                     .Queryable()
                     .Where( s =>
                         s.StepType.Guid == stepTypeGuid.Value
@@ -745,48 +617,12 @@ namespace Rock.Jobs
                         && s.StepStatus.IsCompleteStatus
                         && personAliasIds.Contains( s.PersonAliasId )
                     )
-                    .Select( s => new
+                    .Select( s => new ConversionInfo
                     {
-                        s.PersonAliasId,
+                        PersonAliasId = s.PersonAliasId,
                         ConversionDateTime = s.CompletedDateTime.Value
                     } )
                     .ToList();
-
-                if ( !tookStepConversions.Any() )
-                {
-                    return null;
-                }
-
-                return tookStepConversions
-                    .Select( c =>
-                    {
-                        var conversionCommunication = getConversionCommunication( c.PersonAliasId, c.ConversionDateTime );
-
-                        if ( conversionCommunication == null )
-                        {
-                            return null;
-                        }
-
-                        return new CommunicationFlowInstanceConversionHistory
-                        {
-                            CommunicationFlowCommunicationId = conversionCommunication.Id,
-                            CommunicationFlowCommunication = conversionCommunication,
-                            CommunicationFlowInstanceId = instance.Id,
-                            CommunicationFlowInstance = instance,
-                            Date = c.ConversionDateTime,
-                            PersonAliasId = c.PersonAliasId
-                        };
-                    } )
-                    // Filter out conversions that already exist in the current conversions.
-                    .Where( conversionHistory =>
-                        conversionHistory != null
-                        && !instance.CommunicationFlowInstanceConversionHistories.Any( h =>
-                            h.CommunicationFlowCommunicationId == conversionHistory.CommunicationFlowCommunicationId &&
-                            h.CommunicationFlowInstanceId == conversionHistory.CommunicationFlowInstanceId &&
-                            h.PersonAliasId == conversionHistory.PersonAliasId &&
-                            h.Date == conversionHistory.Date
-                        )
-                    ).ToList();
             }
         }
 
@@ -1049,7 +885,11 @@ namespace Rock.Jobs
                         return false; // recipient.HasClickedAny; 
 
                     case ExitConditionType.ConversionAchieved:
-                        return recipient.CommunicationFlowInstance.CommunicationFlowInstanceConversionHistories.Any( ch => ch.PersonAliasId == recipient.RecipientPersonAliasId );
+                        return recipient
+                            .CommunicationFlowInstance
+                            .CommunicationFlowInstanceCommunications
+                            .SelectMany( cfic => cfic.CommunicationFlowInstanceConversionHistories )
+                            .Any( ch => ch.PersonAliasId == recipient.RecipientPersonAliasId );
 
                     default:
                         return false;

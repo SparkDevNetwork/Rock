@@ -95,24 +95,6 @@ namespace Rock.Model
         private ICollection<CommunicationFlowInstanceCommunication> _communicationFlowInstanceCommunications;
 
         /// <summary>
-        /// Gets or sets the conversion histories for this Communication Flow Instance.
-        /// </summary>
-        [DataMember]
-        public virtual ICollection<CommunicationFlowInstanceConversionHistory> CommunicationFlowInstanceConversionHistories
-        {
-            get
-            {
-                return _communicationFlowInstanceConversionHistories ?? ( _communicationFlowInstanceConversionHistories = new Collection<CommunicationFlowInstanceConversionHistory>() );
-            }
-            set
-            {
-                _communicationFlowInstanceConversionHistories = value;
-            }
-        }
-
-        private ICollection<CommunicationFlowInstanceConversionHistory> _communicationFlowInstanceConversionHistories;
-
-        /// <summary>
         /// Gets or sets the recipients for this Communication Flow Instance.
         /// </summary>
         [DataMember]
