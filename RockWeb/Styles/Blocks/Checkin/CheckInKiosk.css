@@ -519,6 +519,7 @@
  */
 .check-in-page .schedule-select-screen .button-list {
     flex-direction: row;
+    flex-wrap: wrap;
     justify-content: center;
 }
 
