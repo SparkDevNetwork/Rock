@@ -30,6 +30,7 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Text;
 using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
@@ -43,6 +44,10 @@ using Rock.Attribute;
 using Rock.Cms.StructuredContent;
 using Rock.Data;
 using Rock.Enums.Core;
+using Rock.Enums.Geography;
+using Rock.Geography;
+using Rock.Geography.Classes;
+using Rock.Lava.Filters.Internal;
 using Rock.Logging;
 using Rock.Model;
 using Rock.Security;
@@ -1115,10 +1120,11 @@ namespace Rock.Lava
         /// <param name="input"></param>
         /// <param name="groupTypeId"></param>
         /// <param name="maxResults"></param>
+        /// <param name="travelMode"></param>
         /// <param name="returnOnlyClosestLocationPerGroup"></param>
         /// <param name="maxDistance"></param>
         /// <returns></returns>
-        public static object NearestGroups( ILavaRenderContext context, object input, string groupTypeId, string maxResults, string returnOnlyClosestLocationPerGroup, string maxDistance )
+        public static object NearestGroups( ILavaRenderContext context, object input, string groupTypeId, string maxResults, string travelMode, string returnOnlyClosestLocationPerGroup, string maxDistance )
         {
             // Get Rock Context
             var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
@@ -1127,57 +1133,70 @@ namespace Rock.Lava
             var person = GetPerson( input, context );
 
             // Get the point from the person's home location, or if the input is an actual point in the format of '33.663092,-112.202615'
-            DbGeography point = null;
+            GeographyPoint point = null;
             if ( person != null )
             {
                 var personService = new PersonService( rockContext );
-                point = personService.GetGeopoints( person.Id ).FirstOrDefault();
+
+                var personLocation = personService.GetGeopoints( person.Id ).FirstOrDefault();
+
+                if ( personLocation == null )
+                {
+                    return null;
+                }
+                point = new GeographyPoint( personLocation );
             }
             else
             {
-                point = ParseToDbGeography( input.ToString() );
+                point = new GeographyPoint( input.ToString() );
             }
 
-            int? numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
-            int numericalMaxResults = maxResults.AsIntegerOrNull() ?? 10;
-            int? numericalMaxDistance = maxDistance.AsIntegerOrNull();
-            bool boolReturnOnlyClosestLocationPerGroup = returnOnlyClosestLocationPerGroup.AsBooleanOrNull() ?? true;
-
-            if ( point == null || numericalGroupTypeId == null  )
-            {
-                return null;
-            }
-
+            var numericalGroupTypeId = groupTypeId.AsIntegerOrNull();
+            var numericalMaxResults = maxResults.AsIntegerOrNull() ?? 10;
+            var numericalMaxDistance = maxDistance.AsIntegerOrNull();
+            var boolReturnOnlyClosestLocationPerGroup = returnOnlyClosestLocationPerGroup.AsBooleanOrNull() ?? true;
+            var selectedTravelMode = travelMode.ConvertToEnumOrNull<TravelMode>();
 
             // Get results and shape for return
-            return new GroupService( rockContext )
+            var sourcePoint = point.ToDbGeography();
+            var results = new GroupService( rockContext )
                 .GetNearestGroups( point, numericalGroupTypeId.Value, numericalMaxResults, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
-                .Select( g => new 
+                .Select( g => new GroupProximityResult
                 {
-                    Distance = g.Location.GeoPoint.Distance( point ),
-                    Group =  g.Group,
+                    StraightLineDistanceInMeters = g.Location.GeoPoint.Distance( sourcePoint ),
+                    Group = g.Group,
                     Location = g.Location
                 } ).ToList();
-  
-        }
 
-        /// <summary>
-        /// Private helper method to convert a string of '33.663092,-112.202615' to a DbGeography. Did not make this
-        /// an extension method to prevent expanding dependency on EntityFramework.dll.
-        /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
-        private static DbGeography ParseToDbGeography( string input )
-        {
-            var parts = input.Split( ',' );
-            if ( parts.Length != 2 )
-                throw new ArgumentException( "Invalid format. Expected format is 'latitude,longitude'." );
 
-            double latitude = double.Parse( parts[0].Trim() );
-            double longitude = double.Parse( parts[1].Trim() );
+            if ( selectedTravelMode is null )
+            {
+                return results;
+            }
 
-            string wellKnownText = $"POINT({longitude} {latitude})";
-            return DbGeography.PointFromText( wellKnownText, 4326 );
+            // Get driving distances from location extensions
+            var destinations = results
+                .Where( r => r.Location?.Latitude != null && r.Location?.Longitude != null )
+                .Select( r => new GeographyPoint { Latitude = r.Location.Latitude.Value, Longitude = r.Location.Longitude.Value } )
+                .ToList();
+
+            var travelDistances = Task.Run( () => GeographyHelpers.GetDrivingMatrixAsync( point, destinations, selectedTravelMode.Value ) ).Result;
+
+            // Merge travel distances into group results
+            foreach ( var travelDistance in travelDistances )
+            {
+                // Find matching group result
+                var matches = results.Where( r => r.LocationPoint == travelDistance.DestinationPoint ).ToList();
+
+                foreach ( var match in matches )
+                {
+                    match.TravelDistanceInMeters = travelDistance.DistanceInMeters;
+                    match.TravelTimeInMinutes = travelDistance.TravelTimeInMinutes;
+                    match.TravelMode = selectedTravelMode;
+                }
+            }
+
+            return results;
         }
 
         /// <summary>
