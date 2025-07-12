@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -127,7 +127,7 @@ namespace Rock.Blocks.Core
             var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             var marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
 
-        /// null-check on GetSpouse
+        // Early null check to return null if not married or no spouse found
             if ( person.MaritalStatusValue?.Guid != marriedGuid )
             {
                 return null;
