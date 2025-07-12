@@ -117,7 +117,7 @@ namespace Rock.Blocks.Communication
                                 ConversionDate =
                                     conversionHistoryQuery
                                         .Where( ch =>
-                                            ch.CommunicationFlowInstanceId == ic.CommunicationFlowInstanceId
+                                            ch.CommunicationFlowInstanceCommunicationId == ic.Id
                                             && ch.PersonAliasId == cr.PersonAliasId
                                         )
                                         .OrderByDescending( ch => ch.Date ) // This is needed here to get the latest conversion.

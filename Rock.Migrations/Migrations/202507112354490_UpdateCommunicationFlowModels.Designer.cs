@@ -13,7 +13,7 @@ namespace Rock.Migrations
         
         string IMigrationMetadata.Id
         {
-            get { return "202507112234118_UpdateCommunicationFlowModels"; }
+            get { return "202507112354490_UpdateCommunicationFlowModels"; }
         }
         
         string IMigrationMetadata.Source

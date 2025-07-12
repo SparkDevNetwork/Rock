@@ -158,7 +158,8 @@ namespace Rock.Blocks.Communication
 
                     var conversionCountForAllInstances = communicationFlow
                         .CommunicationFlowInstances
-                        .Sum( i => i.CommunicationFlowInstanceConversionHistories.Count );
+                        .SelectMany( i => i.CommunicationFlowInstanceCommunications )
+                        .Sum( ic => ic.CommunicationFlowInstanceConversionHistories.Count );
 
                     return conversionCountForAllInstances > 0 ? $"{recipientCountForAllInstances / conversionCountForAllInstances}%" : "0%";
                 })

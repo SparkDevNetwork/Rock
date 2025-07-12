@@ -59,12 +59,6 @@ namespace Rock.Model
                 return false;
             }
 
-            if ( new Service<CommunicationFlowInstanceConversionHistory>( Context ).Queryable().Any( a => a.CommunicationFlowInstanceId == item.Id ) )
-            {
-                errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationFlowInstance.FriendlyTypeName, CommunicationFlowInstanceConversionHistory.FriendlyTypeName );
-                return false;
-            }
-
             if ( new Service<CommunicationFlowInstanceRecipient>( Context ).Queryable().Any( a => a.CommunicationFlowInstanceId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", CommunicationFlowInstance.FriendlyTypeName, CommunicationFlowInstanceRecipient.FriendlyTypeName );

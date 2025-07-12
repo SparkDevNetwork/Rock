@@ -199,7 +199,7 @@ namespace Rock.Blocks.Communication
                         Converted =
                             ctx.CommunicationFlowInstanceConversionHistories
                                .Where( ch =>
-                                       ch.CommunicationFlowInstanceId == ic.CommunicationFlowInstanceId
+                                       ch.CommunicationFlowInstanceCommunicationId == ic.Id
                                        && ch.PersonAliasId == cr.PersonAliasId )
                                .OrderBy( ch => ch.Date )
                                .Select( ch => ( DateTime? ) ch.Date )
