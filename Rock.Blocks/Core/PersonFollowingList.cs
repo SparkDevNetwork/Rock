@@ -1,4 +1,4 @@
-﻿// <copyright>
+// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -127,17 +127,20 @@ namespace Rock.Blocks.Core
             var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
             var marriedGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
 
-            return person.Members.Where( m =>
-                    person.MaritalStatusValue != null && 
-                    person.MaritalStatusValue.Guid.Equals( marriedGuid ) &&
-                    m.GroupRole.Guid.Equals( adultGuid ) )
+        // Early null check to return null if not married or no spouse found
+            if ( person.MaritalStatusValue?.Guid != marriedGuid )
+            {
+                return null;
+            }
+            
+            return person.Members
+                .Where( m => m.GroupRole.Guid == adultGuid )
                 .SelectMany( m => m.Group.Members )
                 .Where( m =>
                     m.PersonId != person.Id &&
-                    m.GroupRole.Guid.Equals( adultGuid ) &&
-                    m.Person.MaritalStatusValue != null &&
-                    m.Person.MaritalStatusValue.Guid.Equals( marriedGuid ) )
-                .Select( s => s.Person )
+                    m.GroupRole.Guid == adultGuid &&
+                    m.Person.MaritalStatusValue?.Guid == marriedGuid )
+                .Select( gm => gm.Person )
                 .FirstOrDefault();
         }
 
