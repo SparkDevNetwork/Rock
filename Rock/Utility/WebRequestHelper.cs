@@ -20,6 +20,11 @@ using System.Linq;
 using System.Net;
 using System.Threading;
 using System.Web;
+
+#if REVIEW_WEBFORMS
+using Microsoft.Owin;
+#endif
+
 using Rock.Model;
 using Rock.Web;
 using Rock.Web.Cache;
@@ -59,10 +64,26 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Gets the client ip address.
+        /// Gets the client's IP address.
+        /// </summary>
+        /// <param name="owinContext">The OWIN context.</param>
+        /// <returns>The client's IP address or an empty <see langword="string"/> if unable to find the address.</returns>
+        public static string GetClientIpAddress( IOwinContext owinContext )
+        {
+            var httpRequestBase = owinContext?.Get<HttpContextBase>( typeof( HttpContextBase ).FullName )?.Request;
+            if ( httpRequestBase == null )
+            {
+                return string.Empty;
+            }
+
+            return GetClientIpAddress( httpRequestBase );
+        }
+
+        /// <summary>
+        /// Gets the client's IP address.
         /// </summary>
         /// <param name="request">The request.</param>
-        /// <returns></returns>
+        /// <returns>The client's IP address or an empty <see langword="string"/> if unable to find the address.</returns>
         public static string GetClientIpAddress( HttpRequestBase request )
         {
             string ipAddress = GetXForwardedForIpAddress( request ); // First look for the value in the X-FORWARDED-FOR header (proxies)
@@ -128,7 +149,7 @@ namespace Rock.Utility
         }
 
         /// <summary>
-        /// Gets the IP Address from the X-Forwarded-For header. 
+        /// Gets the IP Address from the X-Forwarded-For header.
         /// </summary>
         /// <param name="request">The request.</param>
         /// <returns></returns>
@@ -230,7 +251,7 @@ namespace Rock.Utility
             {
                 return false;
             }
-            
+
             var rangeAddressFamily = parsedBeginningIPAddress.AddressFamily;
 
             if ( parsedClientIPAddress.AddressFamily != rangeAddressFamily )

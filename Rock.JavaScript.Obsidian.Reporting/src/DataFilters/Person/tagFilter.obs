@@ -31,10 +31,10 @@
         { text: "Organizational Tags", value: "2" },
     ];
     const tag = ref<Guid>(props.modelValue.tag ?? "");
-    const tagOptionsByType = ref<Record<Guid, ListItemBag[]>>(safeParseJson(props.modelValue.tagOptionsByType) ?? {});
+    const tagOptionsByType = safeParseJson<Record<Guid, ListItemBag[]>>(props.options.tagOptionsByType) ?? {};
 
     const tagOptions = computed(() => {
-        return tagOptionsByType.value[tagType.value] ?? [];
+        return tagOptionsByType[tagType.value] ?? [];
     });
 
     watch([tagType, tag], () => {

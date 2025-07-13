@@ -12,7 +12,7 @@
                 <div class="row">
                     <div ref="searchContainer" class="search-container col-md-9 col-sm-8">
                         <div class="mb-3">
-                            <TextBox v-model="searchText" placeholder="Search" class="form-control" isClearable />
+                            <TextBox v-model="searchText" placeholder="Search" class="form-control" isClearable @keydown.enter="handleEnterKey" />
                         </div>
                     </div>
                     <div class="control-wrapper col-md-3 col-sm-4">
@@ -150,6 +150,40 @@
         return [];
     };
 
+    /**
+     * Navigates to the single visible filtered item when the Enter key is pressed.
+     */
+    function handleEnterKey(): void {
+        // Search for visible <li> inside .list-as-blocks
+        const allLists = document.querySelectorAll(".list-as-blocks ul");
+
+        let visibleList: HTMLUListElement | null = null;
+
+        // Find the first visible list
+        for (const list of Array.from(allLists)) {
+            const style = window.getComputedStyle(list);
+            if (style.display !== "none" && style.visibility !== "hidden") {
+                visibleList = list as HTMLUListElement;
+                break;
+            }
+        }
+
+        if (!visibleList) {
+            return;
+        }
+
+        const visibleItems = Array.from(visibleList.querySelectorAll("li")).filter(li => {
+            const style = window.getComputedStyle(li);
+            return style.display !== "none" && style.visibility !== "hidden";
+        });
+
+        if (visibleItems.length === 1) {
+            const link = visibleItems[0].querySelector("a") as HTMLAnchorElement | null;
+            if (link?.href) {
+                window.location.href = link.href;
+            }
+        }
+    }
     // #endregion
 
 </script>

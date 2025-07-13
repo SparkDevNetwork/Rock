@@ -467,6 +467,7 @@ namespace Rock.Model
                                     scheduledTransaction.IsActive = payment.ScheduleActive.Value;
                                 }
 
+                                transaction.Summary = scheduledTransaction.Summary + Environment.NewLine;
                                 transaction.ScheduledTransactionId = scheduledTransaction.Id;
                                 transaction.AuthorizedPersonAliasId = scheduledTransaction.AuthorizedPersonAliasId;
                                 transaction.SourceTypeValueId = scheduledTransaction.SourceTypeValueId;
@@ -498,7 +499,7 @@ namespace Rock.Model
 
                             if ( txnAmount < 0.0M )
                             {
-                                transaction.Summary = "Reversal created for previous transaction(s) to correct the total transaction amount." + Environment.NewLine;
+                                transaction.Summary += "Reversal created for previous transaction(s) to correct the total transaction amount." + Environment.NewLine;
                             }
 
                             // Set the attributes of the transaction

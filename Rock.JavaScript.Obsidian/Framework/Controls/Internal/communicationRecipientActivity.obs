@@ -1,0 +1,286 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="communication-recipient-activity">
+
+        <LoadingIndicator v-if="isLoadingActivity" :delay="500" />
+
+        <NotifificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotifificationBox>
+
+        <template v-else-if="recipientActivity">
+
+            <div v-if="!isPersonHeaderHidden" class="communication-recipient-activity-person-bio row">
+
+                <div class="communication-recipient-activity-person-avatar-name-email col-lg-2">
+                    <PersonAvatar v-if="photoUrl"
+                                  :photoUrl="photoUrl"
+                                  :photoSize="36"
+                                  marginRight="3" />
+                    <div v-if="showName || email" class="communication-recipient-activity-person-name-email text-truncate">
+                        <div v-if="showName" class="communication-recipient-activity-person-name text-truncate">
+                            <a :href="`/person/${idKey}`" @click.stop><strong>{{ formattedName }}</strong></a>
+                        </div>
+                        <div v-if="email" class="communication-recipient-activity-person-email text-truncate">
+                            {{ email }}
+                        </div>
+                    </div>
+                </div>
+
+                <div v-for="item in personInfoItems"
+                     :key="item.text!"
+                     class="communication-recipient-activity-person-info-item col-sm-6 col-md-4 col-lg-2">
+                    <div class="communication-recipient-activity-person-info-item-label text-truncate">
+                        {{ item.text }}
+                    </div>
+                    <div v-html="item.value || '&nbsp;'" class="communication-recipient-activity-person-info-item-value text-truncate"></div>
+                </div>
+
+            </div>
+
+            <NotifificationBox v-if="!anyActivities" :alertType="AlertType.Info">
+                No activity found for this recipient.
+            </NotifificationBox>
+
+            <div v-else class="communication-recipient-activity-timeline">
+                <h4>Activity Timeline</h4>
+
+                <template v-for="[date, activities] in Array.from(timelineActivitiesByDate)" :key="date">
+                    <div class="communication-recipient-activity-timeline-date">
+                        {{ date }}
+                    </div>
+
+                    <ConnectedList :hideConnectors="true">
+                        <ConnectedListItem v-for="(a, index) in activities" :key="`${date}-${index}`"
+                                           :iconCssClass="a.iconCssClass"
+                                           :iconLabelType="a.iconLabelType"
+                                           :title="a.activity"
+                                           :aside="a.description"
+                                           minWidth="237px"
+                                           iconTitleAndDescMinWidth="187px">
+                            <template v-if="a.activityDateTime" #description>
+                                <i class="ti ti-clock"></i> {{ a.activityDateTime }}
+                            </template>
+                        </ConnectedListItem>
+                    </ConnectedList>
+
+                </template>
+
+            </div>
+
+        </template>
+
+    </div>
+</template>
+
+<style scoped>
+.communication-recipient-activity-person-bio {
+    margin: 0 0 var(--spacing-large) 0;
+    padding: var(--spacing-medium);
+    padding-bottom: var(--spacing-xsmall);
+    border-radius: var(--border-radius-base);
+    border: 1px solid var(--color-interface-medium);
+}
+
+.communication-recipient-activity-person-avatar-name-email {
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-xsmall);
+}
+
+.communication-recipient-activity-person-email {
+    color: var(--color-interface-medium);
+}
+
+.communication-recipient-activity-person-info-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--spacing-xsmall);
+}
+
+.communication-recipient-activity-person-info-item-label {
+    size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.communication-recipient-activity-person-info-item-value {
+    color: var(--color-interface-medium);
+}
+
+.communication-recipient-activity-timeline {
+    border-radius: var(--rounded-small);
+    border: 1px solid var(--color-interface-soft);
+    background: var(--color-interface-softer);
+    padding: var(--spacing-large);
+}
+
+.communication-recipient-activity-timeline h4 {
+    margin: 0;
+}
+
+.communication-recipient-activity-timeline-date {
+    margin-top: var(--spacing-large);
+    margin-bottom: var(--spacing-medium);
+    font-weight: var(--font-weight-semibold);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref, watch } from "vue";
+    import { RecipientActivityIconCssClass, RecipientActivityIconLabelType, RecipientTimelineActivity } from "./CommunicationRecipientActivity/types.partial";
+    import ConnectedList from "@Obsidian/Controls/connectedList.obs";
+    import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
+    import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
+    import NotifificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";
+    import { CommunicationRecipientActivityDescription } from "@Obsidian/Enums/Communication/communicationRecipientActivity";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
+    import { useHttp } from "@Obsidian/Utility/http";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { CommunicationRecipientGetActivityOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/communicationRecipientGetActivityOptionsBag";
+    import { CommunicationRecipientGetActivityResultsBag } from "@Obsidian/ViewModels/Rest/Controls/communicationRecipientGetActivityResultsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const http = useHttp();
+    const securityGrantToken = useSecurityGrantToken();
+
+    const props = defineProps({
+        recpientIdkey: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        isPersonHeaderHidden: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        }
+    });
+
+    // #region Values
+
+    const isLoadingActivity = ref(false);
+    const errorMessage = ref("");
+    const recipientActivity = ref<CommunicationRecipientGetActivityResultsBag | null>(null);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const photoUrl = computed((): string => {
+        return recipientActivity.value?.personPhotoUrl ?? "";
+    });
+
+    const idKey = computed((): string => {
+        return recipientActivity.value?.personIdKey ?? "";
+    });
+
+    const formattedName = computed((): string => {
+        if (!recipientActivity.value) {
+            return "";
+        }
+
+        return `${recipientActivity.value.personNickName} ${recipientActivity.value.personLastName}`;
+    });
+
+    const showName = computed((): boolean => {
+        return !!(formattedName.value && idKey.value);
+    });
+
+    const email = computed((): string => {
+        return recipientActivity.value?.personEmail ?? "";
+    });
+
+    const personInfoItems = computed((): ListItemBag[] => {
+        const items: ListItemBag[] = [
+            { text: "Phone", value: recipientActivity.value?.personPhoneNumber },
+            { text: "Campus", value: recipientActivity.value?.personCampusName },
+            { text: "Age", value: recipientActivity.value?.personAge?.toString() },
+            { text: "Connection Status", value: recipientActivity.value?.personConnectionStatus },
+            { text: "Marital Status", value: recipientActivity.value?.personMaritalStatus }
+        ];
+
+        return items;
+    });
+
+    const timelineActivitiesByDate = computed((): Map<string, RecipientTimelineActivity[]> => {
+        const groupedActivities = new Map<string, RecipientTimelineActivity[]>();
+
+        recipientActivity.value?.activities
+            ?.filter(a => a.activityDateTime)
+            .forEach(a => {
+                const rockDateTime = RockDateTime.parseISO(a.activityDateTime!);
+                const dateString = rockDateTime?.toASPString("dddd, MMMM d, yyyy");
+
+                if (!dateString) {
+                    return;
+                }
+
+                var activities = groupedActivities.get(dateString);
+                if (!activities) {
+                    activities = [];
+                    groupedActivities.set(dateString, activities);
+                }
+
+                activities.push({
+                    iconCssClass: RecipientActivityIconCssClass[a.activity],
+                    iconLabelType: RecipientActivityIconLabelType[a.activity],
+                    activity: CommunicationRecipientActivityDescription[a.activity],
+                    activityDateTime: rockDateTime?.toASPString("t") ?? "",
+                    description: a.description,
+                    tooltip: a.tooltip
+                });
+            });
+
+        return groupedActivities;
+    });
+
+    const anyActivities = computed((): boolean => {
+        return !!timelineActivitiesByDate.value.size;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Loads the recipient activity from the server.
+     */
+    async function loadRecipientActivity(): Promise<void> {
+        if (!props.recpientIdkey) {
+            recipientActivity.value = null;
+            return;
+        }
+
+        isLoadingActivity.value = true;
+
+        const options: CommunicationRecipientGetActivityOptionsBag = {
+            communicationRecipientIdKey: props.recpientIdkey,
+            securityGrantToken: securityGrantToken.value
+        };
+
+        const result = await http.post<CommunicationRecipientGetActivityResultsBag>("/api/v2/Controls/CommunicationRecipientGetActivity", undefined, options);
+
+        isLoadingActivity.value = false;
+
+        if (result.isSuccess && result.data) {
+            recipientActivity.value = result.data;
+        }
+        else {
+            errorMessage.value = result.errorMessage ?? "Unknown error while loading recipient activity.";
+            recipientActivity.value = null;
+        }
+    }
+
+    // #endregion Functions
+
+    // #region Watchers
+
+    watch(() => props.recpientIdkey, async () => {
+        await loadRecipientActivity();
+    });
+
+    // #endregion Watchers
+
+    loadRecipientActivity();
+</script>

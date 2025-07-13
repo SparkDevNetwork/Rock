@@ -1,0 +1,445 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="messagePreview" class="communication-message-details">
+
+        <Panel title="Details">
+
+            <NotficationBox v-if="isFutureSend" :alertType="AlertType.Info" heading="Future Send">
+                This communication is scheduled to be sent {{ futureSendDateTimeElapsed }} <small>({{ futureSendDateTimeFormatted }})</small>.
+            </NotficationBox>
+
+            <div class="row d-flex flex-wrap">
+                <div v-if="createdByPersonName" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        Created By:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        <span v-html="createdByPersonName || '&nbsp;'"></span>
+                        <span v-if="createdDateTimeElapsed"
+                              :data-original-title="createdDateTimeTooltip"
+                              :ref="applyTooltip">
+                            ({{ createdDateTimeElapsed }})
+                        </span>
+                    </div>
+                </div>
+                <div v-if="approvedByPersonName" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        Approved By:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        <span v-html="approvedByPersonName || '&nbsp;'"></span>
+                        <span v-if="approvedDateTimeElapsed"
+                              :data-original-title="approvedDateTimeTooltip"
+                              :ref="applyTooltip">
+                            ({{ approvedDateTimeElapsed }})
+                        </span>
+                    </div>
+                </div>
+                <div v-if="fromName" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        From:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        <span>
+                            {{ fromName }}
+                        </span>
+                        <span v-if="fromValue">
+                            ({{ fromValue }})
+                        </span>
+                    </div>
+                </div>
+                <div :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        List:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        {{ listName }}
+                    </div>
+                </div>
+
+                <div v-if="emailSubject" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        Subject:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        <strong>{{ emailSubject }}</strong>
+                    </div>
+                </div>
+                <div v-if="replyToEmail" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        Reply To:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        {{ replyToEmail }}
+                    </div>
+                </div>
+                <div v-if="ccEmails" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        CC:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        {{ ccEmails }}
+                    </div>
+                </div>
+                <div v-if="bccEmails" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        BCC:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        {{ bccEmails }}
+                    </div>
+                </div>
+                <div v-if="emailAttachmentLinks.length" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        Attachments:
+                    </div>
+                    <div v-for="attachment in emailAttachmentLinks" :class="infoItemValueCssClass">
+                        <a :href="attachment.url" target="_blank" rel="noopener noreferrer">{{ attachment.fileName }}</a>
+                    </div>
+                </div>
+
+                <div v-if="smsMessage" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        Message:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        {{ smsMessage }}
+                    </div>
+                </div>
+
+                <div v-if="pushTitle" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        Title:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        {{ pushTitle }}
+                    </div>
+                </div>
+                <div v-if="pushMessage" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        Message:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        {{ pushMessage }}
+                    </div>
+                </div>
+                <div v-if="pushOpenActionDescription" :class="infoItemCssClass">
+                    <div :class="infoItemLabelCssClass">
+                        Open Option:
+                    </div>
+                    <div :class="infoItemValueCssClass">
+                        {{ pushOpenActionDescription }}
+                    </div>
+                </div>
+            </div>
+
+        </Panel>
+
+        <Panel title="Preview" :hasFullscreen="true">
+
+            <EmailPreview v-if="isEmail" :message="messagePreview?.emailMessage ?? ''" />
+
+            <SmsMobilePreview v-else-if="isSms"
+                              :smsMessage="messagePreview?.smsMessage ?? ''"
+                              :smsFromNumberName="messagePreview?.fromSystemPhoneNumberName ?? ''"
+                              :smsAttachmentLinks="smsAttachmentLinks" />
+
+            <PushNotificationMobilePreview v-else-if="isPush"
+                                           :pushTitle="messagePreview?.pushTitle ?? ''"
+                                           :pushMessage="messagePreview?.pushMessage ?? ''" />
+
+        </Panel>
+
+    </div>
+</template>
+
+<style scoped>
+.communication-message-details-info-item {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: var(--spacing-large);
+}
+
+.communication-message-details-info-item-label {
+    font-size: var(--font-size-small);
+    color: var(--color-interface-stronger);
+    font-weight: var(--font-weight-semibold);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { useCommunicationDetail, useMediumFilter } from "./utils.partial";
+    import EmailPreview from "@Obsidian/Controls/Internal/emailPreview.obs";
+    import { BinaryFileAttachment } from "@Obsidian/Controls/Internal/MobilePreview/types.partial";
+    import PushNotificationMobilePreview from "@Obsidian/Controls/Internal/pushNotificationMobilePreview.obs";
+    import SmsMobilePreview from "@Obsidian/Controls/Internal/smsMobilePreview.obs";
+    import NotficationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
+    import { PushOpenActionDescription } from "@Obsidian/Enums/Blocks/Communication/CommunicationDetail/pushOpenAction";
+    import { Guid } from "@Obsidian/Types";
+    import { emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationMessagePreviewBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationMessagePreviewBag";
+
+    const communicationDetail = useCommunicationDetail();
+    const mediumFilter = useMediumFilter();
+
+    const props = defineProps({
+        messagePreview: {
+            type: Object as PropType<CommunicationMessagePreviewBag | null | undefined>,
+            required: true
+        }
+    });
+
+    const infoItemLabelCssClass = "communication-message-details-info-item-label text-truncate";
+    const infoItemValueCssClass = "communication-message-details-info-item-value text-truncate";
+
+    // #region Values
+
+    const createdByPersonName = ref(props.messagePreview?.createdByPersonName ?? "");
+    const approvedByPersonName = ref(props.messagePreview?.approvedByPersonName ?? "");
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const futureSendRockDateTime = computed((): RockDateTime | null => {
+        if (!communicationDetail.value?.futureSendDateTime) {
+            return null;
+        }
+
+        return RockDateTime.parseISO(communicationDetail.value.futureSendDateTime);
+    });
+
+    const isFutureSend = computed((): boolean => {
+        return !!futureSendRockDateTime.value
+            && !futureSendRockDateTime.value.isEarlierThan(RockDateTime.now());
+    });
+
+    const futureSendDateTimeFormatted = computed((): string => {
+        return futureSendRockDateTime.value
+            ? futureSendRockDateTime.value.toASPString("G")
+            : "";
+    });
+
+    const futureSendDateTimeElapsed = computed((): string => {
+        return futureSendRockDateTime.value
+            ? futureSendRockDateTime.value.toElapsedString()
+            : "";
+    });
+
+    const isEmail = computed((): boolean => {
+        return communicationDetail.value?.type === CommunicationType.Email
+            || mediumFilter.value == CommunicationType.Email;
+    });
+
+    const isSms = computed((): boolean => {
+        return communicationDetail.value?.type === CommunicationType.SMS
+            || mediumFilter.value === CommunicationType.SMS;
+    });
+
+    const isPush = computed((): boolean => {
+        return communicationDetail.value?.type === CommunicationType.PushNotification;
+    });
+
+    const createdRockDateTime = computed((): RockDateTime | null => {
+        return RockDateTime.parseISO(props.messagePreview?.createdDateTime ?? "")
+            ?? null;
+    });
+
+    const createdDateTimeElapsed = computed((): string => {
+        return createdRockDateTime.value?.humanizeElapsed() ?? "";
+    });
+
+    const createdDateTimeTooltip = computed((): string => {
+        return createdRockDateTime.value?.toASPString("G") ?? "";
+    });
+
+    const approvedRockDateTime = computed((): RockDateTime | null => {
+        return RockDateTime.parseISO(props.messagePreview?.approvedDateTime ?? "")
+            ?? null;
+    });
+
+    const approvedDateTimeElapsed = computed((): string => {
+        return approvedRockDateTime.value?.humanizeElapsed() ?? "";
+    });
+
+    const approvedDateTimeTooltip = computed((): string => {
+        return createdRockDateTime.value?.toASPString("G") ?? "";
+    });
+
+    const fromName = computed((): string => {
+        if (isEmail.value) {
+            return props.messagePreview?.fromPersonName ?? "";
+        }
+        else if (isSms.value) {
+            return props.messagePreview?.fromSystemPhoneNumberName ?? "";
+        }
+        else {
+            return "";
+        }
+    });
+
+    const fromValue = computed((): string => {
+        if (isEmail.value) {
+            return props.messagePreview?.fromPersonEmail ?? "";
+        }
+        else if (isSms.value) {
+            return props.messagePreview?.fromSystemPhoneNumber ?? "";
+        }
+        else {
+            return "";
+        }
+    });
+
+    const listName = computed((): string => {
+        return props.messagePreview?.communicationListName || "Manual Recipient List";
+    });
+
+    const emailSubject = computed((): string => {
+        return isEmail.value
+            ? props.messagePreview?.emailSubject ?? ""
+            : "";
+    });
+
+    const replyToEmail = computed((): string => {
+        return isEmail.value
+            ? props.messagePreview?.replyToEmail ?? fromValue.value
+            : "";
+    });
+
+    const ccEmails = computed((): string => {
+        return isEmail.value
+            ? props.messagePreview?.ccEmails ?? ""
+            : "";
+    });
+
+    const bccEmails = computed((): string => {
+        return isEmail.value
+            ? props.messagePreview?.bccEmails ?? ""
+            : "";
+    });
+
+    const emailAttachmentLinks = computed((): BinaryFileAttachment[] => {
+        const binaryFiles = props.messagePreview?.emailAttachmentBinaryFiles;
+        if (isEmail.value && binaryFiles?.length) {
+            return binaryFiles.map(binaryFile => {
+                const binaryFileGuid: Guid = toGuidOrNull(binaryFile?.value) ?? emptyGuid;
+                return {
+                    fileName: binaryFile?.text ?? "",
+                    binaryFileGuid,
+                    url: `/GetFile.ashx?guid=${binaryFileGuid}&fileName=${binaryFile?.text}`
+                };
+            });
+        }
+        else {
+            return [];
+        }
+    });
+
+    const smsMessage = computed((): string => {
+        return isSms.value
+            ? props.messagePreview?.smsMessage ?? ""
+            : "";
+    });
+
+    const smsAttachmentLinks = computed((): BinaryFileAttachment[] => {
+        const binaryFiles = props.messagePreview?.smsAttachmentBinaryFiles;
+        if (isSms.value && binaryFiles?.length) {
+            return binaryFiles.map(binaryFile => {
+                const binaryFileGuid: Guid = toGuidOrNull(binaryFile?.value) ?? emptyGuid;
+                return {
+                    fileName: binaryFile?.text ?? "",
+                    binaryFileGuid,
+                    url: `/GetFile.ashx?guid=${binaryFileGuid}&fileName=${binaryFile?.text}`
+                };
+            });
+        }
+        else {
+            return [];
+        }
+    });
+
+    const pushTitle = computed((): string => {
+        return isPush.value
+            ? props.messagePreview?.pushTitle ?? ""
+            : "";
+    });
+
+    const pushMessage = computed((): string => {
+        return isPush.value
+            ? props.messagePreview?.pushMessage ?? ""
+            : "";
+    });
+
+    const pushOpenActionDescription = computed((): string => {
+        if (!isPush.value || isNullish(props.messagePreview?.pushOpenAction)) {
+            return "";
+        }
+
+        return PushOpenActionDescription[props.messagePreview!.pushOpenAction!];
+    });
+
+    const infoItemsWithValuesCount = computed((): number => {
+        const items: string[] = [
+            // Shared items.
+            createdByPersonName.value,
+            approvedByPersonName.value,
+            fromName.value,
+            listName.value,
+
+            // Email items.
+            emailSubject.value,
+            replyToEmail.value,
+            ccEmails.value,
+            bccEmails.value,
+            emailAttachmentLinks.value.length ? "email attachments" : "",
+
+            // SMS items.
+            smsMessage.value,
+
+            // Push items.
+            pushTitle.value,
+            pushMessage.value,
+            pushOpenActionDescription.value
+        ];
+
+        return items.filter(i => !!i).length;
+    });
+
+    const infoItemCssClass = computed((): string => {
+        const count = infoItemsWithValuesCount.value;
+
+        let colLgWidth = 3;                         // 4 cols by default
+        if (count <= 2) colLgWidth = 6;             // 2 cols
+        else if (count === 3) colLgWidth = 4;       // 3 cols
+        else if (count === 4) colLgWidth = 3;       // 4 cols
+        else if (count <= 6) colLgWidth = 4;        // 3 cols
+
+        return `communication-message-details-info-item col-xs-12 col-md-6 col-lg-${colLgWidth}`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Applies a tooltip to an element. The element should have an
+     * `data-original-title` attribute containing the tooltip text.
+     *
+     * Typical use, `:ref="applyTooltip"`
+     */
+    function applyTooltip(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
+    }
+
+    // #endregion Functions
+</script>

@@ -20,7 +20,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const locationTypes = ref<ListItemBag[]>(safeParseJson(props.modelValue.locationTypes) ?? []);
+    const locationTypes = safeParseJson<ListItemBag[]>(props.options.locationTypes) ?? [];
     const locationTypeGuid = ref<string>(props.modelValue.locationTypeGuid ?? "");
     const location = ref<AddressControlBag | ListItemBag | string | undefined>(safeParseJson(props.modelValue.location));
     const miles = ref<number | null>(toNumberOrNull(props.modelValue.miles));

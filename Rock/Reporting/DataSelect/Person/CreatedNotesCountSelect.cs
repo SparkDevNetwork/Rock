@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -21,9 +21,13 @@ using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
 using Rock.Utility;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -36,7 +40,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the count of notes created by the person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select the count of notes created by the person" )]
-    [Rock.SystemGuid.EntityTypeGuid( "B1CD75F8-7CD2-4495-B13A-B6196ADE94B0")]
+    [Rock.SystemGuid.EntityTypeGuid( "B1CD75F8-7CD2-4495-B13A-B6196ADE94B0" )]
     public class CreatedNotesCountSelect : DataSelectComponent
     {
         #region Properties
@@ -122,6 +126,64 @@ namespace Rock.Reporting.DataSelect.Person
         {
             // disable sorting on this column since it is an IEnumerable
             return string.Empty;
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var noteTypeService = new NoteTypeService( rockContext );
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
+            var noteTypes = noteTypeService.Queryable()
+                .Where( a => a.EntityTypeId == entityTypeIdPerson )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new ListItemBag { Value = a.Guid.ToString(), Text = a.Name } ).ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/createdNotesCountSelect.obs" ),
+                Options = new Dictionary<string, string> { ["noteTypeOptions"] = noteTypes.ToCamelCaseJson( false, true ) }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            var settings = new CreatedNotesCountSelectSettings( selection );
+
+            if ( !settings.IsValid )
+            {
+                return data;
+            }
+
+            var noteTypes = NoteTypeCache.GetMany( settings.NoteTypeIds, rockContext )
+                .Select( a => a.Guid.ToString() )
+                .ToList();
+
+            data.Add( "noteTypes", noteTypes.ToJson() );
+            data.Add( "dateRange", settings.DelimitedValues.ToStringSafe() );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = new CreatedNotesCountSelectSettings();
+            var noteTypeGuids = data.GetValueOrNull( "noteTypes" )?.FromJsonOrNull<List<Guid>>() ?? new List<Guid>();
+            var noteTypeIds = NoteTypeCache.GetMany( noteTypeGuids, rockContext )
+                .Select( a => a.Id )
+                .ToList();
+
+            settings.NoteTypeIds.AddRange( noteTypeIds );
+            settings.DelimitedValues = data.GetValueOrDefault( "dateRange", "" );
+
+            return settings.ToSelectionString();
         }
 
         #endregion

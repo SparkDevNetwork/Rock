@@ -2104,5 +2104,10 @@ namespace Rock.SystemGuid
         /// The library viewer page.
         /// </summary>
         public const string LIBRARY_VIEWER = "1264554E-C5B2-44E9-BD5E-08181B9348D4";
+
+        /// <summary>
+        /// The Group Placement page.
+        /// </summary>
+        public const string GROUP_PLACEMENT = "C1B0C21F-FF3B-4D79-A11A-75BF689A954A";
     }
 }

@@ -1,0 +1,37 @@
+<template>
+    <DropDownList v-model="phoneNumberType" :items="phoneNumberTypeOptions" label="Phone Type" :showBlankItem="false" />
+
+    <CheckBox v-if="showCallOriginationCheckBox"
+              v-model="enableCallOrigination"
+              label="Enable Call Origination"
+              help="Determines if the phone numbers should be linked to enable click-to-call." />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { asBoolean, asTrueOrFalseString } from "@Obsidian/Utility/booleanUtils";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const phoneNumberTypeOptions = safeParseJson<ListItemBag[]>(props.options.phoneNumberTypeOptions) ?? [];
+    const phoneNumberType = ref<string>(props.modelValue.phoneNumberType ?? "");
+
+    const showCallOriginationCheckBox = asBoolean(props.options.showCallOriginationCheckBox);
+    const enableCallOrigination = ref<boolean>(asBoolean(props.modelValue.enableCallOrigination));
+
+    watch([phoneNumberType, enableCallOrigination], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            phoneNumberType: phoneNumberType.value,
+            enableCallOrigination: asTrueOrFalseString(enableCallOrigination.value),
+        });
+    });
+</script>

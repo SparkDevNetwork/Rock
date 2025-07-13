@@ -23,7 +23,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const learningProgramOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.learningProgramOptions) ?? []);
+    const learningProgramOptions = safeParseJson<ListItemBag[]>(props.options.learningProgramOptions) ?? [];
     const learningProgram = ref<Guid>(props.modelValue.learningProgram ?? "");
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
 

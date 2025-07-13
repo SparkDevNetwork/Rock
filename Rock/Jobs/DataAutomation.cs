@@ -22,6 +22,8 @@ using System.Linq;
 using System.Net.Http;
 using System.Web;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -140,11 +142,7 @@ Update Family Status: {updateFamilyStatus}
                     using ( RockContext rockContext = new RockContext() )
                     {
                         rockContext.SourceOfChange = SOURCE_OF_CHANGE;
-#if REVIEW_WEBFORMS
-                        rockContext.Database.CommandTimeout = commandTimeout;
-#else
                         rockContext.Database.SetCommandTimeout( commandTimeout );
-#endif
                         // attach the person object to this rockContext so that it will do changetracking on it
                         new PersonService( rockContext ).Attach( person );
 
@@ -251,11 +249,7 @@ Update Family Status: {updateFamilyStatus}
                 {
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
-#if REVIEW_WEBFORMS
-                    rockContext.Database.CommandTimeout = commandTimeout;
-#else
                     rockContext.Database.SetCommandTimeout( commandTimeout );
-#endif
 
                     var excludeAttributeIds = GetIgnoredPersonAttributeList( rockContext );
                     // Get all the person ids with selected activity
@@ -476,11 +470,7 @@ Update Family Status: {updateFamilyStatus}
                     var excludeAttributeIds = GetIgnoredPersonAttributeList( rockContext );
 
                     // increase the timeout just in case.
-#if REVIEW_WEBFORMS
-                    rockContext.Database.CommandTimeout = commandTimeout;
-#else
                     rockContext.Database.SetCommandTimeout( commandTimeout );
-#endif
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
                     // Get all the person ids with selected activity
@@ -633,11 +623,7 @@ Update Family Status: {updateFamilyStatus}
                 {
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
                     // increase the timeout just in case.
-#if REVIEW_WEBFORMS
-                    rockContext.Database.CommandTimeout = commandTimeout;
-#else
                     rockContext.Database.SetCommandTimeout( commandTimeout );
-#endif
 
                     // Start a qry for all family ids
                     var familyIdQry = new GroupService( rockContext )
@@ -977,11 +963,7 @@ Update Family Status: {updateFamilyStatus}
                 using ( var rockContext = new RockContext() )
                 {
                     // increase the timeout just in case.
-#if REVIEW_WEBFORMS
-                    rockContext.Database.CommandTimeout = commandTimeout;
-#else
                     rockContext.Database.SetCommandTimeout( commandTimeout );
-#endif
                     rockContext.SourceOfChange = SOURCE_OF_CHANGE;
 
                     var qry = new GroupMemberService( rockContext )
@@ -1312,11 +1294,7 @@ Update Family Status: {updateFamilyStatus}
                 int dataViewId = connectionStatusDataviewMapping.Value.Value;
                 using ( var dataViewRockContext = new RockContext() )
                 {
-#if REVIEW_WEBFORMS
-                    dataViewRockContext.Database.CommandTimeout = commandTimeout;
-#else
                     dataViewRockContext.Database.SetCommandTimeout( commandTimeout );
-#endif
                     var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {
@@ -1406,11 +1384,7 @@ Update Family Status: {updateFamilyStatus}
                 int dataViewId = groupStatusDataviewMapping.Value.Value;
                 using ( var dataViewRockContext = new RockContext() )
                 {
-#if REVIEW_WEBFORMS
-                    dataViewRockContext.Database.CommandTimeout = commandTimeout;
-#else
                     dataViewRockContext.Database.SetCommandTimeout( commandTimeout );
-#endif
                     var dataView = DataViewCache.Get( dataViewId );
                     if ( dataView == null )
                     {

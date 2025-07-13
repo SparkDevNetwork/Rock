@@ -22,6 +22,8 @@ using System.IO;
 using System.Linq;
 using System.Text;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -226,7 +228,7 @@ namespace Rock.Jobs
                         }
                     }
 
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
                     var jobMigration = new JobMigration( rockContext );
                     var migrationHelper = new MigrationHelper( jobMigration );
                     ReplaceBlocksOfOneBlockTypeWithBlocksOfAnotherBlockType( blockTypeGuidPair.Key, blockTypeGuidPair.Value, rockContext, migrationHelper );

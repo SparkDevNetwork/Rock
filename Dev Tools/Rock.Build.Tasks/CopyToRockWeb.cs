@@ -95,12 +95,9 @@ namespace Rock.Build.Tasks
                 return;
             }
 
-            if ( File.Exists( destFile ) )
+            if ( IsMatchingSizeAndTimeStamp( sourceFile, destFile ) )
             {
-                if ( new FileInfo( destFile ).LastWriteTime >= new FileInfo( sourceFile ).LastWriteTime )
-                {
-                    return;
-                }
+                return;
             }
 
             var relativeDestination = destFile;
@@ -113,6 +110,35 @@ namespace Rock.Build.Tasks
 
             Directory.CreateDirectory( Path.GetDirectoryName( destFile ) );
             File.Copy( sourceFile, destFile, true );
+        }
+
+        /// <summary>
+        /// Method compares two files and returns true if their size and timestamp are identical.
+        /// </summary>
+        /// <param name="sourceFile">The source file</param>
+        /// <param name="destinationFile">The destination file</param>
+        private static bool IsMatchingSizeAndTimeStamp( string sourceFile, string destinationFile )
+        {
+            var sf = new FileInfo( sourceFile );
+            var df = new FileInfo( destinationFile );
+
+            // If the destination doesn't exist, then it is not a matching file.
+            if ( !df.Exists )
+            {
+                return false;
+            }
+
+            if ( sf.LastWriteTimeUtc != df.LastWriteTimeUtc )
+            {
+                return false;
+            }
+
+            if ( sf.Length != df.Length )
+            {
+                return false;
+            }
+
+            return true;
         }
     }
 }

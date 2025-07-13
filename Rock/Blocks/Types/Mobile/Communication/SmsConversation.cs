@@ -21,6 +21,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Mobile;
@@ -253,11 +255,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
             {
                 using ( var rockContext = new RockContext() )
                 {
-#if REVIEW_NET5_0_OR_GREATER
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
-#else
-                    rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
-#endif
 
                     var communicationResponseService = new CommunicationResponseService( rockContext );
                     var recipientPersonId = new PersonService( rockContext ).GetId( personGuid.Value );

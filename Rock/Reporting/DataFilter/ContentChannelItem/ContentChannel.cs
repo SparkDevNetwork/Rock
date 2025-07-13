@@ -71,15 +71,6 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            return new DynamicComponentDefinitionBag
-            {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelFilter.obs" )
-            };
-        }
-
-        /// <inheritdoc/>
-        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
-        {
             var contentChannelOptions = new ContentChannelService( new RockContext() ).Queryable()
                .Where( a => a.ContentChannelType.ShowInChannelList == true )
                .OrderBy( d => d.Name )
@@ -87,10 +78,22 @@ namespace Rock.Reporting.DataFilter.ContentChannelItem
                .Select( a => a.ToListItemBag() )
                .ToList();
 
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/ContentChannelItem/contentChannelFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["contentChannelOptions"] = contentChannelOptions.ToCamelCaseJson( false, true )
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
             return new Dictionary<string, string>
             {
                 ["contentChannel"] = selection,
-                ["contentChannelOptions"] = contentChannelOptions.ToCamelCaseJson( false, true )
             };
         }
 

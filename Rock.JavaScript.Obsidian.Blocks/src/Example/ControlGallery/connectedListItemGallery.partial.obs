@@ -10,10 +10,16 @@
                            :primaryActions="primaryActions"
                            :secondaryActions="secondaryActions"
                            :title="title"
-                           @click="onClick">
+                           :onClick="simulateNotClickable ? undefined : onClick">
+
+            <template v-if="simulatePrependSlot" #prepend>
+                Prepend Slot Content
+            </template>
 
             <template v-if="simulateDescriptionSlot" #description>
-                <div>Description Content</div>
+                <div>
+                    <i class="ti ti-clock"></i> {{ description }}
+                </div>
             </template>
 
         </ConnectedListItem>
@@ -29,7 +35,6 @@
             <div class="row">
                 <TextBox v-model="title" formGroupClasses="col-md-4" label="Title" />
                 <TextBox v-model="description" formGroupClasses="col-md-4" label="Description" />
-                <TextBox v-model="asideIconCssClass" formGroupClasses="col-md-4" label="Aside Icon CSS Class" />
             </div>
 
             <div class="row">
@@ -37,7 +42,7 @@
                 <TextBox v-model="aside" formGroupClasses="col-md-4" label="Aside" />
             </div>
 
-            <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateItems" horizontal :repeatColumns="4" />
+            <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
         </template>
     </GalleryAndResult>
 </template>
@@ -110,7 +115,7 @@
         ];
     });
 
-    const simulateItems = [
+    const simulateOptions = [
         {
             value: "primaryActions",
             text: "Primary Actions"
@@ -120,12 +125,28 @@
             text: "Secondary Actions"
         },
         {
+            value: "prepend",
+            text: "Prepend Slot"
+        },
+        {
             value: "description",
             text: "Description Slot"
+        },
+        {
+            value: "notClickable",
+            text: "Not Clickable"
         }
     ];
 
+    const simulatePrependSlot = computed((): boolean => simulateValues.value.includes("prepend"));
+
     const simulateDescriptionSlot = computed((): boolean => simulateValues.value.includes("description"));
+
+    const anySlotsSimulated = computed((): boolean => {
+        return simulatePrependSlot.value || simulateDescriptionSlot.value;
+    });
+
+    const simulateNotClickable = computed((): boolean => simulateValues.value.includes("notClickable"));
 
     const exampleCode = computed<string>(() => {
         return `<ConnectedListItem aside="${aside.value}"
@@ -136,14 +157,19 @@
                    description="${description.value}"
                    :primaryActions="${JSON.stringify(primaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
                    :secondaryActions="${JSON.stringify(secondaryActions.value, null, 2).replace(/\n/g, "\n                   ").replace(/"/g, "'")}"
-                   title="${title.value}"
-                   @click="onClick"${simulateValues.value.includes("description") ? `>
-    <template #description>Description Content</template>
+                   title="${title.value}"${!simulateNotClickable.value ? `
+                   @click="onClick"` : ""}${anySlotsSimulated.value ? `>${simulatePrependSlot.value ? `
+    <template #prepend>
+        Prepend Slot Content
+    </template>` : ""}${simulateDescriptionSlot.value ? `
+    <template #description>
+        <i class="ti ti-clock"></i> ${description.value}
+    </template>` : ""}
 </ConnectedListItem>` : " />"}`;
     });
 
     function onClick(): void {
-        alert("Button clicked!");
+        alert("Item clicked!");
     }
 
     watch(iconLabelType, (newValue) => {

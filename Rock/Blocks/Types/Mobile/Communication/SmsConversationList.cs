@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Communication;
@@ -223,11 +225,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
             {
                 using ( var rockContext = new RockContext() )
                 {
-#if REVIEW_NET5_0_OR_GREATER
                     rockContext.Database.SetCommandTimeout( GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180 );
-#else
-                    rockContext.Database.CommandTimeout = GetAttributeValue( AttributeKey.DatabaseTimeoutSeconds ).AsIntegerOrNull() ?? 180;
-#endif
 
                     var months = GetAttributeValue( AttributeKey.ShowConversationsFromMonthsAgo ).AsInteger();
                     var startDateTime = RockDateTime.Now.AddMonths( -months );

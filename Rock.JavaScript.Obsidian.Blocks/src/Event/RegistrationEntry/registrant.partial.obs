@@ -9,7 +9,7 @@
                     </div>
                     <div v-if="isFamilyMembersDropDownVisible" class="row">
                         <div class="col-md-6">
-                            <DropDownList :modelValue="currentRegistrant.personGuid ?? ''" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" :label="isCreatingNewFamily ? 'Guest to Register' : 'Family Member to Register'" :showBlankItem="false" />
+                            <DropDownList :modelValue="currentRegistrant.personGuid ?? ''" @update:modelValue="onSetPersonGuid" :items="familyMemberOptions" :label="props.currentRegistrant.isNewFamily ? 'Guest to Register' : 'Family Member to Register'" :showBlankItem="false" />
                         </div>
                     </div>
                 </template>
@@ -157,7 +157,6 @@
     const signatureToken = ref<string>("");
     const formResetKey = ref<string>("");
     const isNextDisabled = ref<boolean>(false);
-    const isCreatingNewFamily = ref<boolean>(false);
 
     // #endregion
 
@@ -363,7 +362,7 @@
 
     /** The people that can be picked from because they are members of the same family. */
     const familyMemberOptions = computed<ListItemBag[]>(() => {
-        if (isCreatingNewFamily.value) {
+        if (props.currentRegistrant.isNewFamily) {
             return [
                 {
                     text: "Guest",
@@ -794,10 +793,10 @@
 
     function onSetFamilyGuid(familyGuid: Guid): void {
         if (familyGuid === newFamilyGuid) {
-            isCreatingNewFamily.value = true;
+            props.currentRegistrant.isNewFamily = true;
         }
         else {
-            isCreatingNewFamily.value = false;
+            props.currentRegistrant.isNewFamily = false;
         }
 
         if (familyGuid !== props.currentRegistrant.familyGuid) {

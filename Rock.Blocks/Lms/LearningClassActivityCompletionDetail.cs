@@ -246,6 +246,7 @@ namespace Rock.Blocks.Lms
             // Create the participant bags
             var bags = classParticipants.Select( p => new LearningActivityParticipantBag
             {
+                PersonId = p.PersonId,
                 Email = p.Email,
                 Guid = p.Guid,
                 IdKey = Rock.Utility.IdHasher.Instance.GetHash( p.Id ),

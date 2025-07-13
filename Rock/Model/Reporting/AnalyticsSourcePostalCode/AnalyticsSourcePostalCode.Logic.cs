@@ -32,6 +32,8 @@ using System.Reflection;
 using EntityFramework.Utilities;
 #endif
 
+using Microsoft.EntityFrameworkCore;
+
 using Newtonsoft.Json;
 
 #if REVIEW_WEBFORMS
@@ -144,20 +146,12 @@ namespace Rock.Model
                 try
                 {
                     // if TRUNCATE takes more than 5 seconds, it is probably due to a lock. If so, do a DELETE FROM instead
-#if REVIEW_NET5_0_OR_GREATER
                     rockContext.Database.SetCommandTimeout( 5 );
-#else
-                    rockContext.Database.CommandTimeout = 5;
-#endif
                     rockContext.Database.ExecuteSqlCommand( string.Format( "TRUNCATE TABLE {0}", typeof( AnalyticsSourcePostalCode ).GetCustomAttribute<TableAttribute>().Name ) );
                 }
                 catch
                 {
-#if REVIEW_NET5_0_OR_GREATER
                     rockContext.Database.SetCommandTimeout( null );
-#else
-                    rockContext.Database.CommandTimeout = null;
-#endif
                     rockContext.Database.ExecuteSqlCommand( string.Format( "DELETE FROM {0}", typeof( AnalyticsSourcePostalCode ).GetCustomAttribute<TableAttribute>().Name ) );
                 }
             }

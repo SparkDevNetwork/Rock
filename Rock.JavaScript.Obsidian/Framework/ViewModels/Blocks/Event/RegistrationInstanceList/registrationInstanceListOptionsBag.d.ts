@@ -23,18 +23,12 @@
 
 /** The additional configuration options for the Registration Instance List block. */
 export type RegistrationInstanceListOptionsBag = {
-    /**
-     * Whether to show the wait list column.
-     */
-    showWaitList?: boolean;
+    /** The name of the registration instance. */
+    registrationInstanceName?: string | null;
 
-    /**
-     * The name of the registration instance to show.
-     */
-    registrationInstanceName?: string;
+    /** Whether to show the details list column. */
+    showDetailsColumn: boolean;
 
-    /**
-     * Gets or sets a value indicating whether the details column should be shown.
-     */
-    showDetailsColumn?: boolean;
+    /** Whether to show the wait list column. */
+    showWaitList: boolean;
 };

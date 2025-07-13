@@ -28,6 +28,6 @@ export type BulkImportToolBox = {
     /** Gets or sets the options for the block. */
     options?: BulkImportToolOptionsBag | null;
 
-    /** Gets or sets the root folder for the file upload. */
+    /** Gets or sets the Encrypted Root Folder. */
     rootFolder?: string | null;
 };

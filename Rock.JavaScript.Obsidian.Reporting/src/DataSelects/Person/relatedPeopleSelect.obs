@@ -1,0 +1,45 @@
+<template>
+    <CheckBoxList v-model="familyRelationships" :items="familyRelationshipOptions"
+                  label="Include Family Relationships Types"
+                  help="These relationship types apply to members of the same Family." />
+
+    <CheckBoxList v-model="knownRelationships" :items="knownRelationshipOptions"
+                  label="Include Known Relationships Types"
+                  help="These relationship types apply to People from another Family." />
+
+    <DropDownList v-model="listFormat" :items="listFormatOptions" :showBlankItem="false"
+                  label="Output Format"
+                  help="Specifies the content and format of the items in this field." />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const familyRelationshipOptions = safeParseJson<ListItemBag[]>(props.options.familyRelationshipOptions) ?? [];
+    const familyRelationships = ref<string[]>(safeParseJson(props.modelValue.familyRelationships) ?? []);
+
+    const knownRelationshipOptions = safeParseJson<ListItemBag[]>(props.options.knownRelationshipOptions) ?? [];
+    const knownRelationships = ref<string[]>(safeParseJson(props.modelValue.knownRelationships) ?? []);
+
+    const listFormatOptions = safeParseJson<ListItemBag[]>(props.options.listFormatOptions) ?? [];
+    const listFormat = ref<string>(props.modelValue.listFormat ?? "");
+
+    watch([familyRelationships, knownRelationships, listFormat], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            familyRelationships: JSON.stringify(familyRelationships.value),
+            knownRelationships: JSON.stringify(knownRelationships.value),
+            listFormat: listFormat.value,
+        });
+    });
+</script>

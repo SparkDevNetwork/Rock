@@ -52,7 +52,7 @@ body.rock-modal {
     .close {
       padding:          6px;
       text-decoration:  none;
-      color:            var(--color-interface-softest);
+      color:            var(--base-interface-softest);
       text-shadow:      none;
     }
 
@@ -193,7 +193,9 @@ dl:not(.dl-horizontal) {
 
 // Moved from _blocks-connections.less `\RockWeb\Styles\_blocks-connections.less`
 .connection-request-board {
-
+  .modal-title {
+    color: var(--color-interface-stronger);
+  }
   .modal-content.rock-modal .modal-header {
     color:        var(--color-interface-stronger);
     background:   var(--color-interface-softer);
@@ -204,7 +206,7 @@ dl:not(.dl-horizontal) {
   }
 
   .modal-content.rock-modal .modal-header .close {
-    color:        var(--color-interface-medium);
+    color:        var(--color-interface-strong);
   }
 
   .modal-content.rock-modal .modal-header small {

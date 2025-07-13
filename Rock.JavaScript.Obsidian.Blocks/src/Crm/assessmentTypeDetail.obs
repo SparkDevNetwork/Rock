@@ -107,7 +107,7 @@
 
         if (assessmentTypeViewBag.value?.isActive !== true) {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
+                iconCssClass: "fa fa-lightbulb-o",
                 title: "Inactive",
                 type: "danger"
             });

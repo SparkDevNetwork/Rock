@@ -55,6 +55,12 @@ namespace Rock.Model
 
             // ignoring AttendanceOccurrence,ScheduleId
 
+            if ( new Service<CommunicationFlow>( Context ).Queryable().Any( a => a.ScheduleId == item.Id ) )
+            {
+                errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, CommunicationFlow.FriendlyTypeName );
+                return false;
+            }
+
             if ( new Service<DataView>( Context ).Queryable().Any( a => a.PersistedScheduleId == item.Id ) )
             {
                 errorMessage = string.Format( "This {0} is assigned to a {1}.", Schedule.FriendlyTypeName, DataView.FriendlyTypeName );

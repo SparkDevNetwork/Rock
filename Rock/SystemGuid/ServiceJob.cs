@@ -508,5 +508,10 @@ namespace Rock.SystemGuid
         /// The Job to run Post v18.0 Data Migrations to chop Block.
         /// </summary>
         public const string DATA_MIGRATIONS_180_CHOP_OBSIDIAN_BLOCKS = "6BFCE2DE-5B38-4B71-8737-423AF51A39B1";
+
+        /// <summary>
+        /// The job to run Post v18.0 Data Migrations to populate the newly-added [CommunicationRecipient].[DeliveredDateTime] field.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_POPULATE_COMMUNICATIONRECIPIENT_DELIVEREDDATETIME = "EF2CF0AC-7A83-4BEB-8824-41D3B5B8B832";
     }
 }

@@ -16,6 +16,8 @@
 //
 using System;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Lava;
 using Rock.Web;
@@ -116,8 +118,8 @@ END";
 
             using ( var rockContext = new Rock.Data.RockContext() )
             {
-#if REVIEW_NET5_0_OR_GREATER
                 rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
+#if REVIEW_NET5_0_OR_GREATER
                 rockContext.Database.ExecuteSqlRaw( @"
 UPDATE FinancialTransaction
 SET SundayDate = dbo.ufnUtility_GetSundayDate(TransactionDateTime)
@@ -132,7 +134,6 @@ WHERE SundayDate IS NULL
 	OR SundayDate != dbo.ufnUtility_GetSundayDate(OccurrenceDate)
 " );
 #else
-                rockContext.Database.CommandTimeout = commandTimeoutSeconds;
                 rockContext.Database.ExecuteSqlCommand( @"
 UPDATE FinancialTransaction
 SET SundayDate = dbo.ufnUtility_GetSundayDate(TransactionDateTime)

@@ -39,15 +39,25 @@ namespace RockWeb
         {
             try
             {
+                var entityTypeGuid = context.Request.QueryString["EntityTypeGuid"].AsGuidOrNull();
                 int entityTypeId = context.Request.QueryString["EntityTypeId"].AsInteger();
                 string recordKey = context.Request.QueryString["RecordKey"];
 
-                if ( entityTypeId == 0 || recordKey.IsNullOrWhiteSpace() )
+                if ( ( entityTypeId == 0 && entityTypeGuid == null ) || recordKey.IsNullOrWhiteSpace() )
                 {
-                    throw new Exception( "Missing or invalid EntityTypeId or RecordKey" );
+                    throw new Exception( "Missing or invalid EntityTypeId/Guid or RecordKey" );
                 }
 
-                Type backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeId ).AssemblyName );
+                Type backgroundCheckComponentType;
+                if ( entityTypeGuid.HasValue )
+                {
+                    backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeGuid.Value ).AssemblyName );
+                }
+                else
+                {
+                    backgroundCheckComponentType = Type.GetType( EntityTypeCache.Get( entityTypeId ).AssemblyName );
+                }
+
                 if ( backgroundCheckComponentType != null )
                 {
                     MethodInfo methodInfo = backgroundCheckComponentType.GetMethod( "GetReportUrl" );
@@ -68,7 +78,7 @@ namespace RockWeb
                             {
                                 if ( url == "Unauthorized" )
                                 {
-                                    context.Response.StatusCode = (int)HttpStatusCode.Unauthorized;
+                                    context.Response.StatusCode = ( int ) HttpStatusCode.Unauthorized;
                                     return;
                                 }
                                 else
@@ -82,6 +92,10 @@ namespace RockWeb
                             {
                                 // Can safely ignore this exception
                             }
+                        }
+                        else
+                        {
+                            SendError( context, 500, "The underlying component was unable to retrieve the requested item.  Additional details can be found in the exception log." );
                         }
                     }
                 }
@@ -102,6 +116,20 @@ namespace RockWeb
                 ExceptionLogService.LogException( ex, context );
                 context.Response.StatusCode = (int)HttpStatusCode.InternalServerError;
             }
+        }
+
+        /// <summary>
+        /// Sends an error code response and completes the request.
+        /// </summary>
+        /// <param name="context">THe HttpContext for this request.</param>
+        /// <param name="code">The response code to send.</param>
+        /// <param name="message">The response message to send.</param>
+        private void SendError( HttpContext context, int code, string message )
+        {
+            context.Response.Clear();
+            context.Response.StatusCode = code;
+            context.Response.StatusDescription = message;
+            context.ApplicationInstance.CompleteRequest();
         }
 
         /// <summary>

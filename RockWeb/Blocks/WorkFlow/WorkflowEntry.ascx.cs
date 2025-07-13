@@ -939,7 +939,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( workflowType == null )
                     {
-                        // If the workflowType is still not set, try to find it from the "WorkflowType" from the IdKey.
+                        // If the workflowType is still not set, try to find it from the "WorkflowTypeId" as an IdKey.
                         var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId );
                         if ( workflowTypeId.IsNotNullOrWhiteSpace() )
                         {

@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -44,11 +46,7 @@ namespace Rock.Tasks
                     // Allow an extended timeout for database access, to cater for situations where there is a large queue
                     // of these tasks to process and we may have to wait.
                     var rockContext = new RockContext();
-#if REVIEW_NET5_0_OR_GREATER
                     rockContext.Database.SetCommandTimeout( 180 );
-#else
-                    rockContext.Database.CommandTimeout = 180;
-#endif
 
                     var groupMember = new GroupMemberService( rockContext ).Get( message.GroupMemberGuid.Value );
                     if ( groupMember != null )

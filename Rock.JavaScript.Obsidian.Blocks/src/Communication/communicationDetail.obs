@@ -1,0 +1,598 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="!config.isHidden" class="communication-detail">
+
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
+        <Panel v-else
+               type="block"
+               :title="communicationName"
+               panelHeadingCssClass="communication-detail-panel-heading"
+               panelBodyCssClass="communication-detail-panel-body">
+
+            <template #headerActions>
+                <div class="action">
+                    <HighlightLabel v-if="!isNullish(communicationStatus)"
+                                    :labelType="communicationStatusLabelType">
+                        {{ InferredCommunicationStatusDescription[communicationStatus] }}
+                    </HighlightLabel>
+                </div>
+                <div class="action d-none d-md-block">
+                    <HighlightLabel>
+                        {{ recipientCountLabel }}
+                    </HighlightLabel>
+                </div>
+                <div v-if="canDuplicate" class="action d-none d-md-block">
+                    <RockButton :btnSize="BtnSize.Small"
+                                :isLoading="isDuplicating"
+                                :disabled="isPerformingAction"
+                                @click="onDuplicateCommunicationClick">
+                        <i class="ti ti-files"></i>
+                        Duplicate
+                    </RockButton>
+                </div>
+            </template>
+
+            <template #subheaderLeft>
+                <div class="communication-detail-sub-header-left">
+                    <HighlightLabel labelType="info"
+                                    :iconCssClass="mediumIconCssClass">
+                        {{ mediumLabel }}
+                    </HighlightLabel>
+                    <HighlightLabel v-if="campaignLabel"
+                                    labelType="info"
+                                    iconCssClass="ti ti-git-branch"
+                                    class="d-none d-md-flex">
+                        {{ campaignLabel }}
+                    </HighlightLabel>
+                    <HighlightLabel v-if="topicLabel"
+                                    labelType="info"
+                                    iconCssClass="ti ti-messages"
+                                    class="d-none d-md-flex">
+                        {{ topicLabel }}
+                    </HighlightLabel>
+                    <HighlightLabel v-if="isBulk"
+                                    labelType="default"
+                                    iconCssClass="ti ti-mail-plus"
+                                    class="d-none d-md-flex">
+                        Bulk
+                    </HighlightLabel>
+                </div>
+            </template>
+
+            <template #subheaderRight>
+                <div class="communication-detail-sub-header-right">
+                    <ButtonGroup v-if="showMediumButtonGroup"
+                                 v-model="mediumFilterItem"
+                                 :items="mediumFilterItems"
+                                 :btnSize="BtnSize.ExtraSmall" />
+                </div>
+            </template>
+
+            <div class="communication-detail-panel-body-content">
+                <TabbedContent v-model:selectedTab="selectedTab"
+                               :tabs="tabs"
+                               :selectedTabQueryParameterKey="PageParameterKey.Tab"
+                               class="communication-detail-tabbed-content">
+                    <template #tabpane="{ item }">
+                        <div class="communication-detail-tab-content">
+
+                            <Analytics v-if="item === TabItem.Analytics" />
+
+                            <MessageDetails v-else-if="item === TabItem.MessageDetails"
+                                            :messagePreview="config.messagePreview" />
+
+                            <RecipientDetails v-else-if="item === TabItem.RecipientDetails"
+                                              :gridDefinition="config.recipientGridDefinition"
+                                              :gridOptions="config.recipientGridOptions"
+                                              :communicationType="communicationType" />
+
+                        </div>
+                    </template>
+                </TabbedContent>
+            </div>
+
+            <template v-if="showFooterActions" #footerActions>
+                <div class="communication-detail-footer-actions d-none d-md-block">
+                    <RockButton :btnType="BtnType.Link" @click="onSeeSourcePageClick">
+                        <div class="communication-detail-source-page-button">
+                            <span>See Source Page</span>
+                            <i class="ti ti-external-link"></i>
+                        </div>
+                    </RockButton>
+                </div>
+            </template>
+
+            <template v-if="showFooterSecondaryActions" #footerSecondaryActions>
+                <div class="communication-detail-footer-secondary-actions">
+                    <RockButton v-if="canApprove"
+                                :btnType="BtnType.Success"
+                                :isLoading="isApproving"
+                                :disabled="isPerformingAction"
+                                @click="onApproveClick">
+                        Approve
+                    </RockButton>
+                    <RockButton v-if="canDeny"
+                                :btnType="BtnType.Danger"
+                                :isLoading="isDenying"
+                                :disabled="isPerformingAction"
+                                @click="onDenyClick">
+                        Deny
+                    </RockButton>
+                    <RockButton v-if="canEdit"
+                                :isLoading="isEditing"
+                                :disabled="isPerformingAction"
+                                @click="onEditClick">
+                        Edit
+                    </RockButton>
+                    <RockButton v-if="canCancel"
+                                :btnType="BtnType.Link"
+                                :isLoading="isCancelling"
+                                :disabled="isPerformingAction"
+                                @click="onCancelClick">
+                        Cancel Send
+                    </RockButton>
+                    <RockButton v-if="canCreatePersonalTemplate"
+                                :btnType="BtnType.Link"
+                                :isLoading="isCreatingPersonalTemplate"
+                                :disabled="isPerformingAction"
+                                class="d-none d-md-inline-block"
+                                @click="isPersonalTemplateModalVisible = true">
+                        Create Personal Template
+                    </RockButton>
+                </div>
+            </template>
+
+        </Panel>
+
+    </div>
+
+    <PersonalTemplateModal v-model="isPersonalTemplateModalVisible"
+                           @createPersonalTemplate="onCreatePersonalTemplate" />
+</template>
+
+<style scoped>
+.communication-detail-sub-header-left,
+.communication-detail-sub-header-right {
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    gap: var(--spacing-xsmall);
+}
+
+:deep(.communication-detail-panel-body) {
+    display: flex;
+    flex-direction: column;
+    padding: 0;
+    overflow-y: hidden;
+}
+
+.communication-detail-panel-body-content {
+    flex: 1 1 auto;
+    overflow-y: hidden;
+}
+
+:deep(.communication-detail-panel-body > .actions) {
+    flex: 0 0 auto;
+    margin: 0;
+}
+
+.communication-detail-tabbed-content {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+}
+
+.communication-detail-tab-content {
+    padding: 0 var(--spacing-large);
+}
+
+.communication-detail-source-page-button {
+    color: var(--color-primary);
+    font-weight: var(--font-weight-semibold);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.communication-detail-footer-secondary-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref } from "vue";
+    import PersonalTemplateModal from "./CommunicationDetail/personalTemplateModal.partial.obs";
+    import { PageParameterKey, TabItem } from "./CommunicationDetail/types.partial";
+    import { provideCommunicationDetail, provideMediumFilter, provideSelectedTab } from "./CommunicationDetail/utils.partial";
+    import Analytics from "./CommunicationDetail/analytics.partial.obs";
+    import MessageDetails from "./CommunicationDetail/messageDetails.partial.obs";
+    import RecipientDetails from "./CommunicationDetail/recipientDetails.partial.obs";
+    import ButtonGroup from "@Obsidian/Controls/buttonGroup.obs";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TabbedContent from "@Obsidian/Controls/tabbedContent.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { InferredCommunicationStatus, InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
+    import { alert } from "@Obsidian/Utility/dialogs";
+    import { asFormattedString, toNumber } from "@Obsidian/Utility/numberUtils";
+    import { pluralize } from "@Obsidian/Utility/stringUtils";
+    import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { CommunicationActionResponseBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationActionResponseBag";
+    import { CommunicationDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDetailBag";
+    import { CommunicationDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDetailInitializationBox";
+    import { CommunicationRedirectBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationRedirectBag";
+    import { CreatePersonalTemplateRequestBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/createPersonalTemplateRequestBag";
+
+    const config = useConfigurationValues<CommunicationDetailInitializationBox>();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    const invokeBlockAction = useInvokeBlockAction();
+
+    onConfigurationValuesChanged(useReloadBlock());
+
+    const mediumFilterItems = [
+        {
+            text: CommunicationTypeDescription[CommunicationType.Email],
+            value: CommunicationType.Email.toString()
+        },
+        {
+            text: CommunicationTypeDescription[CommunicationType.SMS],
+            value: CommunicationType.SMS.toString()
+        }
+    ];
+
+    const tabs = [
+        TabItem.Analytics,
+        TabItem.MessageDetails,
+        TabItem.RecipientDetails
+    ];
+
+    // #region Values
+
+    const errorMessage = ref(config?.errorMessage ?? "");
+
+    const mediumFilterItem = ref(CommunicationType.Email.toString());
+
+    const selectedTab = ref(
+        new URLSearchParams(window.location.search).get(PageParameterKey.Tab)
+        || TabItem.Analytics
+    );
+
+    const isDuplicating = ref(false);
+    const isApproving = ref(false);
+    const isDenying = ref(false);
+    const isEditing = ref(false);
+    const isCancelling = ref(false);
+
+    const isPersonalTemplateModalVisible = ref(false);
+    const isCreatingPersonalTemplate = ref(false);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const communicationDetail = computed((): CommunicationDetailBag | null | undefined => {
+        return config.communicationDetail;
+    });
+
+    const communicationName = computed((): string => {
+        return communicationDetail.value?.name ?? "";
+    });
+
+    const communicationStatus = computed((): InferredCommunicationStatus | undefined => {
+        return communicationDetail.value?.inferredStatus;
+    });
+
+    const communicationStatusLabelType = computed((): "default" | "success" | "warning" | "danger" => {
+        switch (communicationStatus.value) {
+            case InferredCommunicationStatus.Draft:
+            case InferredCommunicationStatus.PendingApproval:
+            case InferredCommunicationStatus.Approved:
+                return "default";
+            case InferredCommunicationStatus.Denied:
+                return "danger";
+            case InferredCommunicationStatus.Sending:
+                return "warning";
+            case InferredCommunicationStatus.Sent:
+                return "success";
+            default:
+                return "default";
+        }
+    });
+
+    const communicationType = computed((): CommunicationType | undefined => {
+        return communicationDetail.value?.type;
+    });
+
+    const topicLabel = computed((): string | null | undefined => {
+        return communicationDetail.value?.topic;
+    });
+
+    const isBulk = computed((): boolean => {
+        return communicationDetail.value?.isBulk ?? false;
+    });
+
+    const recipientCountLabel = computed((): string => {
+        const recipientCount = communicationDetail.value?.totalRecipientCount ?? 0;
+
+        return recipientCount > 0
+            ? `${asFormattedString(recipientCount)} ${pluralize("Recipient")}`
+            : "No Recipients";
+    });
+
+    const mediumIconCssClass = computed((): string => {
+        let iconCssClass = "";
+
+        switch (communicationType.value) {
+            case CommunicationType.Email:
+                iconCssClass = "ti ti-mail ";
+                break;
+            case CommunicationType.SMS:
+                iconCssClass = "ti ti-message ";
+                break;
+            case CommunicationType.PushNotification:
+                iconCssClass = "ti ti-device-mobile ";
+                break;
+            case CommunicationType.RecipientPreference:
+                iconCssClass = "ti ti-user-circle ";
+                break;
+        }
+
+        return iconCssClass;
+    });
+
+    const mediumLabel = computed((): string => {
+        return typeof communicationType.value !== "undefined"
+            ? CommunicationTypeDescription[communicationType.value]
+            : "";
+    });
+
+    const campaignLabel = computed((): string => {
+        return communicationDetail.value?.communicationFlowName ?? "";
+    });
+
+    const showMediumButtonGroup = computed((): boolean => {
+        return communicationType.value === CommunicationType.RecipientPreference
+            && selectedTab.value !== TabItem.RecipientDetails;
+    });
+
+    const mediumFilter = computed((): CommunicationType | null => {
+        return showMediumButtonGroup.value
+            ? toNumber(mediumFilterItem.value) as CommunicationType
+            : null;
+    });
+
+    const showFooterActions = computed((): boolean => {
+        return !!config.messagePreview?.urlReferrer
+            && selectedTab.value === TabItem.MessageDetails;
+    });
+
+    const canApprove = computed((): boolean => {
+        return !!config.permissions?.canApprove;
+    });
+
+    const canDeny = computed((): boolean => {
+        return !!config.permissions?.canDeny;
+    });
+
+    const canEdit = computed((): boolean => {
+        return !!config.permissions?.canEdit;
+    });
+
+    const canCancel = computed((): boolean => {
+        return !!config.permissions?.canCancel;
+    });
+
+    const canDuplicate = computed((): boolean => {
+        return !!config.permissions?.canDuplicate;
+    });
+
+    const canCreatePersonalTemplate = computed((): boolean => {
+        return !!config.permissions?.canCreatePersonalTemplate;
+    });
+
+    const showFooterSecondaryActions = computed((): boolean => {
+        return selectedTab.value === TabItem.MessageDetails
+            && (
+                canApprove.value
+                || canDeny.value
+                || canEdit.value
+                || canCancel.value
+                || canDuplicate.value
+                || canCreatePersonalTemplate.value
+            );
+    });
+
+    const isPerformingAction = computed((): boolean => {
+        return isDuplicating.value
+            || isApproving.value
+            || isDenying.value
+            || isEditing.value
+            || isCancelling.value
+            || isCreatingPersonalTemplate.value;
+    });
+
+    // #endregion Computed Values
+
+    // #region Event Handlers
+
+    /**
+     * Duplicates this communication and then redirects to the newly-created
+     * communication instance.
+     */
+    async function onDuplicateCommunicationClick(): Promise<void> {
+        if (isPerformingAction.value) {
+            return;
+        }
+
+        isDuplicating.value = true;
+
+        const result = await invokeBlockAction<CommunicationRedirectBag>("DuplicateCommunication");
+
+        isDuplicating.value = false;
+
+        if (!result.isSuccess || !result.data?.communicationUrl) {
+            await alert(result.errorMessage || "Unknown error while trying to duplicate communication.");
+            return;
+        }
+
+        window.location.href = makeUrlRedirectSafe(result.data.communicationUrl);
+    }
+
+    /**
+     * Called when the "See Source Page" button is clicked.
+     */
+    function onSeeSourcePageClick(): void {
+        window.location.href = makeUrlRedirectSafe(
+            config.messagePreview?.urlReferrer ?? ""
+        );
+    }
+
+    /**
+     * Handles a communication action response.
+     *
+     * @param response The response to handle.
+     */
+    async function handleActionResponse(response: CommunicationActionResponseBag): Promise<void> {
+        if (response.outcomeMessage) {
+            await alert(response.outcomeMessage);
+        }
+
+        if (response.redirectUrl) {
+            window.location.href = makeUrlRedirectSafe(
+                response.redirectUrl
+            );
+        }
+    }
+
+    /**
+     * Called when the "Approve" button is clicked.
+     */
+    async function onApproveClick(): Promise<void> {
+        if (isPerformingAction.value) {
+            return;
+        }
+
+        isApproving.value = true;
+
+        const result = await invokeBlockAction<CommunicationActionResponseBag>("ApproveCommunication");
+
+        isApproving.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            await alert(result.errorMessage || "Unknown error while tring to approve communication.");
+            return;
+        }
+
+        await handleActionResponse(result.data);
+    }
+
+    /**
+     * Called when the "Deny" button is clicked.
+     */
+    async function onDenyClick(): Promise<void> {
+        if (isPerformingAction.value) {
+            return;
+        }
+
+        isDenying.value = true;
+
+        const result = await invokeBlockAction<CommunicationActionResponseBag>("DenyCommunication");
+
+        isDenying.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            await alert(result.errorMessage || "Unknown error while tring to deny communication.");
+            return;
+        }
+
+        await handleActionResponse(result.data);
+    }
+
+    /**
+     * Called when the "Edit" button is clicked.
+     */
+    async function onEditClick(): Promise<void> {
+        if (isPerformingAction.value) {
+            return;
+        }
+
+        isEditing.value = true;
+
+        const result = await invokeBlockAction<CommunicationActionResponseBag>("EditCommunication");
+
+        isEditing.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            await alert(result.errorMessage || "Unknown error while trying to edit communication.");
+            return;
+        }
+
+        await handleActionResponse(result.data);
+    }
+
+    /**
+     * Called when the "Cancel" button is clicked.
+     */
+    async function onCancelClick(): Promise<void> {
+        if (isPerformingAction.value) {
+            return;
+        }
+
+        isCancelling.value = true;
+
+        const result = await invokeBlockAction<CommunicationActionResponseBag>("CancelCommunication");
+
+        isCancelling.value = false;
+
+        if (!result.isSuccess || !result.data) {
+            await alert(result.errorMessage || "Unknown error while trying to cancel communication.");
+            return;
+        }
+
+        await handleActionResponse(result.data);
+    }
+
+    /**
+     * Creates a personal template based off the current communication.
+     *
+     * @param bag The information about a request to create a personal template.
+     */
+    async function onCreatePersonalTemplate(bag: CreatePersonalTemplateRequestBag): Promise<void> {
+        if (isPerformingAction.value) {
+            return;
+        }
+
+        isCreatingPersonalTemplate.value = true;
+
+        const result = await invokeBlockAction("CreatePersonalTemplate", { bag });
+
+        isCreatingPersonalTemplate.value = false;
+
+        if (!result.isSuccess) {
+            await alert(result.errorMessage ?? "Unknown error while trying to create personal template.");
+            return;
+        }
+
+        await alert("A new personal communication template was created.");
+    }
+
+    // #endregion Event Handlers
+
+    provideSecurityGrant(securityGrant);
+    provideCommunicationDetail(communicationDetail);
+    provideMediumFilter(mediumFilter);
+    provideSelectedTab(selectedTab);
+</script>

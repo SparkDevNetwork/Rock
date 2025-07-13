@@ -211,7 +211,19 @@ namespace Rock.Blocks.Lms
                             
                             {% elseif course.LearningCompletionStatus == 'Pass' %}
                                 <div class=""d-flex align-items-center"">
-                                    <h4 class=""m-0""><span class=""label label-success"">Passed</span></h4>
+                                    <h4 class=""m-0"">
+                                        <span class=""label label-success"">
+                                            {% if course.IsCompletionOnly == true %}
+                                                {% if course.CompletionScaleName != empty %}
+                                                    {{ course.CompletionScaleName }}
+                                                    {% else %}
+                                                    Completed
+                                                {% endif %}
+                                                {% else %}
+                                                Passed
+                                            {% endif %}
+                                        </span>
+                                    </h4>
                                 </div>
                         {% endif %}
     

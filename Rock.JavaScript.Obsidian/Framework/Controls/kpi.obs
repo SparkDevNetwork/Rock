@@ -10,6 +10,9 @@
         <div class="kpi-stat">
             <span class="kpi-value text-color">{{ calculatedValue }}</span>
             <span class="kpi-label">{{ label }}</span>
+            <div v-if="$slots.secondaryLabel" class="kpi-secondary-label">
+                <slot name="secondaryLabel" />
+            </div>
         </div>
     </div>
 </template>

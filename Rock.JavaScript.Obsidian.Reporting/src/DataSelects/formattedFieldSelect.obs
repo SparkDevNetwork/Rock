@@ -1,0 +1,114 @@
+<template>
+    <DropDownList v-model="property"
+                  label="Property"
+                  help="Select the property you wish to include in the report"
+                  :items="properties" />
+
+    <DropDownList v-if="showSortByPropertyPicker"
+                  v-model="sortByProperty"
+                  label="Sort-by Property"
+                  help="The selected property is a linked entity and cannot be sorted on directly. Select the sub-property you wish to sort by."
+                  :items="sortByProperties" />
+
+    <CodeEditor v-model="template"
+                mode="lava"
+                label="Template"
+                editor="monaco"
+                help="Use Lava syntax to get format the value of the selected property. The lava variable uses the same name as the property name. Common merge fields such as CurrentPerson are also available." />
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import { FormattedFieldSelectGetSortByPropertiesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/formattedFieldSelectGetSortByPropertiesOptionsBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { dataViewSelectProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps(dataViewSelectProps);
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const properties: ListItemBag[] = safeParseJson(props.options.propertyBags) ?? [];
+    const property = ref(props.modelValue.property ?? "");
+
+    const sortByProperties = ref<ListItemBag[]>(safeParseJson(props.options.sortByPropertyBags) ?? []);
+    const sortByProperty = ref(props.modelValue.sortByProperty ?? "");
+
+    const sortByPropertiesByProperty: Record<string, ListItemBag[]> = {};
+    if (property.value) {
+        sortByPropertiesByProperty[property.value] = sortByProperties.value;
+    }
+
+    const showSortByPropertyPicker = ref(sortByProperties.value.length > 0);
+
+    const template = ref(props.modelValue.template ?? "");
+
+    watch(property, async () => {
+        if (property.value) {
+            // check if we have the sortByProperties for this property cached
+            if (sortByPropertiesByProperty[property.value] == null) {
+                // Not cached, so we need to load it
+                sortByProperties.value = [];
+                // Cache the old property so we can reselect it if it exists in the new list
+                const oldSortByProperty = sortByProperty.value;
+                const results = await loadSortByProperties();
+                sortByPropertiesByProperty[property.value] = results;
+                sortByProperties.value = results;
+
+                if (results.length > 0) {
+                    showSortByPropertyPicker.value = true;
+                    // Re-set to the old value. If it doesn't exist in the new list, it will be unset thanks to the way
+                    // the dropdown list works, so we don't need to check if it exists.
+                    sortByProperty.value = oldSortByProperty;
+                }
+                else {
+                    showSortByPropertyPicker.value = false;
+                }
+            }
+            else {
+                // Use the cached list
+                sortByProperties.value = sortByPropertiesByProperty[property.value];
+                showSortByPropertyPicker.value = sortByProperties.value.length > 0;
+            }
+        }
+        else {
+            sortByProperties.value = [];
+        }
+    });
+
+    watch([property, sortByProperty, template], () => {
+        const newData = {
+            ...props.modelValue,
+            property: property.value,
+            sortByProperty: sortByProperty.value,
+            template: template.value
+        };
+
+        emit("update:modelValue", newData);
+    });
+
+    async function loadSortByProperties(): Promise<ListItemBag[]> {
+        const options: FormattedFieldSelectGetSortByPropertiesOptionsBag = {
+            property: property.value,
+        };
+
+        const response = await props.executeRequest({
+            action: "GetSortByProperties",
+            options: JSON.stringify(options)
+        });
+
+        const sortByProperties = safeParseJson<ListItemBag[]>(response?.sortByPropertyBags ?? "[]");
+
+        if (Array.isArray(sortByProperties)) {
+            return sortByProperties;
+        }
+        else {
+            console.error("Error fetching items from server", response?.Message);
+            return [];
+        }
+    }
+</script>

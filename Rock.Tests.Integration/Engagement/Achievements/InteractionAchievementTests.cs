@@ -159,10 +159,14 @@ namespace Rock.Tests.Integration.Engagement.Achievements
         /// <summary>
         /// Runs after all tests in this class is executed.
         /// </summary>
-        [ClassCleanup]
+        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
         public static void ClassCleanup()
         {
-            DeleteTestData();
+            if ( !IsContainersEnabled )
+            {
+                DeleteTestData();
+            }
+
             _rockContext = null;
             _interactionService = null;
         }

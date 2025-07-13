@@ -101,11 +101,7 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var result = new Dictionary<string, string>{
-                { "includeInactive", IncludeInactive.ToTrueFalse() },
-                { "multiple", "False" },
-                { "label", null }
-            };
+            var result = new Dictionary<string, string>();
 
             var campus = CampusCache.Get( selection.AsGuidOrNull() ?? Guid.Empty );
             result.Add( "campus", campus?.ToListItemBag()?.ToCamelCaseJson( false, true ) );

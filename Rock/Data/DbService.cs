@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Configuration;
 
 namespace Rock.Data
@@ -80,17 +82,11 @@ namespace Rock.Data
 
                     using ( SqlCommand sqlCommand = new SqlCommand( commandText, con ) )
                     {
-#if REVIEW_NET5_0_OR_GREATER
+
                         if ( Context.Database.GetCommandTimeout().HasValue )
                         {
                             sqlCommand.CommandTimeout = Context.Database.GetCommandTimeout().Value;
                         }
-#else
-                        if ( Context.Database.CommandTimeout.HasValue )
-                        {
-                            sqlCommand.CommandTimeout = Context.Database.CommandTimeout.Value;
-                        }
-#endif
 
                         sqlCommand.CommandType = commandType;
 

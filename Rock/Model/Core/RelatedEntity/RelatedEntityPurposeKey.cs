@@ -89,6 +89,60 @@ namespace Rock.Model
         public const string RegistrationTemplateGroupPlacementTemplate = "PLACEMENT-TEMPLATE";
 
         /// <summary>
+        /// <para>The group placement for a Source Group</para>
+        /// <para>NOTE: Use methods on <seealso cref="GroupService" /> such as <seealso cref="GroupService.GetSourceGroupPlacementPlacementGroups"/>
+        /// instead of <seealso cref="RelatedEntityService"/> to make this easier to use.</para>
+        /// <para>For this, the RelatedEntity fields would be...</para>
+        /// <list>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.PurposeKey" /></term>
+        ///     <description>GROUP-PLACEMENT</description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.SourceEntityType"/></term>
+        ///     <description><see cref="Rock.Model.Group"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.TargetEntityType"/></term>
+        ///     <description><see cref="Rock.Model.Group"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.QualifierValue"/></term>
+        ///     <description><c>null</c></description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        [Description( "Group Placement" )]
+        public const string GroupPlacement = "GROUP-PLACEMENT";
+
+        /// <summary>
+        /// <para>The group placement for an Entity Set</para>
+        /// <para>NOTE: Use methods on <seealso cref="GroupService" /> such as <seealso cref="EntitySetService.GetEntitySetPlacementPlacementGroups"/>
+        /// instead of <seealso cref="RelatedEntityService"/> to make this easier to use.</para>
+        /// <para>For this, the RelatedEntity fields would be...</para>
+        /// <list>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.PurposeKey" /></term>
+        ///     <description>ENTITY-SET-PLACEMENT</description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.SourceEntityType"/></term>
+        ///     <description><see cref="Rock.Model.EntitySet"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.TargetEntityType"/></term>
+        ///     <description><see cref="Rock.Model.Group"/></description>
+        /// </item>
+        /// <item>
+        ///     <term><see cref="RelatedEntity.QualifierValue"/></term>
+        ///     <description><c>null</c></description>
+        /// </item>
+        /// </list>
+        /// </summary>
+        [Description( "Entity Set Placement" )]
+        public const string EntitySetPlacement = "ENTITY-SET-PLACEMENT";
+
+        /// <summary>
         /// <para>The relationship between a Person (PersonAlias) and the FinancialAccount they want Giving Alerts for.</para>
         /// <para>NOTE: Use methods on <seealso cref="FinancialAccountService"/> such as ....
         /// instead of <seealso cref="RelatedEntityService"/> to make this easier to use.</para>

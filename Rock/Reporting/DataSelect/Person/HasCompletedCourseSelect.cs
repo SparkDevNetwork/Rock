@@ -25,11 +25,16 @@ using System.Web.UI.WebControls;
 using Rock.Data;
 using Rock.Enums.Lms;
 using Rock.Model;
+using Rock.Net;
 using Rock.Reporting.DataFilter.Person;
+using Rock.Security;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Rest.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
 
-namespace Rock.Reporting.DataSelect.Group
+namespace Rock.Reporting.DataSelect.Person
 {
     /// <summary>
     /// The Data Select responsible for including completed learning course details.
@@ -56,6 +61,111 @@ namespace Rock.Reporting.DataSelect.Group
 
         /// <inheritdoc/>
         public override string ColumnHeaderText => "Has Completed Course";
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
+
+            var programOptions = new LearningProgramService( rockContext )
+                .Queryable()
+                .Where( lp => lp.IsActive && lp.IsCompletionStatusTracked )
+                .OrderBy( lp => lp.Name )
+                .ToList()
+                .Select( lp => lp.ToListItemBag() )
+                .ToList();
+
+            var courseOptions = new List<ListItemBag>();
+
+            if ( selectionConfig.LearningCourseGuid.HasValue )
+            {
+                var course = new LearningCourseService( rockContext ).Get( selectionConfig.LearningCourseGuid.Value );
+                var programGuid = course?.LearningProgram?.Guid;
+
+                courseOptions = new LearningCourseService( rockContext )
+                    .Queryable()
+                    .Where( lc => lc.IsActive && lc.LearningProgram.Guid == programGuid )
+                    .OrderBy( lc => lc.Order )
+                    .ThenBy( lc => lc.Name )
+                    .Select( lc => new ListItemBag { Text = lc.Name, Value = lc.Guid.ToString() } )
+                    .ToList();
+            }
+
+            var statusOptions = new List<ListItemBag>();
+
+            foreach ( LearningCompletionStatus enumValue in HasCompletedCourseFilter.CompletionStatusesWithCompletedDateValue )
+            {
+                statusOptions.Add( new ListItemBag { Text = Enum.GetName( typeof( LearningCompletionStatus ), enumValue ), Value = enumValue.ToString() } );
+            }
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/hasCompletedCourseSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["programOptions"] = programOptions.ToCamelCaseJson( false, true ),
+                    ["courseOptions"] = courseOptions.ToCamelCaseJson( false, true ),
+                    ["statusOptions"] = statusOptions.ToCamelCaseJson( false, true ),
+                },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            var selectionConfig = SelectionConfig.Parse( selection ) ?? new SelectionConfig();
+
+            if ( selectionConfig.LearningCourseGuid.HasValue )
+            {
+                var course = new LearningCourseService( rockContext ).Get( selectionConfig.LearningCourseGuid.Value );
+
+                data.Add( "course", course?.Guid.ToString() );
+                data.Add( "program", course?.LearningProgram?.Guid.ToString() );
+            }
+
+            data.Add( "dateRange", selectionConfig.SlidingDateRangeDelimitedValues );
+            data.Add( "status", selectionConfig.LearningCompletionStatuses.Select( status => status.ToString() ).ToJson() );
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selectionConfig = new SelectionConfig();
+
+            selectionConfig.LearningCourseGuid = data.GetValueOrNull( "course" )?.AsGuidOrNull();
+            selectionConfig.SlidingDateRangeDelimitedValues = data.GetValueOrDefault( "dateRange", "All||||" );
+            selectionConfig.LearningCompletionStatuses = data.GetValueOrDefault( "status", "[]" ).FromJsonOrNull<List<LearningCompletionStatus>>();
+
+            return selectionConfig.ToJson();
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var action = request.GetValueOrNull( "action" );
+            var options = request.GetValueOrNull( "options" )?.FromJsonOrNull<HasCompletedCourseSelectGetCoursesOptionsBag>();
+
+            if ( action == "GetCourses" && options != null && options.ProgramGuid != null )
+            {
+                var courseOptions = new LearningCourseService( rockContext )
+                    .Queryable()
+                    .Where( lc => lc.IsActive && lc.LearningProgram.Guid == options.ProgramGuid )
+                    .OrderBy( lc => lc.Order )
+                    .ThenBy( lc => lc.Name )
+                    .Select( lc => new ListItemBag { Text = lc.Name, Value = lc.Guid.ToString() } )
+                    .ToList();
+
+                return new Dictionary<string, string> { { "courseOptions", courseOptions.ToCamelCaseJson( false, true ) } };
+            }
+            return null;
+        }
 
         #endregion
 

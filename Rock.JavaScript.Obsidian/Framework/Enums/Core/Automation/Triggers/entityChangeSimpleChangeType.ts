@@ -31,8 +31,8 @@ export const EntityChangeSimpleChangeType = {
     AnyChange: 0,
 
     /**
-     * The critieria rull match if the old value or the new value are
-     * equal to the UpdatedValue property. The OriginalValue property is
+     * The critieria will match if the new value is equal to the
+     * UpdatedValue property. The OriginalValue property is ignored.
      * ignored. This does not require that the value has changed.
      */
     HasSpecificValue: 1,
@@ -40,14 +40,16 @@ export const EntityChangeSimpleChangeType = {
     /**
      * The criteria will match if the old value is equal to the OriginalValue
      * property and the property has been changed to a different value. The
-     * UpdatedValue property is ignored.
+     * UpdatedValue property is ignored. Will not match if the entity is being
+     * added or deleted.
      */
     ChangedFromValue: 2,
 
     /**
      * The criteria will match if the new value is equal to the UpdatedValue
      * property and the property has been changed from a different value. The
-     * OriginalValue property is ignored.
+     * OriginalValue property is ignored. Will not match if the entity is being
+     * added or deleted.
      */
     ChangedToValue: 3,
 
@@ -55,7 +57,7 @@ export const EntityChangeSimpleChangeType = {
      * The critieria will match if the old value is equal to the OriginalValue
      * property and the new/current value is equal to the UpdatedValue
      * property. This requires that the property value has actually been
-     * changed.
+     * changed. Will not match if the entity is being added or deleted.
      */
     ChangedFromValueToValue: 4
 } as const;

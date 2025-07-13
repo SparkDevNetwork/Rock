@@ -24,3 +24,5 @@ export type GetHtmlResponse = {
     html: string;
     bodyWidth?: number | null | undefined;
 };
+
+export type UsageType = "template" | "email";

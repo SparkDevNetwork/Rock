@@ -20,6 +20,9 @@ using System.Collections.Generic;
 using System.Data.Entity;
 using System.Diagnostics;
 using System.Linq;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Communication;
 using Rock.Data;
@@ -104,11 +107,7 @@ namespace Rock.Model
                         : rockContextReadOnly;
 
                     // increase the timeout just in case the data view source is slow
-#if REVIEW_NET5_0_OR_GREATER
                     syncContext.Database.SetCommandTimeout( commandTimeout ?? 30 );
-#else
-                    syncContext.Database.CommandTimeout = commandTimeout ?? 30;
-#endif
                     syncContext.SourceOfChange = "Group Sync";
 
                     dataViewName = syncDataView.Name;

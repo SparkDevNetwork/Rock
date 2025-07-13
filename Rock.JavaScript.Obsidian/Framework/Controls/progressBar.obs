@@ -1,8 +1,8 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="progress">
-        <div class="progress-bar" role="progressbar" :aria-valuenow="roundedBoundedPercent" aria-valuemin="0" aria-valuemax="100" :style="style">
-            <span :class="{'sr-only': !showCompletionText}">{{ roundedBoundedPercent }}% Complete</span>
+        <div :class="progressBarClass" role="progressbar" :aria-valuenow="roundedBoundedPercent" aria-valuemin="0" aria-valuemax="100" :style="style">
+            <span :class="{ 'sr-only': !showCompletionText }">{{ roundedBoundedPercent }}% Complete</span>
         </div>
     </div>
 </template>
@@ -19,6 +19,20 @@
         showCompletionText: {
             type: Boolean as PropType<boolean>,
             default: false
+        },
+
+        progressBarType: {
+            type: String as PropType<"default" | "success" | "info" | "warning" | "danger">,
+            default: "default"
+        }
+    });
+
+    const progressBarClass = computed((): string => {
+        if (props.progressBarType === "default") {
+            return "progress-bar";
+        }
+        else {
+            return `progress-bar progress-bar-${props.progressBarType}`;
         }
     });
 

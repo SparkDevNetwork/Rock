@@ -146,7 +146,7 @@ export default defineComponent({
          */
         isFullScreenVisible: {
             type: Boolean as PropType<boolean>,
-            default: true
+            default: false
         },
 
         /** The current display mode for the detail panel. */

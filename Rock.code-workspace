@@ -80,7 +80,8 @@
 		"recommendations": [
 			"dbaeumer.vscode-eslint",
 			"vue.volar",
-			"orta.vscode-jest"
+			"orta.vscode-jest",
+            "EditorConfig.EditorConfig"
 		]
 	},
 	"folders": [

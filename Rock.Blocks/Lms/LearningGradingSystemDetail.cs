@@ -27,6 +27,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Lms.LearningGradingSystemDetail;
 using Rock.ViewModels.Utility;
+using Rock.Web;
 using Rock.Web.Cache;
 
 namespace Rock.Blocks.Lms
@@ -46,7 +47,7 @@ namespace Rock.Blocks.Lms
 
     [Rock.SystemGuid.EntityTypeGuid( "c174c0ef-9085-4ed6-b21d-019e2ac04b12" )]
     [Rock.SystemGuid.BlockTypeGuid( "bd92b4d8-5777-422d-b210-a6b95ac137ad" )]
-    public class LearningGradingSystemDetail : RockEntityDetailBlockType<LearningGradingSystem, LearningGradingSystemBag>
+    public class LearningGradingSystemDetail : RockEntityDetailBlockType<LearningGradingSystem, LearningGradingSystemBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -378,5 +379,25 @@ namespace Rock.Blocks.Lms
         }
 
         #endregion
+
+        public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
+        {
+            using ( var rockContext = new RockContext() )
+            {
+                var learningGradingSystemId = pageReference.GetPageParameter( PageParameterKey.LearningGradingSystemId );
+                var learningGradingSystemName = new LearningGradingSystemService( rockContext )
+                    .GetSelect( learningGradingSystemId, b => b.Name );
+                var breadCrumbPageRef = new PageReference( pageReference.PageId, pageReference.RouteId, pageReference.Parameters );
+                var breadCrumb = new BreadCrumbLink( learningGradingSystemName ?? "New Grading System", breadCrumbPageRef );
+
+                return new BreadCrumbResult
+                {
+                    BreadCrumbs = new List<IBreadCrumb>
+                   {
+                       breadCrumb
+                   }
+                };
+            }
+        }
     }
 }

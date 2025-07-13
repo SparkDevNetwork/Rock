@@ -140,9 +140,20 @@ namespace Rock.Reporting.DataFilter.Group
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var groupTypes = new GroupTypeService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( gt => gt.Id == this.SignUpGroupGroupTypeId || gt.InheritedGroupTypeId == this.SignUpGroupGroupTypeId )
+                .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
+                .ToList();
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/signUpOpportunityHasNoMembersFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/signUpOpportunityHasNoMembersFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "groupTypes", groupTypes.ToCamelCaseJson(false, true) }
+                },
             };
         }
 
@@ -151,19 +162,11 @@ namespace Rock.Reporting.DataFilter.Group
         {
             var selectionConfig = SelectionConfig.Parse( selection );
 
-            var groupTypes = new GroupTypeService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( gt => gt.Id == this.SignUpGroupGroupTypeId || gt.InheritedGroupTypeId == this.SignUpGroupGroupTypeId )
-                    .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
-                    .ToList();
-
             var data = new Dictionary<string, string>
             {
                 { "groupTypeGuid", selectionConfig?.GroupTypeGuid },
                 { "memberType", selectionConfig?.MemberType },
-                { "hidePastOpportunities", selectionConfig?.HidePastOpportunities.ToTrueFalse() },
-                { "groupTypes", groupTypes.ToCamelCaseJson(false, true) }
+                { "hidePastOpportunities", selectionConfig?.HidePastOpportunities.ToTrueFalse() }
             };
 
             return data;

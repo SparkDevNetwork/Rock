@@ -40,29 +40,29 @@ namespace Rock.Tests.Performance.Attributes
         /// <param name="ratioStyle">The ratio style.</param>
         public SummaryStyleAttribute( bool printUnitsInHeader, SizeUnit sizeUnit, TimeUnit timeUnit, bool printUnitsInContent = true, bool printZeroValuesInContent = false, int maxParameterColumnWidth = 20, RatioStyle ratioStyle = RatioStyle.Value )
         {
-            BenchmarkDotNet.Columns.SizeUnit su;
+            Perfolizer.Metrology.SizeUnit su;
             Perfolizer.Horology.TimeUnit tu;
 
             switch ( sizeUnit )
             {
                 case SizeUnit.B:
-                    su = BenchmarkDotNet.Columns.SizeUnit.B;
+                    su = Perfolizer.Metrology.SizeUnit.B;
                     break;
 
                 case SizeUnit.KB:
-                    su = BenchmarkDotNet.Columns.SizeUnit.KB;
+                    su = Perfolizer.Metrology.SizeUnit.KB;
                     break;
 
                 case SizeUnit.MB:
-                    su = BenchmarkDotNet.Columns.SizeUnit.MB;
+                    su = Perfolizer.Metrology.SizeUnit.MB;
                     break;
 
                 case SizeUnit.GB:
-                    su = BenchmarkDotNet.Columns.SizeUnit.GB;
+                    su = Perfolizer.Metrology.SizeUnit.GB;
                     break;
 
                 case SizeUnit.TB:
-                    su = BenchmarkDotNet.Columns.SizeUnit.TB;
+                    su = Perfolizer.Metrology.SizeUnit.TB;
                     break;
 
                 default:

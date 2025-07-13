@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,14 +15,18 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI.WebControls;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
 
 #if REVIEW_NET5_0_OR_GREATER
 using EFDbContext = Microsoft.EntityFrameworkCore.DbContext;
@@ -40,7 +44,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [ExportMetadata( "ComponentName", "Select Person Name" )]
     [BooleanField( "Show As Link", "", true )]
     [CustomRadioListField( "Display Order", "", "0^FirstName LastName,1^LastName&#44; FirstName", true, "0" )]
-    [Rock.SystemGuid.EntityTypeGuid( "52E351C8-F44C-49CC-B547-13C28A5F3386")]
+    [Rock.SystemGuid.EntityTypeGuid( "52E351C8-F44C-49CC-B547-13C28A5F3386" )]
     public class PersonLinkSelect : DataSelectComponent, IRecipientDataSelect
     {
         /// <summary>
@@ -85,6 +89,41 @@ namespace Rock.Reporting.DataSelect.GroupMember
                 return "Common";
             }
         }
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/GroupMember/personLinkSelect.obs" )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var settings = selection.FromJsonOrNull<Dictionary<string, string>>() ?? new Dictionary<string, string>();
+
+            return new Dictionary<string, string>
+            {
+                ["showAsLink"] = settings.GetValueOrDefault( "ShowAsLink", string.Empty ),
+                ["displayOrder"] = settings.GetValueOrDefault( "DisplayOrder", string.Empty )
+            };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string>
+            {
+                ["ShowAsLink"] = data.GetValueOrDefault( "showAsLink", string.Empty ).AsBooleanOrNull().ToStringSafe(),
+                ["DisplayOrder"] = data.GetValueOrDefault( "displayOrder", string.Empty ).ToIntSafe().ToStringSafe()
+            }.ToJson();
+        }
+
+        #endregion
 
 #if REVIEW_WEBFORMS
         /// <summary>
@@ -137,11 +176,11 @@ namespace Rock.Reporting.DataSelect.GroupMember
         {
             bool showAsLink = this.GetAttributeValueFromSelection( "ShowAsLink", selection ).AsBooleanOrNull() ?? false;
             int displayOrder = this.GetAttributeValueFromSelection( "DisplayOrder", selection ).AsIntegerOrNull() ?? 0;
-            
+
             var memberQuery = new GroupMemberService( context ).Queryable();
 
             IQueryable<string> personLinkQuery;
-            
+
             if ( showAsLink )
             {
                 // Return a string in the format: <a href='/person/{personId}'>LastName, NickName</a>
@@ -168,7 +207,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             var exp = SelectExpressionExtractor.Extract( personLinkQuery, entityIdProperty, "gm" );
 
-            return exp; 
+            return exp;
         }
 
         #region IRecipientDataSelect implementation

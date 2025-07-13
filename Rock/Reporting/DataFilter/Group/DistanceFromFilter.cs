@@ -74,9 +74,20 @@ namespace Rock.Reporting.DataFilter.Group
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var locationTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
+                .DefinedValues
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Value );
+
+            var locationTypeBags = locationTypes.ToListItemBagList();
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/distanceFromFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/distanceFromFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "locationTypes", locationTypeBags.ToCamelCaseJson( false, true ) },
+                },
             };
         }
 
@@ -85,15 +96,6 @@ namespace Rock.Reporting.DataFilter.Group
         {
             var data = new Dictionary<string, string>();
             string[] selectionValues = selection.Split( '|' );
-
-            var locationTypes = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.GROUP_LOCATION_TYPE.AsGuid() )
-                .DefinedValues
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Value );
-
-            var locationTypeBags = locationTypes.ToListItemBagList();
-
-            data.AddOrReplace( "locationTypes", locationTypeBags.ToCamelCaseJson( false, true ) );
 
             if ( selectionValues.Length >= 3 )
             {

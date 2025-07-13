@@ -45,7 +45,7 @@
     }>();
 
     const sites = ref<string[]>(safeParseJson(props.modelValue.sites) ?? []);
-    const siteOptions: ListItemBag[] = safeParseJson(props.modelValue.siteOptions) ?? [];
+    const siteOptions: ListItemBag[] = safeParseJson(props.options.siteOptions) ?? [];
 
     const notificationsEnabled = ref<string>(props.modelValue.notificationsEnabled ?? "");
     const notificationsEnabledOptions: ListItemBag[] = [
@@ -54,10 +54,10 @@
     ];
 
     const platforms = ref<string[]>(safeParseJson(props.modelValue.platforms) ?? []);
-    const platformOptions: ListItemBag[] = safeParseJson(props.modelValue.platformOptions) ?? [];
+    const platformOptions: ListItemBag[] = safeParseJson(props.options.platformOptions) ?? [];
 
     const deviceTypes = ref<string[]>(safeParseJson(props.modelValue.deviceTypes) ?? []);
-    const deviceTypeOptions: ListItemBag[] = safeParseJson(props.modelValue.deviceTypeOptions) ?? [];
+    const deviceTypeOptions: ListItemBag[] = safeParseJson(props.options.deviceTypeOptions) ?? [];
 
     watch([sites, notificationsEnabled, platforms, deviceTypes], () => {
         emit("update:modelValue", {

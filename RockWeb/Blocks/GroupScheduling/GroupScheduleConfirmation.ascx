@@ -17,10 +17,44 @@
                     <div class="confirmation-message">
                     <asp:Literal ID="lResponse" runat="server" Visible="false" />
                     </div>
+
+                    <asp:Panel ID="pnlSelectConfirmationOption" runat="server" CssClass="pending-confirmations" Visible="false">
+                        <asp:Repeater ID="rptSelectedConfirmations" runat="server" OnItemDataBound="rptSelectedConfirmations_ItemDataBound">
+                            <ItemTemplate>
+                                <asp:Literal ID="litSectionBreak" runat="server" Visible="false"><hr /></asp:Literal>
+                                <h5><asp:Literal ID="litDate" runat="server" Visible="false" /></h5>
+                                <p>
+                                    <asp:Literal ID="litGroupName" runat="server" /><br />
+                                    <asp:Literal ID="litLocation" runat="server" />
+                                </p>
+                            </ItemTemplate>
+                        </asp:Repeater>
+                        <hr />
+                        <div>
+                            <asp:Button ID="btnAcceptAll" CssClass="btn btn-success" runat="server" Text="Accept All" OnClick="btnAcceptAll_Click" />
+                            <asp:Button ID="btnDeclineAll" CssClass="btn btn-danger" runat="server" Text="Decline All" OnClick="btnDeclineAll_Click" />
+                            <a href="/scheduletoolbox">Customize in Schedule Toolbox</a>
+                        </div>
+                    </asp:Panel>
+
+                    <Rock:ModalDialog ID="mdDeclineAll" runat="server"
+                        Title="Declined Reason"
+                        ValidationGroup="DeclineAll"
+                        OnSaveClick="mdDeclineAll_SaveClick"
+                        SaveButtonText="Save"
+                        Visible="false">
+                        <Content>
+                            <p>Your feedback on declining this schedule would be valuable to us.</p>
+                            <Rock:RockDropDownList ID="ddlDeclineAllReason" DataValueField="Id" DataTextField="Value" runat="server" Label="Reason for Decline" ValidationGroup="DeclineAll" />
+                            <Rock:RockTextBox ID="tbDeclineAllNote" runat="server" Label="Please elaborate on why you cannot attend." TextMode="MultiLine" ValidationGroup="DeclineAll" />
+                        </Content>
+                    </Rock:ModalDialog>
+
+
                     <asp:Panel ID="pnlDeclineReason" runat="server" CssClass="decline-reason margin-b-lg"  Visible="false">
                         <div class="row">
                             <div class="col-md-3">
-                                <Rock:RockDropDownList ID="ddlDeclineReason" DataValueField="Id" DataTextField="Value"  runat="server" Label="Decline Reason" Visible="false" />
+                                <Rock:RockDropDownList ID="ddlDeclineReason" DataValueField="Id" DataTextField="Value" runat="server" Label="Decline Reason" Visible="false" />
                             </div>
                         </div>
                         <div class="row">

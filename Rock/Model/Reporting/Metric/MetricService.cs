@@ -24,6 +24,9 @@ using System.Data.SqlClient;
 using System.Diagnostics;
 using System.Linq;
 using System.Reflection;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Chart;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -218,11 +221,7 @@ FROM (
             {
                 using ( var rockContextForMetricEntity = new RockContext() )
                 {
-#if REVIEW_NET5_0_OR_GREATER
                     rockContextForMetricEntity.Database.SetCommandTimeout( commandTimeout );
-#else
-                    rockContextForMetricEntity.Database.CommandTimeout = commandTimeout;
-#endif
 
                     var metricService = new MetricService( rockContextForMetricEntity );
                     metric = metricService.Get( metricId );
@@ -252,11 +251,7 @@ FROM (
                     {
                         using ( var rockContextForMetricValues = new RockContext() )
                         {
-#if REVIEW_NET5_0_OR_GREATER
                             rockContextForMetricValues.Database.SetCommandTimeout( commandTimeout );
-#else
-                            rockContextForMetricValues.Database.CommandTimeout = commandTimeout;
-#endif
                             var metricPartitions = new MetricPartitionService( rockContextForMetricValues ).Queryable().Where( a => a.MetricId == metric.Id ).ToList();
                             var metricValueService = new MetricValueService( rockContextForMetricValues );
                             var metricValuePartitionService = new MetricValuePartitionService( rockContextForMetricValues );

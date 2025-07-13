@@ -17,6 +17,7 @@
 
 using System;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -99,7 +100,9 @@ namespace Rock.Blocks.WebFarm
         /// <inheritdoc/>
         protected override IQueryable<WebFarmNodeLog> GetListQueryable( RockContext rockContext )
         {
-            var query = base.GetListQueryable( rockContext );
+            var query = base.GetListQueryable( rockContext )
+                .Include( a => a.WriterWebFarmNode )
+                .Include( a => a.WebFarmNode );
 
             // Filter by the page parameter
             var nodeId = PageParameter( PageParameterKey.WebFarmNodeId ).AsIntegerOrNull();

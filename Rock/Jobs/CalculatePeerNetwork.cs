@@ -21,6 +21,8 @@ using System.Text;
 
 using Humanizer;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Logging;
@@ -95,7 +97,7 @@ namespace Rock.Jobs
             using ( var rockContext = new RockContext() )
             {
                 var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
-                rockContext.Database.CommandTimeout = commandTimeout;
+                rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 if ( CalculatePeerNetworkForFollowing( rockContext ) )
                 {

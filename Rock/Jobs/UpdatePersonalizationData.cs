@@ -18,6 +18,8 @@ using System.ComponentModel;
 using System.Linq;
 using System.Text;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -83,7 +85,7 @@ namespace Rock.Jobs
                 { 
                     using ( var rockContext = new RockContext() )
                     {
-                        rockContext.Database.CommandTimeout = commandTimeoutSeconds;
+                        rockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
                         var segmentUpdateResults = new PersonalizationSegmentService( rockContext ).UpdatePersonAliasPersonalizationDataForSegment( segment );
                         if ( segmentUpdateResults.CountAddedSegment == 0 && segmentUpdateResults.CountRemovedFromSegment == 0 )
                         {
@@ -98,7 +100,7 @@ namespace Rock.Jobs
             }
 
             var cleanupRockContext = new RockContext();
-            cleanupRockContext.Database.CommandTimeout = commandTimeoutSeconds;
+            cleanupRockContext.Database.SetCommandTimeout( commandTimeoutSeconds );
             var cleanedUpCount = new PersonalizationSegmentService( cleanupRockContext ).CleanupPersonAliasPersonalizationDataForSegmentsThatDontExist();
             if ( cleanedUpCount > 0 )
             {

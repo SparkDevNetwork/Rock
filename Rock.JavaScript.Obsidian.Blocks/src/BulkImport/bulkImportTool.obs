@@ -169,69 +169,70 @@
 
     const importProgressMessage = ref<string>("");
     const importProgressResults = ref<string>("");
-    const importProgressPercentage = ref<number>(0);
     const importAlertType = ref<AlertType>(AlertType.Info);
     const isImporting = ref<boolean>(false);
 
     const alertTypeRef = AlertType;
 
     const additionalNotes = `
-    Before Importing
-    -- Backup the Customer's Database
-    -- Verify that Rock > Home / General Settings / File Types / 'Person Image', has the Storage Type set to what you want. Slingshot will use that when importing Person and Family Photos
-    -- Verify that Rock > Home / General Settings / File Types / 'Transaction Image', has the Storage Type set to what you want. Slingshot will use that when importing FinancialTransaction Images
+Before Importing
+-- Backup the Customer's Database
+-- Verify that Rock > Home / General Settings / File Types / 'Person Image', has the Storage Type set to what you want. Slingshot will use that when importing Person and Family Photos
+-- Verify that Rock > Home / General Settings / File Types / 'Transaction Image', has the Storage Type set to what you want. Slingshot will use that when importing FinancialTransaction Images
 
-    After Importing
-    -- Go the General Settings / Group Types and filter by Check-in Template. This will show you the group types that already a Check-in Template
-    -- Now, in a separate window, go to Power Tools / SQL Command
+After Importing
+-- Go the General Settings / Group Types and filter by Check-in Template. This will show you the group types that already a Check-in Template
+-- Now, in a separate window, go to Power Tools / SQL Command
 
-    // Use this SQL to figure out what GroupTypes were involved in the Attendance Import, and what their Parent Group Type is
+// Use this SQL to figure out what GroupTypes were involved in the Attendance Import, and what their Parent Group Type is
 
-    SELECT gt.NAME [GroupType.Name], gt.Id, max(gt.CreatedDateTime) [GroupType.CreateDateTime]
-            ,count(*) [AttendanceCount]
-            ,(
-                    SELECT TOP 1 pgt.NAME
-                    FROM GroupTypeAssociation gta
-                    INNER JOIN GroupType pgt ON pgt.Id = gta.GroupTypeId
-                    WHERE ChildGroupTypeId = gt.id
-                    ) [Parent Group Type]
-    FROM Attendance a
-    INNER JOIN [Group] g ON g.Id = (SELECT GroupId from AttendanceOccurrence WHERE Id = a.OccurrenceId)
-    INNER JOIN [GroupType] gt ON g.GroupTypeId = gt.id
-    GROUP BY gt.NAME,gt.Id
-    order by gt.Id desc
+SELECT gt.NAME [GroupType.Name], gt.Id, max(gt.CreatedDateTime) [GroupType.CreateDateTime]
+    ,count(*) [AttendanceCount]
+    ,(
+        SELECT TOP 1 pgt.NAME
+        FROM GroupTypeAssociation gta
+        INNER JOIN GroupType pgt ON pgt.Id = gta.GroupTypeId
+        WHERE ChildGroupTypeId = gt.id
+    ) [Parent Group Type]
+FROM Attendance a
+INNER JOIN [Group] g ON g.Id = (SELECT GroupId from AttendanceOccurrence WHERE Id = a.OccurrenceId)
+INNER JOIN [GroupType] gt ON g.GroupTypeId = gt.id
+GROUP BY gt.NAME,gt.Id
+order by gt.Id desc
 
-    // To see a break down by Group Name and Type, this SQL is handy
+// To see a break down by Group Name and Type, this SQL is handy
 
-    SELECT gt.NAME [GroupType.Name]
+SELECT gt.NAME [GroupType.Name]
     ,gt.Id
-          ,g.Name [Group.Name]
-            ,count(*) [AttendanceCount]
-            ,MAX(PGT.NAME) [Parent Group Type]
-            ,MAX(PGT.GroupTypePurpose) [Parent Group Type Purpose]
-                ,max(gt.CreatedDateTime) [GroupType.CreateDateTime]
-    FROM Attendance a
-    INNER JOIN [Group] g ON g.Id = (SELECT GroupId from AttendanceOccurrence WHERE Id = a.OccurrenceId)
-    INNER JOIN [GroupType] gt ON g.GroupTypeId = gt.id
-    OUTER APPLY (
-            SELECT TOP 1 pgt.NAME
-            ,dv.Value [GroupTypePurpose]
-            FROM GroupTypeAssociation gta
-            INNER JOIN GroupType pgt ON pgt.Id = gta.GroupTypeId
-            LEFT JOIN DefinedValue dv ON pgt.GroupTypePurposeValueId = dv.Id
-            WHERE gta.ChildGroupTypeId = gt.id
-            ) PGT
-    GROUP BY gt.NAME
-            ,gt.Id
-            ,g.Name
-    order by Gt.Id, Gt.Name, g.Name
+    ,g.Name [Group.Name]
+    ,count(*) [AttendanceCount]
+    ,MAX(PGT.NAME) [Parent Group Type]
+    ,MAX(PGT.GroupTypePurpose) [Parent Group Type Purpose]
+    ,max(gt.CreatedDateTime) [GroupType.CreateDateTime]
+FROM Attendance a
+INNER JOIN [Group] g ON g.Id = (SELECT GroupId from AttendanceOccurrence WHERE Id = a.OccurrenceId)
+INNER JOIN [GroupType] gt ON g.GroupTypeId = gt.id
+OUTER APPLY (
+    SELECT TOP 1
+        pgt.NAME
+        ,dv.Value [GroupTypePurpose]
+    FROM GroupTypeAssociation gta
+    INNER JOIN GroupType pgt ON pgt.Id = gta.GroupTypeId
+    LEFT JOIN DefinedValue dv ON pgt.GroupTypePurposeValueId = dv.Id
+    WHERE gta.ChildGroupTypeId = gt.id
+    ) PGT
+GROUP BY gt.NAME
+    ,gt.Id
+    ,g.Name
+order by Gt.Id, Gt.Name, g.Name
 
-    -- Now, back to Rock > Home / General Settings / Group Types, select a Checkin-Template group type. For example, Weekly Service Check-in Area
-            -- Using the SQL Results, add the Child Group Types to the appropriate Checkin-Template group type.
-            -- Ones that sound like Weekend Check-in will go in Weekend Check-in GroupType, then the 'General' panelwidget | Child Group Types
-            -- Ones that sound like Volunteer Check-in will go in Volunteer Check-in GroupType, then the 'General' panelwidget | Child Group Types
-            -- Now Attendance Analytics will be able to show the import Attendance Data
-    `;
+-- Now, back to Rock > Home / General Settings / Group Types, select a Checkin-Template group type. For example, Weekly Service Check-in Area
+    -- Using the SQL Results, add the Child Group Types to the appropriate Checkin-Template group type.
+    -- Ones that sound like Weekend Check-in will go in Weekend Check-in GroupType, then the 'General' panelwidget | Child Group Types
+    -- Ones that sound like Volunteer Check-in will go in Volunteer Check-in GroupType, then the 'General' panelwidget | Child Group Types
+    -- Now Attendance Analytics will be able to show the import Attendance Data`;
+
+    let realTimeConnectionId = "";
 
     // #endregion
 
@@ -248,34 +249,36 @@
             await startRealTime();
         });
 
-        topic.on("taskStarted", (data) => {
-            onImportStarted(data);
+        topic.onReconnected(async () => {
+            realTimeConnectionId = topic.connectionId ?? "";
         });
-        topic.on("taskCompleted", (data) => {
-            onImportCompleted(data);
+
+        topic.on("taskStarted", onImportStarted);
+        topic.on("taskCompleted", onImportCompleted);
+        topic.on("updateTaskProgress", (data: TaskActivityProgressStatusBag) => {
+            if (data?.message) {
+                importProgressMessage.value = data.message;
+            }
         });
         topic.on("updateTaskLog", (data) => {
             if (data?.message) {
-                if (data.message.includes("<dl>") || data.message.includes("<dt>")) {
-                    importProgressResults.value = data.message;
-                }
+                importProgressResults.value = data.message;
             }
         });
+
+        realTimeConnectionId = topic.connectionId ?? "";
     }
 
     function onImportStarted(_bag: TaskActivityProgressStatusBag): void {
         isImporting.value = true;
         importProgressMessage.value = "Starting import...";
-        importProgressPercentage.value = 0;
         importAlertType.value = AlertType.Info;
         importProgressResults.value = "";
     }
 
-
     function onImportCompleted(bag: TaskActivityProgressStatusBag): void {
         isImporting.value = false;
         importProgressMessage.value = bag.message || "Import completed";
-        importProgressPercentage.value = 100;
 
         if (bag.errors?.length) {
             importAlertType.value = AlertType.Danger;
@@ -426,7 +429,7 @@
                 SlingshotFilePath: slingshotFullPath.value,
                 ImportType: importType,
                 ImportUpdateType: importUpdateType.value,
-                SessionId: ""
+                SessionId: realTimeConnectionId
             }
         });
 

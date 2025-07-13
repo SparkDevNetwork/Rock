@@ -36,7 +36,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const groupTypes = ref<ListItemBag[]>(safeParseJson(props.modelValue.groupTypes) ?? []);
+    const groupTypes = ref<ListItemBag[]>(safeParseJson(props.options.groupTypes) ?? []);
     const groupTypeGuid = ref<string>(props.modelValue.groupTypeGuid ?? "");
 
     const projectTypes: ListItemBag[] = [

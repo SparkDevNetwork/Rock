@@ -227,7 +227,7 @@ namespace Rock.Jobs
                 1) Whenever you do a new RockContext() in RockCleanup make sure to set the CommandTimeout, like this:
 
                     var rockContext = new RockContext();
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
 
                 2) The cleanupTitle parameter on RunCleanupTask should short. The should be short enough so that the summary of all job tasks
                    only shows a one line summary of each task (doesn't wrap)
@@ -2715,7 +2715,7 @@ SELECT @@ROWCOUNT
             return 0;
 
             ////var rockContext = new RockContext();
-            ////rockContext.Database.CommandTimeout = commandTimeout;
+            ////rockContext.Database.SetCommandTimeout( commandTimeout );
 
             ////var maxDays = dataMap.GetIntValue( AttributeKey.RemoveBenevolenceRequestsWithoutAPersonMaxDays );
 

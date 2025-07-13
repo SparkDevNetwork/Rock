@@ -38,7 +38,7 @@
     }>();
 
     const activityType = ref<Guid>(props.modelValue.activityType ?? "");
-    const activityTypeOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.activityTypeOptions) ?? []);
+    const activityTypeOptions = ref<ListItemBag[]>(safeParseJson(props.options.activityTypeOptions) ?? []);
     const comparisonType = ref<`${ComparisonType}`>((props.modelValue.comparisonType as `${ComparisonType}`) ?? `${ComparisonType.EqualTo}`);
     const minimumCount = ref<number | null>(toNumberOrNull(props.modelValue.minimumCount) ?? 4);
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));

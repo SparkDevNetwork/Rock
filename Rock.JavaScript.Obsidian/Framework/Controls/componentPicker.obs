@@ -24,6 +24,11 @@
             default: null
         },
 
+        includeInactive: {
+            type: Boolean as PropType<boolean | null>,
+            default: false
+        },
+
         ...standardAsyncPickerProps
     });
 
@@ -59,7 +64,8 @@
      */
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: ComponentPickerGetComponentsOptionsBag = {
-            containerType: props.containerType
+            containerType: props.containerType,
+            includeInactive: props.includeInactive
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/ComponentPickerGetComponents", undefined, options);
 

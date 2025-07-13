@@ -96,5 +96,10 @@ namespace Rock.ViewModels.Blocks.Event.RegistrationEntry
         /// The unique identifier.
         /// </value>
         public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the boolean value that determines if the current registrant is a new family.
+        /// </summary>
+        public bool IsNewFamily { get; set; }
     }
 }

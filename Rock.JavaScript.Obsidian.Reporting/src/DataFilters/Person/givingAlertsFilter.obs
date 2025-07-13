@@ -40,7 +40,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const alertTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.alertTypeOptions) ?? [];
+    const alertTypeOptions = safeParseJson<ListItemBag[]>(props.options.alertTypeOptions) ?? [];
     const alertTypes = ref<Guid[]>(safeParseJson(props.modelValue.alertTypes) ?? []);
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
     const amount = ref<number | null>(toNumberOrNull(props.modelValue.amount));

@@ -15,10 +15,6 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
-
-using Rock.ViewModels.Utility;
-
 namespace Rock.ViewModels.Blocks.Communication.CommunicationList
 {
     /// <summary>
@@ -27,35 +23,23 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationList
     public class CommunicationListOptionsBag
     {
         /// <summary>
-        /// Gets or sets a value indicating whether the current user can approve new communications.
+        /// Gets or sets whether to show the "created by" filter controls.
         /// </summary>
-        /// <value>
-        ///   <c>true</c> if the can approve new communications; otherwise, <c>false</c>.
-        /// </value>
-        public bool CanApprove { get; set; }
+        public bool ShowCreatedByFilter { get; set; }
 
         /// <summary>
-        /// Gets or sets the current person.
+        /// Gets or sets whether an active email transport exists.
         /// </summary>
-        /// <value>
-        /// The current person.
-        /// </value>
-        public ListItemBag CurrentPerson { get; set; }
+        public bool HasActiveEmailTransport { get; set; }
 
         /// <summary>
-        /// Gets or sets the communication types for the communication type filter dropdown.
+        /// Gets or sets whether an active SMS transport exists.
         /// </summary>
-        /// <value>
-        /// The communication types.
-        /// </value>
-        public List<ListItemBag> CommunicationTypeItems { get; set; }
+        public bool HasActiveSmsTransport { get; set; }
 
         /// <summary>
-        /// Gets or sets the status types for the status filter dropdown.
+        /// Gets or sets whether an active push transport exists.
         /// </summary>
-        /// <value>
-        /// The statuses.
-        /// </value>
-        public List<ListItemBag> StatusItems { get; set; }
+        public bool HasActivePushTransport { get; set; }
     }
 }

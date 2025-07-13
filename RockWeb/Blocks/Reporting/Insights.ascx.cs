@@ -91,7 +91,7 @@ namespace RockWeb.Blocks.Reporting
         /// <summary>
         /// Lava short code pie chart configuration
         /// </summary>
-        const string PieChartConfig = "{[ chart type:'pie' chartheight:'200px' legendshow:'true' legendposition:'right' ]}";
+        const string PieChartConfig = "{[ chart type:'pie' chartheight:'300px' legendshow:'true' legendposition:'bottom' ]}";
 
         /// <summary>
         /// Keeps track of the number of colors to skip when selecting the fill color for the charts
@@ -195,10 +195,10 @@ namespace RockWeb.Blocks.Reporting
         {
             var demographics = new List<DemographicItem>()
             {
-                new DemographicItem( "Gender", GetGenderLava( persons ) ),
                 new DemographicItem( "Connection Status", GetConnectionStatusLava( persons ) ),
-                new DemographicItem( "Marital Status", GetMaritalStatusLava( persons ) ),
                 new DemographicItem( "Age", GetAgeLava( persons ) ),
+                new DemographicItem( "Marital Status", GetMaritalStatusLava( persons ) ),
+                new DemographicItem( "Gender", GetGenderLava( persons ) ),
             };
 
             if ( GetAttributeValue( AttributeKey.ShowRace ).AsBoolean() )
@@ -222,7 +222,7 @@ namespace RockWeb.Blocks.Reporting
         private string GetGenderLava( IEnumerable<PersonViewModel> qry )
         {
             var dataItems = qry.GroupBy( p => p.Gender )
-                .Select( p => new DataItem() { Label = p.Key.ToString(), Value = p.Count().ToString() } )
+                .Select( g => new DataItem( g.Key.ToString(), g.Count().ToString() ) )
                 .ToList();
 
             return PopulateShortcodeDataItems( PieChartConfig, dataItems );
@@ -234,15 +234,21 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetConnectionStatusLava( IEnumerable<PersonViewModel> qry )
         {
-            var dataItems = qry.Select( p => new DataItem()
-            {
-                Label = p.ConnectionStatusValueId.HasValue
+            const string chartConfig = "{[ chart type:'bar' chartheight:'300px' yaxismin:'0' yaxismax:'50' yaxisstepsize:'10' valueformat:'percentage' ]}";
+
+            var total = qry.Count();
+            var dataItems = qry
+                .Select( p => p.ConnectionStatusValueId.HasValue
                     ? DefinedValueCache.Get( p.ConnectionStatusValueId.Value )?.Value ?? Unknown
-                    : Unknown
-            } ).GroupBy( di => di.Label )
+                    : Unknown )
+                .GroupBy( label => label )
+                .Select( g => new DataItem(
+                    g.Key,
+                    DataItem.GetPercentage( g.Count(), total )
+                ) )
                 .ToList();
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems.Select( di => new DataItem( di.Key, di.Count().ToString() ) ).ToList() );
+            return PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
         /// <summary>
@@ -251,15 +257,21 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetMaritalStatusLava( IEnumerable<PersonViewModel> qry )
         {
-            var dataItems = qry.Select( p => new DataItem()
-            {
-                Label = p.MaritalStatusValueId.HasValue
-                    ? DefinedValueCache.Get( p.MaritalStatusValueId.Value )?.Value ?? Unknown
-                    : Unknown
-            } ).GroupBy( di => di.Label )
-            .ToList();
+            const string chartConfig = "{[ chart type:'bar' chartheight:'300px' yaxismin:'0' yaxismax:'100' yaxisstepsize:'20' valueformat:'percentage' ]}";
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems.Select( di => new DataItem( di.Key, di.Count().ToString() ) ).ToList() );
+            var total = qry.Count();
+            var dataItems = qry
+                .Select( p => p.MaritalStatusValueId.HasValue
+                    ? DefinedValueCache.Get( p.MaritalStatusValueId.Value )?.Value ?? Unknown
+                    : Unknown )
+                .GroupBy( label => label )
+                .Select( g => new DataItem(
+                    g.Key,
+                    DataItem.GetPercentage( g.Count(), total )
+                ) )
+                .ToList();
+
+            return PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
         /// <summary>
@@ -268,40 +280,43 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetAgeLava( IEnumerable<PersonViewModel> qry )
         {
+            const string chartConfig = "{[ chart type:'bar' chartheight:'300px' yaxismin:'0' yaxismax:'50' yaxisstepsize:'10' valueformat:'percentage' ]}";
+
+            var total = qry.Count();
             var dataItems = new List<DataItem>();
             var peopleWithAgeQry = qry.Where( p => p.BirthDate.HasValue );
 
             var zeroToFiveRangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ZeroToFive );
-            dataItems.Add( new DataItem( "0-5", zeroToFiveRangeSql.ToString() ) );
+            dataItems.Add( new DataItem( "0-5", DataItem.GetPercentage( zeroToFiveRangeSql, total ) ) );
 
             var sixToTwelveRangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.SixToTwelve );
-            dataItems.Add( new DataItem( "6-12", sixToTwelveRangeSql.ToString() ) );
+            dataItems.Add( new DataItem( "6-12", DataItem.GetPercentage( sixToTwelveRangeSql, total ) ) );
 
             var thirteenToSeventeenRangeSql = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ThirteenToSeventeen );
-            dataItems.Add( new DataItem( "13-17", thirteenToSeventeenRangeSql.ToString() ) );
+            dataItems.Add( new DataItem( "13-17", DataItem.GetPercentage( thirteenToSeventeenRangeSql, total ) ) );
 
             var eighteenAndTwentyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.EighteenToTwentyFour );
-            dataItems.Add( new DataItem( "18-24", eighteenAndTwentyFour.ToString() ) );
+            dataItems.Add( new DataItem( "18-24", DataItem.GetPercentage( eighteenAndTwentyFour, total ) ) );
 
             var twentyFiveAndThirtyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.TwentyFiveToThirtyFour );
-            dataItems.Add( new DataItem( "25-34", twentyFiveAndThirtyFour.ToString() ) );
+            dataItems.Add( new DataItem( "25-34", DataItem.GetPercentage( twentyFiveAndThirtyFour, total ) ) );
 
             var thirtyFiveAndFortyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.ThirtyFiveToFortyFour );
-            dataItems.Add( new DataItem( "35-44", thirtyFiveAndFortyFour.ToString() ) );
+            dataItems.Add( new DataItem( "35-44", DataItem.GetPercentage( thirtyFiveAndFortyFour, total ) ) );
 
             var fortyFiveAndFiftyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.FortyFiveToFiftyFour );
-            dataItems.Add( new DataItem( "45-54", fortyFiveAndFiftyFour.ToString() ) );
+            dataItems.Add( new DataItem( "45-54", DataItem.GetPercentage( fortyFiveAndFiftyFour, total ) ) );
 
             var fiftyFiveAndSixtyFour = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.FiftyFiveToSixtyFour );
-            dataItems.Add( new DataItem( "55-64", fiftyFiveAndSixtyFour.ToString() ) );
+            dataItems.Add( new DataItem( "55-64", DataItem.GetPercentage( fiftyFiveAndSixtyFour, total ) ) );
 
-            var overSixtyFive = peopleWithAgeQry.Count( predicate: p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.SixtyFiveOrOlder );
-            dataItems.Add( new DataItem( ">65", overSixtyFive.ToString() ) );
+            var overSixtyFive = peopleWithAgeQry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.SixtyFiveOrOlder );
+            dataItems.Add( new DataItem( ">65", DataItem.GetPercentage( overSixtyFive, total ) ) );
 
             var unknown = qry.Count( p => p.AgeBracket == Rock.Enums.Crm.AgeBracket.Unknown );
-            dataItems.Add( new DataItem( Unknown, unknown.ToString() ) );
+            dataItems.Add( new DataItem( Unknown, DataItem.GetPercentage( unknown, total ) ) );
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems );
+            return PopulateShortcodeDataItems( chartConfig, dataItems );
         }
 
         /// <summary>
@@ -310,15 +325,15 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetRaceLava( IEnumerable<PersonViewModel> qry )
         {
-            var dataItems = qry.Select( p => new DataItem()
-            {
-                Label = p.RaceValueId.HasValue
+            var dataItems = qry
+                .Select( p => p.RaceValueId.HasValue
                     ? DefinedValueCache.Get( p.RaceValueId.Value )?.Value ?? Unknown
-                    : Unknown
-            } ).GroupBy( di => di.Label )
-            .ToList();
+                    : Unknown )
+                .GroupBy( label => label )
+                .Select( g => new DataItem( g.Key, g.Count().ToString() ) )
+                .ToList();
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems.Select( di => new DataItem( di.Key, di.Count().ToString() ) ).ToList() );
+            return PopulateShortcodeDataItems( PieChartConfig, dataItems );
         }
 
         /// <summary>
@@ -327,15 +342,15 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetEthnicityLava( IEnumerable<PersonViewModel> qry )
         {
-            var dataItems = qry.Select( p => new DataItem()
-            {
-                Label = p.EthnicityValueId.HasValue
+            var dataItems = qry
+                .Select( p => p.EthnicityValueId.HasValue
                     ? DefinedValueCache.Get( p.EthnicityValueId.Value )?.Value ?? Unknown
-                    : Unknown
-            } ).GroupBy( di => di.Label )
-            .ToList();
+                    : Unknown )
+                .GroupBy( label => label )
+                .Select( g => new DataItem( g.Key, g.Count().ToString() ) )
+                .ToList();
 
-            return PopulateShortcodeDataItems( PieChartConfig, dataItems.Select( di => new DataItem( di.Key, di.Count().ToString() ) ).ToList() );
+            return PopulateShortcodeDataItems( PieChartConfig, dataItems );
         }
 
         /// <summary>
@@ -524,7 +539,15 @@ namespace RockWeb.Blocks.Reporting
         /// <returns></returns>
         private string GetFillColor( int skip, string label )
         {
-            if ( label == Unknown )
+            if ( label == "Male" )
+            {
+                return "#B2D7FF";
+            }
+            else if ( label == "Female" )
+            {
+                return "#FFB2C1";
+            }
+            else if ( label == Unknown )
             {
                 return "#E7E5E4";
             }
@@ -637,7 +660,6 @@ namespace RockWeb.Blocks.Reporting
                     return "0";
                 }
 
-                var asDecimal = decimal.Divide( count, total );
                 var percent = ( decimal ) count / total * 100;
                 return percent.ToString( "0.##" ); // 2 decimal places max
             }

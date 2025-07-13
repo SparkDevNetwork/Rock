@@ -22,6 +22,7 @@ using System.Diagnostics;
 using System.Linq;
 using System.Text;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
@@ -243,7 +244,7 @@ namespace Rock.Jobs
             {
                 using ( var rockContext = new RockContext() )
                 {
-                    rockContext.Database.CommandTimeout = _commandTimeout;
+                    rockContext.Database.SetCommandTimeout( _commandTimeout );
 
                     var interactionSessions = GetInteractionSessionsForActivityUpdate( rockContext, startDate, cutoffStartDateTime, batchSize );
 

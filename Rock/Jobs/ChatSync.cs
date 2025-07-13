@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
@@ -174,7 +175,7 @@ namespace Rock.Jobs
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
                     var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
 
                     // The chat helper methods that will be called by this job have been designed to never throw an
                     // unhandled exception, but will - instead - return an object that will contain any exceptions

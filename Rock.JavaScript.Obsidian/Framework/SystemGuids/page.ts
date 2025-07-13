@@ -812,6 +812,8 @@ export const Page = {
     GroupMemberDetailSecurityRolesDetail: "45899E6A-7CEC-44EC-8DBA-BD8850262C04",
     /** The group member history page guid */
     GroupMemberHistory: "EAAB757E-524F-4DB9-A124-D5EFBCDCA63B",
+    /** The Group Placement page. */
+    GroupPlacement: "C1B0C21F-FF3B-4D79-A11A-75BF689A954A",
     /**
      * Gets the Group Registration page guid
      * ParentPage: Small Groups

@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.Tests.Shared;
 
@@ -7,6 +9,42 @@ namespace Rock.Tests.Utility.ExtensionMethods
     [TestClass]
     public class StringExtensionsTest
     {
+        #region AsDateTime
+
+        [TestMethod]
+        [DataRow( null, null )]
+        [DataRow( "", null )]
+        [DataRow( "2025-07-08T14:23:45", "2025-07-08 14:23:45" )]
+        [DataRow( "2025-07-08", "2025-07-08 00:00:00" )]
+        [DataRow( "2020-08-23T00:00:00.0000000", "2020-08-23 00:00:00.000" )]
+        [DataRow( "1,2,3", "2003-01-02 00:00:00.000" )]
+        [DataRow( "💥🔥", null )]
+        [DataRow( "123456", null )]
+        [DataRow( "07/04", "YYYY-07-04" )] // MM/dd fallback (custom logic)
+        [DataRow( "20:58", "YYYY-MM-DD 20:58:00" )] // HH:mm fallback (custom logic)
+        [DataRow( "2,4", "YYYY-02-04 00:00:00.000" )]
+        public void AsDateTime_ShouldParseOrReturnNull( string input, string expected )
+        {
+            var result = input.AsDateTime();
+
+            if ( expected == null )
+            {
+                Assert.That.IsNull( result );
+            }
+            else
+            {
+                var now = RockDateTime.Now;
+                expected = expected
+                    .Replace( "YYYY", now.Year.ToString() )
+                    .Replace( "MM", now.Month.ToString( "D2" ) )
+                    .Replace( "DD", now.Day.ToString( "D2" ) );
+
+                Assert.That.AreEqual( DateTime.Parse( expected ), result );
+            }
+        }
+
+        #endregion
+
         #region AsDoubleOrNull
 
         /// <summary>

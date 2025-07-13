@@ -3,7 +3,7 @@
     <div class="search-filter-row">
         <div class="search-filter-icon">
             <i v-if="props.isEnabled" class="fa fa-check-square" style="color: var(--color-primary);"></i>
-            <i v-else class="fa fa-check-square-o" style="color: #c3c2c2;"></i>
+            <i v-else class="fa fa-square-o" style="color: var(--color-interface-soft);"></i>
         </div>
 
         <div class="search-filter-content">

@@ -1,0 +1,93 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="kpis" class="communication-message-performance-kpis row">
+        <div :class="kpiCssClass">
+            <Kpi :value="`${kpis.openRate}%`"
+                 label="Open Rate"
+                 iconCssClass="ti ti-mail-opened"
+                 color="blue"
+                 :colorShade="700"
+                 :isCard="true">
+                <template #secondaryLabel>
+                    Total: {{ asFormattedString(kpis.totalOpensCount) }} &bullet; Unique: {{ asFormattedString(kpis.uniqueOpensCount) }}
+                </template>
+            </Kpi>
+        </div>
+        <div v-if="showEmailMetrics" :class="kpiCssClass">
+            <Kpi :value="`${kpis.clickThroughRate}%`"
+                 label="Click-Through Rate"
+                 iconCssClass="ti ti-hand-finger"
+                 color="green"
+                 :colorShade="700"
+                 :isCard="true">
+                <template #secondaryLabel>
+                    Total: {{ asFormattedString(kpis.totalClicksCount) }} &bullet; Unique: {{ asFormattedString(kpis.uniqueClicksCount) }}
+                </template>
+            </Kpi>
+        </div>
+        <div v-if="showEmailMetrics" :class="kpiCssClass">
+            <Kpi :value="`${kpis.markedAsSpamRate}%`"
+                 label="Marked as Spam"
+                 iconCssClass="ti ti-trash"
+                 color="orange"
+                 :colorShade="700"
+                 :isCard="true">
+                <template #secondaryLabel>
+                    Total: {{ asFormattedString(kpis.totalMarkedAsSpamCount) }}
+                </template>
+            </Kpi>
+        </div>
+        <div v-if="showEmailMetrics" :class="kpiCssClass">
+            <Kpi :value="`${kpis.unsubscribeRate}%`"
+                 label="Unsubscribe Rate"
+                 iconCssClass="ti ti-circle-minus"
+                 color="red"
+                 :colorShade="700"
+                 :isCard="true">
+                <template #secondaryLabel>
+                    Total: {{ asFormattedString(kpis.totalUnsubscribesCount) }}
+                </template>
+            </Kpi>
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.communication-message-performance-kpis {
+    margin-left: -var(--spacing-small);
+    margin-right: -var(--spacing-small);
+}
+
+.communication-message-performance-kpis > div {
+    padding-left: var(--spacing-small);
+    padding-right: var(--spacing-small);
+    margin-bottom: var(--spacing-large);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import Kpi from "@Obsidian/Controls/kpi.obs";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { CommunicationKpisBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationKpisBag";
+
+    const props = defineProps({
+        kpis: {
+            type: Object as PropType<CommunicationKpisBag | null | undefined>,
+            required: true
+        },
+
+        showEmailMetrics: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const kpiCssClass = computed((): string => {
+        return props.showEmailMetrics
+            ? "col-sm-6 col-lg-3"
+            : "col-sm-12";
+    });
+</script>

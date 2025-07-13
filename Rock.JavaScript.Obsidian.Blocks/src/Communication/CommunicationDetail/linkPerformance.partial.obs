@@ -1,0 +1,70 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="communication-analytics-link-performance">
+        <div class="communication-analytics-link-performance-stats">
+            <h5 class="communication-analytics-link-performance-url text-truncate">
+                {{ linkAnalytics.url }}
+            </h5>
+            <div class="communication-analytics-link-performance-numbers">
+                <HighlightLabel labelType="info">
+                    Click-Through Rate: {{ asFormattedString(linkAnalytics.clickThroughRate, 1) }}%
+                </HighlightLabel>
+                <HighlightLabel labelType="success">
+                    Total: {{ asFormattedString(linkAnalytics.totalClicksCount) }} &bullet; Unique: {{ asFormattedString(linkAnalytics.uniqueClicksCount) }}
+                </HighlightLabel>
+            </div>
+        </div>
+        <div class="communication-analytics-link-performance-bar" :style="`width: ${linkAnalytics.percentOfTopLink}%`">
+            <ProgressBar :percent="uniqueOfTotalPercent" progressBarType="success" />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.communication-analytics-link-performance-stats {
+    display: flex;
+    justify-content: space-between;
+}
+
+.communication-analytics-link-performance-url {
+    margin: 0;
+}
+
+.communication-analytics-link-performance-numbers {
+    display: flex;
+    justify-content: flex-end;
+    flex-wrap: wrap;
+    gap: var(--spacing-xsmall);
+}
+
+.communication-analytics-link-performance-bar {
+    margin-top: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import ProgressBar from "@Obsidian/Controls/progressBar.obs";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { CommunicationLinkAnalyticsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationLinkAnalyticsBag";
+
+    const props = defineProps({
+        linkAnalytics: {
+            type: Object as PropType<CommunicationLinkAnalyticsBag>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    const uniqueOfTotalPercent = computed((): number => {
+        if (props.linkAnalytics.totalClicksCount <= 0) {
+            return 0;
+        }
+
+        return Math.round(props.linkAnalytics.uniqueClicksCount / props.linkAnalytics.totalClicksCount * 100);
+    });
+
+    // #endregion Computed Values
+</script>

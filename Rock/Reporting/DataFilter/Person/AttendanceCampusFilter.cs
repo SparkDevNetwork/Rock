@@ -107,7 +107,7 @@ namespace Rock.Reporting.DataFilter.Person
 
                 return new Dictionary<string, string>
                 {
-                    {"campuses", campusBags.ToCamelCaseJson(false, true) },
+                    { "campuses", campusBags.ToCamelCaseJson(false, true) },
                     { "comparisonType", selectionValues[1] },
                     { "attendedCount", selectionValues[2] },
                     { "dateRange", dateRange }

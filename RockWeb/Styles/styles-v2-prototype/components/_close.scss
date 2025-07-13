@@ -9,7 +9,7 @@
   color:          var(--color-interface-strongest);
   filter:         alpha(opacity=20);
   text-shadow:    0 1px 0 var(--color-interface-softest);
-  opacity:        .2;
+  // opacity:        .8;
 
   &:hover,
   &:focus {
@@ -17,7 +17,7 @@
     text-decoration:  none;
     cursor:           pointer;
     filter:           alpha(opacity=20);
-    opacity:          .2;
+    // opacity:          .2;
   }
   
   // Additional properties for button version

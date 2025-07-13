@@ -117,9 +117,9 @@
                         </div>
 
                         <div class="col-xs-12 col-sm-7">
-                            <PushNotificationPreview :class="breakpointHelper.breakpoint"
-                                                     :pushTitle="internalPushTitle"
-                                                     :pushMessage="internalPushMessage" />
+                            <PushNotificationMobilePreview :class="breakpointHelper.breakpoint"
+                                                           :pushTitle="internalPushTitle"
+                                                           :pushMessage="internalPushMessage" />
                         </div>
                     </div>
                 </div>
@@ -207,12 +207,12 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import LoadingOverlay from "./loadingOverlay.partial.obs";
-    import PushNotificationPreview from "./pushNotificationMobilePreview.partial.obs";
     import { BlockActionCallbacks } from "./types.partial";
     import { useBreakpointHelper } from "./utils.partial";
     import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
+    import PushNotificationMobilePreview from "@Obsidian/Controls/Internal/pushNotificationMobilePreview.obs";
     import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
     import PagePicker from "@Obsidian/Controls/pagePicker.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
