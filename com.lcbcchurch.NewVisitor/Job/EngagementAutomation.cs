@@ -286,7 +286,7 @@ namespace com.lcbcchurch.NewVisitor.Job
                 var scoringGuids = scoringItemDetails.Select( a => a.Guid ).ToList();
                 // Get the distinct person ids
                 personIds = personIds.Distinct().ToList();
-                var persons = new PersonService( rockContext ).GetByIds( personIds );
+                var persons = new PersonService( rockContext ).GetByIds( personIds ).toList();
                 persons.LoadAttributes();
                 List<EngagementScoreResult> engagementScoreResults = new List<EngagementScoreResult>();
                 foreach ( var person in persons )
