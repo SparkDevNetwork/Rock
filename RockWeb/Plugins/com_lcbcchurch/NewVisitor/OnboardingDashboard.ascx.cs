@@ -899,13 +899,14 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
                    .Select( a => a.EntityId.Value )
                    .ToList();
 
-            var persons = new PersonService( rockContext ).GetByIds( personIds );
+            var personQuery = new PersonService(rockContext).GetByIds(personIds);
             if ( _campusId.HasValue )
             {
-                persons = persons.Where( a => a.PrimaryFamily.CampusId == _campusId.Value );
+                personQuery = personQuery.Where( a => a.PrimaryFamily.CampusId == _campusId.Value );
             }
 
-            persons = persons.Where( a => a.AgeClassification == AgeClassification.Adult );
+            personQuery = personQuery.Where( a => a.AgeClassification == AgeClassification.Adult );
+            var persons = personQuery.ToList();
             persons.LoadAttributes();
             personIds = persons.Select( a => a.Id ).ToList();
 

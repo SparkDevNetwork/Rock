@@ -317,7 +317,7 @@ namespace RockWeb.Plugins.com_lcbcchurch.NewVisitor
             }
 
             var currentDate = RockDateTime.Now;
-            var persons = new PersonService( rockContext ).GetByIds( personIds );
+            var persons = new PersonService( rockContext ).GetByIds( personIds ).ToList();
             persons.LoadAttributes( rockContext );
             
             foreach ( var person in persons )
