@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -22,5 +22,12 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramList
     /// </summary>
     public class StepProgramListOptionsBag
     {
+        /// <summary>
+        /// Gets or sets a value indicating whether the reorder column should be visible.
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if the column is visible; otherwise, <c>false</c>.
+        /// </value>
+        public bool IsReOrderColumnVisible { get; set; }
     }
 }

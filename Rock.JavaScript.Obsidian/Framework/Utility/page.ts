@@ -23,6 +23,7 @@ export type PageConfig = {
     pageId: number;
     pageGuid: Guid;
     pageParameters: Record<string, string>;
+    sessionGuid: Guid;
     interactionGuid: Guid;
     currentPerson: CurrentPersonBag | null;
     isAnonymousVisitor: boolean;

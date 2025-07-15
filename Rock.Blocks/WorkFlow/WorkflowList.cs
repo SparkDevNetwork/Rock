@@ -96,8 +96,6 @@ namespace Rock.Blocks.Workflow
 
         #region Fields
 
-        private WorkflowType _workflowType;
-
         #endregion
 
         #region Properties
@@ -193,10 +191,10 @@ namespace Rock.Blocks.Workflow
         protected override IQueryable<Rock.Model.Workflow> GetListQueryable( RockContext rockContext )
         {
             IEnumerable<Rock.Model.Workflow> workflows = new List<Rock.Model.Workflow>().AsQueryable();
+            var workflowType = GetWorkflowType();
 
-            if ( GetCanView() && _workflowType != null )
+            if ( GetCanView() && workflowType != null )
             {
-                var workflowType = GetWorkflowType();
                 var workflowService = new WorkflowService( rockContext );
 
                 workflows = workflowService
@@ -257,22 +255,16 @@ namespace Rock.Blocks.Workflow
         /// Gets the type of the workflow.
         /// </summary>
         /// <returns></returns>
-        private WorkflowType GetWorkflowType()
+        public WorkflowTypeCache GetWorkflowType()
         {
-            if ( _workflowType == null )
+            var workflowTypeGuid = GetAttributeValue( AttributeKey.DefaultWorkflowType ).AsGuidOrNull();
+
+            if ( workflowTypeGuid.HasValue )
             {
-                if ( !string.IsNullOrWhiteSpace( GetAttributeValue( AttributeKey.DefaultWorkflowType ) ) )
-                {
-                    Guid.TryParse( GetAttributeValue( AttributeKey.DefaultWorkflowType ), out Guid workflowTypeGuid );
-                    _workflowType = new WorkflowTypeService( RockContext ).Get( workflowTypeGuid );
-                }
-                else
-                {
-                    var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId ).AsInteger();
-                    _workflowType = new WorkflowTypeService( RockContext ).Get( workflowTypeId );
-                }
+                return WorkflowTypeCache.Get( workflowTypeGuid.Value );
             }
-            return _workflowType;
+
+            return WorkflowTypeCache.Get( PageParameter( PageParameterKey.WorkflowTypeId ), !PageCache.Layout.Site.DisablePredictableIds );
         }
 
         /// <inheritdoc/>

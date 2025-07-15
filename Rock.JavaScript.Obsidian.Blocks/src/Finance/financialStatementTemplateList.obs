@@ -15,8 +15,7 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    width="150"
-                    visiblePriority="xs" />
+                    width="25%" />
 
         <TextColumn name="description"
                     title="Description"
@@ -28,9 +27,8 @@
         <BooleanColumn name="isActive"
                        title="Active"
                        field="isActive"
-                       width="157px"
-                       :filter="booleanValueFilter"
-                       visiblePriority="xs" />
+                       width="5%"
+                       :filter="booleanValueFilter" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

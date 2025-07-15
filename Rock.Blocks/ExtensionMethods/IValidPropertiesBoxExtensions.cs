@@ -22,7 +22,7 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.Blocks
 {
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "Use the new extension methods defined in Rock assembly." )]
     public static class IValidPropertiesBoxExtensions
     {

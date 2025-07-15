@@ -2959,8 +2959,9 @@ namespace RockWeb.Blocks.Event
                 {
                     if ( field.AttributeId.HasValue )
                     {
+                        // Also check security if it's an attribute.
                         var attribute = AttributeCache.Get( field.AttributeId.Value );
-                        if ( attribute == null )
+                        if ( attribute == null || !attribute.IsAuthorized( Authorization.VIEW, this.CurrentPerson ) )
                         {
                             return null;
                         }

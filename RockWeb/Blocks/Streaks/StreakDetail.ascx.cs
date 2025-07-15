@@ -808,6 +808,12 @@ namespace RockWeb.Blocks.Streaks
                 {
                     var streakTypeId = PageParameter( PageParameterKey.StreakTypeId ).AsIntegerOrNull();
 
+                    if ( streakTypeId == null )
+                    {
+                        var streakTypeIdKey = PageParameter( PageParameterKey.StreakTypeId );
+                        streakTypeId = Rock.Utility.IdHasher.Instance.GetId( streakTypeIdKey );
+                    }
+
                     if ( streakTypeId.HasValue && streakTypeId.Value > 0 )
                     {
                         var streakTypeService = GetStreakTypeService();
@@ -829,6 +835,12 @@ namespace RockWeb.Blocks.Streaks
             if ( _streak == null )
             {
                 var streakId = PageParameter( PageParameterKey.StreakId ).AsIntegerOrNull();
+
+                if ( streakId == null )
+                {
+                    var streakIdKey = PageParameter( PageParameterKey.StreakId );
+                    streakId = Rock.Utility.IdHasher.Instance.GetId( streakIdKey );
+                }
 
                 if ( streakId.HasValue && streakId.Value > 0 )
                 {

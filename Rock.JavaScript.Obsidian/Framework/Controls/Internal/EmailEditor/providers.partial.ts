@@ -1798,7 +1798,29 @@ export function createGlobalBodyWidthProvider(
     const widthAttributeProvider = createDomWatcherProvider(
         document.body,
         `${GlobalStylesCssSelectors.bodyWidth}:not([data-component-body-width="true"])`,
-        (el) => attributeProvider(el, "width", numberToStringConverter),
+        (el) => {
+            const descendantTds = [...el.querySelectorAll(":scope")] as HTMLTableCellElement[];
+
+            const provider = attributeProvider(
+                el,
+                "width",
+                numberToStringConverter,
+                undefined,
+                {
+                    onTargetValueUpdated(targetValue) {
+                        descendantTds.forEach(td => {
+                            if (targetValue) {
+                                td.style.maxWidth = targetValue;
+                            }
+                            else {
+                                td.style.removeProperty("max-width");
+                            }
+                        });
+                    },
+                });
+
+            return provider;
+        },
         undefined
     );
 
@@ -1810,6 +1832,16 @@ export function createGlobalBodyWidthProvider(
         GlobalStylesCssSelectors.bodyWidth,
         "width",
         stringConverter
+    );
+
+    // This provider copies the max width to the td elements to hide
+    // overflow of child components whose widths are greater than the body width.
+    const maxWidthTdStyleSheetProvider = styleSheetProvider(
+        document.body,
+        RockStylesCssClass,
+        `${GlobalStylesCssSelectors.bodyWidth}:not([data-component-body-width="true"]) > tbody > tr > td`,
+        "max-width",
+        pixelConverter
     );
 
     // The returned provider is primarily based on this provider's value.
@@ -1825,6 +1857,7 @@ export function createGlobalBodyWidthProvider(
             if (!isNullish(newWidth)) {
                 widthStyleSheetProvider.value = "100%";
             }
+            maxWidthTdStyleSheetProvider.value = newWidth;
         }
     });
 
@@ -1840,6 +1873,7 @@ export function createGlobalBodyWidthProvider(
 
             dispose(): void {
                 maxWidthStyleSheetProvider.dispose();
+                maxWidthTdStyleSheetProvider.dispose();
                 widthStyleSheetProvider.dispose();
                 widthAttributeProvider.dispose();
                 globalBodyWidthProviderCache.delete(document);

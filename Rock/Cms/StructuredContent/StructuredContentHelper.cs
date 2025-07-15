@@ -56,7 +56,7 @@ namespace Rock.Cms.StructuredContent
         /// <value>
         /// The structured content JSON string.
         /// </value>
-        public string Content { get; }
+        public string Content { get; private set; }
 
         /// <summary>
         /// Gets the user values JSON string.
@@ -211,7 +211,7 @@ namespace Rock.Cms.StructuredContent
         /// Renders the block contents using the specified block types.
         /// </summary>
         /// <param name="writer">The writer to use when rendering blocks.</param>
-        /// <param name="blockRenderers">The block types used to render</param>
+        /// <param name="blockRenderers">The block types used to render.</param>
         public void Render( TextWriter writer, IReadOnlyDictionary<string, IStructuredContentBlockRenderer> blockRenderers )
         {
             var contentData = Content?.FromJsonOrNull<StructuredContentData>() ?? new StructuredContentData();
@@ -245,6 +245,54 @@ namespace Rock.Cms.StructuredContent
                     blockType.Render( writer, block.Data );
                 }
             }
+        }
+
+        /// <summary>
+        /// Processes any Lava in blocks that support Lava merge fields. This will
+        /// update the <see cref="Content"/> property with the new values after
+        /// the merge fields have been resolved.
+        /// </summary>
+        /// <param name="mergeFields">The merge fields to use when processing Lava.</param>
+        internal void ResolveMergeFields( Dictionary<string, object> mergeFields )
+        {
+            ResolveMergeFields( mergeFields, GetBlockTypes() );
+        }
+
+        /// <summary>
+        /// Processes any Lava in blocks that support Lava merge fields. This will
+        /// update the <see cref="Content"/> property with the new values after
+        /// the merge fields have been resolved.
+        /// </summary>
+        /// <param name="mergeFields">The merge fields to use when processing Lava.</param>
+        /// <param name="blockRenderers">The block types used to process the blocks.</param>
+        private void ResolveMergeFields( Dictionary<string, object> mergeFields, IReadOnlyDictionary<string, IStructuredContentBlockRenderer> blockRenderers )
+        {
+            var contentData = Content?.FromJsonOrNull<StructuredContentData>();
+
+            if ( contentData == null )
+            {
+                return;
+            }
+
+            foreach ( var block in contentData.Blocks )
+            {
+                if ( !blockRenderers.TryGetValue( block.Type, out var blockType ) )
+                {
+                    continue;
+                }
+
+                if ( blockType is IStructuredContentBlockLavaRenderer lavaRenderer )
+                {
+                    var newData = lavaRenderer.ResolveMergeFields( mergeFields, block.Data );
+
+                    if ( !ReferenceEquals( newData, block.Data ) )
+                    {
+                        block.Data = newData;
+                    }
+                }
+            }
+
+            Content = contentData.ToJson( false );
         }
 
         #endregion

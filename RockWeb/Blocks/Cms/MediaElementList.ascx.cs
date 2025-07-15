@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Media;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -325,7 +326,8 @@ namespace RockWeb.Blocks.Cms
                    Id = a.Id,
                    Name = a.Name,
                    DurationSeconds =  a.DurationSeconds,
-                   WatchCount = watchCountQry.Where( b => interactionComponentQry.Where( c => a.Id == c.EntityId && b.InteractionComponentId == c.Id ).Any() ).Count()
+                   WatchCount = watchCountQry.Where( b => interactionComponentQry.Where( c => a.Id == c.EntityId && b.InteractionComponentId == c.Id ).Any() ).Count(),
+                   Transcribed = a.TranscriptionText != null && a.TranscriptionText.Trim() != string.Empty
                } );
 
             var sortProperty = gElementList.SortProperty;
@@ -370,6 +372,11 @@ namespace RockWeb.Blocks.Cms
             var mediaFolderService = new MediaFolderService( rockContext );
 
             var mediaFolderId = PageParameter( PageParameterKey.MediaFolderId ).AsIntegerOrNull();
+
+            if ( !mediaFolderId.HasValue )
+            {
+                mediaFolderId = IdHasher.Instance.GetId( PageParameter( PageParameterKey.MediaFolderId ) );
+            }
 
             if ( !mediaFolderId.HasValue )
             {
@@ -419,5 +426,9 @@ namespace RockWeb.Blocks.Cms
         /// </value>
         public int WatchCount { get; set; }
 
+        /// <summary>
+        /// Gets or sets whether or not the element has TranscriptionText
+        /// </summary>
+        public bool Transcribed { get; set; }
     }
 }

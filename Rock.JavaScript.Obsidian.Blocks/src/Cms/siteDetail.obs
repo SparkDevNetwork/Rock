@@ -109,7 +109,6 @@
     import { SiteDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/SiteDetail/siteDetailOptionsBag";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { confirmDelete } from "@Obsidian/Utility/dialogs";
-    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
     import { ModalAlertType } from "@Obsidian/Enums/Controls/modalAlertType";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { useStore } from "@Obsidian/PageState";
@@ -128,8 +127,6 @@
     const submitForm = ref(false);
     const resetKey = ref("");
     const showAuditDetailsModal = ref(false);
-    const params = new URLSearchParams(window.location.search);
-    const isAutoEditMode = ref(asBooleanOrNull(params.get("autoEdit")) ?? false);
     const isCompiling = ref(false);
     const siteUrl = ref(siteViewBag.value?.siteUrl ?? "/");
     const isShowing = ref(false);

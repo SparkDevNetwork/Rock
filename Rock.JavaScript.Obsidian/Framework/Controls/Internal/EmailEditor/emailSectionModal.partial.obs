@@ -55,7 +55,7 @@
     import { EmailEditorGetEmailSectionOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/emailEditorGetEmailSectionOptionsBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { removeTemporaryAttributes, removeTemporaryElements, removeTemporaryWrappers } from "./utils.partial";
-    import { createBinaryFileImageFromElement, getEmailSection, updateEmailSection } from "./api";
+    import { useApi } from "./api";
 
     const props = defineProps({
         modelValue: {
@@ -86,6 +86,8 @@
     }>();
 
     // #region Values
+
+    const api = useApi();
 
     // UI state.
     const internalValue = useVModelPassthrough(props, "modelValue", emit);
@@ -219,7 +221,7 @@
             try {
                 isSaving.value = true;
 
-                const thumbnailInfo = await createBinaryFileImageFromElement({
+                const thumbnailInfo = await api.createBinaryFileImageFromElement({
                     element: tempElement,
                     fileName: getFileName(emailSectionName.value),
                     binaryFileTypeGuid: BinaryFiletype.CommunicationImage
@@ -236,7 +238,7 @@
                     usageSummary: emailSectionUsageSummary.value
                 };
 
-                const result = await updateEmailSection(bag);
+                const result = await api.updateEmailSection(bag);
 
                 if (result.isSuccess && result.data) {
                     if (props.componentElement) {
@@ -274,7 +276,7 @@
             try {
                 isSaving.value = true;
 
-                const thumbnailInfo = await createBinaryFileImageFromElement({
+                const thumbnailInfo = await api.createBinaryFileImageFromElement({
                     element: tempElement,
                     fileName: getFileName(emailSectionName.value),
                     binaryFileTypeGuid: BinaryFiletype.CommunicationImage
@@ -291,7 +293,7 @@
                     usageSummary: emailSectionUsageSummary.value
                 };
 
-                const result = await updateEmailSection(bag);
+                const result = await api.updateEmailSection(bag);
 
                 if (result.isSuccess && result.data) {
                     if (props.componentElement) {
@@ -347,7 +349,7 @@
                 emailSectionGuid: guid
             };
 
-            const emailSection = (await getEmailSection(bag))?.data;
+            const emailSection = (await api.getEmailSection(bag))?.data;
 
             isSystem.value = !!emailSection?.isSystem;
 

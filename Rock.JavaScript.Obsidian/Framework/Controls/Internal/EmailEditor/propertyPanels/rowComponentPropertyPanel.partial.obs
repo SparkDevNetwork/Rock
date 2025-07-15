@@ -4,7 +4,8 @@
                                 title="Row"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')">
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
         <template v-if="componentHelper">
             <AccordionGroup>
                 <Accordion title="General Settings">
@@ -45,6 +46,7 @@
     } from "../providers.partial";
     import { ValueProvider } from "../types.partial";
     import {
+        getBorderWrapperCellSelector,
         getBorderWrapperTableSelector,
         getRowComponentHelper,
         numberToStringConverter,
@@ -64,6 +66,7 @@
         (e: "clone"): void;
         (e: "complete"): void;
         (e: "delete"): void;
+        (e: "migrate", value: Element): void;
     }>();
 
     // #region Computed Props
@@ -104,6 +107,19 @@
                         else {
                             el.removeAttribute("data-component-body-width");
                         }
+
+                        const descendantTdElements = props.componentElement.querySelectorAll(getBorderWrapperCellSelector("row"));
+
+                        descendantTdElements.forEach((descendantTdElement) => {
+                            if (isHTMLElement(descendantTdElement)) {
+                                if (value) {
+                                    descendantTdElement.style.maxWidth = value;
+                                }
+                                else {
+                                    descendantTdElement.style.removeProperty("max-width");
+                                }
+                            }
+                        });
                     }
                 }
             }),

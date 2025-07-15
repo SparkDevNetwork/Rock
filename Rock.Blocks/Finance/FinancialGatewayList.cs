@@ -39,7 +39,7 @@ namespace Rock.Blocks.Finance
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial gateways." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the financial gateway details.",

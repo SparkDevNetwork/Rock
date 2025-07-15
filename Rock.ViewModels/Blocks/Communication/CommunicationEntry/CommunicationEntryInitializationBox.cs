@@ -136,5 +136,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntry
         ///   <see langword="true"/> if the duplicate prevention option shown; otherwise,<see langword="false"/>.
         /// </value>
         public bool IsDuplicatePreventionOptionShown { get; set; }
+
+        /// <summary>
+        /// Determines if the asset manager feature is enabled in the HTML editor control.
+        /// </summary>
+        public bool EnableAssetManager { get; set; }
     }
 }

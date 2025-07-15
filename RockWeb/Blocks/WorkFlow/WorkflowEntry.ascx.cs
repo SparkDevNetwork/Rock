@@ -876,6 +876,18 @@ namespace RockWeb.Blocks.WorkFlow
                             _workflowType = WorkflowTypeCache.Get( workflowTypeGuidFromURL );
                         }
                     }
+
+                    if ( _workflowType == null )
+                    {
+                        // If the workflowType is still not set, try to find a WorkflowTypeGuid from either the query or route, via the PageParameter.
+                        var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId );
+                        if ( workflowTypeId.IsNotNullOrWhiteSpace() )
+                        {
+                            _workflowType = WorkflowTypeCache.GetByIdKey( workflowTypeId );
+
+                            WorkflowTypeGuid = _workflowType?.Guid.ToString();
+                        }
+                    }
                 }
             }
 
@@ -1597,8 +1609,6 @@ namespace RockWeb.Blocks.WorkFlow
             {
                 personEntryPerson.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
                 personEntryPerson.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
-                personEntryPerson.RaceValueId = formPersonEntrySettings.RaceValueId;
-                personEntryPerson.EthnicityValueId = formPersonEntrySettings.EthnicityValueId;
                 PersonService.SaveNewPerson( personEntryPerson, personEntryRockContext, cpPersonEntryCampus.SelectedCampusId );
             }
 
@@ -1635,8 +1645,6 @@ namespace RockWeb.Blocks.WorkFlow
                 {
                     personEntryPersonSpouse.ConnectionStatusValueId = formPersonEntrySettings.ConnectionStatusValueId;
                     personEntryPersonSpouse.RecordStatusValueId = formPersonEntrySettings.RecordStatusValueId;
-                    personEntryPersonSpouse.RaceValueId = formPersonEntrySettings.RaceValueId;
-                    personEntryPersonSpouse.EthnicityValueId = formPersonEntrySettings.EthnicityValueId;
 
                     // if adding/editing the 2nd Person (should normally be the spouse), set both people to selected Marital Status
 

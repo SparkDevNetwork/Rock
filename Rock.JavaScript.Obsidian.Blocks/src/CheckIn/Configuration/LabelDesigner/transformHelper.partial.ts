@@ -119,99 +119,71 @@ export class TransformHelper {
         const rightAnchor = ["top-right", "middle-right", "bottom-right"].includes(this.lastAnchor ?? "");
         const bottomAnchor = ["bottom-left", "bottom-center", "bottom-right"].includes(this.lastAnchor ?? "");
 
-        // Get the new values.
-        let newX = this.node.x();
-        let newY = this.node.y();
+        let newX: number;
+        let newY: number;
         let newWidth = this.node.width() * this.node.scaleX();
         let newHeight = this.node.height() * this.node.scaleY();
 
+        let stageWidth: number;
+        let stageHeight: number;
+
         const rotation = Math.round(this.node.rotation());
+
+        // Rotate all our values to make the math easier. So if we are rotated
+        // at -90 (text reads from bottom to top) then the "newX" value becomes
+        // the bottom edge of the field and the bottom of the canvas becomes
+        // the left edge.
+        if (rotation === -90) {
+            newX = this.stage.height() - this.node.y();
+            newY = this.node.x();
+
+            stageWidth = this.stage.height();
+            stageHeight = this.stage.width();
+        }
+        else if (rotation === 90) {
+            newX = this.node.y();
+            newY = this.stage.width() - this.node.x();
+
+            stageWidth = this.stage.height();
+            stageHeight = this.stage.width();
+        }
+        else if (rotation === 180) {
+            newX = this.stage.width() - this.node.x();
+            newY = this.stage.height() - this.node.y();
+
+            stageWidth = this.stage.width();
+            stageHeight = this.stage.height();
+        }
+        else {
+            newX = this.node.x();
+            newY = this.node.y();
+
+            stageWidth = this.stage.width();
+            stageHeight = this.stage.height();
+        }
 
         // If this is a left side anchor then attempt to snap the x position,
         // otherwise if it is a right anchor then attempt to snap the width.
         if (leftAnchor) {
-            if (rotation === 90) {
-                const snap = this.surface.snapPixel(newY);
+            const snap = this.surface.snapPixel(newX);
 
-                newWidth += newY - snap;
-                newY = snap;
-            }
-            else if (rotation === 180) {
-                const snap = this.surface.snapPixel(newX);
-
-                newWidth += snap - newX;
-                newX = snap;
-            }
-            else if (rotation === -90) {
-                const snap = this.surface.snapPixel(newY);
-
-                newWidth -= newY - snap;
-                newY = snap;
-            }
-            else {
-                const snap = this.surface.snapPixel(newX);
-
-                newWidth += newX - snap;
-                newX = snap;
-            }
+            newWidth += newX - snap;
+            newX = snap;
         }
         else if (rightAnchor) {
-            if (rotation === 90) {
-                newWidth = this.surface.snapPixel(newY + newWidth) - newY;
-            }
-            else if (rotation === 180) {
-                newWidth = newX - this.surface.snapPixel(newX - newWidth);
-
-            }
-            else if (rotation === -90) {
-                newWidth = newY - this.surface.snapPixel(newY - newWidth);
-            }
-            else {
-                newWidth = this.surface.snapPixel(newX + newWidth) - newX;
-            }
+            newWidth = this.surface.snapPixel(newX + newWidth) - newX;
         }
 
         // If this is a top side anchor then attempt to snap the y position,
         // otherwise if it is a bottom anchor then attempt to snap the height.
         if (topAnchor) {
-            if (rotation === 90) {
-                const snap = this.surface.snapPixel(newX);
+            const snap = this.surface.snapPixel(newY);
 
-                newHeight += snap - newX;
-                newX = snap;
-            }
-            else if (rotation === 180) {
-                const snap = this.surface.snapPixel(newY);
-
-                newHeight -= newY - snap;
-                newY = snap;
-            }
-            else if (rotation === -90) {
-                const snap = this.surface.snapPixel(newX);
-
-                newHeight += newX - snap;
-                newX = snap;
-            }
-            else {
-                const snap = this.surface.snapPixel(newY);
-
-                newHeight += newY - snap;
-                newY = snap;
-            }
+            newHeight += newY - snap;
+            newY = snap;
         }
         else if (bottomAnchor) {
-            if (rotation === 90) {
-                newHeight = newX - this.surface.snapPixel(newX - newHeight);
-            }
-            else if (rotation === 180) {
-                newHeight = newY - this.surface.snapPixel(newY - newHeight);
-            }
-            else if (rotation === -90) {
-                newHeight = this.surface.snapPixel(newX + newHeight) - newX;
-            }
-            else {
-                newHeight = this.surface.snapPixel(newY + newHeight) - newY;
-            }
+            newHeight = this.surface.snapPixel(newY + newHeight) - newY;
         }
 
         // If this is a left anchor then clamp the x position to the left
@@ -239,8 +211,8 @@ export class TransformHelper {
                 newWidth = 20;
             }
         }
-        else if (newWidth + newX > this.stage.width()) {
-            newWidth = this.stage.width() - newX;
+        else if (newWidth + newX > stageWidth) {
+            newWidth = stageWidth - newX;
         }
 
         // If the new height is too small force it to the minimum size.
@@ -254,8 +226,19 @@ export class TransformHelper {
                 newHeight = 20;
             }
         }
-        else if (newHeight + this.node.y() > this.stage.height()) {
-            newHeight = this.stage.height() - this.node.y();
+        else if (newHeight + newY > stageHeight) {
+            newHeight = stageHeight - newY;
+        }
+
+        // Rotate our value back.
+        if (rotation === -90) {
+            [newX, newY] = [newY, this.stage.height() - newX];
+        }
+        else if (rotation === 90) {
+            [newX, newY] = [this.stage.width() - newY, newX];
+        }
+        else if (rotation === 180) {
+            [newX, newY] = [this.stage.width() - newX, this.stage.height() - newY];
         }
 
         // Set the new values.

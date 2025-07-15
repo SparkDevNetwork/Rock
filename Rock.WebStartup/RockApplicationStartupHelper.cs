@@ -104,6 +104,7 @@ namespace Rock.WebStartup
             LogStartupMessage( "Application Starting" );
 
             InitializeRockApp();
+            Rock.JsonExtensions.ReferenceEqualityComparer = new Rock.Utility.EntityReferenceEqualityComparer();
 
             AppDomain.CurrentDomain.AssemblyResolve += AppDomain_AssemblyResolve;
 
@@ -173,6 +174,21 @@ namespace Rock.WebStartup
             RockLogger.ReloadConfiguration();
             ShowDebugTimingMessage( "RockLogger" );
 
+            using ( ObservabilityHelper.StartActivity( "Startup: Application Startup Stage 1" ) )
+            {
+                RunApplicationStartupStage1( runMigrationFileInfo, ranEFMigrations );
+            }
+        }
+
+        /// <summary>
+        /// Runs the first stage of the application startup that can be traced
+        /// by observability. This requires that EF be configured and that
+        /// observability also be configured.
+        /// </summary>
+        /// <param name="runMigrationFileInfo">The FileInfo that represents the 'Run.Migration' file.</param>
+        /// <param name="ranEFMigrations"><c>true</c> if EF migrations were executed.</param>
+        private static void RunApplicationStartupStage1( FileInfo runMigrationFileInfo, bool ranEFMigrations )
+        {
             // Configure the values for RockDateTime.
             // To avoid the overhead of initializing the GlobalAttributesCache prior to LoadCacheObjects(), load these from the database instead.
             LogStartupMessage( "Configuring Date Settings" );

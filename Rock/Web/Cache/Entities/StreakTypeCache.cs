@@ -233,7 +233,9 @@ namespace Rock.Web.Cache
             RequiresEnrollment = sourceModel.RequiresEnrollment;
             OccurrenceFrequency = sourceModel.OccurrenceFrequency;
             StartDate = sourceModel.StartDate;
-            OccurrenceMap = sourceModel.OccurrenceMap;
+            // Create a copy of the byte array, otherwise modifications on the entity
+            // could affect the cached data.
+            OccurrenceMap = sourceModel.OccurrenceMap?.ToArray();
             FirstDayOfWeek = sourceModel.FirstDayOfWeek;
             StructureSettingsJSON = sourceModel.StructureSettingsJSON;
 

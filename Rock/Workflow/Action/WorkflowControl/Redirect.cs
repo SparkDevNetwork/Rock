@@ -18,11 +18,15 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 using System.Web;
 
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.Workflow;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Workflow;
 
 namespace Rock.Workflow.Action
 {
@@ -56,7 +60,7 @@ namespace Rock.Workflow.Action
         Order = 1 )]
 
     [Rock.SystemGuid.EntityTypeGuid( "E2F3DFC1-415D-45C9-B84E-D91562139FDA")]
-    public class Redirect : ActionComponent
+    public class Redirect : ActionComponent, IInteractiveAction
     {
 
         #region Attribute Keys
@@ -80,6 +84,11 @@ namespace Rock.Workflow.Action
         public override bool Execute( RockContext rockContext, WorkflowAction action, object entity, out List<string> errorMessages )
         {
             errorMessages = new List<string>();
+
+            if ( IsObsidianBlock() )
+            {
+                return false;
+            }
 
             string url = GetAttributeValue( action, AttributeKey.Url );
             Guid guid = url.AsGuid();
@@ -111,5 +120,87 @@ namespace Rock.Workflow.Action
                 return processOpt != "2";
             }
         }
+
+        /// <summary>
+        /// Determines if this action is being executed in the context of the
+        /// new Obsidian block.
+        /// </summary>
+        /// <returns><c>true</c> if being executed in the context of the new Obsidian block; <c>false</c> if legacy WebForms.</returns>
+        private bool IsObsidianBlock()
+        {
+            // If we are being processed by the new Obsidian Workflow Entry
+            // block, then don't continue processing this action as it will be
+            // handled by the block. This specific case handles the scenario of
+            // a block action submitting a form and then eventually hitting
+            // this action.
+            if ( RockRequestContextAccessor.Current?.RequestUri?.AbsolutePath?.StartsWith( "/api/v2/BlockActions", StringComparison.OrdinalIgnoreCase ) == true )
+            {
+                return true;
+            }
+
+            if ( HttpContext.Current?.Handler is System.Web.UI.Page page )
+            {
+                var obsidianWorkflowEntryBlock = page.ControlsOfTypeRecursive<Rock.Web.UI.RockBlockTypeWrapper>()
+                    .Where( bw => bw.BlockCache?.BlockType?.Guid == new Guid( "9116AAD8-CF16-4BCE-B0CF-5B4D565710ED" ) )
+                    .FirstOrDefault();
+
+                // If we are being processed by the new Obsidian Workflow
+                // Entry block, then don't continue processing this action
+                // as it will be handled by the block. This specific case
+                // handles the scenario of an initial page load causing the
+                // workflow to process and hit here.
+                if ( obsidianWorkflowEntryBlock != null )
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        #region IInteractiveAction
+
+        /// <inheritdoc/>
+        InteractiveActionResult IInteractiveAction.StartAction( WorkflowAction action, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var mergeFields = GetMergeFields( action, requestContext );
+            var url = GetAttributeValue( action, AttributeKey.Url, true ).ResolveMergeFields( mergeFields );
+            var processOpt = GetAttributeValue( action, AttributeKey.ProcessingOptions );
+            var canSendRedirect = url.IsNotNullOrWhiteSpace();
+
+            var result = new InteractiveActionResult
+            {
+                IsSuccess = true,
+                ProcessingType = InteractiveActionContinueMode.ContinueWhileUnattended,
+                ActionData = new InteractiveActionDataBag
+                {
+                    Message = new InteractiveMessageBag
+                    {
+                        Type = InteractiveMessageType.Redirect,
+                        Content = url
+                    }
+                }
+            };
+
+            if ( processOpt == "1" )
+            {
+                result.IsSuccess = canSendRedirect;
+            }
+            else if ( processOpt == "2" )
+            {
+                result.IsSuccess = false;
+                result.ProcessingType = InteractiveActionContinueMode.Stop;
+            }
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        InteractiveActionResult IInteractiveAction.UpdateAction( WorkflowAction action, Dictionary<string, string> componentData, RockContext rockContext, RockRequestContext requestContext )
+        {
+            throw new NotSupportedException();
+        }
+
+        #endregion
     }
 }

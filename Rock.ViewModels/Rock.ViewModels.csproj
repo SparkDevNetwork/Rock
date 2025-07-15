@@ -117,10 +117,16 @@
     <Compile Include="Blocks\Cms\ContentChannelTypeDetail\ContentChannelTypeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\LavaShortcodeList\LavaShortcodeListBox.cs" />
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementBag.cs" />
+    <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalizationSegmentList\PersonalizationSegmentListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationInitializationBox.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatView\ChatPersonDataBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatView\ChatPersonSettingsBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatView\ChatViewConfigurationBag.cs" />
+    <Compile Include="Blocks\Communication\Chat\ChatView\ChatViewInitializationBox.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationEntryWizardGetEmailPreviewHtmlBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationEntryWizardCheckShortLinkTokenBag.cs" />
     <Compile Include="Blocks\Communication\CommunicationEntryWizard\CommunicationEntryWizardSaveCommunicationTemplateResponseBag.cs" />
@@ -146,6 +152,9 @@
     <Compile Include="Blocks\Communication\SmsConversations\SmsConversationsInitializationBox.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\SmsConversationsSaveNoteBag.cs" />
     <Compile Include="Blocks\Communication\SmsConversations\SnippetBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailCommunicationTemplateBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailGetPreviewMessageRequestBag.cs" />
+    <Compile Include="Blocks\Communication\CommunicationTemplateDetail\CommunicationTemplateDetailInitializationBox.cs" />
     <Compile Include="Blocks\Core\PersonSuggestionList\PersonSuggestionListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchPageBag.cs" />
     <Compile Include="Blocks\Cms\PageSearch\PageSearchBag.cs" />
@@ -193,10 +202,11 @@
     <Compile Include="Blocks\Finance\FinancialPersonBankAccountList\FinancialPersonBankAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Finance\FinancialScheduledTransactionList\FinancialScheduledTransactionListOptionsBag.cs" />
     <Compile Include="Blocks\Reporting\TithingOverview\TithingOverviewToolTipBag.cs" />
+    <Compile Include="Blocks\Security\LoginHistory\LoginHistoryOptionsBag.cs" />
     <Compile Include="Blocks\Tv\AppleTvPageList\AppleTvPageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageList\PageListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PageShortLinkList\PageShortLinkListOptionsBag.cs" />
-    <Compile Include="Blocks\Cms\BlockList\BlockListOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\LayoutBlockList\LayoutBlockListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeDetailOptionsBag.cs" />
     <Compile Include="Blocks\Cms\ThemeDetail\ThemeFieldBag.cs" />
@@ -531,11 +541,11 @@
     <Compile Include="Blocks\Cms\ContentCollectionDetail\CustomFieldFilterBag.cs" />
     <Compile Include="Blocks\Core\Notes\DeleteNoteRequestBag.cs" />
     <Compile Include="Blocks\Core\Notes\EditNoteRequestBag.cs" />
-    <Compile Include="Blocks\Core\Notes\NoteBag.cs" />
-    <Compile Include="Blocks\Core\Notes\NoteEditBag.cs" />
+    <Compile Include="Controls\NoteBag.cs" />
+    <Compile Include="Controls\NoteEditBag.cs" />
     <Compile Include="Blocks\Core\Notes\NotesInitializationBox.cs" />
-    <Compile Include="Blocks\Core\Notes\NoteTypeBag.cs" />
-    <Compile Include="Blocks\Core\Notes\SaveNoteRequestBag.cs" />
+    <Compile Include="Controls\NoteTypeBag.cs" />
+    <Compile Include="Controls\SaveNoteRequestBag.cs" />
     <Compile Include="Blocks\Core\Notes\WatchNoteRequestBag.cs" />
     <Compile Include="Blocks\Core\NotificationMessageList\GetMessageActionRequestBag.cs" />
     <Compile Include="Blocks\Core\NotificationMessageList\GetMessageActionResponseBag.cs" />
@@ -764,6 +774,7 @@
     <Compile Include="Blocks\Utility\RealTimeVisualizer\CustomSettingsOptionsBag.cs" />
     <Compile Include="Blocks\Utility\RealTimeVisualizer\ThemeListItemBag.cs" />
     <Compile Include="Blocks\Utility\RealTimeVisualizer\TopicAndChannelBag.cs" />
+    <Compile Include="Blocks\WorkFlow\WorkflowEntry\WorkflowEntryOptionsBag.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowList\WorkflowListOptionsBag.cs" />
     <Compile Include="Blocks\WorkFlow\FormBuilder\FormFieldShowHide.cs" />
     <Compile Include="Blocks\WorkFlow\WorkflowTriggerDetail\WorkflowTriggerBag.cs" />
@@ -830,10 +841,14 @@
     <Compile Include="Controls\MobileNavigationActionBag.cs" />
     <Compile Include="Controls\PhoneNumberBoxWithSmsControlBag.cs" />
     <Compile Include="Controls\NoteMentionItemBag.cs" />
+    <Compile Include="Reporting\ChartNumericDataPointBag.cs" />
+    <Compile Include="Rest\CheckIn\ProximityBeaconBag.cs" />
+    <Compile Include="Rest\CheckIn\ProximityCheckInOptionsBag.cs" />
     <Compile Include="Rest\Controls\AIProviderPickerGetAIProviderOptionsBag.cs" />
     <Compile Include="Rest\Controls\AssetManagerExtractFileOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorCreateAttendanceOccurrenceOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorAttendanceOccurrenceBag.cs" />
+    <Compile Include="Rest\Controls\EmailEditorGetAllEmailSectionsOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetAttendanceOccurrenceOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorGetFutureAttendanceOccurrencesOptionsBag.cs" />
     <Compile Include="Rest\Controls\EmailEditorRegisterRsvpRecipientsOptionsBag.cs" />
@@ -1127,6 +1142,15 @@
     <Compile Include="Utility\TypeScriptTypeAttribute.cs" />
     <Compile Include="Utility\EntityBagBase.cs" />
     <Compile Include="Utility\ValidPropertiesBox.cs" />
+    <Compile Include="Workflow\EntryFormButtonBag.cs" />
+    <Compile Include="Workflow\EntryFormFieldBag.cs" />
+    <Compile Include="Workflow\EntryFormSectionBag.cs" />
+    <Compile Include="Workflow\InteractiveActionBag.cs" />
+    <Compile Include="Workflow\InteractiveActionDataBag.cs" />
+    <Compile Include="Workflow\InteractiveActionExceptionBag.cs" />
+    <Compile Include="Workflow\InteractiveMessageBag.cs" />
+    <Compile Include="Workflow\PersonEntryConfigurationBag.cs" />
+    <Compile Include="Workflow\PersonEntryValuesBag.cs" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Rock.Enums\Rock.Enums.csproj">

@@ -57,7 +57,7 @@ namespace Rock.Services.NuGet
         /// <summary>
         /// NOTE ***************************************************************************
         /// This event handler is needed because the current version of NuGet.Core has a bug 
-        /// when calling WebProjectSsyte.AddReferences() method. It is passing a null stream 
+        /// when calling WebProjectSystem.AddReference() method. It is passing a null stream 
         /// object resulting in zero byte bin files getting written.
         /// 
         /// SEE: 

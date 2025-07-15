@@ -16,6 +16,8 @@
 //
 using System.IO;
 
+using Rock.Attribute;
+
 namespace Rock.Cms.StructuredContent
 {
     /// <summary>
@@ -29,6 +31,7 @@ namespace Rock.Cms.StructuredContent
     /// it directly in your code with extreme caution and knowing that doing so
     /// can result in application failures when updating to a new Rock release.
     /// </remarks>
+    [RockInternal( "17.1" )]
     public interface IStructuredContentBlockRenderer
     {
         /// <summary>

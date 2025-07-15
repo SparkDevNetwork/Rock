@@ -1,0 +1,215 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="email-design-subheader" v-if="!config.isEditRestrictedSystem">
+        <NotificationBox alertType="warning"
+                         class="alert-inline"
+                         heading="Warning: HTML Mode Requires Advanced Knowledge">
+            <p>
+                <span v-if="isFeatureEnabled('EMAIL_BUILDER_FEATURE', version)">Using the HTML editor may cause compatibility issues with the Email Builder.</span>
+                <button class="show-advanced-help-button"
+                        type="button"
+                        @click.prevent="emit('showAdvancedHelp')">Show Help</button>
+            </p>
+        </NotificationBox>
+    </div>
+
+    <div class="email-design-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="side-panel">
+                    <div class="row">
+                        <div class="col-md-12">
+                            <CheckBox v-model="internalIsCssInliningEnabled"
+                                      :disableLabel="true"
+                                      label=""
+                                      text="CSS Inlining Enabled">
+                                <template #inputGroupAppend>
+                                    <HelpBlock text="Enable CSS Inlining to move styles to inline attributes. This can help maximize compatibility with email clients. This requires support for inlining by the configured email transport." />
+                                </template>
+                            </CheckBox>
+                        </div>
+                    </div>
+
+                    <template v-if="isFeatureEnabled('LAVA_FIELDS_FEATURE', version)">
+                        <div class="row">
+                            <div class="col-md-12">
+                                <KeyValueList v-model="internalLavaFields"
+                                              help="Add any fields and their default values that can be used as lava merge fields within the template html. Any fields with a 'Color' suffix will use a Color Picker as the value editor."
+                                              label="Lava Fields"
+                                              keyPlaceholder="Key"
+                                              valuePlaceholder="Default Value" />
+
+                                <RockButton btnSize="xs"
+                                            btnType="action"
+                                            @click="onUpdateLavaFieldsClicked">Update Lava Fields</RockButton>
+
+                                <HelpBlock text="This will update the Message Template and above lava fields to match. If a field has a different value set in Preview mode, the lava field controls will be updated to use the value from the preview's value." />
+                            </div>
+                        </div>
+                    </template>
+                </div>
+            </div>
+
+            <div class="col-md-8">
+                <CodeEditor v-model="internalValue"
+                            :disabled="isSaving || config.isEditRestrictedSystem"
+                            :editorHeight="400"
+                            mode="lava" />
+            </div>
+        </div>
+    </div>
+
+    <div class="email-design-footer">
+        <RockButton btnType="link"
+                    class="text-primary"
+                    @click="emit('cancel')">Cancel</RockButton>
+
+        <RockButton btnType="primary"
+                    @click="onApplyClicked">Apply</RockButton>
+    </div>
+</template>
+
+<style scoped>
+.email-design-footer {
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    margin: 0 calc(0px - var(--panel-body-padding)) calc(0px - var(--panel-body-padding));
+    padding: var(--spacing-medium) var(--spacing-large);
+    border-top: 1px solid var(--color-interface-softer);
+}
+
+.show-advanced-help-button {
+    background: none;
+    border: none;
+    display: inline-block;
+    font-weight: bold;
+}
+</style>
+
+<script setup lang="ts">
+    import { ref, watch, PropType } from "vue";
+    import { isFeatureEnabled, useCommunicationTemplateMessageUtils, useRecordUtils } from "./utils.partial";
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
+    import HelpBlock from "@Obsidian/Controls/helpBlock.obs";
+    import KeyValueList from "@Obsidian/Controls/keyValueList.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { CommunicationTemplateVersion } from "@Obsidian/Enums/Communication/communicationTemplateVersion";
+    import { KeyValueItem } from "@Obsidian/Types/Controls/keyValueItem";
+    import { CommunicationTemplateDetailInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationTemplateDetail/communicationTemplateDetailInitializationBox";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const props = defineProps({
+        modelValue: {
+            type: String as PropType<string>,
+            required: true
+        },
+        lavaFields: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+        lavaFieldValues: {
+            type: Object as PropType<Record<string, string>>,
+            required: true
+        },
+        isCssInliningEnabled: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        logoBinaryFile: {
+            type: Object as PropType<ListItemBag | null | undefined>,
+            required: false
+        },
+        isSaving: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+        version: {
+            type: Number as PropType<CommunicationTemplateVersion>,
+            required: true
+        },
+        config: {
+            type: Object as PropType<CommunicationTemplateDetailInitializationBox>,
+            required: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: string): void;
+        (e: "update:lavaFields", value: Record<string, string>): void;
+        (e: "update:lavaFieldValues", value: Record<string, string>): void;
+        (e: "update:isCssInliningEnabled", value: boolean): void;
+        (e: "cancel"): void;
+        (e: "apply"): void;
+        (e: "showAdvancedHelp"): void;
+    }>();
+
+    const { areRecordsEqual, recordAsKeyValueItems, keyValueItemsAsRecord } = useRecordUtils();
+    const { updateMessage } = useCommunicationTemplateMessageUtils();
+
+    // #region Values
+
+    // Copy the input values to delay applying changes until the user clicks "Apply".
+    const internalValue = ref<string>(props.modelValue);
+    const internalIsCssInliningEnabled = ref<boolean>(props.isCssInliningEnabled);
+    const internalLavaFields = ref<KeyValueItem[]>(recordAsKeyValueItems(props.lavaFields));
+    const internalLavaFieldValues = ref<Record<string, string>>({ ...props.lavaFieldValues });
+
+    // #endregion Values
+
+    // #region Event Handlers
+
+    function onUpdateLavaFieldsClicked(): void {
+        const result = updateMessage({
+            lavaFields: keyValueItemsAsRecord(internalLavaFields.value),
+            lavaFieldValues: internalLavaFieldValues.value,
+            logoBinaryFile: props.logoBinaryFile,
+            message: internalValue.value,
+        });
+
+        // Update internal values.
+        internalValue.value = result.message;
+        internalLavaFields.value = recordAsKeyValueItems(result.lavaFields);
+        internalLavaFieldValues.value = result.lavaFieldValues;
+    }
+
+    function onApplyClicked(): void {
+        emit("update:modelValue", internalValue.value);
+        emit("update:isCssInliningEnabled", internalIsCssInliningEnabled.value);
+        emit("update:lavaFields", keyValueItemsAsRecord(internalLavaFields.value));
+        emit("update:lavaFieldValues", internalLavaFieldValues.value);
+        emit("apply");
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(() => props.modelValue, val => {
+        if (val !== internalValue.value) {
+            internalValue.value = val;
+        }
+    });
+
+    watch(() => props.isCssInliningEnabled, val => {
+        if (val !== internalIsCssInliningEnabled.value) {
+            internalIsCssInliningEnabled.value = val;
+        }
+    });
+
+    watch(() => props.lavaFields, val => {
+        if (!areRecordsEqual(val, keyValueItemsAsRecord(internalLavaFields.value))) {
+            internalLavaFields.value = recordAsKeyValueItems(val);
+        }
+    });
+
+    watch(() => props.lavaFieldValues, val => {
+        if (!areRecordsEqual(val, internalLavaFieldValues.value)) {
+            internalLavaFieldValues.value = { ...val };
+        }
+    });
+
+    // #endregion Watchers
+</script>

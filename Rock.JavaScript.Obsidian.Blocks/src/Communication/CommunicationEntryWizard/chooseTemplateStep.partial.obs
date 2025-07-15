@@ -151,7 +151,7 @@
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { vShortcut } from "@Obsidian/Directives/shortcut";
-    import { CommunicationType } from "@Obsidian/Enums/Blocks/Communication/CommunicationEntryWizard/communicationType";
+    import { CommunicationType } from "@Obsidian/Enums/Communication/communicationType";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { Guid } from "@Obsidian/Types";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";

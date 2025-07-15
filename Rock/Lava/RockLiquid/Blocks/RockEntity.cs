@@ -448,14 +448,16 @@ namespace Rock.Lava.RockLiquid.Blocks
                             // Determine if we should prefetch attributes. By default we will unless they specifically say not to.
                             if (!disableattributeprefetch)
                             {
+                                var attributedItems = resultList.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList();
+
                                 // If a filtered list of attributes keys are not provided load all attributes otherwise just load the ones for the keys provided.
-                                if (attributeKeys.Count() == 0)
+                                if ( attributeKeys.Count() == 0 )
                                 {
-                                    resultList.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadAttributes();
+                                    Helper.LoadAttributes( entityType, attributedItems, ( RockContext ) dbContext );
                                 }
                                 else
                                 {
-                                    resultList.Select( r => r as IHasAttributes ).Where( r => r != null ).ToList().LoadFilteredAttributes( (RockContext) dbContext, a => attributeKeys.Contains( a.Key ) );
+                                    Helper.LoadFilteredAttributes( entityType, attributedItems, ( RockContext ) dbContext, a => attributeKeys.Contains( a.Key ) );
                                 }
                             }
 

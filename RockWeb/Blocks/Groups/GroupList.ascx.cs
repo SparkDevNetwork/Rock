@@ -320,6 +320,11 @@ namespace RockWeb.Blocks.Groups
                             deleteButton.ToolTip = "Archive";
                             e.Row.AddCssClass( "js-has-grouphistory" );
                         }
+
+                        if ( groupInfo.HasChatChannel )
+                        {
+                            e.Row.AddCssClass( "js-has-chat-channel" );
+                        }
                     }
                 }
             }
@@ -914,6 +919,8 @@ namespace RockWeb.Blocks.Groups
                 var groupMemberService = new GroupMemberService( rockContext );
                 var groupSyncService = new GroupSyncService( rockContext );
 
+                var chatChannelGroupIds = new HashSet<int>( groupService.GetChatChannelGroupsQuery().Select( g => g.Id ) );
+
                 groupList = qryGroups
                     .AsEnumerable()
                     .Where( g => g.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
@@ -934,7 +941,8 @@ namespace RockWeb.Blocks.Groups
                         IsSecurityRole = g.IsSecurityRole,
                         DateAdded = DateTime.MinValue,
                         IsSynced = groupSyncService.Queryable().Any( gs => gs.GroupId == g.Id ),
-                        MemberCount = groupMemberService.Queryable().Count( gm => gm.GroupId == g.Id )
+                        MemberCount = groupMemberService.Queryable().Count( gm => gm.GroupId == g.Id ),
+                        HasChatChannel = chatChannelGroupIds.Contains( g.Id )
                     } )
                     .AsQueryable()
                     .Sort( sortProperty )
@@ -1305,6 +1313,11 @@ namespace RockWeb.Blocks.Groups
             /// </summary>
             /// <value>The group is security role.</value>
             public bool IsSecurityRole { get; internal set; }
+
+            /// <summary>
+            /// Gets or sets whether the group has a corresponding chat channel in the external chat system.
+            /// </summary>
+            public bool HasChatChannel { get; set; }
         }
     }
 }

@@ -6,6 +6,7 @@
                      :getHtmlRequest="getHtmlRequest"
                      :mergeFields="mergeFields"
                      :recipientPersonIds="[]"
+                     :ltr="ltr"
                      :videoProviderNames="[]" />
 
         <template #settings>
@@ -13,8 +14,12 @@
             <RockButton btnType="primary" help="The Email Editor value is only updated on demand. Click this button to get its current value." @click="onGetHtmlClicked">Get HTML</RockButton>
 
             <div class="row">
-                <div class="col">
+                <div class="col-md-2">
                     <Switch v-model="disabled" label="Disabled" :text="disabled ? 'Yes' : 'No'" />
+                </div>
+
+                <div class="col-md-2">
+                    <Switch v-model="ltr" label="Left to Right" :text="ltr ? 'Yes' : 'No'" />
                 </div>
             </div>
 
@@ -56,6 +61,7 @@
 </body>
 </html>`);
     const disabled = ref(false);
+    const ltr = ref(false);
     const mergeFields = ref([
         "GlobalAttribute",
         "Rock.Model.Person",

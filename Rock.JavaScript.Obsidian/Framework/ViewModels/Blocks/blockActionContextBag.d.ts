@@ -43,4 +43,11 @@ export type BlockActionContextBag = {
      * loaded with.
      */
     pageParameters?: Record<string, string> | null;
+
+    /**
+     * The Interaction session that this request belongs to. This is used
+     * to group block action API requests back to the main request's
+     * session.
+     */
+    sessionGuid?: Guid | null;
 };

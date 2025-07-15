@@ -43,6 +43,9 @@ export type CheckinTypeDetailOptionsBag = {
     /** Gets or sets the registration attribute options. */
     personAttributeOptions?: ListItemBag[] | null;
 
+    /** Gets or sets the promotions content channel options. */
+    promotionsContentChannelTypeOptions?: ListItemBag[] | null;
+
     /** Gets or sets the relationship type options. */
     relationshipTypeOptions?: ListItemBag[] | null;
 

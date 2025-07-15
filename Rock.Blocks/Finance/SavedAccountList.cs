@@ -48,7 +48,8 @@ namespace Rock.Blocks.Finance
     [LinkedPage( "Detail Page",
         Description = "Page used to view details of a saved account.",
         IsRequired = false,
-        Key = AttributeKey.DetailPage )]
+        Key = AttributeKey.DetailPage,
+        SiteTypes = Enums.Cms.SiteTypeFlags.Mobile )]
 
     #endregion
 
@@ -233,7 +234,7 @@ namespace Rock.Blocks.Finance
             var financialPersonSavedAccountService = new FinancialPersonSavedAccountService( RockContext );
 
             var transactionTypeId = DefinedValueCache.GetId( Rock.SystemGuid.DefinedValue.TRANSACTION_TYPE_CONTRIBUTION.AsGuid() );
-            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, transactionTypeId, this.PageCache?.Layout?.Site?.SiteType ?? SiteType.Web, out var errorMessage );
+            var savedAccount = financialPersonSavedAccountService.CreateAccountFromToken( MyWellGateway, options, RequestContext.CurrentPerson, transactionTypeId, out var errorMessage );
 
             if ( savedAccount == null )
             {

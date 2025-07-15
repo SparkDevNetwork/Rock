@@ -36,6 +36,7 @@ const state: State = reactive({
     contextEntities: {},
     pageId: 0,
     pageGuid: "",
+    sessionGuid: "",
     interactionGuid: "",
     executionStartTime: RockDateTime.now().toMilliseconds(),
     debugTimings: [],
@@ -59,6 +60,7 @@ export class Store {
         state.pageParameters = pageConfig.pageParameters || {};
         state.pageId = pageConfig.pageId;
         state.pageGuid = pageConfig.pageGuid;
+        state.sessionGuid = pageConfig.sessionGuid;
         state.interactionGuid = pageConfig.interactionGuid;
         state.executionStartTime = pageConfig.executionStartTime;
         state.loginUrlWithReturnUrl = pageConfig.loginUrlWithReturnUrl;

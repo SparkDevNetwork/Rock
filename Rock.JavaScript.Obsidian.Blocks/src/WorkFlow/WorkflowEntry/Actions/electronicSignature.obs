@@ -1,0 +1,129 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div>
+        <div class="styled-scroll">
+            <div class="signaturedocument-container">
+                <iframe :srcdoc="content"
+                        class="signaturedocument-iframe"
+                        style="width: 100%;"
+                        :onload="onResizeIframe"
+                        :onresize="onResizeIframe">
+                </iframe>
+            </div>
+        </div>
+
+        <div class="well">
+            <ElectronicSignature v-model="signature"
+                                 :documentTerm="documentTerm"
+                                 :isDrawn="isDrawn"
+                                 :noCopyEmail="!sendCopy"
+                                 :showNameOnCompletion="showName"
+                                 @signed="onSigned" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import ElectronicSignature from "@Obsidian/Controls/electronicSignature.obs";
+    import { SignatureType } from "@Obsidian/Enums/Core/signatureType";
+    import { Guid } from "@Obsidian/Types";
+    import { asBoolean } from "@Obsidian/Utility/booleanUtils";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { useSuspense } from "@Obsidian/Utility/suspense";
+    import { ElectronicSignatureValue } from "@Obsidian/ViewModels/Controls/electronicSignatureValue";
+    import { computed, ref } from "vue";
+    import { interactiveActionProps } from "../types";
+
+    const enum ComponentConfigurationKey {
+        SignatureType = "signatureType",
+        DocumentTerm = "documentTerm",
+        SignedByEmail = "signedByEmail",
+        LegalName = "legalName",
+        SendCopy = "sendCopy",
+        ShowName = "showName",
+        Content = "content"
+    }
+
+    const enum ComponentDataKey {
+        SignatureData = "signatureData",
+        SignedByName = "signedByName",
+        SignedByEmail = "signedByEmail"
+    }
+
+    const props = defineProps(interactiveActionProps);
+
+    const suspense = useSuspense();
+
+    // #region Values
+
+    const signature = ref<ElectronicSignatureValue>();
+    let frameLoadOperationKey: Guid | undefined = newGuid();
+
+    // #endregion
+
+    // #region Computed Values
+
+    const content = computed((): string => {
+        return props.configuration[ComponentConfigurationKey.Content] ?? "";
+    });
+
+    const isDrawn = computed((): boolean => {
+        return props.configuration[ComponentConfigurationKey.SignatureType] == SignatureType.Drawn.toString();
+    });
+
+    const sendCopy = computed((): boolean => {
+        return asBoolean(props.configuration[ComponentConfigurationKey.SendCopy]);
+    });
+
+    const showName = computed((): boolean => {
+        return asBoolean(props.configuration[ComponentConfigurationKey.ShowName]);
+    });
+
+    const documentTerm = computed((): string => {
+        return props.configuration[ComponentConfigurationKey.DocumentTerm] ?? "document";
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Called when the iframe has either loaded or resized.
+     *
+     * @param event The event being processed.
+     */
+    function onResizeIframe(event: Event): void {
+        // Force the iframe to be the full height of the inner content. This
+        // allows our parent element to handle scrolling.
+        if (event.target instanceof HTMLIFrameElement && event.target.contentWindow) {
+            event.target.style.height = event.target.contentWindow.document.documentElement.scrollHeight + "px";
+        }
+
+        // After the first resize, inform the page we are ready to display.
+        if (frameLoadOperationKey && suspense) {
+            suspense.completeAsyncOperation(frameLoadOperationKey);
+            frameLoadOperationKey = undefined;
+        }
+    }
+
+    /**
+     * Called when the signature component has completed signing.
+     */
+    async function onSigned(): Promise<void> {
+        const newData: Record<string, string | null | undefined> = {
+            [ComponentDataKey.SignatureData]: signature.value?.signatureData,
+            [ComponentDataKey.SignedByName]: signature.value?.signedByName,
+            [ComponentDataKey.SignedByEmail]: signature.value?.signedByEmail
+        };
+
+        await props.submit(newData);
+    }
+
+    // #endregion
+
+    if (suspense) {
+        if (frameLoadOperationKey) {
+            suspense.startAsyncOperation(frameLoadOperationKey);
+        }
+    }
+</script>

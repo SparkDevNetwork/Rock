@@ -22,7 +22,7 @@ namespace Rock.Logging
     /// The Log Levels available for RockLogger.
     /// </summary>
     [Obsolete( "This is not used and will be removed in the future." )]
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     public enum RockLogLevel
     {
         /// <summary>

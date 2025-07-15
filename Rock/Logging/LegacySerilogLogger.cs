@@ -28,7 +28,7 @@ namespace Rock.Logging
     /// </summary>
     /// <seealso cref="Rock.Logging.IRockLogger" />
     [Obsolete( "This will be removed in the future." )]
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     internal class LegacySerilogLogger : IRockLogger
     {
         private const string DEFAULT_DOMAIN = "OTHER";
@@ -723,7 +723,7 @@ namespace Rock.Logging
         /// <param name="domain">The domain.</param>
         /// <returns></returns>
         [Obsolete( "Use the LoggerFactory on RockLogger instead." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public bool ShouldLogEntry( RockLogLevel logLevel, string domain )
         {
             return true;

@@ -74,6 +74,17 @@ namespace Rock.Model
             /// <inheritdoc/>
             protected override void PostSave()
             {
+                // If the Campus is being added and it doesn't have a BeaconId,
+                // then set the BeaconId to the Id.
+                if ( PreSaveState == EntityContextState.Added && !Entity.BeaconId.HasValue && Entity.Id <= ushort.MaxValue )
+                {
+                    Entity.BeaconId = Entity.Id;
+                    RockContext.SaveChanges( new SaveChangesArgs
+                    {
+                        DisablePrePostProcessing = true
+                    } );
+                }
+
                 if ( PreSaveState == EntityContextState.Modified )
                 {
                     // If a campus is modified, then it can only effect kiosk

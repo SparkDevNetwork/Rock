@@ -23,6 +23,8 @@ using System.Data.Entity.ModelConfiguration;
 using System.Linq;
 using System.Runtime.Serialization;
 using Newtonsoft.Json.Linq;
+
+using Rock.Cms.ContentCollection.Attributes;
 using Rock.Data;
 using Rock.Lava;
 
@@ -143,8 +145,12 @@ namespace Rock.Model
         /// <value>
         /// The unique message identifier.
         /// </value>
+        /// A simple index was added to the UniqueMessageId field due to a known usage in core for Twilio.  
+        /// It was also reported by Bill at Bema that a similar issue with ClearStream was causing poor performance. 
+        /// While we usually prefer to create crafted covering indexes with composite and include columns—this case justified a single-column index.
         [DataMember]
         [MaxLength( 100 )]
+        [IndexField]
         public string UniqueMessageId { get; set; }
 
         /// <summary>

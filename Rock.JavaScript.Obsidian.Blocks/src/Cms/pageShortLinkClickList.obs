@@ -1,7 +1,9 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Grid v-if="isVisible"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
+          :entityTypeGuid="EntityType.Interaction"
           keyField="idKey"
           itemTerm="Clicks"
           stickyHeader
@@ -11,7 +13,7 @@
         <DateTimeColumn name="interactionDateTime"
                         title="Date / Time"
                         field="interactionDateTime"
-                        :filter="textValueFilter"
+                        :filter="dateValueFilter"
                         :itemClass="'align-right justify-content-end'"
                         visiblePriority="xs" />
 
@@ -19,6 +21,7 @@
                       title="Person"
                       field="person"
                       :filter="pickExistingValueFilter"
+                      :filterValue="getPersonNameFilterValue"
                       visiblePriority="xs"
                       :showAsLink="true" />
 
@@ -50,12 +53,14 @@
 
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
-    import Grid, { DateTimeColumn, PersonColumn, TextColumn, pickExistingValueFilter, textValueFilter } from "@Obsidian/Controls/grid";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import Grid, { DateTimeColumn, PersonColumn, TextColumn, pickExistingValueFilter, textValueFilter, dateValueFilter } from "@Obsidian/Controls/grid";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { PageShortLinkClickListOptionsBag } from "@Obsidian/ViewModels/Blocks/Cms/PageShortLinkClickList/pageShortLinkClickListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { reactive, ref, computed } from "vue";
     import { useStore } from "@Obsidian/PageState";
+    import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkClickListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -92,6 +97,17 @@
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
         }
     }
+
+    /**
+    * Gets the filter value text to use for the name column.
+    *
+    * @param row The row to be filtered.
+    */
+    function getPersonNameFilterValue(row: Record<string, unknown>): string {
+        const person = row["person"] as PersonFieldBag;
+        return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
     // #endregion
 
     gridDataSource.value = loadGridData();

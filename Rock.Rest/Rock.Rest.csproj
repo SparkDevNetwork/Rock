@@ -376,6 +376,7 @@
     <Compile Include="v2\Models\CodeGenerated\GroupTypeRolesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\GroupTypesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\HistoriesController.CodeGenerated.cs" />
+    <Compile Include="v2\Models\CodeGenerated\HistoryLoginsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\HtmlContentsController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\IdentityVerificationCodesController.CodeGenerated.cs" />
     <Compile Include="v2\Models\CodeGenerated\IdentityVerificationsController.CodeGenerated.cs" />

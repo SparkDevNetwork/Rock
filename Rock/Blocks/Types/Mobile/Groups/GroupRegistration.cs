@@ -53,6 +53,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [GroupTypesField( "Allowed Group Types",
         Description = "Determines which group types are allowed when adding people to a group from this block.",
         IsRequired = false,
+        DefaultValue = SystemGuid.GroupType.GROUPTYPE_SMALL_GROUP,
         EnhancedSelection = true,
         Key = AttributeKey.GroupTypes,
         Order = 1 )]
@@ -918,6 +919,13 @@ namespace Rock.Blocks.Types.Mobile.Groups
                 if ( GroupTypeGuids.Any() && !GroupTypeGuids.Contains( group.GroupType.Guid ) )
                 {
                     return ActionBadRequest( "Invalid group type for current configuration." );
+                }
+
+                // Just flat out don't allow them to add themselves to a
+                // security role - ever.
+                if ( group.IsSecurityRole )
+                {
+                    return ActionBadRequest( "The group is a restricted group type." );
                 }
 
                 // Verify the data provided about the person and spouse is valid.

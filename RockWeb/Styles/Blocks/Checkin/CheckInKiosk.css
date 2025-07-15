@@ -434,6 +434,14 @@
     font-size: var(--font-size-h4);
 }
 
+.check-in-page .welcome-screen.camera-disabled .start-button {
+    grid-row: 1/3;
+}
+
+.check-in-page .welcome-screen.camera-disabled .scan-barcode-button {
+    display: none;
+}
+
 .check-in-page .welcome-screen.kiosk-closed,
 .check-in-page .welcome-screen.kiosk-not-open,
 .check-in-page .welcome-screen.kiosk-not-open-yet {

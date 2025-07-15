@@ -190,6 +190,7 @@ namespace Rock.Model
             target.PublicName = source.PublicName;
             target.StartDate = source.StartDate;
             target.Url = source.Url;
+            target.UsesCampusChildAccounts = source.UsesCampusChildAccounts;
             target.CreatedDateTime = source.CreatedDateTime;
             target.ModifiedDateTime = source.ModifiedDateTime;
             target.CreatedByPersonAliasId = source.CreatedByPersonAliasId;

@@ -21,7 +21,7 @@ namespace Rock.Web.UI
     /// <summary>
     /// A BlockType that supports adding additional block type attributes at runtime
     /// </summary>
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     [Obsolete( "No longer used. There is no replacement for this interface." )]
     public interface IDynamicAttributesBlock
     {

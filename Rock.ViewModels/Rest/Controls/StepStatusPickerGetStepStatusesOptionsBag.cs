@@ -30,5 +30,10 @@ namespace Rock.ViewModels.Rest.Controls
         /// The GUID of the step program that this step status is part of.
         /// </summary>
         public Guid? StepProgramGuid { get; set; }
+
+        /// <summary>
+        /// The security grant token to use when performing authorization checks.
+        /// </summary>
+        public string SecurityGrantToken { get; set; }
     }
 }

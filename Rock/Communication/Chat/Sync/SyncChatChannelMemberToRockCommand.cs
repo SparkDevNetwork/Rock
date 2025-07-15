@@ -73,10 +73,9 @@ namespace Rock.Communication.Chat.Sync
         /// <summary>
         /// Initializes a new instance of the <see cref="SyncChatChannelMemberToRockCommand"/> class.
         /// </summary>
-        /// <param name="attemptLimit">The maximum number of times to attempt a chat-to-Rock sync command before giving up.</param>
         /// <param name="chatSyncType">The type of synchronization to perform.</param>
-        public SyncChatChannelMemberToRockCommand( int attemptLimit, ChatSyncType chatSyncType )
-            : base( attemptLimit, chatSyncType )
+        public SyncChatChannelMemberToRockCommand( ChatSyncType chatSyncType )
+            : base( chatSyncType )
         {
         }
     }

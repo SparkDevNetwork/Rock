@@ -447,12 +447,6 @@ namespace Rock.Blocks.Group.Scheduling
             // selection of past dates, so the individual may choose a past week as the source when cloning schedules. The UI will be
             // responsible for preventing the scheduling/manipulation of past schedules (and we'll also double-check & prevent doing
             // so within this block's action methods).
-            // 
-            //  1) If no date range selected, default to the next 6 weeks.
-            //  2) If only a start date is selected, set end date = start date.
-            //  3) If only an end date is selected, set start date = end date.
-            //  4) If end date >= start date, set end date = start date.
-            //  5) Allow any other valid selections (knowing they might be selecting an excessively-large range).
 
             /*
                 5/31/2024 - JPH
@@ -483,74 +477,28 @@ namespace Rock.Blocks.Group.Scheduling
                 TimeValue = 6
             };
 
-            if ( filters.DateRange == null )
-            {
-                filters.DateRange = defaultDateRange;
-            }
+            var validatedDateRange = filters.DateRange.Validate( defaultDateRange );
 
-            if ( filters.DateRange.RangeType == SlidingDateRangeType.DateRange )
-            {
-                var lowerDate = filters.DateRange.LowerDate;
-                var upperDate = filters.DateRange.UpperDate;
+            var actualSlidingDateRange = validatedDateRange.SlidingDateRangeBag;
+            var actualDateRange = validatedDateRange.ActualDateRange;
 
-                if ( lowerDate.HasValue && upperDate.HasValue )
-                {
-                    if ( upperDate < lowerDate )
-                    {
-                        filters.DateRange.UpperDate = lowerDate;
-                    }
-                }
-                else if ( lowerDate.HasValue )
-                {
-                    filters.DateRange.UpperDate = lowerDate;
-                }
-                else if ( upperDate.HasValue )
-                {
-                    filters.DateRange.LowerDate = upperDate;
-                }
-                else
-                {
-                    filters.DateRange = defaultDateRange;
-                }
-            }
-
-            DateRange GetDateRange( SlidingDateRangeBag slidingDateRange )
-            {
-                var rangeType = slidingDateRange.RangeType.ToString();
-                var number = slidingDateRange.TimeValue.ToString();
-                var unitType = slidingDateRange.TimeUnit.ToString();
-                var startDate = slidingDateRange.LowerDate.ToString();
-                var endDate = slidingDateRange.UpperDate.ToString();
-
-                var delimitedValues = $"{rangeType}|{number}|{unitType}|{startDate}|{endDate}";
-
-                return RockDateTimeHelper.CalculateDateRangeFromDelimitedValues( delimitedValues );
-            }
-
-            var dateRange = GetDateRange( filters.DateRange );
-
-            // At this point, we should have validated start and end dates, but if for some reason we don't, default to the next 6 weeks.
-            if ( dateRange?.Start == null || dateRange?.End == null )
-            {
-                filters.DateRange = defaultDateRange;
-                dateRange = GetDateRange( filters.DateRange );
-            }
+            // Ensure the filters object represents the actual, validated sliding date range.
+            filters.DateRange = actualSlidingDateRange;
 
             // These fallback values should never be needed, but we'll include them just in case
             // the `CalculateDateRange...` method fails to return valid values for some reason.
-            if ( dateRange?.Start == null || dateRange?.End == null )
+            if ( actualDateRange?.Start == null || actualDateRange?.End == null )
             {
                 // These are the values we would expect from "Next 6 Weeks".
                 var defaultStartDate = RockDateTime.Today;
                 // Add 35 days to today's "end of week" date, so we'll include this current week + the following 5 weeks.
                 var defaultEndDate = RockDateTime.Today.EndOfWeek( RockDateTime.FirstDayOfWeek ).AddDays( 35 );
 
-                dateRange = new DateRange( defaultStartDate, defaultEndDate );
+                actualDateRange = new DateRange( defaultStartDate, defaultEndDate );
             }
 
-            var actualStartDate = dateRange.Start.Value;
-            var actualEndDate = dateRange.End.Value;
-            var actualSlidingDateRange = filters.DateRange;
+            var actualStartDate = actualDateRange.Start.Value;
+            var actualEndDate = actualDateRange.End.Value;
 
             string friendlyDateRange;
 

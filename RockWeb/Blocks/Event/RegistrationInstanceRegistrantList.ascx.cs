@@ -20,6 +20,7 @@ using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Net;
 using System.Text;
 using System.Web.UI;
 using System.Web.UI.WebControls;
@@ -1686,7 +1687,8 @@ namespace RockWeb.Blocks.Event
                             f.FieldSource == RegistrationFieldSource.RegistrantAttribute )
                         .Select( f => f.Attribute )
                         .ToList();
-                    registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct().ToList();
+                    registrantAttributeIds = registrantAttributes.Select( a => a.Id ).Distinct()
+                        .ToList();
 
                     // Filter query by any configured registrant attribute filters
                     if ( registrantAttributes != null && registrantAttributes.Any() )
@@ -1704,6 +1706,8 @@ namespace RockWeb.Blocks.Event
                             f.Attribute != null &&
                             f.FieldSource == RegistrationFieldSource.PersonAttribute )
                         .Select( f => f.Attribute )
+                        .ToList()
+                        .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                         .ToList();
                     personAttributesIds = personAttributes.Select( a => a.Id ).Distinct().ToList();
 
@@ -1920,6 +1924,8 @@ namespace RockWeb.Blocks.Event
                                     .Where( v =>
                                         registrantAttributeIds.Contains( v.AttributeId ) &&
                                         v.EntityId.Value == registrant.Id )
+                                    .ToList()
+                                    .Where( a => a.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) )
                                     .ToList()
                                     .ForEach( v => attributeFieldObject.AttributeValues
                                         .Add( v.AttributeId.ToString() + v.Attribute.Key, new AttributeValueCache( v ) ) );

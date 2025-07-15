@@ -28,5 +28,12 @@ namespace Rock.ViewModels.Rest.Controls
         /// The type of binary files to search for
         /// </summary>
         public Guid BinaryFileTypeGuid { get; set; }
+
+        /// <summary>
+        /// Gets or sets the security grant token to use when performing
+        /// authorization checks.
+        /// </summary>
+        /// <value>The security grant token.</value>
+        public string SecurityGrantToken { get; set; }
     }
 }

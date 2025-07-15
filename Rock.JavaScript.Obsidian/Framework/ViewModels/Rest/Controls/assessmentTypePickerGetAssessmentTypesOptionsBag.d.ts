@@ -28,4 +28,7 @@
 export type AssessmentTypePickerGetAssessmentTypesOptionsBag = {
     /** Whether to include assessment types that are marked inactive */
     isInactiveIncluded?: boolean | null;
+
+    /** The security grant token to use when performing authorization checks. */
+    securityGrantToken?: string | null;
 };

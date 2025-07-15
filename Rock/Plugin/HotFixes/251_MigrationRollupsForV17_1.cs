@@ -1,0 +1,83 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
+
+namespace Rock.Plugin.HotFixes
+{
+    /// <summary>
+    /// Plug-in migration
+    /// </summary>
+    /// <seealso cref="Rock.Plugin.Migration" />
+    [MigrationNumber( 251, "17.1" )]
+    public class MigrationRollupsForV17_1 : Migration
+    {
+        /// <summary>
+        /// Operations to be performed during the upgrade process.
+        /// </summary>
+        public override void Up()
+        {
+            ReduceDefaultSizeRockLoggerMaxFileSizeAndNumberOfLogFilesUp();
+            UpdateAppleDeviceListUp();
+        }
+
+        /// <summary>
+        /// Operations to be performed during the downgrade process.
+        /// </summary>
+        public override void Down()
+        {
+            // No down
+        }
+
+        /// <summary>
+        /// NA: AUpdates the RockLogger MaxFileSize and NumberOfLogFiles from 20 to 5 - up
+        /// </summary>
+        private void ReduceDefaultSizeRockLoggerMaxFileSizeAndNumberOfLogFilesUp()
+        {
+            Sql( @"UPDATE [Attribute]
+    SET [DefaultValue] = REPLACE(
+            REPLACE([DefaultValue], '""MaxFileSize"":20,', '""MaxFileSize"":5,'),
+            '""NumberOfLogFiles"":20,', '""NumberOfLogFiles"":5,'
+            )
+    ,IsDefaultPersistedValueDirty = 1
+    WHERE [Key] = 'core_LoggingConfig';" );
+        }
+
+        /// <summary>
+        /// Update the Apple Device List to include new devices.
+        /// </summary>
+        private void UpdateAppleDeviceListUp()
+        {
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPhone17,5", "iPhone 16e", "099C90E2-0771-413D-8762-B473EE6DFDB9", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad15,8", "iPad 11th Gen (WiFi+Cellular)", "27D7717D-9483-4EFB-BBF9-1CD26D4C5F68", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad15,7", "iPad 11th Gen (WiFi)", "A55A657E-CA61-415D-8BA6-27C48A51A1D7", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad15,6", "iPad Air 13-inch 7th Gen (WiFi+Cellular)", "7B731688-93B7-4DE0-AF86-A0621FDC586B", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad15,5", "iPad Air 13-inch 7th Gen (WiFi)", "E2940051-B693-4B20-B230-0AAB0F2CD8D0", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad15,4", "iPad Air 11-inch 7th Gen (WiFi+Cellular)", "2575B3EB-C8CD-448B-80F3-15C2BDD11069", true );
+            RockMigrationHelper.UpdateDefinedValue( SystemGuid.DefinedType.APPLE_DEVICE_MODELS, "iPad15,3", "iPad Air 11-inch 7th Gen (WiFi)", "E4EA4216-12E3-49DF-AFB4-F6B2A26E311E", true );
+
+            Sql( @"
+                DECLARE @AppleDeviceDefinedTypeId INT = (SELECT [Id] FROM [DefinedType] WHERE [Guid] = 'DAE31F78-7AB9-4ACE-9EE1-C1E6A734562C')
+
+                UPDATE [PersonalDevice] SET [Model] = dv.[Description]
+                FROM [PersonalDevice] pd
+                JOIN [DefinedValue] dv ON pd.[Model] = dv.[Value]
+                WHERE pd.[Manufacturer] = 'Apple'
+                  AND pd.[Model] like '%,%'
+                  AND dv.DefinedTypeId = @AppleDeviceDefinedTypeId" );
+        }
+    }
+}

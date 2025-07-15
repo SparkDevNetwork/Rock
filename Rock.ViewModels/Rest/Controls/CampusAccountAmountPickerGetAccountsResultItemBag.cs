@@ -16,8 +16,6 @@
 //
 
 using System;
-using System.Collections.Generic;
-using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Rest.Controls
 {
@@ -36,11 +34,5 @@ namespace Rock.ViewModels.Rest.Controls
         /// GUID of the account
         /// </summary>
         public Guid Value { get; set; }
-
-        /// <summary>
-        /// List of the ACTUAL accounts to use (if using account-campus mapping logic) for each of the campuses.
-        /// The Campus GUID is the key and a ListItemBag of the account details are the value.
-        /// </summary>
-        public Dictionary<Guid, ListItemBag> CampusAccounts { get; set; }
     }
 }

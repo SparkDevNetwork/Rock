@@ -418,7 +418,7 @@ namespace Rock.Blocks.Core
             {
                 if ( fieldType.Field is Rock.Field.ISecurityGrantFieldType grantFieldType )
                 {
-                    grantFieldType.AddRulesToSecurityGrant( securityGrant );
+                    grantFieldType.AddRulesToSecurityGrant( securityGrant, new Dictionary<string, string>() );
                 }
             }
 

@@ -14,7 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
-using Rock.ViewModels.Blocks.Core.Notes;
+using Rock.ViewModels.Controls;
 
 namespace Rock.ViewModels.Blocks.Communication.SmsConversations
 {
@@ -32,6 +32,5 @@ namespace Rock.ViewModels.Blocks.Communication.SmsConversations
         /// Gets or sets the note request bag containing the details for saving a note.
         /// </summary>
         public SaveNoteRequestBag NoteRequestBag { get; set; }
-
     }
 }

@@ -20,7 +20,7 @@
                     field="description"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="40%"  />
+                    width="40%" />
 
         <TextColumn name="storageEntityType"
                     title="Storage Type"
@@ -57,7 +57,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'name'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

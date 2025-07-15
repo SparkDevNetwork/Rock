@@ -100,6 +100,12 @@ namespace Rock.ViewModels.Blocks.Finance.FinancialAccountDetail
         public string Url { get; set; }
 
         /// <summary>
+        /// Determines if the account uses child accounts and a campus identifier from
+        /// the block to pick a matching child account for the transaction.
+        /// </summary>
+        public bool UsesCampusChildAccounts { get; set; }
+
+        /// <summary>
         /// Gets or sets the account participants.
         /// </summary>
         /// <value>

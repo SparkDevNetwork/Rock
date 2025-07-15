@@ -1,0 +1,67 @@
+<template>
+    <NotificationBox v-if="isNotificationType"
+                     :alertType="alertType"
+                     :heading="message.title ?? undefined">
+        &nbsp;<span>{{ message.content }}</span>
+    </NotificationBox>
+
+    <div v-else-if="message.type === InteractiveMessageType.Html"
+         v-html="message.content">
+    </div>
+
+    <div v-else-if="message.type === InteractiveMessageType.Redirect">
+        <!-- Intentionally blank. -->
+    </div>
+
+    <NotificationBox v-else
+                     alertType="warning">
+        We received an unexpected message format and are unable to display it.
+    </NotificationBox>
+</template>
+
+<script setup lang="ts">
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { InteractiveMessageType } from "@Obsidian/Enums/Workflow/interactiveMessageType";
+    import { InteractiveMessageBag } from "@Obsidian/ViewModels/Workflow/interactiveMessageBag";
+    import { computed, PropType } from "vue";
+
+    const props = defineProps({
+        /**
+         * The message to display.
+         */
+        message: {
+            type: Object as PropType<InteractiveMessageBag>,
+            required: true
+        }
+    });
+
+    /** Determines if this message should display a notification box. */
+    const isNotificationType = computed((): boolean => {
+        return props.message.type === InteractiveMessageType.Error
+            || props.message.type === InteractiveMessageType.Warning
+            || props.message.type === InteractiveMessageType.Information
+            || props.message.type === InteractiveMessageType.Success;
+    });
+
+    /** The type of alert for the notification box. */
+    const alertType = computed((): AlertType => {
+        if (props.message.type === InteractiveMessageType.Error) {
+            return AlertType.Danger;
+        }
+        else if (props.message.type === InteractiveMessageType.Warning) {
+            return AlertType.Warning;
+        }
+        else if (props.message.type === InteractiveMessageType.Success) {
+            return AlertType.Success;
+        }
+        else {
+            return AlertType.Info;
+        }
+    });
+
+    // If the message is a redirect, then do so.
+    if (props.message.type === InteractiveMessageType.Redirect && props.message.content) {
+        window.location.href = props.message.content;
+    }
+</script>

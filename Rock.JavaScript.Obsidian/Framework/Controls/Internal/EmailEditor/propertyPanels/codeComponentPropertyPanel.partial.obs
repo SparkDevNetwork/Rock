@@ -1,11 +1,13 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <ComponentPropertyPanelBase :componentElement="componentElement"
+                                :componentMigrationHelper="codeComponentHelper"
                                 :hasPaddedBody="true"
                                 title="Lava"
                                 @clone="$emit('clone')"
                                 @complete="$emit('complete')"
-                                @delete="$emit('delete')">
+                                @delete="$emit('delete')"
+                                @migrate="$emit('migrate', $event)">
         <template v-if="componentHelper?.contentWrapper">
             <div class="row">
                 <div class="col-sm-12">
@@ -57,6 +59,7 @@
         (e: "clone"): void;
         (e: "complete"): void;
         (e: "delete"): void;
+        (e: "migrate", value: Element): void;
     }>();
 
     // #region Values

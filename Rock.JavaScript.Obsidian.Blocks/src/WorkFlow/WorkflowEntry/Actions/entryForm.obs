@@ -1,0 +1,220 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="workflow-entry-panel">
+        <RockForm ref="form"
+                  :formResetKey="formResetKey"
+                  @submit="onFormSubmit">
+            <PrePost :pre="headerHtml"
+                     :post="footerHtml">
+                <EntryFormPersonEntry v-if="personEntry"
+                                      v-model="personEntryValues"
+                                      :configuration="personEntry" />
+
+                <EntryFormSection v-for="(section, sectionIndex) of sections"
+                                  :class="sectionIndex === 0 ? 'mt-4' : ''"
+                                  :section="section"
+                                  :fields="fields"
+                                  :fieldValues="fieldValues"
+                                  :filterContext="filterContext"
+                                  @updateFieldValue="onUpdateFieldValue" />
+
+                <EntryFormSection :fields="fields"
+                                  :fieldValues="fieldValues"
+                                  :filterContext="filterContext"
+                                  @updateFieldValue="onUpdateFieldValue" />
+            </PrePost>
+
+            <div class="actions" v-content="actionNodes"></div>
+        </RockForm>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import EntryFormPersonEntry from "./entryFormPersonEntry.partial.obs";
+    import EntryFormSection from "./entryFormSection.partial.obs";
+    import PrePost from "../prePost.partial";
+    import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import { EntryFormButtonBag } from "@Obsidian/ViewModels/Workflow/entryFormButtonBag";
+    import { EntryFormFieldBag } from "@Obsidian/ViewModels/Workflow/entryFormFieldBag";
+    import { EntryFormSectionBag } from "@Obsidian/ViewModels/Workflow/entryFormSectionBag";
+    import { PersonEntryConfigurationBag } from "@Obsidian/ViewModels/Workflow/personEntryConfigurationBag";
+    import { PersonEntryValuesBag } from "@Obsidian/ViewModels/Workflow/personEntryValuesBag";
+    import { computed, ref, watch } from "vue";
+    import { Guid } from "@Obsidian/Types";
+    import { EntryFormFilterContext } from "./conditional.partial";
+    import { newGuid } from "@Obsidian/Utility/guid";
+    import { interactiveActionProps } from "../types";
+
+    const enum ComponentConfigurationKey {
+        HeaderHtml = "headerHtml",
+        FooterHtml = "footerHtml",
+        Sections = "sections",
+        Fields = "fields",
+        PersonEntry = "personEntry",
+        Buttons = "buttons"
+    }
+
+    const enum ComponentDataKey {
+        FieldValues = "fieldValues",
+        PersonEntryValues = "personEntryValues",
+        Button = "button"
+    }
+
+    const props = defineProps(interactiveActionProps);
+
+    const form = ref<InstanceType<typeof RockForm>>();
+    const formResetKey = ref(newGuid());
+
+    const headerHtml = ref(props.configuration[ComponentConfigurationKey.HeaderHtml] ?? "");
+    const footerHtml = ref(props.configuration[ComponentConfigurationKey.FooterHtml] ?? "");
+    const sections = ref<EntryFormSectionBag[]>(parseJsonSafe(props.configuration[ComponentConfigurationKey.Sections]) ?? []);
+    const fields = ref<EntryFormFieldBag[]>(parseJsonSafe(props.configuration[ComponentConfigurationKey.Fields]) ?? []);
+    const personEntry = ref<PersonEntryConfigurationBag | undefined>(parseJsonSafe(props.configuration[ComponentConfigurationKey.PersonEntry]));
+    const buttons = ref<EntryFormButtonBag[]>(parseJsonSafe(props.configuration[ComponentConfigurationKey.Buttons]) ?? []);
+
+    const fieldValues = ref<Record<string, string>>(parseJsonSafe(props.data[ComponentDataKey.FieldValues]) ?? {});
+    const personEntryValues = ref<PersonEntryValuesBag | undefined>(parseJsonSafe(props.data[ComponentDataKey.PersonEntryValues]));
+
+    const buttonNodes = ref<HTMLAnchorElement[]>([]);
+    const actionNodes = ref<Node[]>([]);
+    let currentButtonAction: string | undefined;
+
+    const filterContext = computed((): EntryFormFilterContext => {
+        return {
+            fields: fields.value,
+            fieldValues: fieldValues.value
+        };
+    });
+
+    function parseJsonSafe<T>(json: string | null | undefined): T | undefined {
+        if (!json) {
+            return undefined;
+        }
+
+        try {
+            return JSON.parse(json);
+        }
+        catch {
+            return undefined;
+        }
+    }
+
+    function configureButtons(html: string | null | undefined): void {
+        const buttonNodeList: HTMLAnchorElement[] = [];
+
+        if (!html) {
+            actionNodes.value = [];
+            buttonNodes.value = [];
+            return;
+        }
+
+        const div = document.createElement("div");
+        div.innerHTML = html;
+        div.querySelectorAll("a").forEach(anchorNode => {
+            let onclickText = anchorNode.getAttribute("onclick");
+            let validate = false;
+
+            if (onclickText) {
+                if (onclickText.includes("__validate__")) {
+                    validate = true;
+                }
+
+                onclickText = onclickText.replace(/__validate__/g, "")
+                    .replace(/__novalidate__/g, "");
+
+                anchorNode.setAttribute("onclick", onclickText);
+            }
+
+            const href = anchorNode.getAttribute("href");
+
+            if (href && href.startsWith("#__submit__:")) {
+                const buttonAction = href.replace("#__submit__:", "");
+                anchorNode.setAttribute("href", "#");
+                anchorNode.addEventListener("click", ev => onButtonClick(buttonAction, anchorNode, ev, validate));
+            }
+
+            buttonNodeList.push(anchorNode);
+        });
+
+        actionNodes.value = Array.from(div.childNodes);
+        buttonNodes.value = buttonNodeList;
+    }
+
+
+    /**
+     * Called when a field component has updated the value in the UI.
+     *
+     * @param value The updated value from the field component.
+     */
+    function onUpdateFieldValue(attributeGuid: Guid, value: string): void {
+        const newValues = { ...fieldValues.value };
+
+        newValues[attributeGuid] = value;
+
+        fieldValues.value = newValues;
+    }
+
+    async function onButtonClick(buttonAction: string, source: HTMLElement, event: MouseEvent, validate: boolean): Promise<void> {
+        event.preventDefault();
+
+        let originalContent: string = "";
+
+        if (source.dataset["loadingText"]) {
+            originalContent = source.innerHTML;
+            source.innerHTML = source.dataset["loadingText"];
+        }
+
+        const buttonNodeList = [...buttonNodes.value];
+        buttonNodeList.forEach(node => node.classList.add("disabled"));
+
+        try {
+            currentButtonAction = buttonAction;
+
+            if (validate) {
+                if (form.value) {
+                    await form.value.submitForm();
+                }
+            }
+            else {
+                await onFormSubmit();
+            }
+        }
+        finally {
+            currentButtonAction = undefined;
+            buttonNodeList.forEach(node => node.classList.remove("disabled"));
+
+            if (originalContent) {
+                source.innerHTML = originalContent;
+            }
+        }
+    }
+
+    async function onFormSubmit(): Promise<void> {
+        const newData = { ...props.data };
+
+        newData[ComponentDataKey.FieldValues] = JSON.stringify(fieldValues.value);
+        newData[ComponentDataKey.PersonEntryValues] = JSON.stringify(personEntryValues.value);
+        newData[ComponentDataKey.Button] = currentButtonAction;
+
+        await props.submit(newData);
+    }
+
+    // If either configuration or data changes, we need to reset our state
+    // to match both.
+    watch([() => props.configuration, () => props.data], () => {
+        headerHtml.value = props.configuration[ComponentConfigurationKey.HeaderHtml] ?? "";
+        footerHtml.value = props.configuration[ComponentConfigurationKey.FooterHtml] ?? "";
+        sections.value = parseJsonSafe(props.configuration[ComponentConfigurationKey.Sections]) ?? [];
+        fields.value = parseJsonSafe(props.configuration[ComponentConfigurationKey.Fields]) ?? [];
+        personEntry.value = parseJsonSafe(props.configuration[ComponentConfigurationKey.PersonEntry]);
+        buttons.value = parseJsonSafe<EntryFormButtonBag[]>(props.configuration[ComponentConfigurationKey.Buttons]) ?? [];
+
+        fieldValues.value = parseJsonSafe(props.data[ComponentDataKey.FieldValues]) ?? {};
+        personEntryValues.value = parseJsonSafe(props.data[ComponentDataKey.PersonEntryValues]);
+        formResetKey.value = newGuid();
+
+        configureButtons(buttons.value.map(b => b.html).join(" "));
+    });
+
+    configureButtons(buttons.value.map(b => b.html).join(" "));
+</script>

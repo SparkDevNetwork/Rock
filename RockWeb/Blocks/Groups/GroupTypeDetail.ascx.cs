@@ -20,12 +20,15 @@ using System.ComponentModel;
 using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Newtonsoft.Json;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Communication.Chat;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Communication.Chat;
 using Rock.Enums.Group;
 using Rock.Model;
 using Rock.Security;
@@ -650,6 +653,16 @@ namespace RockWeb.Blocks.Groups
 
             avcEditAttributes.GetEditValues( groupType );
 
+            // Chat
+            if ( ChatHelper.IsChatEnabled )
+            {
+                groupType.IsChatAllowed = cbIsChatAllowed.Checked;
+                groupType.IsChatEnabledForAllGroups = cbIsChatEnabledForAllGroups.Checked;
+                groupType.IsLeavingChatChannelAllowed = cbIsLeavingChatChannelAllowed.Checked;
+                groupType.IsChatChannelPublic = cbIsChatChannelPublic.Checked;
+                groupType.IsChatChannelAlwaysShown = cbIsChatChannelAlwaysShown.Checked;
+            }
+
             if ( !groupType.IsValid )
             {
                 cvGroupType.IsValid = groupType.IsValid;
@@ -1069,6 +1082,35 @@ namespace RockWeb.Blocks.Groups
             {
                 role.LoadAttributes();
                 GroupTypeRolesState.Add( role );
+            }
+
+            // Chat
+            if ( ChatHelper.IsChatEnabled )
+            {
+                cbIsChatAllowed.Checked = groupType.IsChatAllowed;
+                cbIsChatEnabledForAllGroups.Checked = groupType.IsChatEnabledForAllGroups;
+                cbIsLeavingChatChannelAllowed.Checked = groupType.IsLeavingChatChannelAllowed;
+                cbIsChatChannelPublic.Checked = groupType.IsChatChannelPublic;
+                cbIsChatChannelAlwaysShown.Checked = groupType.IsChatChannelAlwaysShown;
+
+                SetChatControlsVisibility( groupType.IsChatAllowed );
+
+                if ( groupType.IsSystem )
+                {
+                    cbIsChatAllowed.Enabled = false;
+                    cbIsChatEnabledForAllGroups.Enabled = false;
+                    cbIsLeavingChatChannelAllowed.Enabled = false;
+                    cbIsChatChannelPublic.Enabled = false;
+                    cbIsChatChannelAlwaysShown.Enabled = false;
+
+                    nbChatRunSyncJob.Visible = false;
+                }
+
+                wpChat.Visible = true;
+            }
+            else
+            {
+                wpChat.Visible = false;
             }
 
             BindGroupTypeRolesGrid();
@@ -1673,6 +1715,7 @@ namespace RockWeb.Blocks.Groups
             cbCanManageMembers.Checked = groupTypeRole.CanManageMembers;
             cbIsCheckInAllowed.Checked = groupTypeRole.IsCheckInAllowed;
             cbIsExcludedFromPeerNetwork.Checked = groupTypeRole.IsExcludedFromPeerNetwork;
+            cbCanTakeAttendance.Checked = groupTypeRole.CanTakeAttendance;
 
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
             nbMinimumRequired.Help = string.Format(
@@ -1685,6 +1728,9 @@ namespace RockWeb.Blocks.Groups
                 "The maximum number of {0} in this {1} that are allowed to have this role.",
                 memberTerm.Pluralize(),
                 groupTerm );
+
+            ddlChatRole.SetValue( groupTypeRole.ChatRole.ConvertToInt() );
+            ddlChatRole.Visible = ChatHelper.IsChatEnabled && cbIsChatAllowed.Checked;
 
             ShowDialog( "GroupTypeRoles", true );
         }
@@ -1762,8 +1808,10 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.CanManageMembers = cbCanManageMembers.Checked;
             groupTypeRole.IsCheckInAllowed = cbIsCheckInAllowed.Checked;
             groupTypeRole.IsExcludedFromPeerNetwork = cbIsExcludedFromPeerNetwork.Checked;
+            groupTypeRole.CanTakeAttendance = cbCanTakeAttendance.Checked;
             groupTypeRole.MinCount = nbMinimumRequired.Text.AsIntegerOrNull();
             groupTypeRole.MaxCount = nbMaximumAllowed.Text.AsIntegerOrNull();
+            groupTypeRole.ChatRole = ddlChatRole.SelectedValueAsEnum<ChatRole>();
             groupTypeRole.LoadAttributes();
 
             Helper.GetEditValues( phGroupTypeRoleAttributes, groupTypeRole );
@@ -3279,6 +3327,53 @@ namespace RockWeb.Blocks.Groups
         }
 
         #endregion Peer Network Controls
+
+        #region Chat Controls
+
+        /// <summary>
+        /// Handles the CheckedChanged event of the cbIsChatAllowed control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void cbIsChatAllowed_CheckedChanged( object sender, EventArgs e )
+        {
+            nbDisableChatChannels.Visible = false;
+
+            var isChatAllowed = cbIsChatAllowed.Checked;
+
+            SetChatControlsVisibility( isChatAllowed );
+
+            if ( isChatAllowed )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                var count = new GroupTypeService( rockContext )
+                    .GetChatEnabledGroupCount( hfGroupTypeId.Value.AsInteger() );
+
+                if ( count > 0 )
+                {
+                    nbDisableChatChannels.Text = $"{count:N0} chat {"channel".PluralizeIf( count > 1 )} will be immediately disabled if you disable chat for this group type.";
+                    nbDisableChatChannels.Visible = true;
+                }
+            }
+        }
+
+        /// <summary>
+        /// Sets the visibility for the chat controls.
+        /// </summary>
+        /// <param name="isChatAllowed">Whether chat is currently allowed for this <see cref="GroupType"/>.</param>
+        private void SetChatControlsVisibility( bool isChatAllowed )
+        {
+            cbIsChatEnabledForAllGroups.Visible = isChatAllowed;
+            cbIsLeavingChatChannelAllowed.Visible = isChatAllowed;
+            cbIsChatChannelPublic.Visible = isChatAllowed;
+            cbIsChatChannelAlwaysShown.Visible = isChatAllowed;
+        }
+
+        #endregion Chat Controls
 
         protected void ddlGroupRequirementType_SelectedIndexChanged( object sender, EventArgs e )
         {

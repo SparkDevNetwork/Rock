@@ -1,7 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 
 <template>
-    <Grid :definition="config.gridDefinition ?? undefined"
+    <Grid v-if="isVisible"
+          :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
           personKeyField="personIdKey"
@@ -32,13 +33,22 @@
                 visiblePriority="xs"
                 width="25%">
             <template #format="{ row }">
-                <div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm"
-                     ref="popOverEl"
-                     :personid="`${row.personIdKey}`"
-                     :data-original="`${photoUrl(row)}&w=50`"
-                     :style="`background-image: url( ${photoUrl(row)} );
-                        background-size: cover;
-                        background-repeat: no-repeat;`">
+                <div class="photo-icon-container position-relative">
+                    <div class="photo-icon photo-round photo-round-xs pull-left margin-r-sm"
+                         @mouseenter="(e) => showPopover(row.personId, e)"
+                         @mouseleave="hidePopoverWithDelay(row.personId)"
+                         :data-original="`${photoUrl(row)}&w=50`"
+                         :style="`background-image: url( ${photoUrl(row)} ); background-size: cover; background-repeat: no-repeat;`">
+                    </div>
+                    <div v-if="activePopovers[row.personId]"
+                         class="profile-popover"
+                         :class="{ visible: popoverContents[row.personId] }"
+                         :data-person-id="row.personId"
+                         @mouseenter="clearHideTimer(row.personId)"
+                         @mouseleave="hidePopover(row.personId)">
+                        <div class="popover-arrow"></div>
+                        <div class="popover-content" v-html="popoverContents[row.personId] || loadingTemplate"></div>
+                    </div>
                 </div>
                 <span class="mr-1">{{ `${row.fullName ?? ""}` }}</span>
                 <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
@@ -132,6 +142,42 @@
 .title-right .grid-column-title {
     text-align: right;
 }
+
+.photo-icon-container {
+    position: relative;
+    display: inline-block;
+}
+
+.profile-popover {
+    position: fixed;
+    z-index: 100000;
+    background-color: #fff;
+    border: 1px solid rgba(0, 0, 0, 0.2);
+    border-radius: 6px;
+    box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+    padding: 10px;
+    max-width: 300px;
+    opacity: 0;
+    transition: opacity 0.2s;
+    pointer-events: none;
+}
+
+.profile-popover.visible {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.popover-arrow {
+    position: absolute;
+    width: 0;
+    height: 0;
+    border-style: solid;
+    left: -10px;
+    top: 50%;
+    transform: translateY(-50%);
+    border-width: 10px 10px 10px 0;
+    border-color: transparent #fff transparent transparent;
+}
 </style>
 
 <script setup lang="ts">
@@ -143,13 +189,14 @@
     import { StepParticipantListOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepParticipantList/stepParticipantListOptionsBag";
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { NavigationUrlKey } from "./StepParticipantList/types.partial";
-    import { computed, reactive, ref, watch } from "vue";
+    import { computed, reactive, ref, nextTick } from "vue";
     import { PersonFieldBag } from "@Obsidian/ViewModels/Core/Grid/personFieldBag";
     import { useHttp } from "@Obsidian/Utility/http";
+    import { useStore } from "@Obsidian/PageState";
 
     const config = useConfigurationValues<ListBlockBox<StepParticipantListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
-    const popOverEl = ref<HTMLElement | null>(null);
+
     const http = useHttp();
 
     // #region Values
@@ -159,9 +206,19 @@
 
     const stepStatusBackgroundColors = config.options?.stepStatusBackgroundColors ?? {};
 
+    // Popover state
+    const activePopovers = reactive<Record<string, boolean>>({});
+    const popoverContents = reactive<Record<string, string>>({});
+    const popoverTimers = reactive<Record<string, number>>({});
+    const loadingTemplate = '<i class="fas fa-spinner fa-pulse"></i>';
+
     // #endregion
 
     // #region Computed Values
+
+    const isVisible = computed((): boolean => {
+        return useStore().state.areSecondaryBlocksShown;
+    });
 
     /**
      * The item term, derived from the name of the current step type.
@@ -169,6 +226,11 @@
     const itemTerm = computed((): string => {
         return config.options?.stepType?.text ? `${config.options.stepType.text} Step Participants` : "Step Participants";
     });
+
+    /* eslint-disable @typescript-eslint/naming-convention */
+    interface PickerItemDetailsResponse {
+        PickerItemDetailsHtml: string;
+    }
 
     // #endregion
 
@@ -186,6 +248,104 @@
         }
         else {
             throw new Error(result.errorMessage ?? "Unknown error while trying to load grid data.");
+        }
+    }
+
+    /**
+     * Shows the popover for the specified person ID
+     */
+    function showPopover(personId: string, event: MouseEvent): void {
+        if (!personId) return;
+
+        activePopovers[personId] = true;
+
+        nextTick(() => {
+            const popover = document.querySelector(`.profile-popover[data-person-id="${personId}"]`) as HTMLElement;
+            if (popover) {
+                const photoElement = event.target as HTMLElement;
+                const rect = photoElement.getBoundingClientRect();
+                const offset = 15;
+
+                const top = rect.top + (rect.height / 2);
+                popover.style.top = `${top}px`;
+                popover.style.transform = "translateY(-50%)";
+                popover.style.left = `${rect.right + offset}px`;
+
+                const popoverRect = popover.getBoundingClientRect();
+                const viewportWidth = window.innerWidth;
+                const viewportHeight = window.innerHeight;
+
+                if (popoverRect.right > viewportWidth) {
+                    popover.style.left = `${rect.left - popoverRect.width - offset}px`;
+                }
+
+                if (popoverRect.top < 0) {
+                    popover.style.top = "0px";
+                    popover.style.transform = "none";
+                }
+                else if (popoverRect.bottom > viewportHeight) {
+                    popover.style.top = `${viewportHeight - popoverRect.height}px`;
+                    popover.style.transform = "none";
+                }
+            }
+
+            if (!popoverContents[personId]) {
+                loadPopoverContent(personId);
+            }
+        });
+    }
+
+    /**
+     * Hides the popover for the specified person ID with a delay
+     */
+    function hidePopoverWithDelay(personId: string): void {
+        if (!personId) return;
+
+        clearHideTimer(personId);
+
+        popoverTimers[personId] = window.setTimeout(() => {
+            hidePopover(personId);
+        }, 100);
+    }
+
+    /**
+     * Immediately hides the popover for the specified person ID
+     */
+    function hidePopover(personId: string): void {
+        if (!personId) return;
+
+        activePopovers[personId] = false;
+    }
+
+    /**
+     * Clears the hide timer for the specified person ID
+     */
+    function clearHideTimer(personId: string): void {
+        if (!personId || !popoverTimers[personId]) return;
+
+        window.clearTimeout(popoverTimers[personId]);
+        delete popoverTimers[personId];
+    }
+
+    /**
+     * Loads the popover content for the specified person ID
+     */
+    async function loadPopoverContent(personId: string): Promise<void> {
+        if (!personId) return;
+
+        try {
+            const dataUrl = `/api/People/PopupHtml/${personId}/false`;
+            const response = await http.get<PickerItemDetailsResponse>(dataUrl);
+
+            if (response.data?.PickerItemDetailsHtml) {
+                popoverContents[personId] = response.data.PickerItemDetailsHtml;
+            }
+            else {
+                popoverContents[personId] = "<div>No information available</div>";
+            }
+        }
+        catch (error) {
+            popoverContents[personId] = '<div class="text-danger">Error loading information</div>';
         }
     }
 
@@ -230,12 +390,12 @@
 
     /**
      * Called when a row has been selected by the individual.
-     *
-     * @param key The key of the row that was selected.
      */
     function onSelectItem(key: string): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
-            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", key);
+            const row = gridData?.rows?.find(r => r["idKey"] === key);
+            const id = row?.id ?? 0;
+            window.location.href = config.navigationUrls[NavigationUrlKey.DetailPage].replace("((Key))", id.toString());
         }
     }
 
@@ -263,7 +423,7 @@
     }
 
     /**
-     * Called when the Add button has been clicked by the indivual.
+     * Called when the Person button has been clicked by the indivual.
      */
     function onPersonClick(key: string): void {
         if (config.options?.personProfilePageUrl) {
@@ -275,7 +435,7 @@
     }
 
     /**
-     * Called when the Person button has been clicked by the indivual.
+     * Called when the Add button has been clicked by the indivual.
      */
     function onAddItem(): void {
         if (config.navigationUrls?.[NavigationUrlKey.DetailPage]) {
@@ -284,55 +444,5 @@
     }
 
     // #endregion
-
-    watch(popOverEl, (element) => {
-        var $ = window["$"];
-
-        if (element) {
-            $(element).popover({
-                placement: "right",
-                trigger: "manual",
-                delay: 500,
-                html: true,
-                content: function () {
-                    let personId = $(this).attr("personid");
-                    let dataUrl = "/api/People/PopupHtml/" + personId + "/false";
-
-                    let content = document.getElementById(personId) ?? document.createElement("div");
-                    content.setAttribute("id", personId);
-                    // Dummy height and width for popover since content will originally be empty.
-                    content.style.width = "300px";
-                    content.style.height = "200px";
-                    content.innerHTML = '<i class="fas fa-spinner fa-pulse"></i>';
-
-                    http.get<any>(dataUrl).then(response => {
-                        // Let browser handle height and width.
-                        content.style.width = "";
-                        content.style.height = "";
-                        content.style.display = "block";
-                        content.innerHTML = response.data.PickerItemDetailsHtml;
-                    });
-
-                    // Return empty div to be updated whrn response from server is received.
-                    return content;
-                }
-            }).on("mouseenter", (e: Event) => {
-                var target = e.target;
-                $(target).popover("show");
-                $(target).siblings(".popover").on("mouseleave", () => {
-                    $(target).popover("hide");
-                });
-            }).on("mouseleave", (e: Event) => {
-                var target = e.target;
-                setTimeout(() => {
-                    if (!$(".popover:hover").length) {
-                        $(target).popover("hide");
-                    }
-                }, 100);
-            });
-        }
-
-    });
-
     gridDataSource.value = loadGridData();
 </script>

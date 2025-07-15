@@ -27,6 +27,7 @@ using Microsoft.Extensions.Logging;
 using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
+using Rock.Communication.Chat.Exceptions;
 using Rock.Communication.Chat.Sync;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
@@ -59,9 +60,9 @@ namespace Rock.Jobs
         DefaultBooleanValue = true,
         Order = 2 )]
 
-    [BooleanField( "Delete Merged Chat Person Records",
+    [BooleanField( "Delete Merged Chat Individuals",
         Key = AttributeKey.DeleteMergedChatUsers,
-        Description = "Determines if non-prevailing, merged chat person records should be deleted in the external chat system. If enabled, when two people in Rock have been merged, and both had an associated chat person record, the non-prevailing chat person record will be deleted from the external chat system to ensure other people can send future messages to only the prevailing chat person record.",
+        Description = "Determines if non-prevailing, merged chat individuals should be deleted in the external chat system. If enabled, when two people in Rock have been merged, and both had an associated chat individual, the non-prevailing chat individual will be deleted from the external chat system to ensure other people can send future messages to only the prevailing chat individual.",
         IsRequired = false,
         DefaultBooleanValue = true,
         Order = 3 )]
@@ -156,7 +157,7 @@ namespace Rock.Jobs
             if ( !ChatHelper.IsChatEnabled )
             {
                 var section = CreateAndAddResultSection( null ); // No section title.
-                CreateAndAddNewTaskResult( section, "Chat is not enabled.", TimeSpan.Zero );
+                var taskResult = CreateAndAddNewTaskResult( section, "Chat is not enabled.", TimeSpan.Zero );
 
                 ReportResults();
                 return;
@@ -707,22 +708,22 @@ namespace Rock.Jobs
 
             rockToChatUsersStopwatch.Stop();
 
-            taskResult = CreateAndAddNewTaskResult( section, "Rock People to Chat Person Records", rockToChatUsersStopwatch.Elapsed );
+            taskResult = CreateAndAddNewTaskResult( section, "Rock People to Chat Individuals", rockToChatUsersStopwatch.Elapsed );
 
             if ( rockToChatUsersExceptions.Any() )
             {
                 taskResult.Exception = ChatHelper.GetFirstOrAggregateException(
                     rockToChatUsersExceptions,
-                    "Exceptions occurred while syncing Rock People to Chat Person records."
+                    "Exceptions occurred while syncing Rock People to Chat Individuals."
                 );
             }
 
-            AddCrudDetailsToTaskResult( taskResult, rockToChatUsersResult, "Chat Person" );
+            AddCrudDetailsToTaskResult( taskResult, rockToChatUsersResult, "Chat Individual" );
 
             if ( globallyBannedChatUserKeys.Any() )
             {
                 var count = globallyBannedChatUserKeys.Count;
-                taskResult.Details.Add( $"{count:N0} {"Chat Person".PluralizeIf( count > 1 )} Globally Banned" );
+                taskResult.Details.Add( $"{count:N0} {"Chat Individual".PluralizeIf( count > 1 )} Globally Banned" );
             }
 
             #endregion 1) Rock-to-Chat Sync
@@ -777,10 +778,13 @@ namespace Rock.Jobs
             }
 
             // Continue by getting existing Rock groups.
-            var existingRockChatGroups = groupService.GetRockChatGroups() ?? new List<RockChatGroup>();
+            var existingRockChatGroups = chatHelper.GetAllRockChatGroups() ?? new List<RockChatGroup>();
 
             // Collect any Rock groups along the way, whose members should be synced.
             var groupsRequiringMemberSync = new List<GroupCache>();
+
+            // Collect any Stream channels along the way, that originated in Rock, yet somehow no longer have a Rock group representation.
+            var channelQueryableKeysToDelete = new List<string>();
 
             var chatToRockGroupsResult = new ChatSyncCrudResult();
             var chatToRockGroupsExceptions = new List<Exception>();
@@ -807,9 +811,10 @@ namespace Rock.Jobs
 
                 if ( ChatHelper.DidChatChannelOriginateInRock( chatChannel.Key ) )
                 {
-                    // Ignore channels that originated (but no longer exist) in Rock. This means something unexpected
-                    // happened in the upstream sync processes, as the channel should have already been deleted from
-                    // the external chat system. We're not going to re-create it here.
+                    // This means something unexpected happened in the upstream sync processes, as the channel should
+                    // have already been deleted from the external chat system. We're not going to re-create it here,
+                    // but we will delete it externally.
+                    channelQueryableKeysToDelete.Add( chatChannel.QueryableKey );
                     continue;
                 }
 
@@ -821,8 +826,9 @@ namespace Rock.Jobs
                 }
 
                 // We have everything we need to create this group; add a sync command.
-                var syncCommand = new SyncChatChannelToRockCommand( attemptLimit: 1, ChatSyncType.Create )
+                var syncCommand = new SyncChatChannelToRockCommand( ChatSyncType.Create )
                 {
+                    AttemptLimit = 1,
                     GroupTypeId = groupTypeId,
                     ChatChannelKey = chatChannel.Key,
                     GroupName = chatChannel.Name,
@@ -850,9 +856,15 @@ namespace Rock.Jobs
 
                     // Sync the members for any groups that were synced.
                     groupsRequiringMemberSync.AddRange(
-                        channelSyncCrudResult.Unique.Select( id => GroupCache.Get( id.ToString() ) )
+                        channelSyncCrudResult.Unique.Select( id => GroupCache.Get( id.AsInteger() ) )
                     );
                 }
+            }
+
+            // Try to delete any external chat channels that somehow still exist when they shouldn't.
+            if ( channelQueryableKeysToDelete.Any() )
+            {
+                await chatHelper.DeleteChatChannelsAsync( channelQueryableKeysToDelete );
             }
 
             // ------------------------------------------
@@ -897,8 +909,9 @@ namespace Rock.Jobs
                     var chatRole = EnumExtensions.ConvertToEnumOrNull<ChatRole>( channelMember.Role );
 
                     // We have everything we need to create this member; add a sync command.
-                    var syncCommand = new SyncChatChannelMemberToRockCommand( attemptLimit: 1, ChatSyncType.Create )
+                    var syncCommand = new SyncChatChannelMemberToRockCommand( ChatSyncType.Create )
                     {
+                        AttemptLimit = 1,
                         GroupId = groupId,
                         ChatChannelKey = chatChannelKey,
                         ChatPersonKey = channelMember.ChatUserKey,
@@ -1038,13 +1051,13 @@ namespace Rock.Jobs
             }
 
             // Get the [chat channel key]-to-[Rock group ID & name] mappings.
-            var rockChatGroups = new GroupService( rockContext ).GetRockChatGroups();
+            var rockChatGroups = chatHelper.GetAllRockChatGroups();
             if ( rockChatGroups?.Any() != true )
             {
-                var taskResult = CreateAndAddNewTaskResult( section, "Missing Chat-to-Rock Mapping Data", TimeSpan.Zero );
+                var taskResult = CreateAndAddNewTaskResult( section, "No Chat Channel Groups found in Rock", TimeSpan.Zero );
                 taskResult.IsWarning = true;
 
-                Log( LogLevel.Warning, "No Chat Channel-to-Rock Group ID mappings found. Unable to create Interactions, as we won't be able to map a given Chat Channel back to a Rock Group." );
+                Log( LogLevel.Warning, "No Chat Channel Groups found in Rock, so no Interactions will be created." );
 
                 // There's no reason to continue if we have no mappings.
                 return;
@@ -1054,10 +1067,10 @@ namespace Rock.Jobs
             var personAliasIdByChatUserKeys = new PersonAliasService( rockContext ).GetChatPersonAliasIdByChatUserKeys();
             if ( personAliasIdByChatUserKeys?.Any() != true )
             {
-                var taskResult = CreateAndAddNewTaskResult( section, "Missing Chat-to-Rock Mapping Data", TimeSpan.Zero );
+                var taskResult = CreateAndAddNewTaskResult( section, "No Chat Individuals found in Rock", TimeSpan.Zero );
                 taskResult.IsWarning = true;
 
-                Log( LogLevel.Warning, "No Chat Person Key-to-Rock Person Alias ID mappings found. Unable to create Interactions, as we won't be able to map a given Chat Channel back to a Rock Group." );
+                Log( LogLevel.Warning, "No Chat Individuals found in Rock, so no Interactions will be created." );
 
                 // There's no reason to continue if we have no mappings.
                 return;
@@ -1145,10 +1158,14 @@ namespace Rock.Jobs
                         continue;
                     }
 
-                    // Ensure we have an interaction component for this group.
+                    // Ensure we have an interaction component for this group (while lumping all DMs into a single component).
+                    var componentName = rockChatGroup.GroupTypeId == ChatHelper.ChatDirectMessageGroupTypeId
+                        ? ChatHelper.ChatDirectMessageGroupName
+                        : rockChatGroup.Name;
+
                     var interactionComponentId = InteractionComponentCache.GetOrCreateComponentIdByName(
                         interactionChannelId,
-                        componentName: rockChatGroup.Name
+                        componentName
                     );
 
                     foreach ( var chatUserMessageCountsKvp in chatUserMessageCounts )
@@ -1166,7 +1183,7 @@ namespace Rock.Jobs
                         {
                             if ( chatUserKeysSkipped.Add( chatUserKey ) )
                             {
-                                Log( LogLevel.Warning, $"No Rock Person Alias ID found for Chat Person Key '{chatUserKey}'. Unable to create Interactions for this Chat Person." );
+                                Log( LogLevel.Warning, $"No Rock Person Alias ID found for Chat Individual Key '{chatUserKey}'. Unable to create Interactions for this Chat Individual." );
                             }
 
                             continue;
@@ -1214,14 +1231,14 @@ namespace Rock.Jobs
         #region Delete Merged Chat Users
 
         /// <summary>
-        /// Deletes non-prevailing chat person records that have been merged with other Rock people.
+        /// Deletes non-prevailing chat individuals that have been merged with other Rock people.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
         /// <param name="chatHelper">The chat helper.</param>
         /// <returns>A task representing the asynchronous operation.</returns>
         private async Task DeleteMergedChatUsersAsync( RockContext rockContext, ChatHelper chatHelper )
         {
-            var section = CreateAndAddResultSection( "Delete Merged Chat Person Records:" );
+            var section = CreateAndAddResultSection( "Delete Merged Chat Individuals:" );
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -1237,7 +1254,7 @@ namespace Rock.Jobs
             }
 
             var count = mergeResult.Deleted.Count;
-            CreateAndAddNewTaskResult( section, $"{count:N0} Merged Chat Person {"Record".PluralizeIf( count > 1 )} {CrudMessage.Deleted}", stopwatch.Elapsed );
+            CreateAndAddNewTaskResult( section, $"{count:N0} Merged Chat Individual {"Record".PluralizeIf( count > 1 )} {CrudMessage.Deleted}", stopwatch.Elapsed );
         }
 
         #endregion Delete Merged Chat Users
@@ -1369,25 +1386,33 @@ namespace Rock.Jobs
                 .Where( r => r.IsWarning )
                 .Any();
 
+            var enableErrorLogsMessage = "Enable 'Error' verbosity level for all 'Chat' domains in Rock Logs and re-run the job to get a full list of issues.";
+            var enableWarningLogsMessage = "Enable 'Warning' verbosity level for all 'Chat' domains in Rock Logs and re-run the job to get a full list of issues.";
+
             if ( exceptions.Any() )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. You can also enable 'Error' verbosity level for 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. {enableErrorLogsMessage}" );
             }
             else if ( anyWarnings )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( "<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. Enable 'Warning' verbosity level for all 'Chat' domains in Rock Logs and re-run this job to get a full list of issues." );
+                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. {enableWarningLogsMessage}" );
             }
 
             this.Result = jobSummaryBuilder.ToString();
 
+            var jobName = nameof( ChatSync );
+
             if ( exceptions.Any() )
             {
-                var jobName = nameof( ChatSync );
                 var innerException = ChatHelper.GetFirstOrAggregateException( exceptions, $"Exceptions occurred in {jobName}." );
 
-                throw new RockJobWarningException( $"{jobName} completed with errors.", innerException );
+                throw new ChatSyncException( $"{jobName} completed with errors. {enableErrorLogsMessage}", innerException );
+            }
+            else if ( anyWarnings )
+            {
+                throw new RockJobWarningException( $"{jobName} completed with warnings. {enableWarningLogsMessage}" );
             }
         }
 

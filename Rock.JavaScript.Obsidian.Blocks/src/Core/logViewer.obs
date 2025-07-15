@@ -11,32 +11,37 @@
           :showLaunchWorkflow="false"
           :isCountMessageVisible="false"
           :customActions="customActions"
-          :isSearchVisible="false">
+          :isSearchVisible="true">
 
         <DateTimeColumn name="dateTime"
                         title="Date"
                         field="datetime"
                         visiblePriority="xs"
-                        width="15%" />
+                        width="17%">
+            <template #format="{ row }">
+                <span v-if="row.datetime">{{ RockDateTime.parseISO(row.datetime)?.toASPString("d") }} {{ RockDateTime.parseISO(row.datetime)?.toASPString("HH:mm:ss.fff tt") }}</span>
+                <span v-else>no date</span>
+            </template>
+        </DateTimeColumn>
 
         <TextColumn name="level"
                     title="Level"
                     field="level"
                     visiblePriority="md"
-                    width="15%" />
+                    width="7%" />
 
         <TextColumn name="category"
                     title="Category"
                     field="category"
                     visiblePriority="md"
-                    width="15%"
+                    width="20%"
                     itemClass="category-wrap" />
 
         <TextColumn name="message"
                     title="Message"
                     field="message"
                     visiblePriority="xs"
-                    width="75%" />
+                    width="60%" />
 
         <TextColumn name="exception"
                     title="Exception"
@@ -59,6 +64,7 @@
     import { GridDataBag } from "@Obsidian/ViewModels/Core/Grid/gridDataBag";
     import { RockLogEventsBag } from "@Obsidian/ViewModels/Blocks/Core/LogViewer/RockLogEventsBag";
     import { GridAction } from "@Obsidian/Types/Controls/grid";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     // #region Values
 

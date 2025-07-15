@@ -1148,11 +1148,6 @@ namespace Rock.Web.UI.Controls
         {
             EnsureChildControls();
 
-            if ( _ddlCountry.SelectedValue == "------------------------" )
-            {
-                _ddlCountry.SelectedIndex = 0;
-            }
-
             SetCountryAndState( _ddlCountry.SelectedValue );
         }
 
@@ -1345,7 +1340,7 @@ namespace Rock.Web.UI.Controls
                         _ddlCountry.Items.Add( new ListItem( "Countries", string.Empty ) );
                     }
                     _ddlCountry.Items.Add( new ListItem( UseCountryAbbreviation ? defaultCountry.Value : defaultCountry.Description, defaultCountry.Value ) );
-                    _ddlCountry.Items.Add( new ListItem( "------------------------", "------------------------" ) );
+                    _ddlCountry.Items.Add( new ListItem( "------------------------", string.Empty ) );
                 }
             }
 

@@ -63,6 +63,7 @@ namespace Rock.Tests.CheckIn.v2
         [DataRow( nameof( TemplateConfigurationData.IsOverrideAvailable ), true, "core_checkin_EnableOverride" )]
         [DataRow( nameof( TemplateConfigurationData.IsPhotoHidden ), true, "core_checkin_HidePhotos" )]
         [DataRow( nameof( TemplateConfigurationData.IsPresenceEnabled ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE )]
+        [DataRow( nameof( TemplateConfigurationData.IsProximityEnabled ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN )]
         [DataRow( nameof( TemplateConfigurationData.IsRemoveFromFamilyAtKioskAllowed ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK )]
         [DataRow( nameof( TemplateConfigurationData.IsSameCodeUsedForFamily ), true, "core_checkin_ReuseSameCode" )]
         [DataRow( nameof( TemplateConfigurationData.IsSameOptionUsed ), true, "core_checkin_UseSameOptions" )]
@@ -415,7 +416,7 @@ namespace Rock.Tests.CheckIn.v2
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( TemplateConfigurationData );
-            var expectedPropertyCount = 74;
+            var expectedPropertyCount = 75;
 
             var propertyCount = type.GetProperties().Length;
 

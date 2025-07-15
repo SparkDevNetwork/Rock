@@ -88,7 +88,7 @@ namespace Rock.Logging
         /// The log configuration.
         /// </value>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public IRockLogConfiguration LogConfiguration { get; private set; }
 
         #region Constructors
@@ -114,7 +114,7 @@ namespace Rock.Logging
         /// </summary>
         /// <param name="rockLogConfiguration">The rock log configuration.</param>
         [Obsolete( "This is not used and will be removed in the future." )]
-        [RockObsolete( "1.17" )]
+        [RockObsolete( "17.0" )]
         public RockLoggerMemoryBuffer( IRockLogConfiguration rockLogConfiguration )
             : this( LogLevel.Information )
         {
@@ -165,7 +165,7 @@ namespace Rock.Logging
     /// </summary>
     /// <seealso cref="Rock.Logging.IRockLogConfiguration" />
     [Obsolete( "This is not used and will be removed in the future." )]
-    [RockObsolete( "1.17" )]
+    [RockObsolete( "17.0" )]
     public class RockLoggerInMemoryConfiguration : IRockLogConfiguration
     {
         private RockLogLevel _logLevel;

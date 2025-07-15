@@ -21,8 +21,8 @@
 // </copyright>
 //
 
-import { NoteBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteBag";
-import { NoteTypeBag } from "@Obsidian/ViewModels/Blocks/Core/Notes/noteTypeBag";
+import { NoteBag } from "@Obsidian/ViewModels/Controls/noteBag";
+import { NoteTypeBag } from "@Obsidian/ViewModels/Controls/noteTypeBag";
 
 export type NotesInitializationBox = {
     /** Gets or sets a value indicating whether the add note editor should always be visible. */

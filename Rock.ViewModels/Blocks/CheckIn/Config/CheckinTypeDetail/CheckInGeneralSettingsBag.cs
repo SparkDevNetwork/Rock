@@ -82,6 +82,30 @@ namespace Rock.ViewModels.Blocks.CheckIn.Config.CheckinTypeDetail
         public List<string> AchievementTypes { get; set; }
 
         /// <summary>
+        /// Gets or sets the Promotions Content Channel.
+        /// </summary>
+        /// <value>
+        /// The promotions content channel types.
+        /// </value>
+        public string PromotionsContentChannelTypes { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable remove family kiosk].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable remove family kiosk]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableRemoveFamilyKiosk { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether [enable proximity check-in].
+        /// </summary>
+        /// <value>
+        ///   <c>true</c> if [enable proximity check-in]; otherwise, <c>false</c>.
+        /// </value>
+        public bool EnableProximityCheckin { get; set; }
+
+        /// <summary>
         /// Gets or sets the automatic select days back.
         /// </summary>
         /// <value>

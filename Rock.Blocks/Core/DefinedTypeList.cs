@@ -172,6 +172,13 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
+        protected override List<DefinedType> GetListItems( IQueryable<DefinedType> queryable, RockContext rockContext )
+        {
+            var items = queryable.ToList();
+            return items.Where( a => a.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<DefinedType> GetGridBuilder()
         {
             return new GridBuilder<DefinedType>()

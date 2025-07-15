@@ -118,7 +118,7 @@ namespace RockWeb.Blocks.Groups
                 gOccurrences.RowDataBound += gOccurrences_RowDataBound;
 
                 // make sure they have Auth to edit the block OR edit to the Group
-                bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson );
+                bool canEditBlock = IsUserAuthorized( Authorization.EDIT ) || _group.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) || _group.IsAuthorized( Authorization.TAKE_ATTENDANCE, this.CurrentPerson );
                 gOccurrences.Actions.ShowAdd = canEditBlock && GetAttributeValue( AttributeKey.AllowAdd ).AsBoolean();
                 gOccurrences.IsDeleteEnabled = canEditBlock;
 

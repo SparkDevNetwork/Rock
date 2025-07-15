@@ -52,17 +52,14 @@ namespace Rock.Communication.Chat.Sync
         /// </remarks>
         public int? PersonId { get; set; }
 
-        /// <summary>
-        /// Gets the type of synchronization to perform.
-        /// </summary>
-        public new ChatSyncType ChatSyncType => ChatSyncType.Delete;
+        /// <inheritdoc/>
+        public override int AttemptLimit => 1;
 
         /// <summary>
         /// Initializes a new instance of the <see cref="DeleteChatPersonInRockCommand"/> class.
         /// </summary>
-        /// <param name="attemptLimit">The maximum number of times to attempt a chat-to-Rock sync command before giving up.</param>
-        public DeleteChatPersonInRockCommand( int attemptLimit = 1 )
-            : base( attemptLimit, ChatSyncType.Delete )
+        public DeleteChatPersonInRockCommand()
+            : base( ChatSyncType.Delete )
         {
         }
     }

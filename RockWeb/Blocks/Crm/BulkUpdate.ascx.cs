@@ -38,11 +38,9 @@ using System.Web;
 using System.Diagnostics;
 using System.Collections.Concurrent;
 using System.IO;
-using Rock.Tasks;
 using Rock.Utility;
 using Rock.RealTime.Topics;
 using Rock.RealTime;
-using Rock.Logging;
 using Microsoft.Extensions.Logging;
 
 namespace RockWeb.Blocks.Crm
@@ -149,7 +147,7 @@ namespace RockWeb.Blocks.Crm
         bool _canEditConnectionStatus = false;
         bool _canEditRecordStatus = true;
 
-        #endregion
+        #endregion Fields
 
         #region Properties
 
@@ -159,7 +157,7 @@ namespace RockWeb.Blocks.Crm
         private List<string> SelectedFields { get; set; }
         private List<Guid> AttributeCategories { get; set; }
 
-        #endregion
+        #endregion Properties
 
         #region Base Control Methods
 
@@ -460,7 +458,7 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        #endregion
+        #endregion Base Control Methods
 
         #region Events
 
@@ -536,10 +534,11 @@ namespace RockWeb.Blocks.Crm
         /// <param name="args">The <see cref="ServerValidateEventArgs"/> instance containing the event data.</param>
         protected void cvSelection_ServerValidate( object source, ServerValidateEventArgs args )
         {
-            int? groupId = gpGroup.SelectedValue.AsIntegerOrNull();
-            int? tagId = ddlTagList.SelectedValue.AsIntegerOrNull();
-            int? workFlowTypeId = rlbWorkFlowType.SelectedValue.AsIntegerOrNull();
-            args.IsValid = SelectedFields.Any() || !string.IsNullOrWhiteSpace( tbNote.Text ) || ( groupId.HasValue && groupId > 0 ) || tagId.HasValue || workFlowTypeId.HasValue;
+            var groupId = gpGroup.SelectedValueAsId();
+            var tagId = ddlTagList.SelectedValueAsId();
+            var workFlowTypeId = rlbWorkFlowType.SelectedValueAsId();
+            var stepTypeId = stpStepTypePicker.SelectedValueAsId();
+            args.IsValid = SelectedFields.Any() || !string.IsNullOrWhiteSpace( tbNote.Text ) || ( groupId.HasValue && groupId > 0 ) || tagId.HasValue || workFlowTypeId.HasValue || stepTypeId.HasValue;
         }
 
         /// <summary>
@@ -641,7 +640,38 @@ namespace RockWeb.Blocks.Crm
             SetGroupControls();
         }
 
-        #endregion
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the ddlStepAction control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void ddlStepAction_SelectedIndexChanged( object sender, EventArgs e )
+        {
+            SelectStepType();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the sppProgramPicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void sppProgramPicker_SelectedIndexChanged( object sender, System.EventArgs e )
+        {
+            SelectStepProgram();
+        }
+
+        /// <summary>
+        /// Handles the SelectedIndexChanged event of the stpStepTypePicker control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="System.EventArgs"/> instance containing the event data.</param>
+        protected void stpStepTypePicker_SelectedIndexChanged( object sender, System.EventArgs e )
+        {
+            SelectStepType();
+        }
+
+        #endregion Events
 
         #region Private Methods
 
@@ -858,6 +888,32 @@ namespace RockWeb.Blocks.Crm
 
             processor.UpdateTagId = ddlTagList.SelectedValue.AsInteger();
 
+            // Step Updates
+            processor.UpdateStepTypeId = stpStepTypePicker.SelectedValueAsId();
+            processor.UpdateStepStatusId = sspStatusPicker.SelectedValueAsId();
+            processor.UpdateStepCampusId = cpStepCampus.SelectedCampusId;
+            processor.UpdateStepNote = tbStepNote.Text;
+            processor.UpdateStepStartDate = dpStepStartDate.SelectedDate;
+            processor.UpdateStepEndDate = dpStepEndDate.SelectedDate;
+
+            if ( processor.UpdateStepTypeId > 0 )
+            {
+                if ( ddlStepAction.SelectedValue == "Add" )
+                {
+                    processor.UpdateStepAction = PersonBulkUpdateProcessor.StepChangeActionSpecifier.Add;
+                    processor.StepAttributeValuesContainer = avcStepAttributes;
+                }
+                else if ( ddlStepAction.SelectedValue == "Update" )
+                {
+                    processor.UpdateStepAction = PersonBulkUpdateProcessor.StepChangeActionSpecifier.Modify;
+                    processor.StepAttributeValuesContainer = avcStepAttributes;
+                }
+                else if ( ddlStepAction.SelectedValue == "Remove" )
+                {
+                    processor.UpdateStepAction = PersonBulkUpdateProcessor.StepChangeActionSpecifier.Remove;
+                }
+            }
+
             // Set post-processing Workflows
             var selectedWorkflows = rlbWorkFlowType.Items
                                            .Cast<ListItem>()
@@ -1057,8 +1113,8 @@ namespace RockWeb.Blocks.Crm
 
         private void SetControlSelection( IRockControl control, string label )
         {
-            bool controlEnabled = SelectedFields.Contains( control.ClientID, StringComparer.OrdinalIgnoreCase );
-            string iconCss = controlEnabled ? "fa-check-circle-o" : "fa-circle-o";
+            var controlEnabled = SelectedFields.Contains( control.ClientID, StringComparer.OrdinalIgnoreCase );
+            var iconCss = controlEnabled ? "fa-check-circle-o" : "fa-circle-o";
             control.Label = string.Format( "<span class='js-select-item'><i class='fa {0}'></i></span> {1}", iconCss, label );
             var webControl = control as WebControl;
             if ( webControl != null )
@@ -1158,6 +1214,7 @@ namespace RockWeb.Blocks.Crm
                 gpGroup.SetValue( null );
                 ddlGroupMemberStatus.Visible = false;
                 ddlGroupRole.Visible = false;
+                pnlGroupMemberAttributes.Visible = false;
                 return;
             }
 
@@ -1165,6 +1222,7 @@ namespace RockWeb.Blocks.Crm
             {
                 ddlGroupMemberStatus.Visible = false;
                 ddlGroupRole.Visible = false;
+                pnlGroupMemberAttributes.Visible = false;
             }
             else
             {
@@ -1179,6 +1237,7 @@ namespace RockWeb.Blocks.Crm
 
                     ddlGroupRole.Visible = true;
                     ddlGroupMemberStatus.Visible = true;
+                    pnlGroupMemberAttributes.Visible = true;
 
                     if ( action == "Add" )
                     {
@@ -1214,6 +1273,7 @@ namespace RockWeb.Blocks.Crm
                 {
                     ddlGroupRole.Visible = false;
                     ddlGroupMemberStatus.Visible = false;
+                    pnlGroupMemberAttributes.Visible = false;
 
                     ddlGroupRole.Items.Add( new ListItem( string.Empty, string.Empty ) );
                     ddlGroupMemberStatus.Items.Add( new ListItem( string.Empty, string.Empty ) );
@@ -1269,7 +1329,158 @@ namespace RockWeb.Blocks.Crm
             }
         }
 
-        #endregion
+        /// <summary>
+        /// Selects the step program.
+        /// </summary>
+        private void SelectStepProgram()
+        {
+            var stepProgramId = sppProgramPicker.SelectedValueAsId();
+            stpStepTypePicker.Visible = stepProgramId.HasValue;
+            stpStepTypePicker.StepProgramId = stepProgramId;
+            sspStatusPicker.StepProgramId = stepProgramId;
+            pnlStepDetail.Visible = false;
+            pnlStepAttributes.Visible = false;
+        }
+
+        /// <summary>
+        /// Selects the type of the step.
+        /// </summary>
+        private void SelectStepType()
+        {
+            var stepProgramId = sppProgramPicker.SelectedValueAsId();
+            if ( !stepProgramId.HasValue )
+            {
+                pnlStepDetail.Visible = false;
+                pnlStepAttributes.Visible = false;
+                return;
+            }
+
+            var stepTypeId = stpStepTypePicker.SelectedValueAsId();
+            if ( !stepTypeId.HasValue )
+            {
+                pnlStepDetail.Visible = false;
+                pnlStepAttributes.Visible = false;
+                return;
+            }
+
+            var stepProgram = StepProgramCache.Get( stepProgramId.Value );
+            var stepType = stepProgram.StepTypes.FirstOrDefault( st => st.Id == stepTypeId.Value );
+            if ( stepType == null )
+            {
+                pnlStepDetail.Visible = false;
+                pnlStepAttributes.Visible = false;
+                return;
+            }
+
+            string action = ddlStepAction.SelectedValue;
+            var userCanEdit = stepType.IsAuthorized( Authorization.EDIT, CurrentPerson );
+            if ( !userCanEdit )
+            {
+                pnlStepDetail.Visible = false;
+                pnlStepAttributes.Visible = false;
+                nbStepMessage.Visible = true;
+                nbStepMessage.Text = $"You are not authorized to {action.ToLowerInvariant()} {stepType.Name} steps.";
+                return;
+            }
+
+            pnlStepDetail.Visible = stepTypeId.HasValue;
+            pnlStepAttributes.Visible = stepTypeId.HasValue;
+
+            var startDateLabel = "Start Date";
+            if ( !stepType.HasEndDate )
+            {
+                startDateLabel = "Date";
+                dpStepEndDate.Visible = false;
+            }
+            else
+            {
+                startDateLabel = "Start Date";
+                dpStepEndDate.Visible = true;
+            }
+
+            if ( action == "Remove" )
+            {
+                pnlStepDetail.Visible = false;
+                pnlStepAttributes.Visible = false;
+            }
+            else if ( action == "Add" )
+            {
+                pnlStepDetail.RemoveCssClass( "fade-inactive" );
+                pnlStepAttributes.RemoveCssClass( "fade-inactive" );
+
+                sspStatusPicker.Enabled = true;
+                dpStepStartDate.Enabled = true;
+                dpStepEndDate.Enabled = true;
+                cpStepCampus.Enabled = true;
+                tbStepNote.Enabled = true;
+
+                sspStatusPicker.Label = "Status";
+                dpStepStartDate.Label = startDateLabel;
+                dpStepEndDate.Label = "End Date";
+                cpStepCampus.Label = "Campus";
+                tbStepNote.Label = "Note";
+            }
+            else
+            {
+                pnlStepDetail.AddCssClass( "fade-inactive" );
+                pnlStepAttributes.AddCssClass( "fade-inactive" );
+                SetControlSelection( sspStatusPicker, "Status" );
+                SetControlSelection( dpStepStartDate, startDateLabel );
+                SetControlSelection( dpStepEndDate, "End Date" );
+                SetControlSelection( cpStepCampus, "Campus" );
+                SetControlSelection( tbStepNote, "Note" );
+            }
+
+            BuildStepAttributes();
+        }
+
+        /// <summary>
+        /// Builds the Step attribute controls.
+        /// </summary>
+        private void BuildStepAttributes()
+        {
+            var stepAttributes = AttributeCache.AllForEntityType<Step>();
+            avcStepAttributes.ExcludedAttributes = stepAttributes
+                .Where( a =>
+                    a.Key == "Order" ||
+                    a.Key == "Active" ||
+                    !a.ShowOnBulk )
+                .ToArray();
+
+            var stepTypeId = stpStepTypePicker.SelectedValueAsId();
+
+            if ( stepTypeId.HasValue )
+            {
+                var step = new Step { StepTypeId = stepTypeId.Value };
+                step.LoadAttributes();
+                avcStepAttributes.AddEditControls( step );
+            }
+            else
+            {
+                avcStepAttributes.AddEditControls( null );
+            }
+
+            string action = ddlStepAction.SelectedValue;
+            if ( action == "Update" )
+            {
+                SetControlSelectionRecursive( avcStepAttributes );
+            }
+        }
+
+        private void SetControlSelectionRecursive( Control control )
+        {
+            if ( control is IRockControl rockControl )
+            {
+                SetControlSelection( rockControl, rockControl.Label );
+            }
+
+            foreach ( Control child in control.Controls )
+            {
+                SetControlSelectionRecursive( child );
+            }
+        }
+
+        #endregion Private Methods
 
         #region Helper Classes
 
@@ -1320,7 +1531,7 @@ namespace RockWeb.Blocks.Crm
 
         }
 
-        #endregion
+        #endregion Helper Classes
 
         #region Bulk Update Processor
 
@@ -1353,6 +1564,11 @@ namespace RockWeb.Blocks.Crm
                 public const string ReviewReason = "dvpReviewReason";
                 public const string ReviewReasonNote = "tbReviewReasonNote";
                 public const string Campus = "cpCampus";
+                public const string StepStatus = "sspStatusPicker";
+                public const string StepStartDate = "dpStepStartDate";
+                public const string StepEndDate = "dpStepEndDate";
+                public const string StepCampus = "cpStepCampus";
+                public const string StepNote = "tbStepNote";
             }
 
             public enum ProcessorStatusUpdateTypeSpecifier
@@ -1392,7 +1608,15 @@ namespace RockWeb.Blocks.Crm
                 Modify = 3
             }
 
-            #endregion
+            public enum StepChangeActionSpecifier
+            {
+                None = 0,
+                Add = 1,
+                Remove = 2,
+                Modify = 3
+            }
+
+            #endregion Enumerations and Constants
 
             #region Events
 
@@ -1416,7 +1640,7 @@ namespace RockWeb.Blocks.Crm
 
             public event EventHandler<ProcessorStatusUpdateEventArgs> StatusUpdated;
 
-            #endregion
+            #endregion Events
 
             #region Constructors
 
@@ -1435,9 +1659,10 @@ namespace RockWeb.Blocks.Crm
                 UpdateFollowingAction = FollowingChangeActionSpecifier.None;
                 UpdateTagAction = TagChangeActionSpecifier.None;
                 UpdateNoteAction = NoteChangeActionSpecifier.None;
+                UpdateStepAction = StepChangeActionSpecifier.None;
             }
 
-            #endregion
+            #endregion Constructors
 
             #region Fields and Properties
 
@@ -1537,7 +1762,16 @@ namespace RockWeb.Blocks.Crm
             public TagChangeActionSpecifier UpdateTagAction { get; set; }
             public int UpdateTagId { get; set; }
 
-            #endregion
+            public StepChangeActionSpecifier UpdateStepAction { get; set; }
+            public int? UpdateStepTypeId { get; set; }
+            public int? UpdateStepStatusId { get; set; }
+            public DateTime? UpdateStepStartDate { get; set; }
+            public DateTime? UpdateStepEndDate { get; set; }
+            public AttributeValuesContainer StepAttributeValuesContainer { get; set; }
+            public int? UpdateStepCampusId { get; set; }
+            public string UpdateStepNote { get; set; }
+
+            #endregion Bulk Update Values
 
             /// <summary>
             /// A list of identifiers of workflows that should be executed for each person after the update.
@@ -1625,7 +1859,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            #endregion
+            #endregion Fields and Properties
 
             #region Trace Output
 
@@ -1937,6 +2171,7 @@ namespace RockWeb.Blocks.Crm
                 hasUpdateActions = hasUpdateActions || ( this.UpdateFollowingAction != FollowingChangeActionSpecifier.None );
                 hasUpdateActions = hasUpdateActions || ( this.UpdateTagAction != TagChangeActionSpecifier.None );
                 hasUpdateActions = hasUpdateActions || ( this.UpdateNoteAction != NoteChangeActionSpecifier.None );
+                hasUpdateActions = hasUpdateActions || ( this.UpdateStepAction != StepChangeActionSpecifier.None );
                 hasUpdateActions = hasUpdateActions || ( this.UpdatePersonAttributeValues != null && this.UpdatePersonAttributeValues.Any() );
                 hasUpdateActions = hasUpdateActions || ( this.UpdateGroupAttributeValues != null && this.UpdateGroupAttributeValues.Any() );
                 hasUpdateActions = hasUpdateActions || ( this.PostUpdateWorkflowIdList != null && this.PostUpdateWorkflowIdList.Any() );
@@ -1967,13 +2202,11 @@ namespace RockWeb.Blocks.Crm
 
                 var personService = new PersonService( rockContext );
 
-                var ids = personIdList.ToList();
-
                 #region Individual Details Updates
 
                 int inactiveStatusId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE ).Id;
 
-                var people = personService.Queryable( true ).Where( p => ids.Contains( p.Id ) ).ToList();
+                var people = personService.Queryable( true ).Where( p => personIdList.Contains( p.Id ) ).ToList();
 
                 foreach ( var person in people )
                 {
@@ -2065,18 +2298,18 @@ namespace RockWeb.Blocks.Crm
                     Guid familyGuid = new Guid( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
 
                     var familyMembers = new GroupMemberService( rockContext ).Queryable()
-                        .Where( m => ids.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
+                        .Where( m => personIdList.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
                         .Select( m => new { m.PersonId, m.GroupId } )
                         .Distinct()
                         .ToList();
 
                     var families = new GroupMemberService( rockContext ).Queryable()
-                        .Where( m => ids.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
+                        .Where( m => personIdList.Contains( m.PersonId ) && m.Group.GroupType.Guid == familyGuid )
                         .Select( m => m.Group )
                         .Distinct()
                         .ToList();
 
-                    foreach ( int personId in ids )
+                    foreach ( int personId in personIdList )
                     {
                         var familyIds = familyMembers.Where( m => m.PersonId == personId ).Select( m => m.GroupId ).ToList();
                         if ( familyIds.Count == 1 )
@@ -2130,9 +2363,9 @@ namespace RockWeb.Blocks.Crm
                                 .Distinct()
                                 .ToList();
 
-                            foreach ( int id in ids.Where( id => !alreadyFollowingIds.Contains( id ) ) )
+                            foreach ( int personId in personIdList.Where( id => !alreadyFollowingIds.Contains( id ) ) )
                             {
-                                var person = people.FirstOrDefault( p => p.Id == id );
+                                var person = people.FirstOrDefault( p => p.Id == personId );
                                 if ( person != null && person.PrimaryAliasId.HasValue )
                                 {
                                     var following = new Following
@@ -2148,7 +2381,7 @@ namespace RockWeb.Blocks.Crm
                         else
                         {
                             var paQry = personAliasService.Queryable()
-                                .Where( p => ids.Contains( p.PersonId ) )
+                                .Where( p => personIdList.Contains( p.PersonId ) )
                                 .Select( p => p.Id );
 
                             foreach ( var following in followingService.Queryable()
@@ -2166,7 +2399,7 @@ namespace RockWeb.Blocks.Crm
 
                 rockContext.SaveChanges();
 
-                #endregion
+                #endregion Individual Details Updates
 
                 #region Person Attributes
 
@@ -2229,7 +2462,7 @@ namespace RockWeb.Blocks.Crm
 
                 rockContext.SaveChanges();
 
-                #endregion
+                #endregion Person Attributes
 
                 #region Add Note
 
@@ -2245,11 +2478,11 @@ namespace RockWeb.Blocks.Crm
                         var notes = new List<Note>();
                         var noteService = new NoteService( rockContext );
 
-                        foreach ( int id in ids )
+                        foreach ( int personId in personIdList )
                         {
                             var note = new Note();
                             note.IsSystem = false;
-                            note.EntityId = id;
+                            note.EntityId = personId;
                             note.Caption = isPrivate ? "You - Personal Note" : string.Empty;
                             note.Text = UpdateNoteText;
                             note.IsAlert = UpdateNoteIsAlert;
@@ -2263,7 +2496,7 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                #endregion
+                #endregion Add Note
 
                 #region Group
 
@@ -2276,7 +2509,7 @@ namespace RockWeb.Blocks.Crm
 
                         var existingMembersQuery = groupMemberService.Queryable( true ).Include( a => a.Group )
                                                                      .Where( m => m.GroupId == group.Id
-                                                                                  && ids.Contains( m.PersonId ) );
+                                                                                  && personIdList.Contains( m.PersonId ) );
 
                         if ( this.UpdateGroupAction == GroupChangeActionSpecifier.Remove )
                         {
@@ -2370,7 +2603,7 @@ namespace RockWeb.Blocks.Crm
                                             m.GroupRoleId
                                         } ).ToList();
 
-                                    var personKeys = ids.Where( id => !existingMembers.Any( m => m.PersonId == id && m.GroupRoleId == UpdateGroupRoleId.Value ) ).ToList();
+                                    var personKeys = personIdList.Where( id => !existingMembers.Any( m => m.PersonId == id && m.GroupRoleId == UpdateGroupRoleId.Value ) ).ToList();
 
                                     Action<RockContext, List<int>> addAction = ( context, items ) =>
                                     {
@@ -2466,9 +2699,10 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                #endregion
+                #endregion Group
 
                 #region Tag
+
                 var personEntityTypeId = EntityTypeCache.Get( typeof( Rock.Model.Person ) ).Id;
 
                 if ( this.UpdateTagAction != TagChangeActionSpecifier.None )
@@ -2481,7 +2715,7 @@ namespace RockWeb.Blocks.Crm
                         // get guids of selected individuals
                         var personGuids = new PersonService( rockContext ).Queryable( true )
                                             .Where( p =>
-                                                ids.Contains( p.Id ) )
+                                                personIdList.Contains( p.Id ) )
                                             .Select( p => p.Guid )
                                             .ToList();
 
@@ -2515,9 +2749,10 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
-                #endregion
 
-                #region workflow
+                #endregion Tag
+
+                #region Workflow
 
                 if ( PostUpdateWorkflowIdList != null )
                 {
@@ -2535,7 +2770,187 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                #endregion
+                #endregion Workflow
+
+                #region Step
+
+                if ( this.UpdateStepAction != StepChangeActionSpecifier.None )
+                {
+                    var stepType = new StepTypeService( rockContext ).Get( UpdateStepTypeId.Value );
+                    if ( stepType != null && stepType.IsAuthorized( Authorization.EDIT, CurrentPerson ) )
+                    {
+                        foreach ( var person in people )
+                        {
+                            if ( this.UpdateStepAction == StepChangeActionSpecifier.Add )
+                            {
+                                var stepService = new StepService( rockContext );
+                                var step = new Step
+                                {
+                                    StepTypeId = stepType.Id,
+                                    PersonAliasId = person.PrimaryAliasId ?? person.Aliases.First().Id,
+                                    StartDateTime = UpdateStepStartDate,
+                                    EndDateTime = stepType.HasEndDate ? UpdateStepEndDate : null,
+                                    StepStatusId = UpdateStepStatusId,
+                                    CampusId = UpdateStepCampusId,
+                                    Note = UpdateStepNote
+                                };
+
+                                if ( UpdateStepStatusId.HasValue )
+                                {
+                                    // Mark the completed date if the status is a completed status
+                                    var stepStatus = new StepStatusService( rockContext ).Get( UpdateStepStatusId.Value );
+                                    if ( stepStatus != null && stepStatus.IsCompleteStatus )
+                                    {
+                                        step.CompletedDateTime = step.EndDateTime ?? step.StartDateTime;
+                                    }
+                                }
+
+                                if ( !stepService.CanAddBecauseMeetsAllowMultipleRule( person.PrimaryAliasId.Value, stepType ) )
+                                {
+                                    var validationMessage = $"{person.NickName} is not able to complete {stepType.Name} again because of the 'Allow Multiple' setting.";
+                                    Interlocked.Increment( ref _errorCount );
+                                    _logger.LogInformation( $"" );
+                                }
+                                else if ( HasUnmetPrereqs( person, stepType, stepService ) )
+                                {
+                                    var validationMessage= $"{person.NickName} is not able to complete {stepType.Name} as there are unmet prerequisites.";
+                                    Interlocked.Increment( ref _errorCount );
+                                    _logger.LogInformation( $"" );
+                                }
+                                else if ( !step.IsValid )
+                                {
+                                    var validationMessage = string.Join( ",", step.ValidationResults.Select( r => r.ErrorMessage ).ToArray() );
+                                    Interlocked.Increment( ref _errorCount );
+                                    _logger.LogInformation( validationMessage );
+                                }
+                                else
+                                {
+                                    stepService.Add( step );
+                                    rockContext.SaveChanges();
+
+                                    step.LoadAttributes( rockContext );
+                                    StepAttributeValuesContainer.GetEditValues( step );
+                                    step.SaveAttributeValues( rockContext );
+                                }
+                            }
+                            else if ( this.UpdateStepAction == StepChangeActionSpecifier.Remove )
+                            {
+                                var stepService = new StepService( rockContext );
+                                var personAliasService = new PersonAliasService( rockContext );
+                                var personAliasQuery = personAliasService.Queryable().Where( a => personIdList.Contains( a.PersonId ) ).Select( a => a.Id );
+                                var stepsToRemove = stepService.Queryable().Where( s => s.StepTypeId == this.UpdateStepTypeId && personAliasQuery.Contains( s.PersonAliasId ) );
+                                stepService.DeleteRange( stepsToRemove );
+                                rockContext.SaveChanges();
+                            }
+                            else if ( this.UpdateStepAction == StepChangeActionSpecifier.Modify )
+                            {
+                                var stepService = new StepService( rockContext );
+                                var personAliasService = new PersonAliasService( rockContext );
+                                var personAliasQuery = personAliasService.Queryable().Where( a => personIdList.Contains( a.PersonId ) ).Select( a => a.Id );
+                                var stepsToUpdate = stepService.Queryable().Where( s => s.StepTypeId == this.UpdateStepTypeId && personAliasQuery.Contains( s.PersonAliasId ) );
+
+                                foreach ( var stepToUpdate in stepsToUpdate.ToList() )
+                                {
+                                    if ( SelectedFields.Contains( FieldNames.StepCampus ) )
+                                    {
+                                        stepToUpdate.CampusId = UpdateStepCampusId;
+                                    }
+
+                                    if ( SelectedFields.Contains( FieldNames.StepNote ) )
+                                    {
+                                        stepToUpdate.Note = UpdateStepNote;
+                                    }
+
+                                    bool checkCompletionDate = false;
+
+                                    if ( SelectedFields.Contains( FieldNames.StepEndDate ) )
+                                    {
+                                        stepToUpdate.EndDateTime = UpdateStepEndDate;
+                                        checkCompletionDate = true;
+                                    }
+
+                                    if ( SelectedFields.Contains( FieldNames.StepStartDate ) )
+                                    {
+                                        stepToUpdate.StartDateTime = UpdateStepStartDate;
+                                        checkCompletionDate = true;
+                                    }
+
+                                    if ( SelectedFields.Contains( FieldNames.StepStatus ) && UpdateStepStatusId.HasValue )
+                                    {
+                                        stepToUpdate.StepStatusId = UpdateStepStatusId;
+                                        checkCompletionDate = true;
+                                    }
+
+                                    if ( checkCompletionDate && stepToUpdate.StepStatusId.HasValue )
+                                    {
+                                        var stepStatus = new StepStatusService( rockContext ).Get( stepToUpdate.StepStatusId.Value );
+                                        if ( !stepStatus.IsCompleteStatus )
+                                        {
+                                            stepToUpdate.CompletedDateTime = null;
+                                        }
+                                        else
+                                        {
+                                            stepToUpdate.CompletedDateTime = stepToUpdate.EndDateTime ?? stepToUpdate.StartDateTime;
+                                        }
+                                    }
+
+                                    if ( stepToUpdate.IsValid )
+                                    {
+                                        rockContext.SaveChanges();
+
+                                        var tempStep = new Step { StepTypeId = stepType.Id }; // Used for reading the edit values from the AttributeValueContainer, before we filter for selected values.
+                                        tempStep.LoadAttributes( rockContext );
+                                        StepAttributeValuesContainer.GetEditValues( tempStep );
+
+                                        stepToUpdate.LoadAttributes( rockContext );
+                                        foreach ( var attributeKeyValue in stepToUpdate.Attributes )
+                                        {
+                                            // Only change the attribute values if they were selected by the user (to prevent unintentional overwriting with default values).
+                                            if ( SelectedFields.Contains( $"attribute_field_{attributeKeyValue.Value.Id}" ) )
+                                            {
+                                                stepToUpdate.AttributeValues[attributeKeyValue.Key] = tempStep.AttributeValues[attributeKeyValue.Key];
+                                            }
+                                        }
+
+                                        stepToUpdate.SaveAttributeValues( rockContext );
+                                    }
+                                    else
+                                    {
+                                        var validationMessage = string.Join( ",", stepToUpdate.ValidationResults.Select( r => r.ErrorMessage ).ToArray() );
+                                        Interlocked.Increment( ref _errorCount );
+                                        _logger.LogInformation( validationMessage );
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+
+                #endregion Step
+            }
+
+            /// <summary>
+            /// Determines whether the person has met prerequisites to add a step of this type.
+            /// </summary>
+            /// <param name="person"></param>
+            /// <param name="stepType"></param>
+            /// <param name="stepService"></param>
+            /// <returns>
+            ///   <c>true</c> if has met prerequisites; otherwise, <c>false</c>.
+            /// </returns>
+            private static bool HasUnmetPrereqs( Person person, StepType stepType, StepService stepService )
+            {
+                var prerequisiteStepTypes = stepType.StepTypePrerequisites.Select( stp => stp.PrerequisiteStepType );
+
+                var completedStepTypeIds = stepService.Queryable().AsNoTracking()
+                    .Where( s =>
+                        s.PersonAlias.PersonId == person.Id &&
+                        s.StepStatus != null &&
+                        s.StepStatus.IsCompleteStatus )
+                    .Select( s => s.StepTypeId );
+
+                var unmetPrereqs = prerequisiteStepTypes.Where( st => !completedStepTypeIds.Contains( st.Id ) ).ToList();
+                return unmetPrereqs.Any();
             }
 
             /// <summary>
@@ -2570,7 +2985,7 @@ namespace RockWeb.Blocks.Crm
                 }
             }
 
-            #endregion
+            #endregion Bulk Update Processing
 
             #region Action Summary
 
@@ -2687,7 +3102,7 @@ namespace RockWeb.Blocks.Crm
                     changes.Add( "Remove from your Following list." );
                 }
 
-                #endregion
+                #endregion Individual Details Updates
 
                 #region Attributes
 
@@ -2735,7 +3150,7 @@ namespace RockWeb.Blocks.Crm
                         }
                     }
                 }
-                #endregion
+                #endregion Attributes
 
                 #region Note
 
@@ -2753,7 +3168,7 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                #endregion
+                #endregion Note
 
                 #region Group
 
@@ -2812,7 +3227,7 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                #endregion
+                #endregion Group
 
                 #region Tag
 
@@ -2831,9 +3246,9 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                #endregion
+                #endregion Tag
 
-                #region workflow
+                #region Workflow
 
                 if ( this.PostUpdateWorkflowIdList != null
                      && this.PostUpdateWorkflowIdList.Any() )
@@ -2858,7 +3273,66 @@ namespace RockWeb.Blocks.Crm
                     }
                 }
 
-                #endregion
+                #endregion Workflow
+
+                #region Step
+
+                if ( this.UpdateStepAction != StepChangeActionSpecifier.None )
+                {
+                    var stepType = StepTypeCache.Get( this.UpdateStepTypeId.Value );
+                    if ( stepType != null )
+                    {
+                        if ( this.UpdateStepAction == StepChangeActionSpecifier.Remove )
+                        {
+                            changes.Add( $"Remove step <span class='field-name'>{stepType.Name}</span>." );
+                        }
+                        else if ( this.UpdateStepAction == StepChangeActionSpecifier.Add )
+                        {
+                            changes.Add( $"Add step <span class='field-name'>{stepType.Name}</span>." );
+                        }
+                        else if ( this.UpdateStepAction == StepChangeActionSpecifier.Modify )
+                        {
+                            if ( SelectedFields.Contains( FieldNames.StepStatus ) && this.UpdateStepStatusId.HasValue )
+                            {
+                                var stepStatus = new StepStatusService( rockContext ).Get( this.UpdateStepStatusId.Value );
+                                if ( stepStatus != null )
+                                {
+                                    EvaluateChange( changes, $"{stepType}", stepStatus.Name );
+                                }
+                            }
+
+                            if ( SelectedFields.Contains( FieldNames.StepStartDate ) )
+                            {
+                                EvaluateChange( changes, $"{stepType.Name} Start Date", this.UpdateStepStartDate.ToString() );
+                            }
+
+                            if ( SelectedFields.Contains( FieldNames.StepEndDate ) )
+                            {
+                                EvaluateChange( changes, $"{stepType.Name} End Date", this.UpdateStepEndDate.ToString() );
+                            }
+
+                            if ( SelectedFields.Contains( FieldNames.StepCampus ) )
+                            {
+                                if ( this.UpdateStepCampusId.HasValue )
+                                {
+                                    var campus = CampusCache.Get( this.UpdateStepCampusId.Value );
+                                    EvaluateChange( changes, $"{stepType.Name} Campus", campus.Name );
+                                }
+                                else
+                                {
+                                    EvaluateChange( changes, $"{stepType.Name} Campus", "[None]" );
+                                }
+                            }
+
+                            if ( SelectedFields.Contains( FieldNames.StepNote ) )
+                            {
+                                EvaluateChange( changes, $"{stepType.Name} Campus", this.UpdateStepNote );
+                            }
+                        }
+                    }
+                }
+
+                #endregion Step
 
                 return changes;
             }
@@ -2868,7 +3342,6 @@ namespace RockWeb.Blocks.Crm
             /// </summary>
             /// <param name="historyMessages">The history messages.</param>
             /// <param name="propertyName">Name of the property.</param>
-            /// <param name="oldValue">The old value.</param>
             /// <param name="newValue">The new value.</param>
             private void EvaluateChange( List<string> historyMessages, string propertyName, string newValue )
             {
@@ -2887,7 +3360,6 @@ namespace RockWeb.Blocks.Crm
             /// </summary>
             /// <param name="historyMessages">The history messages.</param>
             /// <param name="propertyName">Name of the property.</param>
-            /// <param name="oldValue">The old value.</param>
             /// <param name="newValue">The new value.</param>
             private void EvaluateChange( List<string> historyMessages, string propertyName, int? newValue )
             {
@@ -2900,7 +3372,6 @@ namespace RockWeb.Blocks.Crm
             /// </summary>
             /// <param name="historyMessages">The history messages.</param>
             /// <param name="propertyName">Name of the property.</param>
-            /// <param name="oldValue">The old value.</param>
             /// <param name="newValue">The new value.</param>
             /// <param name="includeTime">if set to <c>true</c> [include time].</param>
             private void EvaluateChange( List<string> historyMessages, string propertyName, DateTime? newValue, bool includeTime = false )
@@ -2940,9 +3411,9 @@ namespace RockWeb.Blocks.Crm
                 EvaluateChange( historyMessages, propertyName, newStringValue );
             }
 
-            #endregion
+            #endregion Action Summary
         }
 
-        #endregion
+        #endregion Bulk Update Processor
     }
 }

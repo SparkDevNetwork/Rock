@@ -64,10 +64,8 @@
     });
 
     // #region Values
-
     const name = ref(props.modelValue?.name ?? "");
     const description = ref(props.modelValue?.description ?? "");
-    //const chartData = ref(props.modelValue?.chartData ?? "{}");
     const chartData = ref<ChartData>(JSON.parse(props.modelValue?.chartData ?? "{}"));
     const kpi = ref(props.modelValue?.kpi ?? "");
     const showChart = ref(props.modelValue?.showChart);
@@ -109,7 +107,6 @@
                 beginAtZero: true,
                 suggestedMax: 2
             },
-
         }
     });
 

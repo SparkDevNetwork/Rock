@@ -159,7 +159,7 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <Rock:HtmlEditor ID="htmlContent" runat="server" Label="Content" ResizeMaxWidth="720" Height="300" />
-                                <Rock:StructureContentEditor ID="sceContent" runat="server" Label="Content" />
+                                <Rock:StructureContentEditor ID="sceContent" runat="server" Label="Content" EditorBottomPadding="300" />
                             </div>
                         </div>
 

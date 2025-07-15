@@ -22,6 +22,7 @@ using System.Linq.Expressions;
 using System.Threading.Tasks;
 
 using Rock.Data;
+using Rock.Enums.Security;
 using Rock.Model;
 using Rock.Observability;
 using Rock.RealTime;
@@ -262,7 +263,8 @@ namespace Rock.CheckIn.v2
                 }
 
                 // Get all the group locations for active locations. This also
-                // filters down to only groups in an active area.
+                // filters down to only groups in an active area. This also
+                // filters down to only active groups.
                 var activeGroupLocations = locations
                     .Where( l => l.IsActive )
                     .SelectMany( l => GroupLocationCache.AllForLocationId( l.Id ).Select( gl => new
@@ -271,7 +273,17 @@ namespace Rock.CheckIn.v2
                         Location = l
                     } ) )
                     .DistinctBy( glc => glc.GroupLocation.Id )
-                    .Where( glc => activeAreaIds.Contains( GroupCache.Get( glc.GroupLocation.GroupId, RockContext )?.GroupTypeId ?? 0 ) )
+                    .Where( glc =>
+                    {
+                        var groupCache = GroupCache.Get( glc.GroupLocation.GroupId, RockContext );
+
+                        if ( groupCache == null || !groupCache.IsActive )
+                        {
+                            return false;
+                        }
+
+                        return activeAreaIds.Contains( groupCache.GroupTypeId );
+                    } )
                     .ToList();
 
                 // Get all the schedules that are associated with these locations.
@@ -575,14 +587,44 @@ namespace Rock.CheckIn.v2
         /// </summary>
         /// <param name="pinCode">The PIN code to be authenticated.</param>
         /// <param name="errorMessage">On return contains any error message that should be displayed.</param>
+        /// <param name="saveHistoryLogin">Whether a <see cref="HistoryLogin"/> record should be saved for this attempt.</param>
         /// <returns><c>true</c> if the PIN code was valid and trusted; otherwise <c>false</c>.</returns>
-        public virtual bool TryAuthenticatePin( string pinCode, out string errorMessage )
+        public virtual bool TryAuthenticatePin( string pinCode, out string errorMessage, bool saveHistoryLogin = false )
         {
             var pinAuth = AuthenticationContainer.GetComponent( typeof( Rock.Security.Authentication.PINAuthentication ).FullName );
+
+            var pinAuthProviderName = EntityTypeCache.Get( Rock.SystemGuid.EntityType.AUTHENTICATION_PIN.AsGuid() )
+                    ?.FriendlyName
+                    ?? "PIN Authentication";
+
+            // We'll supplement this history login object as needed below.
+            var historyLogin = new HistoryLogin
+            {
+                UserName = "XXXXX", // Obfuscate the PIN
+                ExternalSource = "Check-in Supervisor Login"
+            }
+            .WithContext( pinAuthProviderName );
+
+            // A local function to centralize the saving of a history login record.
+            void SaveHistoryLoginIfNeeded( LoginFailureReason? reason = null, string message = null )
+            {
+                if ( !saveHistoryLogin )
+                {
+                    return;
+                }
+
+                historyLogin.LoginFailureReason = reason;
+                historyLogin.LoginFailureMessage = message;
+                historyLogin.WasLoginSuccessful = !reason.HasValue;
+
+                historyLogin.SaveAfterDelay();
+            }
 
             // Make sure PIN authentication is enabled.
             if ( pinAuth == null || !pinAuth.IsActive )
             {
+                SaveHistoryLoginIfNeeded( LoginFailureReason.Other, $"{pinAuthProviderName} is not active." );
+
                 errorMessage = "Sorry, we couldn't find an account matching that PIN.";
                 return false;
             }
@@ -590,9 +632,26 @@ namespace Rock.CheckIn.v2
             var userLoginService = new UserLoginService( RockContext );
             var userLogin = userLoginService.GetByUserName( pinCode );
 
+            // Supplement the history login object if we found a user login.
+            if ( userLogin != null )
+            {
+                historyLogin.UserLoginId = userLogin.Id;
+                historyLogin.PersonAliasId = userLogin.Person?.PrimaryAliasId;
+            }
+
             // Make sure this is a PIN auth user login.
             if ( userLogin == null || !userLogin.EntityTypeId.HasValue || userLogin.EntityTypeId.Value != pinAuth.TypeId )
             {
+                var loginFailureReason = LoginFailureReason.UserNotFound;
+                string loginFailureMessage = null;
+                if ( userLogin != null )
+                {
+                    loginFailureReason = LoginFailureReason.Other;
+                    loginFailureMessage = $"This username is not associated with {pinAuthProviderName}.";
+                }
+
+                SaveHistoryLoginIfNeeded( loginFailureReason, loginFailureMessage );
+
                 errorMessage = "Sorry, we couldn't find an account matching that PIN.";
                 return false;
             }
@@ -601,22 +660,30 @@ namespace Rock.CheckIn.v2
             // in the future.
             if ( !pinAuth.Authenticate( userLogin, null ) )
             {
+                SaveHistoryLoginIfNeeded( LoginFailureReason.Other, "PIN authentication failed." );
+
                 errorMessage = "Sorry, we couldn't find an account matching that PIN.";
                 return false;
             }
 
             if ( !( userLogin.IsConfirmed ?? true ) )
             {
+                SaveHistoryLoginIfNeeded( LoginFailureReason.UserNotConfirmed );
+
                 errorMessage = "Sorry, account needs to be confirmed.";
                 return false;
             }
             else if ( userLogin.IsLockedOut ?? false )
             {
+                SaveHistoryLoginIfNeeded( LoginFailureReason.LockedOut );
+
                 errorMessage = "Sorry, account is locked-out.";
                 return false;
             }
             else
             {
+                SaveHistoryLoginIfNeeded();
+
                 errorMessage = string.Empty;
                 return true;
             }

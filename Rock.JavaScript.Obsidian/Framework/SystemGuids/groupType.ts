@@ -41,6 +41,8 @@ export const GroupType = {
     GrouptypeFundraisingopportunity: "4BE7FC44-332D-40A8-978E-47B7035D7A0C",
     /** General group type guid */
     GrouptypeGeneral: "8400497B-C52F-40AE-A529-3FCCB9587101",
+    /** Hidden Application Group group type guid */
+    GrouptypeHiddenApplicationGroup: "2C6F2847-B404-4595-AB35-CE42F2303868",
     /** Know relationship group type guid */
     GrouptypeKnownRelationships: "E0C5A0E2-B7B3-4EF4-820D-BBF7F9A374EF",
     /** Learning Management System (LMS) Class group type guid */

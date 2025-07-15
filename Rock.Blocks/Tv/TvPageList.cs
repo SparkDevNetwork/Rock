@@ -94,6 +94,7 @@ namespace Rock.Blocks.Tv
         private TvPageListOptionsBag GetBoxOptions()
         {
             var options = new TvPageListOptionsBag();
+            options.DefaultPageIdKey = GetDefaultPageIdKey();
             options.SiteId = PageParameter( PageParameterKey.SiteId );
 
             return options;
@@ -205,6 +206,26 @@ namespace Rock.Blocks.Tv
             }
 
             return cacheability.ToCacheabilityBag().RockCacheabilityType;
+        }
+
+        /// <summary>
+        /// Gets the default page identifier key of the current application.
+        /// </summary>
+        /// <returns></returns>
+        private string GetDefaultPageIdKey()
+        {
+            var applicationId = GetSiteId();
+            return applicationId.HasValue ? SiteCache.Get( applicationId.Value )?.DefaultPage?.IdKey : string.Empty;
+        }
+
+        /// <summary>
+        /// Gets the site identifier passed as a query parameter.
+        /// </summary>
+        /// <returns></returns>
+        private int? GetSiteId()
+        {
+            var siteId = PageParameter( PageParameterKey.SiteId );
+            return siteId.AsIntegerOrNull() ?? Rock.Utility.IdHasher.Instance.GetId( siteId );
         }
 
         #endregion

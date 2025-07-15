@@ -39,6 +39,7 @@
 
 <asp:UpdatePanel ID="upnlContent" runat="server">
     <ContentTemplate>
+        <Rock:NotificationBox ID="nbNotAuthorizedToView" runat="server" NotificationBoxType="Warning" Visible="false" />
         <!-- Edit Panel -->
         <asp:Panel ID="pnlEditDetail" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">

@@ -185,6 +185,13 @@ namespace Rock.Blocks.Communication
         Category = AttributeCategory.HtmlEditorSettings,
         Order = 18 )]
 
+    [BooleanField( "Enable Asset Manager",
+        Key = AttributeKey.EnableAssetManager,
+        Description = "Allows individuals to have access to the asset manager. This includes browsing existing files as well as modifying existing and uploading new files.",
+        DefaultBooleanValue = false,
+        Category = AttributeCategory.HtmlEditorSettings,
+        Order = 19 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.EntityTypeGuid( "26C0C9A1-1383-48D5-A062-E05622A1CBF2" )]
@@ -227,6 +234,7 @@ namespace Rock.Blocks.Communication
             public const string ShowEmailMetricsReminderOptions = "ShowEmailMetricsReminderOptions";
             public const string ShowAdditionalEmailRecipients = "ShowAdditionalEmailRecipients";
             public const string ShowDuplicatePreventionOption = "ShowDuplicatePreventionOption";
+            public const string EnableAssetManager = "EnableAssetManager";
         }
 
         /// <summary>
@@ -401,6 +409,11 @@ namespace Rock.Blocks.Communication
         /// </summary>
         private bool IsDuplicatePreventionOptionShown => GetAttributeValue( AttributeKey.ShowDuplicatePreventionOption ).AsBoolean();
 
+        /// <summary>
+        /// Determines if the asset manager will be enabled when using the HTML editor.
+        /// </summary>
+        private bool EnableAssetManager => GetAttributeValue( AttributeKey.EnableAssetManager ).AsBoolean();
+
         #endregion
 
         #region Base Control Methods
@@ -424,6 +437,7 @@ namespace Rock.Blocks.Communication
                     box.AreEmailMetricsReminderOptionsShown = this.AreEmailMetricsReminderOptionsShown;
                     box.IsDuplicatePreventionOptionShown = this.IsDuplicatePreventionOptionShown;
                     box.Authorization = authorization;
+                    box.EnableAssetManager = this.EnableAssetManager;
                     box.IsCcBccEntryAllowed = this.IsCcBccEntryAllowed;
                     box.IsHidden = false;
                     box.IsEditMode = this.EditPageParameter;
@@ -1617,9 +1631,12 @@ namespace Rock.Blocks.Communication
         {
             var securityGrant = new Rock.Security.SecurityGrant();
 
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
-            securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+            if ( EnableAssetManager )
+            {
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.VIEW ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.EDIT ) );
+                securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Rock.Security.Authorization.DELETE ) );
+            }
 
             return securityGrant.ToToken();
         }

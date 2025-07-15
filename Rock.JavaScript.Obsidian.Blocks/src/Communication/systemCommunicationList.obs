@@ -64,7 +64,7 @@
                        width="57"
                        visiblePriority="xs" />
 
-        <SecurityColumn />
+        <SecurityColumn :itemTitle="'title'" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

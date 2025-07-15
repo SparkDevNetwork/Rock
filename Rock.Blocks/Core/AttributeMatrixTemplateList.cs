@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [Category( "Core" )]
     [Description( "Shows a list of all attribute matrix templates." )]
     [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the attribute matrix template details.",

@@ -58,5 +58,10 @@ namespace Rock.Communication.Chat.DTO
         /// Gets or sets whether the <see cref="ChatChannelMember"/> should be ignored during the sync process.
         /// </summary>
         public bool ShouldIgnore { get; set; }
+
+        /// <summary>
+        /// The notification mode to respect for push notifications.
+        /// </summary>
+        public ChatNotificationMode PushNotificationMode { get; set; }
     }
 }

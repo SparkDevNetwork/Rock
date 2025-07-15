@@ -727,6 +727,15 @@ namespace Rock.Tests.Integration.Communications
             if ( expectedCssInline )
             {
                 expectedHtmlMessage = @"<html><head></head><body>
+		                            <style>
+		                              .component-text td {
+			                              color: #0a0a0a;
+			                              font-family: Helvetica, Arial, sans-serif;
+			                              font-size: 16px;
+			                              font-weight: normal;
+			                              line-height: 1.3;
+		                              }
+		                            </style>
 		                            <div class=""structure-dropzone"">
 			                            <div class=""dropzone"">
 				                            <table class=""component component-text selected"">
@@ -1750,6 +1759,15 @@ namespace Rock.Tests.Integration.Communications
             if ( expectedCssInline )
             {
                 expectedHtmlMessage = @"<html><head></head><body>
+		                            <style>
+		                              .component-text td {
+			                              color: #0a0a0a;
+			                              font-family: Helvetica, Arial, sans-serif;
+			                              font-size: 16px;
+			                              font-weight: normal;
+			                              line-height: 1.3;
+		                              }
+		                            </style>
 		                            <div class=""structure-dropzone"">
 			                            <div class=""dropzone"">
 				                            <table class=""component component-text selected"">

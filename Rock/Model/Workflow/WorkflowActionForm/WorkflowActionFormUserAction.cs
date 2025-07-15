@@ -121,20 +121,40 @@ namespace Rock.Model
             {
                 var buttonHtml = buttonDefinedValue.GetAttributeValue( "ButtonHTML" );
 
-                if ( !buttonHtml.IsNullOrWhiteSpace() )
+                if ( IsCancelButton( buttonDefinedValue.Guid, buttonHtml ) )
                 {
-                    buttonHtml = buttonHtml.ToLower().Replace( " ", "" );
-
-                    if ( !buttonHtml.Contains( "{{buttonclick}}" )
-                         && buttonHtml.Contains( "onclick=\"returntrue;\"" ) )
-                    {
-                        cancelButtonList.Add( buttonDefinedValue.Guid );
-                    }
+                    cancelButtonList.Add( buttonDefinedValue.Guid );
                 }
             }
 
             return cancelButtonList;
+        }
 
+        /// <summary>
+        /// Determines if the button should be considered a cancel button. These
+        /// buttons will still save form entry data but will not validate.
+        /// </summary>
+        /// <param name="definedValueGuid">The unique identifier of the <see cref="DefinedValue"/> that defines this button.</param>
+        /// <param name="buttonHtml">The HTML content of the button.</param>
+        /// <returns><c>true</c> if the button is considered a cancel button; otherwise <c>false</c>.</returns>
+        internal static bool IsCancelButton( Guid? definedValueGuid, string buttonHtml )
+        {
+            if ( definedValueGuid.HasValue && definedValueGuid.Value == SystemGuid.DefinedValue.BUTTON_HTML_CANCEL.AsGuid() )
+            {
+                return true;
+            }
+
+            if ( !buttonHtml.IsNullOrWhiteSpace() )
+            {
+                buttonHtml = buttonHtml.ToLower().Replace( " ", "" );
+
+                if ( !buttonHtml.Contains( "{{buttonclick}}" ) && buttonHtml.Contains( "onclick=\"returntrue;\"" ) )
+                {
+                    return true;
+                }
+            }
+
+            return false;
         }
     }
 }

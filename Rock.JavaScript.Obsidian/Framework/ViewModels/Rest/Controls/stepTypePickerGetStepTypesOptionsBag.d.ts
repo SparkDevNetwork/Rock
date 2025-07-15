@@ -28,6 +28,9 @@ import { Guid } from "@Obsidian/Types";
  * the StepTypePicker control.
  */
 export type StepTypePickerGetStepTypesOptionsBag = {
+    /** The security grant token to use when performing authorization checks. */
+    securityGrantToken?: string | null;
+
     /** The GUID of the step program that this step type is part of. */
     stepProgramGuid?: Guid | null;
 };
