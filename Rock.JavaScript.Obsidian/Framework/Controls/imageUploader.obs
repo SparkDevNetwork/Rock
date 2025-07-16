@@ -47,6 +47,7 @@
     import RockFormField from "./rockFormField.obs";
     import { toGuidOrNull } from "@Obsidian/Utility/guid";
     import { isPromise } from "@Obsidian/Utility/promiseUtils";
+    import { useSecurityGrantToken } from "@Obsidian/Utility/block";
 
     const props = defineProps({
         /**
@@ -125,6 +126,8 @@
     }>();
 
     const internalValue = ref(props.modelValue);
+
+    const securityGrantToken = useSecurityGrantToken();
 
     // Variables related to the progress of uploading a new file.
     const isUploading = ref(false);
@@ -213,7 +216,8 @@
                 isTemporary: props.uploadAsTemporary,
                 progress: (progress, total, percent) => {
                     uploadProgressText.value = `${percent}%`;
-                }
+                },
+                securityGrantToken: securityGrantToken.value
             });
 
             internalValue.value = result;
