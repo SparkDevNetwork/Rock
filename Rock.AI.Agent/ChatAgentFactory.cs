@@ -19,7 +19,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
-using System.Text.Json;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
@@ -28,7 +27,6 @@ using Microsoft.SemanticKernel;
 using Rock.Data;
 using Rock.Enums.Core.AI.Agent;
 using Rock.Logging;
-using Rock.Model;
 using Rock.Net;
 using Rock.SystemGuid;
 using Rock.Web.Cache.Entities;
@@ -53,7 +51,7 @@ namespace Rock.AI.Agent
 
         internal string ExecuteLavaParameterHint { get; set; } = "A JSON object with the parameters defined in the schema.";
 
-        private ChatAgentFactory( IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
+        private ChatAgentFactory( IServiceProvider serviceProvider, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
         {
             _serviceProvider = serviceProvider; ;
             _requestContextAccessor = requestContextAccessor;
@@ -63,7 +61,7 @@ namespace Rock.AI.Agent
         }
 
         public ChatAgentFactory( int agentId, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
-            : this( serviceProvider, rockContext, requestContextAccessor, loggerFactory, rockContextFactory )
+            : this( serviceProvider, requestContextAccessor, loggerFactory, rockContextFactory )
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
@@ -79,8 +77,8 @@ namespace Rock.AI.Agent
             _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
         }
 
-        internal ChatAgentFactory( AgentProviderComponent provider, AgentConfiguration agentConfiguration, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory, Action<IServiceCollection> configureServices )
-            : this( serviceProvider, rockContext, requestContextAccessor, loggerFactory, rockContextFactory )
+        internal ChatAgentFactory( AgentProviderComponent provider, AgentConfiguration agentConfiguration, IServiceProvider serviceProvider, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory, Action<IServiceCollection> configureServices )
+            : this( serviceProvider, requestContextAccessor, loggerFactory, rockContextFactory )
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
@@ -117,7 +115,7 @@ namespace Rock.AI.Agent
             _logger.LogInformation( "Kernel built in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
 
             sw.Restart();
-            LoadPluginsForAgent( kernel, _serviceProvider );
+            LoadPluginsForAgent( kernel );
             sw.Stop();
 
             _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
@@ -129,7 +127,7 @@ namespace Rock.AI.Agent
         /// Registers the plug-ins for the agent.
         /// </summary>
         /// <param name="kernel"></param>
-        private void LoadPluginsForAgent( Kernel kernel, IServiceProvider serviceProvider )
+        private void LoadPluginsForAgent( Kernel kernel )
         {
             LoadNativeSkills( kernel.Plugins, kernel.Services, _serviceProvider );
             LoadVirtualSkills( kernel.Plugins );
@@ -224,8 +222,7 @@ namespace Rock.AI.Agent
             }
 
             var requestContext = _requestContextAccessor.RockRequestContext;
-            var mergeFields = requestContext.GetCommonMergeFields()
-                ?? new Dictionary<string, object>();
+            var mergeFields = requestContext.GetCommonMergeFields();
 
             foreach ( var function in functions )
             {
@@ -247,42 +244,22 @@ namespace Rock.AI.Agent
                     );
 
                     pluginFunctions[function.Key] = semanticFunction;
-                    //var proxyFunction = KernelFunctionFactory.CreateFromMethod(
-                    //    ( Func<Kernel, string, Task<string>> ) ( async ( Kernel kernel, string input ) =>
-                    //    {
-                    //        return await ExecutePrompt( function, kernel, input );
-                    //    } ),
-                    //    functionName: function.Key,
-                    //    description: function.UsageHint,
-                    //    loggerFactory: _loggerFactory
-                    //);
-
-                    //pluginFunctions[function.Key] = proxyFunction;
                 }
 
                 else if ( function.FunctionType == FunctionType.ExecuteLava )
                 {
-                    //var functionParameters = new List<KernelParameterMetadata>();
-                    //var parameter = new KernelParameterMetadata( "promptAsJson" )
-                    //{
-                    //    Description = ExecuteLavaParameterHint,
-                    //    IsRequired = true,
-                    //    Schema = ParseSchema( function.InputSchema )
-                    //};
-
-                    //functionParameters.Add( parameter );
+                    var parameters = function.Parameters.Select( p => p.GetKernelParameterMetadata() ).ToList();
 
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
                         ( Func<Kernel, KernelArguments, string> ) ( ( Kernel kernel, KernelArguments args ) =>
                         {
-                            // Create a LavaSkill instance that will be used to run the function.
+                            // Create a ProxyFunction instance that will be used to run the function.
                             var proxySkill = new ProxyFunction( kernel.Services.GetRequiredService<AgentRequestContext>(), requestContext );
                             return proxySkill.ExecuteLava( function, args );
                         } ),
                         functionName: function.Key,
                         description: function.UsageHint,
-                        parameters: ParseSchemaParameters( function.InputSchema ),
-                        //parameters: functionParameters,
+                        parameters: parameters,
                         loggerFactory: _loggerFactory
                     );
 
@@ -293,103 +270,11 @@ namespace Rock.AI.Agent
             return pluginFunctions.Values;
         }
 
-        /// <summary>
-        /// Parses the input schema into a KernelJsonSchema object.
-        /// </summary>
-        /// <param name="inputSchema"></param>
-        /// <returns></returns>
-        private static KernelJsonSchema ParseSchema( string inputSchema )
-        {
-            if ( string.IsNullOrWhiteSpace( inputSchema ) )
-            {
-                return null;
-            }
-
-            try
-            {
-                // Deserialize the input schema to a KernelJsonSchema object
-                return JsonSerializer.Deserialize<KernelJsonSchema>( inputSchema );
-            }
-            catch
-            {
-                return null;
-            }
-        }
-
-        private static List<KernelParameterMetadata> ParseSchemaParameters( string inputSchema )
-        {
-            var schema = ParseSchema( inputSchema );
-
-            if ( schema?.RootElement == null )
-            {
-                return new List<KernelParameterMetadata>();
-            }
-
-            if ( !schema.RootElement.TryGetProperty( "properties", out var properties ) || properties.ValueKind != JsonValueKind.Object )
-            {
-                return new List<KernelParameterMetadata>();
-            }
-
-            var requiredParameters = schema.RootElement.TryGetProperty( "required", out var requiredProperty )
-                ? requiredProperty.EnumerateArray().Select( p => p.GetString() ).ToList()
-                : new List<string>();
-            var parameters = new List<KernelParameterMetadata>();
-
-            foreach ( var property in properties.EnumerateObject() )
-            {
-                if ( property.Value.ValueKind != JsonValueKind.Object )
-                {
-                    continue;
-                }
-
-                var parameter = new KernelParameterMetadata( property.Name )
-                {
-                    Description = property.Value.TryGetProperty( "description", out var description ) ? description.GetString() : string.Empty,
-                    IsRequired = requiredParameters.Contains( property.Name ),
-                    Schema = JsonSerializer.Deserialize<KernelJsonSchema>( property.Value )
-                };
-
-                parameters.Add( parameter );
-            }
-
-            return parameters;
-        }
-
         private static List<SkillConfiguration> GetSkillConfigurations( int agentId, RockContext rockContext )
         {
             var agent = AIAgentCache.Get( agentId, rockContext );
 
             return agent.GetSkillConfigurations( rockContext );
         }
-
-        //private async Task<string> ExecutePrompt( AgentFunction function, Kernel kernel, string input )
-        //{
-        //    var originalContext = kernel.Services.GetRequiredService<AgentRequestContext>();
-
-        //    using ( var scope = kernel.Services.CreateScope() )
-        //    {
-        //        var scopedKernel = new Kernel( scope.ServiceProvider, kernel.Plugins );
-        //        var agent = new ChatAgent( scopedKernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor );
-        //        var prompt = function.Prompt;
-
-        //        agent.Context.CopyFrom( originalContext );
-
-        //        if ( function.EnableLavaPreRendering )
-        //        {
-        //            var mergeFields = _requestContextAccessor.RockRequestContext.GetCommonMergeFields();
-
-        //            mergeFields["AgentContext"] = agent.Context;
-        //            mergeFields["Input"] = input;
-
-        //            prompt = prompt.ResolveMergeFields( mergeFields );
-        //        }
-
-        //        agent.AddMessage( AuthorRole.User, prompt );
-
-        //        var response = await agent.GetChatMessageContentAsync();
-
-        //        return response.Content;
-        //    }
-        //}
     }
 }

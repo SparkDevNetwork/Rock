@@ -29,7 +29,7 @@ using Rock.ViewModels.Blocks.Core.AI.AISkillDetail;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Core
+namespace Rock.Blocks.Core.AI
 {
     /// <summary>
     /// Displays the details of a particular ai skill.

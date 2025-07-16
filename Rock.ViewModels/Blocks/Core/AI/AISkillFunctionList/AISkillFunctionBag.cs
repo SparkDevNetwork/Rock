@@ -17,6 +17,7 @@
 
 using Rock.ViewModels.Utility;
 using Rock.Enums.Core.AI.Agent;
+using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Core.AI.AISkillFunctionList
 {
@@ -73,8 +74,8 @@ namespace Rock.ViewModels.Blocks.Core.AI.AISkillFunctionList
         public string Prompt { get; set; }
 
         /// <summary>
-        /// A JSON Schema object that defines the structure of input parameters.
+        /// The parameters that are defined for the prompt template.
         /// </summary>
-        public string PromptParametersSchema { get; set; }
+        public List<ParameterSchemaBag> PromptParameters { get; set; } = new List<ParameterSchemaBag>();
     }
 }

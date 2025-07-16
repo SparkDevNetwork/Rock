@@ -34,7 +34,7 @@ using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
-namespace Rock.Blocks.Core
+namespace Rock.Blocks.Core.AI
 {
     /// <summary>
     /// Displays a list of ai skill functions.
@@ -207,7 +207,7 @@ namespace Rock.Blocks.Core
                 Temperature = promptSettings.Temperature,
                 MaxTokens = promptSettings.MaxTokens,
                 Prompt = promptSettings.Prompt,
-                PromptParametersSchema = promptSettings.PromptParametersSchema
+                PromptParameters = promptSettings.PromptParameters?.Select( ToSchemaBag ).ToList(),
             };
         }
 
@@ -322,12 +322,38 @@ namespace Rock.Blocks.Core
             box.IfValidProperty( nameof( box.Bag.Prompt ),
                 () => promptSettings.Prompt = box.Bag.Prompt );
 
-            box.IfValidProperty( nameof( box.Bag.PromptParametersSchema ),
-                () => promptSettings.PromptParametersSchema = box.Bag.PromptParametersSchema );
+            box.IfValidProperty( nameof( box.Bag.PromptParameters ),
+                () => promptSettings.PromptParameters = box.Bag.PromptParameters?.Select( FromSchemaBag ).ToList() );
 
             entity.SetAdditionalSettings( promptSettings );
 
             return true;
+        }
+
+        private ParameterSchemaBag ToSchemaBag( ParameterSchema schema )
+        {
+            return new ParameterSchemaBag
+            {
+                AllowedValues = schema.AllowedValues?.ToList(),
+                DataType = schema.DataType,
+                UsageHint = schema.UsageHint,
+                IsRequired = schema.IsRequired,
+                IsCollection = schema.IsCollection,
+                Name = schema.Name,
+            };
+        }
+
+        private ParameterSchema FromSchemaBag( ParameterSchemaBag bag )
+        {
+            return new ParameterSchema
+            {
+                AllowedValues = bag.AllowedValues?.ToList(),
+                DataType = bag.DataType,
+                UsageHint = bag.UsageHint,
+                IsRequired = bag.IsRequired,
+                IsCollection = bag.IsCollection,
+                Name = bag.Name,
+            };
         }
 
         #endregion

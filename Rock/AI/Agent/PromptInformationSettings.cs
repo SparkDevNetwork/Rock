@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+
 namespace Rock.AI.Agent
 {
     /// <summary>
@@ -47,9 +49,8 @@ namespace Rock.AI.Agent
         public string Prompt { get; set; }
 
         /// <summary>
-        /// A JSON Schema object that defines the structure of input parameters
-        /// for the prompt.
+        /// The parameters that are defined for the prompt template.
         /// </summary>
-        public string PromptParametersSchema { get; set; }
+        public List<ParameterSchema> PromptParameters { get; set; } = new List<ParameterSchema>();
     }
 }

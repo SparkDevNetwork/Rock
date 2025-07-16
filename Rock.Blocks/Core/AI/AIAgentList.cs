@@ -29,7 +29,7 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.AI.AIAgentList;
 using Rock.Web.Cache;
 
-namespace Rock.Blocks.Core
+namespace Rock.Blocks.Core.AI
 {
     /// <summary>
     /// Displays a list of ai agents.

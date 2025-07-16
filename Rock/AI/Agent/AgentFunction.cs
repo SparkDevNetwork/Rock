@@ -16,6 +16,7 @@
 //
 
 using System;
+using System.Collections.Generic;
 
 using Rock.Enums.Core.AI.Agent;
 
@@ -73,28 +74,10 @@ namespace Rock.AI.Agent
         public string Prompt { get; set; } = string.Empty;
 
         /// <summary>
-        /// <para>
-        /// A JSON Schema object that defines the structure of input parameters for the function.
-        /// Follows the standard schema format with "type", "properties", and "required" fields.
-        /// This schema is used for validating inputs, generating user interfaces, and guiding AI agents in how to call the function.
-        /// </para>
-        /// <code>
-        /// Example:
-        /// {
-        ///   "type": "object",
-        ///   "properties": {
-        ///     "EventId": { "type": "integer" },
-        ///     "PersonId": { "type": "integer" }
-        ///   },
-        ///   "required": [ "EventId", "PersonId" ]
-        /// }
-        /// </code>
+        /// The parameters defined on the function. This is only valid when
+        /// <see cref="FunctionType"/> is <see cref="FunctionType.ExecuteLava"/>.
         /// </summary>
-        /// <remarks>
-        /// This is only valid when <see cref="FunctionType"/> is set to
-        /// <see cref="FunctionType.AIPrompt"/>.
-        /// </remarks>
-        public string InputSchema { get; set; } = @"";
+        public List<ParameterSchema> Parameters { get; set; } = new List<ParameterSchema>();
 
         /// <summary>
         /// If set to true, the prompt will be processed using Lava templating before being sent to the AI model. This 

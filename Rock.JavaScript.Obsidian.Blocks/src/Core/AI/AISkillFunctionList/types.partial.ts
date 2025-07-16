@@ -15,6 +15,13 @@
 // </copyright>
 //
 
-import { Validator } from "jsonschema";
+import { Guid } from "@Obsidian/Types";
+import { ParameterSchemaBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillFunctionList/parameterSchemaBag";
 
-export { Validator };
+export const enum NavigationUrlKey {
+    DetailPage = "DetailPage"
+}
+
+export type AugmentedParameterSchemaBag = ParameterSchemaBag & {
+    id: Guid;
+};

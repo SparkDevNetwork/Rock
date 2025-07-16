@@ -130,7 +130,7 @@ namespace Rock.Web.Cache.Entities
                             FunctionType = function.FunctionType,
                             Prompt = prompt.Prompt ?? string.Empty,
                             EnableLavaPreRendering = prompt.PreRenderLava,
-                            InputSchema = prompt.PromptParametersSchema,
+                            Parameters = prompt.PromptParameters,
                             Temperature = ( double? ) prompt.Temperature,
                             MaxTokens = prompt.MaxTokens,
                         };

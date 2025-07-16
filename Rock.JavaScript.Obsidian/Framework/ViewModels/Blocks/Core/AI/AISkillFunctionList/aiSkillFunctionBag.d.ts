@@ -22,6 +22,7 @@
 //
 
 import { FunctionType } from "@Obsidian/Enums/Core/AI/Agent/functionType";
+import { ParameterSchemaBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillFunctionList/parameterSchemaBag";
 import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
 
 /** The item details for the AI Skill Function List block. */
@@ -66,8 +67,8 @@ export type AISkillFunctionBag = {
     /** The prompt text to be sent to the language model or executed by Lava. */
     prompt?: string | null;
 
-    /** A JSON Schema object that defines the structure of input parameters. */
-    promptParametersSchema?: string | null;
+    /** The parameters that are defined for the prompt template. */
+    promptParameters?: ParameterSchemaBag[] | null;
 
     /** Determines the randomness of the response. */
     temperature: number;

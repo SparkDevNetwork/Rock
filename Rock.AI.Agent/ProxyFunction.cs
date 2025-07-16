@@ -15,101 +15,207 @@
 // </copyright>
 //
 
+using System.Collections;
 using System.Collections.Generic;
+using System.Linq;
+using System.Text.Json;
 
 using Microsoft.SemanticKernel;
 
+using Rock.Enums.Core.AI.Agent;
 using Rock.Net;
 
 namespace Rock.AI.Agent
 {
+    /// <summary>
+    /// Support class to handle executing a native function backed by a
+    /// Lava template.
+    /// </summary>
     internal class ProxyFunction
     {
+        #region Fields
+
+        /// <summary>
+        /// The agent request context that this function will be executed for.
+        /// </summary>
         private readonly AgentRequestContext _agentRequestContext;
 
+        /// <summary>
+        /// The current request context. This is used to provide common merge
+        /// fields as well as knowing who the current person is in Lava.
+        /// </summary>
         private readonly RockRequestContext _rockRequestContext;
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Creates a new instance of <see cref="ProxyFunction"/>.
+        /// </summary>
+        /// <param name="requestContext">The agent request context that this function will be executed for.</param>
+        /// <param name="rockRequestContext">The current request context.</param>
         public ProxyFunction( AgentRequestContext requestContext, RockRequestContext rockRequestContext )
         {
             _agentRequestContext = requestContext;
             _rockRequestContext = rockRequestContext;
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Executes the Lava template defined in the function and returns the
+        /// results from resolving the template and merge fields.
+        /// </summary>
+        /// <param name="function">The function to be executed.</param>
+        /// <param name="args">The arguments from the language model that will be passed to the Lava template.</param>
+        /// <returns>The output from the Lava template.</returns>
         public string ExecuteLava( AgentFunction function, KernelArguments args )
         {
-            //var promptAsDictionary = promptAsJson?.FromJsonOrNull<Dictionary<string, object>>();
-            //var mergeFields = _rockRequestContext.GetCommonMergeFields();
-
-            //mergeFields["AgentContext"] = _agentRequestContext;
-
-            //if ( promptAsDictionary != null )
-            //{
-            //    foreach ( var kvp in promptAsDictionary )
-            //    {
-            //        if ( kvp.Value is string stringValue )
-            //        {
-            //            mergeFields.TryAdd( kvp.Key, stringValue );
-            //        }
-            //        else if ( kvp.Value is bool boolValue )
-            //        {
-            //            mergeFields.TryAdd( kvp.Key, boolValue );
-            //        }
-            //        else if ( kvp.Value is int intValue )
-            //        {
-            //            mergeFields.TryAdd( kvp.Key, intValue );
-            //        }
-            //        else if ( kvp.Value is double doubleValue )
-            //        {
-            //            mergeFields.TryAdd( kvp.Key, doubleValue );
-            //        }
-            //        else if ( kvp.Value is null )
-            //        {
-            //            mergeFields.TryAdd( kvp.Key, null );
-            //        }
-            //        else
-            //        {
-            //            mergeFields.TryAdd( kvp.Key, kvp.Value.ToStringSafe() );
-            //        }
-            //    }
-            //}
-
-            //var promptAsDictionary = promptAsJson?.FromJsonOrNull<Dictionary<string, object>>();
             var mergeFields = _rockRequestContext.GetCommonMergeFields();
 
             mergeFields["AgentContext"] = _agentRequestContext;
 
-            foreach ( var kvp in args )
-            {
-                if ( kvp.Value is string stringValue )
-                {
-                    mergeFields.TryAdd( kvp.Key, stringValue );
-                }
-                else if ( kvp.Value is bool boolValue )
-                {
-                    mergeFields.TryAdd( kvp.Key, boolValue );
-                }
-                else if ( kvp.Value is int intValue )
-                {
-                    mergeFields.TryAdd( kvp.Key, intValue );
-                }
-                else if ( kvp.Value is double doubleValue )
-                {
-                    mergeFields.TryAdd( kvp.Key, doubleValue );
-                }
-                else if ( kvp.Value is null )
-                {
-                    mergeFields.TryAdd( kvp.Key, null );
-                }
-                else
-                {
-                    mergeFields.TryAdd( kvp.Key, kvp.Value.ToStringSafe() );
-                }
-            }
+            AddParametersToMergeFields( mergeFields, function.Parameters, args );
 
             // Because only administrators (or those granted access by an
             // administrator) can create or edit functions, we can safely
             // just enable all lava commands.
-            return function.Prompt.ResolveMergeFields( mergeFields, "All" );
+            return function.Prompt.ResolveMergeFields( mergeFields, "All" ).Trim();
         }
+
+        /// <summary>
+        /// Adds the parameters defined in the function to the Lava merge fields.
+        /// </summary>
+        /// <param name="mergeFields">The merge fields object to add the parameter values to.</param>
+        /// <param name="parameters">The parameters that were defined on the function.</param>
+        /// <param name="args">The arguments passed from the language model to the function.</param>
+        internal static void AddParametersToMergeFields( Dictionary<string, object> mergeFields, List<ParameterSchema> parameters, KernelArguments args )
+        {
+            foreach ( var parameter in parameters )
+            {
+                if ( !args.ContainsKey( parameter.Name ) )
+                {
+                    mergeFields.Add( parameter.Name, null );
+
+                    continue;
+                }
+
+                if ( parameter.IsCollection )
+                {
+                    var value = args[parameter.Name];
+
+                    mergeFields.Add( parameter.Name, ConvertValueToCollection( value, parameter.DataType ) );
+                }
+                else
+                {
+                    var value = args[parameter.Name];
+
+                    mergeFields.Add( parameter.Name, ConvertValueToType( value, parameter.DataType ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Converts the value to the specified parameter data type.
+        /// </summary>
+        /// <param name="value">The value from the language model to be converted.</param>
+        /// <param name="dataType">The target data type to convert the value to.</param>
+        /// <returns>The converted value.</returns>
+        internal static object ConvertValueToType( object value, ParameterSchemaDataType dataType )
+        {
+            if ( dataType == ParameterSchemaDataType.String )
+            {
+                return value?.ToString();
+            }
+            else if ( dataType == ParameterSchemaDataType.Number )
+            {
+                if ( value == null )
+                {
+                    return null;
+                }
+                else if ( value.GetType() == typeof( int ) )
+                {
+                    return ( int ) value;
+                }
+                else if ( value.GetType() == typeof( double ) )
+                {
+                    return ( double ) value;
+                }
+                else
+                {
+                    return value.ToString().AsDoubleOrNull() ?? 0.0;
+                }
+            }
+            else if ( dataType == ParameterSchemaDataType.Boolean )
+            {
+                if ( value == null )
+                {
+                    return null;
+                }
+                else if ( value.GetType() == typeof(bool))
+                {
+                    return ( bool ) value;
+                }
+                else
+                {
+                    return value.ToString().AsBoolean();
+                }
+            }
+            else
+            {
+                return null;
+            }
+        }
+
+        /// <summary>
+        /// Converts the value to a collection of the specified data type.
+        /// </summary>
+        /// <param name="value">The value from the language model to be converted.</param>
+        /// <param name="dataType">The target data type to convert each of the values to.</param>
+        /// <returns>The converted values.</returns>
+        internal static List<object> ConvertValueToCollection( object value, ParameterSchemaDataType dataType )
+        {
+            if ( value is ICollection collection )
+            {
+                return collection
+                    .Cast<object>()
+                    .Select( a => ConvertValueToType( a, dataType ) )
+                    .ToList();
+            }
+            else if ( value is string stringValue )
+            {
+                // Value might be a JSON encoded string of array values.
+                try
+                {
+                    var jsonArray = JsonSerializer.Deserialize<List<object>>( stringValue );
+
+                    return jsonArray
+                        ?.Select( a => ConvertValueToType( a, dataType ) )
+                        .ToList()
+                        ?? new List<object>();
+                }
+                catch
+                {
+                    // Ignore any errors. If it fails to deserialize, we'll
+                    // just treat it as a list of one value.
+                    return new List<object>
+                    {
+                        ConvertValueToType( stringValue, dataType )
+                    };
+                }
+            }
+            else
+            {
+                return new List<object>
+                {
+                    ConvertValueToType( value, dataType )
+                };
+            }
+        }
+
+        #endregion
     }
 }

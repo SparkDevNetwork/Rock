@@ -29,7 +29,7 @@ using Rock.ViewModels.Blocks.Core.AI.AISkillList;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
-namespace Rock.Blocks.Core
+namespace Rock.Blocks.Core.AI
 {
     /// <summary>
     /// Displays a list of ai skills.

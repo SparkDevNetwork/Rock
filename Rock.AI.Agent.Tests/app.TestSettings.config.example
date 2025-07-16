@@ -2,5 +2,6 @@
 <appSettings>
     <add key="AzureOpenAIApiKey" value="" />
     <add key="AzureOpenAIEndpoint" value="" />
+    <add key="SkipAzureOpenAI" value="False" />
 </appSettings>
 
