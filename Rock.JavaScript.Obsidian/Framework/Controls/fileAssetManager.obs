@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div id="pnlAssetManager" class="picker-wrapper align-items-stretch flex-nowrap styled-scroll" :style="wrapperStyles">
-        <div class="picker-folders d-flex flex-column bg-body p-3 mh-100 position-relative flex-shrink-0">
+        <div class="picker-folders d-flex flex-column p-3 mh-100 position-relative flex-shrink-0" style="background-color: var(--color-interface-softer)">
 
             <div class="mb-3 d-flex flex-shrink-0">
                 <RockButton type="button" btnSize="xs" class="mr-2" title="Create a new folder in the selected folder" @click="showAddFolderForm" :disabled="!isFolderSelected">
@@ -91,7 +91,7 @@
                                 </div>
                             </td>
                             <td class="grid-thumbnail">
-                                <img :src="file.iconPath" style="object-fit: cover; height: 58px; width: 44px;">
+                                <img :src="file.iconPath" style="object-fit: fill; height: 58px; width: 44px;">
                             </td>
                             <td class="grid-filename">
                                 <span v-show="shownFileRenameForm != file.key">{{ file.name }}</span>
