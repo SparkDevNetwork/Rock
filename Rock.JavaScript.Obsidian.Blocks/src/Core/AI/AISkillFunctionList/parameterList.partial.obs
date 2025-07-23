@@ -70,7 +70,6 @@
                     <div class="col-md-6">
                         <TextBox v-model="usageHint"
                                  label="Usage Hint"
-                                 rules="required"
                                  textMode="multiline"
                                  :rows="6" />
                     </div>
