@@ -21,6 +21,8 @@ using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
+using Rock.Lava;
+
 namespace Rock.AI.Agent
 {
     /// <summary>
@@ -28,6 +30,7 @@ namespace Rock.AI.Agent
     /// request. This includes system messages, user messages, assistant
     /// responses and any other details that should be sent to the LLM.
     /// </summary>
+    [LavaType]
     public class AgentRequestContext
     {
         #region Fields
