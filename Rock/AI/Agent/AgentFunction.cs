@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Text.RegularExpressions;
 
 using Rock.Enums.Core.AI.Agent;
 
@@ -24,6 +25,11 @@ namespace Rock.AI.Agent
 {
     internal class AgentFunction
     {
+        /// <summary>
+        /// AI function names only support alphanumeric characters and spaces.
+        /// </summary>
+        private static readonly Regex InvalidNameCharacters = new Regex( @"[^a-zA-Z0-9_]", RegexOptions.Compiled );
+
         /// <summary>
         /// The unique identifier of this function. If this is not filled in
         /// with a valid value then the function will be ignored.
@@ -41,7 +47,7 @@ namespace Rock.AI.Agent
         /// <summary>
         /// The key name derived from the name.
         /// </summary>
-        public string Key => Name.Replace( " ", "" );
+        public string Key => InvalidNameCharacters.Replace( Name, string.Empty );
 
         /// <summary>
         /// A short human-readable description of what the semantic function does.
