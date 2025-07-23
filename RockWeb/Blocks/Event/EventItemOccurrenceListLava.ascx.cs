@@ -52,6 +52,11 @@ namespace RockWeb.Blocks.Event
         CodeEditorTheme.Rock,
         defaultValue:"{% include '~~/Assets/Lava/EventItemOccurrenceList.lava' %}",
         order:6)]
+    [LavaCommandsField( "Enabled Lava Commands",
+        description: "The Lava commands that should be enabled for this Job.",
+        required: false,
+        order: 7,
+        key: "EnabledLavaCommands" )]
     [Rock.SystemGuid.BlockTypeGuid( "3ABC7007-CE3E-4092-900F-C907948CA8C2" )]
     public partial class EventItemOccurrenceListLava : Rock.Web.UI.RockBlock
     {
@@ -197,7 +202,7 @@ namespace RockWeb.Blocks.Event
 
                 mergeFields.Add("Context", contextObjects);
 
-                lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+                lContent.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
 
             }
             else

@@ -40,6 +40,11 @@ namespace RockWeb.Blocks.Event
     [CodeEditorField( "Lava Template", "Lava template to use to display the list of events.", CodeEditorMode.Lava, CodeEditorTheme.Rock, 400, true, @"{% include '~~/Assets/Lava/CalendarItem.lava' %}", "", 2 )]
     [BooleanField( "Set Page Title", "Determines if the block should set the page title with the calendar item name.", false )]
     [LinkedPage( "Registration Page", "Registration page for events" )]
+     [LavaCommandsField( "Enabled Lava Commands",
+        description: "The Lava commands that should be enabled for this block.",
+        required: false,
+        key: "EnabledLavaCommands" )]
+    
     [Rock.SystemGuid.BlockTypeGuid( "18EFAE90-3AB1-40FE-9EC6-A5CF42F2A7D9" )]
     public partial class EventItemOccurrenceLava : Rock.Web.UI.RockBlock
     {
@@ -233,7 +238,7 @@ namespace RockWeb.Blocks.Event
                 mergeFields.Add( "Event", eventItemOccurrence != null ? eventItemOccurrence.EventItem : null );
                 mergeFields.Add( "CurrentPerson", CurrentPerson );
 
-                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields );
+                lOutput.Text = GetAttributeValue( "LavaTemplate" ).ResolveMergeFields( mergeFields, GetAttributeValue( "EnabledLavaCommands" ) );
 
                 if ( GetAttributeValue( "SetPageTitle" ).AsBoolean() )
                 {

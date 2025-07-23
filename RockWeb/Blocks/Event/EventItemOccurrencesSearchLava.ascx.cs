@@ -131,6 +131,13 @@ namespace RockWeb.Blocks.Event
         DefaultBooleanValue = true,
         Order = 10,
         Key = AttributeKey.ShowDateRangeFilter )]
+    [LavaCommandsField(
+        "Enabled Lava Commands",
+        Description =  "The Lava commands that should be enabled for this block.",
+        IsRequired = false,
+        Order = 11,
+        Key = AttributeKey.EnabledLavaCommands )]
+
     [Rock.SystemGuid.BlockTypeGuid( "01CA4723-8290-41C6-A2D2-88469FAA48E9" )]
     public partial class EventItemOccurrencesSearchLava : RockBlock
     {
@@ -149,6 +156,7 @@ namespace RockWeb.Blocks.Event
             public const string ShowAudienceFilter = "ShowAudienceFilter";
             public const string FilterAudiences = "FilterAudiences";
             public const string ShowDateRangeFilter = "ShowDateRangeFilter";
+            public const string EnabledLavaCommands = "EnabledLavaCommands";
         }
 
         #endregion Attribute Keys
@@ -441,7 +449,7 @@ namespace RockWeb.Blocks.Event
                 mergeFields.Add( "EventCalendar", new EventCalendarService( rockContext ).Get( EventCalendarId.Value ) );
             }
 
-            lResults.Text = GetAttributeValue( AttributeKey.ResultsLavaTemplate ).ResolveMergeFields( mergeFields );
+            lResults.Text = GetAttributeValue( AttributeKey.ResultsLavaTemplate ).ResolveMergeFields( mergeFields, GetAttributeValue( AttributeKey.EnabledLavaCommands ) );
         }
 
         /// <summary>
