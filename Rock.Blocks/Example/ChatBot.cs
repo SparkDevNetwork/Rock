@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 using Rock.AI.Agent;
 using Rock.Attribute;
+using Rock.Enums.Cms;
 using Rock.Enums.Core.AI.Agent;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -22,6 +23,7 @@ namespace Rock.Blocks.Example
     [Description( "Allows the user to try out the chat agent." )]
     [IconCssClass( "ti ti-robot" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
+    [ConfigurationChangedReload( BlockReloadMode.Block )]
 
     [CustomDropdownListField( "Agent",
         Description = "The AI agent to use for this chat bot.",
@@ -60,7 +62,7 @@ namespace Rock.Blocks.Example
             }
 
             // Find the recent sessions.
-            var sessions = GetRecentSessions();
+            var sessions = GetRecentSessions( agentCache.Id );
 
             var sessionId = sessions.LastOrDefault()?.Id;
 
@@ -71,7 +73,7 @@ namespace Rock.Blocks.Example
 
                 await agent.StartNewSessionAsync( null, null );
 
-                sessions = GetRecentSessions();
+                sessions = GetRecentSessions( agentCache.Id );
                 sessionId = sessions.Last().Id;
             }
 
@@ -87,11 +89,12 @@ namespace Rock.Blocks.Example
             };
         }
 
-        private List<ChatSessionBag> GetRecentSessions()
+        private List<ChatSessionBag> GetRecentSessions( int agentId )
         {
             return new AIAgentSessionService( RockContext )
                 .Queryable()
                 .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                    && s.AIAgentId == agentId
                     && !s.RelatedEntityTypeId.HasValue
                     && !s.RelatedEntityId.HasValue )
                 .OrderBy( s => s.LastMessageDateTime )
