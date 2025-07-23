@@ -102,7 +102,6 @@
 <style scoped>
 .actions {
     display: flex;
-    justify-content: flex-end;
     gap: var(--spacing-xsmall);
 }
 </style>
