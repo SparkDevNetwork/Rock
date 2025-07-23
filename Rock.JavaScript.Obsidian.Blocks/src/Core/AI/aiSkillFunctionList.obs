@@ -102,6 +102,7 @@
                     label="Prompt"
                     editor="monaco"
                     :mode="editFunctionPromptMode"
+                    :maxEditorHeight="400"
                     rules="required" />
 
         <div class="form-group">
