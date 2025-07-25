@@ -308,7 +308,7 @@
                             <Rock:ModalAlert ID="mdDeleteWarning" runat="server" />
                             <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link" OnClick="btnDelete_Click" CausesValidation="false" />
                             <div class="pull-right">
-                                <asp:LinkButton ID="btnSchedules" runat="server" CssClass="btn btn-default" OnClick="btnSchedules_Click"><i class="fa fa-calendar"></i> Schedule</asp:LinkButton>
+                                <asp:LinkButton ID="btnSchedules" runat="server" CssClass="btn btn-default" OnClick="btnSchedules_Click"><i class="ti ti-calendar"></i> Schedule</asp:LinkButton>
                             </div>
                         </div>
 

@@ -830,7 +830,7 @@ namespace Rock.Jobs
                 var syncCommand = new SyncChatChannelToRockCommand( ChatSyncType.Create )
                 {
                     AttemptLimit = 1,
-                    GroupTypeId = groupTypeId,
+                    GroupTypeId = groupTypeId.Value,
                     ChatChannelKey = chatChannel.Key,
                     GroupName = chatChannel.Name,
                     IsActive = chatChannel.IsActive
@@ -1393,12 +1393,12 @@ namespace Rock.Jobs
             if ( exceptions.Any() )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. {enableErrorLogsMessage}" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. {enableErrorLogsMessage}" );
             }
             else if ( anyWarnings )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. {enableWarningLogsMessage}" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-warning'></i> Some tasks completed with warnings. {enableWarningLogsMessage}" );
             }
 
             this.Result = jobSummaryBuilder.ToString();
@@ -1438,18 +1438,18 @@ namespace Rock.Jobs
 
             if ( result.HasException )
             {
-                formattedResultSb.Append( $"<i class='fa fa-circle text-danger'></i> {title}" );
+                formattedResultSb.Append( $"<i class='ti ti-circle text-danger'></i> {title}" );
             }
             else if ( result.IsWarning )
             {
-                formattedResultSb.Append( $"<i class='fa fa-circle text-warning'></i> {title}" );
+                formattedResultSb.Append( $"<i class='ti ti-circle text-warning'></i> {title}" );
             }
             else
             {
-                formattedResultSb.Append( $"<i class='fa fa-circle text-success'></i> {title}" );
+                formattedResultSb.Append( $"<i class='ti ti-circle text-success'></i> {title}" );
             }
 
-            var iconSpacer = "<span style='visibility:hidden'><i class='fa fa-circle'></i></span>";
+            var iconSpacer = "<span style='visibility:hidden'><i class='ti ti-circle'></i></span>";
             foreach ( var detail in result.Details?.Where( d => d.IsNotNullOrWhiteSpace() ) )
             {
                 formattedResultSb.AppendLine( string.Empty );

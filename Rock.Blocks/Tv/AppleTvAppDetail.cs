@@ -41,7 +41,7 @@ namespace Rock.Blocks.Tv
     [DisplayName( "Apple TV Application Detail" )]
     [Category( "TV > TV Apps" )]
     [Description( "Allows a person to edit an Apple TV application.." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

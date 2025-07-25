@@ -110,7 +110,7 @@ namespace Rock.UniversalSearch.IndexModels
         {
             get
             {
-                return "fa fa-desktop";
+                return "ti ti-device-desktop";
             }
         }
 

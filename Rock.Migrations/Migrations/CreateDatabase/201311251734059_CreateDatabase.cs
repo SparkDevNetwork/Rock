@@ -18,7 +18,7 @@ namespace Rock.Migrations
 {
     using System;
     using System.Data.Entity.Migrations;
-    
+
     /// <summary>
     ///
     /// </summary>
@@ -31,6 +31,19 @@ namespace Rock.Migrations
         {
             /* Create Database */
             Sql( RockMigration.MigrationSQL._201311251734059_CreateDatabase );
+
+            /*
+                07/17/2025 - SMC
+                This migration was updated to replace the TransactionEntry block with the newer TransactionEntryV2 block in new
+                Rock installations, intentionally leaving the block alone for existing instances.
+
+                The next time the database is "squished" into the CreateDatabase script, this extra migration should be removed,
+                as it will already be included.
+
+                Reason: Use new TransactionEntryV2 block for new Rock installations.
+             */
+
+            Sql( NewInstallationGivingBlockReplacementAsOf17_3.MigrationSql );
         }
         
         /// <summary>

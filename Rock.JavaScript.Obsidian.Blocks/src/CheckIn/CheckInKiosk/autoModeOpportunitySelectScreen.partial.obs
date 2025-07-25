@@ -12,8 +12,8 @@
                             :disabled="isConflictingOpportunitySelected(opportunity) || isProcessing"
                             @click="onOpportunityClick(opportunity)">
                     <span class="selection">
-                        <i v-if="isOpportunitySelected(opportunity)" class="fa fa-check-square"></i>
-                        <i v-else class="fa fa-square-o"></i>
+                        <i v-if="isOpportunitySelected(opportunity)" class="ti ti-checkbox"></i>
+                        <i v-else class="ti ti-square"></i>
                     </span>
 
                     <span class="title">

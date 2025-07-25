@@ -34,7 +34,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [DisplayName( "Live Experience Occurrences" )]
     [Category( "Mobile > Events" )]
     [Description( "Displays a lava formatted list of experience occurrences that are currently happening." )]
-    [IconCssClass( "fa fa-tv" )]
+    [IconCssClass( "ti ti-device-tv" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

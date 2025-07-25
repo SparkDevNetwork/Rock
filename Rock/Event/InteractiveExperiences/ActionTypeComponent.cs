@@ -91,7 +91,7 @@ namespace Rock.Event.InteractiveExperiences
         /// this action type.
         /// </summary>
         /// <value>The icon CSS class that will be used to visually represent this action type.</value>
-        public virtual string IconCssClass => "fa fa-play";
+        public virtual string IconCssClass => "ti ti-player-play";
 
         #endregion
 

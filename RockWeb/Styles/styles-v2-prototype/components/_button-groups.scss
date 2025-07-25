@@ -140,10 +140,10 @@
 
 // ========================== BUTTON GROUP SIZING ==========================
 .btn-group-xs > .btn { 
-  padding:        var(--spacing-xsmall) var(--spacing-medium);
-  font-size:      var(--font-size-h5);
+  padding:        1px var(--spacing-tiny);
+  font-size:      var(--font-size-xsmall);
   line-height:    var(--line-height-tight);
-  border-radius:  var(--rounded-small);
+  border-radius:  var(--rounded-tiny);
 }
 .btn-group-sm > .btn { 
   padding:        var(--spacing-tiny) var(--spacing-xsmall);
@@ -152,10 +152,10 @@
   border-radius:  var(--rounded-small);
 }
 .btn-group-lg > .btn { 
-  padding:        1px var(--spacing-tiny);
-  font-size:      var(--font-size-xsmall);
+  padding:        var(--spacing-xsmall) var(--spacing-medium);
+  font-size:      var(--font-size-h5);
   line-height:    var(--line-height-normal);
-  border-radius:  var(--rounded-tiny);
+  border-radius:  var(--rounded-small);
 }
 // ======================== END BUTTON GROUP SIZING ========================
 

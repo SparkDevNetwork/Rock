@@ -44,13 +44,13 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-plug"></i>
+                    <i class="ti ti-plug"></i>
                     Connections
                 </h1>
                 <div class="panel-labels d-flex align-items-center">
                     <asp:Literal ID="lStatusBarContent" runat="server" />
 
-                    <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"> <i title="Options" class="fa fa-gear"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"> <i title="Options" class="ti ti-settings"></i></asp:LinkButton>
                 </div>
             </div>
 

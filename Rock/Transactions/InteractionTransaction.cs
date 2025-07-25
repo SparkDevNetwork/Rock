@@ -88,16 +88,8 @@ namespace Rock.Transactions
                 return;
             }
 
-            /*
-                7/10/2025 - MSE
-
-                The `ComponentEntityTypeId` on `InteractionChannel` should represent the type of the component being interacted with (ContentChannelItem),
-                not the parent channel (ContentChannel).
-
-                Previously, we used `channelEntity?.TypeId`, which gave the wrong value — using 209 (ContentChannel) instead of 208 (ContentChannelItem).
-             */
-
-            var componentEntityTypeId = componentEntity?.TypeId;
+            // NOTE: Just in case this seem confusing, the EntityType of ChannelEntity tells us what the *component* entity type id is!
+            var componentEntityTypeId = channelEntity?.TypeId;
 
             Initialize( channelTypeMediumValue.Id, channelEntity?.Id, channelEntity?.ToString(), componentEntityTypeId, componentEntity.Id, componentEntity.ToString(), info );
         }
@@ -123,7 +115,9 @@ namespace Rock.Transactions
                 return;
             }
 
-            var componentEntityTypeId = componentEntityCache?.CachedEntityTypeId;
+            // NOTE: Just in case this seem confusing, the EntityType of ChannelEntity tells us what the *component* entity type id is!
+            var componentEntityTypeId = channelEntity?.CachedEntityTypeId;
+
             Initialize( channelTypeMediumValue.Id, channelEntity?.Id, channelEntity?.ToString(), componentEntityTypeId, componentEntityCache.Id, componentEntityCache.ToString(), info );
         }
 
@@ -147,7 +141,8 @@ namespace Rock.Transactions
                 return;
             }
 
-            var componentEntityTypeId = componentEntityCache?.CachedEntityTypeId;
+            // NOTE: Just in case this seem confusing, the EntityType of ChannelEntity tells us what the *component* entity type id is!
+            var componentEntityTypeId = channelEntity?.TypeId;
 
             Initialize( channelTypeMediumValue.Id, channelEntity?.Id, channelEntity?.ToString(), componentEntityTypeId, componentEntityCache.Id, componentEntityCache.ToString(), info );
         }

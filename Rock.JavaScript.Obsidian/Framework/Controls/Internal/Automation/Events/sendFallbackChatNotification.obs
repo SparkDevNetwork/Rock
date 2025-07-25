@@ -1,0 +1,106 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <AutomationEventHeader title="Send Fallback Chat Notification"
+                           description="Choose the system communication that will be sent as a fallback to Chat members who don't receive device notifications whenever the event executes."
+                           :mergeFields="mergeFields" />
+
+    <NotificationBox :alertType="AlertType.Info">
+        To maintain performance and avoid placing unnecessary load on the Rock server, fallback notifications will be sent to a maximum of 50 members. However, the recommended use case is much smaller: ideally 3 to 5 members per channel for optimal effectiveness and responsiveness.
+    </NotificationBox>
+
+    <div class="row">
+        <div class="col-md-4">
+            <DropDownList v-model="systemCommunication"
+                          label="System Communication"
+                          help="The sytem communication to be sent as a fallback notification. Email and SMS are supported."
+                          :items="systemCommunicationItems"
+                          enhanceForLongLists
+                          rules="required" />
+        </div>
+
+        <div class="col-md-4">
+            <NumberBox v-model="notificationSuppressionMinutes"
+                       label="Notification Suppression Minutes"
+                       help="The number of minutes the system will suppress notifications if the recipient has already received a recent notification."
+                       :minimumValue="0" />
+        </div>
+
+        <div class="col-md-4">
+            <NumberBox v-model="deviceSeenWithinDays"
+                       label="Device Seen Within Days"
+                       help="A Chat member will be excluded from fallback notifications if they have accessed Rock using a personal device within this number of days. Note that the same device must also currently have Rock notifications enabled."
+                       :minimumValue="0" />
+        </div>
+    </div>
+</template>
+
+<script setup lang="ts">
+    import { ref, watch } from "vue";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import AutomationEventHeader from "@Obsidian/Controls/Internal/Automation/automationEventHeader.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import { automationEventComponentProps } from "@Obsidian/Core/Core/Automation/component";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
+    import { updateRefValue } from "@Obsidian/Utility/component";
+    import { toNumberOrNull } from "@Obsidian/Utility/numberUtils";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { AutomationValueDefinitionBag } from "@Obsidian/ViewModels/Core/Automation/automationValueDefinitionBag";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const enum ConfigurationKey {
+        SystemCommunication = "systemCommunication",
+        NotificationSuppressionMinutes = "notificationSuppressionMinutes",
+        DeviceSeenWithinDays = "deviceSeenWithinDays"
+    }
+
+    const enum OptionKey {
+        SystemCommunicationItems = "systemCommunicationItems",
+    }
+
+    const props = defineProps(automationEventComponentProps);
+
+    const mergeFields = ref<AutomationValueDefinitionBag[]>([
+        ...props.mergeFields,
+        {
+            key: "Person",
+            description: "The person who will receive the fallback notification.",
+            typeName: "Rock.Model.Person"
+        }
+    ]);
+
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    // #region Values
+
+    const systemCommunication = ref(props.modelValue[ConfigurationKey.SystemCommunication] ?? "");
+    const notificationSuppressionMinutes = ref(toNumberOrNull(props.modelValue[ConfigurationKey.NotificationSuppressionMinutes]) ?? 60);
+    const deviceSeenWithinDays = ref(toNumberOrNull(props.modelValue[ConfigurationKey.DeviceSeenWithinDays]) ?? 45);
+
+    const systemCommunicationItems = ref(safeParseJson<ListItemBag[]>(props.options[OptionKey.SystemCommunicationItems]) ?? []);
+
+    // #endregion Values
+
+    watch([systemCommunication, notificationSuppressionMinutes, deviceSeenWithinDays], () => {
+        const newValues = { ...props.modelValue };
+
+        newValues[ConfigurationKey.SystemCommunication] = systemCommunication.value;
+        newValues[ConfigurationKey.NotificationSuppressionMinutes] = notificationSuppressionMinutes.value?.toString();
+        newValues[ConfigurationKey.DeviceSeenWithinDays] = deviceSeenWithinDays.value?.toString();
+
+        emit("update:modelValue", newValues);
+    });
+
+    watch(() => props.modelValue, () => {
+        updateRefValue(systemCommunication, props.modelValue[ConfigurationKey.SystemCommunication] ?? "");
+        updateRefValue(notificationSuppressionMinutes, toNumberOrNull(props.modelValue[ConfigurationKey.NotificationSuppressionMinutes]) ?? 60);
+        updateRefValue(deviceSeenWithinDays, toNumberOrNull(props.modelValue[ConfigurationKey.DeviceSeenWithinDays]) ?? 45);
+    });
+
+    watch(() => props.options[OptionKey.SystemCommunicationItems], () => {
+        systemCommunicationItems.value = safeParseJson<ListItemBag[]>(props.options[OptionKey.SystemCommunicationItems]) ?? [];
+    });
+</script>

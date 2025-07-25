@@ -13,7 +13,7 @@
                             :btnSize="BtnSize.ExtraSmall"
                             :disabled="disabled || isLoadingCurrentSchedule || !personGroupScheduleFeedUrl"
                             @click="onAddToCalendarClick">
-                    <i class="fa fa-calendar-plus-o"></i>
+                    <i class="ti ti-calendar-plus"></i>
                     Add to Calendar
                 </RockButton>
             </span>
@@ -25,7 +25,7 @@
                             :btnSize="BtnSize.ExtraSmall"
                             :disabled="disabled || isLoadingCurrentSchedule || !personGroupScheduleFeedUrl"
                             @click="onCopyCalendarLinkClick">
-                    <i class="fa fa-calendar-alt"></i>
+                    <i class="ti ti-calendar-month"></i>
                     Copy Calendar Link
                 </RockButton>
             </span>
@@ -38,7 +38,7 @@
                     :btnSize="BtnSize.ExtraSmall"
                     :disabled="disabled || isLoadingCurrentSchedule"
                     @click="onScheduleUnavailabilityClick">
-            <i class="fa fa-calendar-times-o"></i>
+            <i class="ti ti-calendar-x"></i>
             {{ scheduleUnavailabilitybuttonText }}
         </RockButton>
     </div>

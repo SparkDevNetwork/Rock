@@ -58,7 +58,7 @@
                 <div v-if="requirementCheckType === 'Sql'">
                     <div class="col-md-12">
                         <RockLabel>SQL Syntax</RockLabel>
-                        <a class="help" href="javascriot:void(0);"><i class="fa fa-question-circle" :onClick="onSqlInfoClick"></i></a>
+                        <a class="help" href="javascriot:void(0);"><i class="ti ti-zoom-question" :onClick="onSqlInfoClick"></i></a>
                         <TransitionVerticalCollapse>
                             <div v-if="showSqlHelpHTML" class="alert alert-info js-sourcesql-help" v-html="sqlHelpHTML"></div>
                         </TransitionVerticalCollapse>

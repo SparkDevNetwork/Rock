@@ -167,7 +167,7 @@ namespace RockWeb.Blocks.Prayer
 
                 <div class=""card-footer bg-white border-0"">
                     {% if EnablePrayerTeamFlagging %}
-                    <a href = ""#"" class=""btn btn-link btn-sm pl-0 text-muted"" onclick=""ReviewFlag(this);{{ item.Id | Postback:'Flag' }}""><i class=""fa fa-flag""></i> <span>Flag</span></a>
+                    <a href = ""#"" class=""btn btn-link btn-sm pl-0 text-muted"" onclick=""ReviewFlag(this);{{ item.Id | Postback:'Flag' }}""><i class=""ti ti-flag""></i> <span>Flag</span></a>
                     {% endif %}
                     <a class=""btn btn-primary btn-sm pull-right"" href=""#"" onclick=""Prayed(this);{{ item.Id | Postback:'Pray' }}"">Pray</a>
                 </div>

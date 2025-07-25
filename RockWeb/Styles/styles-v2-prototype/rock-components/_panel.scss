@@ -92,6 +92,17 @@
   }
 }
 
+  // Removes the padding from a panel's body
+.panel.panel-body-flush {
+  & > .panel-body {
+    padding: 0;
+
+    .actions:last-of-type {
+        margin: inherit;
+    }
+  }
+}
+
 // Moved from theme.less
 .panel-block {
   position:           relative;

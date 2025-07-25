@@ -48,7 +48,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication List" )]
     [Category( "Communication" )]
     [Description( "Lists the status of all previously created communications." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

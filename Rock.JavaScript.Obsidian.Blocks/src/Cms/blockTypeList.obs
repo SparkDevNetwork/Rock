@@ -149,7 +149,7 @@
         return [
             {
                 title: "Reload All Block Type Attributes",
-                iconCssClass: "fa fa-refresh",
+                iconCssClass: "ti ti-refresh",
                 handler: onReloadAttributesClick
             },
         ];

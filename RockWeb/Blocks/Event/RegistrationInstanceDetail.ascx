@@ -20,7 +20,7 @@
 	                    <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
 	                    <asp:PlaceHolder runat="server">
 	                        <div class="wizard-item-icon">
-	                            <i class="fa fa-fw fa-clipboard"></i>
+	                            <i class="ti ti-fw ti-clipboard"></i>
 	                        </div>
 	                        <div class="wizard-item-label">
 	                            <asp:Literal ID="lWizardTemplateName" runat="server" />
@@ -31,7 +31,7 @@
 
 	            <div class="wizard-item active">
 	                <div class="wizard-item-icon">
-	                    <i class="fa fa-fw fa-file-o"></i>
+	                    <i class="ti ti-fw ti-file"></i>
 	                </div>
 	                <div class="wizard-item-label">
 	                    <asp:Literal ID="lWizardInstanceName" runat="server" />
@@ -40,7 +40,7 @@
 
 	            <div class="wizard-item">
 	                <div class="wizard-item-icon">
-	                    <i class="fa fa-fw fa-group"></i>
+	                    <i class="ti ti-fw ti-users"></i>
 	                </div>
 	                <div class="wizard-item-label">
 	                    Registration
@@ -49,7 +49,7 @@
 
 	            <div class="wizard-item">
 	                <div class="wizard-item-icon">
-	                    <i class="fa fa-fw fa-user"></i>
+	                    <i class="ti ti-fw ti-user"></i>
 	                </div>
 	                <div class="wizard-item-label">
 	                    Registrant
@@ -66,7 +66,7 @@
 
 	                <div class="panel-heading panel-follow">
 	                    <h1 class="panel-title">
-	                        <i class="fa fa-file-o"></i>
+	                        <i class="ti ti-file"></i>
 	                        <asp:Literal ID="lReadOnlyTitle" runat="server" />
 	                    </h1>
 	                    <div class="panel-labels">
@@ -131,7 +131,7 @@
 	                            <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-instance" OnClick="btnDelete_Click" CausesValidation="false" />
 	                            <span class="pull-right">
 	                                <asp:LinkButton ID="btnSendPaymentReminder" runat="server" Text="Send Payment Reminders" CssClass="btn btn-default" OnClick="btnSendPaymentReminder_Click" Visible="false" />
-	                                <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
+	                                <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='ti ti-copy'></i>" OnClick="btnCopy_Click" />
 	                            </span>
 	                        </div>
 	                    </fieldset>

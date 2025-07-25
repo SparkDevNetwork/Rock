@@ -6,7 +6,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-file-text-o"></i>
+                    <i class="ti ti-file-type-txt"></i>
                     <asp:Literal ID="lHeading" runat="server" />
                 </h1>
                 <div class="panel-labels">

@@ -44,7 +44,7 @@ namespace Rock.Blocks.Administration
     [DisplayName( "Page Properties" )]
     [Category( "Administration" )]
     [Description( "Displays the page properties." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

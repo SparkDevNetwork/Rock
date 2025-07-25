@@ -38,7 +38,7 @@ namespace Rock.Blocks.Cms
 
     [DisplayName( "Lava Application Detail" )]
     [Description( "Displays the details of a particular lava application." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [Category( "CMS" )]
     [SupportedSiteTypes( SiteType.Web )]
 

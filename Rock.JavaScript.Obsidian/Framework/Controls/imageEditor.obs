@@ -8,7 +8,7 @@
         <template #default="{ uniqueId, field }">
             <div class="control-wrapper">
                 <NotificationBox v-if="errorMessage" alertType="warning">
-                    <strong><i class="fa fa-exclamation-triangle"></i> Warning </strong>
+                    <strong><i class="ti ti-alert-triangle"></i> Warning </strong>
                     <span>{{ errorMessage }}</span>
                 </NotificationBox>
 
@@ -26,14 +26,14 @@
                     <div class="image-editor-photo">
                         <div v-if="isUploading" class="text-bold text-center p-3" style="position:absolute; top:0; right: 0; bottom:0; left:0; background: rgba(255, 255, 255, .75)">
                             <div class="js-upload-progress">
-                                <i class="fa fa-refresh fa-3x fa-spin"></i>
+                                <i class="ti ti-refresh ti-3x ti-spin"></i>
                             </div>
                             <span style="opacity: 0.75">Uploading...</span>
                         </div>
                         <div class="image-container" :style="thumbnailStyle"></div>
                         <div :class="{ 'options': !buttonCssClass }">
                             <a aria-label="Select an Image File" title="Select an Image File" :class="buttonCssClass"><i :class="buttonIconCssClass" aria-hidden></i> {{ buttonText }}</a>
-                            <a @click.prevent.stop="onRemoveFileClick" v-if="isDeleteVisible" aria-label="Clear Image" title="Clear Image"><i class="fa fa-times" aria-hidden></i></a>
+                            <a @click.prevent.stop="onRemoveFileClick" v-if="isDeleteVisible" aria-label="Clear Image" title="Clear Image"><i class="ti ti-x" aria-hidden></i></a>
                         </div>
                         <div class="image-editor-fileinput">
                             <input ref="fileInputElement" type="file" style="display: none;" @change="onFileChange" @remove="onFileRemove" @click.stop />
@@ -121,7 +121,7 @@
 
         buttonIconCssClass: {
             type: String,
-            default: "fa fa-pencil"
+            default: "ti ti-pencil"
         },
 
         buttonCssClass: {

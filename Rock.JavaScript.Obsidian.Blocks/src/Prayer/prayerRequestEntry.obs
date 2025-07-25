@@ -1,6 +1,6 @@
 <template>
     <div class="upAdd">
-        <Panel title="Add Prayer Request" titleIconCssClass="fa fa-praying-hands" type="block">
+        <Panel title="Add Prayer Request" titleIconCssClass="ti ti-pray" type="block">
             <template #default>
                 <RockForm v-if="!isEntryHidden" @submit="onSubmitted">
                     <NotificationBox v-if="errors.length" id="nbWarningMessage" alertType="warning" label="Warning">

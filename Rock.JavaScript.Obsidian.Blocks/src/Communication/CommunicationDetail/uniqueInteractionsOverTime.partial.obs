@@ -1,43 +1,143 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Chart v-if="chartData"
-           type="line"
-           :data="chartData"
-           :options="chartOptions" />
+    <div v-if="chartData" class="communication-detail-unique-interactions-over-time">
+        <div class="communication-detail-unique-interactions-over-time-actions">
+            <RadioButtonList v-if="showPerformanceChartTimeframeFilter"
+                             v-model="performanceChartTimeframe"
+                             :items="performanceChartTimeframeItems"
+                             :horizontal="true"
+                             :disableLabel="true" />
+        </div>
+        <div class="communication-detail-unique-interactions-over-time-chart">
+            <Chart type="line"
+                   :data="chartData"
+                   :options="chartOptions" />
+        </div>
+    </div>
 </template>
 
+<style scoped>
+.communication-detail-unique-interactions-over-time {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.communication-detail-unique-interactions-over-time-actions {
+    flex: 0 0 auto;
+}
+
+.communication-detail-unique-interactions-over-time-chart {
+    flex: 1 0 auto;
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, PropType } from "vue";
-    import { getCssVar, useChartStyles } from "./utils.partial";
+    import { computed, PropType, ref } from "vue";
+    import { useChartStyles, useCommunicationDetail } from "./utils.partial";
     import Chart from "@Obsidian/Controls/chart.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
 
+    const communicationDetail = useCommunicationDetail();
+    const chartStyles = useChartStyles();
+
+    const enum PerformanceChartTimeframe {
+        First45Days = "First 45 Days",
+        AllTime = "All Time"
+    }
+
+    const performanceChartTimeframeItems = [
+        {
+            text: PerformanceChartTimeframe.First45Days,
+            value: PerformanceChartTimeframe.First45Days
+        },
+        {
+            text: PerformanceChartTimeframe.AllTime,
+            value: PerformanceChartTimeframe.AllTime
+        }
+    ];
+
     const props = defineProps({
         chartDataPoints: {
-            type: Array as PropType<ChartNumericDataPointBag[]>,
+            type: Array as PropType<ChartNumericDataPointBag[] | null | undefined>,
             required: true
         }
     });
 
-    const chartStyles = useChartStyles();
+    type InteractionDataPoint = ChartNumericDataPointBag & { date: RockDateTime };
+
+    // #region Values
+
+    const performanceChartTimeframe = ref(PerformanceChartTimeframe.First45Days);
+
+    // #endregion Values
 
     // #region Computed Values
 
-    const dataPoints = computed((): ChartNumericDataPointBag[] => {
+    const communicationSendDate = computed((): RockDateTime | undefined => {
+        return communicationDetail.value?.sendDateTime
+            ? RockDateTime.parseISO(communicationDetail.value.sendDateTime)?.date
+            : undefined;
+    });
+
+    const fortyFifthDayDate = computed((): RockDateTime | undefined => {
+        return communicationSendDate.value?.addDays(44);
+    });
+
+    const dataPoints = computed((): InteractionDataPoint[] => {
+        if (!props.chartDataPoints || !communicationSendDate.value) {
+            return [];
+        }
+
+        // Enrich each data point with the parsed RockDateTime.
         return props.chartDataPoints
-            ?.filter(dp =>
+            .filter(dp =>
                 dp?.seriesName
                 && dp.label
                 && !isNullish(dp.value)
                 && dp.color
             )
-            ?? [];
+            .map(dp => {
+                const date = RockDateTime.parseISO(dp.label!);
+                if (!date) {
+                    return null;
+                }
+                return { ...dp, date };
+            })
+            .filter((dp): dp is InteractionDataPoint => !!dp);
+    });
+
+    const showPerformanceChartTimeframeFilter = computed((): boolean => {
+        return !!(
+            fortyFifthDayDate.value
+            && dataPoints.value
+                .some(dp => dp.date > fortyFifthDayDate.value!)
+        );
+    });
+
+    const visibleDataPoints = computed((): ChartNumericDataPointBag[] => {
+        return dataPoints.value
+            .filter(dp => {
+                if (performanceChartTimeframe.value === PerformanceChartTimeframe.AllTime) {
+                    return true;
+                }
+
+                // Only show data points for the first 45 days.
+                return dp.date <= fortyFifthDayDate.value!;
+            })
+            .map(dp => ({
+                ...dp,
+                label: dp.date.toASPString("d")
+            }));
     });
 
     const chartData = computed((): ChartData | null => {
-        if (!dataPoints.value.length) {
+        if (!visibleDataPoints.value.length) {
             return null;
         }
 
@@ -50,11 +150,11 @@
             borderWidth: number
         }>();
 
-        dataPoints.value.forEach(dp => {
+        visibleDataPoints.value.forEach(dp => {
             const seriesName = dp.seriesName!;
             let seriesDataSet = seriesDataSets.get(seriesName);
 
-            const color = getCssVar(dp.color!, chartStyles.value.fallbackColor);
+            const color = getCssVariableValue(dp.color!, chartStyles.value.fallbackColor);
 
             if (!seriesDataSet) {
                 seriesDataSet = {
@@ -79,12 +179,12 @@
     });
 
     const maxPercentage = computed((): number => {
-        if (!dataPoints.value.length) {
+        if (!visibleDataPoints.value.length) {
             return 0;
         }
 
         return Math.max(
-            ...dataPoints.value
+            ...visibleDataPoints.value
                 .map((dp => dp.value!))
         );
     });
@@ -118,6 +218,7 @@
                 },
                 legend: {
                     position: "bottom",
+                    align: "start",
                     labels: {
                         boxWidth: chartStyles.value.legendBoxSize,
                         boxHeight: chartStyles.value.legendBoxSize,

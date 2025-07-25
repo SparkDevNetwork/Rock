@@ -46,7 +46,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Public Learning Class Workspace" )]
     [Category( "LMS" )]
     [Description( "The main block for interacting with enrolled classes." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

@@ -3,11 +3,11 @@
 
         <Loading :isLoading="props.isLoading">
 
-            <div v-if="props.data && props.data.length > 0" class="text-right text-muted">
-                <small>{{ didNotReceiveAny }} ({{ percentDidNotReceiveAny }}%) Active Adults Did Not Receive Any Messages</small>
+            <div v-if="hasData" class="text-right text-muted">
+                <small>{{ asFormattedString(didNotReceiveAny) }} ({{ percentDidNotReceiveAny }}%) Active Adults Did Not Receive Any Messages</small>
             </div>
 
-            <Chart v-if="props.data && props.data.length > 0" type="bar" :data="data" :options="options" />
+            <Chart v-if="hasData" type="bar" :data="data" :options="options" />
 
             <div v-else>
                 <NothingToShow />
@@ -25,6 +25,7 @@
     import { computed, PropType, ref } from "vue";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
     import { CommunicationSaturationReportChartDataBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationSaturationReport/communicationSaturationReportChartDataBag";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
 
     const props = defineProps({
         data: {
@@ -57,6 +58,15 @@
     const percentDidNotReceiveAny = computed<number>(() => {
         const percent = Math.round(didNotReceiveAny.value / (didNotReceiveAny.value + totalDidReceive.value) * 100);
         return Number.isNaN(percent) ? 0 : percent;
+    });
+
+    const hasData = computed(() => {
+        if (!props.data || props.data.length === 0) {
+            return false;
+        }
+
+        const totalRecipients = props.data.reduce((sum, item) => sum + (!item.bucket || item.bucket === "0" ? 0 : item.numberOfRecipients), 0);
+        return totalRecipients > 0;
     });
 
     const data = computed<ChartData>(() => ({

@@ -32,7 +32,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Public Learning Program List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of public learning programs." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [TextField( "Page Title",

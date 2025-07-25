@@ -26,7 +26,7 @@
             <asp:HiddenField ID="hfRegistrationTemplateId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-clipboard"></i>
+                <h1 class="panel-title"><i class="ti ti-clipboard"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" /></h1>
 
                 <div class="panel-labels">
@@ -205,7 +205,7 @@
                             <asp:PlaceHolder ID="phForms" runat="server" />
                         </div>
                         <div class="pull-right">
-                            <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="fa fa-plus"></i> Add Form</asp:LinkButton>
+                            <asp:LinkButton ID="lbAddForm" runat="server" CssClass="btn btn-action btn-xs" OnClick="lbAddForm_Click" CausesValidation="false"><i class="ti ti-plus"></i> Add Form</asp:LinkButton>
                         </div>
                     </Rock:PanelWidget>
 
@@ -461,7 +461,7 @@
                         <Rock:HiddenFieldWithClass ID="hfHasRegistrations" runat="server" CssClass="js-has-registrations" />
                         <asp:LinkButton ID="btnDelete" runat="server" Text="Delete" CssClass="btn btn-link js-delete-template" OnClick="btnDelete_Click" CausesValidation="false" />
                         <span class="pull-right">
-                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="btnCopy_Click" />
+                            <asp:LinkButton ID="btnCopy" runat="server" CssClass="btn btn-default btn-sm btn-square" Text="<i class='ti ti-copy'></i>" OnClick="btnCopy_Click" />
                             <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-sm btn-square btn-security" />
                         </span>
                     </div>
@@ -637,13 +637,13 @@
                                         </asp:Panel>
                                         <Rock:CurrencyBox ID="cbFeeItemCost" runat="server" CssClass="input-width-md margin-b-sm" Placeholder="Cost" ValidationGroup="Fee" NumberType="Currency" Required="false" />
                                         <Rock:NumberBox ID="nbMaximumUsageCount" runat="server" CssClass="input-width-md margin-b-sm" Placeholder="Max Available" ValidationGroup="Fee" Required="false" NumberType="Integer" />
-                                        <asp:LinkButton ID="btnDeleteFeeItem" runat="server" CssClass="btn btn-danger btn-sm btn-square margin-b-sm" OnClick="btnDeleteFeeItem_Click"><i class="fa fa-times"></i></asp:LinkButton>
+                                        <asp:LinkButton ID="btnDeleteFeeItem" runat="server" CssClass="btn btn-danger btn-sm btn-square margin-b-sm" OnClick="btnDeleteFeeItem_Click"><i class="ti ti-x"></i></asp:LinkButton>
                                     </div>
                                 </ItemTemplate>
                             </asp:Repeater>
 
                             <div class="actions">
-                                <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm btn-square" OnClick="btnAddFeeItem_Click"><i class="fa fa-plus-circle"></i></asp:LinkButton>
+                                <asp:LinkButton ID="btnAddFeeItem" runat="server" CssClass="btn btn-action btn-sm btn-square" OnClick="btnAddFeeItem_Click"><i class="ti ti-circle-plus"></i></asp:LinkButton>
                             </div>
                         </Rock:RockControlWrapper>
 

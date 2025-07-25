@@ -143,7 +143,7 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
         /// <param name="fiscalStartMonth">The fiscal start month.</param>
         /// <param name="date">The date.</param>
         /// <returns></returns>
-        [Obsolete("Use the new GetFiscalYear method signature below.")]
+        [RockObsolete("Use the new GetFiscalYear method signature below.")]
         private static int GetFiscalYear( int fiscalStartMonth, DateTime date )
         {
             int fiscalYearStart = date.AddMonths( -( fiscalStartMonth - 1 ) ).Year;
@@ -428,7 +428,6 @@ SET [SundayDateYear] = YEAR([SundayDate]);";
         /// the previous month.
         /// </summary>
         /// <param name="date">The date to calculate the fiscal year for.</param>
-        /// <param name="fiscalWeekNumber">The fiscal week number of the given date.</param>
         /// <param name="fiscalYearStartMonth">The number of the month that represents the start of the fiscal calendar (e.g., April = 4).</param>
         /// <param name="firstDayOfWeek">The first day of the week (<see cref="RockDateTime.FirstDayOfWeek"/>).</param>
         /// <param name="minimumDaysRequiredInFirstWeek">The minimum number of days that need to be in the starting week for it to count as the first week.</param>

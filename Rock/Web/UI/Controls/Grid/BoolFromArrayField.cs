@@ -74,7 +74,7 @@ namespace Rock.Web.UI.Controls
 
             if ( boolValue )
             {
-                return "<i class=\"fa fa-check\"></i>";
+                return "<i class=\"ti ti-check\"></i>";
             }
             else
             {

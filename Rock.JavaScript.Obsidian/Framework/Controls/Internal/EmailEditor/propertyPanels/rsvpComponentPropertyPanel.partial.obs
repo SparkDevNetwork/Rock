@@ -37,7 +37,7 @@
                                 <RockButton btnSize="xs"
                                             :disabled="isCreatingOccurrence || areRsvpRecipientsRegistering || areRsvpRecipientsRegistered"
                                             @click="onRegisterRecipientsClicked">
-                                    <i class="fa fa-user-check"></i> {{ areRsvpRecipientsRegistering ? 'Registering...' : areRsvpRecipientsRegistered ? 'Recipients Registered!' : 'Register Recipients' }}
+                                    <i class="ti ti-user-check"></i> {{ areRsvpRecipientsRegistering ? 'Registering...' : areRsvpRecipientsRegistered ? 'Recipients Registered!' : 'Register Recipients' }}
                                 </RockButton>
                             </div>
                         </div>

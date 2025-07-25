@@ -4,53 +4,55 @@
 
         <LoadingIndicator v-if="isLoadingActivity" :delay="500" />
 
-        <NotifificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+        <NotifificationBox v-else-if="errorMessage" :alertType="AlertType.Warning">
             {{ errorMessage }}
         </NotifificationBox>
 
         <template v-else-if="recipientActivity">
+            <ContentSection v-if="!isPersonHeaderHidden" title="Recipient" icon="ti ti-user">
+                <div v-if="!isPersonHeaderHidden" class="communication-recipient-activity-person-bio row">
 
-            <div v-if="!isPersonHeaderHidden" class="communication-recipient-activity-person-bio row">
-
-                <div class="communication-recipient-activity-person-avatar-name-email col-lg-2">
-                    <PersonAvatar v-if="photoUrl"
-                                  :photoUrl="photoUrl"
-                                  :photoSize="36"
-                                  marginRight="3" />
-                    <div v-if="showName || email" class="communication-recipient-activity-person-name-email text-truncate">
-                        <div v-if="showName" class="communication-recipient-activity-person-name text-truncate">
-                            <a :href="`/person/${idKey}`" @click.stop><strong>{{ formattedName }}</strong></a>
-                        </div>
-                        <div v-if="email" class="communication-recipient-activity-person-email text-truncate">
-                            {{ email }}
+                    <div class="communication-recipient-activity-person-avatar-name-email col-lg-2">
+                        <PersonAvatar v-if="photoUrl"
+                                      :photoUrl="photoUrl"
+                                      :photoSize="36"
+                                      marginRight="3" />
+                        <div v-if="showName || email" class="communication-recipient-activity-person-name-email text-truncate">
+                            <div v-if="showName" class="communication-recipient-activity-person-name text-truncate">
+                                <a :href="`/person/${idKey}`" @click.stop><strong>{{ formattedName }}</strong></a>
+                            </div>
+                            <div v-if="email" class="communication-recipient-activity-person-email text-truncate">
+                                {{ email }}
+                            </div>
                         </div>
                     </div>
-                </div>
 
-                <div v-for="item in personInfoItems"
-                     :key="item.text!"
-                     class="communication-recipient-activity-person-info-item col-sm-6 col-md-4 col-lg-2">
-                    <div class="communication-recipient-activity-person-info-item-label text-truncate">
-                        {{ item.text }}
+                    <div v-for="item in personInfoItems"
+                         :key="item.text!"
+                         class="communication-recipient-activity-person-info-item col-sm-6 col-md-4 col-lg-2">
+                        <div class="communication-recipient-activity-person-info-item-label text-truncate">
+                            {{ item.text }}
+                        </div>
+                        <div v-html="item.value || '&nbsp;'" class="communication-recipient-activity-person-info-item-value text-truncate"></div>
                     </div>
-                    <div v-html="item.value || '&nbsp;'" class="communication-recipient-activity-person-info-item-value text-truncate"></div>
-                </div>
 
-            </div>
+                </div>
+            </ContentSection>
 
             <NotifificationBox v-if="!anyActivities" :alertType="AlertType.Info">
                 No activity found for this recipient.
             </NotifificationBox>
 
-            <div v-else class="communication-recipient-activity-timeline">
-                <h4>Activity Timeline</h4>
+            <ContentSection v-else title="Activity Timeline" icon="ti ti-timeline">
+                <template v-if="$slots.timelineHeaderActions" #headerActions>
+                    <slot name="timelineHeaderActions" />
+                </template>
 
                 <template v-for="[date, activities] in Array.from(timelineActivitiesByDate)" :key="date">
-                    <div class="communication-recipient-activity-timeline-date">
-                        {{ date }}
-                    </div>
+                    <div class="communication-recipient-activity-timeline-date-group">
 
-                    <ConnectedList :hideConnectors="true">
+                        <div class="communication-recipient-activity-timeline-date">{{ date }}</div>
+
                         <ConnectedListItem v-for="(a, index) in activities" :key="`${date}-${index}`"
                                            :iconCssClass="a.iconCssClass"
                                            :iconLabelType="a.iconLabelType"
@@ -62,24 +64,32 @@
                                 <i class="ti ti-clock"></i> {{ a.activityDateTime }}
                             </template>
                         </ConnectedListItem>
-                    </ConnectedList>
 
+                    </div>
                 </template>
 
-            </div>
-
+                <template v-if="$slots.timelineFooterActions" #footerActions>
+                    <slot name="timelineFooterActions" />
+                </template>
+            </ContentSection>
         </template>
-
     </div>
 </template>
 
 <style scoped>
+.communication-recipient-activity {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xlarge);
+}
+
 .communication-recipient-activity-person-bio {
-    margin: 0 0 var(--spacing-large) 0;
+    margin: 0;
     padding: var(--spacing-medium);
     padding-bottom: var(--spacing-xsmall);
     border-radius: var(--border-radius-base);
     border: 1px solid var(--color-interface-medium);
+    background-color: var(--color-interface-softest);
 }
 
 .communication-recipient-activity-person-avatar-name-email {
@@ -107,20 +117,13 @@
     color: var(--color-interface-medium);
 }
 
-.communication-recipient-activity-timeline {
-    border-radius: var(--rounded-small);
-    border: 1px solid var(--color-interface-soft);
-    background: var(--color-interface-softer);
-    padding: var(--spacing-large);
-}
-
-.communication-recipient-activity-timeline h4 {
-    margin: 0;
+.communication-recipient-activity-timeline-date-group {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-medium);
 }
 
 .communication-recipient-activity-timeline-date {
-    margin-top: var(--spacing-large);
-    margin-bottom: var(--spacing-medium);
     font-weight: var(--font-weight-semibold);
 }
 </style>
@@ -128,8 +131,8 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { RecipientActivityIconCssClass, RecipientActivityIconLabelType, RecipientTimelineActivity } from "./CommunicationRecipientActivity/types.partial";
-    import ConnectedList from "@Obsidian/Controls/connectedList.obs";
     import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotifificationBox from "@Obsidian/Controls/notificationBox.obs";
     import PersonAvatar from "@Obsidian/Controls/personAvatar.obs";

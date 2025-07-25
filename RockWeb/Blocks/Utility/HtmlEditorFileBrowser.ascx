@@ -13,11 +13,11 @@
         <asp:UpdatePanel ID="upnlFolders" Class="picker-folders" runat="server" UpdateMode="Conditional" ChildrenAsTriggers="false">
             <ContentTemplate>
                 <div class="actions btn-group">
-                    <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="fa fa-folder-plus"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="fa fa-i-cursor"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbMoveFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbMoveFolder_Click" CausesValidation="false" ToolTip="Move Folder"><i class="fa fa-external-link"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; } Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="fa fa-trash-alt"></i></asp:LinkButton>
-                    <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="fa fa-refresh"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbCreateFolder" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbCreateFolder_Click" CausesValidation="false" ToolTip="New Folder"><i class="ti ti-folder-plus"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbRenameFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbRenameFolder_Click" CausesValidation="false" ToolTip="Rename Folder"><i class="ti ti-cursor-text"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbMoveFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbMoveFolder_Click" CausesValidation="false" ToolTip="Move Folder"><i class="ti ti-external-link"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbDeleteFolder" runat="server" CssClass="btn btn-sm btn-default" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; } Rock.dialogs.confirmDelete(event, 'folder and all its contents');" OnClick="lbDeleteFolder_Click" CausesValidation="false" ToolTip="Delete Folder"><i class="ti ti-trash"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbRefresh" runat="server" CssClass="btn btn-sm btn-default" OnClick="lbRefresh_Click" CausesValidation="false" ToolTip="Refresh"><i class="ti ti-refresh"></i></asp:LinkButton>
                 </div>
 
                 <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" Text="Folder not found" Visible="false" />
@@ -231,7 +231,7 @@
 
                     <div class="pull-right"><Rock:FileUploader ID="fuprFileUpload" runat="server" IsBinaryFile="false" DisplayMode="Button" /></div>
                     <div class="pull-right">
-                    <asp:LinkButton ID="btnUploadZipFile" runat="server" CssClass="btn btn-default btn-sm margin-r-sm" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbArchive_Click" CausesValidation="false" ToolTip="Archive"><i class="fa fa-file-archive"></i> Upload Zip</asp:LinkButton>
+                    <asp:LinkButton ID="btnUploadZipFile" runat="server" CssClass="btn btn-default btn-sm margin-r-sm" OnClientClick="if ($(this).attr('disabled') == 'disabled') { return false; }" OnClick="lbArchive_Click" CausesValidation="false" ToolTip="Archive"><i class="ti ti-file-zip"></i> Upload Zip</asp:LinkButton>
                     </div>
                 </div>
 

@@ -39,7 +39,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [DisplayName( "SMS Conversation List" )]
     [Category( "Mobile > Communication" )]
     [Description( "Displays a list of SMS conversations that the individual can interact with." )]
-    [IconCssClass( "fa fa-sms" )]
+    [IconCssClass( "ti ti-device-mobile-message" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

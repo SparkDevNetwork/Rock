@@ -28,7 +28,7 @@
                             </div>
                         </td>
                         <td class="align-middle" data-priority="1">
-                            <CopyButton :value="item.formPageUrl ?? ''"><i class="fa fa-clipboard"></i> Copy Link</CopyButton>
+                            <CopyButton :value="item.formPageUrl ?? ''"><i class="ti ti-clipboard"></i> Copy Link</CopyButton>
                         </td>
                     </tr>
                 </tbody>

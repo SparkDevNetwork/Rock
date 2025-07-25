@@ -5,7 +5,7 @@
             
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-comment"></i> Prayer Comments</h1>
+                    <h1 class="panel-title"><i class="ti ti-message"></i> Prayer Comments</h1>
                 </div>
                 <div class="panel-body">
                     <div class="grid grid-panel">

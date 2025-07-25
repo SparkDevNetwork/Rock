@@ -197,7 +197,9 @@
 }
 
 .carousel-control .fa-chevron-left,
-.carousel-control .fa-chevron-right {
+.carousel-control .fa-chevron-right,
+.carousel-control .ti-chevron-left,
+.carousel-control .ti-chevron-right {
   position: absolute;
   top: 50%;
   z-index: 5;
@@ -205,11 +207,13 @@
   margin-top: -10px;
 }
 
-.carousel-control .fa-chevron-left {
+.carousel-control .fa-chevron-left,
+.carousel-control .ti-chevron-left {
   left: 40px;
 }
 
-.carousel-control .fa-chevron-right {
+.carousel-control .fa-chevron-right,
+.carousel-control .ti-chevron-right {
   right: 40px;
 }
 // ======================= END LEFT/RIGHT CONTROLS =======================

@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Signature Document Template List" )]
     [Category( "Core" )]
     [Description( "Lists all the signature document templates and allows for managing them." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

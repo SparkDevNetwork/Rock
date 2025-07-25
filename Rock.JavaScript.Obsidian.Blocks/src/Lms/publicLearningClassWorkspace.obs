@@ -88,7 +88,7 @@
                             </h3>
 
                             <div class="announcement-cards-container empty-announcements-container" v-if="!hasAnnouncements">
-                                <i class="fa fa-comment-slash fa-2x no-announcements-icon"></i>
+                                <i class="ti ti-message-off ti-2x no-announcements-icon"></i>
                                 <h6 class="no-announcements-title">No Announcements</h6>
                                 <div class="no-announcements-text">Future announcements will display here.</div>
                             </div>
@@ -134,7 +134,7 @@
                             </h3>
 
                             <div class="notification-cards-container empty-notifications-container" v-if="!hasNotifications">
-                                <i class="fa fa-bell-slash-o fa-2x no-notifications-icon"></i>
+                                <i class="ti ti-bell-off ti-2x no-notifications-icon"></i>
                                 <h6 class="no-notifications-title">No Notifications</h6>
                                 <div class="no-notifications-text">Future notifications will display here.</div>
                             </div>
@@ -212,8 +212,8 @@
                                      data-container="body"
                                      :data-original-title="getActivityTooltip(item)">
                                     <div class="activity-item-completion-container">
-                                        <i v-if="isCompleted(item)" class="fa fa-check-circle fa-2x text-success"></i>
-                                        <i v-if="!isCompleted(item)" class="fa fa-circle-o fa-2x is-incomplete"></i>
+                                        <i v-if="isCompleted(item)" class="ti ti-circle-check ti-2x text-success"></i>
+                                        <i v-if="!isCompleted(item)" class="ti ti-circle ti-2x is-incomplete"></i>
                                     </div>
                                     <div class="activity-item-detail-container">
                                         <h5 class="activity-name">{{ item?.classActivityBag?.name }}</h5>
@@ -248,7 +248,7 @@
                         <div v-if="showCompletedScreen"
                              class="course-completed-content">
                             <div>
-                                <i class="fa fa-check-circle fa-5x text-success"></i>
+                                <i class="ti ti-circle-check ti-5x text-success"></i>
                             </div>
 
                             <h2>Congratulations {{ currentPersonNickName }}!</h2>
@@ -382,7 +382,7 @@
     const announcementOverflowContainerClass = computed(() => isViewingAllAnnouncements.value === true ? "show-less" : "show-all");
 
     /** The icon class to use for the announcements overflow toggle button. */
-    const announcementsOverflowIconClass = computed(() => isViewingAllAnnouncements.value === true ? "fa fa-chevron-up" : "fa fa-chevron-down");
+    const announcementsOverflowIconClass = computed(() => isViewingAllAnnouncements.value === true ? "ti ti-chevron-up" : "ti ti-chevron-down");
 
     /** The text to display for the announcements overflow toggle button. */
     const announcementsOverflowText = computed(() => isViewingAllAnnouncements.value === true ? "Show Less" : "Show All");
@@ -423,7 +423,7 @@
     const notificationsOverflowContainerClass = computed(() => isViewingAllNotifications.value === true ? "show-less" : "show-all");
 
     /** The icon class to use for the notifications overflow toggle button. */
-    const notificationsOverflowIconClass = computed(() => isViewingAllNotifications.value === true ? "fa fa-chevron-up" : "fa fa-chevron-down");
+    const notificationsOverflowIconClass = computed(() => isViewingAllNotifications.value === true ? "ti ti-chevron-up" : "ti ti-chevron-down");
 
     /** The text to display for the notifications overflow toggle button. */
     const notificationsOverflowText = computed(() => isViewingAllNotifications.value === true ? "Show Less" : "Show All");

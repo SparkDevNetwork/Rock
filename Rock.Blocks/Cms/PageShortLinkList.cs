@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Page Short Link List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of page short links." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

@@ -23,7 +23,7 @@
                         aria-haspopup="true"
                         aria-expanded="false"
                         @click.stop="togglePersonDropdown(index)">
-                    <i class="fa fa-ellipsis-v"></i>
+                    <i class="ti ti-dots-vertical"></i>
                 </button>
                 <ul class="dropdown-menu">
                     <li>

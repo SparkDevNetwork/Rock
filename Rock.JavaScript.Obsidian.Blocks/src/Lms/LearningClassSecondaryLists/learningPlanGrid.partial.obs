@@ -82,8 +82,8 @@
                 title=""
                 visiblePriority="md">
             <template #format="{ row }">
-                <span :class="row.isAttentionNeeded ? 'attention-needed-icon fa fa-poll fw mr-3' : 'fw'" title="Requires grading or facilitator action"></span>
-                <span :class="row.hasStudentComments ? 'student-comments-icon fa fa-comment-alt' : 'fw'" title="Student commented on this assignment"></span>
+                <span :class="row.isAttentionNeeded ? 'attention-needed-icon ti ti-chart-bar fw mr-3' : 'fw'" title="Requires grading or facilitator action"></span>
+                <span :class="row.hasStudentComments ? 'student-comments-icon ti ti-message' : 'fw'" title="Student commented on this assignment"></span>
             </template>
         </Column>
 
@@ -102,7 +102,7 @@
 
     const invokeBlockAction = useInvokeBlockAction();
 
-    const assignToIcons: Array<string> = ["fa fa-user-graduate", "fa fa-chalkboard-teacher"];
+    const assignToIcons: Array<string> = ["ti ti-user", "ti ti-chalkboard-teacher"];
     const assignToColors: Array<string> = ["var(--color-info-strong)", "var(--color-warning-strong)"];
 
     const emit = defineEmits<{

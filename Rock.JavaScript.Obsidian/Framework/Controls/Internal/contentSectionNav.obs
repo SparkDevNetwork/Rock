@@ -1,0 +1,173 @@
+<template>
+    <div class="list-group content-section-nav">
+        <div class="content-section-nav-header">
+            <h5 class="content-section-nav-title">Sections</h5>
+
+            <span style="position: relative;">
+                <button type="button" class="btn btn-action"
+                        data-toggle="dropdown">
+                    <i class="ti ti-dots-vertical"></i>
+                </button>
+
+                <ul class="dropdown-menu dropdown-menu-right">
+                    <li v-if="autoCollapse">
+                        <a href="#" @click.prevent="autoCollapse = false">
+                            <i class="ti ti-viewport-short"></i>
+                            Turn Off Auto Collapse
+                        </a>
+                    </li>
+                    <li v-else>
+                        <a href="#" @click.prevent="autoCollapse = true">
+                            <i class="ti ti-viewport-short"></i>
+                            Turn On Auto Collapse
+                        </a>
+                    </li>
+                </ul>
+            </span>
+        </div>
+
+        <a v-for="section in sections"
+           :href="`#${section.anchor.value}`"
+           class="list-group-item nav-link"
+           :class="{ active: section.anchor.value === activeSectionId }"
+           @click.prevent.stop="onOpenSectionClick(section)">
+            <i v-if="section.icon.value" :class="section.icon.value"></i>
+            {{ section.title.value || "Primary" }}
+        </a>
+    </div>
+</template>
+
+<style>
+.content-section-nav {
+    border: none;
+    border-radius: var(--rounded-medium);
+    padding: var(--spacing-xsmall);
+    background-color: var(--color-interface-softer);
+    position: sticky;
+    position: -webkit-sticky;
+    /* ← "pin" it 0px from the top of its scroll container */
+    top: 0;
+    /* keep it above your content as you scroll */
+    z-index: 10;
+}
+
+.content-section-nav > .content-section-nav-header {
+    width: 100%;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding-left: var(--spacing-xsmall);
+    margin-bottom: var(--spacing-tiny);
+}
+
+.content-section-nav > .nav-title {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-small);
+    padding-left: var(--spacing-small);
+}
+
+.content-section-nav > .nav-link {
+    border: none;
+    border-radius: var(--rounded-small);
+    background-color: transparent;
+    color: var(--color-interface-strong);
+    padding: var(--spacing-xsmall) var(--spacing-small);
+    font-weight: normal;
+    font-size: var(--font-size-small);
+    display: flex;
+    align-items: center;
+    margin-bottom: var(--spacing-tiny);
+}
+
+.content-section-nav > .list-group-item i.ti {
+    font-size: var(--font-size-regular);
+    margin-right: var(--spacing-xsmall);
+    color: var(--color-interface-strong);
+    align-self: center;
+}
+
+.content-section-nav > .list-group-item:hover {
+    background-color: var(--color-interface-softest);
+}
+
+.content-section-nav > .list-group-item.active {
+    background-color: var(--color-interface-softest);
+    font-weight: var(--font-weight-semibold);
+    color: var(--color-interface-strong);
+}
+
+.content-section-nav > .list-group-item.active i.ti {
+    color: var(--color-interface-strong);
+}
+</style>
+
+<script setup lang="ts">
+    import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { onBeforeMount, onMounted, PropType, ref } from "vue";
+
+    const props = defineProps({
+        sections: {
+            type: Array as PropType<IContentSectionHolder[]>,
+            required: true
+        },
+
+        autoCollapse: {
+            type: Boolean as PropType<boolean>,
+            default: true
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:autoCollapse", value: boolean): void;
+    }>();
+
+    // #region Values
+
+    const autoCollapse = useVModelPassthrough(props, "autoCollapse", emit);
+    const activeSectionId = ref(window.location.hash.replace("#", ""));
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the hash change event to update the active section ID.
+     */
+    function onHashChange(): void {
+        activeSectionId.value = window.location.hash.replace("#", "");
+
+    }
+
+    /**
+     * Handles the click event on a section link to open the section.
+     * This will automatically collapse other sections before opening the
+     * clicked section.
+     *
+     * @param section The section that was clicked.
+     */
+    function onOpenSectionClick(section: IContentSectionHolder): void {
+        props.sections
+            .filter(s => !!s.title.value)
+            .forEach(s => {
+                if (s !== section) {
+                    s.isCollapsed.value = true;
+                }
+            });
+
+        section.isCollapsed.value = false;
+
+        const url = `${window.location.href.split("#")[0]}#${section.anchor.value}`;
+        window.history.replaceState(null, "", url);
+    }
+
+    // #endregion
+
+    onMounted((): void => {
+        window.addEventListener("hashchange", onHashChange);
+    });
+
+    onBeforeMount((): void => {
+        window.removeEventListener("hashchange", onHashChange);
+    });
+</script>

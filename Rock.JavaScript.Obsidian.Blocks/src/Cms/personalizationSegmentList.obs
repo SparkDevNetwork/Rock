@@ -87,7 +87,7 @@
                        visiblePriority="xs" />
 
         <ButtonColumn name="segmentLink"
-                      iconClass="fa fa-users"
+                      iconClass="ti ti-users"
                       :excludeFromExport="true"
                       @click="onSegmentClick"
                       visiblePriority="xs" />

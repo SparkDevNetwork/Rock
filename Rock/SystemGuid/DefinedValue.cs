@@ -1609,5 +1609,34 @@ namespace Rock.SystemGuid
         public const string RECORD_SOURCE_TYPE_ROKU_TV_APP = "1849A5FB-1434-45AA-AD78-D403A3C7685A";
 
         #endregion
+
+        #region Chat Reaction
+
+        /// <summary>
+        /// The default 'Love' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_LOVE = "BC0D5463-93F6-4087-9D94-C8F393B969E6";
+
+        /// <summary>
+        /// The default 'Haha' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_HAHA = "A71E5E19-BF17-4424-BCC0-9CE87544DAA5";
+
+        /// <summary>
+        /// The default 'Like' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_LIKE = "DEE11D1A-4AC2-4264-8E33-235C0D177626";
+
+        /// <summary>
+        /// The default 'Sad' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_SAD = "94214A68-A5E0-4B44-8194-E0B91F00CF9E";
+
+        /// <summary>
+        /// The default 'Wow' reaction for chat messages.
+        /// </summary>
+        public const string CHAT_REACTION_WOW = "304DF5A2-142E-494D-8EEE-D4DBE81B1579";
+
+        #endregion
     }
 }

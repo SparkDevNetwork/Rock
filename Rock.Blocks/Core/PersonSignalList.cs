@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Person Signal List" )]
     [Category( "Core" )]
     [Description( "Displays a list of person signals." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "db2e3ce3-94bd-4d12-8add-598bf938e8e1" )]

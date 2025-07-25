@@ -5,7 +5,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-tachometer"></i>
+                    <i class="ti ti-brand-speedtest"></i>
                     Cache Viewer
                 </h1>
             </div>
@@ -20,7 +20,7 @@
                 </div>
                 <div class="actions">
                         <Rock:BootstrapButton ID="btnRefresh" runat="server" CssClass="btn btn-primary" ToolTip="Refresh" OnClick="btnRefresh_Click">
-                            <i class="fa fa-refresh"></i>
+                            <i class="ti ti-refresh"></i>
                             Load
                         </Rock:BootstrapButton>
                     </div>

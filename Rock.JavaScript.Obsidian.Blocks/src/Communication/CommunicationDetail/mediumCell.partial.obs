@@ -44,7 +44,7 @@
             return "";
         }
 
-        return `ti ti-${icon} ti-2x`;
+        return `ti ti-${icon}`;
     });
 
     // #endregion Computed Values

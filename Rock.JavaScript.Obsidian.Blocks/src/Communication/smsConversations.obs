@@ -5,7 +5,7 @@
     <Panel v-else
            type="block"
            title="SMS Conversations"
-           titleIconCssClass="fa fa-comments"
+           titleIconCssClass="ti ti-messages"
            :hasFullscreen="true">
         <template #headerActions>
             <div v-if="systemPhoneNumbers.length > 0" class="panel-heading pl-0">
@@ -52,7 +52,7 @@
                                             :isSquare="true"
                                             @click="togglePersonFilter()"
                                             :class="['pull-right', { 'bg-warning': personFilterSelection?.value }]">
-                                    <i class="fa fa-filter"></i>
+                                    <i class="ti ti-filter"></i>
                                 </RockButton>
                             </div>
                             <transition name="slide">
@@ -103,15 +103,15 @@
                                                         aria-haspopup="true"
                                                         aria-expanded="false"
                                                         @click.stop="toggleReadDropdown(index)">
-                                                    <i class="fa fa-ellipsis-v"></i>
+                                                    <i class="ti ti-dots-vertical"></i>
                                                 </button>
                                                 <ul class="dropdown-menu">
                                                     <li>
                                                         <button type="button"
                                                                 class="dropdown-item btn-link"
                                                                 @click.stop="changeReadStatusFromDropdown(conversation, index)">
-                                                            <span v-if="conversation.isConversationRead"><i class="fa fa-eye-slash mr-2"></i>Mark As Unread</span>
-                                                            <span v-else><i class="fa fa-eye mr-2"></i>Mark As Read</span>
+                                                            <span v-if="conversation.isConversationRead"><i class="ti ti-eye-off mr-2"></i>Mark As Unread</span>
+                                                            <span v-else><i class="ti ti-eye mr-2"></i>Mark As Read</span>
                                                         </button>
                                                     </li>
                                                 </ul>
@@ -133,7 +133,7 @@
                         <div class="header d-flex align-items-center justify-content-between">
                             <div class="d-flex">
                                 <a href="#" class="conversation-back mr-3" @click.prevent="deselectConversation">
-                                    <i class="fa fa-chevron-left"></i>
+                                    <i class="ti ti-chevron-left"></i>
                                 </a>
                                 <div v-if="!isNullOrWhiteSpace(selectedConversation.recipientDescription)" class="header-lava" v-html="selectedConversation.recipientDescription"></div>
                                 <div v-else class="header-lava"> {{ selectedFormattedPhoneNumber }} (Unknown Person)</div>
@@ -144,7 +144,7 @@
                                             :isSquare="true"
                                             title="Add Note"
                                             @click="onNoteEditorButtonClick">
-                                    <i class="fa fa-edit"></i>
+                                    <i class="ti ti-edit"></i>
                                 </RockButton>
                                 <ReminderButton v-if="selectedConversation.entityGuidForReminder && selectedConversation.entityTypeGuidForReminder"
                                                 :contextEntityGuid="selectedConversation.entityGuidForReminder"
@@ -157,7 +157,7 @@
                                             :isSquare="true"
                                             title="Mark As Unread"
                                             @click="toggleConversationReadStatus(selectedConversation)">
-                                    <i class="fa fa-eye-slash fa-fw"></i>
+                                    <i class="ti ti-eye-off ti-fw"></i>
                                 </RockButton>
                                 <RockButton v-else
                                             :btnType="BtnType.Default"
@@ -165,21 +165,21 @@
                                             :isSquare="true"
                                             title="Mark As Read"
                                             @click="toggleConversationReadStatus(selectedConversation)">
-                                    <i class="fa fa-eye fa-fw"></i>
+                                    <i class="ti ti-eye ti-fw"></i>
                                 </RockButton>
                                 <RockButton v-if="selectedConversation.isLinkToPersonVisible"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
                                             title="Link to Person"
                                             @click="showLinkToPersonModal">
-                                    <i class="fa fa-link fa-fw"></i>
+                                    <i class="ti ti-link ti-fw"></i>
                                 </RockButton>
                                 <RockButton v-if="selectedConversation.isViewMergeRequestVisible"
                                             :btnType="BtnType.Default"
                                             :btnSize="BtnSize.Small"
                                             title="View Merge Request"
                                             @click="viewMergeRequest">
-                                    <i class="fa fa-users fa-fw"></i>
+                                    <i class="ti ti-users ti-fw"></i>
                                 </RockButton>
                             </div>
                         </div>
@@ -227,7 +227,7 @@
                                                 :btnSize="BtnSize.Small"
                                                 class="close"
                                                 @click="toggleImageUploader(false)">
-                                        <i class="fa fa-times"></i>
+                                        <i class="ti ti-x"></i>
                                     </RockButton>
                                     <div class="sms-image-uploader">
                                         <ImageUploader v-model="imageAttachment"
@@ -245,7 +245,7 @@
                                             :isSquare="true"
                                             title="Insert Snippet"
                                             @click="showSnippetModal">
-                                    <i class="fa fa-bolt"></i>
+                                    <i class="ti ti-bolt"></i>
                                 </RockButton>
                             </div>
                             <TextBox v-model="newMessageText" :rows="1" textMode="multiline" placeholder="Type a message" />
@@ -254,7 +254,7 @@
                                             :btnSize="BtnSize.Default"
                                             :isSquare="true"
                                             @click="toggleImageUploader()">
-                                    <i class="fa fa-camera"></i>
+                                    <i class="ti ti-camera"></i>
                                 </RockButton>
                                 <RockButton :btnType="BtnType.Primary"
                                             :btnSize="BtnSize.Default"
@@ -684,7 +684,7 @@
 </style>
 
 <script setup lang="ts">
-    import { onConfigurationValuesChanged, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
+    import { getSecurityGrant, onConfigurationValuesChanged, provideSecurityGrant, setPropertiesBoxValue, useConfigurationValues, useInvokeBlockAction, usePersonPreferences, useReloadBlock } from "@Obsidian/Utility/block";
     import { SmsConversationsInitializationBox } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/smsConversationsInitializationBox";
     import { CommunicationMessageFilter, CommunicationMessageFilterDescription } from "@Obsidian/Enums/Communication/communicationMessageFilter";
     import { SmsConversationsSaveNoteBag } from "@Obsidian/ViewModels/Blocks/Communication/SmsConversations/smsConversationsSaveNoteBag";
@@ -725,6 +725,8 @@
 
     const box = useConfigurationValues<SmsConversationsInitializationBox>();
     const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(box.securityGrantToken);
+    provideSecurityGrant(securityGrant);
     const preferences = usePersonPreferences().blockPreferences;
     const messageFilterItems = enumToListItemBag(CommunicationMessageFilterDescription);
     var realTimeTopic: ITopic<IConversationParticipantTopic>;

@@ -112,14 +112,14 @@
 
         if (serviceJobViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
+                iconCssClass: "ti ti-bulb-filled",
                 title: "Active",
                 type: "success"
             });
         }
         else {
             labels.push({
-                iconCssClass: "fa fa-lightbulb-o",
+                iconCssClass: "ti ti-bulb",
                 title: "Inactive",
                 type: "danger"
             });

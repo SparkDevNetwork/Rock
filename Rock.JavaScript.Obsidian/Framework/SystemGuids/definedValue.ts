@@ -125,6 +125,16 @@ export const DefinedValue = {
     ChartStyleFlot: "B45DA8E1-B9A6-46FD-9A2B-E8440D7D6AAC",
     /** Rock Chart Style */
     ChartStyleRock: "2ABB2EA0-B551-476C-8F6B-478CD08C2227",
+    /** The default 'Haha' reaction for chat messages. */
+    ChatReactionHaha: "A71E5E19-BF17-4424-BCC0-9CE87544DAA5",
+    /** The default 'Like' reaction for chat messages. */
+    ChatReactionLike: "DEE11D1A-4AC2-4264-8E33-235C0D177626",
+    /** The default 'Love' reaction for chat messages. */
+    ChatReactionLove: "BC0D5463-93F6-4087-9D94-C8F393B969E6",
+    /** The default 'Sad' reaction for chat messages. */
+    ChatReactionSad: "94214A68-A5E0-4B44-8194-E0B91F00CF9E",
+    /** The default 'Wow' reaction for chat messages. */
+    ChatReactionWow: "304DF5A2-142E-494D-8EEE-D4DBE81B1579",
     /** The check in attendance type physical */
     CheckInAttendanceTypePhysical: "290CE89F-7DA0-41ED-82C1-1249A4A42BA4",
     /** The check in attendance type virtual */

@@ -1804,7 +1804,7 @@ namespace RockWeb.Blocks.Event
 
                 if ( isPaymentPlanActive )
                 {
-                    hlBalance.IconCssClass = "fa fa-calendar-day";
+                    hlBalance.IconCssClass = "ti ti-calendar-event";
                 }
             }
             else
@@ -2564,7 +2564,7 @@ namespace RockWeb.Blocks.Event
             var h1Heading = new HtmlGenericControl( "h1" );
             h1Heading.AddCssClass( "panel-title" );
             h1Heading.AddCssClass( "pull-left" );
-            h1Heading.InnerHtml = "<i class='fa fa-user'></i> " + registrant.PersonName;
+            h1Heading.InnerHtml = "<i class='ti ti-user'></i> " + registrant.PersonName;
             divHeading.Controls.Add( h1Heading );
 
             var divLabels = new HtmlGenericControl( "div" );
@@ -2599,7 +2599,7 @@ namespace RockWeb.Blocks.Event
                 divLabels.Controls.Add( aProfileLink );
                 aProfileLink.AddCssClass( "btn btn-default btn-xs btn-square margin-l-sm" );
                 var iProfileLink = new HtmlGenericControl( "i" );
-                iProfileLink.AddCssClass( "fa fa-user" );
+                iProfileLink.AddCssClass( "ti ti-user" );
                 aProfileLink.Controls.Add( iProfileLink );
             }
 
@@ -2809,7 +2809,7 @@ namespace RockWeb.Blocks.Event
                 const string htmlFormat = @"
     <div class='icon-property'>
         <div class='icon' style='background: {1}; color: {0};'>
-            <i class='fa fa-signature'></i>
+            <i class='ti ti-signature'></i>
         </div>
         <div class='property'>
             {2}

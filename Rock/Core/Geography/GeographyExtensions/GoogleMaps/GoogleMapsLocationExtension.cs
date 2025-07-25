@@ -188,7 +188,7 @@ namespace Rock.Core.Geography.GeographyExtensions.GoogleMaps
                         {
                             DestinationPoint = destinations[e.DestinationIndex],
                             DistanceInMeters = e.DistanceMeters,
-                            TravelTimeInMinutes = ( e.DurationTimeSpan ?? TimeSpan.Zero ).Minutes                            
+                            TravelTimeInMinutes = ( int ) ( e.DurationTimeSpan ?? TimeSpan.Zero ).TotalMinutes                            
                         } )
                 .ToList();
             }

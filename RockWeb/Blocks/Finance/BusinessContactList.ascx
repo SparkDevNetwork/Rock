@@ -4,7 +4,7 @@
 
         <asp:Panel ID="pnlContactList" runat="server" CssClass="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-users"></i> Business Contacts</h1>
+                    <h1 class="panel-title"><i class="ti ti-users"></i> Business Contacts</h1>
                 </div>
                 <asp:HiddenField ID="hfBusinessId" runat="server" />
                 <div class="panel-body">

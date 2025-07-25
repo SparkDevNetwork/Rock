@@ -7,7 +7,7 @@
             <div class="panel-heading">
                 <div class="pull-left">
                     <h1 class="panel-title">
-                        <i class="fa fa-people-carry"></i>
+                        <i class="ti ti-package-export"></i>
                         NCOA Results
                     </h1>
                 </div>
@@ -85,7 +85,7 @@
                                                         <label class='label <%# Eval("StatusCssClass") %>'><%# Eval("Status") %></label>
                                                         <h4>
                                                             <div class="pull-right">
-                                                                <a class="btn btn-default" href='<%# string.Format( "{0}{1}", ResolveRockUrl( "~/Person/" ), Eval("HeadOftheHousehold.Id") ) %>'><i class="fa fa-users"></i></a>
+                                                                <a class="btn btn-default" href='<%# string.Format( "{0}{1}", ResolveRockUrl( "~/Person/" ), Eval("HeadOftheHousehold.Id") ) %>'><i class="ti ti-users"></i></a>
                                                             </div>
                                                         </h4>
                                                     </div>
@@ -108,8 +108,8 @@
                     </asp:Repeater>
 
                     <div class="clearfix">
-                        <asp:HyperLink id="hlNext" CssClass="btn btn-primary pull-right" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
-                        <asp:HyperLink id="hlPrev" CssClass="btn btn-primary pull-left" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
+                        <asp:HyperLink id="hlNext" CssClass="btn btn-primary pull-right" runat="server" Text="Next <i class='ti ti-chevron-right'></i>" />
+                        <asp:HyperLink id="hlPrev" CssClass="btn btn-primary pull-left" runat="server" Text="<i class='ti ti-chevron-left'></i> Prev" />
                     </div>
 
                 </div>

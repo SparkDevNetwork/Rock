@@ -12,7 +12,7 @@
         <div class="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-shield"></i> Protect My Ministry</h1>
+                <h1 class="panel-title"><i class="ti ti-shield-half"></i> Protect My Ministry</h1>
                 <div class="panel-labels">
                     <asp:LinkButton ID="btnDefault" runat="server" CssClass="btn btn-default btn-xs" OnClick="btnDefault_Click">Enable As Default Background Check Provider</asp:LinkButton>
                 </div>
@@ -53,7 +53,7 @@
                     </div>
 
                     <Rock:NotificationBox ID="nbSSLWarning" runat="server" CssClass="clearfix" NotificationBoxType="Danger">
-                        <i class="fa fa-2x fa-exclamation-triangle pull-left margin-v-sm margin-r-md"></i>
+                        <i class="ti ti-2x ti-alert-triangle pull-left margin-v-sm margin-r-md"></i>
                         Your current configuration will cause Protect My Ministry to send results to your server over an
                         insecure connection. Please ensure that your server is configured for SSL and use a <code>https://</code>
                         URL to protect the data during transmission before using in production.
@@ -89,7 +89,7 @@
         <asp:Panel ID="pnlPackages" CssClass="panel panel-block" runat="server" Visible="true">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-archive"></i> Background Check Types</h1>
+                <h1 class="panel-title"><i class="ti ti-archive"></i> Background Check Types</h1>
             </div>
             <div class="panel-body">
 

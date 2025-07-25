@@ -52,6 +52,11 @@ namespace Rock.Core.Geography
         /// <returns>A list of driving distances and durations for each destination.</returns>
         public static async Task<List<DistanceResult>> GetDrivingMatrixAsync( GeographyPoint origin, List<GeographyPoint> destinations, TravelMode mode = TravelMode.Drive )
         {
+            if ( destinations == null || destinations.Count == 0 )
+            {
+                return new List<DistanceResult>();
+            }
+
             // For now we'll only support Google for driving matrix calculations. This static method though abstracts the implementation details,
             // so that in the future if we want to support other providers, we can do so without changing the method signature.
             var googleLocationExtension = new GoogleMapsLocationExtension();

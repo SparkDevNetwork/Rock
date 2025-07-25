@@ -21,20 +21,6 @@ import { CommunicationType } from "@Obsidian/Enums/Communication/communicationTy
 import { CommunicationDetailBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDetailBag";
 
 /**
- * Gets the CSS variable value.
- *
- * @param name The name of the CSS variable.
- * @param fallback The fallback value to use.
- */
-export function getCssVar(name: string, fallback: string): string {
-    const computedStyle = getComputedStyle(document.documentElement)
-        .getPropertyValue(name)
-        .trim();
-
-    return computedStyle || fallback;
-}
-
-/**
  * Injects a provided value.
  * Throws an exception if the value is undefined or not yet provided.
  *

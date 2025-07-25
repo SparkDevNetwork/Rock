@@ -1,6 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Grid v-if="isVisible"
+          title="Log"
           :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           keyField="idKey"
@@ -14,10 +15,12 @@
           :showLaunchWorkflow="false">
 
         <DateTimeColumn name="logDate"
-                        title="Date" field="logDate"
+                        title="Date"
+                        field="logDate"
                         :filter="dateValueFilter"
                         visiblePriority="sm"
-                        width="15%" />
+                        width="15%"
+                        showSeconds />
 
         <TextColumn name="writerNodeName"
                     title="Writer Node Name"

@@ -17,10 +17,10 @@
 
                 <div class="panel-labels">
                     <asp:LinkButton ID="lbShowCards" runat="server" class="btn btn-xs btn-square btn-default" OnClick="ShowCards" AutoPostBack="true">
-                        <i class="fa fa-th"></i>
+                        <i class="ti ti-grid-dots"></i>
                     </asp:LinkButton>
                     <asp:LinkButton ID="lbShowGrid" runat="server" class="btn btn-xs btn-square btn-default" OnClick="ShowGrid" AutoPostBack="true">
-                        <i class="fa fa-list"></i>
+                        <i class="ti ti-list"></i>
                     </asp:LinkButton>
                 </div>
             </div><!-- panel heading -->
@@ -71,7 +71,7 @@
                                         <div class="step-card-hover">
                                             <asp:LinkButton runat="server" id="lbCardAddStep" OnCommand="AddStep" CommandArgument='<%# Eval("StepType.Id") %>' CssClass="card-add-step-button">
                                                 <span>
-                                                <i class="fa fa-plus-circle fa-2x"></i>
+                                                <i class="ti ti-circle-plus ti-2x"></i>
                                                 <br />
                                                 Add a <%# Eval("StepTerm") %>
                                                 </span>
@@ -94,12 +94,12 @@
                                                                 <td class="steps-status"><%# Eval("StatusHtml") %></td>
                                                                 <td runat="server" id="tdEdit">
                                                                     <asp:LinkButton runat="server" OnCommand="rSteps_Edit" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions">
-                                                                        <i class="fa fa-pencil"></i>
+                                                                        <i class="ti ti-pencil"></i>
                                                                     </asp:LinkButton>
                                                                 </td>
                                                                 <td runat="server" id="tdDelete">
                                                                     <asp:LinkButton runat="server" OnCommand="rSteps_Delete" CommandArgument='<%# Eval("StepId") %>' CssClass="btn-actions btn-delete">
-                                                                        <i class="fa fa-times"></i>
+                                                                        <i class="ti ti-x"></i>
                                                                     </asp:LinkButton>
                                                                 </td>
                                                             </tr>

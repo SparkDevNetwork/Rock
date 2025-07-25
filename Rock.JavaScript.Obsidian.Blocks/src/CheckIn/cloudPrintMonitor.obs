@@ -7,7 +7,7 @@
                  :class="getProxyClass(proxy)"
                  :key="proxy.id">
                 <div class="header">
-                    <i class="fa fa-cloud"></i>
+                    <i class="ti ti-cloud"></i>
                     <span class="title">
                         {{ proxy.name }}
                     </span>

@@ -3492,13 +3492,13 @@ namespace Rock.Lava
 
             for ( int i = 0; i < rating; i++ )
             {
-                starMarkup.Append( "<i class='fa fa-rating-on'></i>" );
+                starMarkup.Append( "<i class='ti ti-star-filled'></i>" );
                 starCounter++;
             }
 
             for ( int i = starCounter; i < 5; i++ )
             {
-                starMarkup.Append( "<i class='fa fa-rating-off'></i>" );
+                starMarkup.Append( "<i class='ti ti-star'></i>" );
             }
 
             return starMarkup.ToString();
@@ -5080,7 +5080,7 @@ namespace Rock.Lava
 
                     if ( entityTypeCache != null )
                     {
-                        RockContext _rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+                        RockContext rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
                         Type entityType = entityTypeCache.GetEntityType();
                         if ( entityType != null )
@@ -5088,7 +5088,7 @@ namespace Rock.Lava
                             Type[] modelType = { entityType };
                             Type genericServiceType = typeof( Rock.Data.Service<> );
                             Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                            Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { _rockContext } ) as IService;
+                            Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
 
                             MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
 
@@ -5255,13 +5255,22 @@ namespace Rock.Lava
         /// <summary>
         /// Gets the integer value from from a key-hash string.
         /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
+        /// <param name="input">The input value to be parsed into integer form.</param>
+        /// <returns>An integer value or null if the integer could not be parsed.</returns>
+        /// <remarks>
+        /// If the provided input represents a non-hashed integer string, this integer value will be immediately returned.
+        /// </remarks>
         public static int? FromIdHash( string input )
         {
             if ( string.IsNullOrWhiteSpace( input ) )
             {
                 return null;
+            }
+
+            var inputAsInteger = input.AsIntegerOrNull();
+            if ( inputAsInteger.HasValue )
+            {
+                return inputAsInteger;
             }
 
             return IdHasher.Instance.GetId( input );

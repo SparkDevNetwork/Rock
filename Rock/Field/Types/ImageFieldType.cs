@@ -69,13 +69,10 @@ namespace Rock.Field.Types
         {
             var publicValues = new Dictionary<string, string>( base.GetPublicConfigurationValues( privateConfigurationValues, usage, value ) );
 
-            if ( publicValues.ContainsKey( IMG_TAG_TEMPLATE ) )
+            var imageTagTemplate = publicValues.GetValueOrNull( IMG_TAG_TEMPLATE );
+            if ( imageTagTemplate.IsNullOrWhiteSpace() )
             {
-                var imageTagTemplate = publicValues[IMG_TAG_TEMPLATE];
-                if ( imageTagTemplate.IsNullOrWhiteSpace() )
-                {
-                    publicValues[IMG_TAG_TEMPLATE] = DefaultImageTagTemplate;
-                }
+                publicValues.AddOrReplace( IMG_TAG_TEMPLATE, DefaultImageTagTemplate );
             }
 
             publicValues[IMAGE_URL] = FileUrlHelper.GetImageUrl( value.AsGuid() );

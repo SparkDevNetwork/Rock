@@ -21,7 +21,8 @@ import { ComparisonType } from "@Obsidian/Enums/Reporting/comparisonType";
 import { FieldTypeBase } from "./fieldType";
 
 export const enum ConfigurationValueKey {
-    BinaryFileType = "binaryFileType"
+    BinaryFileType = "binaryFileType",
+    BinaryFileOptions = "binaryFileOptions"
 }
 
 // The edit component can be quite large, so load it only as needed.

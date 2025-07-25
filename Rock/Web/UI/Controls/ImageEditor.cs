@@ -43,7 +43,7 @@ namespace Rock.Web.UI.Controls
     /// <example>
     /// <code>
     /// <![CDATA[
-    ///     <Rock:ImageEditor ID="imgedPhoto" runat="server" ButtonText="<i class='fa fa-pencil'></i> Select Photo"
+    ///     <Rock:ImageEditor ID="imgedPhoto" runat="server" ButtonText="<i class='ti ti-pencil'></i> Select Photo"
     ///             ButtonCssClass="btn btn-primary margin-t-sm" CommandArgument='<%# Eval("Id") %>'
     ///             OnFileSaved="imageEditor_FileSaved" ShowDeleteButton="false" />
     /// ]]>
@@ -274,12 +274,12 @@ namespace Rock.Web.UI.Controls
         [
         Bindable( true ),
         Category( "Appearance" ),
-        DefaultValue( "<i class='fa fa-pencil'></i>" ),
+        DefaultValue( "<i class='ti ti-pencil'></i>" ),
         Description( "The text for the edit button." )
         ]
         public string ButtonText
         {
-            get { return ViewState["ButtonText"] as string ?? "<i class='fa fa-pencil'></i>"; }
+            get { return ViewState["ButtonText"] as string ?? "<i class='ti ti-pencil'></i>"; }
             set { ViewState["ButtonText"] = value; }
         }
 
@@ -622,12 +622,12 @@ namespace Rock.Web.UI.Controls
 
             _aRemove = new HtmlAnchor();
             _aRemove.ID = "rmv";
-            _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
+            _aRemove.InnerHtml = "<i class='ti ti-x'></i>";
             Controls.Add( _aRemove );
 
             _lbCropImage = new LinkButton();
             _lbCropImage.ID = this.ID + "_lbCropImage";
-            _lbCropImage.Text = "<i class='fa fa-crop'></i>";
+            _lbCropImage.Text = "<i class='ti ti-crop'></i>";
             _lbCropImage.Click += _lbShowModal_Click;
             _lbCropImage.CausesValidation = false;
             Controls.Add( _lbCropImage );
@@ -660,7 +660,7 @@ namespace Rock.Web.UI.Controls
 
             _lSaveStatus = new Label();
             _lSaveStatus.ID = this.ID + "_lSaveStatus";
-            _lSaveStatus.CssClass = "fa fa-2x fa-check-circle-o text-success";
+            _lSaveStatus.CssClass = "ti ti-2x ti-circle-check text-success";
             _lSaveStatus.Style.Add( "vertical-align", "bottom" );
             _lSaveStatus.Visible = false;
             Controls.Add( _lSaveStatus );
@@ -939,7 +939,7 @@ namespace Rock.Web.UI.Controls
 
             writer.Write( @"
                 <div class='js-upload-progress' style='display:none'>
-                    <i class='fa fa-refresh fa-3x fa-spin'></i>
+                    <i class='ti ti-refresh ti-3x ti-spin'></i>
                 </div>" );
 
             string backgroundImageFormat = "<div class='image-container' id='{0}' style='background-image:url({1});background-size:cover;background-position:50%'></div>";

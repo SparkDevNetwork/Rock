@@ -72,7 +72,7 @@
     const value = ref<string>("316");
     const label = ref<string>("Active Members");
     const tooltip = ref<string>("The fictional number of members of this church that attend regularly.");
-    const iconCssClass = ref<string>("fa fa-users");
+    const iconCssClass = ref<string>("ti ti-users");
     const color = ref<Color | "">("");
     const colorShade = ref<`${Shade}` | "">("");
     const isCard = ref<boolean>(false);

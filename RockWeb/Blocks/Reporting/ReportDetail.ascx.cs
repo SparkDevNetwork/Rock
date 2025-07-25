@@ -153,12 +153,12 @@ namespace RockWeb.Blocks.Reporting
 
                 if ( this.ShowResults )
                 {
-                    btnToggleResults.Text = "Hide Results <i class='fa fa-chevron-up'></i>";
+                    btnToggleResults.Text = "Hide Results <i class='ti ti-chevron-up'></i>";
                     btnToggleResults.ToolTip = "Hide Results";
                 }
                 else
                 {
-                    btnToggleResults.Text = "Show Results <i class='fa fa-chevron-down'></i>";
+                    btnToggleResults.Text = "Show Results <i class='ti ti-chevron-down'></i>";
                     btnToggleResults.ToolTip = "Show Results";
                 }
 

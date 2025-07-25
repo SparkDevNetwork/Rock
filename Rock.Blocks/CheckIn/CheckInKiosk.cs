@@ -49,7 +49,7 @@ namespace Rock.Blocks.CheckIn
     [DisplayName( "Check-in Kiosk" )]
     [Category( "Check-in" )]
     [Description( "The standard Rock block for performing check-in at a kiosk." )]
-    [IconCssClass( "fa fa-clipboard-check" )]
+    [IconCssClass( "ti ti-clipboard-check" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -81,7 +81,7 @@ namespace Rock.Blocks.CheckIn
         Order = 4 )]
 
     [BooleanField( "Select All Schedules Automatically",
-        Description = "When enabled, the kiosk will automatically select all available schedules instead of asking the individual to make a selection.",
+        Description = "When enabled, the kiosk will automatically select all available schedules instead of asking the individual to make a selection. This will also disable the 'skip' screen when there is nothing to check into, instead those individuals will quietly be skipped and not checked in.",
         Key = AttributeKey.SelectAllSchedulesAutomatically,
         IsRequired = false,
         Order = 5 )]

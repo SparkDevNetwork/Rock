@@ -7,7 +7,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-file-text-o"></i> Requests</h1>
+                    <h1 class="panel-title"><i class="ti ti-file-type-txt"></i> Requests</h1>
                 </div>
                 <div class="panel-body">
 
@@ -37,8 +37,8 @@
                                 <Rock:DateField DataField="ResponseDate" HeaderText="Completed" SortExpression="ResponseDate" />
                                 <Rock:RockBoundField ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" DataField="RecordFoundLabel" HeaderText="Record Found" SortExpression="RecordFound" HtmlEncode="false" />
                                 <asp:HyperLinkField HeaderText="Report" DataNavigateUrlFields="ResponseDocumentUrl" DataNavigateUrlFormatString="{0}" DataTextField="ResponseDocumentText" ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center"  />
-                                <Rock:LinkButtonField HeaderText="Log" Text="<i class='fa fa-file-code-o fa-lg'></i>" OnClick="gRequest_Data" HeaderStyle-CssClass="" ItemStyle-CssClass="" ColumnPriority="DesktopLarge" />
-                                <Rock:EditField OnClick="gRequest_ViewWorkflow" IconCssClass="fa fa-cogs" ToolTip="View Workflow" />
+                                <Rock:LinkButtonField HeaderText="Log" Text="<i class='ti ti-file-code ti-lg'></i>" OnClick="gRequest_Data" HeaderStyle-CssClass="" ItemStyle-CssClass="" ColumnPriority="DesktopLarge" />
+                                <Rock:EditField OnClick="gRequest_ViewWorkflow" IconCssClass="ti ti-settings-cog" ToolTip="View Workflow" />
 
                             </Columns>
                         </Rock:Grid>

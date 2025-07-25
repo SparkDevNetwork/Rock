@@ -162,6 +162,7 @@ BEGIN
 			OR c.Guid = @DisplayedCampusGuid
 			OR g.CampusId IS NULL
 		)
+		AND g.IsArchived = 0
 	END
 	ELSE
 	BEGIN
@@ -182,7 +183,8 @@ BEGIN
 			@DisplayedCampusGuid IS NULL
 			OR c.Guid = @DisplayedCampusGuid
 			OR g.CampusId IS NULL
-		  );
+		  )
+		  AND g.IsArchived = 0;
 
 		-- Path 2: From RegistrationInstance > RelatedEntity > Group
 		INSERT INTO #DestinationGroups (GroupId, GroupTypeId)
@@ -203,7 +205,8 @@ BEGIN
 			@DisplayedCampusGuid IS NULL
 			OR c.Guid = @DisplayedCampusGuid
 			OR g.CampusId IS NULL
-		  );
+		  )
+		  AND g.IsArchived = 0;
 	END
 
 	IF @PlacementMode = 'GroupMode'
@@ -226,8 +229,12 @@ BEGIN
 			FROM GroupMember gm
 			INNER JOIN Person p ON gm.PersonId = p.Id
 			LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
-			WHERE gm.GroupId = @SourceEntityId
-			  OR gm.GroupId IN (SELECT GroupId FROM #DestinationGroups)
+			WHERE gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
+			AND (
+				gm.GroupId = @SourceEntityId
+				OR gm.GroupId IN (SELECT GroupId FROM #DestinationGroups)
+			)
 
 	END
 	ELSE IF @PlacementMode = 'EntitySetMode'
@@ -275,6 +282,8 @@ BEGIN
 		FROM Person p
 		INNER JOIN [GroupMember] gm ON p.Id = gm.PersonId
 		INNER JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
+		WHERE gm.IsArchived = 0
+		AND gm.GroupMemberStatus != 0
 
 	END
     ELSE IF @PlacementMode = 'TemplateMode'
@@ -366,11 +375,15 @@ BEGIN
 				FROM @Registrants r 
 				WHERE r.PersonAliasId = pa.Id
 			)
+			AND gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 		) x -- Gets all people. (placed registrants, unplaced registrants, and placed non-registrants)
         INNER JOIN PersonAlias pa ON x.PersonAliasId = pa.Id
 		INNER JOIN Person p ON pa.PersonId = p.Id
         LEFT JOIN GroupMember gm ON gm.PersonId = p.Id
             AND gm.GroupId IN (SELECT GroupId FROM #DestinationGroups)
+			AND gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 		LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
 		LEFT JOIN FeeData fd ON fd.RegistrationRegistrantId = x.RegistrantId
         WHERE (
@@ -388,6 +401,7 @@ BEGIN
 					AND fd.FeeItemId IN (SELECT Id FROM IncludedFeeItemIds)
 			)
 		 )
+
     END
     ELSE IF @PlacementMode = 'InstanceMode'
     BEGIN
@@ -472,11 +486,15 @@ BEGIN
 				FROM @Registrants r 
 				WHERE r.PersonAliasId = pa.Id
 			)
+			AND gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 		) x -- Gets all people. (placed registrants, unplaced registrants, and placed non-registrants)
         INNER JOIN PersonAlias pa ON x.PersonAliasId = pa.Id
         INNER JOIN Person p ON pa.PersonId = p.Id
         LEFT JOIN GroupMember gm ON gm.PersonId = p.Id
             AND gm.GroupId IN (SELECT GroupId FROM #DestinationGroups)
+			AND gm.IsArchived = 0
+			AND gm.GroupMemberStatus != 0
 		LEFT JOIN #DestinationGroups g ON gm.GroupId = g.GroupId
 		LEFT JOIN FeeData fd ON fd.RegistrationRegistrantId = X.RegistrantId
 		WHERE (

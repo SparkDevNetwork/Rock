@@ -5,7 +5,7 @@
         
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-th-large"></i> Block Type List</h1>
+                <h1 class="panel-title"><i class="ti ti-border-all"></i> Block Type List</h1>
             </div>
             <div class="panel-body">
 

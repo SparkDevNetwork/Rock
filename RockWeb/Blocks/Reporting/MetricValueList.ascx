@@ -8,7 +8,7 @@
             <Rock:ModalAlert ID="mdGridWarning" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-list"></i> Metric Values</h1>
+                <h1 class="panel-title"><i class="ti ti-list"></i> Metric Values</h1>
             </div>
             <div class="panel-body">
 

@@ -604,7 +604,7 @@ namespace RockWeb.Blocks.Groups
             }
             else
             {
-                lGroupIconHtml.Text = "<i class='fa fa-user' ></i>";
+                lGroupIconHtml.Text = "<i class='ti ti-user' ></i>";
             }
 
             if ( groupMember.Id.Equals( 0 ) )

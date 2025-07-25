@@ -43,6 +43,13 @@ export type GeneralConfigurationBag = {
     /** Gets or sets the personalization cookie cache length minutes. */
     personalizationCookieCacheLengthMinutes?: number | null;
 
+    /**
+     * The hostname to use for connections to the Rock RealTime system.
+     * If not set then the hostname connected to by the client for other
+     * web requests will be used.
+     */
+    realTimeHostname?: string | null;
+
     /** Gets or sets the visitor cookie persistence length days. */
     visitorCookiePersistenceLengthDays?: number | null;
 };

@@ -38,7 +38,7 @@
                 <span class="mr-1">{{ row.fullName }}</span>
                 <span v-if="row.signalMarkup" class="mr-1" v-html="row.signalMarkup"></span>
                 <span v-if="config.options?.isNoteColumnVisible && row.note" class='js-member-note' data-toggle='tooltip' data-placement='top' :title='`${row.note}`'>
-                    <i class='fa fa-file-text-o text-info'></i>
+                    <i class='ti ti-file-type-txt text-info'></i>
                 </span>
             </template>
         </Column>
@@ -112,7 +112,7 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
-        <ButtonColumn v-if="config.options?.personProfilePageUrl" :excludeFromExport="true" name="user" iconClass="fa fa-user" @click="onPersonClick" visiblePriority="md" />
+        <ButtonColumn v-if="config.options?.personProfilePageUrl" :excludeFromExport="true" name="user" iconClass="ti ti-user" @click="onPersonClick" visiblePriority="md" />
 
         <DeleteColumn v-if="config.isDeleteEnabled" @click="onDeleteClick" />
     </Grid>

@@ -37,7 +37,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Grading System Scale List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning grading system scales." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

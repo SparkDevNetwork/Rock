@@ -35,12 +35,12 @@
                       visiblePriority="sm" />
 
         <BooleanColumn name="isSystem"
-                       title="Is System"
+                       title="System"
                        field="isSystem"
                        visiblePriority="xs" />
 
         <BooleanColumn name="cacheToServerFileSystem"
-                       title="Cache To Server File System"
+                       title="Cache To Server"
                        field="cacheToServerFileSystem"
                        visiblePriority="xs" />
 

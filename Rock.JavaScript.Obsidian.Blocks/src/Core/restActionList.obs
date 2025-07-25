@@ -29,7 +29,7 @@
                 width="50px"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <span v-if="row.hasCacheHeader" class="text-success fa fa-tachometer-alt"></span>
+                <span v-if="row.hasCacheHeader" class="text-success ti ti-brand-speedtest"></span>
             </template>
         </Column>
 

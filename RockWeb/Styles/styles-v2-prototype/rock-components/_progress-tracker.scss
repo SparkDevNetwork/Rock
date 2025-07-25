@@ -13,8 +13,8 @@
 // ======================== BASE STYLE ========================
 .progress-tracker {
   display: flex;
-  background: var(--color-interface-soft);
-  border: 1px solid var(--color-interface-softer);
+  background: var(--color-interface-softest);
+  border: 1px solid var(--color-interface-soft);
   border-radius: var(--rounded-small);
 }
 
@@ -51,7 +51,7 @@
   display: block;
   width: 14px;
   height: 100%;
-  color: var(--color-interface-softer);
+  color: var(--color-interface-soft);
 
   svg {
     width: 100%;
@@ -64,7 +64,7 @@
   display: flex;
   align-items: center;
   width: 100%;
-  padding: var(--spacing-xsmall) var(--spacing-small) var(--spacing-xsmall) var(----spacing-small);
+  padding: var(--spacing-xsmall) var(--spacing-small) var(--spacing-xsmall) var(--spacing-small);
   font-size: .875rem;
   font-weight: var(--font-weight-medium);
   line-height: 1.25;
@@ -90,12 +90,12 @@
 
   &.current {
     background: var(--color-interface-softest);
-    border: 2px solid var(color-primary);
+    border: 2px solid var(--color-primary);
   }
 
   &.upcoming {
     background: var(--color-interface-softest);
-    border: 2px solid var(--color-interface-strong);
+    border: 2px solid var(--color-interface-medium);
   }
 }
 

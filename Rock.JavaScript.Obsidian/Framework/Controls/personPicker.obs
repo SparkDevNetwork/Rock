@@ -5,12 +5,12 @@
             <div class="control-wrapper">
                 <div class="picker picker-select person-picker">
                     <a class="picker-label" href="#" @click.prevent.stop="togglePopup">
-                        <i class="fa fa-user fa-fw"></i>
+                        <i class="ti ti-user ti-fw"></i>
                         <span class="selected-name">{{ selectedName }}</span>
                         <button role="button" type="button" aria-label="Clear selection" v-if="showClear" class="btn picker-select-none" @click.prevent.stop="onClear">
-                            <i class="fa fa-times"></i>
+                            <i class="ti ti-x"></i>
                         </button>
-                        <b class="fa fa-caret-down"></b>
+                        <b class="ti ti-caret-down"></b>
                     </a>
 
                     <div v-if="showPopup" class="backdrop" @keydown.esc.stop="onCancel">
@@ -19,13 +19,13 @@
                                 <h4>Person Search</h4>
                                 <div class="d-flex align-items-center">
                                     <RockButton class="btn-square mr-2" v-if="isSelfSelectionEnabled" @click.prevent="selectSelf" :btnSize="BtnSize.ExtraSmall" aria-label="Select Self" title="Select Self">
-                                        <i class="fa fa-user" aria-hidden></i>
+                                        <i class="ti ti-user" aria-hidden></i>
                                     </RockButton>
                                     <RockButton class="btn-square mr-2" @click.prevent="isAdvancedSearch = !isAdvancedSearch" :btnSize="BtnSize.ExtraSmall" aria-label="Advanced Search" title="Advanced Search">
-                                        <i class="fa fa-gears" aria-hidden></i>
+                                        <i class="ti ti-settings-cog" aria-hidden></i>
                                     </RockButton>
                                     <button class="action btn-link" @click.prevent.stop="onCancel" type="button" aria-label="Close" title="Close">
-                                        <i class="fa fa-times" aria-hidden></i>
+                                        <i class="ti ti-x" aria-hidden></i>
                                     </button>
                                 </div>
                             </div>
@@ -70,7 +70,7 @@
                                                     <div class="taglist pull-right">
                                                         <Tag v-for="tag in getTags(result)" :key="tag.name ?? undefined" :modelValue="tag" class="mb-0" disabled />
                                                     </div>
-                                                    <div class="leading-snug"><span class="text-md font-weight-semibold">{{ result.name }}</span> <i class="fa fa-child text-primary" v-if="result.ageClassification == AgeClassification.Child" aria-label="Child" title="Child"></i> <span v-if="result.formattedAge" class="text-muted">{{ result.formattedAge }}</span></div>
+                                                    <div class="leading-snug"><span class="text-md font-weight-semibold">{{ result.name }}</span> <i class="ti ti-user-screen text-primary" v-if="result.ageClassification == AgeClassification.Child" aria-label="Child" title="Child"></i> <span v-if="result.formattedAge" class="text-muted">{{ result.formattedAge }}</span></div>
                                                     <div v-if="getSubInformation(result)" class="text-muted"><span v-html="getSubInformation(result)" /></div>
                                                     <small><a :href="`/Person/${result.guid}`" @click.stop target="_blank" rel="noreferrer noopener" tabindex="-1">Profile</a></small>
                                                 </div>

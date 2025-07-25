@@ -21,6 +21,7 @@
 //  + Panel drawer
 //  + Panel subheader
 //  + Panel badges
+//  + Panel Footer Content
 // =============================================================
 
 
@@ -685,7 +686,8 @@
       width:        100%;
     }
 
-    i.fa.fa-bars {
+    i.fa.fa-bars,
+    i.ti.ti-menu-2 {
       cursor:       pointer;
     }
   }
@@ -976,6 +978,17 @@
 }
 // ===================== END PANEL BADGES =====================
 
+.panel-worksurface > .panel-body {
+    display: flex;
+    flex-direction: column;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.panel-worksurface .panel-scrollable-content {
+    flex-grow: 1;
+    overflow: hidden auto;
+}
 
 .paneleditor-label {
   float: left;
@@ -1093,3 +1106,17 @@
 .panel-headerimage {
   margin:               -15px -15px 15px -15px;
 }
+
+// ======================= PANEL FOOTER CONTENT =======================
+
+.panel-footer-content {
+    padding: var(--panel-body-padding);
+    background: var(--color-interface-softer);
+    border-top: 1px solid var(--color-interface-soft);
+}
+
+.panel-sidebar-footer-content {
+    grid-column: 1 / span 4;
+}
+
+// ===================== END PANEL FOOTER CONTENT =====================

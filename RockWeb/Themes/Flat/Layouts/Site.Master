@@ -52,7 +52,7 @@
                 <div class="container">
 			        <div class="navbar-header">
                         <button class="navbar-toggle" type="button" data-toggle="collapse" data-target=".navbar-collapse">
-                            <i class="fa fa-bars"></i>
+                            <i class="ti ti-menu-2"></i>
                         </button>
                         <Rock:Zone Name="Header" runat="server" />
 			        </div>

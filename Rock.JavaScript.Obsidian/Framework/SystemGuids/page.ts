@@ -398,6 +398,13 @@ export const Page = {
      * ParentPage: Communications
      */
     CommunicationMediums: "6FF35C53-F89F-4601-8543-2E2328C623F8",
+    /** Gets the Communication Reports page guid */
+    CommunicationReports: "64E589FE-020F-447A-87D6-50A38068B945",
+    /**
+     * Gets the Communication Saturation page guid
+     * ParentPage: Communications
+     */
+    CommunicationSaturation: "DA0F647C-5317-4368-9514-E408F2254E24",
     /**
      * Gets the Communication Templates page guid
      * ParentPage: Communications
@@ -1050,6 +1057,8 @@ export const Page = {
      * ParentPage: Communications
      */
     NewCommunication: "2A22D08D-73A8-4AAF-AC7E-220E8B2E7857",
+    /** Gets the New Communication (Obsidian) page guid */
+    NewCommunicationObsidian: "9F7AE226-CC95-4E6A-B333-C0294A2024BC",
     /**
      * Gets the New Family page guid
      * ParentPage: Manage

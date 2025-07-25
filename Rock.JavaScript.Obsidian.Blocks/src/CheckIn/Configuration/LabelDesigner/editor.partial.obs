@@ -4,12 +4,12 @@
             <div class="left-actions">
                 <RockButton :disabled="!labelManager.canUndo.value"
                             @click="() => labelManager.undo()">
-                    <i class="fa fa-undo"></i>
+                    <i class="ti ti-arrow-back-up"></i>
                 </RockButton>
 
                 <RockButton :disabled="!labelManager.canRedo.value"
                             @click="() => labelManager.redo()">
-                    <i class="fa fa-redo"></i>
+                    <i class="ti ti-arrow-forward-up"></i>
                 </RockButton>
             </div>
 
@@ -19,7 +19,7 @@
             <div class="right-actions">
                 <RockButton :disabled="isDeleteFieldDisabled"
                             @click="onDeleteFieldClick">
-                    <i class="fa fa-trash"></i>
+                    <i class="ti ti-trash"></i>
                 </RockButton>
             </div>
         </div>

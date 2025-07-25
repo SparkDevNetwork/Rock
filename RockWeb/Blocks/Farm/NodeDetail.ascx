@@ -71,7 +71,7 @@ $(document).ready(function () {
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-network-wired"></i>
+                    <i class="ti ti-schema"></i>
                     Web Farm Node:
                     <asp:Literal runat="server" ID="lNodeName" />
                 </h1>

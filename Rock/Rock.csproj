@@ -238,8 +238,7 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\libs\Rock.Common.Tv\Rock.Common.Tv.dll</HintPath>
     </Reference>
-    <Reference Include="stream-chat-net, Version=2.10.0.0, Culture=neutral, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="stream-chat-net">
       <HintPath>..\libs\StreamChat\stream-chat-net.dll</HintPath>
     </Reference>
     <Reference Include="System" />

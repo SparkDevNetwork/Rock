@@ -477,7 +477,7 @@ namespace Rock.Web.UI.Controls
                 _pnlPickerMenu.Controls.AddAt( 0, ModePanel );
             }
 
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i><span>{0}</span><b class='fa fa-caret-down'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='ti ti-map-pin'></i><span>{0}</span><b class='ti ti-caret-down'></b>", this.AddressSummaryText );
 
             base.Render( writer );
         }
@@ -503,7 +503,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.Attributes["aria-label"] = "Clear selection";
             _btnSelectNone.Attributes["class"] = "btn picker-select-none";
             _btnSelectNone.ID = string.Format( "btnSelectNone_{0}", this.ID );
-            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
+            _btnSelectNone.InnerHtml = "<i class='ti ti-x'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
             _btnSelectNone.ServerClick += _btnSelectNone_ServerClick;
@@ -598,7 +598,7 @@ namespace Rock.Web.UI.Controls
 
             this.Location = location;
 
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i><span>{0}</span><b class='fa fa-caret-down'></b>", this.AddressSummaryText );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='ti ti-map-pin'></i><span>{0}</span><b class='ti ti-caret-down'></b>", this.AddressSummaryText );
 
             ShowDropDown = false;
 
@@ -616,7 +616,7 @@ namespace Rock.Web.UI.Controls
         protected void _btnSelectNone_ServerClick( object sender, EventArgs e )
         {
             Location = null;
-            _btnPickerLabel.InnerHtml = string.Format( "<i class='fa fa-map-marker-alt'></i><span>{0}</span><b class='fa fa-caret-down'></b>", string.Empty );
+            _btnPickerLabel.InnerHtml = string.Format( "<i class='ti ti-map-pin'></i><span>{0}</span><b class='ti ti-caret-down'></b>", string.Empty );
         }
 
         /// <summary>

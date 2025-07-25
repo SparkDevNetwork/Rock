@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title ">
-                    <i class="fa fa-question-circle"></i>
+                    <i class="ti ti-zoom-question"></i>
                     Nameless People
                 </h1>
             </div>
@@ -17,7 +17,7 @@
                     <Rock:Grid ID="gNamelessPersonList" runat="server" RowItemText="Nameless Person" DataKeyNames="Id">
                         <Columns>
                             <Rock:RockLiteralField ID="lUnmatchedPerson" HeaderText="Phone Number" OnDataBound="lUnmatchedPerson_DataBound" />
-                            <Rock:LinkButtonField ID="btnLinkToPerson" Text="<i class='fa fa-user'></i>" ToolTip="Link to Person" CssClass="btn btn-default btn-sm" OnClick="btnLinkToPerson_Click" />
+                            <Rock:LinkButtonField ID="btnLinkToPerson" Text="<i class='ti ti-user'></i>" ToolTip="Link to Person" CssClass="btn btn-default btn-sm" OnClick="btnLinkToPerson_Click" />
                         </Columns>
                     </Rock:Grid>
                 </div>

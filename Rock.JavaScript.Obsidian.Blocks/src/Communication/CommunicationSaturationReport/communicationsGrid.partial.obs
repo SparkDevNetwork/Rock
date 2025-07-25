@@ -44,7 +44,7 @@
         <ButtonColumn name="view"
                       title=""
                       field="view"
-                      iconClass="fa fa-poll"
+                      iconClass="ti ti-chart-bar"
                       :onClick="showCommunicationDetails" />
 
     </Grid>

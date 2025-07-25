@@ -172,7 +172,7 @@
                     </h2>
                     <div class="panel-labels">
                         <asp:LinkButton ID="btnAddCampaignRequests" runat="server" OnClick="btnAddCampaignRequests_Click" CssClass="btn btn-default btn-xs">
-                            <i class="fa fa-plus"></i>
+                            <i class="ti ti-plus"></i>
                             Campaign Requests
                         </asp:LinkButton>
                     </div>
@@ -189,7 +189,7 @@
                         <ContentTemplate>
                             <div class="d-inline-block btn-group-mega js-btn-group-mega">
                                 <button type="button" class="btn btn-xs btn-tool dropdown-toggle js-dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                    <i class="fa fa-plug"></i>
+                                    <i class="ti ti-plug"></i>
                                     Opportunities
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-mega js-dropdown-menu-mega">
@@ -231,7 +231,7 @@
                                 </ul>
                             </div>
                             <asp:LinkButton ID="lbAddRequest" runat="server" CssClass="btn btn-xs btn-tool" OnClick="lbAddRequest_Click" CausesValidation="false">
-                                <i class="fa fa-plus"></i>
+                                <i class="ti ti-plus"></i>
                                 Add Request
                             </asp:LinkButton>
                         </ContentTemplate>
@@ -239,7 +239,7 @@
                     <div class="toolbar-group">
                         <div class="btn-group">
                             <button id="btnConnectors" runat="server" type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-user"></i>
+                                <i class="ti ti-user"></i>
                                 <asp:Literal runat="server" ID="lConnectorText" />
                             </button>
                             <ul class="dropdown-menu">
@@ -269,7 +269,7 @@
                     <div class="toolbar-group">
                         <div class="btn-group">
                             <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-sort"></i>
+                                <i class="ti ti-caret-up-down"></i>
                                 <asp:Literal runat="server" ID="lSortText" />
                             </button>
                             <ul class="dropdown-menu dropdown-menu-right">
@@ -287,12 +287,12 @@
                             </ul>
                         </div>
                         <a id="aFilterDrawerToggle" runat="server" href="javascript:toggleFilterDrawer()" class="btn btn-xs btn-tool">
-                            <i class="fa fa-filter"></i>
+                            <i class="ti ti-filter"></i>
                             Filters
                         </a>
                         <div runat="server" id="divCampusBtnGroup" class="btn-group">
                             <button type="button" class="btn btn-xs btn-tool dropdown-toggle" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
-                                <i class="fa fa-building"></i>
+                                <i class="ti ti-building"></i>
                                 <asp:Literal runat="server" ID="lCurrentCampusName" />
                             </button>
                             <ul class="dropdown-menu">
@@ -412,7 +412,7 @@
                                 <div class="col-sm-10">
                                     <asp:Literal runat="server" ID="lRequestModalViewModeStatusIcons" />
                                     <a runat="server" class="small pull-right" id="aRequestModalViewModeProfileLink">
-                                        <i class="fa fa-user-alt"></i>
+                                        <i class="ti ti-user"></i>
                                         Person Profile
                                     </a>
                                     <h3 class="mt-0 mb-3">
@@ -522,7 +522,7 @@
                                     </div>
                                     <div class="col-md-6 text-right">
                                         <asp:LinkButton runat="server" ID="lbRequestModalViewModeAddActivity" OnClick="lbRequestModalViewModeAddActivity_Click" CssClass="btn btn-default btn-xs">
-                                            <i class="fa fa-plus"></i>
+                                            <i class="ti ti-plus"></i>
                                             Add Activity
                                         </asp:LinkButton>
                                     </div>
@@ -781,7 +781,7 @@
                 <div>
                     <div class="btn-group dropdown-right">
                         <button type="button" class="btn btn-sm text-muted bg-white dropdown-toggle pr-0" data-toggle="dropdown">
-                            <i class="fa fa-ellipsis-h"></i>
+                            <i class="ti ti-dots"></i>
                         </button>
                         <ul class="dropdown-menu">
                             <li>
@@ -805,11 +805,11 @@
             </div>
             <div class="board-card-meta">
                 <span title="{{ActivityCountText}} - {{DaysSinceLastActivityLongText}}">
-                    <i class="fa fa-list"></i>
+                    <i class="ti ti-list"></i>
                     {{ActivityCount}} - {{DaysSinceLastActivityShortText}}
                 </span>
                 <span title="{{DaysSinceOpeningLongText}}">
-                    <i class="fa fa-calendar"></i>
+                    <i class="ti ti-calendar"></i>
                     {{DaysSinceOpeningShortText}}
                 </span>
             </div>

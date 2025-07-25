@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-plus-square-o"></i>
+                <h1 class="panel-title"><i class="ti ti-square-plus"></i>
                     <asp:Literal ID="lTitle" runat="server"></asp:Literal></h1>
             </div>
             <div class="panel-body">

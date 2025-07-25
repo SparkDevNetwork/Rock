@@ -98,7 +98,7 @@
                     obj.selectedShape = null;
                 }
                 $('#gmnoprint-delete-button_' + obj.controlId).attr('disabled', '')
-                    .find('.fa-times').css("color", "#aaa");
+                    .find('.ti-x').css("color", "#aaa");
             }
 
             /**
@@ -111,7 +111,7 @@
 
                 // enable delete button
                 $('#gmnoprint-delete-button_' + obj.controlId).prop("disabled", false)
-                    .find('.fa-times').css("color", "");
+                    .find('.ti-x').css("color", "");
 
                 obj.selectedShape = shape;
 
@@ -501,8 +501,8 @@
 
                 var isExpaned = $myElement.data("fullscreen");
 
-                $(this).children('i').toggleClass("fa-expand", isExpaned);
-                $(this).children('i').toggleClass("fa-compress", ! isExpaned);
+                $(this).children('i').toggleClass("ti-maximize", isExpaned);
+                $(this).children('i').toggleClass("ti-minimize", ! isExpaned);
 
                 // Shrink to regular size
                 if ( isExpaned ) {

@@ -147,7 +147,7 @@ namespace Rock.Rest.v2
                     Value = a.Guid.ToString(),
                     Text = options.DisplayPublicName ? a.PublicName : a.Name,
                     IsActive = a.IsActive,
-                    IconCssClass = "fa fa-file-o"
+                    IconCssClass = "ti ti-file"
                 } ).ToList();
 
             var resultIds = accountList.Select( f => f.Id ).ToList();
@@ -422,7 +422,7 @@ namespace Rock.Rest.v2
                 EntityTypeGuid = EntityTypeCache.Get<Rock.Model.AdaptiveMessageCategory>().Guid,
                 IncludeUnnamedEntityItems = true,
                 IncludeCategoriesWithoutChildren = false,
-                DefaultIconCssClass = "fa fa-list-ol",
+                DefaultIconCssClass = "ti ti-list-numbers",
                 LazyLoad = true,
                 SecurityGrant = grant
             } );
@@ -1063,7 +1063,7 @@ namespace Rock.Rest.v2
                 {
                     Text = options.NewFolderName,
                     Value = $"0,{parsedAsset.EncryptedRoot},{Path.Combine( parsedAsset.SubPath, options.NewFolderName )}",
-                    IconCssClass = "fa fa-folder",
+                    IconCssClass = "ti ti-folder",
                     HasChildren = false,
                     UnencryptedRoot = parsedAsset.Root
                 } );
@@ -1097,7 +1097,7 @@ namespace Rock.Rest.v2
                     {
                         Text = options.NewFolderName,
                         Value = $"{provider.Id},{parsedAsset.EncryptedRoot},{Path.Combine( parsedAsset.SubPath, options.NewFolderName )}/",
-                        IconCssClass = "fa fa-folder",
+                        IconCssClass = "ti ti-folder",
                         HasChildren = false,
                         UnencryptedRoot = parsedAsset.Root
                     } );
@@ -1648,7 +1648,7 @@ namespace Rock.Rest.v2
                 {
                     Text = folder.Name,
                     Value = folderKey,
-                    IconCssClass = "fa fa-folder",
+                    IconCssClass = "ti ti-folder",
                     HasChildren = hasChildren,
                     UnencryptedRoot = parsedAsset.Root
                 };
@@ -1721,7 +1721,7 @@ namespace Rock.Rest.v2
                     {
                         Text = subDirInfo.Name,
                         Value = subDirKey,
-                        IconCssClass = "fa fa-folder",
+                        IconCssClass = "ti ti-folder",
                         HasChildren = hasChildren,
                         UnencryptedRoot = asset.Root
                     };
@@ -1913,7 +1913,7 @@ namespace Rock.Rest.v2
                 {
                     Text = folder.Name,
                     Value = $"{parentAsset.ProviderId},{parentAsset.EncryptedRoot},{Path.Combine( parentAsset.SubPath, folder.Name ).TrimEnd( '/', '\\' ) + "/"}",
-                    IconCssClass = "fa fa-folder",
+                    IconCssClass = "ti ti-folder",
                     // Verifying if it has any children is slow, so we just say true and it gets fixed
                     // on the client when attempting to expand children
                     HasChildren = true,
@@ -2421,7 +2421,7 @@ namespace Rock.Rest.v2
                     return Unauthorized();
                 }
 
-                var items = new BinaryFileService( new RockContext() )
+                var items = new BinaryFileService( rockContext )
                     .Queryable()
                     .Where( f => f.BinaryFileType.Guid == options.BinaryFileTypeGuid && !f.IsTemporary )
                     .OrderBy( f => f.FileName )
@@ -3039,9 +3039,16 @@ namespace Rock.Rest.v2
                     ? DefinedValueCache.Get( person.MaritalStatusValueId.Value )?.Value
                     : string.Empty;
 
-                var personPhoneNumber = recipientData.PhoneNumbers?.Any() == true
-                    ? recipientData.PhoneNumbers.First().NumberFormatted
-                    : string.Empty;
+                string personPhoneNumber = string.Empty;
+                if ( recipientData.PhoneNumbers?.Any() == true )
+                {
+                    // Prefer SMS phone number; fall back to first phone number.
+                    var phoneNumber = recipientData.PhoneNumbers
+                        .FirstOrDefault( p => p.IsMessagingEnabled )
+                        ?? recipientData.PhoneNumbers.First();
+
+                    personPhoneNumber = phoneNumber.NumberFormatted;
+                }
 
                 var results = new CommunicationRecipientGetActivityResultsBag
                 {
@@ -3395,7 +3402,7 @@ namespace Rock.Rest.v2
                         item.Value = request.Guid.ToString();
                         item.Text = request.PersonAlias.Person.FullName;
                         item.HasChildren = false;
-                        item.IconCssClass = "fa fa-user";
+                        item.IconCssClass = "ti ti-user";
                         list.Add( item );
                     }
                 }
@@ -5614,7 +5621,7 @@ namespace Rock.Rest.v2
                         Label = groupRequirement.GroupRequirementType.CheckboxLabel.IsNotNullOrWhiteSpace()
                             ? groupRequirement.GroupRequirementType.CheckboxLabel
                             : groupRequirement.GroupRequirementType.Name,
-                        Icon = "fa fa-square-o fa-fw"
+                        Icon = "ti ti-square ti-fw"
                     };
                 }
 
@@ -5624,7 +5631,7 @@ namespace Rock.Rest.v2
                     {
                         Enabled = true,
                         Label = "Mark as Met",
-                        Icon = "fa fa-check-circle-o fa-fw"
+                        Icon = "ti ti-circle-check ti-fw"
                     };
                 }
 
@@ -5644,7 +5651,7 @@ namespace Rock.Rest.v2
                         Label = groupRequirementType.DoesNotMeetWorkflowLinkText.IsNotNullOrWhiteSpace()
                             ? groupRequirementType.DoesNotMeetWorkflowLinkText
                             : "Requirement Not Met",
-                        Icon = "fa fa-play-circle-o fa-fw"
+                        Icon = "ti ti-player-play ti-fw"
                     };
                 }
 
@@ -5656,7 +5663,7 @@ namespace Rock.Rest.v2
                         Label = groupRequirementType.WarningWorkflowLinkText.IsNotNullOrWhiteSpace() ?
                             groupRequirementType.WarningWorkflowLinkText :
                             "Requirement Met With Warning",
-                        Icon = "fa fa-play-circle-o fa-fw"
+                        Icon = "ti ti-player-play ti-fw"
                     };
                 }
 
@@ -8518,7 +8525,7 @@ namespace Rock.Rest.v2
                 var hasChildren = pageIdentifiersWithChildren.Any( a => a == g.Value );
                 g.HasChildren = hasChildren;
                 g.IsFolder = hasChildren;
-                g.IconCssClass = "fa fa-file-o";
+                g.IconCssClass = "ti ti-file";
             }
 
             return Ok( pageItemList.AsQueryable() );
@@ -9043,7 +9050,7 @@ namespace Rock.Rest.v2
                     EntityTypeGuid = EntityTypeCache.Get<RegistrationTemplate>().Guid,
                     IncludeUnnamedEntityItems = false,
                     IncludeCategoriesWithoutChildren = false,
-                    DefaultIconCssClass = "fa fa-list-ol",
+                    DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
                     SecurityGrant = grant
                 };
@@ -9489,7 +9496,7 @@ namespace Rock.Rest.v2
                     IncludeCategoryGuids = options.IncludeCategoryGuids == null || options.IncludeCategoryGuids.Count == 0 ? null : options.IncludeCategoryGuids,
                     ItemFilterPropertyName = options.EntityTypeGuid.HasValue ? "EntityTypeId" : null,
                     ItemFilterPropertyValue = options.EntityTypeGuid.HasValue ? EntityTypeCache.Get( options.EntityTypeGuid.Value ).Id.ToString() : "",
-                    DefaultIconCssClass = "fa fa-list-ol",
+                    DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
                     SecurityGrant = grant
                 };
@@ -9700,7 +9707,7 @@ namespace Rock.Rest.v2
                     IncludeUnnamedEntityItems = false,
                     IncludeCategoriesWithoutChildren = false,
                     IncludeInactiveItems = options.IncludeInactiveItems,
-                    DefaultIconCssClass = "fa fa-list-ol",
+                    DefaultIconCssClass = "ti ti-list-numbers",
                     LazyLoad = true,
                     SecurityGrant = grant
                 };
@@ -9997,7 +10004,7 @@ namespace Rock.Rest.v2
                     item.Value = category.Key.ToString();
                     item.Text = category.Value;
                     item.HasChildren = true;
-                    item.IconCssClass = "fa fa-folder";
+                    item.IconCssClass = "ti ti-folder";
                     list.Add( item );
                 }
             }
@@ -10014,7 +10021,7 @@ namespace Rock.Rest.v2
                         item.Value = entityType.Guid.ToString();
                         item.Text = ActionContainer.GetComponentName( entityType.Name );
                         item.HasChildren = false;
-                        item.IconCssClass = "fa fa-cube";
+                        item.IconCssClass = "ti ti-cube";
                         list.Add( item );
                     }
                 }

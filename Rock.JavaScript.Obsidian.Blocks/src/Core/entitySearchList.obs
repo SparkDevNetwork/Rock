@@ -46,7 +46,7 @@
 
         <ButtonColumn name="preview"
                       tooltip="Preview"
-                      iconClass="fa fa-search"
+                      iconClass="ti ti-search"
                       :disabled="row => !!row.disablePreview"
                       :excludeFromExport="true"
                       @click="onPreviewClick" />

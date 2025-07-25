@@ -20,7 +20,7 @@
                     <div class="d-flex justify-content-end">
                         <button ref="refreshTooltip" class="btn btn-xs btn-default" @click.prevent="refreshData" :title="formatLastUpdated(lastUpdated) + '. Estimated refresh time ' + estimatedRefreshTime + 's.'">
                             {{ calculateTimeDifference(lastUpdated) }}
-                            <i class="fas fa-sync-alt"></i>
+                            <i class="ti ti-refresh"></i>
                         </button>
                     </div>
 

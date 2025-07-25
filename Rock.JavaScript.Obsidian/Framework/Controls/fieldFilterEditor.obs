@@ -24,7 +24,7 @@
         </div>
 
         <div class="filter-actions">
-            <button class="btn btn-xs btn-action add-action" @click.prevent="onAddRuleClick"><i class="fa fa-filter"></i> Add Criteria</button>
+            <button class="btn btn-xs btn-action add-action" @click.prevent="onAddRuleClick"><i class="ti ti-filter"></i> Add Criteria</button>
         </div>
     </div>
 </template>

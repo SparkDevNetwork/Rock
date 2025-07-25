@@ -49,7 +49,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Step Type Detail" )]
     [Category( "Steps" )]
     [Description( "Displays the details of the given Step Type for editing." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 

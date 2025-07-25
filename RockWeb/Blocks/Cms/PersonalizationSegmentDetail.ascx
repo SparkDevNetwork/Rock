@@ -7,7 +7,7 @@
             <asp:HiddenField ID="hfPersonalizationSegmentId" runat="server" />
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-user-tag"></i>
+                    <i class="ti ti-user-dollar"></i>
                     <asp:Literal ID="lPanelTitle" runat="server" Text="" />
 
                 </h1>

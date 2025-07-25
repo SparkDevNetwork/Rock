@@ -19,10 +19,10 @@
                         <div class="pull-right">
                             <div class="btn-group btn-toggle btn-group">
                                 <RockButton @click="toggleSortOrder(true)" :class="isSortedAlphabetically ? selectedButtonClasses : unselectedButtonClasses">
-                                    <i class="icon-fw fa fa-sort-alpha-down"></i>
+                                    <i class="icon-fw ti ti-sort-ascending-letters"></i>
                                 </RockButton>
                                 <RockButton @click="toggleSortOrder(false)" :class="isSortedAlphabetically ? unselectedButtonClasses : selectedButtonClasses">
-                                    <i class="icon-fw fa fa-list"></i>
+                                    <i class="icon-fw ti ti-list"></i>
                                 </RockButton>
                             </div>
                         </div>

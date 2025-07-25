@@ -2,6 +2,7 @@
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
+using Rock.Tests.Lava;
 using Rock.Tests.Shared;
 
 namespace Rock.Tests.Utility.ExtensionMethods
@@ -9,6 +10,14 @@ namespace Rock.Tests.Utility.ExtensionMethods
     [TestClass]
     public class StringExtensionsTest
     {
+
+        [ClassInitialize()]
+        public static void Initialize( TestContext context )
+        {
+            // Reset the timezone to avoid problems with other tests.
+            LavaTestHelper.SetRockDateTimeToLocalTimezone();
+        }
+
         #region AsDateTime
 
         [TestMethod]

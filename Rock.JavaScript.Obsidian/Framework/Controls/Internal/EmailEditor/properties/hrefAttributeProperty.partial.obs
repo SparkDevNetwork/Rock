@@ -4,7 +4,7 @@
                      :label="label"
                      :valueProvider="valueProvider">
         <template #inputGroupPrepend>
-            <span class="input-group-addon"><i class="fa fa-link"></i></span>
+            <span class="input-group-addon"><i class="ti ti-link"></i></span>
         </template>
     </TextBoxProperty>
 </template>

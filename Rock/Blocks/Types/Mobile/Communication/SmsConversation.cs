@@ -43,7 +43,7 @@ namespace Rock.Blocks.Types.Mobile.Communication
     [DisplayName( "SMS Conversation" )]
     [Category( "Mobile > Communication" )]
     [Description( "Displays a single SMS conversation between Rock and individual." )]
-    [IconCssClass( "fa fa-comments" )]
+    [IconCssClass( "ti ti-messages" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

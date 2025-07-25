@@ -9,14 +9,16 @@ interface IExtendedConnection extends Connection {
  * The engine that can connect to an ASP.Net WebForms server.
  */
 export class AspNetEngine extends Engine {
+    private url: string;
     private hub: Proxy | null = null;
     private isManuallyDisconnecting: boolean = false;
 
     /**
      * Creates a new engine that can connect to an ASP.Net WebForms server.
      */
-    public constructor() {
+    public constructor(url: string) {
         super();
+        this.url = url;
     }
 
     /** @inheritdoc */
@@ -27,7 +29,7 @@ export class AspNetEngine extends Engine {
     /** @inheritdoc */
     protected startConnection(): Promise<void> {
         return new Promise<void>((resolve, reject) => {
-            const connection = hubConnection("/rock-rt", { useDefaultPath: false }) as IExtendedConnection;
+            const connection = hubConnection(this.url, { useDefaultPath: false }) as IExtendedConnection;
             const hub = connection.createHubProxy("realTime");
 
             hub.on("message", this.onMessageReceived.bind(this));

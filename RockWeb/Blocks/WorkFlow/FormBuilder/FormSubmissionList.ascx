@@ -7,7 +7,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block styled-scroll">
 
             <div class="panel-heading panel-follow">
-                <h1 class="panel-title"><i class="fa fa-poll-h"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-notes"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>

@@ -28,16 +28,6 @@ export const enum TabItem {
     RecipientDetails = "Recipient Details"
 }
 
-export const enum PerformanceChartItem {
-    Time = "Time",
-    Flow = "Flow"
-}
-
-export const enum PerformanceChartTimeframe {
-    First45Days = "First 45 Days",
-    AllTime = "All Time"
-}
-
 export type ChartStyles = {
     fontFamily: string;
     fontColor: string;
@@ -46,10 +36,6 @@ export type ChartStyles = {
     legendBoxSize: number;
     fallbackColor: string;
 };
-
-export const enum PageParameterKey {
-    Tab = "Tab"
-}
 
 export const enum PreferenceKey {
     RecipientListSettings = "RecipientListSettings"
@@ -77,14 +63,23 @@ export type RecipientGridRow = {
     lastActivityDateTime?: string | null;
     status: CommunicationRecipientStatus;
     statusNote?: string | null;
-    sendDatetime?: string | null;
-    deliveredDateTime?: string | null;
     medium?: CommunicationType | null;
     opensCount?: number | null;
-    lastOpenedDateTime?: string | null;
     clicksCount?: number | null;
+
+    delivered: boolean;
+    deliveredDateTime?: string | null;
+
+    opened: boolean;
+    lastOpenedDateTime?: string | null;
+
+    clicked: boolean;
     lastClickedDateTime?: string | null;
-    unsubscribeDateTime?: string | null;
+
+    unsubscribed: boolean;
+    unsubscribedDateTime?: string | null;
+
+    spam: boolean;
     spamComplaintDateTime?: string | null;
 
     age?: number | null;

@@ -51,7 +51,7 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
         #region Properties
 
         /// <inheritdoc/>
-        public override string IconCssClass => "fa fa-pager";
+        public override string IconCssClass => "ti ti-image-in-picture";
 
         /// <inheritdoc/>
         public override bool IsModerationSupported => false;

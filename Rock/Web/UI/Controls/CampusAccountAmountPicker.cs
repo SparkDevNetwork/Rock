@@ -483,7 +483,7 @@ namespace Rock.Web.UI.Controls
 
             var campus = CampusCache.Get( campusId );
 
-            return displayedAccount.GetMappedAccountForCampus( campus ).Id;
+            return displayedAccount.GetMappedAccountForCampus( campus, true ).Id;
         }
 
         /// <summary>

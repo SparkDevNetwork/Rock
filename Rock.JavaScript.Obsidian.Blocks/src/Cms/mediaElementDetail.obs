@@ -8,7 +8,7 @@
         <template #headerActions>
             <div>
                 <template v-if="mediaElementViewBag?.closeCaption">
-                    <a><span ref="closedCaptionIcon" class="label label-info" title="Has Closed Captions"><i class="fa fa-cc fa-lg"></i></span></a>
+                    <a><span ref="closedCaptionIcon" class="label label-info" title="Has Closed Captions"><i class="ti ti-badge-cc ti-lg"></i></span></a>
                 </template>
                 <template v-if="mediaElementViewBag?.durationSeconds">
                     <span ref="durationLabel" class="label label-default ml-1" title="Media Duration">{{ formatDuration(mediaElementViewBag.durationSeconds) }}</span>
@@ -55,9 +55,9 @@
                         <div :class="{ 'col-md-6': defaultFileUrl || defaultThumbnailUrl }">
                             <div v-if="!showNoStatsMessage">
                                 <h5 class="mb-2">Rock Media Analytics</h5>
-                                <Kpi :value="engagementValue" label="Engagement" :tooltip="`The total minutes played divided by the length of the video times the total number of plays.`" iconCssClass="fa fa-broadcast-tower" color="blue" isCard />
-                                <Kpi :value="playCount" label="Plays" :tooltip="`This video was played ${playCount} times.`" iconCssClass="fa fa-play-circle" color="green" isCard />
-                                <Kpi :value="minutesWatched" label="Minutes Watched" :tooltip="`A total of ${minutesWatched} minutes were watched.`" iconCssClass="fa fa-clock" color="orange" isCard />
+                                <Kpi :value="engagementValue" label="Engagement" :tooltip="`The total minutes played divided by the length of the video times the total number of plays.`" iconCssClass="ti ti-building-broadcast" color="blue" isCard />
+                                <Kpi :value="playCount" label="Plays" :tooltip="`This video was played ${playCount} times.`" iconCssClass="ti ti-player-play" color="green" isCard />
+                                <Kpi :value="minutesWatched" label="Minutes Watched" :tooltip="`A total of ${minutesWatched} minutes were watched.`" iconCssClass="ti ti-clock" color="orange" isCard />
                             </div>
                         </div>
                     </div>
@@ -119,7 +119,7 @@
                                                     </span>
                                                     <span class="individual-play-person-location">{{ item.location || '' }}</span>
                                                 </div>
-                                                <i :class="`fa fa-${getClientIcon(item.clientType)} fa-lg text-muted o-50 mx-2`" :title="item.clientType"></i>
+                                                <i :class="`ti ti-${getClientIcon(item.clientType)} ti-lg text-muted o-50 mx-2`" :title="item.clientType"></i>
                                                 <span class="badge-circle badge-info flex-shrink-0 ml-1" :title="`${item.interactionsCount} Interactions`">{{ item.interactionsCount }}</span>
                                             </div>
                                             <div class="position-relative additional-data">
@@ -129,7 +129,7 @@
                                                         <span>{{ item.operatingSystem }}</span>
                                                         <span>{{ item.application }}</span>
                                                     </div>
-                                                    <div class="expander" name="expander"><i class="fa fa-chevron-right text-muted o-50"></i></div>
+                                                    <div class="expander" name="expander"><i class="ti ti-chevron-right text-muted o-50"></i></div>
                                                 </div>
                                             </div>
                                             <div class="individual-play-chart">
@@ -480,7 +480,7 @@
         interactions.forEach(interaction => interaction.addEventListener("mouseover", event => {
             const target = event.target as HTMLElement;
             if (target && target.getAttribute("name") === "expander") {
-                let icon = target.querySelector(".fa-chevron-right");
+                let icon = target.querySelector(".ti-chevron-right");
                 if (icon) {
                     icon.classList.add("fa-flip-horizontal");
                 }
@@ -490,8 +490,8 @@
         }));
 
         interactions.forEach(interaction => interaction.addEventListener("mouseleave", () => {
-            if (interaction.querySelector(".fa-chevron-right")) {
-                let icon = interaction.querySelector(".fa-chevron-right");
+            if (interaction.querySelector(".ti-chevron-right")) {
+                let icon = interaction.querySelector(".ti-chevron-right");
                 if (icon) {
                     icon.classList.remove("fa-flip-horizontal");
                 }
@@ -1334,12 +1334,12 @@
 
         switch (clientType.toLowerCase()) {
             case "mobile":
-                return "mobile-alt";
+                return "device-mobile";
             case "tablet":
-                return "tablet-alt";
+                return "device-ipad";
             case "desktop":
             default:
-                return "desktop";
+                return "device-desktop";
         }
     }
 

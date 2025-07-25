@@ -90,7 +90,7 @@
                              placeholder="Search for section...">
                         <template #inputGroupPrepend>
                             <span class="input-group-addon">
-                                <i class="fa fa-search"></i>
+                                <i class="ti ti-search"></i>
                             </span>
                         </template>
                     </TextBox>
@@ -453,17 +453,17 @@
     const sidePanelMenuItems: SidePanelMenuItem[] = [
         {
             title: "Blocks",
-            iconCssClass: "fa fa-shapes fa-lg",
+            iconCssClass: "ti ti-icons ti-lg",
             type: "blocks"
         },
         {
             title: "Sections",
-            iconCssClass: "fas fa-object-group fa-lg",
+            iconCssClass: "ti ti-squares ti-lg",
             type: "sections"
         },
         {
             title: "Styles",
-            iconCssClass: "fa fa-swatchbook fa-lg",
+            iconCssClass: "ti ti-color-swatch ti-lg",
             type: "styles"
         }
     ];

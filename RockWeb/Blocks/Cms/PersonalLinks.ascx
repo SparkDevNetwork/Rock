@@ -20,13 +20,13 @@
 
                     <div class="ml-auto">
                         <div class="dropdown pull-right">
-                            <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="fa fa-ellipsis-v"></i></a>
+                            <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="ti ti-dots-vertical"></i></a>
                             <ul class="dropdown-menu">
                                 <li><asp:LinkButton runat="server" ID="lbManageLinks" OnClick="lbManageLinks_Click">Manage Links</asp:LinkButton></li>
                             </ul>
                         </div>
                         <div class="dropdown pull-right">
-                            <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="fa fa-plus"></i></a>
+                            <a class="btn btn-xs py-0 px-1 text-muted" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false" role="button"><i class="ti ti-plus"></i></a>
                             <ul class="dropdown-menu">
                                 <li><asp:LinkButton runat="server" ID="lbAddLink" OnClick="lbAddLink_Click">Add Link</asp:LinkButton></li>
                                 <li><asp:LinkButton runat="server" ID="lbAddSection" OnClick="lbAddSection_Click">Add Section</asp:LinkButton></li>

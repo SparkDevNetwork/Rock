@@ -46,7 +46,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Media Folder List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of media folders." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

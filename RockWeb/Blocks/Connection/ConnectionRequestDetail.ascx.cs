@@ -190,11 +190,11 @@ namespace RockWeb.Blocks.Connection
                                 <small class=""text-muted mr-2 "" title=""{{ connectionRequestActivity.CreatedDateTime }}"">{{ connectionRequestActivity.CreatedDateTime | Date:'sd' }}</small>
                                 {% if canEdit %}
                                     <a title=""Delete"" class=""btn btn-danger btn-sm btn-square grid-delete-button"" href=""#"" onclick=""{{ connectionRequestActivity.Id | Postback:'DeleteActivity' }}"">
-                                        <i class=""fa fa-times""></i>
+                                        <i class=""ti ti-x""></i>
                                     </a>
                                 {% else %}
                                     <a title=""Delete"" class=""btn btn-danger btn-sm btn-square grid-delete-button aspNetDisabled"" href=""#"">
-                                        <i class=""fa fa-times""></i>
+                                        <i class=""ti ti-x""></i>
                                     </a>
                                 {% endif %}
                     </div>
@@ -2188,7 +2188,7 @@ namespace RockWeb.Blocks.Connection
                         var smsLink = LinkedPageUrl(
                             AttributeKeys.SmsLinkPage,
                             new Dictionary<string, string> { { "Person", person.Id.ToString() } } );
-                        smsAnchor = string.Format( @"<a href=""{0}""><i class=""fa fa-comments""></i></a>", smsLink );
+                        smsAnchor = string.Format( @"<a href=""{0}""><i class=""ti ti-messages""></i></a>", smsLink );
                     }
 
                     contactList.Add(

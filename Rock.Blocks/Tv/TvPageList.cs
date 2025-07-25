@@ -38,7 +38,7 @@ namespace Rock.Blocks.Tv
     [DisplayName( "TV Page List" )]
     [Category( "TV > TV Apps" )]
     [Description( "Displays a list of pages." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

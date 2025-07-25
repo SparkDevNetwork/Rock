@@ -32,6 +32,7 @@ using System.Web.UI.WebControls;
 
 using Microsoft.AspNetCore.Hosting;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
 using Rock.Blocks;
@@ -50,7 +51,6 @@ using Rock.Transactions;
 using Rock.Utility;
 using Rock.ViewModels.Crm;
 using Rock.Web.Cache;
-using Rock.Web.HttpModules;
 using Rock.Web.UI.Controls;
 
 using Page = System.Web.UI.Page;
@@ -116,7 +116,7 @@ namespace Rock.Web.UI
         /// The currently running Rock version.
         /// </summary>
         private static string _rockVersion = "";
-        
+
         /// <summary>
         /// A list of blocks (their paths) that will force the obsidian libraries to be loaded.
         /// This is particularly useful when a block has a settings dialog that is dependent on
@@ -125,6 +125,9 @@ namespace Rock.Web.UI
         private static readonly List<string> _blocksToForceObsidianLoad = new List<string>
         {
             "~/Blocks/Cms/PageZoneBlocksEditor.ascx",
+            "~/Blocks/Reporting/ReportDetail.ascx",
+            "~/Blocks/Reporting/DataViewDetail.ascx",
+            "~/Blocks/Reporting/DynamicReport.ascx",
             "~/Blocks/Mobile/MobilePageDetail.ascx"
         };
 
@@ -1293,13 +1296,38 @@ namespace Rock.Web.UI
                     Page.Trace.Warn( "Creating JS objects" );
                     if ( !ClientScript.IsStartupScriptRegistered( "rock-js-object" ) )
                     {
+                        var realTimeUrl = "/rock-rt";
+                        var realTimeHostname = SystemSettings.GetValue( SystemKey.SystemSetting.REALTIME_HOSTNAME );
+
+                        if ( realTimeHostname.IsNotNullOrWhiteSpace() )
+                        {
+                            try
+                            {
+                                var requestUrl = HttpContext.Current.Request.Url;
+
+                                realTimeUrl = new UriBuilder
+                                {
+                                    Scheme = requestUrl.Scheme,
+                                    Host = realTimeHostname,
+                                    Port = requestUrl.Port,
+                                    Path = "/rock-rt"
+                                }.ToString();
+                            }
+                            catch ( Exception ex )
+                            {
+                                RockLogger.LoggerFactory.CreateLogger( GetType().FullName )
+                                    .LogError( ex, "Unable to create URL for real-time engine." );
+                            }
+                        }
+
                         var script = $@"
 Rock.settings.initialize({{
     siteId: {_pageCache.Layout.SiteId},
     layoutId: {_pageCache.LayoutId},
     pageId: {_pageCache.Id},
     layout: '{_pageCache.Layout.FileName}',
-    baseUrl: '{ResolveUrl( "~" )}'
+    baseUrl: '{ResolveUrl( "~" )}',
+    realTimeUrl: '{realTimeUrl}',
 }});";
 
                         ClientScript.RegisterStartupScript( this.Page.GetType(), "rock-js-object", script, true );
@@ -1645,7 +1673,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                         lbCacheControl.Click += lbCacheControl_Click;
                         lbCacheControl.CssClass = $"pull-left margin-l-md {cacheIndicator}";
                         lbCacheControl.ToolTip = $"Web cache {cacheEnabled}";
-                        lbCacheControl.Text = "<i class='fa fa-running'></i>";
+                        lbCacheControl.Text = "<i class='ti ti-run'></i>";
                         adminFooter.Controls.Add( lbCacheControl );
 
                         // If the current user is Impersonated by another user, show a link on the admin bar to log back in as the original user
@@ -1660,7 +1688,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             //_btnRestoreImpersonatedByUser.CssClass = "btn";
                             _btnRestoreImpersonatedByUser.Visible = impersonatedByUser != null;
                             _btnRestoreImpersonatedByUser.Click += _btnRestoreImpersonatedByUser_Click;
-                            _btnRestoreImpersonatedByUser.Text = $"<i class='fa-fw fa fa-unlock'></i> " + $"Restore {impersonatedByUser?.Person?.ToString()}";
+                            _btnRestoreImpersonatedByUser.Text = $"<i class='ti-fw ti ti-lock-open'></i> " + $"Restore {impersonatedByUser?.Person?.ToString()}";
                             impersonatedByUserDiv.Controls.Add( _btnRestoreImpersonatedByUser );
                             adminFooter.Controls.Add( impersonatedByUserDiv );
                         }
@@ -1679,7 +1707,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aBlockConfig.Attributes.Add( "Title", "Block Configuration (Alt-B)" );
                             HtmlGenericControl iBlockConfig = new HtmlGenericControl( "i" );
                             aBlockConfig.Controls.Add( iBlockConfig );
-                            iBlockConfig.Attributes.Add( "class", "fa fa-th-large" );
+                            iBlockConfig.Attributes.Add( "class", "ti ti-border-all" );
                         }
 
                         if ( canEditPage || canAdministratePage )
@@ -1694,7 +1722,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aPageProperties.Attributes.Add( "Title", "Page Properties (Alt+P)" );
                             HtmlGenericControl iPageProperties = new HtmlGenericControl( "i" );
                             aPageProperties.Controls.Add( iPageProperties );
-                            iPageProperties.Attributes.Add( "class", "fa fa-cog" );
+                            iPageProperties.Attributes.Add( "class", "ti ti-settings" );
                         }
 
                         if ( canAdministratePage )
@@ -1709,7 +1737,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aChildPages.Attributes.Add( "Title", "Child Pages (Alt+L)" );
                             HtmlGenericControl iChildPages = new HtmlGenericControl( "i" );
                             aChildPages.Controls.Add( iChildPages );
-                            iChildPages.Attributes.Add( "class", "fa fa-sitemap" );
+                            iChildPages.Attributes.Add( "class", "ti ti-sitemap" );
 
                             // RockPage Zones
                             HtmlGenericControl aPageZones = new HtmlGenericControl( "a" );
@@ -1719,7 +1747,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aPageZones.Attributes.Add( "Title", "Page Zones (Alt+Z)" );
                             HtmlGenericControl iPageZones = new HtmlGenericControl( "i" );
                             aPageZones.Controls.Add( iPageZones );
-                            iPageZones.Attributes.Add( "class", "fa fa-columns" );
+                            iPageZones.Attributes.Add( "class", "ti ti-columns" );
 
                             // RockPage Security
                             HtmlGenericControl aPageSecurity = new HtmlGenericControl( "a" );
@@ -1732,7 +1760,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aPageSecurity.Attributes.Add( "Title", "Page Security" );
                             HtmlGenericControl iPageSecurity = new HtmlGenericControl( "i" );
                             aPageSecurity.Controls.Add( iPageSecurity );
-                            iPageSecurity.Attributes.Add( "class", "fa fa-lock" );
+                            iPageSecurity.Attributes.Add( "class", "ti ti-lock" );
 
                             // ShortLink Properties
                             var administratorShortlinkScript = $@"Obsidian.onReady(() => {{
@@ -1750,7 +1778,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aShortLink.Attributes.Add( "Title", "Add Short Link" );
                             HtmlGenericControl iShortLink = new HtmlGenericControl( "i" );
                             aShortLink.Controls.Add( iShortLink );
-                            iShortLink.Attributes.Add( "class", "fa fa-link" );
+                            iShortLink.Attributes.Add( "class", "ti ti-link" );
 
                             // System Info
                             HtmlGenericControl aSystemInfo = new HtmlGenericControl( "a" );
@@ -1762,7 +1790,7 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                             aSystemInfo.Attributes.Add( "Title", "Rock Information" );
                             HtmlGenericControl iSystemInfo = new HtmlGenericControl( "i" );
                             aSystemInfo.Controls.Add( iSystemInfo );
-                            iSystemInfo.Attributes.Add( "class", "fa fa-info-circle" );
+                            iSystemInfo.Attributes.Add( "class", "ti ti-info-circle" );
                         }
                     }
 
@@ -2352,7 +2380,8 @@ Obsidian.onReady(() => {{
             {
                 Authorization.SignOut();
                 UserLoginService.UpdateLastLogin(
-                    new UpdateLastLoginArgs {
+                    new UpdateLastLoginArgs
+                    {
                         UserName = impersonatedByUser.UserName,
                         ShouldSkipWritingHistoryLog = true
                     }
@@ -3031,7 +3060,7 @@ Sys.Application.add_load(function () {
             var baseUrl = FileUrlHelper.GetImageUrl( binaryFileId );
             var url = ResolveRockUrl( $"{baseUrl}&width={size}&height={size}&mode=crop&format=png" );
             favIcon.Text = $"<link rel=\"{rel}\" sizes=\"{size}x{size}\" href=\"{url}\" />";
-             
+
             AddHtmlLink( favIcon );
         }
 
@@ -3948,7 +3977,7 @@ Sys.Application.add_load(function () {
                     zoneConfigLink.Attributes.Add( "href", "#" );
                     zoneConfig.Controls.Add( zoneConfigLink );
                     HtmlGenericControl iZoneConfig = new HtmlGenericControl( "i" );
-                    iZoneConfig.Attributes.Add( "class", "fa fa-arrow-circle-right" );
+                    iZoneConfig.Attributes.Add( "class", "ti ti-circle-arrow-right" );
                     zoneConfigLink.Controls.Add( iZoneConfig );
 
                     HtmlGenericControl zoneConfigBar = new HtmlGenericControl( "div" );
@@ -3970,7 +3999,7 @@ Sys.Application.add_load(function () {
                     aBlockConfig.Attributes.Add( "zone", zoneControl.Key );
                     //aBlockConfig.InnerText = "Blocks";
                     HtmlGenericControl iZoneBlocks = new HtmlGenericControl( "i" );
-                    iZoneBlocks.Attributes.Add( "class", "fa fa-th-large" );
+                    iZoneBlocks.Attributes.Add( "class", "ti ti-border-all" );
                     aBlockConfig.Controls.Add( iZoneBlocks );
                 }
 
@@ -4710,7 +4739,7 @@ Sys.Application.add_load(function () {
                 return string.Empty;
             }
 
-            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper(request) );
+            return WebRequestHelper.GetClientIpAddress( new HttpRequestWrapper( request ) );
         }
 
         #endregion

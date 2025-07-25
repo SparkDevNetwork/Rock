@@ -660,7 +660,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.Attributes["aria-label"] = "Clear selection";
             _btnSelectNone.Attributes["class"] = "btn picker-select-none js-picker-select-none";
             _btnSelectNone.ID = "btnSelectNone";
-            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
+            _btnSelectNone.InnerHtml = "<i class='ti ti-x'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.ServerClick += btnSelect_Click;
 
@@ -732,13 +732,13 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write(
                     $@"
-                <i class='fa fa-user'></i>
+                <i class='ti ti-user'></i>
                 <span class='js-personpicker-selectedperson-label picker-selectedperson'>{selectedText}</span>
 " );
 
                 _btnSelectNone.RenderControl( writer );
 
-                writer.Write( $@"<b class='fa fa-caret-down'></b>" );
+                writer.Write( $@"<b class='ti ti-caret-down'></b>" );
 
                 writer.RenderEndTag();
 
@@ -757,7 +757,7 @@ namespace Rock.Web.UI.Controls
                 // Render Additional Search Fields toggler
                 writer.Write( @"
                     <span class='js-toggle-additional-search-fields toggle-additional-search-fields picker-search-action clickable' title='Advanced Search'>
-                        <i class='fa fa-search-plus'></i>
+                        <i class='ti ti-zoom-in'></i>
                     </span>" );
 
                 // Render Self Picker
@@ -765,7 +765,7 @@ namespace Rock.Web.UI.Controls
                 {
                     writer.Write( @"
                     <span class='js-select-self picker-search-action clickable' title='Select self'>
-                        <i class='fa fa-user'></i>
+                        <i class='ti ti-user'></i>
                     </span>" );
                 }
 
@@ -831,7 +831,7 @@ namespace Rock.Web.UI.Controls
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";
-                linkButton.Text = $"<i class='fa fa-user'></i><span>{selectedText}</span>";
+                linkButton.Text = $"<i class='ti ti-user'></i><span>{selectedText}</span>";
                 linkButton.Enabled = false;
                 linkButton.RenderControl( writer );
                 writer.WriteLine();

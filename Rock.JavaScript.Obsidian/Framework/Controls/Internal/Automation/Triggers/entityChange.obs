@@ -30,7 +30,7 @@
                 <Toggle v-model="isAdvanced"
                         trueText="Advanced"
                         falseText="Simple"
-                        btnSize="xs" />
+                        btnSize="sm" />
             </div>
 
             <template v-if="isAdvanced">

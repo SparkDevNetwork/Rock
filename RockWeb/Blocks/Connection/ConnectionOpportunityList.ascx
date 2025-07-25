@@ -11,12 +11,12 @@
 
                     <div class="panel-heading">
                         <h1 class="panel-title pull-left">
-                            <i class="fa fa-list"></i>
+                            <i class="ti ti-list"></i>
                             Connection Opportunities
                         </h1>
 
                         <div class="panel-labels">
-                            <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" />
+                            <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='ti ti-switch-3'></i>" />
                         </div>
                     </div>
 

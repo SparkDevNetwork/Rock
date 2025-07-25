@@ -21,7 +21,7 @@
         </style>
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-object-ungroup"></i> Model Map</h1>
+                <h1 class="panel-title"><i class="ti ti-squares"></i> Model Map</h1>
             </div>
             <div class="panel-body">
                 <div class="list-as-blocks clearfix">
@@ -72,23 +72,23 @@
                             <td>A required field.</td>
                         </tr>
                         <tr>
-                            <td class="w-0 text-center"><i class='fa fa-database fa-fw'></i></td>
+                            <td class="w-0 text-center"><i class='ti ti-database ti-fw'></i></td>
                             <td>A property on the database.</td>
                         </tr>
                         <tr>
-                            <td class="w-0 text-center"><i class='fa fa-square fa-fw o-20'></i></td>
+                            <td class="w-0 text-center"><i class='ti ti-square ti-fw o-20'></i></td>
                             <td>Not mapped to the database.  These fields are computed and are only available in the object.</td>
                         </tr>
                         <tr>
-                            <td class="w-0 text-center"><small><i class='fa fa-bolt fa-fw text-warning'></i></small></td>
+                            <td class="w-0 text-center"><small><i class='ti ti-bolt ti-fw text-warning'></i></small></td>
                             <td>These fields are available where Lava is supported.</td>
                         </tr>
                         <tr>
-                            <td class="w-0 text-center"><small><i class="fa fa-filter fa-fw text-info"></i></small></td>
+                            <td class="w-0 text-center"><small><i class="ti ti-filter ti-fw text-info"></i></small></td>
                             <td>These fields can be used as qualifiers on attributes.</td>
                         </tr>
                         <tr>
-                            <td class="text-center"><small><i class='fa fa-ban fa-fw text-danger'></i></small></td>
+                            <td class="text-center"><small><i class='ti ti-ban ti-fw text-danger'></i></small></td>
                             <td>These methods or fields are obsolete and should not be used.</td>
                         </tr>
                     </table>
@@ -134,12 +134,12 @@
 
                         <div class="clearfix">
                             <small class="pull-right">Show:
-                                <span class="js-model-inherited"><i class="js-model-check fa fa-fw fa-square-o"></i> Methods</span>
+                                <span class="js-model-inherited"><i class="js-model-check ti ti-fw ti-square"></i> Methods</span>
                             </small>
                         </div>
 
                         <div id="divClass" runat="server">
-                            <h4 class="font-weight-medium rollover-container border-bottom border-gray-400 pb-1 mb-2"><asp:Literal ID="lClassName" runat="server" /> <asp:Literal ID="lActualTableName" runat="server" /> <asp:HyperLink ID="hlAnchor" runat="server" CssClass="text-color margin-l-sm small rollover-item"><i class="fa fa-xs fa-link"></i></asp:HyperLink></h4>
+                            <h4 class="font-weight-medium rollover-container border-bottom border-gray-400 pb-1 mb-2"><asp:Literal ID="lClassName" runat="server" /> <asp:Literal ID="lActualTableName" runat="server" /> <asp:HyperLink ID="hlAnchor" runat="server" CssClass="text-color margin-l-sm small rollover-item"><i class="ti ti-xs ti-link"></i></asp:HyperLink></h4>
                             <asp:Literal ID="lClassDescription" runat="server" />
                             <asp:Literal ID="lClassExample" runat="server" />
                         </div>
@@ -155,7 +155,7 @@
             Sys.Application.add_load(function () {
                 // Hide and unhide inherited properties and methods
                 $('.js-model-inherited').on('click', function () {
-                    $(this).find('i.js-model-check').toggleClass('fa-check-square-o fa-square-o');
+                    $(this).find('i.js-model-check').toggleClass('ti-square-check ti-square');
                     $(this).closest('.panel-body').find('h4.js-model').toggleClass('visible hidden');
                     $(this).closest('.panel-body').find('li.js-model').toggleClass('visible hidden');
                 });
@@ -164,7 +164,7 @@
                     var valueTable = $(this).next('.js-value-table');
                     var txt = $(valueTable).is(':visible') ? 'Show Values' : 'Hide Values';
                     $(this).find('span').text(txt);
-                    $(this).find('i').toggleClass('fa-chevron-down fa-chevron-up');
+                    $(this).find('i').toggleClass('ti-chevron-down ti-chevron-up');
                     $(valueTable).slideToggle();
                 });
             });

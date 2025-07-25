@@ -88,7 +88,7 @@ namespace Rock.Storage.AssetStorage
         /// <value>
         /// The component icon path.
         /// </value>
-        public override string IconCssClass => "fa fa-google";
+        public override string IconCssClass => "ti ti-brand-google";
 
         #endregion Properties
 

@@ -60,10 +60,10 @@ export class RatingFieldType extends FieldTypeBase {
         const maxRating = toNumberOrNull(configurationValues[ConfigurationValueKey.MaxRating]) ?? 5;
         let html = "";
         for (let i = 0; i < rating && i < maxRating; i++) {
-            html += `<i class="fa fa-rating-selected"></i>`;
+            html += `<i class="ti ti-star-filled"></i>`;
         }
         for (let i = rating; i < maxRating; i++) {
-            html += `<i class="fa fa-rating-unselected"></i>`;
+            html += `<i class="ti ti-star"></i>`;
         }
 
         if (isEscaped) {
@@ -74,7 +74,7 @@ export class RatingFieldType extends FieldTypeBase {
     }
 
     public override getCondensedHtmlValue(value: string, configurationValues: Record<string, string>, isEscaped?: boolean): string {
-        return this.getHtmlValue(value,configurationValues, isEscaped);
+        return this.getHtmlValue(value, configurationValues, isEscaped);
     }
 
     public override getEditComponent(): Component {

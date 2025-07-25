@@ -2,7 +2,7 @@
 <template>
     <Panel type="block">
         <template #title>
-            <i class="fa fa-bus"></i> Message Bus
+            <i class="ti ti-bus"></i> Message Bus
         </template>
         <template #subheaderLeft>
             <span :class="`label label-${activeStatus.type}`">

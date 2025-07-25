@@ -18,6 +18,12 @@ SET NOCOUNT ON;
 DECLARE @CommCount              INT = 250;      -- How many [Communication] records to create.
 DECLARE @MaxRecipientCount      INT = 2500;     -- Max randomized count of [CommunicationRecipient] records per communication.
 
+DECLARE @OnlyRecordTypePerson   BIT = 0;        -- Constrain to only people; RecordType 1 (Default No)
+DECLARE @OnlyNonDeceased        BIT = 0;        -- Constrain to people who are not deceased (Default No)
+DECLARE @OnlyActiveRecordStatus BIT = 0;        -- Constrain to people who Active Record Status (Default No)
+DECLARE @DataViewId             INT = NULL;     -- Constrain people to only those in this PERSISTED DataView (optional)
+DECLARE @VerboseStatus          BIT = 0;        -- Output a message for each communication created (Default No)
+
 DECLARE @StartDate  DATETIME = DATEADD(DAY, -365, GETDATE());   -- Start date for communication date range.
 DECLARE @EndDate    DATETIME = DATEADD(DAY,  14, GETDATE());    -- End date for communication date range.
 
@@ -27,6 +33,19 @@ DECLARE @UseRealisticInteractionDateRange BIT = 1;
 
 ---------------------------------------------------------------------------------------------------
 -- DON'T MODIFY ANYTHING BELOW
+
+-- Check input args:
+IF @DataViewId IS NOT NULL AND EXISTS (
+    SELECT 1
+    FROM [DataView]
+    WHERE [Id] = @DataViewId
+      AND PersistedScheduleIntervalMinutes IS NULL
+      AND PersistedScheduleId IS NULL
+)
+BEGIN
+    THROW 50002, 'I''m sorry... Invalid DataView: must have either PersistedScheduleIntervalMinutes or PersistedScheduleId.', 1;
+END
+
 
 -- Seed [InteractionDeviceType]s to be used for email recipients.
 DECLARE @SeedEmailDeviceTypes TABLE
@@ -185,11 +204,32 @@ DECLARE @PersonAndAliasIds TABLE(
     , [PersonAliasId] INT
 );
 
+DECLARE 
+    @personRecordType INT = (
+        SELECT id
+        FROM DefinedValue
+        WHERE guid = '36CF10D6-C695-413D-8E7C-4546EFEF385E'
+        )
+    ,@personRecordStatusDefinedTypeId INT = (
+        SELECT id
+        FROM DefinedType
+        WHERE guid = '8522BADD-2871-45A5-81DD-C76DA07E2E7E'
+        )
+	,@personRecordStatusValueId INT
+
+-- The "Active" person record status
+SET @personRecordStatusValueId = (select top 1 id from DefinedValue where DefinedTypeId = @personRecordStatusDefinedTypeId AND [Value] = 'Active' )
+
 INSERT INTO @PersonAndAliasIds
 SELECT pa.[PersonId]
     , MIN(pa.[Id])
 FROM [PersonAlias] pa
+INNER JOIN [Person] p ON p.Id = pa.PersonId
 WHERE pa.[AliasPersonId] = pa.[PersonId]    -- only primary aliases
+AND (@OnlyNonDeceased = 0 OR p.IsDeceased = 0 )
+AND (@OnlyRecordTypePerson = 0 OR RecordTypeValueId = @personRecordType)
+AND (@OnlyActiveRecordStatus = 0 OR RecordStatusValueId = @personRecordStatusValueId)
+AND (@DataViewId IS NULL OR p.[Id] IN (SELECT [EntityId] FROM [DataViewPersistedValue] dvp WHERE dvp.[DataViewId] = @DataViewId))
 GROUP BY pa.[PersonId];                     -- one alias per person
 
 -- Ensure the max recipient count doesn't exceed the available person count.
@@ -391,6 +431,11 @@ SET @CommCreatedDateTime = @StartDate;
 
 WHILE @CommIndex < @CommCount
 BEGIN
+    IF (@VerboseStatus = 1)
+    BEGIN
+        PRINT CONCAT('Processing communication index ', @CommIndex, ' of ', @CommCount);
+    END
+
     -- Advance the created datetime.
     SET @Jitter = (ABS(CHECKSUM(NEWID())) % (@BaseIncrementSeconds / 5 + 1)) - (@BaseIncrementSeconds / 10);
     SET @CommCreatedDateTime = DATEADD(SECOND, @BaseIncrementSeconds + @Jitter, @CommCreatedDateTime);
@@ -844,6 +889,11 @@ html, body { margin: 0px; padding: 0px; height: 100%; }
     );
 
     SET @InteractionComponentId = SCOPE_IDENTITY();
+
+    IF @MaxRecipientCount = 0
+    BEGIN
+        THROW 50001, 'Cannot proceed: @MaxRecipientCount is 0.  The constraints probably made the @TotalPersonCount 0.', 1;
+    END
 
     -- Assign a random count of recipients up to the max recipient count.
     SET @RecipientCount = 1 + ABS(CHECKSUM(NEWID())) % @MaxRecipientCount;

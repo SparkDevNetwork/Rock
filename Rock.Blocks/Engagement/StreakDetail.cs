@@ -43,7 +43,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Streak Detail" )]
     [Category( "Engagement" )]
     [Description( "Displays the details of a particular streak." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

@@ -42,7 +42,7 @@ namespace RockWeb.Blocks.Finance
     /// <summary>
     /// Version 2 of the Transaction Entry Block
     /// </summary>
-    [DisplayName( "Transaction Entry (V2)" )]
+    [DisplayName( "Transaction Entry" )]
     [Category( "Finance" )]
     [Description( "Creates a new financial transaction or scheduled transaction." )]
 
@@ -593,7 +593,7 @@ mission. We are so grateful for your commitment.</p>
         <div class='panel panel-default'>
             <div class='panel-heading'>
                 <span class='panel-title h1'>
-                    <i class='fa fa-calendar'></i>
+                    <i class='ti ti-calendar'></i>
                     {{ scheduledTransaction.TransactionFrequencyValue.Value }}
                 </span>
 
@@ -602,7 +602,7 @@ mission. We are so grateful for your commitment.</p>
                 </span>
 
                 <div class='panel-actions pull-right'>
-                    <span class='js-toggle-scheduled-details toggle-scheduled-details clickable fa fa-chevron-down'></span>
+                    <span class='js-toggle-scheduled-details toggle-scheduled-details clickable ti ti-chevron-down'></span>
                 </div>
             </div>
 
@@ -668,7 +668,7 @@ mission. We are so grateful for your commitment.</p>
                 $totalAmount.hide();
             }
 
-            $toggle.removeClass('fa-chevron-down').addClass('fa-chevron-up');
+            $toggle.removeClass('ti-chevron-down').addClass('ti-chevron-up');
         } else {
             if (animate) {
                 $scheduledDetails.slideUp();
@@ -678,7 +678,7 @@ mission. We are so grateful for your commitment.</p>
                 $totalAmount.show();
             }
 
-            $toggle.removeClass('fa-chevron-up').addClass('fa-chevron-down');
+            $toggle.removeClass('ti-chevron-up').addClass('ti-chevron-down');
         }
     };
 

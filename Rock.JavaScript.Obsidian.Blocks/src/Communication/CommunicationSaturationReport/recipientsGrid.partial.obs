@@ -28,7 +28,7 @@
                     :filterValue="getConnectionStatusFilterValue"
                     :quickFilterValue="getConnectionStatusFilterValue" />
 
-        <ButtonColumn name="view" title="" field="view" iconClass="fa fa-user"
+        <ButtonColumn name="view" title="" field="view" iconClass="ti ti-user"
                       :onClick="showPersonCommunicationHistory" />
 
     </Grid>

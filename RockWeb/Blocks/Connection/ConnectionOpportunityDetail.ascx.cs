@@ -1776,7 +1776,7 @@ namespace RockWeb.Blocks.Connection
             if ( connectionOpportunity.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( ConnectionOpportunity.FriendlyTypeName ).FormatAsHtmlTitle();
-                connectionOpportunity.IconCssClass = "fa fa-long-arrow-right";
+                connectionOpportunity.IconCssClass = "ti ti-arrow-narrow-right";
                 hlStatus.Visible = false;
             }
             else

@@ -9,7 +9,7 @@
             <span v-if="businessDetailViewBag?.recordStatus?.value" :class="statusClass">{{ status }}</span>
             <div v-if="showActions" :class="customActionClass" style="position: relative;">
                 <button type="button" class="btn btn-default" data-toggle="dropdown" aria-expanded="false" @click="onActionContextDropdownClick">
-                    Actions <i class="fa fa-caret-down"></i>
+                    Actions <i class="ti ti-caret-down"></i>
                 </button>
                 <ul class="dropdown-menu dropdown-menu-right" v-html="customActions">
 

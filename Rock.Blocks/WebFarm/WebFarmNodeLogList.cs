@@ -38,7 +38,7 @@ namespace Rock.Blocks.WebFarm
     [DisplayName( "Web Farm Node Log List" )]
     [Category( "WebFarm" )]
     [Description( "Displays a list of web farm node logs." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "57e8356d-6e59-4f5b-8db9-a274b7a0efd8" )]
@@ -125,7 +125,12 @@ namespace Rock.Blocks.WebFarm
                 query = query.Where( l => l.EventDateTime < dateRange.End.Value );
             }
 
-            return query.OrderByDescending( l => l.EventDateTime );
+            return query;
+        }
+
+        protected override IQueryable<WebFarmNodeLog> GetOrderedListQueryable( IQueryable<WebFarmNodeLog> queryable, RockContext rockContext )
+        {
+            return queryable.OrderByDescending( l => l.EventDateTime );
         }
 
         /// <inheritdoc/>

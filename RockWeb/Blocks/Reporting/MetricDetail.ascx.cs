@@ -1258,18 +1258,18 @@ The Lava can include Lava merge fields:";
                     if ( metric.Schedule.HasScheduleWarning() )
                     {
                         hlScheduleFriendlyText.LabelType = LabelType.Warning;
-                        iconClass = "fa fa-exclamation-triangle";
+                        iconClass = "ti ti-alert-triangle";
                     }
                     else
                     {
                         hlScheduleFriendlyText.LabelType = LabelType.Info;
-                        iconClass = "fa fa-clock-o";
+                        iconClass = "ti ti-clock";
                     }
                 }
                 else
                 {
                     hlScheduleFriendlyText.LabelType = LabelType.Danger;
-                    iconClass = "fa fa-exclamation-triangle";
+                    iconClass = "ti ti-alert-triangle";
                 }
 
                 hlScheduleFriendlyText.Text = "<i class='" + iconClass + "'></i> " + metric.Schedule.ToFriendlyScheduleText( true );
@@ -1277,7 +1277,7 @@ The Lava can include Lava merge fields:";
             else
             {
                 hlScheduleFriendlyText.LabelType = LabelType.Danger;
-                hlScheduleFriendlyText.Text = "<i class='fa fa-clock-o'></i> " + "Not Scheduled";
+                hlScheduleFriendlyText.Text = "<i class='ti ti-clock'></i> " + "Not Scheduled";
             }
 
             lblMainDetails.Text = descriptionListMain.Html;

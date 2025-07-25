@@ -42,7 +42,7 @@ namespace Rock.Web.UI.Controls
                 + "&lazyLoad=false"
                 + "&entityTypeId=" + EntityTypeCache.Get( Rock.SystemGuid.EntityType.METRICCATEGORY.AsGuid() ).Id;
 
-            this.IconCssClass = "fa fa-bar-chart-o";
+            this.IconCssClass = "ti ti-chart-bar";
             base.OnInit( e );
         }
 

@@ -109,7 +109,7 @@
                 :filter="numberValueFilter"
                 :quickFilterValue="getRecipientCountFilterTextValue">
             <template #format="{ row }">
-                <Badge :badgeType="BadgeType.Info" class="grid-cell-recipients">
+                <Badge :badgeType="BadgeType.Info" class="communication-list-grid-cell-recipients">
                     <i class="ti ti-users"></i> {{ asFormattedString(row.recipientCount) }}
                 </Badge>
             </template>
@@ -123,9 +123,14 @@
         <LabelColumn name="topic"
                      field="topic"
                      title="Topic"
-                     defaultLabelClass="outline"
                      visiblePriority="xl"
-                     :filter="pickExistingValueFilter" />
+                     :filter="pickExistingValueFilter">
+            <template #format="{ row }">
+                <div class="label label-outline text-truncate" :class="{ 'communication-list-grid-cell-label': (row as Row).topic }">
+                    {{ (row as Row).topic }}
+                </div>
+            </template>
+        </LabelColumn>
 
         <Column name="sendDateTime"
                 field="sendDateTime"
@@ -177,8 +182,12 @@
     background-color: var(--theme-light);
 }
 
-.grid-cell-recipients {
+.communication-list-grid-cell-recipients {
     font-size: var(--font-size-small);
+}
+
+.communication-list-grid-cell-label {
+    display: block;
 }
 </style>
 

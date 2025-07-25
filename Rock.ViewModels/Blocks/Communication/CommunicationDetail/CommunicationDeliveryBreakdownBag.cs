@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Rock.Enums.Communication;
 
 namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
@@ -73,5 +75,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
         /// Gets or sets the percentage of recipients for whom communications of this type were cancelled.
         /// </summary>
         public decimal CancelledPercentage { get; set; }
+
+        /// <summary>
+        /// Gets or sets the datetime this delivery breakdown data was last updated.
+        /// </summary>
+        public DateTime? DataLastUpdatedDateTime { get; set; }
     }
 }

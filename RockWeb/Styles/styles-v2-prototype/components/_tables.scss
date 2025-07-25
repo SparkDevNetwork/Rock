@@ -1070,10 +1070,8 @@ td.grid-actions {
   }
 }
 
-.table > tbody > tr.is-deceased {
-  > td {
+.is-deceased {
     color: var(--color-danger-strong);
-  }
 }
 // ===================== END TABLE STATES =====================
 

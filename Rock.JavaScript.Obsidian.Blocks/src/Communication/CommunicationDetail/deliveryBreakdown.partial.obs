@@ -1,17 +1,8 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Panel v-if="deliveryBreakdown" title="Delivery Breakdown">
-
-        <template #headerActions>
-            <div v-if="recipientCountLabel" class="action">
-                <HighlightLabel labelType="primary">
-                    {{ recipientCountLabel }}
-                </HighlightLabel>
-            </div>
-        </template>
-
-        <div class="communication-delivery-breakdown-bar">
-            <div class="communication-delivery-breakdown-bar-pending"
+    <div v-if="deliveryBreakdown" class="communication-detail-delivery-breakdown">
+        <div class="communication-detail-delivery-breakdown-bar">
+            <div class="communication-detail-delivery-breakdown-bar-pending"
                  :style="`width:${pendingPercentage}%`"
                  :data-original-title="tooltips[statuses.pending]"
                  :ref="applyTooltip">
@@ -19,7 +10,7 @@
                     {{ labels[statuses.pending] }}
                 </span>
             </div>
-            <div class="communication-delivery-breakdown-bar-delivered"
+            <div class="communication-detail-delivery-breakdown-bar-delivered"
                  :style="`width:${deliveredPercentage}%`"
                  :data-original-title="tooltips[statuses.delivered]"
                  :ref="applyTooltip">
@@ -27,7 +18,7 @@
                     {{ labels[statuses.delivered] }}
                 </span>
             </div>
-            <div class="communication-delivery-breakdown-bar-failed"
+            <div class="communication-detail-delivery-breakdown-bar-failed"
                  :style="`width:${failedPercentage}%`"
                  :data-original-title="tooltips[statuses.failed]"
                  :ref="applyTooltip">
@@ -35,7 +26,7 @@
                     {{ labels[statuses.failed] }}
                 </span>
             </div>
-            <div class="communication-delivery-breakdown-bar-cancelled"
+            <div class="communication-detail-delivery-breakdown-bar-cancelled"
                  :style="`width:${cancelledPercentage}%`"
                  :data-original-title="tooltips[statuses.cancelled]"
                  :ref="applyTooltip">
@@ -44,102 +35,114 @@
                 </span>
             </div>
         </div>
-
-        <div class="communication-delivery-breakdown-legend">
-            <div class="communication-delivery-breakdown-legend-pending">
-                <div class="communication-delivery-breakdown-legend-swatch"></div>
-                Pending ({{ asFormattedString(pendingCount) }})
+        <div class="communication-detail-delivery-breakdown-legend">
+            <div class="communication-detail-delivery-breakdown-legend-swatches">
+                <div class="communication-detail-delivery-breakdown-legend-pending">
+                    <div class="communication-detail-delivery-breakdown-legend-swatch"></div>
+                    Pending ({{ asFormattedString(pendingCount) }})
+                </div>
+                <div class="communication-detail-delivery-breakdown-legend-delivered">
+                    <div class="communication-detail-delivery-breakdown-legend-swatch"></div>
+                    Delivered ({{ asFormattedString(deliveredCount) }})
+                </div>
+                <div class="communication-detail-delivery-breakdown-legend-failed">
+                    <div class="communication-detail-delivery-breakdown-legend-swatch"></div>
+                    Failed ({{ asFormattedString(failedCount) }})
+                </div>
+                <div class="communication-detail-delivery-breakdown-legend-cancelled">
+                    <div class="communication-detail-delivery-breakdown-legend-swatch"></div>
+                    Cancelled ({{ asFormattedString(cancelledCount) }})
+                </div>
             </div>
-            <div class="communication-delivery-breakdown-legend-delivered">
-                <div class="communication-delivery-breakdown-legend-swatch"></div>
-                Delivered ({{ asFormattedString(deliveredCount) }})
-            </div>
-            <div class="communication-delivery-breakdown-legend-failed">
-                <div class="communication-delivery-breakdown-legend-swatch"></div>
-                Failed ({{ asFormattedString(failedCount) }})
-            </div>
-            <div class="communication-delivery-breakdown-legend-cancelled">
-                <div class="communication-delivery-breakdown-legend-swatch"></div>
-                Cancelled ({{ asFormattedString(cancelledCount) }})
+            <div v-if="formattedLastUpdatedDateTime" class="communication-detail-delivery-breadown-legend-date">
+                Data Last Updated On: {{ formattedLastUpdatedDateTime }}
             </div>
         </div>
-
-    </Panel>
+    </div>
 </template>
 
 <style scoped>
-.communication-delivery-breakdown-bar {
+.communication-detail-delivery-breakdown-bar {
     display: flex;
     height: 80px;
     border-radius: var(--rounded-tiny);
     overflow: hidden;
 }
 
-.communication-delivery-breakdown-bar > div {
+.communication-detail-delivery-breakdown-bar > div {
     display: flex;
     justify-content: center;
     align-items: center;
     font-weight: var(--font-weight-semibold);
 }
 
-.communication-delivery-breakdown-bar-pending,
-.communication-delivery-breakdown-legend-pending > div {
+.communication-detail-delivery-breakdown-bar-pending,
+.communication-detail-delivery-breakdown-legend-pending > div {
     color: var(--color-interface-strong);
     background: var(--color-interface-soft);
 }
 
-.communication-delivery-breakdown-bar-delivered,
-.communication-delivery-breakdown-legend-delivered > div {
+.communication-detail-delivery-breakdown-bar-delivered,
+.communication-detail-delivery-breakdown-legend-delivered > div {
     color: var(--color-success-strong);
     background: var(--color-success-soft);
 }
 
-.communication-delivery-breakdown-bar-failed,
-.communication-delivery-breakdown-legend-failed > div {
+.communication-detail-delivery-breakdown-bar-failed,
+.communication-detail-delivery-breakdown-legend-failed > div {
     color: var(--color-danger-strong);
     background: var(--color-danger-soft);
 }
 
-.communication-delivery-breakdown-bar-cancelled,
-.communication-delivery-breakdown-legend-cancelled > div {
+.communication-detail-delivery-breakdown-bar-cancelled,
+.communication-detail-delivery-breakdown-legend-cancelled > div {
     color: var(--color-warning-strong);
     background: var(--color-warning-soft);
 }
 
-.communication-delivery-breakdown-legend {
+.communication-detail-delivery-breakdown-legend {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-medium);
+    flex-wrap: wrap;
+    padding-top: var(--spacing-medium);
+}
+
+.communication-detail-delivery-breakdown-legend-swatches {
+    flex: 1 1 auto;
     display: flex;
     flex-wrap: wrap;
     gap: var(--spacing-large);
-    padding-top: var(--spacing-medium);
     font-size: var(--font-size-small);
     font-weight: var(--font-weight-semibold);
 }
 
-.communication-delivery-breakdown-legend > div {
+.communication-detail-delivery-breakdown-legend-swatches > div {
     display: flex;
     flex-wrap: nowrap;
     align-items: center;
     gap: var(--spacing-xsmall);
 }
 
-.communication-delivery-breakdown-legend-swatch {
+.communication-detail-delivery-breakdown-legend-swatch {
     width: var(--spacing-large);
     height: var(--spacing-large);
     border-radius: var(--rounded-tiny);
+}
+
+.communication-detail-delivery-breadown-legend-date {
+    flex: 0 1 auto;
+    font-size: var(--font-size-xsmall);
+    color: var(--color-interface-medium);
 }
 </style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import { useMediumFilter } from "./utils.partial";
-    import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
-    import { CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { tooltip } from "@Obsidian/Utility/tooltip";
     import { CommunicationDeliveryBreakdownBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDeliveryBreakdownBag";
-
-    const mediumFilter = useMediumFilter();
 
     const statuses = {
         pending: "Pending",
@@ -158,14 +161,6 @@
     const minimumPercentage = 0.5;
 
     // #region Computed Values
-
-    const recipientCountLabel = computed((): string => {
-        if (!props.deliveryBreakdown || !mediumFilter.value) {
-            return "";
-        }
-
-        return `${CommunicationTypeDescription[mediumFilter.value]}: ${asFormattedString(props.deliveryBreakdown.recipientCount)}`;
-    });
 
     const pendingCount = computed((): number => {
         return props.deliveryBreakdown?.pendingCount ?? 0;
@@ -250,6 +245,16 @@
                 .slice(0, tooltipCount)
                 .map(([key, value]) => [key, `${value}% ${key}`])
         );
+    });
+
+    const formattedLastUpdatedDateTime = computed((): string => {
+        var lastUpdatedRockDateTime = RockDateTime
+            .parseISO(props.deliveryBreakdown?.dataLastUpdatedDateTime ?? "");
+        if (!lastUpdatedRockDateTime) {
+            return "";
+        }
+
+        return lastUpdatedRockDateTime.toASPString("g");
     });
 
     // #endregion Computed Values

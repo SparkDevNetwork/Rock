@@ -13,7 +13,7 @@
         
             <div class="panel-heading clearfix">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-binoculars"></i> 
+                    <i class="ti ti-binoculars"></i> 
                     ViewState Viewer
                 </h1>
 

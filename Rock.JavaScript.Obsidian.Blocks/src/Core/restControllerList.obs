@@ -47,7 +47,7 @@
                 width="1%">
             <template #format="{ row }">
                 <i v-if="row.actionsWithPublicCachingHeaders > 0"
-                   class="text-success fa fa-tachometer-alt"
+                   class="text-success ti ti-brand-speedtest"
                    :title="row.actionsWithPublicCachingHeaders"
                    data-toggle="tooltip"></i>
             </template>

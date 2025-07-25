@@ -5,7 +5,7 @@
         float: left;
     }
 
-    .image-uploader.clearable-input i.fa-times {
+    .image-uploader.clearable-input i.ti-x {
         margin-top: 113px;
     }
 
@@ -20,7 +20,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-paint-brush"></i> <asp:Literal ID="lThemeName" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-brush"></i> <asp:Literal ID="lThemeName" runat="server" /></h1>
             </div>
             <div class="panel-body">
 

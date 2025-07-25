@@ -34,7 +34,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Public Learning Course Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular public learning course." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CodeEditorField( "Lava Template",

@@ -25,15 +25,15 @@
                             <p><strong>Scheduled Individual Legend</strong></p>
                             <p>Each scheduled individual has one of three invite statuses:</p>
                             <ul>
-                                <li><i class="fa fa-circle text-success"></i> Accepted Invite</li>
-                                <li><i class="fa fa-circle text-muted"></i> Pending Invite</li>
-                                <li><i class="fa fa-circle text-danger"></i> Declined Invite</li>
+                                <li><i class="ti ti-circle text-success"></i> Accepted Invite</li>
+                                <li><i class="ti ti-circle text-muted"></i> Pending Invite</li>
+                                <li><i class="ti ti-circle text-danger"></i> Declined Invite</li>
                             </ul>
                             <p>The invite status is shown by a border around the individual's avatar.</p>
                             <p>Some scheduled individuals may also have notification icons that alert you to issues with their schedule.</p>
                             <ul>
-                                <li><i class="fa fa-exclamation-triangle"></i> Indicates a conflict; which can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
-                                <li><i class="fa fa-minus-circle"></i> Indicates that the schedule does not match this person's scheduling preference.</li>
+                                <li><i class="ti ti-alert-triangle"></i> Indicates a conflict; which can happen if an individual is unavailable due to a blackout, they do not meet the group requirements, or because they have a scheduling conflict.</li>
+                                <li><i class="ti ti-circle-minus"></i> Indicates that the schedule does not match this person's scheduling preference.</li>
                             </ul>
                             <p>For both notification icon types, additional details can be viewed by hovering over the icon.</p>
                         </div>
@@ -42,10 +42,10 @@
                             <p><strong>Group Location Schedule Status</strong></p>
                             <p>Each group location has a status bar at the bottom that shows the overall status of the schedule.</p>
                             <ul>
-                                <li><i class="fa fa-square text-danger"></i> A red bar means there are not enough accepted invites to reach the minimum number of individuals needed.</li>
-                                <li><i class="fa fa-square text-warning"></i> A yellow bar means there are enough accepted invites to reach the minimum number, but not the desired number.</li>
-                                <li><i class="fa fa-square text-success"></i> A green bar means there are enough accepted invites to reach or exceed the desired number.</li>
-                                <li><i class="fa fa-square text-critical"></i> An orange bar means there are too many accepted invites and the maximum number is exceeded.</li>
+                                <li><i class="ti ti-square text-danger"></i> A red bar means there are not enough accepted invites to reach the minimum number of individuals needed.</li>
+                                <li><i class="ti ti-square text-warning"></i> A yellow bar means there are enough accepted invites to reach the minimum number, but not the desired number.</li>
+                                <li><i class="ti ti-square text-success"></i> A green bar means there are enough accepted invites to reach or exceed the desired number.</li>
+                                <li><i class="ti ti-square text-critical"></i> An orange bar means there are too many accepted invites and the maximum number is exceeded.</li>
                             </ul>
                             <p>Each status bar will show a solid bar representing the accepted invites, and a semi-transparent bar representing pending invites.</p>
                             <p>Bars include ticks, that mark the thresholds (minimum, desired and maximum) for each schedule. You can hover over each tick to see a tooltip with the threshold and the number of individuals required.</p>
@@ -60,14 +60,14 @@
                     <div class="panel-toolbar d-none d-md-flex flex-wrap flex-sm-nowrap justify-content-between">
                         <div :class="filtersCssClass"
                              :disabled="isBusy"
-                             @click="onSelectFiltersClick"><i class="fa fa-sliders-h"></i> {{ filtersText }}</div>
+                             @click="onSelectFiltersClick"><i class="ti ti-adjustments-horizontal"></i> {{ filtersText }}</div>
 
                         <div class="d-block flex-shrink-0">
                             <RockButton v-if="isCloneSchedulesEnabled"
                                         :btnSize="BtnSize.ExtraSmall"
                                         :disabled="isSchedulingDisabled"
                                         @click="onCloneSchedulesClick">
-                                <i class="fa fa-clone"></i> Clone Schedules
+                                <i class="ti ti-copy"></i> Clone Schedules
                                 <Loading :isLoading="isCloningSchedules" :isSmall="true" class="d-inline-block" />
                             </RockButton>
 
@@ -76,7 +76,7 @@
                                         :disabled="isSchedulingDisabled"
                                         class="ml-1"
                                         @click="onRosterClick">
-                                <i class="fa fa-calendar-check"></i> Rosters
+                                <i class="ti ti-calendar-check"></i> Rosters
                             </RockButton>
 
                             <RockButton v-if="isAutoScheduleEnabled"
@@ -84,7 +84,7 @@
                                         :disabled="isSchedulingDisabled"
                                         class="ml-1"
                                         @click="onAutoScheduleClick">
-                                <i class="fa fa-magic"></i> Auto Schedule
+                                <i class="ti ti-wand"></i> Auto Schedule
                                 <Loading :isLoading="isAutoScheduling" :isSmall="true" class="d-inline-block" />
                             </RockButton>
 
@@ -92,7 +92,7 @@
                                         :disabled="isSchedulingDisabled"
                                         class="ml-1"
                                         @click="onSendConfirmationsClick">
-                                <i class="fa fa-envelope-o"></i> Send Confirmations
+                                <i class="ti ti-mail"></i> Send Confirmations
                                 <Loading :isLoading="isSendingConfirmations" :isSmall="true" class="d-inline-block" />
                             </RockButton>
                         </div>
@@ -102,7 +102,7 @@
                     <div class="panel-toolbar panel-toolbar-mobile d-flex d-md-none justify-content-between">
                         <RockButton :btnSize="BtnSize.Small"
                                     :disabled="isBusy"
-                                    @click="onSelectFiltersClick"><i class="fa fa-sliders-h"></i> Filters</RockButton>
+                                    @click="onSelectFiltersClick"><i class="ti ti-adjustments-horizontal"></i> Filters</RockButton>
 
                         <div class="d-flex">
                             <div class="dropdown">
@@ -113,7 +113,7 @@
                                         aria-expanded="false"
                                         :disabled="isSchedulingDisabled">
                                     <Loading :isLoading="isCloningSchedules || isAutoScheduling || isSendingConfirmations" :isSmall="true">
-                                        <i class="fa fa-ellipsis-v"></i>
+                                        <i class="ti ti-dots-vertical"></i>
                                     </Loading>
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-right">
@@ -122,7 +122,7 @@
                                                 class="dropdown-item btn-link text-nowrap"
                                                 :disabled="isSchedulingDisabled"
                                                 @click="onSendConfirmationsClick">
-                                            <i class="fa fa-envelope-o"></i> Send Confirmations
+                                            <i class="ti ti-mail"></i> Send Confirmations
                                         </button>
                                     </li>
                                     <li v-if="isCloneSchedulesEnabled">
@@ -130,7 +130,7 @@
                                                 class="dropdown-item btn-link text-nowrap"
                                                 :disabled="isSchedulingDisabled"
                                                 @click="onCloneSchedulesClick">
-                                            <i class="fa fa-clone"></i> Clone Schedules
+                                            <i class="ti ti-copy"></i> Clone Schedules
                                         </button>
                                     </li>
                                     <li>
@@ -139,7 +139,7 @@
                                                 class="dropdown-item btn-link text-nowrap"
                                                 :disabled="isSchedulingDisabled"
                                                 @click="onRosterClick">
-                                            <i class="fa fa-calendar-check"></i> Rosters
+                                            <i class="ti ti-calendar-check"></i> Rosters
                                         </button>
                                     </li>
                                     <li v-if="isAutoScheduleEnabled">
@@ -147,7 +147,7 @@
                                                 class="dropdown-item btn-link text-nowrap"
                                                 :disabled="isSchedulingDisabled"
                                                 @click="onAutoScheduleClick">
-                                            <i class="fa fa-magic"></i> Auto Schedule
+                                            <i class="ti ti-wand"></i> Auto Schedule
                                         </button>
                                     </li>
                                 </ul>
@@ -393,7 +393,7 @@
         if (copyLinkUrl.value) {
             actions.push({
                 title: "Copy Link to Clipboard",
-                iconCssClass: "fa fa-clipboard",
+                iconCssClass: "ti ti-clipboard",
                 type: "default",
                 handler: onCopyToClipboardClick,
                 disabled: isBusy.value || !anyGroupsSelected.value

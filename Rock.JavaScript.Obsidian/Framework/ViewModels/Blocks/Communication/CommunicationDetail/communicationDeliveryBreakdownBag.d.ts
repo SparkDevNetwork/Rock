@@ -34,6 +34,9 @@ export type CommunicationDeliveryBreakdownBag = {
     /** Gets or sets the Rock.Enums.Communication.CommunicationType represented within these values. */
     communicationType: CommunicationType;
 
+    /** Gets or sets the datetime this delivery breakdown data was last updated. */
+    dataLastUpdatedDateTime?: string | null;
+
     /** Gets or sets the count of recipients for whom communications of this type were delivered. */
     deliveredCount: number;
 

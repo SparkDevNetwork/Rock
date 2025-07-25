@@ -121,7 +121,7 @@ namespace Rock.Storage.AssetStorage
         {
             get
             {
-                return "fa fa-aws";
+                return "ti ti-brand-aws";
             }
         }
 

@@ -6,7 +6,7 @@
             <asp:HiddenField ID="hfBinaryFileId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-file-text-o"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-file-type-txt"></i> <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
             <div class="panel-body">

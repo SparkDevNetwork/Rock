@@ -1374,7 +1374,7 @@ This {{ Workflow.WorkflowType.WorkTerm }} does not currently require your attent
                 workflowType.IsPersisted = true;
                 workflowType.IsSystem = false;
                 workflowType.CategoryId = parentCategoryId;
-                workflowType.IconCssClass = "fa fa-list-ol";
+                workflowType.IconCssClass = "ti ti-list-numbers";
                 workflowType.ActivityTypes.Add( new WorkflowActivityType { Name = "Start", Guid = Guid.NewGuid(), IsActive = true, IsActivatedWithWorkflow = true } );
                 workflowType.WorkTerm = "Work";
                 workflowType.ProcessingIntervalSeconds = 28800; // Default to every 8 hours

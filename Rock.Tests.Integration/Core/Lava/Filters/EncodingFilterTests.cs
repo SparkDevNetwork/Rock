@@ -147,7 +147,6 @@ Hello Ted!
 
         [DataTestMethod]
         [DataRow( "" )]
-        [DataRow( "123" )]
         [DataRow( "abc" )]
         public void FromIdHash_WithInvalidHashInput_ReturnsEmptyOutput( string inputHash )
         {
@@ -155,6 +154,22 @@ Hello Ted!
             input = input.Replace( "<input>", inputHash );
 
             TestHelper.AssertTemplateOutput( string.Empty, input );
+        }
+
+        [TestMethod]
+        public void FromIdHash_WithIntegerInput_ReturnsIntegerOutput()
+        {
+            var input = @"{{ 123 | FromIdHash }}";
+
+            TestHelper.AssertTemplateOutput( "123", input );
+        }
+
+        [TestMethod]
+        public void FromIdHash_WithIntegerStringInput_ReturnsIntegerOutput()
+        {
+            var input = @"{{ '123' | FromIdHash }}";
+
+            TestHelper.AssertTemplateOutput( "123", input );
         }
 
         #endregion

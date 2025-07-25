@@ -2927,7 +2927,7 @@ The logged-in person's information will be used to complete the registrar inform
             lRequiredSignedDocument.Visible = lRequiredSignedDocument.Text.IsNotNullOrWhiteSpace();
             lWorkflowType.Text = registrationTemplate.RegistrationWorkflowType != null ? registrationTemplate.RegistrationWorkflowType.Name : string.Empty;
             lWorkflowType.Visible = lWorkflowType.Text.IsNotNullOrWhiteSpace();
-            rcwRegistrantFormsSummary.Label = $"<strong>Registrant Forms</strong> ({registrationTemplate.Forms.Count}) <i class='fa fa-caret-down'></i>";
+            rcwRegistrantFormsSummary.Label = $"<strong>Registrant Forms</strong> ({registrationTemplate.Forms.Count}) <i class='ti ti-caret-down'></i>";
             lRegistrantFormsSummary.Text = string.Empty;
 
             if ( registrationTemplate.Forms.Any() )
@@ -2971,7 +2971,7 @@ The logged-in person's information will be used to complete the registrar inform
                 .ToAttributeCacheList();
 
             rcwRegistrationAttributesSummary.Visible = registrationAttributeNameList.Any();
-            rcwRegistrationAttributesSummary.Label = $"<strong>Registration Attributes</strong> ({registrationAttributeNameList.Count}) <i class='fa fa-caret-down'></i>";
+            rcwRegistrationAttributesSummary.Label = $"<strong>Registration Attributes</strong> ({registrationAttributeNameList.Count}) <i class='ti ti-caret-down'></i>";
 
             var registrationAttributeTextBuilder = new StringBuilder();
             foreach ( var registrationAttribute in registrationAttributeNameList )

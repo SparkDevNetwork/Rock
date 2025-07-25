@@ -231,11 +231,11 @@
                                         </div>
 
                                         <div class="col-xs-6 col-sm order-2 order-sm-3 flex-grow-0 text-right text-nowrap">
-                                            <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><i class="fa fa-clock-o" title="Recurring Reminder"></i></asp:Literal>
+                                            <asp:Literal ID="lClock" runat="server" Visible='<%# Eval("IsRenewing") %>'><i class="ti ti-clock" title="Recurring Reminder"></i></asp:Literal>
 
                                             <div class="btn-group dropdown-right ml-1">
                                                 <button type="button" class="btn btn-link btn-overflow dropdown-toggle" data-toggle="dropdown">
-                                                    <i class="fa fa-ellipsis-v"></i>
+                                                    <i class="ti ti-dots-vertical"></i>
                                                 </button>
                                                 <ul class="dropdown-menu">
                                                     <asp:HiddenField ID="hfReminderId" runat="server" Value='<%# Eval("Id") %>' />

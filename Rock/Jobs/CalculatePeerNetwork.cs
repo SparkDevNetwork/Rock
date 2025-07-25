@@ -116,14 +116,14 @@ namespace Rock.Jobs
 
                 foreach ( var peerNetwork in peerNetworksCalculated )
                 {
-                    resultSb.AppendLine( $"<i class='fa fa-circle text-success'></i> {peerNetwork.Titleize()}" );
+                    resultSb.AppendLine( $"<i class='ti ti-circle text-success'></i> {peerNetwork.Titleize()}" );
                 }
 
                 UpdateLastStatusMessage( resultSb.ToString() );
             }
             else
             {
-                UpdateLastStatusMessage( "<i class='fa fa-circle text-warning'></i> No peer network calculations enabled." );
+                UpdateLastStatusMessage( "<i class='ti ti-circle text-warning'></i> No peer network calculations enabled." );
             }
         }
 

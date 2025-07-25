@@ -72,7 +72,9 @@
   }
   
   .fa-square::before,
-  .fa-circle::before {
+  .fa-circle::before,
+  .ti-square::before,
+  .ti-circle::before {
     display: block;
     width: 1em;
     height: 1em;
@@ -80,7 +82,8 @@
     background: currentColor;
   }
 
-  .fa-circle::before {
+  .fa-circle::before,
+  .ti-circle::before {
     border-radius: 50%;
   }
 }

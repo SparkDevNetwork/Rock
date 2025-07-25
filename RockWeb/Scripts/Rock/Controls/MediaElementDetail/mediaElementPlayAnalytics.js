@@ -218,7 +218,7 @@
             };
 
             const $btnLoadMore = $panel.find('.js-load-more');
-            $btnLoadMore.html('<i class="fa fa-refresh fa-spin"></i> Load More');
+            $btnLoadMore.html('<i class="ti ti-refresh ti-spin"></i> Load More');
             $btnLoadMore.addClass("disabled");
 
             const result = await $.ajax({
@@ -304,7 +304,7 @@
             expander.setAttribute("class", "expander");
             expander.setAttribute("name", "expander");
             const expanderIcon = document.createElement("i");
-            expanderIcon.setAttribute("class", "fa fa-chevron-right text-muted o-50");
+            expanderIcon.setAttribute("class", "ti ti-chevron-right text-muted o-50");
             expander.setAttribute("name", "expander");
             expander.append(expanderIcon);
 
@@ -316,7 +316,7 @@
 
             interactions.forEach(interaction => interaction.addEventListener("mouseover", event => {
                 if (event.target.getAttribute("name") === "expander") {
-                    let icon = event.target.querySelector(".fa-chevron-right");
+                    let icon = event.target.querySelector(".ti-chevron-right");
                     if (icon) {
                         icon.classList.add("fa-flip-horizontal");
                     }
@@ -326,8 +326,8 @@
             }));
 
             interactions.forEach(interaction => interaction.addEventListener("mouseleave", event => {
-                if (interaction.querySelector(".fa-chevron-right")) {
-                    let icon = interaction.querySelector(".fa-chevron-right");
+                if (interaction.querySelector(".ti-chevron-right")) {
+                    let icon = interaction.querySelector(".ti-chevron-right");
                     icon.classList.remove("fa-flip-horizontal");
 
                     interaction.classList.remove("expanded");
@@ -337,13 +337,13 @@
 
         const getPerson = function (item) {
             const clientTypeIcons = {
-                Mobile: "fa fa-mobile-alt",
-                Desktop: "fa fa-desktop",
-                Tablet: "fa fa-tablet-alt",
+                Mobile: "ti ti-device-mobile",
+                Desktop: "ti ti-device-desktop",
+                Tablet: "ti ti-device-ipad",
             }
 
             const clientType = document.createElement("i");
-            clientType.setAttribute("class", clientTypeIcons[item.ClientType] + " fa-lg text-muted o-50 mx-2");
+            clientType.setAttribute("class", clientTypeIcons[item.ClientType] + " ti-lg text-muted o-50 mx-2");
             clientType.setAttribute("title", item.ClientType);
 
             const interactions = document.createElement("span");

@@ -39,7 +39,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Type List" )]
     [Category( "Group" )]
     [Description( "Displays a list of group types." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

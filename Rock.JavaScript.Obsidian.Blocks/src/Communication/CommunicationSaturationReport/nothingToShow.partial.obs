@@ -1,6 +1,6 @@
 <template>
     <div class="text-center text-muted py-5">
-        <i class="fa fa-exclamation-triangle mb-3" style="font-size:64px" aria-hidden="true"></i>
+        <i class="ti ti-alert-triangle mb-3" style="font-size:64px" aria-hidden="true"></i>
         <p>
             Nothing To Show<br>
             <small>No results match your current filters. Try adjusting them to see more data.</small>

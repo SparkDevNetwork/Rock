@@ -150,6 +150,7 @@ BEGIN
 			OR c.Guid = @DisplayedCampusGuid
 			OR g.CampusId IS NULL
 		)
+		AND g.IsArchived = 0
 	END
 	ELSE
 	BEGIN
@@ -187,6 +188,7 @@ BEGIN
 			OR c.Guid = @DisplayedCampusGuid
 			OR g.CampusId IS NULL
 		  )
+		  AND g.IsArchived = 0
 
 		UNION
 
@@ -224,6 +226,7 @@ BEGIN
 			@DisplayedCampusGuid IS NULL
 			OR c.Guid = @DisplayedCampusGuid
 			OR g.CampusId IS NULL
-		  );
+		  )
+		  AND g.IsArchived = 0;
 	END
 END

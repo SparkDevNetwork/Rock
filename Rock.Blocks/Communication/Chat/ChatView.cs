@@ -9,6 +9,13 @@ using Rock.ViewModels.Blocks.Communication.Chat.ChatView;
 using Rock.Web.Cache;
 using System;
 using Rock.ViewModels.Controls;
+using Rock.Enums.Communication.Chat;
+using Rock.ViewModels.Utility;
+using System.Collections.Generic;
+using System.Linq;
+using Rock.Mobile;
+using Rock.Utility;
+using System.Security.Policy;
 
 namespace Rock.Blocks.Communication.Chat
 {
@@ -19,24 +26,31 @@ namespace Rock.Blocks.Communication.Chat
     [Category( "Communication" )]
     [Description( "Displays a chat interface utilizing the Rock StreamChat integration." )]
     [SupportedSiteTypes( SiteType.Mobile, SiteType.Web )]
-    [IconCssClass( "fa fa-comments" )]
+    [IconCssClass( "ti ti-messages" )]
 
     #region Block Attributes
 
     #region Shared
+
+    [EnumField( "Chat Style",
+        Description = "Choose how chat conversations are displayed. 'Conversational' offers a simple, text-message feel that's great for direct messages and small groups. 'Community' provides a more structured layout, ideal for group discussions and larger conversations.",
+        DefaultEnumValue = ( int ) ChatViewStyle.Conversational,
+        EnumSourceType = typeof( ChatViewStyle ),
+        Key = AttributeKey.ChatViewStyle,
+        Order = 0 )]
 
     [BooleanField( "Filter Shared Channels by Campus",
         Description = "Only show channels that match the individual's campus or have no campus set.",
         DefaultBooleanValue = false,
         Key = AttributeKey.FilterSharedChannelsByCampus,
         ControlType = Field.Types.BooleanFieldType.BooleanControlType.Checkbox,
-        Order = 0 )]
+        Order = 1 )]
 
     [IntegerField( "Minimum Age",
         Description = "The minimum age required to use chat. If the person does not have a birthdate, the verification template will show. Leave as empty to disable this check altogether.",
         IsRequired = false,
         Key = AttributeKey.MinimumAge,
-        Order = 1 )]
+        Order = 2 )]
 
     #endregion
 
@@ -52,7 +66,7 @@ namespace Rock.Blocks.Communication.Chat
         SiteTypes = Enums.Cms.SiteTypeFlags.Mobile,
         EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
         DefaultValue = _defaultMobileAgeVerificationTemplate,
-        Order = 2 )]
+        Order = 3 )]
 
     [CodeEditorField( "Age Restriction Template",
         Description = "The XAML template displayed when the person is under the minimum age.",
@@ -61,7 +75,7 @@ namespace Rock.Blocks.Communication.Chat
         SiteTypes = Enums.Cms.SiteTypeFlags.Mobile,
         EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
         DefaultValue = _defaultMobileAgeRestrictionTemplate,
-        Order = 3 )]
+        Order = 4 )]
 
     #endregion
 
@@ -77,7 +91,7 @@ namespace Rock.Blocks.Communication.Chat
         SiteTypes = Enums.Cms.SiteTypeFlags.Web,
         EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
         DefaultValue = _defaultWebAgeVerificationTemplate,
-        Order = 4 )]
+        Order = 5 )]
 
     [CodeEditorField( "Age Restriction Template",
         Description = "The XAML template displayed when the person is under the minimum age.",
@@ -86,7 +100,7 @@ namespace Rock.Blocks.Communication.Chat
         SiteTypes = Enums.Cms.SiteTypeFlags.Web,
         EditorMode = Web.UI.Controls.CodeEditorMode.Lava,
         DefaultValue = _defaultWebAgeRestrictionTemplate,
-        Order = 5 )]
+        Order = 6 )]
 
     #endregion
 
@@ -139,6 +153,11 @@ namespace Rock.Blocks.Communication.Chat
             }
         }
 
+        /// <summary>
+        /// Returns the <c>ChatViewStyle</c> of the block.
+        /// </summary>
+        protected ChatViewStyle ChatStyle => GetAttributeValue( AttributeKey.ChatViewStyle ).ConvertToEnumOrNull<ChatViewStyle>() ?? ChatViewStyle.Conversational;
+
         #endregion
 
         #region Keys
@@ -148,6 +167,11 @@ namespace Rock.Blocks.Communication.Chat
         /// </summary>
         private static class AttributeKey
         {
+            /// <summary>
+            /// The chat view style key.
+            /// </summary>
+            public const string ChatViewStyle = "ChatViewStyle";
+
             /// <summary>
             /// The filter shared channels by campus key.
             /// </summary>
@@ -240,19 +264,124 @@ namespace Rock.Blocks.Communication.Chat
                         DirectMessageChannelTypeKey = directMessagingChannelStreamKey,
                         ChannelId = channelId,
                         SelectedChannelId = selectedChannelId,
-                        JumpToMessageId = PageParameter( PageParameterKey.MessageId )
+                        JumpToMessageId = PageParameter( PageParameterKey.MessageId ),
+                        ChatStyle = ChatStyle,
+                        Reactions = GetSupportedReactions()
                     }
                 };
             }
-        }                   
+        }
 
         /// <inheritdoc />
         public override object GetMobileConfigurationValues()
         {
             return new
             {
-                FilterSharedChannelsByCampus = FilterSharedChannelsByCampus
+                FilterSharedChannelsByCampus = FilterSharedChannelsByCampus,
+                Reactions = GetSupportedReactions()
             };
+        }
+
+        /// <summary>
+        /// Retrieves up to 10 active chat reactions defined in the <see cref="SystemGuid.DefinedType.CHAT_REACTION"/> defined type.
+        /// </summary>
+        /// <returns>
+        /// A list of <see cref="ChatReactionBag"/> objects representing the supported chat reactions.
+        /// </returns>
+        private static List<ChatReactionBag> GetSupportedReactions()
+        {
+            var definedType = DefinedTypeCache.Get( SystemGuid.DefinedType.CHAT_REACTION );
+            if ( definedType == null )
+            {
+                return new List<ChatReactionBag>();
+            }
+
+            return definedType.DefinedValues
+                .Where( v => v.IsActive && v.Value.IsNotNullOrWhiteSpace() )
+                .DistinctBy( v => v.Value )
+                .OrderBy( v => v.Order )
+                .Take( 10 )
+                .Select( ConvertToChatReactionBag )
+                .ToList();
+        }
+
+        /// <summary>
+        /// Converts a <see cref="DefinedValueCache"/> entry into a <see cref="ChatReactionBag"/>.
+        /// </summary>
+        /// <param name="definedValue">The defined value representing a chat reaction.</param>
+        /// <returns>
+        /// A <see cref="ChatReactionBag"/> containing the reaction key, text, and optional image URL.
+        /// </returns>
+        private static ChatReactionBag ConvertToChatReactionBag( DefinedValueCache definedValue )
+        {
+            var reactionKey = definedValue.Value;
+            var reactionText = definedValue.GetAttributeValue( "TextReaction" );
+            var imageGuid = definedValue.GetAttributeValue( "ImageReaction" ).AsGuidOrNull();
+
+            // Fetch the image URL for the binary file GUID.
+            var imageUrl = GetReactionImage( imageGuid, ReactionImageSize.Large );
+            var imageUrlMedium = GetReactionImage( imageGuid, ReactionImageSize.Medium );
+            var imageUrlSmall = GetReactionImage( imageGuid, ReactionImageSize.Small );
+
+            return new ChatReactionBag
+            {
+                Key = reactionKey,
+                ReactionText = reactionText,
+                ImageUrl = imageUrl,
+                ImageUrlMedium = imageUrlMedium,
+                ImageUrlSmall = imageUrlSmall
+            };
+        }
+
+        private enum ReactionImageSize
+        {
+            Small,   // 20×20
+            Medium,  // 36×36
+            Large    // 48×48
+        }
+
+        /// <summary>
+        /// Gets the image URL for a reaction based on its binary file GUID.
+        /// </summary>
+        /// <param name="binaryFileGuid">The GUID of the binary file, if none is provided, <see cref="string.Empty"/> is returned.</param>
+        /// <param name="large">If true, the size will be 36x36. If false, the size will be 24x24.</param>
+        /// <returns></returns>
+        private static string GetReactionImage( Guid? binaryFileGuid, ReactionImageSize reactionImageSize )
+        {
+            if ( !binaryFileGuid.HasValue )
+            {
+                return string.Empty;
+            }
+
+            GetImageUrlOptions options = new GetImageUrlOptions
+            {
+                PublicAppRoot = GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" )
+            };
+
+            int width, height;
+
+            switch ( reactionImageSize )
+            {
+                case ReactionImageSize.Small:
+                    width = 20;
+                    height = 20;
+                    break;
+                case ReactionImageSize.Medium:
+                    width = 36;
+                    height = 36;
+                    break;
+                case ReactionImageSize.Large:
+                    width = 48;
+                    height = 48;
+                    break;
+                default:
+                    throw new ArgumentOutOfRangeException( nameof( reactionImageSize ), reactionImageSize, null );
+            }
+
+            options.Width = width;
+            options.Height = height;
+
+            return FileUrlHelper.GetImageUrl( binaryFileGuid.Value, options );
         }
 
         #endregion

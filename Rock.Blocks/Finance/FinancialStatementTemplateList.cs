@@ -38,7 +38,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Financial Statement Template List" )]
     [Category( "Finance" )]
     [Description( "Displays a list of financial statement templates." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

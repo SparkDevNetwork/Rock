@@ -38,7 +38,7 @@ namespace Rock.Blocks.CheckIn
     [DisplayName( "Attendance List" )]
     [Category( "Check-in" )]
     [Description( "Block for displaying the attendance history of a person or a group." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "73fd78df-5322-4716-a478-3cd0ea07a942" )]

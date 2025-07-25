@@ -549,7 +549,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone = new LinkButton();
             _btnSelectNone.ID = this.ID + "_btnSelectNone";
             _btnSelectNone.CssClass = "btn picker-select-none js-picker-select-none";
-            _btnSelectNone.Text = "<i class='fa fa-times'></i>";
+            _btnSelectNone.Text = "<i class='ti ti-x'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Click += _lbClearPicker_Click;
             _pnlRolloverContainer.Controls.Add( _btnSelectNone );

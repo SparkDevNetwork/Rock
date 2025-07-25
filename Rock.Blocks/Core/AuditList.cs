@@ -36,7 +36,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Audit List" )]
     [Category( "Core" )]
     [Description( "Displays a list of audits." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "8d4a9e56-30f1-4a2d-bd00-7803d7d51909" )]

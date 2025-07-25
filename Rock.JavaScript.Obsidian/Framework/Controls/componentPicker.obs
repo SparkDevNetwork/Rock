@@ -65,7 +65,7 @@
     const loadOptions = async (): Promise<ListItemBag[]> => {
         const options: ComponentPickerGetComponentsOptionsBag = {
             containerType: props.containerType,
-            includeInactive: props.includeInactive
+            includeInactive: props.includeInactive ?? false
         };
         const result = await http.post<ListItemBag[]>("/api/v2/Controls/ComponentPickerGetComponents", undefined, options);
 

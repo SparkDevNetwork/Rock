@@ -22,10 +22,7 @@
                 </Accordion>
 
                 <Accordion title="Text Styling">
-                    <FontPropertyGroup :element="componentHelper.contentWrapper"
-                                       :visibilityOptions="{
-                                        isJustifyTextHidden: true
-                                    }" />
+                    <FontPropertyGroup :element="componentHelper.contentWrapper" />
 
                     <ColorPickerProperty label="Background Color"
                                          :valueProvider="backgroundColorProvider" />
@@ -34,21 +31,21 @@
                 <Accordion title="Spacing">
                     <div class="row">
                         <div class="col-sm-12">
-                            <PaddingProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td" />
+                            <PaddingProperty :element="componentHelper.paddingEl" />
                         </div>
                     </div>
 
                     <div class="row">
                         <div class="col-sm-12">
-                            <PaddingProperty :element="componentHelper.marginWrapper.borderWrapper.paddingWrapper.td"
+                            <PaddingProperty :element="componentHelper.marginEl"
                                              label="Margin" />
                         </div>
                     </div>
                 </Accordion>
 
                 <Accordion title="Border">
-                    <BorderPropertyGroup :element="componentHelper.marginWrapper.borderWrapper.td" />
-                    <BorderRadiusProperty :element="componentHelper.marginWrapper.borderWrapper.td" />
+                    <BorderPropertyGroup :element="componentHelper.borderEl" />
+                    <BorderRadiusProperty :element="componentHelper.borderEl" />
                 </Accordion>
             </AccordionGroup>
         </template>

@@ -10,7 +10,7 @@
         <template #title>
             <div class="d-flex align-items-center gap-3">
                 <span v-if="!isNullOrWhiteSpace(box.backPageUrl)" class="clickable text-sm" @click="onBack">
-                    <i class="fa fa-chevron-left d-block"></i>
+                    <i class="ti ti-chevron-left d-block"></i>
                 </span>
                 <h1 class="panel-title">
                     {{ box.title }}
@@ -34,7 +34,7 @@
                                 :isSquare="true"
                                 title="Sort Items"
                                 data-toggle="dropdown">
-                        <i class="fa fa-sort"></i>
+                        <i class="ti ti-caret-up-down"></i>
                     </RockButton>
                     <ul class="dropdown-menu dropdown-menu-right">
                         <li>
@@ -56,20 +56,20 @@
                             :isSquare="true"
                             title="Toggle Gender Highlight View"
                             @click="toggleHighlightGender">
-                    <i class="fa fa-venus-mars"></i>
+                    <i class="ti ti-gender-male"></i>
                 </RockButton>
                 <RockButton :btnType="BtnType.Default"
                             :btnSize="BtnSize.Small"
                             :isSquare="true"
                             title="Toggle Details"
                             @click="toggleCardExpansion">
-                    <i class="fa fa-info-circle"></i>
+                    <i class="ti ti-info-circle"></i>
                 </RockButton>
                 <RockButton :btnType="BtnType.Default"
                             :btnSize="BtnSize.Small"
                             :isSquare="true"
                             @click="openPlacementConfigSettings">
-                    <i class="fa fa-cog"></i>
+                    <i class="ti ti-settings"></i>
                 </RockButton>
             </div>
         </template>
@@ -91,7 +91,7 @@
                                     title="Search People"
                                     :class="{ 'active': isPersonSearchVisible }"
                                     @click="toggleIsPersonSearchVisible">
-                            <i class="fa fa-search"></i>
+                            <i class="ti ti-search"></i>
                         </RockButton>
                     </template>
                     <template #subheaderLeft>
@@ -100,7 +100,7 @@
                                 <TextBox v-model="personSearchText" placeholder="Search" isClearable>
                                     <template #inputGroupPrepend>
                                         <div class="input-group-addon">
-                                            <i class="fa fa-search"></i>
+                                            <i class="ti ti-search"></i>
                                         </div>
                                     </template>
                                 </TextBox>
@@ -110,7 +110,7 @@
 
                     <template #drawerToggle>
                         <div class="placement-drawer">
-                            Filter <i :class="isPersonFilterDrawerOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+                            Filter <i :class="isPersonFilterDrawerOpen ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i>
                         </div>
                     </template>
 
@@ -139,7 +139,7 @@
                         <div class="w-100 p-2 pb-0">
                             <div class="d-flex justify-content-start">
                                 <HighlightLabel v-if="sourcePerson" labelType="custom" customClass="source-person-label">
-                                    {{ sourcePerson.firstName }} {{ sourcePerson.lastName }} <i class="fa fa-times cursor-pointer" @click="removeSourcePerson"></i>
+                                    {{ sourcePerson.firstName }} {{ sourcePerson.lastName }} <i class="ti ti-x cursor-pointer" @click="removeSourcePerson"></i>
                                 </HighlightLabel>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
@@ -151,7 +151,7 @@
                                 </div>
                                 <span class="text-muted">{{ selectedPeopleCount }} Selected
                                     <i ref="selectionInfoElement"
-                                       class="fa fa-info-circle cursor-pointer"
+                                       class="ti ti-info-circle cursor-pointer"
                                        data-toggle="tooltip"
                                        title="Ctrl (Mac: Cmd) + Click to select multiple people.">
                                     </i>
@@ -206,7 +206,7 @@
                                         :btnSize="BtnSize.Small"
                                         title="Add Group"
                                         @click="openAddGroupModal">
-                                <i class="fa fa-group text-xs mr-2"></i>
+                                <i class="ti ti-users text-xs mr-2"></i>
                                 <span>Add Group</span>
                             </RockButton>
 
@@ -214,14 +214,14 @@
                                         :btnSize="BtnSize.Small"
                                         :isSquare="true"
                                         @click="toggleGroupExpansion">
-                                <i :class="areGroupsExpanded ? 'fa fa-angle-double-up' : 'fa fa-angle-double-down'"></i>
+                                <i :class="areGroupsExpanded ? 'ti ti-chevrons-up' : 'ti ti-chevrons-down'"></i>
                             </RockButton>
                         </div>
                     </template>
 
                     <template #drawerToggle>
                         <div class="placement-drawer">
-                            Filter <i :class="isGroupFilterDrawerOpen ? 'fa fa-chevron-up' : 'fa fa-chevron-down'"></i>
+                            Filter <i :class="isGroupFilterDrawerOpen ? 'ti ti-chevron-up' : 'ti ti-chevron-down'"></i>
                         </div>
                     </template>
 
@@ -270,7 +270,7 @@
                         </div>
                         <div v-else-if="filteredAndSortedGroups.length === 0" class="h-100 d-flex align-items-center justify-content-center">
                             <div class="no-groups">
-                                <i class="fa fa-group fa-2x"></i>
+                                <i class="ti ti-users ti-2x"></i>
                                 <p>No Groups</p>
                             </div>
                         </div>
@@ -342,6 +342,10 @@
 /* Work-around to allow the height to descend (through the fullscreen div) all the way down to panel-body */
 :deep(.helper-height > div:first-child) {
     height: 100%;
+}
+
+.panel-title {
+    padding: var(--spacing-xsmall) 0;
 }
 
 .slide-enter-active,
@@ -663,12 +667,12 @@
 
     const showPointer = computed(() => isCtrlKeyHeld.value && isPersonCardHovered.value);
 
-    const selectedPeopleCount = computed(() => selectedPersonIdKeys.value.size);
+    const selectedPeopleCount = computed(() => selectedPersonIdKeys.value.size.toLocaleString());
 
     const isCardTransitionEnabled = computed(() => filteredAndSortedPeopleToPlace.value.length <= 50);
 
     const groupMemberFilterIcon = computed((): string => {
-        return isGroupMemberFilterDisplayed.value ? "fa fa-chevron-up" : "fa fa-chevron-down";
+        return isGroupMemberFilterDisplayed.value ? "ti ti-chevron-up" : "ti ti-chevron-down";
     });
 
     /**
@@ -1037,7 +1041,7 @@
 
                         mirror.innerHTML = `
                             <div class="multi-card-preview">
-                                <i class="fa fa-user-friends"></i>
+                                <i class="ti ti-users"></i>
                             </div>
                         `;
 
@@ -1076,7 +1080,7 @@
 
                         transit.innerHTML = `
                             <div class="multi-card-preview">
-                                <i class="fa fa-user-friends"></i>
+                                <i class="ti ti-users"></i>
                             </div>
                         `;
                     });
@@ -1150,9 +1154,17 @@
                     placementGroup.groupMembers = [];
                 }
 
-                await addGroupMembersToGroup(pendingGroupMembers, placementGroup);
+                const selectedPeopleClone = new Set([...selectedPersonIdKeys.value]);
 
-                selectedPersonIdKeys.value.clear();
+                const result = await addGroupMembersToGroup(pendingGroupMembers, placementGroup);
+                if (result) {
+                    selectedPersonIdKeys.value.clear();
+                }
+                else if (selectedPersonIdKeys.value.size === 0) {
+                    // If the add group members failed and the selected person IdKeys were
+                    // cleared from our handleOutsideClick function then we will reset it here.
+                    selectedPersonIdKeys.value = selectedPeopleClone;
+                }
             }
         };
     }
@@ -1249,13 +1261,9 @@
         let shouldBeDisplayed: boolean = true;
 
         if (box.placementMode === PlacementMode.TemplateMode) {
-            if (!placementConfigurationSettings.value.includedRegistrationInstanceIds || placementConfigurationSettings.value.includedRegistrationInstanceIds?.length === 0) {
-                return true;
-            }
-
             // Default to true if person or registrants were not found for some reason.
             shouldBeDisplayed = groupMember!.person?.registrants?.some(r => {
-                return placementConfigurationSettings.value.includedRegistrationInstanceIds!.includes(r.registrationInstanceIdKey ?? "");
+                return placementConfigurationSettings.value.includedRegistrationInstanceIds?.includes(r.registrationInstanceIdKey ?? "");
             }) ?? true;
         }
 
@@ -2124,7 +2132,7 @@
      * @param placementGroup The target placement group.
      * @returns A promise resolving to the added group members.
      */
-    async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], placementGroup: PlacementGroupBag): Promise<GroupMemberBag[]> {
+    async function addGroupMembersToGroup(pendingGroupMembers: GroupMemberBag[], placementGroup: PlacementGroupBag): Promise<boolean> {
         const result = await invokeBlockAction<GroupMemberBag[]>("AddGroupMembersToGroup", {
             addGroupMembersBag: {
                 pendingGroupMembers,
@@ -2135,14 +2143,15 @@
         });
 
         if (result.isSuccess && result.data) {
-            return result.data;
+            return true;
         }
         else {
             if (pendingGroupMembers[0].groupRoleIdKey) {
                 setGroupRoleError(placementGroup.groupIdKey!, pendingGroupMembers[0].groupRoleIdKey, result.errorMessage ?? "An unknown error occurred while trying to add a group member.");
+                return false;
             }
         }
-        return [];
+        return false;
     }
 
     /**

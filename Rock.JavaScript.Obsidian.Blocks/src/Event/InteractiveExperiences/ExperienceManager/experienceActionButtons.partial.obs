@@ -122,7 +122,7 @@
     }
 
     function getActionSelectedIconClass(action: ListItemBag): string {
-        return action.value === internalValue.value ? "fa fa-check-circle" : "fa fa-check-circle-o";
+        return action.value === internalValue.value ? "ti ti-circle-check" : "ti ti-circle";
     }
 
     // #endregion

@@ -902,7 +902,8 @@ th[align="right"] {
       width: 100%;
     }
 
-    i.fa.fa-bars {
+    i.fa.fa-bars,
+    i.ti.ti-menu-2 {
       cursor: pointer;
     }
   }
@@ -1145,7 +1146,9 @@ th[align="right"] {
 
 .badge {
   .fa-square::before,
-  .fa-circle::before {
+  .fa-circle::before,
+  .ti-square::before,
+  .ti-circle::before {
     display: block;
     width: 1em;
     height: 1em;
@@ -1153,7 +1156,8 @@ th[align="right"] {
     background: currentColor;
   }
 
-  .fa-circle::before {
+  .fa-circle::before,
+  .ti-circle::before {
     border-radius: 50%;
   }
 }
@@ -1338,7 +1342,9 @@ th[align="right"] {
 
 // modify BS3 to use fontawesome for carousel icons
 .carousel-control .fa-chevron-left,
-.carousel-control .fa-chevron-right {
+.carousel-control .fa-chevron-right,
+.carousel-control .ti-chevron-left,
+.carousel-control .ti-chevron-right {
   position: absolute;
   top: 50%;
   z-index: 5;
@@ -1346,11 +1352,13 @@ th[align="right"] {
   margin-top: -10px;
 }
 
-.carousel-control .fa-chevron-left {
+.carousel-control .fa-chevron-left,
+.carousel-control .ti-chevron-left {
   left: 40px;
 }
 
-.carousel-control .fa-chevron-right {
+.carousel-control .fa-chevron-right,
+.carousel-control .ti-chevron-right {
   right: 40px;
 }
 

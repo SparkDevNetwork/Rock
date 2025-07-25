@@ -38,7 +38,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Asset Storage Provider Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular asset storage provider." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

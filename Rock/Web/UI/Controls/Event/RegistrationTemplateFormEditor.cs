@@ -139,8 +139,8 @@ $('.template-form > header').on('click', function () {
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('i.template-form-state', this).toggleClass('fa-chevron-down');
-    $('i.template-form-state', this).toggleClass('fa-chevron-up');
+    $('i.template-form-state', this).toggleClass('ti-chevron-down');
+    $('i.template-form-state', this).toggleClass('ti-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
@@ -160,8 +160,8 @@ $('.template-form > .panel-body').on('validation-error', function() {
     $expanded = $header.children('input.filter-expanded');
     $expanded.val('True');
 
-    $('i.template-form-state', $header).removeClass('fa-chevron-down');
-    $('i.template-form-state', $header).addClass('fa-chevron-up');
+    $('i.template-form-state', $header).removeClass('ti-chevron-down');
+    $('i.template-form-state', $header).addClass('ti-chevron-up');
 
     return false;
 });
@@ -276,7 +276,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
             _lbDeleteForm.ID = this.ID + "_lbDeleteForm";
             _lbDeleteForm.CssClass = "btn btn-xs btn-square btn-danger js-activity-delete";
             _lbDeleteForm.Click += lbDeleteForm_Click;
-            _lbDeleteForm.Controls.Add( new LiteralControl { Text = "<i class='fa fa-times'></i>" } );
+            _lbDeleteForm.Controls.Add( new LiteralControl { Text = "<i class='ti ti-x'></i>" } );
 
             _tbFormName = new RockTextBox();
             Controls.Add( _tbFormName );
@@ -355,7 +355,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
 
             var btnFieldFilterField = new LinkButtonField();
             btnFieldFilterField.CssClass = "btn btn-default btn-sm attribute-criteria";
-            btnFieldFilterField.Text = "<i class='fa fa-filter'></i>";
+            btnFieldFilterField.Text = "<i class='ti ti-filter'></i>";
             btnFieldFilterField.Click += gFields_btnFieldFilterField_Click;
             btnFieldFilterField.DataBound += btnFieldFilterField_DataBound;
             _gFields.Columns.Add( btnFieldFilterField );
@@ -530,11 +530,11 @@ $('.template-form > .panel-body').on('validation-error', function() {
 
             if ( !this.IsDefaultForm )
             {
-                writer.WriteLine( "<a class='btn btn-xs btn-link form-reorder'><i class='fa fa-bars'></i></a>" );
+                writer.WriteLine( "<a class='btn btn-xs btn-link form-reorder'><i class='ti ti-menu-2'></i></a>" );
             }
 
             writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='form-state fa {0}'></i></a>",
-                Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
+                Expanded ? "ti ti-chevron-up" : "ti ti-chevron-down" ) );
 
             if ( IsDeleteEnabled )
             {

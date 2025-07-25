@@ -1451,7 +1451,7 @@ namespace Rock.Blocks.Reporting
             {
                 actions.Add( new BlockCustomActionBag
                 {
-                    IconCssClass = "fa fa-edit",
+                    IconCssClass = "ti ti-edit",
                     Tooltip = "Settings",
                     ComponentFileUrl = "/Obsidian/Blocks/Reporting/dynamicDataCustomSettings.obs"
                 } );

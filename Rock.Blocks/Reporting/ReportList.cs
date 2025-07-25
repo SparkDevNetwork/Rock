@@ -34,7 +34,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Report List" )]
     [Category( "Reporting" )]
     [Description( "Lists all reports under a specified report category." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [CategoryField( "Report Category",

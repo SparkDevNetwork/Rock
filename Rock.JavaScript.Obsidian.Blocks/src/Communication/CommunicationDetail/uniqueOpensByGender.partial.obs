@@ -1,16 +1,24 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Chart v-if="chartData"
-           type="doughnut"
-           :data="chartData"
-           :options="chartOptions" />
+    <div v-if="chartData" class="communication-detail-unique-opens-by-gender">
+        <Chart type="doughnut"
+               :data="chartData"
+               :options="chartOptions" />
+    </div>
 </template>
+
+<style scoped>
+.communication-detail-unique-opens-by-gender {
+    height: 100%;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
-    import { getCssVar, useChartStyles } from "./utils.partial";
+    import { useChartStyles } from "./utils.partial";
     import Chart from "@Obsidian/Controls/chart.obs";
     import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
     import { isNullish } from "@Obsidian/Utility/util";
     import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
 
@@ -48,7 +56,7 @@
             labels.push(dp.label!);
             data.push(dp.value!);
             backgroundColor.push(
-                getCssVar(dp.color!, chartStyles.value.fallbackColor)
+                getCssVariableValue(dp.color!, chartStyles.value.fallbackColor)
             );
         });
 
@@ -67,6 +75,7 @@
             maintainAspectRatio: false,
             plugins: {
                 legend: {
+                    position: "right",
                     labels: {
                         boxWidth: chartStyles.value.legendBoxSize,
                         boxHeight: chartStyles.value.legendBoxSize,

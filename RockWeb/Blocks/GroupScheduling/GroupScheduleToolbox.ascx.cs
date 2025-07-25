@@ -1800,7 +1800,7 @@ $('#{0}').tooltip();
             pnlLocationCol.Attributes.Add( "class", "col-xs-12 col-sm-7 col-md-8 col-lg-6 mb-3 mb-md-0" );
             pnlLocationCol.Controls.Add( ddlSignupLocations );
 
-            var hlSignUpSaved = new HighlightLabel { ID = "hlSignUpSaved", LabelType = LabelType.Success, Text = "<i class='fa fa-check-square'></i> Saved" };
+            var hlSignUpSaved = new HighlightLabel { ID = "hlSignUpSaved", LabelType = LabelType.Success, Text = "<i class='ti ti-checkbox'></i> Saved" };
             hlSignUpSaved.Visible = false;
             pnlLocationCol.Controls.Add( hlSignUpSaved );
 

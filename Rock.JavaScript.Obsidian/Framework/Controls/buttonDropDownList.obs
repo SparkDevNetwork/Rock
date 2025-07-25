@@ -6,11 +6,11 @@
                 <div :class="{ open: isDropDownOpen }" ref="dropdownElement">
                     <RockButton class="dropdown-toggle" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
                         {{ selectionStyle === 'title' && internalValue ? selectedText : title }}
-                        <span class="fa fa-caret-down"></span>
+                        <span class="ti ti-caret-down"></span>
                     </RockButton>
                     <ul class="dropdown-menu">
                         <li v-for="item of items" :key="item.value ?? 0" @click.stop="selectValue(item.value ?? '')">
-                            <a><i :class="{ 'fa fa-fw': true, 'fa-check': internalValue === item.value }" v-if="selectionStyle === 'checkmark'"></i> {{ item.text }}</a>
+                            <a><i :class="{ 'ti ti-fw': true, 'ti-check': internalValue === item.value }" v-if="selectionStyle === 'checkmark'"></i> {{ item.text }}</a>
                         </li>
                     </ul>
                 </div>

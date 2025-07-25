@@ -39,7 +39,7 @@ namespace Rock.Blocks.Prayer
     [DisplayName( "Prayer Comment List" )]
     [Category( "Core" )]
     [Description( "Displays a list of prayer comments for the configured top-level group category." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
 
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage )]

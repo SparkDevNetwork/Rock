@@ -8,7 +8,7 @@
         <asp:Panel ID="pnlWorkflowList" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><asp:Literal ID="lHeadingIcon" runat="server" ><i class="fa fa-list"></i></asp:Literal> <asp:Literal ID="lGridTitle" runat="server" Text="Workflows" /></h1>
+                <h1 class="panel-title"><asp:Literal ID="lHeadingIcon" runat="server" ><i class="ti ti-list"></i></asp:Literal> <asp:Literal ID="lGridTitle" runat="server" Text="Workflows" /></h1>
             </div>
             <div class="panel-body">
 

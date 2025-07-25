@@ -75,7 +75,7 @@ namespace Rock.UniversalSearch.IndexModels
             {
                 if ( string.IsNullOrWhiteSpace( _iconCssClass ) )
                 {
-                    return "fa fa-users";
+                    return "ti ti-users";
                 }
 
                 return _iconCssClass;

@@ -20,13 +20,14 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.Entity;
 using System.Linq;
-using System.Text.RegularExpressions;
 
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
+using Rock.SystemGuid;
+using Rock.Utility;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Cms.PersistedDatasetList;
 using Rock.Web.Cache;
@@ -40,7 +41,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Persisted Dataset List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of persisted datasets." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -58,7 +59,7 @@ namespace Rock.Blocks.Cms
     [Rock.SystemGuid.EntityTypeGuid( "dc11e26e-7e4a-4550-af2d-2c9b94beed4e" )]
     [Rock.SystemGuid.BlockTypeGuid( "cfbb4daf-1aeb-4095-8098-e3a82e30fa7e" )]
     [CustomizedGrid]
-    public class PersistedDatasetList : RockEntityListBlockType<PersistedDataset>
+    public class PersistedDatasetList : RockListBlockType<PersistedDatasetListBag>
     {
         #region Keys
 
@@ -126,37 +127,73 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<PersistedDataset> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<PersistedDatasetListBag> GetListQueryable( RockContext rockContext )
         {
             var persistedDatasetService = new PersistedDatasetService( rockContext );
 
             // Use AsNoTracking() since these records won't be modified
-            var qry = persistedDatasetService.Queryable().AsNoTracking();
+            var qry = persistedDatasetService.Queryable()
+                .AsNoTracking();
 
-            return qry;
+            return qry.Select( p => new PersistedDatasetListBag
+            {
+                AccessKey = p.AccessKey,
+                Name = p.Name,
+                Id = p.Id,
+                LastRefreshDateTime = p.LastRefreshDateTime,
+                TimeToBuildMS = p.TimeToBuildMS,
+                AllowManualRefresh = p.AllowManualRefresh,
+                ResultSize = p.ResultData != null ? p.ResultData.Length / 1024 : 0,
+                IsSystem = p.IsSystem,
+                IsActive = p.IsActive
+            } );
+        }
+
+        /// <inheritdoc/>   
+        protected override IQueryable<PersistedDatasetListBag> GetOrderedListQueryable( IQueryable<PersistedDatasetListBag> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( b => b.Name ).ThenBy( b => b.AccessKey );
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<PersistedDataset> GetOrderedListQueryable( IQueryable<PersistedDataset> queryable, RockContext rockContext )
+        protected override List<PersistedDatasetListBag> GetListItems( IQueryable<PersistedDatasetListBag> queryable, RockContext rockContext )
         {
-            return queryable.OrderBy( p => p.Name ).ThenBy( p => p.AccessKey );
+            var items = queryable.ToList();
+            var hasher = IdHasher.Instance;
+
+            foreach ( var item in items )
+            {
+                item.IdKey = hasher.GetHash( item.Id );
+            }
+
+            return items;
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<PersistedDataset> GetGridBuilder()
+        protected override GridBuilder<PersistedDatasetListBag> GetGridBuilder()
         {
-            return new GridBuilder<PersistedDataset>()
+            return new GridBuilder<PersistedDatasetListBag>()
                 .WithBlock( this )
                 .AddTextField( "idKey", a => a.IdKey )
-                .AddField("id", a => a.Id)
+                .AddField( "id", a => a.Id )
                 .AddTextField( "name", a => a.Name )
                 .AddField( "lastRefreshDateTime", a => a.LastRefreshDateTime )
                 .AddTextField( "accessKey", a => a.AccessKey )
-                .AddField( "timeToBuildMS", a => a.TimeToBuildMS.HasValue ? Math.Round( ( double ) a.TimeToBuildMS ).ToString() : "-" )
-                .AddField("allowManualRefresh", a => a.AllowManualRefresh)
-                .AddTextField( "resultData", a => a.ResultData )
-                .AddField( "resultSize", a => a.ResultData != null ? a.ResultData.Length / 1024 : 0 )
-                .AddField( "isSystem", a => a.IsSystem );
+                .AddField( "timeToBuildMS", a => a.TimeToBuildMS.HasValue ? Math.Round( ( double ) a.TimeToBuildMS ) : a.TimeToBuildMS )
+                .AddField( "allowManualRefresh", a => a.AllowManualRefresh )
+                /*
+                     7/22/2025 - NA
+
+                     Avoid loading all data immediately, as the dataset could be extremely large (potentially hundreds of megabytes).
+                     This is a safeguard to prevent excessive memory usage and slow performance.
+
+                    //.AddTextField( "resultData", a => a.ResultData )
+
+                     Reason: Prevent unnecessary loading of large datasets.
+                */
+                .AddField( "resultSize", a => a.ResultSize )
+                .AddField( "isSystem", a => a.IsSystem )
+                .AddField( "isActive", a => a.IsActive );
         }
 
         #endregion
@@ -259,7 +296,7 @@ namespace Rock.Blocks.Cms
                     : null;
 
                 // Truncate data if it exceeds max size
-                var previewData =  preViewObject.Truncate( maxPreviewSizeLength );
+                var previewData = preViewObject.Truncate( maxPreviewSizeLength );
                 if ( previewData?.Length > maxPreviewSizeLength )
                 {
                     previewData = previewData.Substring( 0, maxPreviewSizeLength );

@@ -110,7 +110,7 @@
 
         if (mediaFolderViewBag.value?.isContentChannelSyncEnabled) {
             labels.push({
-                iconCssClass: "fa fa-exchange",
+                iconCssClass: "ti ti-switch-3",
                 type: "info"
             });
         }

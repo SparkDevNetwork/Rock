@@ -1,240 +1,231 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <Grid v-show="showGrid"
-          :definition="internalGridDefinition!"
-          :data="gridDataSource"
-          keyField="personIdKey"
-          title="Recipient Log"
-          gridSettings
-          :gridSettingsActive="hasSettingsFilters"
-          @gridSettingsClick="isGridSettingsVisible = true"
-          @selectItem="onSelectItem">
+    <div class="communication-detail-recipient-details">
 
-        <SelectColumn />
+        <Grid v-show="showGrid"
+              :definition="internalGridDefinition!"
+              :data="gridDataSource"
+              keyField="personIdKey"
+              itemTerm="Recipient"
+              title="Recipient Log"
+              isNestedInScrollable
+              gridSettings
+              :gridSettingsActive="hasSettingsFilters"
+              @gridSettingsClick="isGridSettingsVisible = true"
+              @selectItem="onSelectItem">
 
-        <PersonColumn name="person"
-                      field="person"
-                      title="Name"
-                      width="200"
-                      :filter="pickExistingValueFilter"
-                      :filterValue="getPersonTextValue"
-                      :quickFilterValue="getPersonTextValue" />
+            <SelectColumn />
 
-        <DateTimeColumn name="lastActivityDateTime"
-                        field="lastActivityDateTime"
-                        title="Last Activity"
+            <PersonColumn name="person"
+                          field="person"
+                          title="Name"
+                          width="200"
+                          :filter="pickExistingValueFilter"
+                          :filterValue="getPersonTextValue"
+                          :quickFilterValue="getPersonTextValue" />
+
+            <DateTimeColumn name="lastActivityDateTime"
+                            field="lastActivityDateTime"
+                            title="Last Activity"
+                            width="200"
+                            :filter="dateValueFilter"
+                            :tooltip="getLastActivityDateTimeTooltip">
+                <template #format="{ row }">
+                    <div :class="{ 'communication-detail-grid-cell-failure': getIsRowIsDeliveryFailure(row) }">
+                        {{ getFormattedDateTime((row as RecipientGridRow).lastActivityDateTime) }}
+                    </div>
+                </template>
+            </DateTimeColumn>
+
+            <NumberColumn v-if="showEmailColumns"
+                          name="opensCount"
+                          field="opensCount"
+                          title="Opens"
+                          :filter="numberValueFilter" />
+
+            <NumberColumn v-if="showEmailColumns"
+                          name=" clicksCount"
+                          field="clicksCount"
+                          title="Clicks"
+                          :filter="numberValueFilter" />
+
+            <Column v-if="showMediumColumn"
+                    name="medium"
+                    field="medium"
+                    title="Medium"
+                    width="150"
+                    :filter="pickExistingValueFilter"
+                    :filterValue="getMediumTextValue"
+                    :quickFilterValue="getMediumTextValue">
+                <template #format="{ row }">
+                    <MediumCell :row="(row as RecipientGridRow)" />
+                </template>
+            </Column>
+
+            <BooleanColumn name="delivered"
+                           field="delivered"
+                           title="Delivered"
+                           width="150"
+                           tooltip="deliveredDateTime"
+                           :filter="booleanValueFilter">
+                <template #format="{ row }">
+                    <i v-if="(row as RecipientGridRow).delivered" class="ti ti-check"></i>
+                    <i v-else-if="getIsRowIsDeliveryFailure(row)" class="ti ti-x communication-detail-grid-cell-failure"></i>
+                </template>
+            </BooleanColumn>
+
+            <BooleanColumn v-if="showOpenedColumn"
+                           name="opened"
+                           field="opened"
+                           title="Opened"
+                           width="150"
+                           tooltip="lastOpenedDateTime"
+                           :filter="booleanValueFilter" />
+
+            <BooleanColumn v-if="showEmailColumns"
+                           name="clicked"
+                           field="clicked"
+                           title="Clicked"
+                           width="150"
+                           tooltip="lastClickedDateTime"
+                           :filter="booleanValueFilter" />
+
+            <BooleanColumn v-if="showEmailColumns"
+                           name="unsubscribed"
+                           field="unsubscribed"
+                           title="Unsubscribed"
+                           width="150"
+                           tooltip="unsubscribedDateTime"
+                           :filter="booleanValueFilter" />
+
+            <BooleanColumn v-if="showEmailColumns"
+                           name="spam"
+                           field="spam"
+                           title="Spam"
+                           width="150"
+                           tooltip="spamComplaintDateTime"
+                           :filter="booleanValueFilter" />
+
+            <NumberColumn v-if="isPropertyColumnVisible(PersonPropertyName.Age)"
+                          name="age"
+                          field="age"
+                          title="Age"
+                          width="150"
+                          :filter="numberValueFilter" />
+
+            <Column v-if="isPropertyColumnVisible(PersonPropertyName.AgeClassification)"
+                    name="ageClassification"
+                    field="ageClassification"
+                    title="Age Classification"
+                    width="200"
+                    :filter="pickExistingValueFilter"
+                    :filterValue="getAgeClassificationTextValue"
+                    :quickFilterValue="getAgeClassificationTextValue"
+                    :sortValue="getAgeClassificationTextValue"
+                    :exportValue="getAgeClassificationTextValue">
+                <template #format="{ row }">
+                    {{ getAgeClassificationTextValue(row) }}
+                </template>
+            </Column>
+
+            <DateColumn v-if="isPropertyColumnVisible(PersonPropertyName.BirthDate)"
+                        name="birthdate"
+                        field="birthdate"
+                        title="Birthdate"
                         width="200"
                         :filter="dateValueFilter" />
 
-        <NumberColumn v-if="showEmailColumns"
-                      name="opensCount"
-                      field="opensCount"
-                      title="Opens"
-                      :filter="numberValueFilter" />
+            <TextColumn v-if="isPropertyColumnVisible(PersonPropertyName.Campus)"
+                        name="campus"
+                        field="campus"
+                        title="Campus"
+                        width="200"
+                        :filter="pickExistingValueFilter" />
 
-        <NumberColumn v-if="showEmailColumns"
-                      name=" clicksCount"
-                      field="clicksCount"
-                      title="Clicks"
-                      :filter="numberValueFilter" />
+            <TextColumn v-if="isPropertyColumnVisible(PersonPropertyName.Email)"
+                        name="email"
+                        field="email"
+                        title="Email"
+                        width="250"
+                        :filter="textValueFilter" />
 
-        <Column v-if="showMediumColumn"
-                name="medium"
-                field="medium"
-                title="Medium"
-                width="150"
-                :filter="pickExistingValueFilter"
-                :filterValue="getMediumTextValue"
-                :quickFilterValue="getMediumTextValue">
-            <template #format="{ row }">
-                <MediumCell :row="(row as RecipientGridRow)" />
+            <Column v-if="isPropertyColumnVisible(PersonPropertyName.Gender)"
+                    name="gender"
+                    field="gender"
+                    title="Gender"
+                    :filter="pickExistingValueFilter"
+                    :filterValue="getGenderTextValue"
+                    :quickFilterValue="getGenderTextValue"
+                    :sortValue="getGenderTextValue"
+                    :exportValue="getGenderTextValue">
+                <template #format="{ row }">
+                    {{ getGenderTextValue(row) }}
+                </template>
+            </Column>
+
+            <TextColumn v-if="isPropertyColumnVisible(PersonPropertyName.Grade)"
+                        name="grade"
+                        field="grade"
+                        title="Grade"
+                        :filter="pickExistingValueFilter" />
+
+            <BooleanColumn v-if="isPropertyColumnVisible(PersonPropertyName.IsDeceased)"
+                           name="isDeceased"
+                           field="isDeceased"
+                           title="Is Deceased"
+                           width="150"
+                           :filter="booleanValueFilter" />
+
+            <AttributeColumns visiblePriority="md" :attributes="internalGridDefinition!.attributeFields ?? []" />
+
+        </Grid>
+
+        <CommunicationRecipientActivity v-if="showRecipientActivity"
+                                        :recpientIdkey="selectedRecipientIdKey">
+
+            <template v-if="mediumIconCssClass" #timelineHeaderActions>
+                <HighlightLabel labelType="info">
+                    <i :class="mediumIconCssClass"></i> {{ mediumLabel }}
+                </HighlightLabel>
             </template>
-        </Column>
 
-        <Column name="deliveredDateTime"
-                field="deliveredDateTime"
-                title="Delivered"
-                width="150"
-                :filter="booleanValueFilter"
-                :filterValue="getWasDeliveredBooleanValue">
-            <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasDeliveredBooleanValue(row)"
-                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).deliveredDateTime)" />
+            <template #timelineFooterActions>
+                <div class="communication-detail-timeline-footer-actions">
+                    <RockButton :btnType="BtnType.Link" @click="selectedRecipientIdKey = ''">
+                        Back
+                    </RockButton>
+                </div>
             </template>
-        </Column>
 
-        <Column v-if="showOpenedColumn"
-                name="lastOpenedDateTime"
-                field="lastOpenedDateTime"
-                title="Opened"
-                width="150"
-                :filter="booleanValueFilter"
-                :filterValue="getWasOpenedBooleanValue">
-            <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasOpenedBooleanValue(row)"
-                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).lastOpenedDateTime)" />
-            </template>
-        </Column>
-
-        <Column v-if="showEmailColumns"
-                name="lastClickedDateTime"
-                field="lastClickedDateTime"
-                title="Clicked"
-                width="150"
-                :filter="booleanValueFilter"
-                :filterValue="getWasClickedBooleanValue">
-            <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasClickedBooleanValue(row)"
-                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).lastClickedDateTime)" />
-            </template>
-        </Column>
-
-        <Column v-if="showEmailColumns"
-                name="unsubscribeDateTime"
-                field="unsubscribeDateTime"
-                title="Unsubscribed"
-                width="150"
-                :filter="booleanValueFilter"
-                :filterValue="getWasUnsubscribedBooleanValue">
-            <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasUnsubscribedBooleanValue(row)"
-                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).unsubscribeDateTime)" />
-            </template>
-        </Column>
-
-        <Column v-if="showEmailColumns"
-                name="spamComplaintDateTime"
-                field="spamComplaintDateTime"
-                title="Spam"
-                width="150"
-                :filter="booleanValueFilter"
-                :filterValue="getWasMarkedAsSpamBooleanValue">
-            <template #format="{ row }">
-                <BooleanWithTooltipCell :isTrue="getWasMarkedAsSpamBooleanValue(row)"
-                                        :cellTooltip="getFormattedDateTime((row as RecipientGridRow).spamComplaintDateTime)" />
-            </template>
-        </Column>
-
-        <NumberColumn v-if="isPropertyColumnVisible(PersonPropertyName.Age)"
-                      name="age"
-                      field="age"
-                      title="Age"
-                      width="150"
-                      :filter="numberValueFilter" />
-
-        <Column v-if="isPropertyColumnVisible(PersonPropertyName.AgeClassification)"
-                name="ageClassification"
-                field="ageClassification"
-                title="Age Classification"
-                width="200"
-                :filter="pickExistingValueFilter"
-                :filterValue="getAgeClassificationTextValue"
-                :quickFilterValue="getAgeClassificationTextValue"
-                :sortValue="getAgeClassificationTextValue"
-                :exportValue="getAgeClassificationTextValue">
-            <template #format="{ row }">
-                {{ getAgeClassificationTextValue(row) }}
-            </template>
-        </Column>
-
-        <DateColumn v-if="isPropertyColumnVisible(PersonPropertyName.BirthDate)"
-                    name="birthdate"
-                    field="birthdate"
-                    title="Birthdate"
-                    width="200"
-                    :filter="dateValueFilter" />
-
-        <TextColumn v-if="isPropertyColumnVisible(PersonPropertyName.Campus)"
-                    name="campus"
-                    field="campus"
-                    title="Campus"
-                    width="200"
-                    :filter="pickExistingValueFilter" />
-
-        <TextColumn v-if="isPropertyColumnVisible(PersonPropertyName.Email)"
-                    name="email"
-                    field="email"
-                    title="Email"
-                    width="250"
-                    :filter="textValueFilter" />
-
-        <Column v-if="isPropertyColumnVisible(PersonPropertyName.Gender)"
-                name="gender"
-                field="gender"
-                title="Gender"
-                :filter="pickExistingValueFilter"
-                :filterValue="getGenderTextValue"
-                :quickFilterValue="getGenderTextValue"
-                :sortValue="getGenderTextValue"
-                :exportValue="getGenderTextValue">
-            <template #format="{ row }">
-                {{ getGenderTextValue(row) }}
-            </template>
-        </Column>
-
-        <TextColumn v-if="isPropertyColumnVisible(PersonPropertyName.Grade)"
-                    name="grade"
-                    field="grade"
-                    title="Grade"
-                    :filter="pickExistingValueFilter" />
-
-        <BooleanColumn v-if="isPropertyColumnVisible(PersonPropertyName.IsDeceased)"
-                       name="isDeceased"
-                       field="isDeceased"
-                       title="Is Deceased"
-                       width="150"
-                       :filter="booleanValueFilter" />
-
-        <AttributeColumns visiblePriority="md" :attributes="internalGridDefinition!.attributeFields ?? []" />
-
-    </Grid>
+        </CommunicationRecipientActivity>
+    </div>
 
     <RecipientGridSettingsModal v-model="gridSettings"
                                 v-model:visible="isGridSettingsVisible"
                                 :gridOptions="gridOptions" />
-
-    <Panel v-show="showRecipientActivity"
-           title="Recipient Activity">
-
-        <template v-if="mediumIconCssClass" #headerActions>
-            <div class="action">
-                <HighlightLabel labelType="info">
-                    <i :class="mediumIconCssClass"></i> {{ mediumLabel }}
-                </HighlightLabel>
-            </div>
-        </template>
-
-        <CommunicationRecipientActivity :recpientIdkey="selectedRecipientIdKey" />
-
-        <template #footerActions>
-            <div class="recipient-details-activity-panel-footer-actions">
-                <RockButton :btnType="BtnType.Link" @click="selectedRecipientIdKey = ''">
-                    Back
-                </RockButton>
-            </div>
-        </template>
-
-    </Panel>
 </template>
 
 <style scoped>
-.recipient-details-activity-panel-footer-actions .btn {
+.communication-detail-grid-cell-failure {
+    color: var(--color-danger-strong);
+}
+
+.communication-detail-timeline-footer-actions .btn {
     color: var(--color-primary);
 }
 </style>
 
 <script setup lang="ts">
     import { computed, PropType, reactive, ref, watch } from "vue";
-    import BooleanWithTooltipCell from "./booleanWithTooltipCell.partial.obs";
     import RecipientGridSettingsModal from "./recipientGridSettingsModal.partial.obs";
     import { GridSettingsOptions, PersonPropertyName } from "./types.partial";
     import MediumCell from "./mediumCell.partial.obs";
     import { PreferenceKey, RecipientGridRow } from "./types.partial";
     import Grid, { AttributeColumns, BooleanColumn, booleanValueFilter, Column, DateColumn, DateTimeColumn, dateValueFilter, NumberColumn, numberValueFilter, PersonColumn, pickExistingValueFilter, SelectColumn, TextColumn, textValueFilter } from "@Obsidian/Controls/grid";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import CommunicationRecipientActivity from "@Obsidian/Controls/Internal/CommunicationRecipientActivity.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import { CommunicationRecipientStatus } from "@Obsidian/Enums/Communication/communicationRecipientStatus";
     import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { AgeClassificationDescription } from "@Obsidian/Enums/Crm/ageClassification";
@@ -364,6 +355,16 @@
     }
 
     /**
+     * Gets whether the provided row represents a delivery failure.
+     *
+     * @param row The row to check.
+     */
+    function getIsRowIsDeliveryFailure(row: Record<string, unknown>): boolean {
+        const status = (row as RecipientGridRow).status;
+        return status == CommunicationRecipientStatus.Failed;
+    }
+
+    /**
      * Gets the text value for the "Person" column.
      *
      * @param row The row whose value to get.
@@ -371,6 +372,22 @@
     function getPersonTextValue(row: Record<string, unknown>): string {
         const person = (row as RecipientGridRow).person;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Gets the tooltip for the "Last Activity" column.
+     *
+     * @param row The row whose tooltip to get.
+     */
+    function getLastActivityDateTimeTooltip(row: Record<string, unknown>): string {
+        if (!getIsRowIsDeliveryFailure(row)) {
+            return "";
+        }
+
+        const recipientGridRow = (row as RecipientGridRow);
+        return recipientGridRow.statusNote
+            ? `Failed delivery: ${recipientGridRow.statusNote}`
+            : `Falied delivery on ${getFormattedDateTime(recipientGridRow.lastActivityDateTime)}`;
     }
 
     /**
@@ -383,51 +400,6 @@
         return isNullish(communicationType)
             ? ""
             : CommunicationTypeDescription[communicationType];
-    }
-
-    /**
-     * Gets the boolean value for the "Delivered" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getWasDeliveredBooleanValue(row: Record<string, unknown>): boolean {
-        return !!(row as RecipientGridRow).deliveredDateTime;
-    }
-
-    /**
-     * Gets the boolean value for the "Opened" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getWasOpenedBooleanValue(row: Record<string, unknown>): boolean {
-        return !!(row as RecipientGridRow).lastOpenedDateTime;
-    }
-
-    /**
-     * Gets the boolean value for the "Clicked" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getWasClickedBooleanValue(row: Record<string, unknown>): boolean {
-        return !!(row as RecipientGridRow).lastClickedDateTime;
-    }
-
-    /**
-     * Gets the boolean value for the "Unsubscribed" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getWasUnsubscribedBooleanValue(row: Record<string, unknown>): boolean {
-        return !!(row as RecipientGridRow).unsubscribeDateTime;
-    }
-
-    /**
-     * Gets the boolean value for the "Spam" column.
-     *
-     * @param row The row whose value to get.
-     */
-    function getWasMarkedAsSpamBooleanValue(row: Record<string, unknown>): boolean {
-        return !!(row as RecipientGridRow).spamComplaintDateTime;
     }
 
     /**

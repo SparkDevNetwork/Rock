@@ -6,7 +6,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-desktop"></i>
+                    <i class="ti ti-device-desktop"></i>
                     Interactions Session List
                 </h1>
                 <div class="form-inline panel-labels d-none d-sm-flex align-items-center pull-right">
@@ -19,8 +19,8 @@
             <div class="panel-body">
                 <asp:Literal ID="lContent" runat="server"></asp:Literal>
                 <div class="actions nav-paging">
-                    <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" Visible="false" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
-                    <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" Visible="false" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
+                    <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" Visible="false" runat="server" Text="<i class='ti ti-chevron-left'></i> Prev" />
+                    <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" Visible="false" runat="server" Text="Next <i class='ti ti-chevron-right'></i>" />
                 </div>
             </div>
 

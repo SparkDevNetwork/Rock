@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Registration Instance - Fee List" )]
     [Category( "Event" )]
     [Description( "Displays the fees related to an event registration instance." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "10f4d211-fc60-40d5-b96b-6b9fcbdbefac" )]

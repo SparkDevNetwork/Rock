@@ -281,7 +281,7 @@ namespace Rock.Rest.Controllers
                     accountTreeViewItem.ParentId = id.ToString();
                 }
 
-                accountTreeViewItem.IconCssClass = "fa fa-file-o";
+                accountTreeViewItem.IconCssClass = "ti ti-file";
                 accountTreeViewItem.TotalCount = totalCount;
             }
 
@@ -352,7 +352,7 @@ namespace Rock.Rest.Controllers
                     accountTreeViewItem.CountInfo = childrenCount;
                 }
 
-                accountTreeViewItem.IconCssClass = "fa fa-file-o";
+                accountTreeViewItem.IconCssClass = "ti ti-file";
             }
 
             return accountTreeViewItems.AsQueryable();
@@ -410,7 +410,7 @@ namespace Rock.Rest.Controllers
 
                 }
 
-                accountTreeViewItem.IconCssClass = "fa fa-file-o";
+                accountTreeViewItem.IconCssClass = "ti ti-file";
             }
 
             return accountTreeViewItems.AsQueryable();

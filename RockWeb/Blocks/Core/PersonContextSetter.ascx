@@ -9,7 +9,7 @@
 
                 <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
                     <asp:Literal ID="lCurrentSelection" runat="server" />
-                    <b class="fa fa-caret-down"></b>
+                    <b class="ti ti-caret-down"></b>
                 </a>
 
                 <ul class="dropdown-menu">

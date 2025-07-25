@@ -36,7 +36,7 @@ namespace Rock.Blocks.Types.Mobile.Core
     [DisplayName( "Attribute Values" )]
     [Category( "Mobile > Core" )]
     [Description( "Used to display attribute values based on the category." )]
-    [IconCssClass( "fa fa-edit" )]
+    [IconCssClass( "ti ti-edit" )]
     [ContextAware]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 

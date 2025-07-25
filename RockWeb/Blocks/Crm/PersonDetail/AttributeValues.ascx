@@ -9,8 +9,8 @@
                 <asp:Literal ID="lTitle" runat="server" />
             </h3>
             <div class="actions rollover-item pull-right">
-                <asp:LinkButton ID="lbOrder" runat="server" CssClass="edit" ToolTip="Order Attributes" OnClick="lbOrder_Click" CausesValidation="false"><i class="fa fa-bars"></i></asp:LinkButton>
-                <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" ToolTip="Edit Attributes" OnClick="lbEdit_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
+                <asp:LinkButton ID="lbOrder" runat="server" CssClass="edit" ToolTip="Order Attributes" OnClick="lbOrder_Click" CausesValidation="false"><i class="ti ti-menu-2"></i></asp:LinkButton>
+                <asp:LinkButton ID="lbEdit" runat="server" CssClass="edit" ToolTip="Edit Attributes" OnClick="lbEdit_Click"><i class="ti ti-pencil"></i></asp:LinkButton>
             </div>
         </div>
         <div class="panel-body">

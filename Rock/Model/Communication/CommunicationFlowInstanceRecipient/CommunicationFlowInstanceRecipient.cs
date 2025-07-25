@@ -88,7 +88,7 @@ namespace Rock.Model
         /// Gets or sets the recipient Person Alias.
         /// </summary>
         [DataMember]
-        public PersonAlias RecipientPersonAlias { get; set; }
+        public virtual PersonAlias RecipientPersonAlias { get; set; }
 
         /// <summary>
         /// Gets or sets the Communication Recipient that was unsubscribed.
@@ -97,7 +97,7 @@ namespace Rock.Model
         /// This can be used to find the exact Communication that caused the recipient to unsubscribe from the Communication Flow Instance.
         /// </remarks>
         [DataMember]
-        public CommunicationRecipient UnsubscribeCommunicationRecipient { get; set; }
+        public virtual CommunicationRecipient UnsubscribeCommunicationRecipient { get; set; }
 
         #endregion Navigation Properties
     }

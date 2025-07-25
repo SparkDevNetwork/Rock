@@ -649,25 +649,19 @@ namespace RockWeb.Blocks.Communication
         {
             if ( Page.IsValid && CommunicationId.HasValue )
             {
-                var dataContext = this.GetDataContext();
+                var newCommunicationId = new CommunicationService( this.GetDataContext() )
+                    .CopyWithBulkInsert( CommunicationId.Value, CurrentPersonAliasId );
 
-                var service = new CommunicationService( dataContext );
-
-                var newCommunication = service.Copy( CommunicationId.Value, CurrentPersonAliasId );
-
-                if ( newCommunication != null )
+                if ( newCommunicationId.HasValue )
                 {
-                    service.Add( newCommunication );
-                    dataContext.SaveChanges();
-
                     // Redirect to new communication
                     if ( CurrentPageReference.Parameters.ContainsKey( PageParameterKey.CommunicationId ) )
                     {
-                        CurrentPageReference.Parameters[PageParameterKey.CommunicationId] = newCommunication.Id.ToString();
+                        CurrentPageReference.Parameters[PageParameterKey.CommunicationId] = newCommunicationId.ToString();
                     }
                     else
                     {
-                        CurrentPageReference.Parameters.Add( PageParameterKey.CommunicationId, newCommunication.Id.ToString() );
+                        CurrentPageReference.Parameters.Add( PageParameterKey.CommunicationId, newCommunicationId.ToString() );
                     }
 
                     Response.Redirect( CurrentPageReference.BuildUrl(), false );

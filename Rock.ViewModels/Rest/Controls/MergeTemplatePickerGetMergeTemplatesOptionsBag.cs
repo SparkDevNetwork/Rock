@@ -38,7 +38,7 @@ namespace Rock.ViewModels.Rest.Controls
         /// specify their own IconCssClass value.
         /// </summary>
         /// <value>The default icon CSS class.</value>
-        public string DefaultIconCssClass { get; set; } = "fa fa-list-ol";
+        public string DefaultIconCssClass { get; set; } = "ti ti-list-numbers";
 
         /// <summary>
         /// Gets or sets a filter for which merge templates to include in results: Global, Public, or Both

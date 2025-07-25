@@ -21,30 +21,30 @@
                     <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1 panel-action-zoom-control">
                         <span class="input-group">
                             <span class="input-group-addon">
-                                <span class="btn btn-default" type="button" @click="onZoomDecreaseClick"><i class="fa fa-minus"></i></span>
+                                <span class="btn btn-default" type="button" @click="onZoomDecreaseClick"><i class="ti ti-minus"></i></span>
                             </span>
                             <input class="form-control text-center" type="text" style="width: 70px; pointer-events: none;" :value="zoomValue + '%'" />
                             <span class="input-group-addon">
-                                <span class="btn btn-default" type="button" @click="onZoomIncreaseClick"><i class="fa fa-plus"></i></span>
+                                <span class="btn btn-default" type="button" @click="onZoomIncreaseClick"><i class="ti ti-plus"></i></span>
                             </span>
                         </span>
                     </span>
 
                     <span v-if="hasZoom && isZoomSupported" class="action panel-action-zoom clickable" :class="{ active: isZoomActive }" @click="onZoomClick">
-                        <i class="fa fa-search-plus" />
+                        <i class="ti ti-zoom-in" />
                     </span>
 
                     <span v-if="$slots.helpContent" class="action panel-action-help clickable" @click="onHelpClick">
-                        <i class="fa fa-question"></i>
+                        <i class="ti ti-question-mark"></i>
                     </span>
 
                     <span v-if="hasFullscreen" class="action panel-action-fullscreen clickable" @click="onFullscreenClick">
-                        <i class="fa fa-expand"></i>
+                        <i class="ti ti-maximize"></i>
                     </span>
 
                     <template v-if="hasHeaderSecondaryActions">
                         <span class="action panel-action-context clickable" style="position: relative;">
-                            <i class="fa fa-ellipsis-v" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
+                            <i class="ti ti-dots-vertical" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
                             <ul class="dropdown-menu dropdown-menu-right">
                                 <li v-for="action in headerSecondaryActions" :class="getHeaderSecondaryActionItemClass(action)">
                                     <a href="#" @click.prevent.stop="onActionClick(action, $event)">
@@ -57,8 +57,8 @@
                     </template>
 
                     <span v-if="hasCollapseAction" class="action clickable" @click="onPanelExpandClick">
-                        <i v-if="isPanelOpen" class="fa fa-chevron-up"></i>
-                        <i v-else class="fa fa-chevron-down"></i>
+                        <i v-if="isPanelOpen" class="ti ti-chevron-up"></i>
+                        <i v-else class="ti ti-chevron-down"></i>
                     </span>
                 </div>
             </div>
@@ -93,7 +93,7 @@
                 </div>
 
                 <div v-else class="drawer-pull" @click="onDrawerPullClick">
-                    <i :class="isDrawerOpen ? 'fa fa-chevron-up fa-xs' : 'fa fa-chevron-down fa-xs'"></i>
+                    <i :class="isDrawerOpen ? 'ti ti-chevron-up ti-xs' : 'ti ti-chevron-down ti-xs'"></i>
                 </div>
             </div>
 
@@ -108,7 +108,11 @@
 
             <TransitionVerticalCollapse>
                 <div v-show="isPanelOpen" :class="panelBodyClass" :style="panelBodyStyle">
-                    <slot />
+                    <div v-if="worksurfaceMode" class="panel-scrollable-content">
+                        <slot />
+                    </div>
+
+                    <slot v-else />
 
                     <div v-if="!slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="actions">
                         <div class="footer-actions">
@@ -143,18 +147,6 @@
         </div>
     </Fullscreen>
 </template>
-
-<style scoped>
-.panel-footer-content {
-    padding: var(--panel-body-padding);
-    background: var(--color-interface-softer);
-    border-top: 1px solid var(--color-interface-soft);
-}
-
-.panel-sidebar-footer-content {
-    grid-column: 1 / span 4;
-}
-</style>
 
 <script lang="ts">
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -266,6 +258,17 @@
             default: ""
         },
 
+        /**
+         * Enables the worksurface mode which allows the panel to be used on
+         * a full worksurface layout. This will cause the body content to
+         * automatically scroll if it is too large to fit in the panel. All
+         * other panel elements will remain in static positions.
+         */
+        worksurfaceMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** A list of action items to be included in the ellipsis. */
         headerSecondaryActions: {
             type: Array as PropType<PanelAction[]>,
@@ -340,6 +343,10 @@
 
         if (hasSidebar.value) {
             classes.push("flex-grow-1");
+        }
+
+        if (props.worksurfaceMode) {
+            classes.push("panel-worksurface");
         }
 
         return classes;

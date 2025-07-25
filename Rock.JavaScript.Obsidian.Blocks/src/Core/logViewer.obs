@@ -88,7 +88,7 @@
 
     const customActions = [{
         title: "Download",
-        iconCssClass: "fa fa-download",
+        iconCssClass: "ti ti-download",
         tooltip: "Download Logs",
         handler: onDownloadClick,
     } as GridAction];

@@ -544,7 +544,7 @@
                         }
 
                         if (self.options.showSelectChildren && self.options.multiselect) {
-                            $li.append('<i class="fa fa-angle-double-down icon-fw clickable select-children js-select-children" title="Select Children"></i>');
+                            $li.append('<i class="ti ti-chevrons-down icon-fw clickable select-children js-select-children" title="Select Children"></i>');
                         }
                     } else {
                         if (leafCssClass) {
@@ -615,7 +615,7 @@
             this.discardLoading(this.$el);
             var $warning = $('<div class="alert alert-danger alert-dismissable js-rocktree-alert"/>');
             $warning.append('<button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>')
-                .append('<strong><i class="fa fa-exclamation-triangle"></i> Error </strong>')
+                .append('<strong><i class="ti ti-alert-triangle"></i> Error </strong>')
                 .append(msg);
             $warning.insertBefore(this.$el);
         },
@@ -877,10 +877,10 @@
         categorySelection: true,
         categoryPrefix: '',
         showSelectChildren: false,
-        loadingHtml: '<span class="rocktree-loading"><i class="fa fa-spinner fa-spin"></i></span>',
+        loadingHtml: '<span class="rocktree-loading"><i class="ti ti-rotate-2 ti-spin"></i></span>',
         iconClasses: {
-            branchOpen: 'fa fa-fw fa-chevron-down',
-            branchClosed: 'fa fa-fw fa-chevron-right',
+            branchOpen: 'ti ti-fw ti-chevron-down',
+            branchClosed: 'ti ti-fw ti-chevron-right',
             leaf: ''
         },
         mapping: {

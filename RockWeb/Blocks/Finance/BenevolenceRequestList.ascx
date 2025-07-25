@@ -7,12 +7,12 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-paste"></i>Benevolence Requests</h1>
+                    <h1 class="panel-title"><i class="ti ti-clipboard-text"></i>Benevolence Requests</h1>
                     <div class="panel-labels d-flex align-items-center">
                         <asp:Literal ID="lStatusBarContent" runat="server" />
 
                         <asp:LinkButton ID="lbBenevolenceTypes" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right" OnClick="lbBenevolenceTypes_Click" CausesValidation="false">
-                            <i title="Options" class="fa fa-gear"></i>
+                            <i title="Options" class="ti ti-settings"></i>
                         </asp:LinkButton>
                     </div>
                 </div>

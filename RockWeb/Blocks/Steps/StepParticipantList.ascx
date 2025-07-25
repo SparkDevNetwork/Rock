@@ -21,7 +21,7 @@
 
                     <div class="panel-heading clearfix">
                         <h1 class="panel-title pull-left">
-                            <i class="fa fa-users"></i>
+                            <i class="ti ti-users"></i>
                             <asp:Literal ID="lHeading" runat="server" Text="Steps" />
                         </h1>
                     </div>

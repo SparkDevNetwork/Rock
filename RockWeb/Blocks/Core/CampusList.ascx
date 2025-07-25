@@ -6,7 +6,7 @@
         
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-building-o"></i> Campus List</h1>
+                <h1 class="panel-title"><i class="ti ti-building"></i> Campus List</h1>
             </div>
             <div class="panel-body">
 
@@ -20,6 +20,7 @@
                             <Rock:RockBoundField DataField="LeaderPersonAlias.Person.FullName" HeaderText="Campus Leader" />
                             <Rock:DefinedValueField DataField="CampusTypeValueId" HeaderText="Campus Type" />
                             <Rock:DefinedValueField DataField="CampusStatusValueId" HeaderText="Campus Status" />
+                            <Rock:RockBoundField DataField="AverageWeekendAttendance" HeaderText="Avg. Attendance" DataFormatString="{0:N0}" ItemStyle-HorizontalAlign="Right" HeaderStyle-HorizontalAlign="Right" />
                             <Rock:BoolField DataField="IsActive" HeaderText="Active" />
                         </Columns>
                     </Rock:Grid>

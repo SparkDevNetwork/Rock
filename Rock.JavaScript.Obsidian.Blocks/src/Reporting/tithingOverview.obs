@@ -7,10 +7,10 @@
                     <div class="toggle-container">
                         <div class="btn-group btn-toggle btn-group-sm">
                             <RockButton :class="isToggled ? onButtonSelectedClasses : unselectedClasses" @click="onChartTypeClick(ChartTypeKey.BarChart)">
-                                <i class="icon-fw fa fa-chart-bar"></i>
+                                <i class="icon-fw ti ti-chart-bar"></i>
                             </RockButton>
                             <RockButton :class="isToggled ? unselectedClasses : offButtonSelectedClasses" @click="onChartTypeClick(ChartTypeKey.LineChart)">
-                                <i class="icon-fw fa fa-chart-area"></i>
+                                <i class="icon-fw ti ti-chart-area"></i>
                             </RockButton>
                         </div>
                     </div>

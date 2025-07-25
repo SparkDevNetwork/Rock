@@ -7,7 +7,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading panel-follow">
-                <h1 class="panel-title"><i class="fa fa-poll-h"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
+                <h1 class="panel-title"><i class="ti ti-notes"></i>&nbsp;<asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
             </div>
@@ -46,7 +46,7 @@
                                     EnabledSlidingDateRangeUnits="Year, Month, Day, Hour" FormGroupCssClass="input-group-sm d-flex flex-wrap justify-content-end" />
 
                                 <asp:LinkButton ID="btnRefreshChart" runat="server" CssClass="btn btn-default btn-sm btn-square" ToolTip="Refresh Chart"
-                                    OnClick="btnRefreshChart_Click"><i class="fa fa-refresh"></i></asp:LinkButton>
+                                    OnClick="btnRefreshChart_Click"><i class="ti ti-refresh"></i></asp:LinkButton>
                             </div>
                         </div>
                     </div>

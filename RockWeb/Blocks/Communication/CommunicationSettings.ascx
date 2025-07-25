@@ -6,7 +6,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-wrench"></i> Communication Settings
+                    <i class="ti ti-tool"></i> Communication Settings
                 </h1>
             </div>
             <div class="panel-body">
@@ -18,7 +18,7 @@
                     </div>
                 </div>
                 <div class="actions">
-                    <Rock:BootstrapButton ID="btnSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSave_Click" Text="Save" DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                    <Rock:BootstrapButton ID="btnSave" runat="server" CssClass="btn btn-primary" AccessKey="s" OnClick="btnSave_Click" Text="Save" DataLoadingText="&lt;i class='ti ti-refresh ti-spin'&gt;&lt;/i&gt; Saving"
                         CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" CompletedDuration="3"></Rock:BootstrapButton>
                 </div>
 

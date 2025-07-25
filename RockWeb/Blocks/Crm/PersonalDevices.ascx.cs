@@ -71,7 +71,7 @@ namespace RockWeb.Blocks.Crm
 <div class=""panel panel-block"">       
     <div class=""panel-heading"">
         <h4 class=""panel-title"">
-            <i class=""fa fa-mobile""></i>
+            <i class=""ti ti-device-mobile""></i>
             {{ Person.FullName }}
         </h4>
     </div>
@@ -80,14 +80,14 @@ namespace RockWeb.Blocks.Crm
             {% for item in PersonalDevices %}
                 <div class=""col-xs-6 col-sm-4 col-md-3 mb-4"">                  
                     <div class=""well h-100 mb-0 rollover-container"">                        
-                        <a class=""pull-right rollover-item btn btn-xs btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this Device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""fa fa-times""></i></a>
+                        <a class=""pull-right rollover-item btn btn-xs btn-danger"" href=""#"" onclick=""Rock.dialogs.confirm('Are you sure you want to delete this Device?', function (result) { if (result ){{ item.PersonalDevice.Id | Postback:'DeleteDevice' }}}) ""><i class=""ti ti-x""></i></a>
                         <div style=""min-height: 120px;"">
                             <h3 class=""margin-v-none"">
                                 {% if item.DeviceIconCssClass != '' %}
                                     <i class=""fa {{ item.DeviceIconCssClass }}""></i>
                                 {% endif %}
                                 {% if item.PersonalDevice.NotificationsEnabled == true %}
-                                    <i class=""fa fa-comment-o""></i>
+                                    <i class=""ti ti-message""></i>
                                 {% endif %}
                             </h3>
                             <dl>

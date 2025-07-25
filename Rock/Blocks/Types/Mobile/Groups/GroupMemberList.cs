@@ -43,7 +43,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [DisplayName( "Group Member List" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows the user to view a list of members in a group." )]
-    [IconCssClass( "fa fa-users" )]
+    [IconCssClass( "ti ti-users" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

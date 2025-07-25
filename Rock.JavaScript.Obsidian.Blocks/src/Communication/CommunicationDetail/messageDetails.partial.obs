@@ -1,141 +1,141 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="messagePreview" class="communication-message-details">
+    <div v-if="messagePreview" class="communication-detail-message-details">
 
-        <Panel title="Details">
+        <ContentSection title="Details" icon="ti ti-list">
+            <div class="communication-detail-message-details-metadata">
+                <NotficationBox v-if="isFutureSend" :alertType="AlertType.Info" heading="Future Send">
+                    This communication is scheduled to be sent {{ futureSendDateTimeElapsed }} <small>({{ futureSendDateTimeFormatted }})</small>.
+                </NotficationBox>
 
-            <NotficationBox v-if="isFutureSend" :alertType="AlertType.Info" heading="Future Send">
-                This communication is scheduled to be sent {{ futureSendDateTimeElapsed }} <small>({{ futureSendDateTimeFormatted }})</small>.
-            </NotficationBox>
+                <div class="row d-flex flex-wrap">
+                    <div v-if="createdByPersonName" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            Created By:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            <span v-html="createdByPersonName || '&nbsp;'"></span>
+                            <span v-if="createdDateTimeElapsed"
+                                  :data-original-title="createdDateTimeTooltip"
+                                  :ref="applyTooltip">
+                                ({{ createdDateTimeElapsed }})
+                            </span>
+                        </div>
+                    </div>
+                    <div v-if="approvedByPersonName" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            Approved By:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            <span v-html="approvedByPersonName || '&nbsp;'"></span>
+                            <span v-if="approvedDateTimeElapsed"
+                                  :data-original-title="approvedDateTimeTooltip"
+                                  :ref="applyTooltip">
+                                ({{ approvedDateTimeElapsed }})
+                            </span>
+                        </div>
+                    </div>
+                    <div v-if="fromName" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            From:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            <span>
+                                {{ fromName }}
+                            </span>
+                            <span v-if="fromValue">
+                                ({{ fromValue }})
+                            </span>
+                        </div>
+                    </div>
+                    <div :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            List:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            {{ listName }}
+                        </div>
+                    </div>
 
-            <div class="row d-flex flex-wrap">
-                <div v-if="createdByPersonName" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        Created By:
+                    <div v-if="emailSubject" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            Subject:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            <strong>{{ emailSubject }}</strong>
+                        </div>
                     </div>
-                    <div :class="infoItemValueCssClass">
-                        <span v-html="createdByPersonName || '&nbsp;'"></span>
-                        <span v-if="createdDateTimeElapsed"
-                              :data-original-title="createdDateTimeTooltip"
-                              :ref="applyTooltip">
-                            ({{ createdDateTimeElapsed }})
-                        </span>
+                    <div v-if="replyToEmail" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            Reply To:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            {{ replyToEmail }}
+                        </div>
                     </div>
-                </div>
-                <div v-if="approvedByPersonName" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        Approved By:
+                    <div v-if="ccEmails" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            CC:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            {{ ccEmails }}
+                        </div>
                     </div>
-                    <div :class="infoItemValueCssClass">
-                        <span v-html="approvedByPersonName || '&nbsp;'"></span>
-                        <span v-if="approvedDateTimeElapsed"
-                              :data-original-title="approvedDateTimeTooltip"
-                              :ref="applyTooltip">
-                            ({{ approvedDateTimeElapsed }})
-                        </span>
+                    <div v-if="bccEmails" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            BCC:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            {{ bccEmails }}
+                        </div>
                     </div>
-                </div>
-                <div v-if="fromName" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        From:
+                    <div v-if="emailAttachmentLinks.length" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            Attachments:
+                        </div>
+                        <div v-for="attachment in emailAttachmentLinks" :class="infoItemValueCssClass">
+                            <a :href="attachment.url" target="_blank" rel="noopener noreferrer">{{ attachment.fileName }}</a>
+                        </div>
                     </div>
-                    <div :class="infoItemValueCssClass">
-                        <span>
-                            {{ fromName }}
-                        </span>
-                        <span v-if="fromValue">
-                            ({{ fromValue }})
-                        </span>
-                    </div>
-                </div>
-                <div :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        List:
-                    </div>
-                    <div :class="infoItemValueCssClass">
-                        {{ listName }}
-                    </div>
-                </div>
 
-                <div v-if="emailSubject" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        Subject:
+                    <div v-if="smsMessage" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            Message:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            {{ smsMessage }}
+                        </div>
                     </div>
-                    <div :class="infoItemValueCssClass">
-                        <strong>{{ emailSubject }}</strong>
-                    </div>
-                </div>
-                <div v-if="replyToEmail" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        Reply To:
-                    </div>
-                    <div :class="infoItemValueCssClass">
-                        {{ replyToEmail }}
-                    </div>
-                </div>
-                <div v-if="ccEmails" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        CC:
-                    </div>
-                    <div :class="infoItemValueCssClass">
-                        {{ ccEmails }}
-                    </div>
-                </div>
-                <div v-if="bccEmails" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        BCC:
-                    </div>
-                    <div :class="infoItemValueCssClass">
-                        {{ bccEmails }}
-                    </div>
-                </div>
-                <div v-if="emailAttachmentLinks.length" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        Attachments:
-                    </div>
-                    <div v-for="attachment in emailAttachmentLinks" :class="infoItemValueCssClass">
-                        <a :href="attachment.url" target="_blank" rel="noopener noreferrer">{{ attachment.fileName }}</a>
-                    </div>
-                </div>
 
-                <div v-if="smsMessage" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        Message:
+                    <div v-if="pushTitle" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            Title:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            {{ pushTitle }}
+                        </div>
                     </div>
-                    <div :class="infoItemValueCssClass">
-                        {{ smsMessage }}
+                    <div v-if="pushMessage" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            Message:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            {{ pushMessage }}
+                        </div>
                     </div>
-                </div>
-
-                <div v-if="pushTitle" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        Title:
-                    </div>
-                    <div :class="infoItemValueCssClass">
-                        {{ pushTitle }}
-                    </div>
-                </div>
-                <div v-if="pushMessage" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        Message:
-                    </div>
-                    <div :class="infoItemValueCssClass">
-                        {{ pushMessage }}
-                    </div>
-                </div>
-                <div v-if="pushOpenActionDescription" :class="infoItemCssClass">
-                    <div :class="infoItemLabelCssClass">
-                        Open Option:
-                    </div>
-                    <div :class="infoItemValueCssClass">
-                        {{ pushOpenActionDescription }}
+                    <div v-if="pushOpenActionDescription" :class="infoItemCssClass">
+                        <div :class="infoItemLabelCssClass">
+                            Open Option:
+                        </div>
+                        <div :class="infoItemValueCssClass">
+                            {{ pushOpenActionDescription }}
+                        </div>
                     </div>
                 </div>
             </div>
+        </ContentSection>
 
-        </Panel>
-
-        <Panel title="Preview" :hasFullscreen="true">
+        <ContentSection title="Preview" icon="ti ti-eye">
 
             <EmailPreview v-if="isEmail" :message="messagePreview?.emailMessage ?? ''" />
 
@@ -148,19 +148,25 @@
                                            :pushTitle="messagePreview?.pushTitle ?? ''"
                                            :pushMessage="messagePreview?.pushMessage ?? ''" />
 
-        </Panel>
+        </ContentSection>
 
     </div>
 </template>
 
 <style scoped>
-.communication-message-details-info-item {
+.communication-detail-message-details {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-large);
+}
+
+.communication-detail-message-details-info-item {
     display: flex;
     flex-direction: column;
     margin-bottom: var(--spacing-large);
 }
 
-.communication-message-details-info-item-label {
+.communication-detail-message-details-info-item-label {
     font-size: var(--font-size-small);
     color: var(--color-interface-stronger);
     font-weight: var(--font-weight-semibold);
@@ -170,6 +176,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";
     import { useCommunicationDetail, useMediumFilter } from "./utils.partial";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import EmailPreview from "@Obsidian/Controls/Internal/emailPreview.obs";
     import { BinaryFileAttachment } from "@Obsidian/Controls/Internal/MobilePreview/types.partial";
     import PushNotificationMobilePreview from "@Obsidian/Controls/Internal/pushNotificationMobilePreview.obs";
@@ -196,8 +203,9 @@
         }
     });
 
-    const infoItemLabelCssClass = "communication-message-details-info-item-label text-truncate";
-    const infoItemValueCssClass = "communication-message-details-info-item-value text-truncate";
+    const infoItemCssClass = "communication-detail-message-details-info-item col-xs-12 col-md-6";
+    const infoItemLabelCssClass = "communication-detail-message-details-info-item-label text-truncate";
+    const infoItemValueCssClass = "communication-detail-message-details-info-item-value text-truncate";
 
     // #region Values
 
@@ -223,7 +231,7 @@
 
     const futureSendDateTimeFormatted = computed((): string => {
         return futureSendRockDateTime.value
-            ? futureSendRockDateTime.value.toASPString("G")
+            ? futureSendRockDateTime.value.toASPString("g")
             : "";
     });
 
@@ -257,7 +265,7 @@
     });
 
     const createdDateTimeTooltip = computed((): string => {
-        return createdRockDateTime.value?.toASPString("G") ?? "";
+        return createdRockDateTime.value?.toASPString("g") ?? "";
     });
 
     const approvedRockDateTime = computed((): RockDateTime | null => {
@@ -270,7 +278,7 @@
     });
 
     const approvedDateTimeTooltip = computed((): string => {
-        return createdRockDateTime.value?.toASPString("G") ?? "";
+        return createdRockDateTime.value?.toASPString("g") ?? "";
     });
 
     const fromName = computed((): string => {
@@ -410,18 +418,6 @@
         ];
 
         return items.filter(i => !!i).length;
-    });
-
-    const infoItemCssClass = computed((): string => {
-        const count = infoItemsWithValuesCount.value;
-
-        let colLgWidth = 3;                         // 4 cols by default
-        if (count <= 2) colLgWidth = 6;             // 2 cols
-        else if (count === 3) colLgWidth = 4;       // 3 cols
-        else if (count === 4) colLgWidth = 3;       // 4 cols
-        else if (count <= 6) colLgWidth = 4;        // 3 cols
-
-        return `communication-message-details-info-item col-xs-12 col-md-6 col-lg-${colLgWidth}`;
     });
 
     // #endregion Computed Values

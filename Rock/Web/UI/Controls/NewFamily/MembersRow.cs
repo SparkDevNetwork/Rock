@@ -516,7 +516,7 @@ namespace Rock.Web.UI.Controls
 
             var iDelete = new HtmlGenericControl( "i" );
             _lbDelete.Controls.Add( iDelete );
-            iDelete.AddCssClass( "fa fa-times" );
+            iDelete.AddCssClass( "ti ti-times" );
 
             _lbDelete.CssClass = "btn btn-square btn-danger pull-right";
             _lbDelete.Click += lbDelete_Click;

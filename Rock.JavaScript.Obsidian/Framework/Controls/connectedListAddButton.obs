@@ -3,11 +3,11 @@
     <div class="connected-list-add-button">
         <DropDownMenu v-if="actions?.length" anchorButtonCssClass="connected-list-add-button-trigger"
                       :items="actions ?? []"
-                      @click.stop><i class="fa fa-plus-circle"></i> {{ addText }}</DropDownMenu>
+                      @click.stop><i class="ti ti-circle-plus"></i> {{ addText }}</DropDownMenu>
 
         <RockButton v-else
                     class="connected-list-add-button-trigger">
-            <i class="fa fa-plus-circle"></i> {{ addText }}
+            <i class="ti ti-circle-plus"></i> {{ addText }}
         </RockButton>
     </div>
 </template>

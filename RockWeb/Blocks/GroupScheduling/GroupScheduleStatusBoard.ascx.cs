@@ -368,13 +368,13 @@ namespace RockWeb.Blocks.GroupScheduling
                         @"
 <th></th>
 <th colspan='{0}' class='position-relative'><div class='sticky-cell'>
-    <i class='fa fa-chevron-down js-toggle-panel'></i> {1}
+    <i class='ti ti-chevron-down js-toggle-panel'></i> {1}
     <a href='{2}' class='ml-1 text-color js-group-scheduler-link'><i class='{3}'></i></a></div>
 </th>",
                         columnsCount - 1, // {0}
                         locationGroup.Name, // {1}
                         groupSchedulingUrl,  // {2}
-                        "fa fa-calendar-check-o" )  // {3}
+                        "ti ti-calendar-check" )  // {3}
                     );
 
                 sbGroupLocations.AppendLine( "</tr>" );

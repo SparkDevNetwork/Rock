@@ -36,7 +36,7 @@ namespace Rock.Blocks.Security.Oidc
     [DisplayName( "OpenID Connect Scopes" )]
     [Category( "Security > OIDC" )]
     [Description( "Block for displaying and editing available OpenID Connect scopes." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",

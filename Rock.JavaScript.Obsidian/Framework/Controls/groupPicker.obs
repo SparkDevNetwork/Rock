@@ -2,13 +2,13 @@
 <template>
     <TreeItemPicker v-model="internalValue"
                     formGroupClasses="group-item-picker"
-                    iconCssClass="fa fa-users"
+                    iconCssClass="ti ti-users"
                     :provider="itemProvider"
                     :multiple="multiple">
 
         <template #customPickerActions>
             <label class="rock-checkbox-icon">
-                <i :class="['fa', includeInactiveGroups ? 'fa-check-square-o' : 'fa-square-o']"></i> Show Inactive
+                <i :class="['ti', includeInactiveGroups ? 'ti-square-check' : 'ti-square']"></i> Show Inactive
                 <span style="display:none"><input type="checkbox" v-model="includeInactiveGroups"></span>
             </label>
         </template>
@@ -81,7 +81,7 @@
         provider.limitToSchedulingEnabled = props.limitToSchedulingEnabled;
         provider.limitToRSVPEnabled = props.limitToRSVPEnabled;
         provider.securityGrantToken = securityGrantToken.value;
-        
+
         itemProvider.value = provider;
     }
 

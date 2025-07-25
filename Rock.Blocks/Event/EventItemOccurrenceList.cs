@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Calendar Event Item Occurrence List" )]
     [Category( "Event" )]
     [Description( "Displays the occurrence details for a given calendar event item." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

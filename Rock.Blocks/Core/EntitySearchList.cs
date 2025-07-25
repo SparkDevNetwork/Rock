@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Entity Search List" )]
     [Category( "Core" )]
     [Description( "Displays a list of entity searches." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

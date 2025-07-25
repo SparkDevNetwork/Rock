@@ -77,7 +77,7 @@
 
         <ButtonColumn v-if="config.navigationUrls?.[NavigationUrlKey.ProfilePage]"
                       name="user"
-                      iconClass="fa fa-user"
+                      iconClass="ti ti-user"
                       @click="onPersonClick"
                       visiblePriority="md" />
 

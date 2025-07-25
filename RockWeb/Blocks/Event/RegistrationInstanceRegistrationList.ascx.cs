@@ -413,7 +413,7 @@ namespace RockWeb.Blocks.Event
                     var paymentPlanIcon = string.Empty;
                     if ( isPaymentPlanActive )
                     {
-                        paymentPlanIcon = "<i class='fa fa-calendar-day'></i>";
+                        paymentPlanIcon = "<i class='ti ti-calendar-event'></i>";
                     }
 
                     lBalance.Text = $"<span class='label {balanceCssClass}'>{balanceDue.FormatAsCurrency()}{paymentPlanIcon}</span><input type='hidden' class='js-has-payments' value='{isPaymentPlanActive.ToTrueFalse()}' />";

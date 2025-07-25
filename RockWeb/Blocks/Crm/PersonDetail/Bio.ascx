@@ -38,17 +38,17 @@
                     </div>
                     <div class="action-container">
                         <button type="button" class="dropdown-toggle btn btn-default btn-go btn-square stretched-link" data-toggle="dropdown" title="Actions" aria-label="Actions">
-                            <i class="fa fa-bolt"></i>
+                            <i class="ti ti-bolt"></i>
                         </button>
                         <ul class="dropdown-menu">
-                            <li><asp:LinkButton ID="lbImpersonate" runat="server" Visible="false" OnClick="lbImpersonate_Click"><i class='fa-fw fa fa-unlock'></i>&nbsp;Impersonate</asp:LinkButton></li>
-                            <li><asp:HyperLink ID="hlVCard" runat="server"><i class='fa fa-address-card'></i>&nbsp;Download vCard</asp:HyperLink></li>
+                            <li><asp:LinkButton ID="lbImpersonate" runat="server" Visible="false" OnClick="lbImpersonate_Click"><i class='ti-fw ti ti-lock-open'></i>&nbsp;Impersonate</asp:LinkButton></li>
+                            <li><asp:HyperLink ID="hlVCard" runat="server"><i class='ti ti-id'></i>&nbsp;Download vCard</asp:HyperLink></li>
                             <asp:Literal ID="lActions" runat="server" />
                         </ul>
                         <span>Actions</span>
                     </div>
                     <div id="divEditButton" runat="server" class="action-container">
-                        <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" data-shortcut-key="e" ToolTip="Alt+I" CssClass="btn btn-default btn-go btn-square stretched-link" OnClick="lbEditPerson_Click" aria-label="Edit Person"><i class="fa fa-pencil"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbEditPerson" runat="server" AccessKey="I" data-shortcut-key="e" ToolTip="Alt+I" CssClass="btn btn-default btn-go btn-square stretched-link" OnClick="lbEditPerson_Click" aria-label="Edit Person"><i class="ti ti-pencil"></i></asp:LinkButton>
                         <span>Edit</span>
                     </div>
                 </div>

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Workflow
     [DisplayName( "Workflow Trigger Detail" )]
     [Category( "WorkFlow" )]
     [Description( "Displays the details of a particular workflow trigger." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

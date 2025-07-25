@@ -46,7 +46,7 @@ namespace Rock.Blocks.Administration
     [DisplayName( "System Configuration" )]
     [Category( "Administration" )]
     [Description( "Used for making configuration changes to configurable items in the web.config." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "7ECDCE1B-D63F-42AA-88B6-7C5585E1F33A" )]
@@ -204,6 +204,7 @@ namespace Rock.Blocks.Administration
                 IncludeBusinessInPersonPicker = Rock.Web.SystemSettings.GetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER ).AsBoolean(),
                 IsMultipleTimeZoneSupportEnabled = Rock.Web.SystemSettings.GetValue( SystemSetting.ENABLE_MULTI_TIME_ZONE_SUPPORT ).AsBoolean(),
                 PDFExternalRenderEndpoint = Rock.Web.SystemSettings.GetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT ),
+                RealTimeHostname = Rock.Web.SystemSettings.GetValue( SystemSetting.REALTIME_HOSTNAME ),
                 PersonalizationCookieCacheLengthMinutes = Rock.Web.SystemSettings.GetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES ).AsIntegerOrNull() ?? SettingDefault.PersonalizationCookieCacheLengthMinutes,
                 VisitorCookiePersistenceLengthDays = Rock.Web.SystemSettings.GetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS ).AsIntegerOrNull() ?? SettingDefault.VisitorCookieTimeoutDays,
                 CountriesRestrictedFromAccessing = countriesRestrictedFromAccessing
@@ -585,6 +586,7 @@ namespace Rock.Blocks.Administration
             Rock.Web.SystemSettings.SetValue( SystemSetting.ALWAYS_SHOW_BUSINESS_IN_PERSONPICKER, bag.IncludeBusinessInPersonPicker.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.ENABLE_KEEP_ALIVE, bag.EnableKeepAlive.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PDF_EXTERNAL_RENDER_ENDPOINT, bag.PDFExternalRenderEndpoint );
+            Rock.Web.SystemSettings.SetValue( SystemSetting.REALTIME_HOSTNAME, bag.RealTimeHostname );
             Rock.Web.SystemSettings.SetValue( SystemSetting.VISITOR_COOKIE_PERSISTENCE_DAYS, bag.VisitorCookiePersistenceLengthDays?.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.PERSONALIZATION_SEGMENT_COOKIE_AFFINITY_DURATION_MINUTES, bag.PersonalizationCookieCacheLengthMinutes?.ToString() );
             Rock.Web.SystemSettings.SetValue( SystemSetting.COUNTRIES_RESTRICTED_FROM_ACCESSING, string.Join( "|", bag.CountriesRestrictedFromAccessing.Distinct() ) );

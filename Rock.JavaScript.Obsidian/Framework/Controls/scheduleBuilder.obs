@@ -4,7 +4,7 @@
         <div class="control-wrapper">
             <div class="picker">
                 <a class="picker-label" href="#" :title="scheduleSummary" @click.prevent="onEditSchedule">
-                    <i class="fa fa-calendar"></i>
+                    <i class="ti ti-calendar"></i>
                     Edit Schedule
                 </a>
             </div>
@@ -47,7 +47,7 @@
                     <ul>
                         <li v-for="date of specificDates">
                             <span>{{ getShortDateText(date) }}</span>&ThinSpace;
-                            <a href="#" class="text-danger" @click.prevent="onRemoveSpecificDate(date)"><i class="fa fa-times"></i></a>
+                            <a href="#" class="text-danger" @click.prevent="onRemoveSpecificDate(date)"><i class="ti ti-x"></i></a>
                         </li>
                     </ul>
 
@@ -69,7 +69,7 @@
                         </table>
                     </div>
                     <a v-else class="btn btn-action btn-sm add-specific-date" @click.prevent="onAddSpecificDate">
-                        <i class="fa fa-plus"></i>
+                        <i class="ti ti-plus"></i>
                         <span>&nbsp;Add Date</span>
                     </a>
                 </div>
@@ -200,7 +200,7 @@
                         <ul>
                             <li v-for="range of exclusionDateRanges">
                                 <span>{{ getShortDateRangeText(range) }}</span>&ThinSpace;
-                                <a href="#" class="text-danger" @click.prevent="onRemoveExclusionDateRange(range)"><i class="fa fa-times"></i></a>
+                                <a href="#" class="text-danger" @click.prevent="onRemoveExclusionDateRange(range)"><i class="ti ti-x"></i></a>
                             </li>
                         </ul>
 
@@ -222,7 +222,7 @@
                             </table>
                         </div>
                         <a v-else class="btn btn-action btn-sm add-exclusion-daterange" @click.prevent="onAddExclusionDateRange">
-                            <i class="fa fa-plus"></i>
+                            <i class="ti ti-plus"></i>
                             <span>&nbsp;Add Date Range</span>
                         </a>
                     </div>

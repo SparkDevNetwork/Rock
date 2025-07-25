@@ -42,7 +42,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Attributes" )]
     [Category( "Core" )]
     [Description( "Allows for the managing of attributes." )]
-    [IconCssClass( "fa fa-list-ul" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

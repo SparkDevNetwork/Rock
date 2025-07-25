@@ -13,7 +13,7 @@
                                         :dismissible="true">
                             The communication has been saved.
                             <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSaveSuccessMessageShown = false">
-                                <i class="fa fa-times" aria-hidden="true"></i>
+                                <i class="ti ti-x" aria-hidden="true"></i>
                             </button>
                         </HighlightLabel>
 
@@ -28,7 +28,7 @@
                     <i ref="saveElement"
                        data-toggle="tooltip"
                        title="Save Draft"
-                       class="fa fa-save"></i>
+                       class="ti ti-device-floppy"></i>
                 </span>
             </template>
 
@@ -376,9 +376,9 @@
     const mobileApplicationGuidOrEmptyString = ref<string>(internalPushData.value?.mobileApplicationGuid ?? "");
 
     const commonMergeFields = [
-        "Person.FirstName^First Name|fa fa-user",
-        "Person.NickName^Nick Name|fa fa-user",
-        "Person.FullName^Full Name|fa fa-user"
+        "Person.FirstName^First Name|ti ti-user",
+        "Person.NickName^Nick Name|ti ti-user",
+        "Person.FullName^Full Name|ti ti-user"
     ];
 
     // #endregion

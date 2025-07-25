@@ -10,7 +10,7 @@
 
             <li class="more-items">
                 <DropDownMenu :items="overflowTabActions" align="right">
-                    <span class="title text-muted">More <i class="fa fa-chevron-down"></i></span>
+                    <span class="title text-muted">More <i class="ti ti-chevron-down"></i></span>
                 </DropDownMenu>
             </li>
         </ul>
@@ -62,7 +62,7 @@
     font-weight: initial;
 }
 
-.tabbed-bar > .toolbar-nav > li.more-items .fa {
+.tabbed-bar > .toolbar-nav > li.more-items .ti {
     margin-left: 8px;
 }
 

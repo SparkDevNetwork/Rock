@@ -340,9 +340,9 @@ namespace Rock.Tests.Integration.Workflow
         {
             var attributeService = new AttributeService( rockContext );
 
-            var personFormAttribute = new Model.Attribute
+            var personFormAttribute = new Rock.Model.Attribute
             {
-                EntityTypeId = EntityTypeCache.Get<Model.Workflow>( true, rockContext ).Id,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Workflow>( true, rockContext ).Id,
                 FieldTypeId = 1,
                 Name = "Test Person",
                 Key = "TestPerson",
@@ -350,9 +350,9 @@ namespace Rock.Tests.Integration.Workflow
                 EntityTypeQualifierValue = DatabaseWorkflowTypeId.ToString()
             };
 
-            var spouseFormAttribute = new Model.Attribute
+            var spouseFormAttribute = new Rock.Model.Attribute
             {
-                EntityTypeId = EntityTypeCache.Get<Model.Workflow>( true, rockContext ).Id,
+                EntityTypeId = EntityTypeCache.Get<Rock.Model.Workflow>( true, rockContext ).Id,
                 FieldTypeId = 1,
                 Name = "Test Spouse",
                 Key = "TestSpouse",
@@ -386,7 +386,7 @@ namespace Rock.Tests.Integration.Workflow
             {
                 Activity = new WorkflowActivity
                 {
-                    Workflow = new Model.Workflow
+                    Workflow = new Rock.Model.Workflow
                     {
                         WorkflowTypeId = DatabaseWorkflowTypeId
                     }
@@ -405,9 +405,9 @@ namespace Rock.Tests.Integration.Workflow
 
         private class TestConfiguration
         {
-            public Model.Attribute PersonAttribute { get; set; }
+            public Rock.Model.Attribute PersonAttribute { get; set; }
 
-            public Model.Attribute SpouseAttribute { get; set; }
+            public Rock.Model.Attribute SpouseAttribute { get; set; }
 
             public WorkflowAction Action { get; set; }
 

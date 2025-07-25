@@ -11,7 +11,7 @@
 
                     <div class="panel-heading">
                         <h1 class="panel-title pull-left">
-                            <i class="fa fa-file-o"></i>
+                            <i class="ti ti-file"></i>
                             <asp:Literal ID="lHeading" runat="server" Text="Instances" />
                         </h1>
                     </div>

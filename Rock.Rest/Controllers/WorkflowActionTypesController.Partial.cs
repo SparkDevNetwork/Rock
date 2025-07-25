@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -52,7 +52,7 @@ namespace Rock.Rest.Controllers
                     item.Id = category.Key.ToString();
                     item.Name = category.Value;
                     item.HasChildren = true;
-                    item.IconCssClass = "fa fa-folder";
+                    item.IconCssClass = "ti ti-folder";
                     list.Add( item );
                 }
             }
@@ -73,7 +73,7 @@ namespace Rock.Rest.Controllers
                                 item.Id = entityType.Id.ToString();
                                 item.Name = ActionContainer.GetComponentName( entityType.Name );
                                 item.HasChildren = false;
-                                item.IconCssClass = "fa fa-cube";
+                                item.IconCssClass = "ti ti-cube";
                                 list.Add( item );
                             }
                         }

@@ -8,6 +8,64 @@
   src: url("../../../Assets/Fonts/TablerFont/tabler-icons-outline.woff2") format("woff2"), url("../fonts/tabler-fonts/tabler-icons-outline.woff?") format("woff");
 }
 
+/*
+    7-18-2025 - PS
+    This section is added to included the size styling for the
+    Rock 1 theme onces we move Completely to the new RockNextGen
+    styling system. We can completely remove this sizing section.
+ */
+.ti-lg {
+    font-size: calc(4em / 3);
+    line-height: calc(3em / 4);
+    vertical-align: -.0667em;
+}
+
+.ti-xs {
+    font-size: .75em !important;
+}
+
+.ti-sm {
+    font-size: .875em !important;
+}
+
+.ti-2x {
+    font-size: 2em !important;
+}
+
+.ti-3x {
+    font-size: 3em !important;
+}
+
+.ti-4x {
+    font-size: 4em !important;
+}
+
+.ti-5x {
+    font-size: 5em !important;
+}
+
+.ti-6x {
+    font-size: 6em !important;
+}
+
+.ti-7x {
+    font-size: 7em !important;
+}
+
+.ti-8x {
+    font-size: 8em !important;
+}
+
+.ti-9x {
+    font-size: 9em !important;
+}
+
+.ti-10x {
+    font-size: 10em !important;
+}
+
+/* End of the to be deleted section. */
+
 .ti {
   font-family: "tabler-icons-outline" !important;
   font-weight: normal;

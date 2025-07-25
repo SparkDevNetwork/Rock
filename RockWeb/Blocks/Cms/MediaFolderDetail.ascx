@@ -8,12 +8,12 @@
             <Rock:ModalAlert ID="mdSyncMessage" runat="server" />
 
             <div class="panel-heading ">
-                <h1 class="panel-title"><i class="fa fa-play-circle"></i>
+                <h1 class="panel-title"><i class="ti ti-player-play"></i>
                     <asp:Literal ID="lActionTitle" runat="server" />
                 </h1>
 
                 <div class="panel-labels">
-                    <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='fa fa-exchange'></i>" />
+                    <Rock:HighlightLabel ID="hlSyncStatus" runat="server" LabelType="Info" Visible="false" Text="<i class='ti ti-switch-3'></i>" />
                 </div>
             </div>
 
@@ -38,7 +38,7 @@
 
                         <span class="pull-right">
                             <asp:LinkButton ID="btnSyncContentChannelItems" runat="server" CssClass="btn btn-sm btn-square btn-default" ToolTip="Sync missing content channel items." data-toggle="tooltip" OnClick="btnSyncContentChannelItems_Click" CausesValidation="false">
-                                <i class="fa fa-sync"></i>
+                                <i class="ti ti-refresh"></i>
                             </asp:LinkButton>
                         </span>
                     </div>

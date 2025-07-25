@@ -1,0 +1,407 @@
+<template>
+    <div :id="section.anchor.value"
+         class="content-section"
+         :class="additionalSectionClasses">
+        <div v-if="title"
+             class="content-section-header"
+             @click="onSectionHeaderClick">
+            <h5 class="content-section-title">
+                <i v-if="icon" :class="icon"></i>
+                {{ title }}
+            </h5>
+
+            <div class="content-section-header-actions">
+                <div v-if="$slots.headerSecondaryActions"
+                     class="content-section-header-reveal-actions">
+                    <slot name="headerSecondaryActions" />
+                </div>
+
+                <slot name="headerActions" />
+
+                <button v-if="!disableCollapse"
+                        type="button"
+                        class="btn btn-action"
+                        @click="section.isCollapsed.value = !section.isCollapsed.value">
+                    <i class="ti ti-chevron-up"></i>
+                </button>
+            </div>
+        </div>
+
+        <TransitionVerticalCollapse>
+            <div v-show="disableCollapse || !section.isCollapsed.value">
+                <div class="content-section-body">
+                    <slot />
+                </div>
+
+                <div v-if="$slots.overflow"
+                     class="content-section-body-overflow"
+                     :class="additionalSectionBodyOverflowClasses">
+                    <div class="content-section-body-overflow-toggle">
+                        <button type="button"
+                                class="btn btn-link"
+                                @click="isOverflowCollapsed = !isOverflowCollapsed">
+                            <span>{{ overflowText || "Show More" }}</span>
+                            <i class="ti ti-chevron-up"></i>
+                        </button>
+                    </div>
+
+                    <TransitionVerticalCollapse>
+                        <div v-show="!isOverflowCollapsed" class="content-section-body-overflow-content">
+                            <slot name="overflow" />
+                        </div>
+                    </TransitionVerticalCollapse>
+                </div>
+
+                <div v-if="$slots.footerActions || $slots.footerSecondaryActions" class="content-section-footer">
+                    <div class="content-section-footer-actions">
+                        <slot name="footerActions" />
+                    </div>
+
+                    <div class="content-section-footer-secondary-actions">
+                        <slot name="footerSecondaryActions" />
+                    </div>
+
+                </div>
+            </div>
+        </TransitionVerticalCollapse>
+    </div>
+</template>
+
+<style>
+/* DEFAULT SECTION */
+
+.content-section {
+    border-radius: var(--rounded-large);
+    height: auto;
+    width: 100%;
+    background-color: var(--color-interface-softer);
+    padding-left: 0;
+    padding-right: 0;
+    overflow: hidden;
+}
+
+/* LIGHT SECTION */
+
+.content-section-light {
+    background-color: var(--color-interface-softest);
+    border: 1px var(--color-interface-soft) solid;
+}
+
+.content-section-light > .content-section-header {
+    border-bottom: 0;
+}
+
+.content-section-light > .content-section-footer {
+    border-top: 0;
+}
+
+.content-section-light > .content-section-body {
+    padding: 0;
+    padding-top: 0;
+    padding-right: var(--spacing-large);
+    padding-bottom: var(--spacing-large);
+    padding-left: var(--spacing-large);
+}
+
+/* HEADER */
+
+.content-section-header {
+    min-height: 58px;
+    padding: var(--spacing-small) var(--spacing-large);
+    display: flex;
+    justify-content: space-between;
+}
+
+.content-section-collapsible > .content-section-header {
+    cursor: pointer;
+}
+
+.content-section-header-actions {
+    display: flex;
+    gap: var(--spacing-tiny);
+    align-items: center;
+    margin-left: var(--spacing-large);
+    color: var(--color-interface-strong);
+    cursor: initial;
+}
+
+.content-section-header-reveal-actions {
+    display: flex;
+    gap: var(--spacing-tiny);
+    align-items: center;
+    opacity: 0;
+    transition: opacity 0.3s ease-in-out;
+    pointer-events: none;
+}
+
+.content-section-header:hover .content-section-header-reveal-actions {
+    opacity: 100%;
+    pointer-events: auto;
+}
+
+.content-section-title {
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+    color: var(--color-interface-strong);
+    margin: 0;
+}
+
+.content-section .content-section-header-actions .ti-chevron-up {
+    /* 0.35 to match the transition speed in the collapse component */
+    transition: transform 0.35s ease-in-out;
+}
+
+.content-section.content-section-collapsed .content-section-header-actions .ti-chevron-up {
+    transform: rotate(180deg);
+}
+
+/* SECTION BODY */
+
+.content-section-body,
+content-section-body-overflow {
+    height: auto;
+    padding: var(--spacing-large);
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xlarge);
+}
+
+.content-section-header + div > .content-section-body {
+    border-top: 1px var(--color-interface-soft) solid;
+}
+
+.content-section .content-stack + .content-stack {
+    border-top: 1px var(--color-interface-soft) solid;
+    padding-top: var(--spacing-xlarge);
+}
+
+/* OVERFLOW BODY */
+
+.content-section-body-overflow-toggle .btn {
+    font-size: var(--font-size-small);
+    color: var(--color-primary);
+    display: flex;
+    align-items: center;
+    gap: var(--spacing-tiny);
+}
+
+.content-section-body-overflow-toggle .btn .ti-chevron-up {
+    /* 0.35 to match the transition speed in the collapse component */
+    transition: transform 0.35s ease-in-out;
+}
+
+.content-section-body-overflow-collapsed .btn .ti-chevron-up {
+    transform: rotate(180deg);
+}
+
+.content-section-body-overflow-content {
+    border-top: 1px var(--color-interface-soft) solid;
+    padding: var(--spacing-large);
+}
+
+/* SECTION FOOTER */
+
+.content-section-footer {
+    padding: var(--spacing-medium);
+    display: flex;
+    justify-content: space-between;
+    border-top: 1px var(--color-interface-soft) solid;
+    align-items: center;
+}
+
+.content-section-footer-actions,
+.content-section-footer-secondary-actions {
+    display: flex;
+    gap: var(--spacing-tiny);
+    align-items: center;
+    color: var(--color-interface-strong);
+    transition: opacity 0.3s ease-in-out;
+}
+
+.content-section-footer-secondary-actions {
+    margin-left: var(--spacing-large);
+}
+
+.content-section-footer-secondary-actions > .btn.btn-default {
+    margin-left: var(--spacing-xsmall);
+}
+
+/* ACTION BUTTONS */
+
+.content-section-header-actions .btn-action,
+.content-section-footer-actions .btn-action,
+.content-section-footer-secondary-actions .btn-action,
+.content-section-nav-header .btn-action {
+    border-radius: var(--rounded-small);
+    padding: var(--spacing-tiny);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--color-interface-strong);
+    border: 0;
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.content-section-header-actions .btn-action:hover,
+.content-section-footer-actions .btn-action:hover,
+.content-section-footer-secondary-actions .btn-action:hover,
+.content-section-nav-header .btn-action:hover {
+    background-color: var(--color-interface-softest);
+    color: var(--color-interface-strong);
+}
+
+.content-section-header-actions .btn-action:focus,
+.content-section-footer-actions .btn-action:focus,
+.content-section-footer-secondary-actions .btn-action:focus,
+.content-section-nav-header .btn-action:focus {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.content-section-header-actions .btn-action:active,
+.content-section-footer-actions .btn-action:active,
+.content-section-footer-secondary-actions .btn-action:active,
+.content-section-nav-header .btn-action:active {
+    background-color: transparent;
+    box-shadow: none;
+}
+
+.content-section-header-actions .btn-action > i,
+.content-section-footer-actions .btn-action > i,
+.content-section-footer-secondary-actions .btn-action > i,
+.content-section-nav-header .btn-action > i {
+    color: var(--color-interface-strong);
+    align-self: center;
+    font-size: var(--font-size-h5);
+    padding: 0 var(--spacing-tiny);
+}
+</style>
+
+<script setup lang="ts">
+    import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
+    import { createSection, useSectionWrapper } from "@Obsidian/Core/Controls/contentSection";
+    import { computed, onBeforeUnmount, PropType, ref } from "vue";
+
+    const props = defineProps({
+        /**
+         * The title of the section. This should be a brief, descriptive label
+         * about the contents of the section.
+         */
+        title: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * The icon to display next to the title. This is optional and can be
+         * left out if no icon is desired.
+         */
+        icon: {
+            type: String as PropType<string>,
+            required: false
+        },
+
+        /**
+         * Whether the section should be displayed with a light background.
+         */
+        light: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * A section can be collapsed by default. This will disable that so the
+         * section is always expanded.
+         */
+        disableCollapse: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * The text to display for the button to show the overflow content.
+         */
+        overflowText: {
+            type: String as PropType<string>,
+            required: false
+        },
+    });
+
+    // #region Values
+
+    const title = computed((): string | undefined => props.title);
+    const icon = computed((): string | undefined => props.icon);
+    const isOverflowCollapsed = ref(true);
+
+    const section = createSection(title, icon);
+    const sectionWrapper = useSectionWrapper();
+
+    // #endregion
+
+    // #region Computed Values
+
+    /**
+     * Additional classes to apply to the section based on its state and
+     * configuration.
+     */
+    const additionalSectionClasses = computed((): string[] => {
+        const classes: string[] = [];
+
+        if (!props.disableCollapse) {
+            classes.push("content-section-collapsible");
+        }
+
+        if (section.isCollapsed.value) {
+            classes.push("content-section-collapsed");
+        }
+
+        if (props.light) {
+            classes.push("content-section-light");
+        }
+
+        return classes;
+    });
+
+    /**
+     * Additional classes to apply to the section body overflow based on its
+     * state.
+     */
+    const additionalSectionBodyOverflowClasses = computed((): string[] => {
+        const classes: string[] = [];
+
+        if (isOverflowCollapsed.value) {
+            classes.push("content-section-body-overflow-collapsed");
+        }
+
+        return classes;
+    });
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles the click event on the section header to toggle the collapse state
+     * of the section.
+     *
+     * @param ev The mouse event that triggered the click.
+     */
+    function onSectionHeaderClick(ev: MouseEvent): void {
+        if (ev.target && ev.target instanceof HTMLElement && ev.target.closest(".content-section-header-actions")) {
+            // If the click was on the actions, don't toggle collapse.
+            return;
+        }
+
+        section.isCollapsed.value = !section.isCollapsed.value;
+    }
+
+    // #endregion
+
+    onBeforeUnmount((): void => {
+        sectionWrapper.removeSection(section);
+    });
+
+    sectionWrapper.addSection(section);
+</script>

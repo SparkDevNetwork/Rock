@@ -29,7 +29,7 @@
 
                             <Rock:RockTemplateField ShowHeader="false"  ExcelExportBehavior="NeverInclude" HeaderStyle-Width="48px">
                                 <ItemTemplate>
-                                    <i class="fa-fw <%# Eval("DocumentType.IconCssClass") %>"></i>
+                                    <i class="ti-fw <%# Eval("DocumentType.IconCssClass") %>"></i>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
 
@@ -38,11 +38,11 @@
                             <Rock:RockBoundField DataField="CreatedByPersonName" HeaderText="Created By"></Rock:RockBoundField>
                             <Rock:DateTimeField DataField="CreatedDateTime" HeaderText="Created On" FormatAsElapsedTime="true" ItemStyle-HorizontalAlign="Left" HeaderStyle-HorizontalAlign="Left"></Rock:DateTimeField>
 
-                            <asp:HyperLinkField ShowHeader="false" Text="<i class='fa fa-file-alt'></i>" Target="_blank" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-columncommand" HeaderStyle-HorizontalAlign="Center" ControlStyle-CssClass="js-document-link btn btn-default"/>
+                            <asp:HyperLinkField ShowHeader="false" Text="<i class='ti ti-file'></i>" Target="_blank" ItemStyle-HorizontalAlign="Center" ItemStyle-CssClass="grid-columncommand" HeaderStyle-HorizontalAlign="Center" ControlStyle-CssClass="js-document-link btn btn-default"/>
 
                             <Rock:RockTemplateField ShowHeader="false" ItemStyle-CssClass="grid-columncommand">
                                 <ItemTemplate>
-                                    <asp:LinkButton ID="lbDownload" runat="server" CssClass="btn btn-default" Text="<i class='fa fa-download'></i>" ToolTip="Download Document" OnClick="gFileListDownload_Click"></asp:LinkButton>
+                                    <asp:LinkButton ID="lbDownload" runat="server" CssClass="btn btn-default" Text="<i class='ti ti-download'></i>" ToolTip="Download Document" OnClick="gFileListDownload_Click"></asp:LinkButton>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
 

@@ -74,7 +74,7 @@
         valueBuilder.addTextValue("Number", props.modelValue.number ?? "");
 
         if (props.modelValue.isSmsEnabled) {
-            valueBuilder.addHtmlValue("SMS Enabled", `<i class="fa fa-check"></i>`);
+            valueBuilder.addHtmlValue("SMS Enabled", `<i class="ti ti-check"></i>`);
         }
 
         if (props.modelValue.smsReceivedWorkflowType?.text) {
@@ -101,7 +101,7 @@
         }
 
         if (props.modelValue.isSmsForwardingEnabled) {
-            valueBuilder.addHtmlValue("SMS Forwarding", `<i class="fa fa-check"></i>`);
+            valueBuilder.addHtmlValue("SMS Forwarding", `<i class="ti ti-check"></i>`);
         }
 
         if (props.modelValue.smsNotificationGroup?.text) {

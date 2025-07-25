@@ -65,7 +65,7 @@
         <Column name="moderationFlags" field="moderationFlags" width="60px">
             <template #format="{ row }">
                 <RockLiteral v-if="!isNullOrWhiteSpace(row.moderationFlags)">
-                    <i class="fa fa-exclamation-triangle text-warning" :ref="(el) => addTooltip(el as Element)" data-toggle="tooltip" :data-original-title="row.moderationFlags"></i>
+                    <i class="ti ti-alert-triangle text-warning" :ref="(el) => addTooltip(el as Element)" data-toggle="tooltip" :data-original-title="row.moderationFlags"></i>
                 </RockLiteral>
             </template>
         </Column>

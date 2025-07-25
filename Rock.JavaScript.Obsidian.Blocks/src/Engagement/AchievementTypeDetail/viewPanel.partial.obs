@@ -20,7 +20,7 @@
                             @click="onRefresh"
                             loadingText="..."
                             :isLoading="isRefreshLoading">
-                    <i class="fa fa-refresh"></i>
+                    <i class="ti ti-refresh"></i>
                 </RockButton>
             </div>
 

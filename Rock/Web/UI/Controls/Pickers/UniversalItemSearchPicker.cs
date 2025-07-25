@@ -445,7 +445,7 @@ namespace Rock.Web.UI.Controls
             _btnSelectNone.Attributes["aria-label"] = "Clear selection";
             _btnSelectNone.Attributes["class"] = "btn picker-select-none js-picker-select-none";
             _btnSelectNone.ID = "btnSelectNone";
-            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
+            _btnSelectNone.InnerHtml = "<i class='ti ti-x'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.ServerClick += btnSelect_Click;
 
@@ -506,13 +506,13 @@ namespace Rock.Web.UI.Controls
 
                 writer.Write(
                     $@"
-                <i class='{IconCssClass} fa-fw'></i>
+                <i class='{IconCssClass} ti-fw'></i>
                 <span class='js-universalitemsearchpicker-selecteditem-label picker-selecteditem'>{selectedText}</span>
 " );
 
                 _btnSelectNone.RenderControl( writer );
 
-                writer.Write( $@"<b class='fa fa-caret-down'></b>" );
+                writer.Write( $@"<b class='ti ti-caret-down'></b>" );
 
                 writer.RenderEndTag();
 
@@ -591,7 +591,7 @@ namespace Rock.Web.UI.Controls
 
                 LinkButton linkButton = new LinkButton();
                 linkButton.CssClass = "picker-label";
-                linkButton.Text = $"<i class='fa fa-user'></i><span>{selectedText}</span>";
+                linkButton.Text = $"<i class='ti ti-user'></i><span>{selectedText}</span>";
                 linkButton.Enabled = false;
                 linkButton.RenderControl( writer );
 

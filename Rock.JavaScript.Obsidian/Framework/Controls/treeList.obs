@@ -6,15 +6,15 @@
                           :key="child.value ?? undefined"
                           :item="child"
                           v-bind="{
-                              modelValue,
-                              multiple,
-                              disableFolderSelection,
-                              autoExpand,
-                              showChildCount,
-                              provider,
-                              initiallyExpanded,
-                              enableDeselect
-                          }"
+                            modelValue,
+                            multiple,
+                            disableFolderSelection,
+                            autoExpand,
+                            showChildCount,
+                            provider,
+                            initiallyExpanded,
+                            enableDeselect
+                        }"
                           @update:modelValue="onUpdateSelectedValues"
                           @treeitem-expanded="onItemExpanded"
                           @treeitem-collapsed="onItemCollapsed" />
@@ -121,7 +121,7 @@
                 internalItems.value = [{
                     children: [],
                     hasChildren: false,
-                    iconCssClass: "fa fa-spinner fa-spin",
+                    iconCssClass: "ti ti-rotate-2 ti-spin",
                     value: "",
                     isActive: false,
                     isFolder: false
@@ -174,7 +174,7 @@
                     item.children = [{
                         children: [],
                         hasChildren: false,
-                        iconCssClass: "fa fa-spinner fa-spin",
+                        iconCssClass: "ti ti-rotate-2 ti-spin",
                         value: "",
                         isActive: false,
                         isFolder: false

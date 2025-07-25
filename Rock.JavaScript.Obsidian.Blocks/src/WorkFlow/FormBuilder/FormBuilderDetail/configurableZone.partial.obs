@@ -9,7 +9,7 @@
 
         <div class="zone-actions">
             <slot name="preActions" />
-            <div v-if="iconCssClass" class="zone-action" @click.stop="onActionClick"><i :class="iconCssClass + ' fa-fw'"></i></div>
+            <div v-if="iconCssClass" class="zone-action" @click.stop="onActionClick"><i :class="iconCssClass + ' ti-fw'"></i></div>
             <slot name="postActions" />
         </div>
     </div>
@@ -26,7 +26,7 @@
 
         iconCssClass: {
             type: String as PropType<string>,
-            default: "fa fa-gear"
+            default: "ti ti-settings"
         },
 
         clickBodyToConfigure: {

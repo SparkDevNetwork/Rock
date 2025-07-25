@@ -182,7 +182,7 @@ namespace Rock.Achievement
             }
 
             var iconClass = achievementTypeCache.AchievementIconCssClass.IsNullOrWhiteSpace() ?
-                "fa fa-medal" :
+                "ti ti-medal" :
                 achievementTypeCache.AchievementIconCssClass;
             var successCountMarkup = string.Empty;
 

@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-calendar"></i>
+                    <i class="ti ti-calendar"></i>
                     <asp:Literal ID="lTitle" runat="server" Text="Schedule Toolbox" />
                 </h1>
 
@@ -74,7 +74,7 @@
                                 data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copies the link to synchronize your schedule with a calendar such as Microsoft Outlook or Google Calendar"
                                 class="btn btn-info btn-xs btn-copy-to-clipboard margin-l-md margin-b-sm"
                                 onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                                <i class="fa fa-calendar-alt"></i> Copy Calendar Link
+                                <i class="ti ti-calendar-month"></i> Copy Calendar Link
                             </button>
                         </span>
                         <table class="table table-borderless">
@@ -166,7 +166,7 @@
                                             <Columns>
                                                 <Rock:RockLiteralField ID="lScheduleName" HeaderText="Schedule" />
                                                 <Rock:RockLiteralField ID="lLocationName" HeaderText="Location" />
-                                                <Rock:LinkButtonField ID="btnEditGroupPreferenceAssignment" CssClass="btn btn-default btn-sm" Text="<i class='fa fa-pencil'></i>" OnClick="btnEditGroupPreferenceAssignment_Click" />
+                                                <Rock:LinkButtonField ID="btnEditGroupPreferenceAssignment" CssClass="btn btn-default btn-sm" Text="<i class='ti ti-pencil'></i>" OnClick="btnEditGroupPreferenceAssignment_Click" />
                                                 <Rock:DeleteField OnClick="btnDeleteGroupPreferenceAssignment_Click" />
                                             </Columns>
                                         </Rock:Grid>

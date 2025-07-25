@@ -45,7 +45,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Account Entry" )]
     [Category( "Security" )]
     [Description( "Allows the user to register." )]
-    [IconCssClass( "fa fa-user-lock" )]
+    [IconCssClass( "ti ti-user-shield" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

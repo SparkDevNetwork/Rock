@@ -144,10 +144,10 @@
 
                     <span v-if="row.remoteSettlementAmountStatus !== 0" class="ml-1 text-xs">
                         <i v-if="row.remoteSettlementAmountStatus === 1"
-                           class="fa fa-circle text-warning"
+                           class="ti ti-circle text-warning"
                            title="The batch totals do not match the remote settlement amount."></i>
                         <i v-else
-                           class="fa fa-circle text-success"
+                           class="ti ti-circle text-success"
                            title="The batch totals match the remote settlement amount."></i>
                     </span>
                 </div>
@@ -284,13 +284,13 @@
         return [
             {
                 title: "Open Selected Batches",
-                iconCssClass: "fa fa-folder-open",
+                iconCssClass: "ti ti-folder-open",
                 disabled: !hasSelectedRows.value,
                 handler: onOpenSelectedBatches
             },
             {
                 title: "Close Selected Batches",
-                iconCssClass: "fa fa-folder",
+                iconCssClass: "ti ti-folder",
                 disabled: !hasSelectedRows.value,
                 handler: onCloseSelectedBatches
             }

@@ -78,8 +78,8 @@ namespace RockWeb.Blocks.Event
     {
         #region Properties
 
-        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}' target='_blank' rel='noopener noreferrer' style='color: black;'><i class='fa fa-file-signature'></i></a>";
-        private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='fa fa-edit text-danger' data-toggle='tooltip' data-original-title='{0}'></i>";
+        private const string SIGNATURE_LINK_TEMPLATE = @"<a href='{0}' target='_blank' rel='noopener noreferrer' style='color: black;'><i class='ti ti-file-invoice'></i></a>";
+        private const string SIGNATURE_NOT_SIGNED_INDICATOR = @"<i class='ti ti-edit text-danger' data-toggle='tooltip' data-original-title='{0}'></i>";
 
         #endregion
 
@@ -218,7 +218,7 @@ namespace RockWeb.Blocks.Event
             // Add a custom button with an EventHandler that is only in this block.
             var customActionConfigEventButton = new CustomActionConfigEvent
             {
-                IconCssClass = "fa fa-user-friends",
+                IconCssClass = "ti ti-users",
                 HelpText = "Communicate to Registrars",
                 EventHandler = LbRegistrarCommunication_Click
             };
@@ -976,7 +976,7 @@ namespace RockWeb.Blocks.Event
                 string iconCssClass = registrationTemplatePlacement.GetIconCssClass();
                 if ( iconCssClass.IsNullOrWhiteSpace() )
                 {
-                    iconCssClass = "fa fa-users";
+                    iconCssClass = "ti ti-users";
                 }
 
                 string groupCountText;

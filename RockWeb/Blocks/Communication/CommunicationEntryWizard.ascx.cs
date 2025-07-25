@@ -1724,7 +1724,7 @@ function onTaskCompleted( resultData )
         /// </summary>
         private void UpdateSendScheduleButton()
         {
-            lbScheduleSend.Text = "<i class='fa fa-calendar' aria-hidden='true'></i> Send: " + GetScheduleText( chkSendImmediately.Checked, dtpSendCommunicationDateTime.SelectedDateTime );
+            lbScheduleSend.Text = "<i class='ti ti-calendar' aria-hidden='true'></i> Send: " + GetScheduleText( chkSendImmediately.Checked, dtpSendCommunicationDateTime.SelectedDateTime );
         }
 
         /// <summary>
@@ -2598,7 +2598,7 @@ function onTaskCompleted( resultData )
             {
                 var attachmentUrl = FileUrlHelper.GetFileUrl( binaryFileAttachment.Key );
                 var removeAttachmentJS = string.Format( "removeAttachment( this, '{0}', '{1}' );", hfEmailAttachedBinaryFileIds.ClientID, binaryFileAttachment.Key );
-                sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a> <a><i class='fa fa-times' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
+                sbAttachmentsHtml.AppendLine( string.Format( "    <li><a href='{0}' target='_blank' rel='noopener noreferrer'>{1}</a> <a><i class='ti ti-x' onclick=\"{2}\"></i></a></li>", attachmentUrl, binaryFileAttachment.Value, removeAttachmentJS ) );
             }
 
             sbAttachmentsHtml.AppendLine( "  </ul>" );

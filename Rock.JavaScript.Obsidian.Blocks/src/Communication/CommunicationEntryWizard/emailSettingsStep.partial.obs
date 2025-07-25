@@ -30,7 +30,7 @@
                             <a class="show-options-button"
                                role="button"
                                @click="areMoreOptionsShown = !areMoreOptionsShown">
-                                <span class="text-primary">Show {{ areMoreOptionsShown ? 'Less' : 'More' }} Options</span> <i :class="{ 'text-color': true, 'fa fa-chevron-up': areMoreOptionsShown, 'fa fa-chevron-down': !areMoreOptionsShown }"></i>
+                                <span class="text-primary">Show {{ areMoreOptionsShown ? 'Less' : 'More' }} Options</span> <i :class="{ 'text-color': true, 'ti ti-chevron-up': areMoreOptionsShown, 'ti ti-chevron-down': !areMoreOptionsShown }"></i>
                             </a>
                         </div>
 
@@ -73,15 +73,15 @@
                                          label="Email Subject"
                                          rules="required" />
                                 <FileUploader v-model="currentAttachment"
-                                               :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
-                                               label="Attachments"
-                                               :uploadAsTemporary="true"
-                                               @update:modelValue="onAttachmentAdded" />
+                                              :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
+                                              label="Attachments"
+                                              :uploadAsTemporary="true"
+                                              @update:modelValue="onAttachmentAdded" />
 
                                 <div class="attachment">
                                     <ul class="attachment-content">
                                         <li v-for="binaryFileAttachment in internalEmailAttachmentBinaryFiles">
-                                            <a :href="`/GetFile.ashx?guid=${binaryFileAttachment.value}&fileName=${binaryFileAttachment.text}`" target="_blank" rel="noopener noreferrer">{{ binaryFileAttachment.text }}</a> <a><i class="fa fa-times" @click="onAttachmentRemoved(binaryFileAttachment)"></i></a>
+                                            <a :href="`/GetFile.ashx?guid=${binaryFileAttachment.value}&fileName=${binaryFileAttachment.text}`" target="_blank" rel="noopener noreferrer">{{ binaryFileAttachment.text }}</a> <a><i class="ti ti-x" @click="onAttachmentRemoved(binaryFileAttachment)"></i></a>
                                         </li>
                                     </ul>
                                 </div>

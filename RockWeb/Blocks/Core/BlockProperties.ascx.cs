@@ -811,11 +811,11 @@ namespace RockWeb.Blocks.Core
                     NumberBox nbRelativeOffset = repeaterItem.FindControl( "nbRelativeOffset" ) as NumberBox;
                     if ( ddlOffsetType.SelectedValue.AsInteger() == 1 )
                     {
-                        nbRelativeOffset.PrependText = "<i class='fa fa-minus'></i>";
+                        nbRelativeOffset.PrependText = "<i class='ti ti-minus'></i>";
                     }
                     else
                     {
-                        nbRelativeOffset.PrependText = "<i class='fa fa-plus'></i>";
+                        nbRelativeOffset.PrependText = "<i class='ti ti-plus'></i>";
                     }
                 }
             }

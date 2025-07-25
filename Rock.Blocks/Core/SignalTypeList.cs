@@ -38,7 +38,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Signal Type List" )]
     [Category( "Core" )]
     [Description( "Displays a list of signal types." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

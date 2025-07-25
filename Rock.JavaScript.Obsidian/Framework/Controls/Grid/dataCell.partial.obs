@@ -1,6 +1,12 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="grid-cell" :class="[additionalItemClass, columnTypeClass]" :style="additionalCellStyles" @click="onClick" role="gridcell">
+    <div ref="cellElement"
+         class="grid-cell"
+         :class="[additionalItemClass, columnTypeClass]"
+         :style="additionalCellStyles"
+         :title="tooltipContent"
+         @click="onClick"
+         role="gridcell">
         <component :is="props.column.formatComponent"
                    :row="props.row"
                    :column="props.column"
@@ -9,9 +15,11 @@
 </template>
 
 <script setup lang="ts">
-    import { PropType, computed } from "vue";
+    import { PropType, computed, onBeforeUnmount, onMounted, ref } from "vue";
     import { ColumnDefinition, IGridState } from "@Obsidian/Types/Controls/grid";
     import { getColumnStyles } from "@Obsidian/Core/Controls/grid";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { destroyTooltip, tooltip } from "@Obsidian/Utility/tooltip";
 
     const props = defineProps({
         /** The column definition of this cell. */
@@ -42,6 +50,9 @@
     const emit = defineEmits<{
         (e: "click"): void
     }>();
+
+    const cellElement = ref<HTMLElement>();
+    const tooltipContent = getTooltipContent();
 
     /** Contains any additional CSS classes for the td element. */
     const additionalItemClass = computed((): string => {
@@ -87,6 +98,30 @@
     });
 
     /**
+     * Gets the HTML content for the tooltip. If tooltipHtml is not set then
+     * then the tooltip text will be HTML escaped.
+     *
+     * @returns The string of HTML content for the tooltip.
+     */
+    function getTooltipContent(): string | undefined {
+        if (!props.column.tooltip) {
+            return undefined;
+        }
+
+        const tooltipText = typeof props.column.tooltip === "string"
+            ? props.row[props.column.tooltip]?.toString()
+            : props.column.tooltip(props.row, props.column, props.grid);
+
+        if (!tooltipText) {
+            return undefined;
+        }
+
+        return props.column.tooltipHtml
+            ? escapeHtml(tooltipText)
+            : tooltipText;
+    }
+
+    /**
      * Called when the cell has been clicked if selection has been enabled.
      */
     function onClick(ev: Event): void {
@@ -100,4 +135,22 @@
             emit("click");
         }
     }
+
+    onMounted(() => {
+        if (cellElement.value && tooltipContent) {
+            tooltip(cellElement.value, {
+                html: true,
+                delay: {
+                    show: 500,
+                    hide: 100
+                }
+            });
+        }
+    });
+
+    onBeforeUnmount(() => {
+        if (cellElement.value) {
+            destroyTooltip(cellElement.value);
+        }
+    });
 </script>

@@ -119,7 +119,7 @@ namespace Rock.Storage.AssetStorage
         {
             get
             {
-                return "fa fa-microsoft";
+                return "ti ti-brand-azure";
             }
         }
 

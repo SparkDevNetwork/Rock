@@ -619,7 +619,7 @@ namespace RockWeb.Blocks.Connection
             var bulkUpdatePageReference = new PageReference( GetAttributeValue( AttributeKey.BulkUpdateRequestsPage ) );
             var customActionConfigEventButton = new CustomActionConfigEvent
             {
-                IconCssClass = "fa fa-truck fa-fw",
+                IconCssClass = "ti ti-truck ti-fw",
                 HelpText = "Update selected requests",
                 EventHandler = LbUpdateConnections_Click,
                 Route = bulkUpdatePageReference.Route
@@ -1098,7 +1098,7 @@ namespace RockWeb.Blocks.Connection
                         AttributeKey.SmsLinkPage,
                         new Dictionary<string, string> { { "Person", viewModel.PersonId.ToString() } } );
 
-                    smsLinkHtml = string.Format( @"<a href=""{0}""><i class=""fa fa-comments""></i></a>", smsLink );
+                    smsLinkHtml = string.Format( @"<a href=""{0}""><i class=""ti ti-messages""></i></a>", smsLink );
                 }
 
                 return new
@@ -3909,11 +3909,11 @@ namespace RockWeb.Blocks.Connection
         {
             if ( IsCardViewMode )
             {
-                lbToggleViewMode.Text = @"<i class=""fa fa-list""></i> List";
+                lbToggleViewMode.Text = @"<i class=""ti ti-list""></i> List";
             }
             else
             {
-                lbToggleViewMode.Text = @"<i class=""fa fa-th-large""></i> Board";
+                lbToggleViewMode.Text = @"<i class=""ti ti-border-all""></i> Board";
             }
         }
 
@@ -4362,7 +4362,7 @@ namespace RockWeb.Blocks.Connection
             // Left side of the header is the opportunity name and icon
             var connectionOpportunity = GetConnectionOpportunity();
             var icon = connectionOpportunity.IconCssClass.IsNullOrWhiteSpace() ?
-                "fa fa-arrow-circle-right" :
+                "ti ti-circle-arrow-right" :
                 connectionOpportunity.IconCssClass;
             var text = connectionOpportunity.Name;
             lTitle.Text = string.Format( @"<i class=""{0}""></i> {1}", icon, text );
@@ -6244,7 +6244,7 @@ namespace RockWeb.Blocks.Connection
         {
             // Add Link to Profile Page Column
             var personProfileLinkField = new HyperLinkField();
-            personProfileLinkField.Text = "<i class='fa fa-user'></i>";
+            personProfileLinkField.Text = "<i class='ti ti-user'></i>";
             personProfileLinkField.ItemStyle.CssClass = "person-profile-link";
             gRequests.Columns.Add( personProfileLinkField );
 

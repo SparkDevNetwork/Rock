@@ -159,7 +159,7 @@
             //
             // Create the delete button.
             //
-            $('<button type="button" class="btn btn-danger btn-square"><i class="fa fa-times"></i></button>')
+            $('<button type="button" class="btn btn-danger btn-square"><i class="ti ti-x"></i></button>')
                 .appendTo($inputGroupBtns);
 
             //
@@ -317,7 +317,7 @@
                 // Setup the add button.
                 //
                 var $addButtonContainer = $('<div class="text-right" />').appendTo($filter);
-                var $addButton = $('<a href="#" class="btn btn-default btn-square btn-sm"><i class="fa fa-plus"></i></a>').appendTo($addButtonContainer);
+                var $addButton = $('<a href="#" class="btn btn-default btn-square btn-sm"><i class="ti ti-plus"></i></a>').appendTo($addButtonContainer);
 
                 //
                 // Store all the objects we need access to later as jQuery data objects

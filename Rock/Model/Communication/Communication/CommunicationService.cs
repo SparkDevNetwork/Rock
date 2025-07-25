@@ -17,6 +17,7 @@
 
 using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -253,7 +254,8 @@ namespace Rock.Model
                 {
                     PersonAliasId = personAliasId.Value,
                     Status = recipientStatus,
-                    SendDateTime = sendDateTime
+                    SendDateTime = sendDateTime,
+                    MediumEntityTypeId = EntityTypeCache.Get( "Rock.Communication.Medium.Email" ).Id
                 };
                 communication.Recipients.Add( communicationRecipient );
             }
@@ -917,6 +919,8 @@ namespace Rock.Model
         /// <param name="communicationId">The communication identifier.</param>
         /// <param name="currentPersonAliasId">The current person alias identifier.</param>
         /// <returns></returns>
+        [Obsolete( "Use CopyWithBulkInsert() instead." )]
+        [RockObsolete( "18.0" )]
         public Communication Copy( int communicationId, int? currentPersonAliasId )
         {
             var dataContext = ( RockContext ) Context;
@@ -947,18 +951,20 @@ namespace Rock.Model
                 // This will avoid an issue where a copied communication will include the same person multiple times
                 // if they have been merged since the original communication was created
                 var primaryAliasRecipients = communicationRecipientService.Queryable()
-                    .Where( a => a.CommunicationId == communication.Id )
-                    .Select( a => new
+                    .Where( cr => cr.CommunicationId == communication.Id )
+                    .Select( cr => new
                     {
-                        a.PersonAlias.Person,
-                        a.AdditionalMergeValuesJson,
-                        a.PersonAliasId
+                        cr.PersonAlias.Person,
+                        cr.AdditionalMergeValuesJson,
+                        cr.PersonAliasId,
+                        cr.MediumEntityTypeId
                     } ).ToList()
                     .GroupBy( a => a.Person.PrimaryAliasId )
-                    .Select( s => new
+                    .Select( grouping => new
                     {
-                        PersonAliasId = s.Key,
-                        AdditionalMergeValuesJson = s.Where( a => a.PersonAliasId == s.Key ).Select( x => x.AdditionalMergeValuesJson ).FirstOrDefault()
+                        PersonAliasId = grouping.Key,
+                        AdditionalMergeValuesJson = grouping.Where( a => a.PersonAliasId == grouping.Key ).Select( x => x.AdditionalMergeValuesJson ).FirstOrDefault(),
+                        MediumEntityTypeId = grouping.Where( a => a.PersonAliasId == grouping.Key ).Select( x => x.MediumEntityTypeId ).FirstOrDefault()
                     } )
                     .Where( s => s.PersonAliasId.HasValue )
                     .ToList();
@@ -970,7 +976,8 @@ namespace Rock.Model
                         PersonAliasId = primaryAliasRecipient.PersonAliasId.Value,
                         Status = CommunicationRecipientStatus.Pending,
                         StatusNote = string.Empty,
-                        AdditionalMergeValuesJson = primaryAliasRecipient.AdditionalMergeValuesJson
+                        AdditionalMergeValuesJson = primaryAliasRecipient.AdditionalMergeValuesJson,
+                        MediumEntityTypeId = primaryAliasRecipient.MediumEntityTypeId
                     } );
                 }
 
@@ -986,6 +993,102 @@ namespace Rock.Model
             }
 
             return null;
+        }
+
+        /// <summary>
+        /// Copies and saves the specified communication using bulk insert for the recipients.
+        /// </summary>
+        /// <param name="communicationId">The communication identifier.</param>
+        /// <param name="currentPersonAliasId">The current person alias identifier.</param>
+        /// <returns>The identifier of the new communication if successfully copied and saved.</returns>
+        public int? CopyWithBulkInsert( int communicationId, int? currentPersonAliasId )
+        {
+            var communication = Queryable()
+                .AsNoTracking()
+                .Include( c => c.Attachments )
+                .FirstOrDefault( c => c.Id == communicationId );
+
+            if ( communication == null )
+            {
+                return null;
+            }
+
+            var newCommunication = communication.Clone( false );
+            Add( newCommunication );
+
+            var now = RockDateTime.Now;
+
+            newCommunication.CreatedByPersonAlias = null;
+            newCommunication.CreatedByPersonAliasId = currentPersonAliasId;
+            newCommunication.CreatedDateTime = now;
+            newCommunication.ModifiedByPersonAlias = null;
+            newCommunication.ModifiedByPersonAliasId = currentPersonAliasId;
+            newCommunication.ModifiedDateTime = now;
+            newCommunication.Id = 0;
+            newCommunication.Guid = Guid.Empty;
+            newCommunication.SenderPersonAliasId = currentPersonAliasId;
+            newCommunication.Status = CommunicationStatus.Draft;
+            newCommunication.ReviewerPersonAlias = null;
+            newCommunication.ReviewerPersonAliasId = null;
+            newCommunication.ReviewedDateTime = null;
+            newCommunication.ReviewerNote = string.Empty;
+            newCommunication.SendDateTime = null;
+
+            foreach ( var attachment in communication.Attachments.ToList() )
+            {
+                var newAttachment = new CommunicationAttachment
+                {
+                    BinaryFileId = attachment.BinaryFileId,
+                    CommunicationType = attachment.CommunicationType
+                };
+
+                newCommunication.Attachments.Add( newAttachment );
+            }
+
+            // Save the communication so we can use its ID for the recipient bulk insert below.
+            var rockContext = ( RockContext ) Context;
+            rockContext.SaveChanges();
+
+            // Get the recipients from the original communication, but only for recipients that are using the
+            // person's primary alias ID. This will avoid an issue where a copied communication will include the
+            // same person multiple times if they have been merged since the original communication was created.
+            var primaryAliasRecipients = new CommunicationRecipientService( rockContext )
+                .Queryable()
+                .Where( cr => cr.CommunicationId == communication.Id )
+                .Select( cr => new
+                {
+                    cr.PersonAlias.Person,
+                    cr.AdditionalMergeValuesJson,
+                    cr.PersonAliasId,
+                    cr.MediumEntityTypeId
+                } )
+                .ToList()
+                .GroupBy( a => a.Person.PrimaryAliasId )
+                .Select( grouping => new
+                {
+                    PersonAliasId = grouping.Key,
+                    AdditionalMergeValuesJson = grouping.Where( a => a.PersonAliasId == grouping.Key ).Select( x => x.AdditionalMergeValuesJson ).FirstOrDefault(),
+                    MediumEntityTypeId = grouping.Where( a => a.PersonAliasId == grouping.Key ).Select( x => x.MediumEntityTypeId ).FirstOrDefault()
+                } )
+                .Where( s => s.PersonAliasId.HasValue )
+                .ToList();
+
+            if ( primaryAliasRecipients.Any() )
+            {
+                var newCommunicationRecipients = primaryAliasRecipients
+                    .Select( r => new CommunicationRecipient
+                    {
+                        CommunicationId = newCommunication.Id,
+                        PersonAliasId = r.PersonAliasId.Value,
+                        Status = CommunicationRecipientStatus.Pending,
+                        AdditionalMergeValuesJson = r.AdditionalMergeValuesJson,
+                        MediumEntityTypeId = r.MediumEntityTypeId
+                    } );
+
+                rockContext.BulkInsert( newCommunicationRecipients );
+            }
+
+            return newCommunication?.Id;
         }
     }
 }

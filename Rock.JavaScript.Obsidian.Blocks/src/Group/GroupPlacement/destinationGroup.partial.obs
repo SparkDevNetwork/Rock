@@ -14,7 +14,7 @@
                           :key="role.idKey">
                     <span v-if="role.idKey"
                           :class="['role-count', getRoleCountOverUnderCapacityClass(role.idKey)]">
-                        {{ pluralize(role.name ?? "") }}: {{ getRoleCount(role.idKey) }}
+                        {{ pluralize(role.name ?? "") }}: {{ getRoleCount(role.idKey).toLocaleString() }}
                     </span>
                 </template>
             </div>
@@ -22,13 +22,13 @@
         <template #headerActions v-if="isGenderHighlighting && !isGroupExpanded">
             <div class="d-flex gap-1 mr-3">
                 <Badge class="unknown-badge">
-                    {{ genderCounts.unknown }}
+                    {{ genderCounts.unknown.toLocaleString() }}
                 </Badge>
                 <Badge class="male-badge">
-                    {{ genderCounts.males }}
+                    {{ genderCounts.males.toLocaleString() }}
                 </Badge>
                 <Badge class="female-badge">
-                    {{ genderCounts.females }}
+                    {{ genderCounts.females.toLocaleString() }}
                 </Badge>
             </div>
         </template>
@@ -83,7 +83,7 @@
                                     <div v-if="getGroupMembersFilteredByRoleAndGender(role.idKey, section.value).length > 0">
                                         <HighlightLabel :customClass="`gender-highlight-label ${section.class}`"
                                                         labelType="custom">
-                                            {{ section.label }} ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, section.value).length }})
+                                            {{ section.label }} ({{ getGroupMembersFilteredByRoleAndGender(role.idKey, section.value).length.toLocaleString() }})
                                         </HighlightLabel>
                                         <div class="group-role-wrapper"
                                              v-drag-source="groupMemberDragOptions">
@@ -526,10 +526,10 @@
         const groupMemberCount = destinationGroup.value.groupMembers?.length ?? 0;
 
         if (!destinationGroup.value.groupCapacity) {
-            return `${groupMemberCount}`;
+            return `${groupMemberCount.toLocaleString()}`;
         }
 
-        return `${groupMemberCount} / ${destinationGroup.value.groupCapacity}`;
+        return `${groupMemberCount.toLocaleString()} / ${destinationGroup.value.groupCapacity.toLocaleString()}`;
     });
 
 
@@ -582,7 +582,7 @@
 
     function getRoleSubHeaderText(roleIdKey: string): string {
         const role = groupTypeRoles.value.find(r => r.idKey === roleIdKey);
-        return role?.maxCount ? `${getRoleCount(roleIdKey)}/${role.maxCount}` : `${getRoleCount(roleIdKey)}`;
+        return role?.maxCount ? `${getRoleCount(roleIdKey).toLocaleString()}/${role.maxCount.toLocaleString()}` : `${getRoleCount(roleIdKey).toLocaleString()}`;
     }
 
     function getGroupMembersFilteredByRole(roleIdKey: string): GroupMemberBag[] {
@@ -602,11 +602,11 @@
         const parts: string[] = [];
 
         if (role.maxCount != null) {
-            parts.push(`Maximum Total: ${role.maxCount}`);
+            parts.push(`Maximum Total: ${role.maxCount.toLocaleString()}`);
         }
 
         if (role.minCount != null) {
-            parts.push(`Minimum Total: ${role.minCount}`);
+            parts.push(`Minimum Total: ${role.minCount.toLocaleString()}`);
         }
 
         return parts.join("<br>");

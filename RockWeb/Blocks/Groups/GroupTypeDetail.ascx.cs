@@ -2745,7 +2745,7 @@ namespace RockWeb.Blocks.Groups
             GroupRequirement requirement = e.Row.DataItem as GroupRequirement;
             if ( requirement != null )
             {
-                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"ti ti-check\"></i>" : string.Empty;
             }
         }
 
@@ -2861,7 +2861,7 @@ namespace RockWeb.Blocks.Groups
             var dataViewId = dataViewValue.ToString().AsIntegerOrNull();
             if ( dataViewId.HasValue )
             {
-                return "<i class=\"fa fa-check\"></i>";
+                return "<i class=\"ti ti-check\"></i>";
             }
 
             return string.Empty;

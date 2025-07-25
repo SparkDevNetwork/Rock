@@ -34,7 +34,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Notes" )]
     [Category( "Core" )]
     [Description( "Context aware block for adding notes to an entity." )]
-    [IconCssClass( "fa fa-note" )]
+    [IconCssClass( "ti ti-note" )]
     [SupportedSiteTypes( SiteType.Web )]
     [Rock.Web.UI.ContextAware]
 

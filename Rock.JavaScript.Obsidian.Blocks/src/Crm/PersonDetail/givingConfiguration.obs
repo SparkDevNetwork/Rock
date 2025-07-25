@@ -18,10 +18,10 @@
                     </div>
                     <div class="col-sm-12">
                         <button v-if="!showTextToGive" class="btn btn-default btn-square btn-xs mt-3 mb-2 pull-right" type="button" title="Add Text-To-Give Configuration" @click.prevent="addTextToGiveSettings">
-                            <i class="fa fa-plus"></i>
+                            <i class="ti ti-plus"></i>
                         </button>
                         <button v-else-if="!isEditingTextToGive" class="btn btn-default btn-square btn-xs pull-right" title="Edit Text-To-Give Configuration" @click.prevent="toggleEditTextToGive">
-                            <i class="fa fa-pencil"></i>
+                            <i class="ti ti-pencil"></i>
                         </button>
                     </div>
                 </div>
@@ -99,10 +99,10 @@
                                 </span>
                                 <div class="rollover-item mt-3">
                                     <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editScheduledTransaction(transaction)" title="Edit Scheduled Transaction">
-                                        <i class="fa fa-pencil"></i>
+                                        <i class="ti ti-pencil"></i>
                                     </button>
                                     <button v-if="transaction.isActive" class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-inactivate-scheduled-transaction" @click.prevent="inactivateScheduledTransaction(transaction)" title="Inactivate Scheduled Transaction">
-                                        <i class="fa fa-times"></i>
+                                        <i class="ti ti-x"></i>
                                     </button>
                                 </div>
                             </td>
@@ -112,7 +112,7 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <button class="btn btn-default btn-square btn-xs mt-3 pull-right" type="button" @click.prevent="addScheduledTransaction" title="Add Scheduled Transaction">
-                            <i class="fa fa-plus"></i>
+                            <i class="ti ti-plus"></i>
                         </button>
                     </div>
                 </div>
@@ -158,7 +158,7 @@
                                 </div>
                                 <div class="rollover-item">
                                     <button v-if="!account.isDefault && !accountIsInUse(account.id.toString())" class="btn btn-sm btn-link text-muted py-0 px-1 js-delete-saved-account" @click.prevent="deleteSavedAccount(account)">
-                                        <i class="fa fa-times"></i>
+                                        <i class="ti ti-x"></i>
                                     </button>
                                 </div>
                             </td>
@@ -204,10 +204,10 @@
                                 </span>
                                 <div class="rollover-item d-flex justify-content-end">
                                     <button class="btn btn-sm btn-link text-muted py-0 px-1" @click.prevent="editPledge(pledge)" title="Edit Pledge">
-                                        <i class="fa fa-pencil"></i>
+                                        <i class="ti ti-pencil"></i>
                                     </button>
                                     <button class="btn btn-sm btn-link text-muted py-0 px-1 ml-1 js-delete-pledge" @click.prevent="deletePledge(pledge)" title="Delete Pledge">
-                                        <i class="fa fa-times"></i>
+                                        <i class="ti ti-x"></i>
                                     </button>
                                 </div>
                             </td>
@@ -217,7 +217,7 @@
                 <div class="row">
                     <div class="col-sm-12">
                         <button class="btn btn-default btn-square btn-xs mt-3 pull-right" @click.prevent="addPledge" title="Add Pledge">
-                            <i class="fa fa-plus"></i>
+                            <i class="ti ti-plus"></i>
                         </button>
                     </div>
                 </div>

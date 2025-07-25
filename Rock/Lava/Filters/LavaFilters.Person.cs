@@ -1186,13 +1186,16 @@ namespace Rock.Lava
             // Get results and shape for return
             var sourcePoint = point.ToDatabase();
             var results = new GroupService( rockContext )
-                .GetNearestGroups( point, numericalGroupTypeId.Value, numericalMaxResults, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
+                .GetNearestGroups( point, numericalGroupTypeId.Value, boolReturnOnlyClosestLocationPerGroup, numericalMaxDistance )
                 .Select( g => new GroupProximityResult
                 {
                     StraightLineDistanceInMeters = g.Location.GeoPoint.Distance( sourcePoint ),
                     Group = g.Group,
                     Location = g.Location
-                } ).ToList();
+                } )
+                .OrderBy( x => x.StraightLineDistanceInMeters )
+                .Take( numericalMaxResults )
+                .ToList();
 
 
             if ( selectedTravelMode is null )

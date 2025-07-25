@@ -309,10 +309,6 @@ th {
   --color-sequential-9: #AFEECB;
   --color-sequential-10: #C9F4DC;
   --color-sequential-11: #E4F9ED;
-  --kpi-col-lg: var(--color-interface-soft)
-  // ========================= END COLOR ==========================
-  // ========================= TYPOGRAPHY =========================
-  // FONT SIZES
   --font-size-xsmall: 12px;
   --font-size-small: 14px;
   --font-size-regular: 16px;
@@ -1013,7 +1009,9 @@ th {
 }
 
 .carousel-control .fa-chevron-left,
-.carousel-control .fa-chevron-right {
+.carousel-control .fa-chevron-right,
+.carousel-control .ti-chevron-left,
+.carousel-control .ti-chevron-right {
   position: absolute;
   top: 50%;
   z-index: 5;
@@ -1021,11 +1019,13 @@ th {
   margin-top: -10px;
 }
 
-.carousel-control .fa-chevron-left {
+.carousel-control .fa-chevron-left,
+.carousel-control .ti-chevron-left {
   left: 40px;
 }
 
-.carousel-control .fa-chevron-right {
+.carousel-control .fa-chevron-right,
+.carousel-control .ti-chevron-right {
   right: 40px;
 }
 
@@ -3301,10 +3301,10 @@ input[type=button].btn-block {
 }
 
 .btn-group-xs > .btn {
-  padding: var(--spacing-xsmall) var(--spacing-medium);
-  font-size: var(--font-size-h5);
+  padding: 1px var(--spacing-tiny);
+  font-size: var(--font-size-xsmall);
   line-height: var(--line-height-tight);
-  border-radius: var(--rounded-small);
+  border-radius: var(--rounded-tiny);
 }
 
 .btn-group-sm > .btn {
@@ -3315,10 +3315,10 @@ input[type=button].btn-block {
 }
 
 .btn-group-lg > .btn {
-  padding: 1px var(--spacing-tiny);
-  font-size: var(--font-size-xsmall);
+  padding: var(--spacing-xsmall) var(--spacing-medium);
+  font-size: var(--font-size-h5);
   line-height: var(--line-height-normal);
-  border-radius: var(--rounded-tiny);
+  border-radius: var(--rounded-small);
 }
 
 .btn-group > .btn + .dropdown-toggle {
@@ -3484,14 +3484,17 @@ input[type=button].btn-block {
   margin-left: 3px;
 }
 .badge .fa-square::before,
-.badge .fa-circle::before {
+.badge .fa-circle::before,
+.badge .ti-square::before,
+.badge .ti-circle::before {
   display: block;
   width: 1em;
   height: 1em;
   content: " ";
   background: currentColor;
 }
-.badge .fa-circle::before {
+.badge .fa-circle::before,
+.badge .ti-circle::before {
   border-radius: 50%;
 }
 
@@ -6831,7 +6834,7 @@ td.grid-actions {
   color: var(--color-interface-medium);
 }
 
-.table > tbody > tr.is-deceased > td {
+.is-deceased {
   color: var(--color-danger-strong);
 }
 
@@ -6902,7 +6905,7 @@ td.grid-actions {
 }
 
 .input-group-btn > .btn {
-  padding: var(--spacing-xsmall) var(--spacing-medium);
+  padding: 6px var(--spacing-medium);
 }
 
 .input-group-addon,
@@ -8326,7 +8329,8 @@ ul ul, ol ul, ul ol, ol ol {
 .panel-persondetails .panel-body .form-group.static-control.matrix-attribute .form-control-static {
   width: 100%;
 }
-.panel-persondetails .panel-body i.fa.fa-bars {
+.panel-persondetails .panel-body i.fa.fa-bars,
+.panel-persondetails .panel-body i.ti.ti-bars {
   cursor: pointer;
 }
 .panel-persondetails .attribute-values + .attribute-values {
@@ -8540,6 +8544,18 @@ ul ul, ol ul, ul ol, ol ol {
   background-color: inherit;
 }
 
+.panel-worksurface > .panel-body {
+  display: flex;
+  flex-direction: column;
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+.panel-worksurface .panel-scrollable-content {
+  flex-grow: 1;
+  overflow: hidden auto;
+}
+
 .paneleditor-label {
   float: left;
 }
@@ -8633,6 +8649,16 @@ ul ul, ol ul, ul ol, ol ol {
 
 .panel-headerimage {
   margin: -15px -15px 15px -15px;
+}
+
+.panel-footer-content {
+  padding: var(--panel-body-padding);
+  background: var(--color-interface-softer);
+  border-top: 1px solid var(--color-interface-soft);
+}
+
+.panel-sidebar-footer-content {
+  grid-column: 1/span 4;
 }
 
 .popover {
@@ -10692,6 +10718,13 @@ ul ul, ol ul, ul ol, ol ol {
   margin-left: var(--spacing-tiny);
 }
 
+.panel.panel-body-flush > .panel-body {
+  padding: 0;
+}
+.panel.panel-body-flush > .panel-body .actions:last-of-type {
+  margin: inherit;
+}
+
 .panel-block {
   position: relative;
   display: -ms-flexbox;
@@ -10882,7 +10915,7 @@ ul ul, ol ul, ul ol, ol ol {
 .personlist li {
   padding-left: 15px;
 }
-.personlist li i.fa-circle {
+.personlist li i.ti-circle {
   margin-right: 7.5px;
   margin-left: -15px;
   font-size: 9px;
@@ -10923,8 +10956,9 @@ ul ul, ol ul, ul ol, ol ol {
 .clearable-input .input-group {
   float: left;
 }
-.timepicker-input i.fa-times,
-.clearable-input i.fa-times {
+.timepicker-input i.ti-x,
+.clearable-input i.fa-times,
+.clearable-input i.ti-x {
   float: left;
   padding: var(--spacing-xsmall);
   margin-top: var(--spacing-tiny);
@@ -10934,12 +10968,13 @@ ul ul, ol ul, ul ol, ol ol {
   -moz-transition: opacity 0.2s ease-out;
   transition: opacity 0.2s ease-out;
 }
-.timepicker-input:hover i.fa-times,
-.clearable-input:hover i.fa-times {
+.timepicker-input:hover i.ti-x,
+.clearable-input:hover i.fa-times,
+.clearable-input:hover i.ti-x {
   opacity: 1;
 }
 
-.touch .timepicker-input i.fa-times {
+.touch .timepicker-input i.ti-x {
   opacity: 1;
 }
 
@@ -11902,6 +11937,8 @@ div.aspNetDisabled {
 }
 .custom-control-input {
   position: absolute;
+  top: 0;
+  left: 0;
   z-index: -1;
   opacity: 0;
 }
@@ -12262,7 +12299,7 @@ div.aspNetDisabled {
   .loginstatus > li > a {
     padding: 0 var(--spacing-xsmall);
   }
-  .loginstatus > li > a .fa-caret-down {
+  .loginstatus > li > a .ti-caret-down {
     display: none;
   }
 }
@@ -12287,7 +12324,7 @@ div.aspNetDisabled {
 .loginstatus > li > a span {
   display: none;
 }
-.loginstatus > li > a .fa-caret-down::before {
+.loginstatus > li > a .ti-caret-down::before {
   content: "\f078";
 }
 .loginstatus > li > a:hover, .loginstatus > li > a:focus {
@@ -12312,8 +12349,8 @@ div.aspNetDisabled {
 
 .progress-tracker {
   display: flex;
-  background: var(--color-interface-soft);
-  border: 1px solid var(--color-interface-softer);
+  background: var(--color-interface-softest);
+  border: 1px solid var(--color-interface-soft);
   border-radius: var(--rounded-small);
 }
 
@@ -12349,7 +12386,7 @@ div.aspNetDisabled {
   display: block;
   width: 14px;
   height: 100%;
-  color: var(--color-interface-softer);
+  color: var(--color-interface-soft);
 }
 .progress-tracker-arrow svg {
   width: 100%;
@@ -12361,7 +12398,7 @@ div.aspNetDisabled {
   display: flex;
   align-items: center;
   width: 100%;
-  padding: var(--spacing-xsmall) var(--spacing-small) var(--spacing-xsmall) var(----spacing-small);
+  padding: var(--spacing-xsmall) var(--spacing-small) var(--spacing-xsmall) var(--spacing-small);
   font-size: 0.875rem;
   font-weight: var(--font-weight-medium);
   line-height: 1.25;
@@ -12387,11 +12424,11 @@ div.aspNetDisabled {
 }
 .progress-tracker-icon.current {
   background: var(--color-interface-softest);
-  border: 2px solid var(color-primary);
+  border: 2px solid var(--color-primary);
 }
 .progress-tracker-icon.upcoming {
   background: var(--color-interface-softest);
-  border: 2px solid var(--color-interface-strong);
+  border: 2px solid var(--color-interface-medium);
 }
 
 .progress-tracker-more {
@@ -13931,7 +13968,7 @@ ul.list-group-panel .list-group-item:first-child,
   display: flex;
   flex-basis: 100%;
   flex-grow: 1;
-  align-items: center;
+  align-items: stretch;
   margin: 0 var(--spacing-xsmall) var(--spacing-medium);
   overflow-y: hidden;
   font-size: var(--font-size-h3);
@@ -13953,7 +13990,6 @@ ul.list-group-panel .list-group-item:first-child,
   align-items: center;
   justify-content: center;
   max-width: 35%;
-  height: 100%;
   font-size: 32px;
   vertical-align: top;
 }
@@ -13961,16 +13997,12 @@ ul.list-group-panel .list-group-item:first-child,
   margin-left: var(--spacing-medium);
 }
 .has-icon-bg .kpi-icon {
-  display: block;
   width: max-content;
   margin-left: 0;
 }
 .has-icon-bg .kpi-icon .kpi-content {
   position: absolute;
-  top: 0;
-  right: 0;
-  bottom: 0;
-  left: 0;
+  inset: 0;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -14737,7 +14769,7 @@ textarea:focus,
   width: 270px;
 }
 
-.ant-select-arrow:has(.fa.fa-plus-square) {
+.ant-select-arrow:has(.ti.ti-square-plus) {
   font-size: 24px !important;
   color: var(--color-info-strong);
   top: 35%;
@@ -14745,7 +14777,7 @@ textarea:focus,
   transition: ease-in-out 0.2s;
 }
 
-.ant-select-arrow:has(.fa.fa-plus-square):hover {
+.ant-select-arrow:has(.ti.ti-square-plus):hover {
   color: var(--color-info-soft);
 }
 
@@ -18351,6 +18383,29 @@ iframe.file-browser {
   margin-bottom: 0;
 }
 
+.segment-and {
+  display: flex;
+  align-items: center;
+  text-align: center;
+  max-width: 580px;
+  margin: 32px auto;
+}
+.segment-and::before, .segment-and::after {
+  content: "";
+  border: 1px solid var(--color-interface-soft);
+  flex: 1;
+}
+.segment-and .text {
+  padding: 0 var(--spacing-tiny);
+  text-transform: uppercase;
+  border: 1px solid var(--color-interface-softer);
+  border-radius: var(--rounded-xsmall);
+  font-size: var(--font-size-small);
+  background-color: var(--color-interface-softer);
+  font-weight: var(--font-weight-medium);
+  margin: 0 var(--spacing-xsmall);
+}
+
 /* ===================== BLOCK =================== */
 /*
   Used to manage styles for specific blocks.
@@ -19984,7 +20039,7 @@ div.summary-sub-title {
   flex-direction: column;
 }
 
-.add-answer-button > i.fa-plus-circle {
+.add-answer-button > i.ti-circle-plus {
   border-radius: 4px;
   background-color: var(--color-default-soft);
   color: var(--color-default-strong);
@@ -30007,57 +30062,57 @@ tbody .collapse.in {
 
 .fa-xs,
 .ti-xs {
-  font-size: 0.75em;
+  font-size: 0.75em !important;
 }
 
 .fa-sm,
 .ti-sm {
-  font-size: 0.875em;
+  font-size: 0.875em !important;
 }
 
 .fa-2x,
 .ti-2x {
-  font-size: 2em;
+  font-size: 2em !important;
 }
 
 .fa-3x,
 .ti-3x {
-  font-size: 3em;
+  font-size: 3em !important;
 }
 
 .fa-4x,
 .ti-4x {
-  font-size: 4em;
+  font-size: 4em !important;
 }
 
 .fa-5x,
 .ti-5x {
-  font-size: 5em;
+  font-size: 5em !important;
 }
 
 .fa-6x,
 .ti-6x {
-  font-size: 6em;
+  font-size: 6em !important;
 }
 
 .fa-7x,
 .ti-7x {
-  font-size: 7em;
+  font-size: 7em !important;
 }
 
 .fa-8x,
 .ti-8x {
-  font-size: 8em;
+  font-size: 8em !important;
 }
 
 .fa-9x,
 .ti-9x {
-  font-size: 9em;
+  font-size: 9em !important;
 }
 
 .fa-10x,
 .ti-10x {
-  font-size: 10em;
+  font-size: 10em !important;
 }
 
 .fa-stack {
@@ -30170,11 +30225,13 @@ tbody .collapse.in {
   filter: none;
 }
 
-.fa-spin {
+.fa-spin,
+.ti-spin {
   animation: fa-spin 2s infinite linear;
 }
 
-.fa-pulse {
+.fa-pulse,
+.ti-pulse {
   animation: fa-spin 1s infinite steps(8);
 }
 

@@ -66,7 +66,7 @@ namespace Rock.Lms
         public override string HighlightColor => "#d8f9e5";
 
         /// <inheritdoc/>
-        public override string IconCssClass => "fa fa-file-alt";
+        public override string IconCssClass => "ti ti-file";
 
         /// <inheritdoc/>
         public override string Name => "File Upload";

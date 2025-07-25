@@ -9,7 +9,7 @@
             <asp:HiddenField ID="hfMetricValueId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-signal"></i>
+                <h1 class="panel-title"><i class="ti ti-antenna-bars-5"></i>
                     <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>

@@ -224,7 +224,7 @@ namespace Rock.UniversalSearch.IndexModels
         {
             get
             {
-                return "fa fa-user";
+                return "ti ti-user";
             }
         }
 

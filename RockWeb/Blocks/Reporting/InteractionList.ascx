@@ -4,7 +4,7 @@
         <div class='panel panel-block'>
             <div class='panel-heading'>
                 <h1 class='panel-title'>
-                    <i class='fa fa-user'></i>
+                    <i class='ti ti-user'></i>
                     Interactions
                 </h1>
                  <div class="form-inline panel-labels hidden-xs">
@@ -16,8 +16,8 @@
             <div class='panel-body'>
                 <asp:Literal ID="lContent" runat="server"></asp:Literal>
                 <div class='nav-paging'>
-                    <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" Visible="false" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
-                    <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" Visible="false" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
+                    <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" Visible="false" runat="server" Text="<i class='ti ti-chevron-left'></i> Prev" />
+                    <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" Visible="false" runat="server" Text="Next <i class='ti ti-chevron-right'></i>" />
                 </div>
             </div>
         </div>

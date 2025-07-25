@@ -191,7 +191,7 @@ namespace Rock.Core.NotificationMessageTypes
             return new NotificationMessageMetadataBag
             {
                 PhotoUrl = url,
-                IconCssClass = "fa fa-at",
+                IconCssClass = "ti ti-at",
                 Color = "#009CE3"
             };
         }

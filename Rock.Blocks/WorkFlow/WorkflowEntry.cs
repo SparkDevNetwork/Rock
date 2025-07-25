@@ -50,7 +50,7 @@ namespace Rock.Blocks.Workflow
     [DisplayName( "Workflow Entry" )]
     [Category( "Worfklow" )]
     [Description( "Used to enter information for a workflow that has interactive elements." )]
-    [IconCssClass( "fa fa-gears" )]
+    [IconCssClass( "ti ti-settings-cog" )]
     [ConfigurationChangedReload( BlockReloadMode.Block )]
     [SupportedSiteTypes( SiteType.Web, SiteType.Mobile )]
 
@@ -1133,7 +1133,7 @@ namespace Rock.Blocks.Workflow
                 iconCssClass = workflowTypeCache?.IconCssClass;
             }
 
-            return iconCssClass ?? "fa fa-gear";
+            return iconCssClass ?? "ti ti-settings";
         }
 
         /// <summary>

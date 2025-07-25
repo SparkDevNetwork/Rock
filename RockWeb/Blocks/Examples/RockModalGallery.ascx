@@ -6,7 +6,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title" data-toc-skip="1">
-                    <i class="fa fa-magic"></i>
+                    <i class="ti ti-wand"></i>
                     Modal Gallery
                 </h1>
             </div>

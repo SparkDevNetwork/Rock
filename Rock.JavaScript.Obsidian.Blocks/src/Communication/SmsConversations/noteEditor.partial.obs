@@ -42,7 +42,7 @@
                         <button v-if="showSecurity && modelValue?.idKey"
                                 class="btn btn-security btn-xs btn-square security"
                                 @click.prevent="onSecurityClick">
-                            <i class="fa fa-lock"></i>
+                            <i class="ti ti-lock"></i>
                         </button>
 
                         <button v-if="!hideCancel" class="edit-note-cancel btn btn-link btn-xs"

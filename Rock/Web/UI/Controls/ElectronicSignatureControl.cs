@@ -376,7 +376,7 @@ namespace Rock.Web.UI.Controls
 
             _clearSignatureLink = new Literal();
             _clearSignatureLink.ID = "_clearSignatureLink";
-            _clearSignatureLink.Text = $@"<a class='btn btn-link p-1 p-md-2 text-color js-clear-signature' title='Clear Signature'><i class='fa fa-2x fa-undo'></i></a>";
+            _clearSignatureLink.Text = $@"<a class='btn btn-link p-1 p-md-2 text-color js-clear-signature' title='Clear Signature'><i class='ti ti-2x ti-arrow-back-up'></i></a>";
             pnlSignSignatureClearButtonCol.Controls.Add( _clearSignatureLink );
 
             /* Controls for Typed Signature*/

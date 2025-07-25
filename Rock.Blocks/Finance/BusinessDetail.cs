@@ -42,7 +42,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Business Detail" )]
     [Category( "Finance" )]
     [Description( "Displays the details of the given business." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [Rock.Web.UI.ContextAware]
 
     #region Block Attributes
@@ -662,7 +662,7 @@ Because the contents of this setting will be rendered inside a &lt;ul&gt; elemen
                 {
                     string url = string.Format( "~/WorkflowEntry/{0}?PersonId={1}", workflowType.Id, businessId );
                     sbActions.AppendFormat(
-                        "<li><a href='{0}'><i class='fa-fw {1}'></i> {2}</a></li>",
+                        "<li><a href='{0}'><i class='ti-fw {1}'></i> {2}</a></li>",
                         this.RequestContext.ResolveRockUrl( url ),
                         workflowType.IconCssClass,
                         workflowType.Name );

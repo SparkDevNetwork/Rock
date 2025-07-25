@@ -1,7 +1,7 @@
 ﻿<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="isShown" :class="['text-center', isSmall ? '' : 'fa-2x']">
-        <i class="fas fa-spinner fa-pulse"></i>
+    <div v-if="isShown" :class="['text-center', isSmall ? '' : 'ti-2x']">
+        <i class="ti ti-rotate-2 ti-pulse"></i>
     </div>
 </template>
 

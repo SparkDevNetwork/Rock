@@ -5,7 +5,7 @@
 
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-gift"></i> Store Item Detail</h1>
+                <h1 class="panel-title"><i class="ti ti-gift"></i> Store Item Detail</h1>
             </div>
             <div class="panel-body">
                 <div class="packagedetail">
@@ -45,11 +45,11 @@
                                     <asp:LinkButton ID="lbRate" Visible="true" runat="server" CssClass="btn btn-default btn-block" OnClick="lbRate_Click">
                                         Add a rating
                                         <span class="rating-bg">
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
-                                            <i class="fas fa-star"></i>
+                                            <i class="ti ti-star"></i>
+                                            <i class="ti ti-star"></i>
+                                            <i class="ti ti-star"></i>
+                                            <i class="ti ti-star"></i>
+                                            <i class="ti ti-star"></i>
                                         </span>
                                     </asp:LinkButton>
                                 </div>
@@ -85,7 +85,7 @@
                                 </div>
 
                                 <p class="clearfix margin-t-md">
-                                    <asp:HyperLink ID="hlPackageLink" runat="server" CssClass="btn btn-default btn-sm pull-right"><i class="fa fa-desktop"></i> Package Website</asp:HyperLink>
+                                    <asp:HyperLink ID="hlPackageLink" runat="server" CssClass="btn btn-default btn-sm pull-right"><i class="ti ti-device-desktop"></i> Package Website</asp:HyperLink>
                                 </p>
 
                                 <asp:Literal ID="lVersionWarning" runat="server" />
@@ -138,7 +138,7 @@
 
                                 <asp:Panel ID="pnlAdditionalVersions" runat="server">
                                     <p>
-                                        <a href="#" class="btn btn-xs btn-default pull-right js-showmoreversions">Additional Versions <i class="fa fa-chevron-down"></i></a>
+                                        <a href="#" class="btn btn-xs btn-default pull-right js-showmoreversions">Additional Versions <i class="ti ti-chevron-down"></i></a>
                                     </p>
                                     <div class="packagedetail-additionalversions">
                                         <asp:Repeater ID="rptAdditionalVersions" runat="server">

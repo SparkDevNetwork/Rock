@@ -11,7 +11,7 @@
                 :data-original-title="tooltipTitle"
                 @mouseleave="resetTooltip"
                 ref="el">
-        <slot><i class="fa fa-clipboard"></i></slot>
+        <slot><i class="ti ti-clipboard"></i></slot>
     </RockButton>
 </template>
 

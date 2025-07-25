@@ -41,7 +41,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Media Folder Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular media folder." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

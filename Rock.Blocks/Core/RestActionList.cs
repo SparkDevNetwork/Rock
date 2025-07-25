@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Rest Action List" )]
     [Category( "Core" )]
     [Description( "Displays a list of rest actions." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "c8ee0e9b-7f66-488c-b3a6-357ebc62b174" )]

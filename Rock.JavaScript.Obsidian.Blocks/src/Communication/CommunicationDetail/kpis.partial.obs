@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div v-if="kpis" class="communication-message-performance-kpis row">
+    <div v-if="kpis" class="communication-detail-kpis row">
         <div :class="kpiCssClass">
             <Kpi :value="`${kpis.openRate}%`"
                  label="Open Rate"
@@ -52,19 +52,6 @@
     </div>
 </template>
 
-<style scoped>
-.communication-message-performance-kpis {
-    margin-left: -var(--spacing-small);
-    margin-right: -var(--spacing-small);
-}
-
-.communication-message-performance-kpis > div {
-    padding-left: var(--spacing-small);
-    padding-right: var(--spacing-small);
-    margin-bottom: var(--spacing-large);
-}
-</style>
-
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import Kpi from "@Obsidian/Controls/kpi.obs";
@@ -86,8 +73,12 @@
     // #region Computed Values
 
     const kpiCssClass = computed((): string => {
-        return props.showEmailMetrics
+        const colWidth = props.showEmailMetrics
             ? "col-sm-6 col-lg-3"
             : "col-sm-12";
+
+        return `communication-detail-kpi ${colWidth}`;
     });
+
+    // #endregion Computed Values
 </script>

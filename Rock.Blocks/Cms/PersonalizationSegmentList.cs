@@ -38,7 +38,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Personalization Segment List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of personalization segments." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

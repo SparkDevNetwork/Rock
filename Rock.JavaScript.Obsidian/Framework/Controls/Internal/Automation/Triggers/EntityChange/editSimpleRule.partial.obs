@@ -1,33 +1,43 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <DropDownList v-model="property"
-                  label="Property"
-                  enhanceForLongLists
-                  :items="propertyItems"
-                  rules="required" />
+    <div class="row">
+        <div class="col-md-6">
+            <DropDownList v-model="property"
+                          label="Property"
+                          enhanceForLongLists
+                          :items="propertyItems"
+                          rules="required" />
+        </div>
+    </div>
 
     <RadioButtonList v-model="changeType"
                      label="Change Type"
+                     :repeatColumns="2"
                      :items="changeTypeItems" />
 
     <TransitionVerticalCollapse>
-        <div v-if="hasOriginalValue || hasUpdatedValue || hasValue" class="row">
-            <div v-if="hasOriginalValue" class="col-md-6">
-                <TextBox v-model="originalValue"
-                         label="Original Value"
-                         rules="required" />
-            </div>
+        <div v-if="hasOriginalValue || hasUpdatedValue || hasValue">
+            <ConditionalWell>
+                <div class="row">
+                    <div v-if="hasOriginalValue" class="col-md-8">
+                        <TextBox v-model="originalValue"
+                                 label="Original Value"
+                                 rules="required" />
+                    </div>
 
-            <div v-if="hasUpdatedValue" class="col-md-6">
-                <TextBox v-model="updatedValue"
-                         label="Updated Value"
-                         rules="required" />
-            </div>
+                    <div v-if="hasUpdatedValue" class="col-md-8">
+                        <TextBox v-model="updatedValue"
+                                 label="Updated Value"
+                                 rules="required" />
+                    </div>
 
-            <div v-if="hasValue" class="col-md-6">
-                <TextBox v-model="updatedValue"
-                         label="Value"
-                         rules="required" />
-            </div>
+                    <div v-if="hasValue" class="col-md-8">
+                        <TextBox v-model="updatedValue"
+                                 label="Value"
+                                 rules="required" />
+                    </div>
+                </div>
+            </ConditionalWell>
         </div>
     </TransitionVerticalCollapse>
 </template>
@@ -43,6 +53,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { newGuid } from "@Obsidian/Utility/guid";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
 
     const props = defineProps({
         /**

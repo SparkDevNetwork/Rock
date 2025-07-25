@@ -1,19 +1,19 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div id="pnlAssetManager" class="picker-wrapper align-items-stretch flex-nowrap styled-scroll" :style="wrapperStyles">
-        <div class="picker-folders d-flex flex-column bg-body p-3 mh-100 position-relative flex-shrink-0">
+        <div class="picker-folders d-flex flex-column p-3 mh-100 position-relative flex-shrink-0" style="background-color: var(--color-interface-softer)">
 
             <div class="mb-3 d-flex flex-shrink-0">
                 <RockButton type="button" btnSize="xs" class="mr-2" title="Create a new folder in the selected folder" @click="showAddFolderForm" :disabled="!isFolderSelected">
-                    <i class="fa fa-folder-plus"></i> <span class="hidden-xs">Add Folder</span>
+                    <i class="ti ti-folder-plus"></i> <span class="hidden-xs">Add Folder</span>
                 </RockButton>
                 <RockButton type="button" btnSize="xs" title="Refresh folder list" isSquare class="ml-auto mr-2" @click="onRefreshFolders">
-                    <i class="fa fa-sync"></i>
+                    <i class="ti ti-refresh"></i>
                 </RockButton>
                 <DropDownMenu :items="folderDropDownMenuItems" align="right" class="d-flex">
                     <template #anchor="anchorAttrs">
                         <RockButton type="button" btnSize="xs" title="Additional Actions" isSquare :disabled="!isFolderSelected || isRootSelected || isFolderRestricted" v-bind="anchorAttrs">
-                            <i class="fa fa-ellipsis-v"></i>
+                            <i class="ti ti-dots-vertical"></i>
                         </RockButton>
                     </template>
                 </DropDownMenu>
@@ -25,10 +25,10 @@
                 </NotificationBox>
                 <TextBox v-model="newFolderName" size="small" label="Folder Name" :rules="addFolderValidation" help="Cannot contain any of the following characters: ^ * > < ? / \ | : , ~" />
                 <RockButton type="submit" btnSize="xs" class="mr-2" :disabled="!newFolderName">
-                    <i class="fa fa-check"></i> Create Folder
+                    <i class="ti ti-check"></i> Create Folder
                 </RockButton>
                 <RockButton @click="hideAddFolder" type="button" btnSize="xs">
-                    <i class="fa fa-times"></i> Cancel
+                    <i class="ti ti-x"></i> Cancel
                 </RockButton>
             </RockForm>
 
@@ -52,21 +52,21 @@
         <div class="picker-files d-flex flex-column p-3 mh-100 flex-shrink-0 position-relative">
             <div class="mb-3 d-flex align-items-center">
                 <div v-if="isUploadingFile" class="js-upload-progress upload-progress-sm mr-2">
-                    <i class="fa fa-refresh fa-spin"></i>
+                    <i class="ti ti-refresh ti-spin"></i>
                 </div>
                 <RockButton type="button" btnSize="xs" class="mr-2" title="Upload a file to the selected location." :disabled="isUploadDisabled" @click.prevent="fileInputElement?.click()">
-                    <i class="fa fa-upload"></i> <span class="hidden-xs">Upload File</span>
+                    <i class="ti ti-upload"></i> <span class="hidden-xs">Upload File</span>
                 </RockButton>
                 <input type="file" ref="fileInputElement" class="hidden" @change="uploadFile" :disabled="isUploadDisabled">
                 <RockButton type="button" btnSize="xs" class="mr-2" title="Upload and extract a zip file in the selected location. The extracted files will overwrite existing files of the same name." v-if="enableFileManager && enableZipUpload" :disabled="isZipUploadDisabled" @click.prevent="zipFileInputElement?.click()">
-                    <i class="fa fa-archive"></i> <span class="hidden-xs">Upload Package</span>
+                    <i class="ti ti-archive"></i> <span class="hidden-xs">Upload Package</span>
                 </RockButton>
                 <input type="file" ref="zipFileInputElement" class="hidden" accept=".zip" @change="uploadZipFile" :disabled="isZipUploadDisabled">
                 <RockButton type="button" btnSize="xs" title="Delete selected files" class="mr-2" :disabled="selectedFileKeys.length < 1" @click="deleteFiles(selectedFileKeys)">
-                    <i class="fa fa-trash-alt"></i> <span class="hidden-xs">Delete Selected</span>
+                    <i class="ti ti-trash"></i> <span class="hidden-xs">Delete Selected</span>
                 </RockButton>
                 <RockButton type="button" btnSize="xs" title="Refresh file list" class="ml-auto" @click="refreshFiles">
-                    <i class="fa fa-sync"></i>
+                    <i class="ti ti-refresh"></i>
                 </RockButton>
             </div>
 
@@ -91,15 +91,15 @@
                                 </div>
                             </td>
                             <td class="grid-thumbnail">
-                                <img :src="file.iconPath" style="object-fit: cover; height: 58px; width: 44px;">
+                                <img :src="file.iconPath" style="object-fit: fill; height: 58px; width: 44px;">
                             </td>
                             <td class="grid-filename">
                                 <span v-show="shownFileRenameForm != file.key">{{ file.name }}</span>
                                 <RockForm v-if="shownFileRenameForm == file.key" @submit="() => renameFile(file)" @keyup.esc="hideRenameFileForm">
                                     <div class="d-flex align-items-center">
                                         <TextBox v-model="renameFileName" size="small" formGroupClasses="mb-0" rules="required" label="File Name" disableLabel id="asset-manager-current-file-rename-input" /><span class="mr-2">{{ renameFileExtension }}</span>
-                                        <RockButton type="submit" btnType="default" btnSize="xs" class="mr-2 flex-shrink-0" title="Rename File" isSquare><i class="fa fa-check"></i></RockButton>
-                                        <RockButton type="button" btnType="default" btnSize="xs" class="flex-shrink-0" title="Cancel" isSquare @click="hideRenameFileForm"><i class="fa fa-times"></i></RockButton>
+                                        <RockButton type="submit" btnType="default" btnSize="xs" class="mr-2 flex-shrink-0" title="Rename File" isSquare><i class="ti ti-check"></i></RockButton>
+                                        <RockButton type="button" btnType="default" btnSize="xs" class="flex-shrink-0" title="Cancel" isSquare @click="hideRenameFileForm"><i class="ti ti-x"></i></RockButton>
                                     </div>
                                 </RockForm>
                             </td>
@@ -112,7 +112,7 @@
                             <td class="grid-actions">
                                 <DropDownMenu :items="getFileDropDownMenuItems(file)" align="right" class="d-flex justify-content-end">
                                     <template #anchor="anchorAttrs">
-                                        <RockButton type="button" btnType="link" class="text-body" v-bind="anchorAttrs"><i class="fa fa-ellipsis-v"></i></RockButton>
+                                        <RockButton type="button" btnType="link" class="text-body" v-bind="anchorAttrs"><i class="ti ti-dots-vertical"></i></RockButton>
                                     </template>
                                 </DropDownMenu>
                             </td>

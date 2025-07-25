@@ -6,7 +6,7 @@
                     <DropDownContent>
                         <template #anchor>
                             <span class="clickable text-sm filter-button" :class="{ 'active': isFilterActive }">
-                                <i class="fa fa-filter"></i> Filter
+                                <i class="ti ti-filter"></i> Filter
                             </span>
                         </template>
 
@@ -31,7 +31,7 @@
 
                 <div class="ml-3 clickable" @click="onMarkAllReadClick">
                     <span class="text-sm">
-                        <i class="fa fa-check"></i> Mark All Read
+                        <i class="ti ti-check"></i> Mark All Read
                     </span>
                 </div>
             </div>

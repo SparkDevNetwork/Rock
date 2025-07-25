@@ -4,7 +4,7 @@
         Unable to view details of this template.
     </NotificationBox>
 
-    <Panel v-else type="block" :title="blockTitle" titleIconCssClass="fa fa-align-left">
+    <Panel v-else type="block" :title="blockTitle" titleIconCssClass="ti ti-align-left">
         <template v-if="!isEditMode" #headerActions>
             <span v-if="isInactive" class="label label-danger">Inactive</span>
         </template>

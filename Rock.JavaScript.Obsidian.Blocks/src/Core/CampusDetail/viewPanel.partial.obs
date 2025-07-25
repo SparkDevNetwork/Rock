@@ -21,8 +21,16 @@
     </fieldset>
 </template>
 
+<style scoped>
+:deep(.help-inline) {
+    font-size: 16px;
+    color: var(--color-interface-medium);
+    cursor: pointer;
+}
+</style>
+
 <script setup lang="ts">
-    import { computed, PropType, ref } from "vue";
+    import { computed, PropType, ref, onMounted } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import ValueDetailList from "@Obsidian/Controls/valueDetailList.obs";
@@ -33,6 +41,7 @@
     import { List } from "@Obsidian/Utility/linq";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
 
     const props = defineProps({
         modelValue: {
@@ -118,19 +127,19 @@
 
         if (props.modelValue.campusTopics && props.modelValue.campusTopics.length > 0) {
             valueBuilder.addHtmlValue("Topics", props.modelValue.campusTopics
-            .map(s => `
+                .map(s => `
             <div class="row">
                 <div class="col-md-3"> ${s.type?.text ?? ""} </div>
                 <div class="col-md-6"> ${s.email ?? ""} </div>
                 <div class="col-md-3"> ${s.isPublic ? "Public" : "Internal"} </div>
             </div>`)
-            .join(""));
+                .join(""));
         }
 
         return valueBuilder.build();
     });
 
-    /** The values to display at half-width on the left side of the block. */
+    /** The values to display at half-width on the right side of the block. */
     const rightSideValues = computed((): ValueDetailListItem[] => {
         const valueBuilder = new ValueDetailListItemBuilder();
 
@@ -158,6 +167,13 @@
             valueBuilder.addTextValue("Location", props.modelValue.location.text);
         }
 
+        if (props.modelValue.averageWeekendAttendance) {
+            valueBuilder.addHtmlValue("Average Weekend Attendance", `${props.modelValue.averageWeekendAttendance.toLocaleString()}
+            <i class='ti ti-info-circle help-inline js-tooltip'
+               data-toggle='tooltip'
+               title='The average weekend attendance for a campus is calculated using the metric classified as "Total Weekend Attendance." Refer to the documentation for more details on metric classifications.'></i>`);
+        }
+
         return valueBuilder.build();
     });
 
@@ -170,4 +186,9 @@
     // #region Event Handlers
 
     // #endregion
+
+    onMounted(() => {
+        document.querySelectorAll(".js-tooltip").forEach(el => tooltip(el as HTMLElement));
+    });
+
 </script>

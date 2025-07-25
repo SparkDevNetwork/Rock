@@ -285,7 +285,7 @@ namespace RockWeb.Blocks.Administration
             pdAuditDetails.SetEntity( page, ResolveRockUrl( "~" ) );
 
             string pageIconHtml = !string.IsNullOrWhiteSpace( page.IconCssClass ) ?
-                pageIconHtml = string.Format( "<i class='{0} fa-2x' ></i>", page.IconCssClass ) : string.Empty;
+                pageIconHtml = string.Format( "<i class='{0} ti-2x' ></i>", page.IconCssClass ) : string.Empty;
 
             lTitle.Text = page.InternalName.FormatAsHtmlTitle();
             if ( !string.IsNullOrEmpty( page.IconCssClass ) )
@@ -294,7 +294,7 @@ namespace RockWeb.Blocks.Administration
             }
             else
             {
-                lIcon.Text = "<i class='fa fa-file-text-o'></i>";
+                lIcon.Text = "<i class='ti ti-file-type-txt'></i>";
             }
 
             var site = SiteCache.Get( page.Layout.SiteId );
@@ -504,7 +504,7 @@ namespace RockWeb.Blocks.Administration
             if ( page.Id > 0 )
             {
                 lTitle.Text = ActionTitle.Edit( Rock.Model.Page.FriendlyTypeName ).FormatAsHtmlTitle();
-                lIcon.Text = "<i class='fa fa-square-o'></i>";
+                lIcon.Text = "<i class='ti ti-square'></i>";
             }
             else
             {
@@ -516,7 +516,7 @@ namespace RockWeb.Blocks.Administration
                 }
                 else
                 {
-                    lIcon.Text = "<i class='fa fa-file-text-o'></i>";
+                    lIcon.Text = "<i class='ti ti-file-type-txt'></i>";
                 }
             }
 

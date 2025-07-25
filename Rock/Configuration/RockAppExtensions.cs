@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.IO;
 
 using Microsoft.Extensions.DependencyInjection;
 
@@ -93,29 +94,7 @@ namespace Rock.Configuration
         }
 
         /// <summary>
-        /// Maps a virtual path to a physical path within the application's context.
-        /// </summary>
-        /// <param name="app">The application instance used to resolve the path.</param>
-        /// <param name="path">The virtual path to be mapped. It must begin with a '~' character.</param>
-        /// <returns>The physical path corresponding to the specified virtual path.</returns>
-        public static string MapPath( this RockApp app, string path )
-        {
-            if ( path.StartsWith( "~" ) )
-            {
-                throw new ArgumentException( "The path must start with a '~' character.", nameof( path ) );
-            }
-
-#if REVIEW_WEBFORMS
-            return System.Web.VirtualPathUtility.ToAbsolute( path );
-#else
-            // TODO: This is a temporary solution until we have a way to specify
-            // the actual root path of the application.
-            return Environment.CurrentDirectory + path.TrimStart( '~' ).Replace( '/', System.IO.Path.DirectorySeparatorChar );
-#endif
-        }
-
-        /// <summary>
-        /// Resolves the rock URL to the absolute path it refers to on this site.
+        /// Resolves the Rock URL to the absolute path it refers to on this site.
         /// The name of the theme will be determined automatically, if it can't
         /// be determined then "Rock" will be used.
         /// </summary>
@@ -135,7 +114,7 @@ namespace Rock.Configuration
         }
 
         /// <summary>
-        /// Resolves the rock URL to the absolute path it refers to on this site.
+        /// Resolves the Rock URL to the absolute path it refers to on this site.
         /// </summary>
         /// <remarks>
         ///     <para>An input starting with "~~/" will return a theme URL like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
@@ -174,6 +153,69 @@ namespace Rock.Configuration
             }
 
             return url;
+        }
+
+        /// <summary>
+        /// Maps the Rock relative path to the physical path it refers to on
+        /// the filesystem. The name of the theme will be determined
+        /// automatically, if it can't be determined then "Rock" will be used.
+        /// </summary>
+        /// <remarks>
+        ///     <para>An input starting with "~~/" will return a path like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
+        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
+        ///     <para>An input of "~~" will return a path like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
+        ///     <para>The input will be returned as supplied for all other cases.</para>
+        /// </remarks>
+        /// <param name="app">The RockApp instance.</param>
+        /// <param name="path">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
+        /// <returns>The resolved path.</returns>
+        public static string MapPath( this RockApp app, string path )
+        {
+            return MapPath( app, path, "Rock" );
+        }
+
+        /// <summary>
+        /// Maps the Rock relative path to the physical path it refers to on
+        /// the filesystem.
+        /// </summary>
+        /// <remarks>
+        ///     <para>An input starting with "~~/" will return a path like, "{SiteRoot}/Themes/{CurrentSiteTheme}/{input}" without the leading "~~".</para>
+        ///     <para>An input starting with "~/" will return the site root like, {SiteRoot}/{input}" without the leading "~".</para>
+        ///     <para>An input of "~~" will return a path like "{SiteRoot}/Themes/{CurrentSiteTheme}" without a trailing slash.</para>
+        ///     <para>An input of "~" will return the site root "{SiteRoot}/" with a trailing slash. </para>
+        ///     <para>The input will be returned as supplied for all other cases.</para>
+        /// </remarks>
+        /// <param name="app">The RockApp instance.</param>
+        /// <param name="path">The input with prefix <c>"~~"</c> or <c>"~"</c>.</param>
+        /// <param name="theme">The name of the theme when a "~~" is encountered.</param>
+        /// <returns>The resolved path.</returns>
+        public static string MapPath( this RockApp app, string path, string theme )
+        {
+            var appPath = app.HostingSettings.WebRootPath.TrimEnd( new char[] { '/', '\\' } );
+
+            if ( path.IsNullOrWhiteSpace() )
+            {
+                return path;
+            }
+
+            if ( path == "~" )
+            {
+                // Special case, make this end with slash.
+                return $"{appPath}{Path.DirectorySeparatorChar}";
+            }
+
+            if ( path.StartsWith( "~~" ) )
+            {
+                return new[] { appPath, "Themes", theme, path.Substring( 2 ) }.JoinStrings( Path.DirectorySeparatorChar.ToString() );
+            }
+
+            if ( path.StartsWith( "~" ) )
+            {
+                return new[] { appPath, path.Substring( 1 ) }.JoinStrings( Path.DirectorySeparatorChar.ToString() );
+            }
+
+            return path;
         }
 
         #region Service Provider

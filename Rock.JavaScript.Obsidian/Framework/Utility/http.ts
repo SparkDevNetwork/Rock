@@ -279,6 +279,9 @@ export type UploadOptions = {
 
     /** The parent entity identifier */
     parentEntityId?: number;
+
+    /** The security grant token */
+    securityGrantToken?: string | null;
 };
 
 /**
@@ -417,6 +420,10 @@ export async function uploadBinaryFile(file: File, binaryFileTypeGuid: Guid, opt
 
     if (options?.parentEntityId) {
         url += "&ParentEntityId=" + options.parentEntityId;
+    }
+
+    if (options?.securityGrantToken) {
+        url += "&SecurityGrantToken=" + encodeURIComponent(options.securityGrantToken);
     }
 
     const formData = new FormData();

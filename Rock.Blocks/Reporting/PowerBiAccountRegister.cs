@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
@@ -29,6 +29,7 @@ namespace Rock.Blocks.Reporting
     [Category("Reporting")]
     [Description("This block registers a Power BI account for Rock to use.")]
     [Rock.SystemGuid.BlockTypeGuid( "6373c4cc-65cc-41e9-9b52-d93d0c2542a6" )]
+    [Rock.SystemGuid.EntityTypeGuid( "B96E7E86-64E5-4A37-9035-C62908A14E71")]
     public class PowerBiAccountRegister : RockBlockType
     {
         #region Block Actions

@@ -130,7 +130,7 @@ namespace Rock.Jobs
                     catch ( Exception ex )
                     {
                         exceptions.Add( ex );
-                        jobResultStringBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> error(s) occurred. See exception log for details." );
+                        jobResultStringBuilder.AppendLine( $"<i class='ti ti-circle text-danger'></i> error(s) occurred. See exception log for details." );
                         ExceptionLogService.LogException( ex );
                         continue;
                     }
@@ -143,7 +143,7 @@ namespace Rock.Jobs
 
             foreach ( var error in errors )
             {
-                jobResultStringBuilder.AppendLine( $"<i class='fa fa-circle text-warning'></i> {error}" );
+                jobResultStringBuilder.AppendLine( $"<i class='ti ti-circle text-warning'></i> {error}" );
             }
 
             this.Result = jobResultStringBuilder.ToString();

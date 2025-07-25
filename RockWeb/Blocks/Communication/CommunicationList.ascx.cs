@@ -591,16 +591,16 @@ namespace RockWeb.Blocks.Communication
                     switch ( this.CommunicationType )
                     {
                         case CommunicationType.RecipientPreference:
-                            iconCssClass = "fa fa-user fa-lg";
+                            iconCssClass = "ti ti-user ti-lg";
                             break;
                         case CommunicationType.Email:
-                            iconCssClass = "fa fa-envelope fa-lg";
+                            iconCssClass = "ti ti-mail ti-lg";
                             break;
                         case CommunicationType.SMS:
-                            iconCssClass = "fa fa-comment fa-lg";
+                            iconCssClass = "ti ti-message ti-lg";
                             break;
                         case CommunicationType.PushNotification:
-                            iconCssClass = "fa fa-bell fa-lg";
+                            iconCssClass = "ti ti-bell ti-lg";
                             break;
                         default:
                             break;
@@ -617,22 +617,13 @@ namespace RockWeb.Blocks.Communication
 
             using ( var rockContext = new RockContext() )
             {
-                var communicationService = new CommunicationService( rockContext );
-
                 using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: List > Copy Communication" ) )
                 {
-                    var newCommunication = communicationService.Copy( e.RowKeyId, CurrentPersonAliasId );
-                    if ( newCommunication != null )
-                    {
-                        activity?.AddTag( "rock.communication_to_copy_id", e.RowKeyId );
+                    newCommunicationId = new CommunicationService( rockContext )
+                        .CopyWithBulkInsert( e.RowKeyId, CurrentPersonAliasId );
 
-                        communicationService.Add( newCommunication );
-                        rockContext.SaveChanges();
-
-                        newCommunicationId = newCommunication.Id;
-
-                        activity?.AddTag( "rock.new_communication_id", newCommunicationId );
-                    }
+                    activity?.AddTag( "rock.communication_to_copy_id", e.RowKeyId );
+                    activity?.AddTag( "rock.new_communication_id", newCommunicationId );
                 }
             }
 

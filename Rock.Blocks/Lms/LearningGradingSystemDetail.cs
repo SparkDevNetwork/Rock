@@ -38,7 +38,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Grading System Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning grading system." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

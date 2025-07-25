@@ -36,7 +36,7 @@ namespace Rock.Blocks.Bus
     [DisplayName( "Consumer List" )]
     [Category( "Bus" )]
     [Description( "Displays a list of consumers." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.BlockTypeGuid( "63f5509a-3d71-4f0f-a074-fa5869856038" )]

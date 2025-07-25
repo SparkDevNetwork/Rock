@@ -341,7 +341,7 @@ namespace Rock.Achievement.Component
 
             if ( iconClass.IsNullOrWhiteSpace() )
             {
-                iconClass = "fa fa-medal";
+                iconClass = "ti ti-medal";
             }
 
             var successCountMarkup = string.Empty;

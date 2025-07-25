@@ -1196,7 +1196,7 @@ namespace RockWeb.Blocks.Steps
             if ( stepProgram == null )
             {
                 stepProgram = new StepProgram();
-                stepProgram.IconCssClass = "fa fa-compress";
+                stepProgram.IconCssClass = "ti ti-minimize";
             }
 
             if ( stepProgram.Id == 0 )

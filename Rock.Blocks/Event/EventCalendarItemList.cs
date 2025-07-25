@@ -38,7 +38,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Calendar Event Item List" )]
     [Category( "Event" )]
     [Description( "Lists all the event items in the given calendar." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

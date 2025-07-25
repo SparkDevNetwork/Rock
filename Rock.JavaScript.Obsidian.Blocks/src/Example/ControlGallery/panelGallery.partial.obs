@@ -10,7 +10,8 @@
                :isFullscreenPageOnly="isFullscreenPageOnly"
                title="Panel Title"
                :headerSecondaryActions="headerSecondaryActions"
-               :tabs="tabs">
+               :tabs="tabs"
+               :worksurfaceMode="worksurfaceMode">
             <template v-if="simulateHelp" #helpContent>
                 This is some help text.
             </template>
@@ -25,11 +26,11 @@
 
             <template v-if="simulateHeaderActions" #headerActions>
                 <span class="action">
-                    <i class="fa fa-star-o"></i>
+                    <i class="ti ti-star"></i>
                 </span>
 
                 <span class="action">
-                    <i class="fa fa-user"></i>
+                    <i class="ti ti-user"></i>
                 </span>
             </template>
 
@@ -49,8 +50,8 @@
             </template>
 
             <template v-if="simulateFooterSecondaryActions" #footerSecondaryActions>
-                <RockButton btnType="default"><i class="fa fa-lock"></i></RockButton>
-                <RockButton btnType="default"><i class="fa fa-unlock"></i></RockButton>
+                <RockButton btnType="default"><i class="ti ti-lock"></i></RockButton>
+                <RockButton btnType="default"><i class="ti ti-lock-open"></i></RockButton>
             </template>
 
             <template v-if="simulateFooterContent" #footerContent>
@@ -59,13 +60,19 @@
 
             <template v-if="tabs.length > 0">
                 <template v-if="selectedTab === 'Mathew'">
-                    <h4>Mathew 1:1-5</h4>
+                    <h4>Mathew 1:1-10</h4>
                     <p>
                         The book of the genealogy of Jesus Christ, the son of David, the son of Abraham.<br />
                         Abraham was the father of Isaac, and Isaac the father of Jacob, and Jacob the father of Judah and his brothers,<br />
                         and Judah the father of Perez and Zerah by Tamar, and Perez the father of Hezron, and Hezron the father of Ram,<br />
                         and Ram the father of Amminadab, and Amminadab the father of Nahshon, and Nahshon the father of Salmon,<br />
-                        and Salmon the father of Boaz by Rahab, and Boaz the father of Obed by Ruth, and Obed the father of Jesse.
+                        and Salmon the father of Boaz by Rahab, and Boaz the father of Obed by Ruth, and Obed the father of Jesse.<br />
+                        And Jesse the father of David the king. And David was the father of Solomon by the wife of Uriah,<br />
+                        and Solomon the father of Rehoboam, and Rehoboam the father of Abijah, and Abijah the father of Asa,<br />
+                        and Asa the father of Jehoshaphat, and Jehoshaphat the father of Joram, and Joram the father of Uzziah,<br />
+                        and Uzziah the father of Jotham, and Jotham the father of Ahaz, and Ahaz the father of Hezekiah,<br />
+                        and Hezekiah the father of Manasseh, and Manasseh the father of Amos,<br />
+                        and Amos the father of Josiah,
                     </p>
                 </template>
                 <template v-else-if="selectedTab === 'Mark'">
@@ -122,6 +129,7 @@
                 <CheckBox formGroupClasses="col-sm-3" v-model="hasFullscreen" label="Has Fullscreen" />
                 <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
                 <CheckBox formGroupClasses="col-sm-3" v-model="hasZoom" label="Has Zoom" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="worksurfaceMode" label="Worksurface Mode" />
             </div>
             <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
 
@@ -129,6 +137,12 @@
         </template>
     </GalleryAndResult>
 </template>
+
+<style scoped>
+:deep(.panel-worksurface) {
+    height: 400px;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
@@ -149,13 +163,13 @@
 
         return [
             {
-                iconCssClass: "fa fa-user",
+                iconCssClass: "ti ti-user",
                 title: "Action 1",
                 type: "default",
                 handler: () => alert("Action 1 selected.")
             },
             {
-                iconCssClass: "fa fa-group",
+                iconCssClass: "ti ti-users",
                 title: "Action 2",
                 type: "default",
                 handler: () => alert("Action 2 selected.")
@@ -167,6 +181,7 @@
     const drawerValue = ref(false);
     const hasFullscreen = ref(false);
     const hasZoom = ref(false);
+    const worksurfaceMode = ref(false);
     const simulateOptions = [
         {
             value: "drawer",
@@ -230,6 +245,10 @@
     const selectedTab = ref("Mathew");
     const tabs = computed((): string[] => {
         return simulateTabs.value ? ["Mathew", "Mark", "Luke", "John"] : [];
+    });
+
+    const panelWithSidebarHeight = computed((): string => {
+        return worksurfaceMode.value ? "400px" : "initial";
     });
 
     const exampleCode = `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">

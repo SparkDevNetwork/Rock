@@ -1979,7 +1979,7 @@ namespace RockWeb.Blocks.Connection
             if ( connectionType == null )
             {
                 connectionType = new ConnectionType();
-                connectionType.IconCssClass = "fa fa-compress";
+                connectionType.IconCssClass = "ti ti-minimize";
             }
             if ( connectionType.Id == 0 )
             {

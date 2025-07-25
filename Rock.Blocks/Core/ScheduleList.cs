@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Schedule List" )]
     [Category( "Core" )]
     [Description( "Lists all the schedules." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage(

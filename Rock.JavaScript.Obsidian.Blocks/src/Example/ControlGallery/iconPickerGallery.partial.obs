@@ -45,7 +45,7 @@
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
 
-    const value = ref("fa fa-bible");
+    const value = ref("ti ti-bible");
     const required = ref(false);
 
     const importCode = getSfcControlImportPath("iconPicker");

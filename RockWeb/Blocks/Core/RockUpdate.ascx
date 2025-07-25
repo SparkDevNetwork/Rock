@@ -15,31 +15,31 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-cloud-download"></i>
+                    <i class="ti ti-cloud-down"></i>
                     Rock Update</h1>
             </div>
 
             <div class="panel-body">
                 <Rock:NotificationBox ID="nbVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
-                     <strong><i class="fa fa-exclamation-triangle"></i> .NET Framework Update Required</strong>
+                     <strong><i class="ti ti-alert-triangle"></i> .NET Framework Update Required</strong>
                      <p>As of Rock v13, Rock requires Microsoft .NET Framework 4.7.2 or greater on the hosting server.
                         This framework version was released by Microsoft on April 30th, 2018.</p>
                 </Rock:NotificationBox>
                 <Rock:NotificationBox ID="nbSqlServerVersionIssue" runat="server" NotificationBoxType="Warning" Visible="false">
-                    <strong><i class="fa fa-exclamation-triangle"></i> Microsoft SQL Server Update Required</strong>
+                    <strong><i class="ti ti-alert-triangle"></i> Microsoft SQL Server Update Required</strong>
                     <p>
                         Rock now requires Microsoft Azure SQL or SQL Server 2016 (or higher), and it must be set to compatibility level 130 (SQL Server 2016) or higher.
                         You will need to upgrade your database in order to proceed with additional updates.
                     </p>
                 </Rock:NotificationBox>
                 <Rock:NotificationBox ID="nbLavaEngineIssue" runat="server" NotificationBoxType="Warning" Visible="false">
-                    <strong><i class="fa fa-exclamation-triangle"></i> 'Lava Engine Liquid Framework' Change is Needed</strong>
+                    <strong><i class="ti ti-alert-triangle"></i> 'Lava Engine Liquid Framework' Change is Needed</strong>
                     <p>
                         Rock v17 no longer supports the "DotLiquid" engine. In order to upgrade Rock to v17, your <strong> Lava Engine Liquid Framework </strong> Global Attribute must be set to "Fluid".
                     </p>
                 </Rock:NotificationBox>
                 <Rock:NotificationBox ID="nbCompileThreadsIssue" runat="server" NotificationBoxType="Warning" Visible="true">
-                    <strong><i class="fa fa-exclamation-triangle"></i> Background Process Running</strong>
+                    <strong><i class="ti ti-alert-triangle"></i> Background Process Running</strong>
                     <p>
                         Rock is running one or more processes that may lock files that will be updated. These will be checked again after clicking the update button. If this message appears again wait a minute and try again.
                     </p>
@@ -50,7 +50,7 @@
                 <asp:Panel ID="pnlNoUpdates" runat="server">
                     <div class="well well-message">
                         <h1>Everything Is Shipshape</h1>
-                        <i class="fa fa-anchor"></i>
+                        <i class="ti ti-anchor"></i>
                         <p>
                             You run a tight ship, there is nothing to update since
                             <asp:Literal ID="lNoUpdateVersion" runat="server" />. Check back soon as we're working hard on something amazing or
@@ -62,7 +62,7 @@
                 <asp:Panel ID="pnlUpdatesAvailable" Visible="false" runat="server">
                     <div class="well well-message well-message-info">
                         <h1>New Pieces Available</h1>
-                        <i class="fa fa-puzzle-piece"></i>
+                        <i class="ti ti-puzzle"></i>
                         <p>We've expanded the puzzle, let's get you up-to-date.</p>
                     </div>
 
@@ -124,13 +124,13 @@
                                 <div class="panel-body">
                                     <div class="row">
                                         <div class="col-md-2">
-                                            <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn" CommandName="Install" CommandArgument='<%# Eval( "SemanticVersion" ) %>'><i class="fa fa-download"></i> Install</asp:LinkButton>
+                                            <asp:LinkButton ID="lbInstall" runat="server" CssClass="btn" CommandName="Install" CommandArgument='<%# Eval( "SemanticVersion" ) %>'><i class="ti ti-download"></i> Install</asp:LinkButton>
                                         </div>
                                         <div class="col-md-10">
                                             <asp:Literal ID="litPackageSummary" runat="server" Text='<%# Eval( "Summary" ) %>'></asp:Literal>
 
                                             <div class="releasenotes">
-                                                <div class="btn btn-sm btn-default margin-v-sm js-releasenote">Release Notes <i class="fa fa-caret-down"></i></div>
+                                                <div class="btn btn-sm btn-default margin-v-sm js-releasenote">Release Notes <i class="ti ti-caret-down"></i></div>
 
                                                 <div class="releasenotes-body" style="display: none">
                                                     <asp:Literal ID="litReleaseNotes" runat="server" Text='<%# ConvertToHtmlLiWrappedUl( Eval( "ReleaseNotes" ).ToStringSafe() ).ConvertCrLfToHtmlBr()  %>'></asp:Literal>
@@ -150,7 +150,7 @@
 
                     <div class="well well-message well-message-success">
                         <h1>Eureka, Pay Dirt!</h1>
-                        <i class="fa fa-exclamation-triangle"></i>
+                        <i class="ti ti-alert-triangle"></i>
                         <p>
                             Update completed successfully... You're now running
                             <asp:Literal ID="lSuccessVersion" runat="server" />.
@@ -170,7 +170,7 @@
                 <asp:Panel ID="pnlError" runat="server" Visible="false">
                     <div class="well well-message well-message-danger">
                         <h1>Whoa... That Wasn't Supposed To Happen</h1>
-                        <i class="fa fa-exclamation-circle"></i>
+                        <i class="ti ti-exclamation-circle"></i>
                         <p>An error occurred during the update process.</p>
                     </div>
 

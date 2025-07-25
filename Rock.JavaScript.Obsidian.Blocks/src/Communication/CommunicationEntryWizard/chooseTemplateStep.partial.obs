@@ -14,7 +14,7 @@
                                  placeholder="Search templates…">
                             <template #inputGroupPrepend>
                                 <span class="input-group-addon">
-                                    <i class="fa fa-search"></i>
+                                    <i class="ti ti-search"></i>
                                 </span>
                             </template>
                         </TextBox>
@@ -47,8 +47,8 @@
                                                 :isSquare="true"
                                                 @click="areStarterTemplatesExpanded = !areStarterTemplatesExpanded">
                                         <i :class="{
-                                            'fa fa-chevron-down': !areStarterTemplatesExpanded,
-                                            'fa fa-chevron-up': areStarterTemplatesExpanded
+                                            'ti ti-chevron-down': !areStarterTemplatesExpanded,
+                                            'ti ti-chevron-up': areStarterTemplatesExpanded
                                         }"></i>
                                     </RockButton>
                                 </template>
@@ -83,7 +83,7 @@
                             btnType="primary"
                             :disabled="isFetchingCommunicationTemplate"
                             @click="onNextStepClicked">
-                    <i v-if="isFetchingCommunicationTemplate" class="fa fa-spinner fa-spin"></i>
+                    <i v-if="isFetchingCommunicationTemplate" class="ti ti-rotate-2 ti-spin"></i>
                     {{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}
                 </RockButton>
             </template>

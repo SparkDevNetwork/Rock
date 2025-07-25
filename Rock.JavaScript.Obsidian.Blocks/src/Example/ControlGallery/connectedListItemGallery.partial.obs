@@ -70,9 +70,9 @@
     const importCode = `import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";`;
 
     const aside = ref<string>("hello@triumph.tech");
-    const asideIconCssClass = ref<string>("fa fa-user");
+    const asideIconCssClass = ref<string>("ti ti-user");
     const badgeText = ref<string>("Step 3");
-    const iconCssClass = ref<string>("fa fa-chart-line");
+    const iconCssClass = ref<string>("ti ti-chart-line");
     const iconLabelType = ref<"default" | "primary" | "success" | "info" | "warning" | "danger" | "custom">("info");
     const iconLabelCssClass = ref<string>("");
     const description = ref<string>("This step calculates weekly growth based on new signups.");
@@ -86,13 +86,13 @@
 
         return [
             {
-                iconCssClass: "fa fa-edit",
+                iconCssClass: "ti ti-edit",
                 title: "Edit",
                 type: "default",
                 handler: () => alert("Edit clicked"),
             },
             {
-                iconCssClass: "fa fa-copy",
+                iconCssClass: "ti ti-copy",
                 title: "Duplicate",
                 type: "default",
                 handler: () => alert("Duplicate clicked"),
@@ -107,7 +107,7 @@
 
         return [
             {
-                iconCssClass: "fa fa-trash",
+                iconCssClass: "ti ti-trash",
                 title: "Delete",
                 type: "default",
                 handler: () => alert("Delete clicked"),

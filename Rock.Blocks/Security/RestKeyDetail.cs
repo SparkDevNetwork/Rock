@@ -38,7 +38,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Rest Key Detail" )]
     [Category( "Security" )]
     [Description( "Displays the details of the given REST API Key." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

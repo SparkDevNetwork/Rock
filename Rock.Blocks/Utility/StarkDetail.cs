@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -30,7 +30,7 @@ namespace Rock.Blocks.Utility
     [DisplayName( "Stark Detail" )]
     [Category( "Obsidian > Utility" )]
     [Description( "An example block." )]
-    [IconCssClass( "fa fa-star" )]
+    [IconCssClass( "ti ti-star" )]
 
     #region Block Attributes
 
@@ -52,7 +52,7 @@ namespace Rock.Blocks.Utility
 
     [Rock.SystemGuid.EntityTypeGuid( "06B36FB8-34D9-4EE3-A24E-0E80BEDA313F")]
     [Rock.SystemGuid.BlockTypeGuid( "B822D570-05B4-4DE1-8994-F9D918019ED9")]
-    public class StarkDetail : RockObsidianBlockType
+    public class StarkDetail : RockBlockType
     {
         #region Attribute Keys
 

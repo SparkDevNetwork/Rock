@@ -35,9 +35,23 @@ export const EditComponent = defineComponent({
         // The internal value used by the text editor.
         const internalValue = ref<ListItemBag | null>(null);
 
-        // Configuration attributes passed to the edit control.
+        /*
+            7/14/2025 - MSE
+
+            We now try to read the BinaryFileType config as JSON to get the GUID.
+            If that doesn’t work, we just use the value as-is.
+
+            This is the same way it’s done in audioFileFieldComponents.ts --- see the binaryFileType computed property there.
+
+            Reason: File uploads failed with predefined file types because the uploader was not always given a GUID.
+        */
         const binaryFileType = computed((): string => {
-            return props.configurationValues[ConfigurationValueKey.BinaryFileType] ?? "";
+            try {
+                const fileType = JSON.parse(props.configurationValues[ConfigurationValueKey.BinaryFileType] || "{}") as ListItemBag;
+                return fileType.value ?? "";
+            } catch {
+                return props.configurationValues[ConfigurationValueKey.BinaryFileType] ?? "";
+            }
         });
 
         // Watch for changes from the parent component and update the text editor.

@@ -30,7 +30,6 @@ using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Core.BinaryFileTypeList;
 using Rock.Web.Cache;
 
-using static Rock.Blocks.Cms.AdaptiveMessageList;
 using static Rock.Blocks.Core.BinaryFileTypeList;
 
 namespace Rock.Blocks.Core
@@ -42,7 +41,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Binary File Type List" )]
     [Category( "Core" )]
     [Description( "Displays a list of binary file types." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -144,10 +143,12 @@ namespace Rock.Blocks.Core
         /// <inheritdoc/>
         protected override IQueryable<BinaryFileTypeData> GetListQueryable( RockContext rockContext )
         {
-            var binaryFileQry = new BinaryFileService( rockContext ).Queryable();
+            var binaryFileQry = new BinaryFileService( rockContext ).Queryable()
+                .Include( b => b.BinaryFileType );
             return GetBinaryFileTypeQueryable( rockContext ).Select( b => new BinaryFileTypeData
             {
                 BinaryFileType = b,
+                StorageEntityType = b.StorageEntityType,
                 FileCount = binaryFileQry.Where( a => a.BinaryFileTypeId == b.Id ).Count()
             } );
         }
@@ -165,13 +166,19 @@ namespace Rock.Blocks.Core
                 .AddTextField( "idKey", a => a.BinaryFileType.IdKey )
                 .AddTextField( "name", a => a.BinaryFileType.Name )
                 .AddTextField( "description", a => a.BinaryFileType.Description )
-                .AddTextField( "storageEntityType", a => a.BinaryFileType.StorageEntityType?.FriendlyName )
+                .AddTextField( "storageEntityType", a => a.StorageEntityType?.FriendlyName )
                 .AddField( "fileCount", p => p.FileCount )
                 .AddField( "isSystem", a => a.BinaryFileType.IsSystem )
                 .AddField( "cacheToServerFileSystem", a => a.BinaryFileType.CacheToServerFileSystem )
                 .AddField( "requiresViewSecurity", a => a.BinaryFileType.RequiresViewSecurity )
                 .AddField( "isSecurityDisabled", a => !a.BinaryFileType.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFieldsFrom( a => a.BinaryFileType, _gridAttributes.Value );
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<BinaryFileTypeData> GetOrderedListQueryable( IQueryable<BinaryFileTypeData> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.BinaryFileType.Name );
         }
 
         /// <summary>
@@ -250,6 +257,10 @@ namespace Rock.Blocks.Core
             /// </value>
             public BinaryFileType BinaryFileType { get; set; }
 
+            /// <summary>
+            /// Gets or sets the whole Storage Entity Type object from the database.
+            /// </summary>
+            public EntityType StorageEntityType { get; set; }
             /// <summary>
             /// Gets or sets the number of file in this binary file type.
             /// </summary>

@@ -1217,7 +1217,7 @@ namespace Rock.Web.UI.Controls
                 writer.AddAttribute( "class", "help" );
                 writer.AddAttribute( "href", "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( "class", "fa fa-question-circle" );
+                writer.AddAttribute( "class", "ti ti-zoom-question" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

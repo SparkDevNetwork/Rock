@@ -37,7 +37,7 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Archived List" )]
     [Category( "Utility" )]
     [Description( "Lists Groups that have been archived." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "b67a0c89-1550-4960-8aaf-baa713be3277" )]

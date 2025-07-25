@@ -98,7 +98,7 @@ namespace Rock.Field.Types
         /// <returns>A string that represents the icon class.</returns>
         protected virtual string GetItemIconCssClass( Dictionary<string, string> privateConfigurationValues )
         {
-            return "fa fa-folder-open";
+            return "ti ti-folder-open";
         }
 
         /// <summary>

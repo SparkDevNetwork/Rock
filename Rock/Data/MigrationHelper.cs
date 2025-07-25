@@ -4144,7 +4144,7 @@ END";
                         [Guid])
                     VALUES(
                         1,@FieldTypeId,@Order,
-                        @CategoryId,'{1}','{2}','{4}',
+                        @CategoryId,N'{1}',N'{2}',N'{4}',
                         '{3}')
                 END
                 ELSE
@@ -4154,9 +4154,9 @@ END";
                         [IsSystem] = 1,
                         [FieldTypeId] = @FieldTypeId,
                         [CategoryId] = @CategoryId,
-                        [Name] = '{1}',
-                        [Description] = '{2}',
-                        [HelpText] = '{4}'
+                        [Name] = N'{1}',
+                        [Description] = N'{2}',
+                        [HelpText] = N'{4}'
                     WHERE [Guid] = '{3}'
 
                 END
@@ -4307,7 +4307,7 @@ END";
                         [Guid])
                     VALUES(
                         1,@FieldTypeId, @EntityTypeId,'DefinedTypeId',CAST(@DefinedTypeId as varchar),
-                        '{2}','{3}','{4}',
+                        N'{2}',N'{3}',N'{4}',
                         {5},0,'{6}',0,0,
                         '{7}')
 
@@ -4318,10 +4318,10 @@ END";
                     UPDATE [Attribute] SET
                         [IsSystem] = 1,
                         [FieldTypeId] = @FieldTypeId,
-                        [Name] = '{3}',
-                        [Description] = '{4}',
+                        [Name] = N'{3}',
+                        [Description] = N'{4}',
                         [Order] = {5},
-                        [DefaultValue] = '{6}',
+                        [DefaultValue] = N'{6}',
                         [Guid] = '{7}'
                     WHERE [EntityTypeId] = @EntityTypeId
                     AND [EntityTypeQualifierColumn] = 'DefinedTypeId'

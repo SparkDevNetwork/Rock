@@ -143,6 +143,14 @@ namespace Rock.Jobs
         Order = 9,
         Key = AttributeKey.StaleAnonymousVisitorRecordRetentionPeriodInDays )]
 
+    [IntegerField(
+        "Campus Average Weekend Attendance Calculation Period (Weeks)",
+        Description = "The number of past weeks (Sundays only) to include when calculating the AverageWeekendAttendance for each campus.",
+        DefaultIntegerValue = 4,
+        Category = "General",
+        Order = 10,
+        Key = AttributeKey.CampusAverageWeekendAttendanceCalculationPeriodWeeks )]
+
     [RockLoggingCategory]
     public class RockCleanup : RockJob
     {
@@ -162,6 +170,7 @@ namespace Rock.Jobs
             public const string RemovedExpiredSavedAccountDays = "RemovedExpiredSavedAccountDays";
             public const string RemoveBenevolenceRequestsWithoutAPersonMaxDays = "RemoveBenevolenceRequestsWithoutAPerson";
             public const string StaleAnonymousVisitorRecordRetentionPeriodInDays = "StaleAnonymousVisitorRecordRetentionPeriodInDays";
+            public const string CampusAverageWeekendAttendanceCalculationPeriodWeeks = "CampusAverageWeekendAttendanceCalculationPeriodWeeks";
         }
 
         /// <summary>
@@ -345,6 +354,8 @@ namespace Rock.Jobs
 
             RunCleanupTask( "update campus tithe metric", () => UpdateCampusTitheMetric() );
 
+            RunCleanupTask( "update campus average weekly attendance", () => UpdateCampusAverageWeekendAttendance() );
+
             /*
              * 21-APR-2022 DMV
              *
@@ -369,7 +380,7 @@ namespace Rock.Jobs
 
             if ( rockCleanupJobResultList.Any( a => a.HasException ) )
             {
-                jobSummaryBuilder.AppendLine( "\n<i class='fa fa-circle text-warning'></i> Some jobs have errors. See exception log for details." );
+                jobSummaryBuilder.AppendLine( "\n<i class='ti ti-circle text-warning'></i> Some jobs have errors. See exception log for details." );
             }
 
             this.Result = jobSummaryBuilder.ToString();
@@ -466,11 +477,11 @@ namespace Rock.Jobs
         {
             if ( result.HasException )
             {
-                return $"<i class='fa fa-circle text-danger'></i> {result.Title} ({result.Elapsed.TotalMilliseconds:N0}ms)";
+                return $"<i class='ti ti-circle text-danger'></i> {result.Title} ({result.Elapsed.TotalMilliseconds:N0}ms)";
             }
             else
             {
-                var icon = "<i class='fa fa-circle text-success'></i>";
+                var icon = "<i class='ti ti-circle text-success'></i>";
                 var title = result.Title.PluralizeIf( result.RowsAffected != 1 ).ApplyCase( LetterCasing.Title );
                 return $"{icon} {result.RowsAffected} {title} ({result.Elapsed.TotalMilliseconds:N0}ms)";
             }
@@ -2893,6 +2904,43 @@ WHERE [ModifiedByPersonAliasId] IS NOT NULL
             }
 
             return deleteCount;
+        }
+
+        private int UpdateCampusAverageWeekendAttendance()
+        {
+            int weeksToCheckBack = GetAttributeValue( AttributeKey.CampusAverageWeekendAttendanceCalculationPeriodWeeks ).AsIntegerOrNull() ?? 4;
+            int updateCount = 0;
+
+            using ( var rockContext = CreateRockContext() )
+            {
+                var updateQry = $@"
+DECLARE @TotalWeekendAttendanceMetricId int = (SELECT TOP 1 m.[Id] FROM [Metric] m INNER JOIN [DefinedValue] dv ON dv.[Id] = m.[MeasurementClassificationValueId] WHERE dv.[Guid] = 'b24acb41-8b75-41dc-9b47-f289d8c9f04f')
+DECLARE @CampusEntityTypeId int = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '00096bed-9587-415e-8ad4-4e076ae8fbf0')
+DECLARE @StartDate date = DATEADD(day, -7 * {weeksToCheckBack}, CAST(GETDATE() AS date))
+
+;WITH AverageAttendance AS (
+    SELECT 
+        mvp.[EntityId] AS [CampusId],
+        CAST(ROUND(AVG(mv.[YValue]), 0) AS INT) AS [WeekendAttendance]
+    FROM [MetricValue] mv
+        INNER JOIN [MetricValuePartition] mvp ON mvp.[MetricValueId] = mv.[Id]
+        INNER JOIN [MetricPartition] mp ON mp.[Id] = mvp.[MetricPartitionId]
+        INNER JOIN [AnalyticsSourceDate] asd ON asd.[DateKey] = mv.[MetricValueDateKey]
+    WHERE 
+        mv.[MetricId] = @TotalWeekendAttendanceMetricId
+        AND mp.[EntityTypeId] = @CampusEntityTypeId
+        AND asd.[SundayDate] >= @StartDate
+    GROUP BY mvp.[EntityId]
+)
+
+UPDATE c
+SET c.[AverageWeekendAttendance] = aa.[WeekendAttendance]
+FROM [Campus] c
+INNER JOIN [AverageAttendance] aa ON c.[Id] = aa.[CampusId]";
+
+                updateCount = rockContext.Database.ExecuteSqlCommand( updateQry );
+            }
+            return updateCount;
         }
 
         /// <summary>

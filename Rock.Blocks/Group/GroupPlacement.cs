@@ -1582,6 +1582,37 @@ namespace Rock.Blocks.Group
         [BlockAction]
         public BlockActionResult AddPlacementGroup( AddGroupBag addGroupBag )
         {
+            /*
+                07/16/2025 - KBH
+
+                There is a known internal issue with the message 'Cannot insert
+                duplicate key row in object dbo.RelatedEntity'. This issue occurs
+                in the following case:
+                    1. A Registration Template must have 2 or more Placement
+                       Configurations.
+                    2. View Group Placements for a Registration Instance on
+                       that Registration Template for a specific Placement
+                       Configuration (i.e. Buses) and add a new Placement
+                       Group.
+                    3. Repeat Step 2 for a different Placement Configuration
+                       (i.e. Activities) but this time add the existing
+                       Placement Group that you created in step 2.
+                    4. See the error appear.
+
+                Reason for the error: The RelatedEntity table currently has
+                a Unique Index:
+                IX_SourceEntityTypeId_SourceEntityId_TargetEntityTypeId_TargetEntityId_PurposeKey nonclustered
+                where the combination of those properties must be unique.
+                In the specific case described above this uniqueness constraint
+                is not met. For Registration Instance Placements, the QualifierValue
+                property is used to store the Placement Configuration Id (Buses or
+                Activities).
+
+                Proposed Solution: Update the unique index to include QualifierValue
+                but we would need to update QualifierValue to be non-nullable and update
+                every NULL qualifier value to 0 for example.
+             */
+
             List<Rock.Model.Group> placementGroups;
             var groupService = new GroupService( RockContext );
             var groupTypeId = Rock.Utility.IdHasher.Instance.GetId( addGroupBag.GroupTypeIdKey );

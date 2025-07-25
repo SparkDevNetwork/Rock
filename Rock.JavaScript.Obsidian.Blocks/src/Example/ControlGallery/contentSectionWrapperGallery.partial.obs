@@ -1,0 +1,104 @@
+<template>
+    <GalleryAndResult :importCode="importCode"
+                      :exampleCode="exampleCode"
+                      demoMode>
+        <ContentSectionWrapper :sidebar="sidebarValue"
+                               :sidebarPosition="rightSidebar ? 'right' : 'left'">
+            <ContentSection v-for="index in sectionCount"
+                            :key="index"
+                            :title="`${getNumberWord(index)} Section`"
+                            :icon="getIconNumber(index)">
+                <ContentStack v-for="index in stackCount"
+                              :key="index"
+                              :title="`${getNumberWord(index)} Stack`"
+                              description="A sample stack in the section.">
+                    <TextBox modelValue="" label="Sample Field" />
+                </ContentStack>
+            </ContentSection>
+        </ContentSectionWrapper>
+
+        <template #settings>
+            <div class="automatic-layout">
+                <DropDownList label="Sidebar" v-model="sidebar" :items="sidebarItems" :showBlankItem="false" />
+                <CheckBox label="Right Sidebar" v-model="rightSidebar" />
+                <NumberUpDown label="Section Count" v-model="sectionCount" :min="1" :max="10" />
+                <NumberUpDown label="Stack Count" v-model="stackCount" :min="1" :max="10" />
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<script setup lang="ts">
+    import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { computed, ref } from "vue";
+    import { ComponentUsage, getIconNumber, getNumberWord, getSfcControlImportPath } from "./common/utils.partial";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+
+    const rightSidebar = ref(true);
+    const sidebar = ref<"auto" | "true" | "false">("auto");
+    const sectionCount = ref(2);
+    const stackCount = ref(2);
+
+    const sidebarItems: ListItemBag[] = [
+        { text: "Auto", value: "auto" },
+        { text: "Yes", value: "true" },
+        { text: "No", value: "false" }
+    ];
+
+    const sidebarValue = computed((): boolean | undefined => {
+        if (sidebar.value === "true") {
+            return true;
+        }
+        else if (sidebar.value === "false") {
+            return false;
+        }
+        return undefined;
+    });
+
+    const importCode = getSfcControlImportPath("contentSectionWrapper");
+    const exampleCode = computed(() => {
+        const usage = new ComponentUsage("ContentSectionWrapper");
+
+        if (sidebar.value !== "auto") {
+            usage.addAttribute("sidebar", sidebar.value === "true");
+        }
+
+        if (!rightSidebar.value) {
+            usage.addAttribute("sidebarPosition", "left");
+        }
+
+        for (let index = 1; index <= sectionCount.value; index++) {
+            if (index > 1) {
+                usage.addBody("");
+            }
+
+            const sectionUsage = new ComponentUsage("ContentSection");
+            sectionUsage.addAttribute("title", `${getNumberWord(index)} Section`);
+            sectionUsage.addAttribute("icon", getIconNumber(index));
+
+            for (let stackIndex = 1; stackIndex <= stackCount.value; stackIndex++) {
+                if (stackIndex > 1) {
+                    sectionUsage.addBody("");
+                }
+
+                const stackUsage = new ComponentUsage("ContentStack");
+                stackUsage.addAttribute("title", `${getNumberWord(stackIndex)} Stack`);
+                stackUsage.addAttribute("description", "A sample stack in the section.");
+                stackUsage.addBody(`<TextBox label="Sample Field" />`);
+
+                sectionUsage.addBody(stackUsage);
+            }
+
+            usage.addBody(sectionUsage);
+        }
+
+        return usage.toString();
+    });
+</script>

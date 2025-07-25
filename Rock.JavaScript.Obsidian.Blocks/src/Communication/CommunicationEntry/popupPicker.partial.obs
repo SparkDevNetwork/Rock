@@ -11,7 +11,7 @@
                      maxTagCount="responsive"
                      :multiple="true">
         <template #suffixIcon>
-            <i v-if="!isAddHidden" class="fa fa-plus-square" :style="{ 'pointer-events': !disabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
+            <i v-if="!isAddHidden" class="ti ti-square-plus" :style="{ 'pointer-events': !disabled ? 'all' : 'none' }" @click="onOpenPopupClicked"></i>
             <i v-else></i>
         </template>
 
@@ -28,7 +28,7 @@
                             class="item-remove text-muted pr-0"
                             :disabled="disabled"
                             @click="onDeselectItemClicked(value)">
-                    <i class="fa fa-times"></i>
+                    <i class="ti ti-x"></i>
                 </RockButton>
             </div>
         </template>
@@ -58,7 +58,7 @@
     margin-right: 8px;
 }
 
-.ant-select-arrow:has(.fa.fa-plus-square) {
+.ant-select-arrow:has(.ti.ti-square-plus) {
     font-size: 24px !important;
     color: var(--color-info-strong);
     top: 35%;
@@ -66,15 +66,15 @@
     transition: ease-in-out 0.2s;
 }
 
-.ant-select-arrow:has(.fa.fa-plus-square):hover {
+.ant-select-arrow:has(.ti.ti-square-plus):hover {
     color: var(--color-info-soft);
 }
 
-.ant-select-selector .ant-select-selection-overflow .item-remove .fa.fa-times {
+.ant-select-selector .ant-select-selection-overflow .item-remove .ti.ti-x {
     color: var(--color-interface-medium);
 }
 
-.ant-select-selector .ant-select-selection-overflow .label-danger .btn-link .fa.fa-times {
+.ant-select-selector .ant-select-selection-overflow .label-danger .btn-link .ti.ti-x {
     color: #ac3523;
 }
 

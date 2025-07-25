@@ -5,7 +5,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-gears"></i> Workflow Entry</h1>
+                <h1 class="panel-title"><i class="ti ti-settings-cog"></i> Workflow Entry</h1>
             </div>
             <div class="panel-body">
                 <asp:Panel id="pnlContent" runat="server" CssClass="panel-group" />
