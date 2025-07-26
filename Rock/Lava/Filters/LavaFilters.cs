@@ -1958,6 +1958,43 @@ namespace Rock.Lava
             return Rock.Lava.Filters.TemplateFilters.RandomNumber( input );
         }
 
+        /// <summary>
+        /// Converts a integer to a enum value
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="input"></param>
+        /// <param name=""></param>
+        /// <returns></returns>
+        public static string AsEnum( ILavaRenderContext context, object input, string enumTypeName )
+        {
+            if ( input == null || string.IsNullOrWhiteSpace( enumTypeName ) )
+            {
+                return null;
+            }
+
+            // Try to parse the input as an integer value
+            if ( !int.TryParse( input.ToString(), out int intValue ) )
+            {
+                return null;
+            }
+
+            var enumType = Reflection.GetEnumType( enumTypeName );
+
+            if ( enumType == null )
+            {
+                return null;
+            }
+
+            // Check if the enum defines the value
+            if ( Enum.IsDefined( enumType, intValue ) )
+            {
+                var enumValue = Enum.ToObject( enumType, intValue );
+                return enumValue.ToString();
+            }
+
+            return null;
+        }
+
         #endregion Number Filters
 
         #region Attribute Filters

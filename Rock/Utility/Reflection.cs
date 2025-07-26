@@ -50,6 +50,50 @@ namespace Rock
         }
 
         /// <summary>
+        /// Get's an enum as a type from it's type name 'Rock.Model.SiteType'
+        /// </summary>
+        /// <param name="enumTypeName"></param>
+        /// <returns></returns>
+        public static Type GetEnumType( string enumTypeName )
+        {
+            if ( string.IsNullOrWhiteSpace( enumTypeName ) )
+            {
+                return null;
+            }
+
+            if ( _enumTypeCache.TryGetValue( enumTypeName, out var cachedType ) )
+            {
+                return cachedType;
+            }
+
+            var enumType = AppDomain.CurrentDomain
+                .GetAssemblies()
+                .SelectMany( assembly =>
+                {
+                    try
+                    {
+                        return assembly.GetTypes();
+                    }
+                    catch
+                    {
+                        return Array.Empty<Type>();
+                    }
+                } )
+                .FirstOrDefault( t =>
+                    t.IsEnum &&
+                    ( t.Name.Equals( enumTypeName, StringComparison.OrdinalIgnoreCase ) ||
+                     t.FullName.Equals( enumTypeName, StringComparison.OrdinalIgnoreCase ) ) );
+
+            if ( enumType != null )
+            {
+                _enumTypeCache[enumTypeName] = enumType;
+            }
+
+            return enumType;
+        }
+        private static readonly Dictionary<string, Type> _enumTypeCache = new Dictionary<string, Type>();
+
+        /// <summary>
         /// Finds the first matching type in Rock or any of the assemblies that reference Rock
         /// </summary>
         /// <param name="baseType">Type of the base.</param>
