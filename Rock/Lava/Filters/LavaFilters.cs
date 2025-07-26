@@ -30,6 +30,8 @@ using System.Text.RegularExpressions;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.HtmlControls;
+using Fluid.Parser;
+
 using Humanizer;
 using Humanizer.Localisation;
 using Ical.Net;
@@ -49,6 +51,7 @@ using Rock.Logging;
 using Rock.Model;
 using Rock.Net;
 using Rock.Security;
+using Rock.Tasks;
 using Rock.Utilities;
 using Rock.Utility;
 using Rock.Web;
@@ -2370,6 +2373,44 @@ namespace Rock.Lava
         #endregion Group Filters
 
         #region Misc Filters
+
+        /// <summary>
+        /// Updates a persisted dataset with the provided key.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="input"></param>
+        /// <param name="delayProcessingUntilComplete"></param>
+        /// <returns></returns>
+        public static string UpdatePersistedDataset( ILavaRenderContext context, object input, bool delayProcessingUntilComplete = false )
+        {
+            var dataSetKey = input.ToString();
+
+            if ( delayProcessingUntilComplete )
+            {
+                var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+                var service = new PersistedDatasetService( rockContext );
+
+                var dataset = service.Queryable().FirstOrDefault( d => d.AccessKey == dataSetKey );
+
+                if ( dataset == null )
+                {
+                    return $"Unable to find PersistedDataset with key {dataSetKey}";
+                }
+
+                dataset.UpdateResultData();
+                rockContext.SaveChanges();
+            }
+            else
+            {
+                var message = new Rock.Tasks.UpdatePersistedDataset.Message()
+                {
+                    AccessKey = dataSetKey
+                };
+                message.Send();
+            }
+
+            return string.Empty;
+        }
 
         /// <summary>
         /// Shows details about which Merge Fields are available
