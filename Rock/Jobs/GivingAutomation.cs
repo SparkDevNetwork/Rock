@@ -2513,7 +2513,11 @@ Created {context.AlertsCreated} {"alert".PluralizeIf( context.AlertsCreated != 1
         /// <param name="message">The message.</param>
         private static void WriteToDebugOutput( string message )
         {
+#if REVIEW_WEBFORMS
             if ( _debugModeEnabled && System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
+#else
+            if ( _debugModeEnabled )
+#endif
             {
                 System.Diagnostics.Debug.WriteLine( $"\tGiving Automation {RockDateTime.Now:mm.ss.f} {message}" );
             }

@@ -66,7 +66,11 @@ namespace Rock.Jobs
                 .Where( wf =>
                     !wf.IsProcessing // Don't attempt to process workflows that are already being processed, as this can cause workflow actions to execute twice.
                     && ( !wf.LastProcessedDateTime.HasValue
+#if REVIEW_WEBFORMS
                         || ( DbFunctions.AddSeconds( wf.LastProcessedDateTime.Value, wf.WorkflowType.ProcessingIntervalSeconds ?? 0 ) <= RockDateTime.Now ) ) )
+#else
+                        || ( wf.LastProcessedDateTime.Value.AddSeconds( wf.WorkflowType.ProcessingIntervalSeconds ?? 0 ) <= RockDateTime.Now ) ) )
+#endif
                 .Select( w => w.Id )
                 .ToList();
 

@@ -56,10 +56,12 @@ namespace Rock.Jobs
         /// <param name="message">The message.</param>
         private void WriteToLog( string message )
         {
+#if REVIEW_WEBFORMS
             if ( System.Web.Hosting.HostingEnvironment.IsDevelopmentEnvironment )
             {
                 System.Diagnostics.Debug.WriteLine( message );
             }
+#endif
 
             try
             {

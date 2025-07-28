@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -79,7 +79,11 @@ namespace Rock.Workflow.Action
             string url = GetAttributeValue( action, URL ).ResolveMergeFields( mergeFields );
 
             var parametersValue = GetAttributeValue( action, PARAMETERS );
+#if REVIEW_WEBFORMS
             var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, parametersValue, null, false );
+#else
+            var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( parametersValue, null, false );
+#endif
             var parameters = new Dictionary<string, object>();
             foreach ( var p in parameterList )
             {
@@ -89,7 +93,11 @@ namespace Rock.Workflow.Action
             }
 
             var headersValue = GetAttributeValue( action, HEADERS );
+#if REVIEW_WEBFORMS
             var headerList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, headersValue, null, false );
+#else
+            var headerList = new Field.Types.KeyValueListFieldType().GetValuesFromString( headersValue, null, false );
+#endif
             var headers = new Dictionary<string, object>();
             foreach ( var p in headerList )
             {

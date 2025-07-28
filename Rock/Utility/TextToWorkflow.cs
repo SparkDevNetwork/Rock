@@ -98,7 +98,11 @@ namespace Rock.Utility
                     var keyValueField = workflowAttributes.FieldType.Field as KeyValueListFieldType;
                     if ( keyValueField != null )
                     {
+#if REVIEW_WEBFORMS
                         workflowAttributesSettings = keyValueField.GetValuesFromString( null,
+#else
+                        workflowAttributesSettings = keyValueField.GetValuesFromString(
+#endif
                             dvWorkflow.GetAttributeValue( "WorkflowAttributes" ), workflowAttributes.QualifierValues,
                             false );
                     }

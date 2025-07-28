@@ -102,6 +102,7 @@ namespace Rock.Workflow.Action
             }
 
             var processOpt = GetAttributeValue( action, AttributeKey.ProcessingOptions );
+#if REVIEW_WEBFORMS
             bool canSendRedirect = !string.IsNullOrWhiteSpace( url ) && HttpContext.Current != null;
 
             if ( canSendRedirect )
@@ -119,6 +120,9 @@ namespace Rock.Workflow.Action
             {
                 return processOpt != "2";
             }
+#else
+            return processOpt != "2";
+#endif
         }
 
         /// <summary>
@@ -138,6 +142,7 @@ namespace Rock.Workflow.Action
                 return true;
             }
 
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current?.Handler is System.Web.UI.Page page )
             {
                 var obsidianWorkflowEntryBlock = page.ControlsOfTypeRecursive<Rock.Web.UI.RockBlockTypeWrapper>()
@@ -154,6 +159,7 @@ namespace Rock.Workflow.Action
                     return true;
                 }
             }
+#endif
 
             return false;
         }

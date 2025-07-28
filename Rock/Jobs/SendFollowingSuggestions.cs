@@ -201,7 +201,11 @@ namespace Rock.Jobs
                             catch ( Exception ex )
                             {
                                 exceptionMsgs.Add( string.Format( "An exception occurred calculating suggestions for the '{0}' suggestion type:{1}    {2}", suggestionType.Name, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
+#if REVIEW_WEBFORMS
                                 ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+#else
+                                ExceptionLogService.LogException( ex );
+#endif
                             }
                         }
 
@@ -280,7 +284,11 @@ namespace Rock.Jobs
                             catch ( Exception ex )
                             {
                                 exceptionMsgs.Add( string.Format( "An exception occurred sending suggestions to '{0}':{1}    {2}", person.FullName, Environment.NewLine, ex.Messages().AsDelimited( Environment.NewLine + "   " ) ) );
+#if REVIEW_WEBFORMS
                                 ExceptionLogService.LogException( ex, System.Web.HttpContext.Current );
+#else
+                                ExceptionLogService.LogException( ex );
+#endif
                             }
                         }
                     }

@@ -77,7 +77,11 @@ namespace Rock.Jobs
                         // Either the refresh interval is valid and elapsed
                         ( a.RefreshIntervalMinutes.HasValue &&
                             ( a.LastRefreshDateTime == null ||
+#if REVIEW_WEBFORMS
                             DbFunctions.AddMinutes( a.LastRefreshDateTime.Value, a.RefreshIntervalMinutes.Value ) < currentDateTime ) )
+#else
+                            a.LastRefreshDateTime.Value.AddMinutes( a.RefreshIntervalMinutes.Value ) < currentDateTime ) )
+#endif
                         ||
                         // Or it has a schedule
                         a.PersistedScheduleId != null

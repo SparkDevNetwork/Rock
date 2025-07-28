@@ -71,8 +71,10 @@ namespace Rock.Web
             }
 
             Logger.LogDebug( $"Consumed 'Page Route Was Updated Message' on node {RockMessageBus.NodeName}." );
+#if REVIEW_WEBFORMS
             RockRouteHandler.RemoveRockPageRoutes();
             RockRouteHandler.RegisterRoutes();
+#endif
         }
     }
 }

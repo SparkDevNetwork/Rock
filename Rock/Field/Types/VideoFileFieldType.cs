@@ -22,6 +22,7 @@ using System.Web.UI.WebControls;
 
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -110,7 +111,7 @@ namespace Rock.Field.Types
 
                 publicConfigurationValues[FILE_NAME] = binaryFileInfo.FileName;
                 publicConfigurationValues[MIME_TYPE] = binaryFileInfo.MimeType;
-                publicConfigurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                publicConfigurationValues[FILE_PATH] = RockApp.Current.ResolveRockUrl( "~/GetFile.ashx" );
                 publicConfigurationValues[FILE_GUID] = binaryFileGuid.ToString();
             }
 

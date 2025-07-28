@@ -231,6 +231,7 @@ function() {
             return resultSb.ToString();
         }
 
+#if REVIEW_WEBFORMS
         /// <inheritdoc/>
         public override Control[] CreateChildControls( Type entityType, FilterField filterControl )
         {
@@ -445,6 +446,7 @@ function() {
             slidingDateRangePicker.DelimitedValues = selectionConfig.DelimitedDateRangeValues;
 
         }
+#endif
 
         /// <inheritdoc/>
         public override Expression GetExpression( Type entityType, IService serviceInstance, ParameterExpression parameterExpression, string selection )

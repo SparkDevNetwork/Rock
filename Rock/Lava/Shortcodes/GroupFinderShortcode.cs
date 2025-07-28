@@ -881,11 +881,13 @@ You may have noticed that distance values are returned in meters. If you're more
             }
 
             // Finally check the HttpContext.
+#if REVIEW_WEBFORMS
             var httpContext = System.Web.HttpContext.Current;
             if ( httpContext != null && httpContext.Items.Contains( "CurrentPerson" ) )
             {
                 return httpContext.Items["CurrentPerson"] as Person;
             }
+#endif
 
             return null;
         }

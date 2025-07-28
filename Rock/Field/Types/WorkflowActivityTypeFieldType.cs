@@ -158,11 +158,13 @@ namespace Rock.Field.Types
 
         private WorkflowType GetContextWorkflowType()
         {
+#if REVIEW_WEBFORMS
             var httpContext = System.Web.HttpContext.Current;
             if ( httpContext != null && httpContext.Items != null )
             {
                 return httpContext.Items[WORKFLOW_TYPE_KEY] as WorkflowType;
             }
+#endif
 
             return null;
         }

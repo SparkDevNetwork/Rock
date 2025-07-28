@@ -86,8 +86,12 @@ namespace Rock.Jobs
                     dataViewException = new RockDataViewFilterExpressionException( ( IDataViewFilterDefinition ) dataView.DataViewFilter, exceptionMessage, sqlTimeoutException );
                 }
 
+#if REVIEW_WEBFORMS
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( dataViewException, context2 );
+#else
+                ExceptionLogService.LogException( dataViewException );
+#endif
                 this.Result = dataViewException.Message;
                 throw dataViewException;
             }
@@ -125,8 +129,12 @@ namespace Rock.Jobs
                 string errorMessage = sb.ToString();
                 this.Result += errorMessage;
                 var exception = new Exception( errorMessage );
+#if REVIEW_WEBFORMS
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );
+#else
+                ExceptionLogService.LogException( exception );
+#endif
                 throw exception;
             }
         }

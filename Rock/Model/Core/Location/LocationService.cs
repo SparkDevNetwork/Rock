@@ -939,7 +939,9 @@ namespace Rock.Model
                 location.IsActive = isActive;
 
                 this.Context.SaveChanges();
+#if WEBFORMS
                 Rock.CheckIn.KioskDevice.Clear();
+#endif
             }
         }
     }

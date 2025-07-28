@@ -128,8 +128,12 @@ namespace Rock.Jobs
                             // Renew context to clear saved entries from memory, this is done to speed up the process since we are 
                             // dealing with a large dataset and the context noticeably slows down when tracking several records.
                             rockContext = new RockContext();
+#if REVIEW_WEBFORMS
                             rockContext.Configuration.AutoDetectChangesEnabled = false;
                             rockContext.Configuration.ValidateOnSaveEnabled = false;
+#else
+                            rockContext.ChangeTracker.AutoDetectChangesEnabled = false;
+#endif
 
                             // Save the current batch.
                             var currentBatch = censusData.Skip( skipCount ).Take( batchSize ).ToList();
@@ -149,7 +153,9 @@ namespace Rock.Jobs
                         for ( int i = 0; i < updateBatches; i++ )
                         {
                             rockContext = new RockContext();
+#if REVIEW_WEBFORMS
                             rockContext.Configuration.ValidateOnSaveEnabled = false;
+#endif
 
                             // Get and update the current batch
                             var currentBatch = rockContext.Set<AnalyticsSourcePostalCode>().OrderBy( az => az.PostalCode ).Skip( i * batchSize ).Take( batchSize ).ToList();

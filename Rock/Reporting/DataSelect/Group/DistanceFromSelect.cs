@@ -240,13 +240,23 @@ namespace Rock.Reporting.DataSelect.Group
                     if ( geoString.StartsWith( "POLYGON" ) )
                     {
                         // GeoFence
+#if REVIEW_WEBFORMS
                         var location = locationService.GetByGeoFence( DbGeography.PolygonFromText( geoString, DbGeography.DefaultCoordinateSystemId ) );
+#else
+                        var fence = new NetTopologySuite.IO.WKTReader().Read( geoString ) as NetTopologySuite.Geometries.Polygon;
+                        var location = locationService.GetByGeoFence( fence );
+#endif
                         locationGuid = location.Guid.ToString();
                     }
                     else if ( geoString.StartsWith( "POINT" ) )
                     {
                         // GeoPoint
+#if REVIEW_WEBFORMS
                         var location = locationService.GetByGeoPoint( DbGeography.FromText( geoString, DbGeography.DefaultCoordinateSystemId ) );
+#else
+                        var point = new NetTopologySuite.IO.WKTReader().Read( geoString ) as NetTopologySuite.Geometries.Point;
+                        var location = locationService.GetByGeoPoint( point );
+#endif
                         locationGuid = location.Guid.ToString();
                     }
                 }

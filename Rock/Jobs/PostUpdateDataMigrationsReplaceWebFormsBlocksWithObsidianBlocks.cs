@@ -92,7 +92,11 @@ namespace Rock.Jobs
         {
             get
             {
+#if REVIEW_WEBFORMS
                 return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
+#else
+                return new Field.Types.KeyValueListFieldType().GetValuesFromString( GetAttributeValue( AttributeKey.BlockTypeGuidReplacementPairs ), null, false )
+#endif
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().AsGuidOrNull().Value );
             }
@@ -102,7 +106,11 @@ namespace Rock.Jobs
         {
             get
             {
+#if WEBFORMS
                 return new Field.Types.KeyValueListFieldType().GetValuesFromString( null, GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
+#else
+                return new Field.Types.KeyValueListFieldType().GetValuesFromString( GetAttributeValue( AttributeKey.BlockAttributeKeysToIgnore ), null, false )
+#endif
                     // Calling Guid?.Value intentionally on the next line so that exceptions are thrown if the field value is invalid.
                     .ToDictionary( kvp => kvp.Key.AsGuidOrNull().Value, kvp => kvp.Value.ToString().SplitDelimitedValues().ToHashSet() );
             }

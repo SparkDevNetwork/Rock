@@ -42,7 +42,7 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
-            return DateRangePicker.FormatDelimitedValues( value ) ?? value;
+            return DateRange.FromDelimitedValues( value )?.ToString() ?? value;
         }
 
         #endregion

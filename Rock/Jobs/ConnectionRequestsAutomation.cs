@@ -128,7 +128,7 @@ namespace Rock.Jobs
                     var destinationStatusId = connectionStatusAutomation.DestinationStatusId;
 
                     // Limit to connection requests that don't already have the same connection status that this automation sets it to
-                    var connectionRequestQry = connectionRequestService.Queryable()
+                    IQueryable<ConnectionRequest> connectionRequestQry = connectionRequestService.Queryable()
                         .Where( a => a.ConnectionStatusId == connectionStatus.Id && a.ConnectionStatusId != connectionStatusAutomation.DestinationStatusId )
                         .Include( a => a.ConnectionOpportunity ).Include( a => a.PersonAlias );
 
@@ -334,8 +334,12 @@ namespace Rock.Jobs
             this.Result += errorMessage;
 
             var exception = new Exception( errorMessage );
+#if REVIEW_WEBFORMS
             var httpContext = HttpContext.Current;
             ExceptionLogService.LogException( exception, httpContext );
+#else
+            ExceptionLogService.LogException( exception );
+#endif
 
             throw exception;
         }

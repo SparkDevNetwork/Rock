@@ -95,7 +95,11 @@ namespace Rock.Jobs
                     .Where( a => a.PersistedScheduleIntervalMinutes.HasValue )
                         .Where( a =>
                             ( a.PersistedLastRefreshDateTime == null )
+#if REVIEW_WEBFORMS
                             || ( System.Data.Entity.SqlServer.SqlFunctions.DateAdd( "mi", a.PersistedScheduleIntervalMinutes.Value, a.PersistedLastRefreshDateTime.Value ) < currentDateTime ) )
+#else
+                            || ( a.PersistedLastRefreshDateTime.Value.AddMinutes( a.PersistedScheduleIntervalMinutes.Value ) < currentDateTime ) )
+#endif
                         .Select( a => a.Id )
                         .ToList();
 

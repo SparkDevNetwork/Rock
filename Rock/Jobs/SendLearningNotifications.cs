@@ -193,7 +193,11 @@ namespace Rock.Jobs
                     // We have to make a copy of the announcement for each recipient
                     // so that we can pre-resolve the description HTML with Lava for
                     // the CurrentPerson.
+#if REVIEW_WEBFORMS
                     var recipientAnnouncement = rockContext.Set<LearningClassAnnouncement>().Create();
+#else
+                    var recipientAnnouncement = rockContext.Set<LearningClassAnnouncement>().CreateProxy();
+#endif
                     recipientAnnouncement.CopyPropertiesFrom( announcement );
                     recipientAnnouncement.Description = announcement.Description.ResolveMergeFields( mergeObjects );
 
@@ -676,7 +680,11 @@ namespace Rock.Jobs
             }
             catch ( Exception ex )
             {
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
                 _errors.Add( $"Unable to send Learning Activity Available Notifications to {personProgramInfo.Person.FullName}. '{ex.Message}'" );
             }
 
@@ -737,10 +745,12 @@ namespace Rock.Jobs
 
                     if ( smsMessage.CurrentPerson == null )
                     {
+#if REVIEW_WEBFORMS
                         smsMessage.CurrentPerson = HttpContext.Current?.Items["CurrentPerson"] as Person;
+#endif
                     }
 
-                    if ( smsMessage.FromSystemPhoneNumber == null )
+                        if ( smsMessage.FromSystemPhoneNumber == null )
                     {
                         _errors.Add( "A From Number was not provided." );
                         return null;

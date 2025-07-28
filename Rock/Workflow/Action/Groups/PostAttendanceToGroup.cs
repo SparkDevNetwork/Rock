@@ -293,10 +293,12 @@ namespace Rock.Workflow.Action
                         new AttendanceService( rockContext ).AddOrUpdate( personAliasId.Value, attendanceDateTime, group.Id, locationId, scheduleId, campusId );
                         rockContext.SaveChanges();
 
+#if REVIEW_WEBFORMS
                         if ( locationId.HasValue )
                         {
                             Rock.CheckIn.KioskLocationAttendance.Remove( locationId.Value );
                         }
+#endif
                     }
                 }
                 else

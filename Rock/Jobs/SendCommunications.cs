@@ -172,7 +172,11 @@ namespace Rock.Jobs
                             }
                         }
 
+#if REVIEW_WEBFORMS
                         ExceptionLogService.LogException( communicationResult.Exception, System.Web.HttpContext.Current );
+#else
+                        ExceptionLogService.LogException( communicationResult.Exception );
+#endif
                     }
                     else
                     {
@@ -287,7 +291,11 @@ namespace Rock.Jobs
                     .Where( c =>
                         c.EmailMetricsReminderOffsetDays.HasValue
                         && !c.EmailMetricsReminderSentDateTime.HasValue
+#if REVIEW_WEBFORMS
                         && DbFunctions.AddDays( c.SendDateTime.Value, c.EmailMetricsReminderOffsetDays.Value ) <= RockDateTime.Now )
+#else
+                        && c.SendDateTime.Value.AddDays( c.EmailMetricsReminderOffsetDays.Value ) <= RockDateTime.Now )
+#endif
 
                     .Select( c => new SendEmailMetricsReminderData
                     {

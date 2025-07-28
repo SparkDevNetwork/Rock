@@ -491,8 +491,12 @@ namespace Rock.Jobs
                 this.Result = resultMessage;
                 var exception = new Exception( resultMessage );
 
+#if REVIEW_WEBFORMS
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );
+#else
+                ExceptionLogService.LogException( exception );
+#endif
                 throw exception;
             }
         }

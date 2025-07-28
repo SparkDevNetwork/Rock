@@ -173,10 +173,12 @@ namespace Rock.Lava
             {
                 var rockPage = RockRequestContextAccessor.Current.Page;
 
+#if REVIEW_WEBFORMS
                 if ( rockPage == null && HttpContext.Current?.Items?.Contains( "Rock:PageId" ) == true )
                 {
                     rockPage = PageCache.Get( HttpContext.Current.Items["Rock:PageId"].ToString().AsInteger() );
                 }
+#endif
 
                 return RockApp.Current.MapPath( templatePath, rockPage.Layout.Site.Theme ?? "Rock" );
             }

@@ -126,6 +126,7 @@ namespace Rock.Field.Types
 
         private Dictionary<Guid, Rock.Model.Attribute> GetContextAttributes()
         {
+#if REVIEW_WEBFORMS
             var httpContext = System.Web.HttpContext.Current;
             if ( httpContext != null && httpContext.Items != null )
             {
@@ -137,6 +138,7 @@ namespace Rock.Field.Types
                     return workflowAttributes.Concat( activityAttributes ).ToDictionary( x => x.Key, x => x.Value );
                 }
             }
+#endif
 
             return null;
         }

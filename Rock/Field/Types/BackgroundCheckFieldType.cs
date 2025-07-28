@@ -27,6 +27,7 @@ using Rock.Model;
 using Rock.Web.UI.Controls;
 using Rock.Attribute;
 using Rock.ViewModels.Utility;
+using Rock.Configuration;
 
 namespace Rock.Field.Types
 {
@@ -112,7 +113,7 @@ namespace Rock.Field.Types
                 publicConfigurationValues[ORIGINAL_PROVIDER_ENTITY_TYPE_GUID] = internalValue.ProviderEntityTypeGuid.ToString();
             }
 
-            publicConfigurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetBackgroundCheck.ashx" );
+            publicConfigurationValues[FILE_PATH] = RockApp.Current.ResolveRockUrl( "~/GetBackgroundCheck.ashx" );
 
             // There must be a case where the publicConfigurationValues[BINARY_FILE_TYPE] is a simple Guid, and in this case
             // we need to turn it into a a ListItemBag.
@@ -212,7 +213,7 @@ namespace Rock.Field.Types
                 return string.Empty;
             }
 
-            var filePath = System.Web.VirtualPathUtility.ToAbsolute( "~/GetBackgroundCheck.ashx" );
+            var filePath = RockApp.Current.ResolveRockUrl( "~/GetBackgroundCheck.ashx" );
 
             if ( internalValue.IsFileBased )
             {
@@ -576,13 +577,13 @@ namespace Rock.Field.Types
                 ? GetHtmlValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )
                 : GetTextValue( value, configurationValues.ToDictionary( cv => cv.Key, cv => cv.Value.Value ) )?.EncodeHtml();
         }
+#endif
 
         private string HtmlEncodeFileName( string fileName )
         {
             return System.Web.HttpUtility.HtmlEncode( fileName );
         }
 
-#endif
         #endregion
         private class PublicValueItem
         {

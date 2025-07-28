@@ -66,6 +66,7 @@ namespace Rock.Workflow.Action
                 return false;
             }
 
+#if REVIEW_WEBFORMS
             HttpContext httpContext = HttpContext.Current;
             if ( httpContext != null )
             {
@@ -105,6 +106,7 @@ namespace Rock.Workflow.Action
                     }
                 }
             }
+#endif
 
             return true;
         }

@@ -209,7 +209,11 @@ namespace Rock.Jobs
                 }
                 catch ( Exception ex )
                 {
+#if REVIEW_WEBFORMS
                     ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                    ExceptionLogService.LogException( ex );
+#endif
                     throw;
                 }
             }
@@ -230,7 +234,11 @@ namespace Rock.Jobs
                     }
                     catch ( Exception ex )
                     {
+#if REVIEW_WEBFORMS
                         ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                        ExceptionLogService.LogException( ex );
+#endif
                         throw;
                     }
                 }
@@ -245,7 +253,11 @@ namespace Rock.Jobs
                     }
                     catch ( Exception ex )
                     {
+#if REVIEW_WEBFORMS
                         ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                        ExceptionLogService.LogException( ex );
+#endif
                         throw;
                     }
                 }
@@ -301,7 +313,11 @@ namespace Rock.Jobs
         /// <returns></returns>
         private bool IntegrityCheck( int commandTimeout, string alertEmail)
         {
+#if REVIEW_WEBFORMS
             string databaseName = new RockContext().Database.Connection.Database;
+#else
+            var databaseName = RelationalDatabaseFacadeExtensions.GetDbConnection( new RockContext().Database ).Database;
+#endif
             string integrityQuery = $"DBCC CHECKDB('{ databaseName }',NOINDEX) WITH PHYSICAL_ONLY, NO_INFOMSGS";
             bool checkPassed = true;
 

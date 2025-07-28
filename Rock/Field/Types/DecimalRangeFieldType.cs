@@ -42,7 +42,11 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override string GetTextValue( string value, Dictionary<string, string> configurationValues )
         {
+#if REVIEW_WEBFORMS
             return NumberRangeEditor.FormatDelimitedValues( value, "G" ) ?? value;
+#else
+            return FormatDelimitedValues( value, "G" ) ?? value;
+#endif
         }
 
         #endregion
@@ -188,5 +192,52 @@ namespace Rock.Field.Types
 #endif
         #endregion
 
+#if NET6_0_OR_GREATER
+        /// <summary>
+        /// Formats the delimited values.
+        /// </summary>
+        /// <param name="value">The value.</param>
+        /// <param name="format">The format.</param>
+        /// <returns></returns>
+        public static string FormatDelimitedValues(string value, string format = "N0")
+        {
+            try
+            {
+                if ( value != null )
+                {
+                    if ( value == "," )
+                    {
+                        return string.Empty;
+                    }
+                    else if ( value.StartsWith( "," ) )
+                    {
+                        string upperValue = decimal.Parse( value.Substring( 1 ) ).ToString(format);
+                        return string.Format( "through {0}", upperValue );
+                    }
+                    else if ( value.EndsWith( "," ) )
+                    {
+                        string lowerValue = decimal.Parse( value.Substring( 0, value.Length - 1 ) ).ToString( format );
+                        return string.Format( "from {0}", lowerValue );
+                    }
+                    else
+                    {
+                        string[] valuePair = value.Split( new char[] { ',' }, StringSplitOptions.None );
+                        if ( valuePair.Length == 2 )
+                        {
+                            string lowerValue = decimal.Parse( valuePair[0] ).ToString( format );
+                            string upperValue = decimal.Parse( valuePair[1] ).ToString( format );
+                            return string.Format( "{0} to {1}", lowerValue, upperValue );
+                        }
+                    }
+                }
+
+                return null;
+            }
+            catch 
+            {
+                return null;  
+            }
+        }
+#endif
     }
 }

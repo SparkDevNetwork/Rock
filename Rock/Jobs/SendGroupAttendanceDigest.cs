@@ -107,7 +107,11 @@ namespace Rock.Jobs
             }
             catch ( Exception ex )
             {
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogException( ex, HttpContext.Current );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
                 throw;
             }
 

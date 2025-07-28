@@ -329,6 +329,7 @@ namespace Rock.Reporting.DataSelect
 
             return new System.Web.UI.Control[] { ddlProperty, ddlSortProperty, codeEditor };
         }
+#endif
 
         private IEnumerable<string> GetPropertyList()
         {
@@ -377,6 +378,7 @@ namespace Rock.Reporting.DataSelect
             return new List<string>();
         }
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Populate the list of available sort sub-properties when the user changes the
         /// selected property index.
@@ -483,6 +485,7 @@ namespace Rock.Reporting.DataSelect
                 }
             }
         }
+#endif
 
         /// <summary>
         /// Get the names of all the Navigation Properties for a given Entity Type. These are
@@ -492,6 +495,7 @@ namespace Rock.Reporting.DataSelect
         /// <returns>A list of strings that represent the property names.</returns>
         static public List<string> GetNavigationPropertyNames( Type entityType )
         {
+#if REVIEW_WEBFORMS
             var dbContext = Rock.Reflection.GetDbContextForEntityType( entityType );
             var workspace = ( ( IObjectContextAdapter ) new RockContext() ).ObjectContext.MetadataWorkspace;
             var itemCollection = ( ObjectItemCollection ) ( workspace.GetItemCollection( DataSpace.OSpace ) );
@@ -500,8 +504,10 @@ namespace Rock.Reporting.DataSelect
                 .Single( e => itemCollection.GetClrType( e ) == entityType );
 
             return metaEntityType.NavigationProperties.Select( p => p.Name ).ToList();
-        }
+#else
+            throw new NotImplementedException( "GetNavigationPropertyNames is not implemented for this platform." );
 #endif
+        }
 
         /// <summary>
         /// Build an IQueryable that selects the property from the entity type. This is

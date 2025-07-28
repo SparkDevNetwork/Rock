@@ -46,6 +46,7 @@ namespace Rock.Jobs
         /// <inheritdoc cref="RockJob.Execute()"/>
         public override void Execute()
         {
+#if REVIEW_WEBFORMS
             // get the configured timeout, or default to 60 minutes if it is blank
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
 
@@ -58,6 +59,9 @@ namespace Rock.Jobs
 
             // Delete the job when this run-once job completes.
             ServiceJobService.DeleteJob( this.GetJobId() );
+#else
+            throw new System.NotImplementedException( "This job is only implemented for WebForms." );
+#endif
         }
     }
 }

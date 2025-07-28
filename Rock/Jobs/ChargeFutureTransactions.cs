@@ -138,8 +138,12 @@ namespace Rock.Jobs
                 this.Result += errorMessage;
 
                 var exception = new Exception( errorMessage );
+#if WEBFORMS
                 var context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );
+#else
+                ExceptionLogService.LogException( exception );
+#endif
 
                 throw exception;
             }

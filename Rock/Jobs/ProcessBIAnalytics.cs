@@ -247,8 +247,12 @@ namespace Rock.Jobs
                 }
                 catch ( System.Exception ex )
                 {
+#if REVIEW_WEBFORMS
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( ex, context2 );
+#else
+                    ExceptionLogService.LogException( ex );
+#endif
                     throw;
                 }
             }
@@ -265,8 +269,12 @@ namespace Rock.Jobs
                 }
                 catch ( System.Exception ex )
                 {
+#if REVIEW_WEBFORMS
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( ex, context2 );
+#else
+                    ExceptionLogService.LogException( ex );
+#endif
                     throw;
                 }
             }
@@ -279,6 +287,7 @@ namespace Rock.Jobs
                 {
                     foreach ( var powerBiAccount in powerBiAccountsDefinedType.DefinedValues )
                     {
+#if REVIEW_WEBFORMS
                         string message;
                         var token = PowerBiUtilities.GetAccessToken( powerBiAccount.Guid, out message );
                         if ( token.IsNullOrWhiteSpace() )
@@ -289,6 +298,9 @@ namespace Rock.Jobs
                         {
                             results.AppendLine( $"Refreshed Power BI Access token for {powerBiAccount.Value}." );
                         }
+#else
+                        throw new NotImplementedException( "PowerBiUtilities.GetAccessToken is not implemented in .NET Core." );
+#endif
                     }
                 }
             }
@@ -539,7 +551,11 @@ namespace Rock.Jobs
                         }
                         else
                         {
+#if REVIEW_WEBFORMS
                             attributeValue = attribute.FieldType.Field.ValueAsFieldType( null, modelAttributeValue, attribute.QualifierValues );
+#else
+                            attributeValue = attribute.FieldType.Field.ValueAsFieldType( modelAttributeValue, attribute.QualifierValues );
+#endif
                         }
 
                         // mass update the value for the Attribute in the Analytics table records 
@@ -1259,7 +1275,11 @@ WHERE asph.CurrentRowIndicator = 1 AND (
                         }
                         else
                         {
+#if REVIEW_WEBFORMS
                             attributeValue = attribute.FieldType.Field.ValueAsFieldType( null, familyAttributeValue, attribute.QualifierValues );
+#else
+                            attributeValue = attribute.FieldType.Field.ValueAsFieldType( familyAttributeValue, attribute.QualifierValues );
+#endif
                         }
 
                         // mass update any AnalyticsSourceFamilyHistorical records that need to be marked as History for this Attribute's Value

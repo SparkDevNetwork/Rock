@@ -29,6 +29,7 @@ using Rock.SystemGuid;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
+using Rock.Configuration;
 
 namespace Rock.Field.Types
 {
@@ -91,7 +92,7 @@ namespace Rock.Field.Types
 
                     if ( !string.IsNullOrWhiteSpace( fileName ) )
                     {
-                        configurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                        configurationValues[FILE_PATH] = RockApp.Current.ResolveRockUrl( "~/GetFile.ashx" );
                         configurationValues[ENCODED_FILENAME] = System.Web.HttpUtility.HtmlEncode( fileName );
                     }
                 }

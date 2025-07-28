@@ -21,6 +21,7 @@ using System.Linq;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -55,7 +56,7 @@ namespace Rock.Jobs
             int resendDays = GetAttributeValue( "ResendInviteAfterNumberDays" ).AsIntegerOrNull() ?? 5;
             int maxInvites = GetAttributeValue( "MaxInvites" ).AsIntegerOrNull() ?? 2;
             int checkDays = GetAttributeValue( "CheckForSignatureDays" ).AsIntegerOrNull() ?? 30;
-            string folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Cache/SignNow" );
+            string folderPath = RockApp.Current.MapPath( "~/App_Data/Cache/SignNow" );
 
             var errorMessages = new List<string>();
             int signatureRequestsSent = 0;

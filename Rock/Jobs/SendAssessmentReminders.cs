@@ -119,9 +119,15 @@ namespace Rock.Jobs
                     .GetLatestAssessments()
                     .AsNoTracking()
                     .Where( a => a.Status == AssessmentRequestStatus.Pending )
+#if REVIEW_WEBFORMS
                     .Where( a => currentDate <= DbFunctions.AddDays( a.RequestedDateTime, cutOffDays ) )
                     .Where( a => ( a.LastReminderDate == null && sendreminderDateTime >= DbFunctions.TruncateTime( a.RequestedDateTime ) ) ||
                         ( sendreminderDateTime >= DbFunctions.TruncateTime( a.LastReminderDate ) ) )
+#else
+                    .Where( a => currentDate <= a.RequestedDateTime.Value.AddDays( cutOffDays ) )
+                    .Where( a => ( a.LastReminderDate == null && sendreminderDateTime >= a.RequestedDateTime.Value.Date ) ||
+                        ( sendreminderDateTime >= a.LastReminderDate.Value.Date ) )
+#endif
                     .Select( a => a.PersonAliasId )
                     .Distinct()
                     .ToList();
@@ -159,8 +165,12 @@ namespace Rock.Jobs
                     string errors = sb.ToString();
                     this.Result += errors;
                     var exception = new Exception( errors );
+#if REVIEW_WEBFORMS
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( exception, context2 );
+#else
+                    ExceptionLogService.LogException( exception );
+#endif
                     throw exception;
                 }
             }

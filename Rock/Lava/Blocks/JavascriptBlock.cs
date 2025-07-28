@@ -55,6 +55,7 @@ namespace Rock.Lava.Blocks
         /// <param name="result">The result.</param>
         public override void OnRender( ILavaRenderContext context, TextWriter result )
         {
+#if REVIEW_WEBFORMS
             // Get the current page object if it is available.
             RockPage page = null;
 
@@ -167,6 +168,9 @@ namespace Rock.Lava.Blocks
                     }
                 }
             }
+#else
+            throw new NotImplementedException( "JavascriptBlock is not implemented in .NET Core." );
+#endif
         }
 
         /// <summary>
@@ -185,6 +189,7 @@ namespace Rock.Lava.Blocks
                 return rockRequestContext.ResolveRockUrl( url );
             }
 
+#if REVIEW_WEBFORMS
             var page = HttpContext.Current?.Handler as RockPage;
             if ( page == null )
             {
@@ -208,6 +213,9 @@ namespace Rock.Lava.Blocks
             }
 
             return page.ResolveUrl( url );
+#else
+            return url;
+#endif
         }
 
         internal static LavaElementAttributes GetAttributesFromMarkup( string markup, ILavaRenderContext context )

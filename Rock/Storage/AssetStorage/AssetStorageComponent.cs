@@ -20,6 +20,7 @@ using System.Data;
 using System.IO;
 using System.Linq;
 
+using Rock.Configuration;
 using Rock.Extension;
 using Rock.Model;
 using Rock.Web.Cache;
@@ -403,6 +404,7 @@ namespace Rock.Storage.AssetStorage
                 CreateImageThumbnailFromStream( assetStorageProvider, asset, physicalThumbPath, width, height );
             }
         }
+#endif
 
         /// <summary>
         /// Deletes the image thumbnail for the provided Asset. If the asset is a file then the singel thumbnail
@@ -414,7 +416,11 @@ namespace Rock.Storage.AssetStorage
         {
             string cleanKey = asset.Key.TrimStart( '~' );
             string virtualPath = $"{ThumbnailRootPath}/{assetStorageProvider.Id}/{cleanKey}";
+#if REVIEW_WEBFORMS
             string physicalPath = FileSystemComponentHttpContext.Server.MapPath( virtualPath );
+#else
+            var physicalPath = RockApp.Current.MapPath( virtualPath );
+#endif
 
             try
             {
@@ -439,7 +445,6 @@ namespace Rock.Storage.AssetStorage
                 throw;
             }
         }
-#endif
 
         /// <summary>
         /// Checks the file extension against the Content File Type White list.

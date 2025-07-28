@@ -44,10 +44,12 @@ namespace Rock.Model
             }
             else
             {
+#if REVIEW_WEBFORMS
                 // There was a need in v1 Check-in to flush this item from the *special* KioskDevice cache too,
                 // but this can likely be removed once Check-in v1 is no longer needed.
                 // ( See b6c03d573eea6c3fbf14d23c40d08e8ae7d42a5b )
                 Rock.CheckIn.KioskDevice.FlushItem( this.Id );
+#endif
                 DeviceCache.FlushItem( Id );
             }
         }

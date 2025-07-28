@@ -3115,10 +3115,17 @@ namespace Rock.Model
                     m.MatchedPerson.Gender == Gender.Unknown ||
                     m.Spouse.Person.Gender == Gender.Unknown )
                 .OrderBy( m => m.Spouse.GroupOrder ?? int.MaxValue )
+#if REVIEW_WEBFORMS
                 .ThenBy( m => Math.Abs( DbFunctions.DiffDays(
                     m.Spouse.Person.BirthDate ?? new DateTime( 1, 1, 1 ),
                     m.MatchedPerson.BirthDate ?? new DateTime( 1, 1, 1 )
                 ) ?? 0 ) )
+#else
+                .ThenBy( m => Math.Abs( EF.Functions.DateDiffDay(
+                    m.Spouse.Person.BirthDate ?? new DateTime( 1, 1, 1 ),
+                    m.MatchedPerson.BirthDate ?? new DateTime( 1, 1, 1 )
+                ) ) )
+#endif
                 .ThenBy( m => m.Spouse.PersonId );
 
             var spouses = spousesQuery

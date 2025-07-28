@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -54,9 +54,15 @@ namespace Rock.Workflow.Action
 
             // Get the current person alias if possible
             PersonAlias personAlias = null;
+#if REVIEW_WEBFORMS
             if ( HttpContext.Current != null && HttpContext.Current.Items.Contains( "CurrentPerson" ) )
             {
                 var currentPerson = HttpContext.Current.Items["CurrentPerson"] as Person;
+#else
+            if ( Net.RockRequestContextAccessor.Current != null )
+            {
+                var currentPerson = Net.RockRequestContextAccessor.Current.CurrentPerson;
+#endif
                 if ( currentPerson != null && currentPerson.PrimaryAlias != null )
                 {
                     personAlias = currentPerson.PrimaryAlias;

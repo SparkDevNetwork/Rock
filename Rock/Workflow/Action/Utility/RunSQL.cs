@@ -53,7 +53,11 @@ namespace Rock.Workflow.Action
 
             var query = GetAttributeValue( action, "SQLQuery" );
             var parametersValue = GetAttributeValue( action, "Parameters" );
+#if REVIEW_WEBFORMS
             var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( null, parametersValue, null, false );
+#else
+            var parameterList = new Field.Types.KeyValueListFieldType().GetValuesFromString( parametersValue, null, false );
+#endif
 
             var mergeFields = GetMergeFields( action );
             query = query.ResolveMergeFields( mergeFields );

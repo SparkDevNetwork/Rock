@@ -29,7 +29,10 @@
     <Compile Include="Plugin\VersionAttribute.cs" />
     <Compile Include="Web\UI\ContextAttribute.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
+    <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
     <Compile Include="Web\UI\Controls\ValueFilter.cs" />
+    <Compile Include="Web\UI\ICustomGridColumns.cs" />
+    <Compile Include="Web\UI\ICustomGridOptions.cs" />
     <!-- Exclude all legacy check-in workflow actions. -->
     <Compile Remove="Workflow\Action\CheckIn\CalculateLastAttended.cs" />
     <Compile Remove="Workflow\Action\CheckIn\CheckInActionComponent.cs" />
@@ -134,6 +137,7 @@
     <PackageReference Include="BCrypt.Net-Next" Version="4.0.3" />
     <PackageReference Include="CacheManager.SystemRuntimeCaching" Version="2.0.0" />
     <PackageReference Include="CS-Script" Version="4.9.7" />
+    <PackageReference Include="CommonMark.NET" Version="0.13.2" />
     <PackageReference Include="CronExpressionDescriptor" Version="2.41.0" />
     <PackageReference Include="DocumentFormat.OpenXml" Version="3.3.0" />
     <PackageReference Include="Elasticsearch.Net" Version="7.17.5" />
@@ -144,6 +148,7 @@
     <PackageReference Include="HtmlAgilityPack" Version="1.12.1" />
     <PackageReference Include="Ical.Net" Version="4.2.0" />
     <PackageReference Include="IdentityModel" Version="3.0.0" />
+    <PackageReference Include="K4os.Hash.xxHash" Version="1.0.6" />
     <PackageReference Include="Lucene.Net" Version="4.8.0-beta00005" />
     <PackageReference Include="Lucene.Net.Analysis.Common" Version="4.8.0-beta00005" />
     <PackageReference Include="Lucene.Net.Expressions" Version="4.8.0-beta00005" />
@@ -167,6 +172,7 @@
     <PackageReference Include="NetTopologySuite.IO.GeoJSON" Version="4.0.0" />
     <PackageReference Include="OpenTelemetry.Exporter.OpenTelemetryProtocol" Version="1.7.0" />
     <PackageReference Include="OpenXmlPowerTools.NetStandard" Version="4.6.0" />
+    <PackageReference Include="PreMailer.Net" Version="2.4.0" />
     <PackageReference Include="PuppeteerSharp" Version="18.1.0" />
     <PackageReference Include="Quartz" Version="3.6.0" />
     <PackageReference Include="QRCoder" Version="1.6.0" />

@@ -92,7 +92,11 @@ namespace Rock.Jobs
             var rockContext = new Rock.Data.RockContext();
             ServiceJobService jobService = new ServiceJobService( rockContext );
             List<ServiceJob> activeJobList = jobService.GetActiveJobs().ToList();
+#if REVIEW_WEBFORMS
             var scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) );
+#else
+            var scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) ).Result;
+#endif
 
             // delete any jobs that are no longer exist (are are not set to active) in the database
             var quartsJobsToDelete = scheduledQuartzJobs.Where( a => !activeJobList.Any( j => j.Guid.Equals( a.Name.AsGuid() ) ) );
@@ -144,12 +148,20 @@ namespace Rock.Jobs
             }
 
             // reload the jobs in case any where added/removed
+#if REVIEW_WEBFORMS
             scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) );
+#else
+            scheduledQuartzJobs = scheduler.GetJobKeys( GroupMatcher<JobKey>.GroupStartsWith( string.Empty ) ).Result;
+#endif
 
             // update schedule if the schedule has changed
             foreach ( var jobKey in scheduledQuartzJobs )
             {
+#if REVIEW_WEBFORMS
                 var triggersOfJob = scheduler.GetTriggersOfJob( jobKey );
+#else
+                var triggersOfJob = scheduler.GetTriggersOfJob( jobKey ).Result;
+#endif
                 var jobCronTrigger = triggersOfJob.OfType<ICronTrigger>().FirstOrDefault();
                 var activeJob = activeJobList.FirstOrDefault( a => a.Guid.Equals( jobKey.Name.AsGuid() ) );
                 if ( jobCronTrigger == null || activeJob == null )
@@ -167,7 +179,11 @@ namespace Rock.Jobs
                 else
                 {
                     // update the job detail if it has changed
+#if REVIEW_WEBFORMS
                     IJobDetail scheduledJobDetail = scheduler.GetJobDetail( jobKey );
+#else
+                    IJobDetail scheduledJobDetail = scheduler.GetJobDetail( jobKey ).Result;
+#endif
                     var activeJobType = activeJob.GetCompiledType();
 
                     if ( scheduledJobDetail != null && activeJobType != null )
@@ -186,7 +202,11 @@ namespace Rock.Jobs
                     {
                         IJobDetail jobDetail = jobService.BuildQuartzJob( activeJob );
                         ITrigger newJobTrigger = jobService.BuildQuartzTrigger( activeJob );
+#if REVIEW_WEBFORMS
                         bool deletedSuccessfully = scheduler.DeleteJob( jobKey );
+#else
+                        bool deletedSuccessfully = scheduler.DeleteJob( jobKey ).Result;
+#endif
                         scheduler.ScheduleJob( jobDetail, newJobTrigger );
                         jobsScheduleUpdated++;
 

@@ -84,7 +84,11 @@ namespace Rock.Jobs
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderEmailTemplate.Length > 0
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderFromEmail.Length > 0
                                                          && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject != null && r.RegistrationInstance.RegistrationTemplate.PaymentReminderSubject.Length > 0
+#if REVIEW_WEBFORMS
                                                          && (r.RegistrationInstance.EndDateTime == null || currentDate <= System.Data.Entity.SqlServer.SqlFunctions.DateAdd("day", cutoffDays,  r.RegistrationInstance.EndDateTime) ) )
+#else
+                                                         && ( r.RegistrationInstance.EndDateTime == null || currentDate <= r.RegistrationInstance.EndDateTime.Value.AddDays( cutoffDays ) ) )
+#endif
                                                  .ToList();
 
                 registrationInstanceCount = registrations.Select( r => r.RegistrationInstance.Id ).Distinct().Count();
@@ -136,8 +140,12 @@ namespace Rock.Jobs
                     string errorMessage = sb.ToString();
                     this.Result += errorMessage;
                     var exception = new Exception( errorMessage );
+#if REVIEW_WEBFORMS
                     HttpContext context2 = HttpContext.Current;
                     ExceptionLogService.LogException( exception, context2 );
+#else
+                    ExceptionLogService.LogException( exception );
+#endif
                     throw exception;
                 }
             }

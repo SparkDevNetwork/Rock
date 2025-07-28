@@ -174,7 +174,11 @@ namespace Rock.Jobs
                 // limit to confirmation offset window
                 sendConfirmationAttendancesQuery = sendConfirmationAttendancesQuery
                     .Where( a => a.Occurrence.Group.GroupType.ScheduleConfirmationEmailOffsetDays.HasValue )
+#if REVIEW_WEBFORMS
                     .Where( a => System.Data.Entity.SqlServer.SqlFunctions.DateDiff( "day", currentDate, a.Occurrence.OccurrenceDate ) <= a.Occurrence.Group.GroupType.ScheduleConfirmationEmailOffsetDays.Value );
+#else
+                    .Where( a => Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay( currentDate, a.Occurrence.OccurrenceDate ) <= a.Occurrence.Group.GroupType.ScheduleConfirmationEmailOffsetDays.Value );
+#endif
 
                 var messageResult = attendanceService.SendScheduleConfirmationCommunication( sendConfirmationAttendancesQuery );
                 rockContext.SaveChanges();
@@ -243,7 +247,11 @@ namespace Rock.Jobs
                 // limit to ones within offset
                 sendReminderAttendancesQuery = sendReminderAttendancesQuery
                     .Where( a =>
+#if REVIEW_WEBFORMS
                         System.Data.Entity.SqlServer.SqlFunctions.DateDiff( "day", currentDate, a.Occurrence.OccurrenceDate )
+#else
+                        Microsoft.EntityFrameworkCore.EF.Functions.DateDiffDay( currentDate, a.Occurrence.OccurrenceDate )
+#endif
                             <= ( a.Occurrence.Group.Members.Where( m => m.PersonId == a.PersonAlias.PersonId )
                                 .OrderBy( r => r.GroupRole.IsLeader )
                                 .FirstOrDefault()

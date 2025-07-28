@@ -22,6 +22,7 @@ using System.Linq;
 using System.Web.UI;
 #endif
 using Rock.Attribute;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 using Rock.Utility;
@@ -189,7 +190,7 @@ namespace Rock.Field.Types
 
                     if ( !string.IsNullOrWhiteSpace( mimeType ) )
                     {
-                        configurationValues[FILE_PATH] = System.Web.VirtualPathUtility.ToAbsolute( "~/GetFile.ashx" );
+                        configurationValues[FILE_PATH] = RockApp.Current.ResolveRockUrl( "~/GetFile.ashx" );
                         configurationValues[MIME_TYPE] = mimeType;
                     }
                 }

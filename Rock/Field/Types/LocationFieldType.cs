@@ -167,9 +167,15 @@ namespace Rock.Field.Types
             }
             else if ( publicValue.IsNotNullOrWhiteSpace() )
             {
+#if REVIEW_WEBFORMS
                 if ( publicValue.Contains( "POINT" ) || publicValue.Contains( "POLYGON" ) )
                 {
                     DbGeography geoPoint = DbGeography.FromText( publicValue.FromJsonOrNull<string>() );
+#else
+                if ( publicValue.Contains( "POINT" ) )
+                {
+                    var geoPoint = new NetTopologySuite.IO.WKTReader().Read( publicValue.FromJsonOrNull<string>() ) as NetTopologySuite.Geometries.Point;
+#endif
                     var location = new LocationService( new RockContext() ).GetByGeoPoint( geoPoint );
                     return location.Guid.ToString();
                 }

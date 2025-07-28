@@ -128,8 +128,12 @@ namespace Rock.Jobs
                 string errorMessage = sb.ToString();
                 this.Result += errorMessage;
                 var exception = new Exception( errorMessage);
+#if REVIEW_WEBFORMS
                 HttpContext context2 = HttpContext.Current;
                 ExceptionLogService.LogException( exception, context2 );
+#else
+                ExceptionLogService.LogException( exception );
+#endif
                 throw exception;
             }
         }

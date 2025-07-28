@@ -68,8 +68,12 @@ namespace Rock.Reporting
             definedValue.SaveAttributeValues(rockContext);
 
             // Redirect to Power BI for authentication
+#if REVIEW_WEBFORMS
             var authUrl = $"https://login.microsoftonline.com/common/oauth2/authorize?client_id={clientId}&response_type=code&redirect_uri={redirectUrl}&state={definedValue.Id}";
             System.Web.HttpContext.Current.Response.Redirect(authUrl);
+#else
+            throw new NotImplementedException("WebForms redirect is not implemented in this context.");
+#endif
         }
     }
 } 

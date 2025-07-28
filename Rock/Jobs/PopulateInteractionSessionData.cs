@@ -383,7 +383,9 @@ namespace Rock.Jobs
              just few seconds or less.
 
              */
+#if REVIEW_WEBFORMS
             using ( new QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
+#endif
             {
                 interactionSessionsWithOutOfDate = new InteractionSessionService( rockContext )
                     .Queryable()
@@ -409,7 +411,9 @@ namespace Rock.Jobs
 
             List<InteractionSession> interactionSessionsWithNullDurationLastCalculatedDateTime;
 
+#if REVIEW_WEBFORMS
             using ( new QueryHintScope( rockContext, QueryHintType.RECOMPILE ) )
+#endif
             {
                 interactionSessionsWithNullDurationLastCalculatedDateTime = interactionSessionsWithNullDurationLastCalculatedDateTimeQuery
                 .OrderByDescending( a => a.Id )

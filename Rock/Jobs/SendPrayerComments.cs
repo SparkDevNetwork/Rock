@@ -350,9 +350,13 @@ namespace Rock.Jobs
             {
                 var exception = new Exception( message );
 
+#if REVIEW_WEBFORMS
                 var httpContext = HttpContext.Current;
 
                 ExceptionLogService.LogException( exception, httpContext );
+#else
+                ExceptionLogService.LogException( exception );
+#endif
 
                 throw exception;
             }

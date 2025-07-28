@@ -17,6 +17,7 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Model;
 
@@ -61,7 +62,11 @@ namespace Rock.Transactions
                 {
                     var status = document.Status;
                     int? binaryFileId = document.BinaryFileId;
+#if REVIEW_WEBFORMS
                     string folderPath = System.Web.Hosting.HostingEnvironment.MapPath( "~/App_Data/Cache/SignNow" );
+#else
+                    var folderPath = RockApp.Current.MapPath( "~/App_Data/Cache/SignNow" );
+#endif
                     var updateErrorMessages = new List<string>();
 
                     if ( docTypeService.UpdateDocumentStatus( document, folderPath, out updateErrorMessages ) )

@@ -171,6 +171,7 @@ namespace Rock.Model
                 return new List<AnalyticsSourcePostalCode>();
             }
 
+#if REVIEW_WEBFORMS
             using ( var excelPackage = new ExcelPackage( fileInfo ) )
             {
                 var table = new DataTable();
@@ -220,6 +221,9 @@ namespace Rock.Model
 
                 return data.OrderBy( z => z.PostalCode ).ToList();
             }
+#else
+            throw new Exception( "The GetZipCodeCensusData method is not implemented for this platform." );
+#endif
         }
 
         /// <summary>
