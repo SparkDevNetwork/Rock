@@ -57,7 +57,7 @@
             <div class="col-md-6">
                 <GroupPicker v-model="smsNotificationGroup"
                              label="SMS Notification Group"
-                             help="Active members of this group will recieve notifications when new SMS messages are received." />
+                             help="Active members of this group will receive push notifications when new SMS messages arrive. These notifications require a mobile app powered by Rock Mobile." />
             </div>
         </div>
 
