@@ -33,24 +33,62 @@ using Rock.Web.Cache.Entities;
 
 namespace Rock.AI.Agent
 {
+    /// <summary>
+    /// Factory class for constructing and configuring chat agents within the Rock AI framework.
+    /// Handles agent configuration loading, dependency injection, kernel creation,
+    /// and skill/plugin registration for semantic and native AI agent capabilities.
+    /// </summary>
     internal class ChatAgentFactory
     {
+        #region Fields
+
+        /// <summary>
+        /// The service provider used to resolve dependencies for the agent.
+        /// </summary>
         private readonly IServiceProvider _serviceProvider;
 
+        /// <summary>
+        /// The configuration for the agent being built. This contains the agent ID, provider, and any additional settings.
+        /// </summary>
         private readonly AgentConfiguration _agentConfiguration;
 
+        /// <summary>
+        /// The kernel builder used to create the kernel for the agent. This is where the services and plugins are registered.
+        /// </summary>
         private readonly IKernelBuilder _kernelBuilder;
 
+        /// <summary>
+        /// The request context accessor that provides access to the current request context.
+        /// </summary>
         private readonly IRockRequestContextAccessor _requestContextAccessor;
 
+        /// <summary>
+        /// The logger factory used to create loggers for the agent and its components.
+        /// </summary>
         private readonly ILoggerFactory _loggerFactory;
 
+        /// <summary>
+        /// The Rock context factory used to create Rock contexts for database operations.
+        /// </summary>
         private readonly IRockContextFactory _rockContextFactory;
 
+        /// <summary>
+        /// The logger used for logging messages related to the chat agent factory.
+        /// </summary>
         private readonly ILogger _logger;
 
-        internal string ExecuteLavaParameterHint { get; set; } = "A JSON object with the parameters defined in the schema.";
+        #endregion
 
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChatAgentFactory"/> class for internal use,
+        /// primarily used by other constructors to handle shared setup logic.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider used to resolve services.</param>
+        /// <param name="requestContextAccessor">Provides access to the current Rock request context.</param>
+        /// <param name="loggerFactory">The logger factory used to create loggers.</param>
+        /// <param name="rockContextFactory">Factory to create Rock database contexts.</param>
         private ChatAgentFactory( IServiceProvider serviceProvider, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
         {
             _serviceProvider = serviceProvider; ;
@@ -60,6 +98,16 @@ namespace Rock.AI.Agent
             _rockContextFactory = rockContextFactory;
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChatAgentFactory"/> class using an agent ID
+        /// and loads its configuration from the database.
+        /// </summary>
+        /// <param name="agentId">The ID of the agent to load.</param>
+        /// <param name="serviceProvider">The service provider used to resolve services.</param>
+        /// <param name="rockContext">The Rock database context for data access.</param>
+        /// <param name="requestContextAccessor">Provides access to the current Rock request context.</param>
+        /// <param name="loggerFactory">The logger factory used to create loggers.</param>
+        /// <param name="rockContextFactory">Factory to create Rock database contexts.</param>
         public ChatAgentFactory( int agentId, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
             : this( serviceProvider, requestContextAccessor, loggerFactory, rockContextFactory )
         {
@@ -77,6 +125,17 @@ namespace Rock.AI.Agent
             _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
         }
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChatAgentFactory"/> class with a preconfigured agent
+        /// and provider, typically used in testing or custom configurations.
+        /// </summary>
+        /// <param name="provider">The agent provider component used to register chat services.</param>
+        /// <param name="agentConfiguration">The pre-loaded agent configuration.</param>
+        /// <param name="serviceProvider">The service provider used to resolve services.</param>
+        /// <param name="requestContextAccessor">Provides access to the current Rock request context.</param>
+        /// <param name="loggerFactory">The logger factory used to create loggers.</param>
+        /// <param name="rockContextFactory">Factory to create Rock database contexts.</param>
+        /// <param name="configureServices">Optional callback to configure additional kernel services.</param>
         internal ChatAgentFactory( AgentProviderComponent provider, AgentConfiguration agentConfiguration, IServiceProvider serviceProvider, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory, Action<IServiceCollection> configureServices )
             : this( serviceProvider, requestContextAccessor, loggerFactory, rockContextFactory )
         {
@@ -90,7 +149,17 @@ namespace Rock.AI.Agent
             _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
         }
 
-        private static IKernelBuilder CreateKernelBuilder( AgentProviderComponent provider, Action<IServiceCollection> configureServices  )
+        #endregion
+
+        #region Methods
+
+        /// <summary>
+        /// Creates and configures an <see cref="IKernelBuilder"/> using the specified agent provider and optional service configuration.
+        /// </summary>
+        /// <param name="provider">The agent provider used to add chat completion services to the kernel.</param>
+        /// <param name="configureServices">An optional delegate to further configure kernel services.</param>
+        /// <returns>An initialized kernel builder instance.</returns>
+        private static IKernelBuilder CreateKernelBuilder( AgentProviderComponent provider, Action<IServiceCollection> configureServices )
         {
             var kernelBuilder = Kernel.CreateBuilder();
             kernelBuilder.Services.AddSingleton<AgentRequestContext>();
@@ -106,6 +175,10 @@ namespace Rock.AI.Agent
             return kernelBuilder;
         }
 
+        /// <summary>
+        /// Builds and returns an <see cref="IChatAgent"/> instance using the configured kernel and agent configuration.
+        /// </summary>
+        /// <returns>A constructed chat agent instance.</returns>
         public IChatAgent Build()
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
@@ -212,6 +285,11 @@ namespace Rock.AI.Agent
             }
         }
 
+        /// <summary>
+        /// Retrieves a collection of virtual skill functions (semantic or proxy) from a list of agent functions.
+        /// </summary>
+        /// <param name="functions">The collection of agent functions to process.</param>
+        /// <returns>A collection of kernel functions representing the agent's virtual skills.</returns>
         private ICollection<KernelFunction> GetVirtualSkillFunctions( IReadOnlyCollection<AgentFunction> functions )
         {
             var pluginFunctions = new Dictionary<string, KernelFunction>();
@@ -270,11 +348,19 @@ namespace Rock.AI.Agent
             return pluginFunctions.Values;
         }
 
+        /// <summary>
+        /// Retrieves the skill configurations for a given agent from the database.
+        /// </summary>
+        /// <param name="agentId">The ID of the agent to load skills for.</param>
+        /// <param name="rockContext">The database context for data access.</param>
+        /// <returns>A list of skill configurations associated with the agent.</returns>
         private static List<SkillConfiguration> GetSkillConfigurations( int agentId, RockContext rockContext )
         {
             var agent = AIAgentCache.Get( agentId, rockContext );
 
             return agent.GetSkillConfigurations( rockContext );
         }
+
+        #endregion
     }
 }

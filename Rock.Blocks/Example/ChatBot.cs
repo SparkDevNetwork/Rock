@@ -36,18 +36,43 @@ namespace Rock.Blocks.Example
     [Rock.SystemGuid.BlockTypeGuid( "91a66c59-830e-49b5-a196-dcf93d0dde92" )]
     public class ChatBot : RockBlockType
     {
+        #region Fields
+
+        /// <summary>
+        /// The agent builder used to construct chat agent instances for this block.
+        /// </summary>
         private readonly IChatAgentBuilder _agentBuilder;
 
+        #endregion
+
+        #region Keys
+
+        /// <summary>
+        /// Keys for block attributes used in this block.
+        /// </summary>
         private static class AttributeKey
         {
             public const string Agent = "Agent";
         }
 
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChatBot"/> class with the specified agent builder.
+        /// </summary>
+        /// <param name="agentBuilder">The agent builder to use.</param>
         public ChatBot( IChatAgentBuilder agentBuilder )
         {
             _agentBuilder = agentBuilder;
         }
 
+        #endregion
+
+        #region Methods
+
+        /// <inheritdoc />
         public async override Task<object> GetObsidianBlockInitializationAsync()
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
@@ -89,6 +114,11 @@ namespace Rock.Blocks.Example
             };
         }
 
+        /// <summary>
+        /// Retrieves a list of recent chat sessions for the current person and specified agent.
+        /// </summary>
+        /// <param name="agentId">The unique identifier of the agent.</param>
+        /// <returns>A list of recent chat sessions.</returns>
         private List<ChatSessionBag> GetRecentSessions( int agentId )
         {
             return new AIAgentSessionService( RockContext )
@@ -113,6 +143,11 @@ namespace Rock.Blocks.Example
                 .ToList();
         }
 
+        /// <summary>
+        /// Retrieves the list of chat messages for a given chat session.
+        /// </summary>
+        /// <param name="sessionId">The unique identifier of the chat session.</param>
+        /// <returns>A list of chat messages in the session.</returns>
         private List<ChatMessageBag> GetSessionMessages( int sessionId )
         {
             return new AIAgentSessionHistoryService( RockContext )
@@ -131,6 +166,11 @@ namespace Rock.Blocks.Example
                 .ToList();
         }
 
+        /// <summary>
+        /// Retrieves the list of active anchors for a given chat session.
+        /// </summary>
+        /// <param name="sessionId">The unique identifier of the chat session.</param>
+        /// <returns>A list of active anchors in the session.</returns>
         private List<ChatAnchorBag> GetSessionAnchors( int sessionId )
         {
             return new AIAgentSessionAnchorService( RockContext )
@@ -154,6 +194,16 @@ namespace Rock.Blocks.Example
                 .ToList();
         }
 
+        #endregion
+
+        #region Block Actions
+
+        /// <summary>
+        /// Sends a user message to the chat agent for the specified session and returns the assistant's response.
+        /// </summary>
+        /// <param name="message">The message from the user.</param>
+        /// <param name="sessionId">The chat session identifier.</param>
+        /// <returns>A block action result containing the assistant's response message and token usage metrics.</returns>
         [BlockAction]
         public async Task<BlockActionResult> SendMessage( string message, int sessionId )
         {
@@ -182,6 +232,10 @@ namespace Rock.Blocks.Example
             } );
         }
 
+        /// <summary>
+        /// Starts a new chat session with the configured agent.
+        /// </summary>
+        /// <returns>A block action result containing the new session details.</returns>
         [BlockAction]
         public async Task<BlockActionResult> StartNewSession()
         {
@@ -206,6 +260,11 @@ namespace Rock.Blocks.Example
             } );
         }
 
+        /// <summary>
+        /// Loads a specific chat session and returns its messages and anchors if the session belongs to the current person.
+        /// </summary>
+        /// <param name="sessionId">The unique identifier of the session to load.</param>
+        /// <returns>A block action result containing session messages and anchors, or an error if not found.</returns>
         [BlockAction]
         public BlockActionResult LoadSession( int sessionId )
         {
@@ -231,6 +290,11 @@ namespace Rock.Blocks.Example
             } );
         }
 
+        /// <summary>
+        /// Deletes a chat session if it belongs to the current person.
+        /// </summary>
+        /// <param name="sessionId">The unique identifier of the session to delete.</param>
+        /// <returns>A block action result indicating success or failure.</returns>
         [BlockAction]
         public BlockActionResult DeleteSession( int sessionId )
         {
@@ -252,6 +316,13 @@ namespace Rock.Blocks.Example
             return ActionOk();
         }
 
+        /// <summary>
+        /// Creates a context anchor for the specified entity within a chat session.
+        /// </summary>
+        /// <param name="sessionId">The chat session identifier.</param>
+        /// <param name="entityTypeName">The name of the entity type.</param>
+        /// <param name="entityId">The unique identifier of the entity.</param>
+        /// <returns>A block action result containing the updated session anchors.</returns>
         [BlockAction]
         public async Task<BlockActionResult> CreateAnchor( int sessionId, string entityTypeName, int entityId )
         {
@@ -285,6 +356,12 @@ namespace Rock.Blocks.Example
             return ActionOk( GetSessionAnchors( sessionId ) );
         }
 
+        /// <summary>
+        /// Deletes an existing context anchor from a chat session.
+        /// </summary>
+        /// <param name="sessionId">The chat session identifier.</param>
+        /// <param name="entityTypeId">The identifier of the entity type whose anchor should be removed.</param>
+        /// <returns>A block action result indicating success or failure.</returns>
         [BlockAction]
         public async Task<BlockActionResult> DeleteAnchor( int sessionId, int entityTypeId )
         {
@@ -304,35 +381,83 @@ namespace Rock.Blocks.Example
             return ActionOk();
         }
 
+        #endregion
+
+        #region Helper Classes
+
+        /// <summary>
+        /// Represents summary information about a single chat session for display in the chat UI.
+        /// </summary>
         private class ChatSessionBag
         {
+            /// <summary>
+            /// Gets or sets the unique identifier for the chat session.
+            /// </summary>
             public int Id { get; set; }
 
+            /// <summary>
+            /// Gets or sets the date and time of the last message in the session.
+            /// </summary>
             public DateTimeOffset LastMessageDateTime { get; set; }
 
+            /// <summary>
+            /// Gets or sets the display name for the session.
+            /// </summary>
             public string Name { get; set; }
         }
 
+        /// <summary>
+        /// Represents a single chat message in a session, including its role, content, and token usage.
+        /// </summary>
         private class ChatMessageBag
         {
+            /// <summary>
+            /// Gets or sets the role of the message author (e.g., User or Assistant).
+            /// </summary>
             public AuthorRole Role { get; set; }
 
+            /// <summary>
+            /// Gets or sets the message content.
+            /// </summary>
             public string Message { get; set; }
 
+            /// <summary>
+            /// Gets or sets the token count used by this message.
+            /// </summary>
             public int TokenCount { get; set; }
 
+            /// <summary>
+            /// Gets or sets the cumulative token count consumed up to and including this message.
+            /// </summary>
             public int ConsumedTokenCount { get; set; }
         }
 
+        /// <summary>
+        /// Represents a context anchor attached to a chat session, linking it to a specific entity.
+        /// </summary>
         private class ChatAnchorBag
         {
+            /// <summary>
+            /// Gets or sets the unique identifier for the anchor.
+            /// </summary>
             public int Id { get; set; }
 
+            /// <summary>
+            /// Gets or sets the entity type identifier for the anchor.
+            /// </summary>
             public int EntityTypeId { get; set; }
 
+            /// <summary>
+            /// Gets or sets the name of the entity type for the anchor.
+            /// </summary>
             public string EntityTypeName { get; set; }
 
+            /// <summary>
+            /// Gets or sets the display name of the anchor.
+            /// </summary>
             public string Name { get; set; }
         }
+
+        #endregion
     }
 }

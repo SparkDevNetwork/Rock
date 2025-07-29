@@ -23,6 +23,11 @@ using Rock.Enums.Core.AI.Agent;
 
 namespace Rock.AI.Agent
 {
+    /// <summary>
+    /// Represents a function or skill that can be executed by an AI agent within the Rock AI framework.
+    /// Supports native code, Lava templating, and semantic (AI prompt) function types.
+    /// Contains metadata about the function's identity, usage, parameters, role, and execution settings.
+    /// </summary>
     internal class AgentFunction
     {
         /// <summary>

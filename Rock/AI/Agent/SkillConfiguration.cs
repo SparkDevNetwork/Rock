@@ -20,22 +20,54 @@ using System.Collections.Generic;
 
 namespace Rock.AI.Agent
 {
+    /// <summary>
+    /// Represents the configuration for a single agent skill, including its metadata,
+    /// function definitions, and optional native type or settings.
+    /// Used to register both semantic and native skills for an AI agent.
+    /// </summary>
     internal class SkillConfiguration
     {
+        /// <summary>
+        /// Gets the display name of the skill.
+        /// </summary>
         public string Name { get; }
 
+        /// <summary>
+        /// Gets the key identifier for this skill, derived from <see cref="Name"/> with spaces removed.
+        /// </summary>
         public string Key => Name.Replace( " ", string.Empty );
 
+        /// <summary>
+        /// Gets a short usage hint describing the purpose or typical use of this skill.
+        /// </summary>
         public string UsageHint { get; }
 
+        /// <summary>
+        /// Gets the list of function definitions (semantic or native) associated with this skill.
+        /// </summary>
         public List<AgentFunction> Functions { get; } = new List<AgentFunction>();
 
+        /// <summary>
+        /// Gets the native type implementing this skill, if it is a native (code-based) skill.
+        /// </summary>
         public Type NativeType { get; }
 
+        /// <summary>
+        /// Gets the list of disabled function GUIDs for this skill.
+        /// </summary>
         public List<Guid> DisabledFunctions { get; } = new List<Guid>();
 
+        /// <summary>
+        /// Gets a dictionary of configuration values for this skill.
+        /// </summary>
         public Dictionary<string, string> ConfigurationValues { get; } = new Dictionary<string, string>();
 
+        /// <summary>
+        /// Initializes a new <see cref="SkillConfiguration"/> for a semantic skill with the specified metadata and functions.
+        /// </summary>
+        /// <param name="name">The display name of the skill.</param>
+        /// <param name="usageHint">A short usage hint describing the skill's purpose.</param>
+        /// <param name="functions">The list of semantic or native functions defined for this skill.</param>
         public SkillConfiguration( string name, string usageHint, List<AgentFunction> functions )
         {
             Name = name;
@@ -43,6 +75,13 @@ namespace Rock.AI.Agent
             Functions = functions ?? new List<AgentFunction>();
         }
 
+        /// <summary>
+        /// Initializes a new <see cref="SkillConfiguration"/> for a native skill, specifying its type and settings.
+        /// </summary>
+        /// <param name="name">The display name of the skill.</param>
+        /// <param name="usageHint">A short usage hint describing the skill's purpose.</param>
+        /// <param name="nativeType">The <see cref="Type"/> implementing the native skill.</param>
+        /// <param name="agentSkillSettings">The settings used to configure the native skill, including disabled functions and configuration values.</param>
         public SkillConfiguration( string name, string usageHint, Type nativeType, AgentSkillSettings agentSkillSettings )
         {
             Name = name;

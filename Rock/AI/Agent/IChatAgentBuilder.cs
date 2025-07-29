@@ -19,8 +19,16 @@ using Rock.Data;
 
 namespace Rock.AI.Agent
 {
+    /// <summary>
+    /// Defines a builder for constructing <see cref="IChatAgent"/> instances for a given agent ID.
+    /// </summary>
     public interface IChatAgentBuilder
     {
+        /// <summary>
+        /// Builds and returns an <see cref="IChatAgent"/> instance for the specified agent ID.
+        /// </summary>
+        /// <param name="agentId">The unique identifier of the agent to build.</param>
+        /// <returns>An initialized chat agent instance.</returns>
         IChatAgent Build( int agentId );
     }
 }

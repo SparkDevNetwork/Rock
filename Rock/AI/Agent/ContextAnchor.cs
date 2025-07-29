@@ -17,14 +17,30 @@
 
 namespace Rock.AI.Agent
 {
+    /// <summary>
+    /// Represents a reference (anchor) to a specific entity instance within a chat or AI agent context.
+    /// Used to provide contextual grounding for agent responses, such as linking to people, groups, or other entities.
+    /// </summary>
     public class ContextAnchor
     {
+        /// <summary>
+        /// Gets or sets the entity type identifier (e.g., Person, Group, etc.).
+        /// </summary>
         public int EntityTypeId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the name of the entity type (for example, "Person" or "Group").
+        /// </summary>
         public string EntityTypeName { get; set; }
 
+        /// <summary>
+        /// Gets or sets the unique identifier for the entity instance.
+        /// </summary>
         public int EntityId { get; set; }
 
+        /// <summary>
+        /// Gets or sets a display name for this anchor, often the entity's name or description.
+        /// </summary>
         public string Name { get; set; }
     }
 }

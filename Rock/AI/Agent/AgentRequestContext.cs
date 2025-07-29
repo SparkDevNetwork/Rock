@@ -81,6 +81,9 @@ namespace Rock.AI.Agent
 
         #region Methods
 
+        /// <summary>
+        /// Clears all system messages, context anchors, chat messages, and cached chat history from the context.
+        /// </summary>
         internal void Clear()
         {
             _systemMessages.Clear();
@@ -89,36 +92,62 @@ namespace Rock.AI.Agent
             _chatHistory = null;
         }
 
+        /// <summary>
+        /// Adds a new system message to the chat context.
+        /// </summary>
+        /// <param name="message">The message to add as a system message.</param>
         internal void AddSystemMessage( string message )
         {
             _systemMessages.Add( new ChatMessageContent( AuthorRole.System, message ) );
             _chatHistory = null;
         }
 
+        /// <summary>
+        /// Adds a new user message to the chat context.
+        /// </summary>
+        /// <param name="message">The message to add as a user message.</param>
         internal void AddUserMessage( string message )
         {
             _chatMessages.Add( new ChatMessageContent( AuthorRole.User, message ) );
             _chatHistory = null;
         }
 
+        /// <summary>
+        /// Adds a new assistant message to the chat context.
+        /// </summary>
+        /// <param name="message">The message to add as an assistant message.</param>
         internal void AddAssistantMessage( string message )
         {
             _chatMessages.Add( new ChatMessageContent( AuthorRole.Assistant, message ) );
             _chatHistory = null;
         }
 
+        /// <summary>
+        /// Adds or replaces a context anchor for the specified entity type in the chat context.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
+        /// <param name="payload">The context anchor payload to associate with the entity type.</param>
         internal void AddAnchor( int entityTypeId, string payload )
         {
             _contextAnchors[entityTypeId] = payload;
             _chatHistory = null;
         }
 
+        /// <summary>
+        /// Removes a context anchor for the specified entity type from the chat context.
+        /// </summary>
+        /// <param name="entityTypeId">The entity type identifier.</param>
         internal void RemoveAnchor( int entityTypeId )
         {
             _contextAnchors.Remove( entityTypeId );
             _chatHistory = null;
         }
 
+        /// <summary>
+        /// Adds session context data to the chat context, unless it is marked as internal.
+        /// </summary>
+        /// <param name="key">The key to associate with the session context.</param>
+        /// <param name="context">The session context data to add.</param>
         internal void AddSessionContext( string key, SessionContext context )
         {
             if ( context.IsInternal )
@@ -130,6 +159,11 @@ namespace Rock.AI.Agent
             _chatHistory = null;
         }
 
+        /// <summary>
+        /// Retrieves the session context data associated with the given key, if present.
+        /// </summary>
+        /// <param name="key">The key of the session context to retrieve.</param>
+        /// <returns>The session context if found; otherwise, null.</returns>
         internal SessionContext GetSessionContext( string key )
         {
             if ( _sessionContext.TryGetValue( key, out var context ) )
@@ -140,12 +174,20 @@ namespace Rock.AI.Agent
             return null;
         }
 
+        /// <summary>
+        /// Removes the session context data associated with the given key from the chat context.
+        /// </summary>
+        /// <param name="key">The key of the session context to remove.</param>
         internal void RemoveSessionContext( string key )
         {
             _sessionContext.Remove( key );
             _chatHistory = null;
         }
 
+        /// <summary>
+        /// Gets the full chat history for the current context, including system messages, context anchors, session contexts, and chat messages.
+        /// </summary>
+        /// <returns>The aggregated chat history object.</returns>
         internal ChatHistory GetChatHistory()
         {
             if ( _chatHistory == null )
