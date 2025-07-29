@@ -291,6 +291,40 @@ namespace Rock.Blocks.Example
         }
 
         /// <summary>
+        /// Clears a chat session of all chat history.
+        /// </summary>
+        /// <param name="sessionId">The unique identifier of the session to clear.</param>
+        /// <returns>A block action result indicating success or failure.</returns>
+        [BlockAction]
+        public BlockActionResult ClearSession( int sessionId )
+        {
+            var sessionService = new AIAgentSessionService( RockContext );
+            var session = sessionService
+                .Queryable()
+                .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                    && s.Id == sessionId )
+                .FirstOrDefault();
+
+            if ( session == null )
+            {
+                return ActionBadRequest( "Session not found." );
+            }
+
+            var sessionHistoryService = new AIAgentSessionHistoryService( RockContext );
+            var messages = sessionHistoryService
+                .Queryable()
+                .Where( h => h.AIAgentSessionId == sessionId )
+                .ToList();
+
+            sessionHistoryService.DeleteRange( messages );
+            session.ClearSessionContext();
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        /// <summary>
         /// Deletes a chat session if it belongs to the current person.
         /// </summary>
         /// <param name="sessionId">The unique identifier of the session to delete.</param>

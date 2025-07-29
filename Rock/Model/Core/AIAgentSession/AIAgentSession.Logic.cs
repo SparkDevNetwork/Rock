@@ -121,6 +121,23 @@ namespace Rock.Model
             this.SetAdditionalSettings( typeof( SessionContext ).Name, _sessionContextData );
         }
 
+        /// <summary>
+        /// Clear all session context data for the session. This will update
+        /// the value, but it won't be persisted to the database until you call
+        /// SaveChanges.
+        /// </summary>
+        internal void ClearSessionContext()
+        {
+            if ( _sessionContextData == null )
+            {
+                LoadSessionContextData();
+            }
+
+            _sessionContextData.Clear();
+
+            this.SetAdditionalSettings( typeof( SessionContext ).Name, _sessionContextData );
+        }
+
         #endregion
     }
 }

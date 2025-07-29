@@ -52,12 +52,22 @@
                 </div>
             </div>
 
-            <div>
+            <div class="action-bar">
                 <TextBox v-model="message"
                          placeholder="Type your message here..."
                          @keyup.enter="onSubmit">
                     <template #inputGroupAppend>
                         <span class="input-group-btn">
+                            <button class="btn btn-default dropup"
+                                    data-toggle="dropdown"
+                                    :class="{ 'open': isActionMenuOpen }">
+                                <i class="ti ti-dots-vertical" style="font-size: initial;"></i>
+                                <ul class="dropdown-menu dropdown-menu-right">
+                                    <li>
+                                        <a href="#" @click.prevent="onClearMessages">Clear Messages</a>
+                                    </li>
+                                </ul>
+                            </button>
                             <button class="btn btn-primary"
                                     :disabled="isSendDisabled"
                                     @click.prevent="onSubmit">Send</button>
@@ -212,6 +222,11 @@
     padding-top: 2px;
     cursor: pointer;
 }
+
+/* Hack to make the bootstrap dropdown menu work with incorrect DOM structure */
+.action-bar .input-group-btn.open .dropdown-menu {
+    display: block;
+}
 </style>
 
 <script setup lang="ts">
@@ -283,6 +298,8 @@
     const sessions = reactive(config.sessions ?? []);
     const anchors = reactive(config.anchors ?? []);
     const sessionId = ref(config.sessionId ?? 0);
+
+    const isActionMenuOpen = ref(false);
 
     const isSendDisabled = computed((): boolean => {
         return isSending.value || !message.value;
@@ -471,6 +488,21 @@
         }
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete session.");
+        }
+    }
+
+    async function onClearMessages(): Promise<void> {
+        if (!await confirm("Are you sure you want to clear all messages?")) {
+            return;
+        }
+
+        const result = await invokeBlockAction("ClearSession", { sessionId: sessionId.value });
+
+        if (result.isSuccess) {
+            messages.splice(0, messages.length);
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to clear chat history.");
         }
     }
 
