@@ -33,7 +33,19 @@ export const ParameterSchemaDataType = {
     Number: 1,
 
     /** The parameter is defined as a boolean type. */
-    Boolean: 2
+    Boolean: 2,
+
+    /**
+     * The parameter is defined as a Date type. This will be represented
+     * as a DateTime value in Lava if possible, otherwise as a string.
+     */
+    Date: 3,
+
+    /**
+     * The parameter is defined as a DateTime type. This will be represented
+     * as a DateTime value in Lava if possible, otherwise as a string.
+     */
+    DateTime: 4
 } as const;
 
 /** The data type of a parameter to use in a JSON schema. */
@@ -42,7 +54,11 @@ export const ParameterSchemaDataTypeDescription: Record<number, string> = {
 
     1: "Number",
 
-    2: "Boolean"
+    2: "Boolean",
+
+    3: "Date",
+
+    4: "Date Time"
 };
 
 /** The data type of a parameter to use in a JSON schema. */

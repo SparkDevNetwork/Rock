@@ -285,6 +285,62 @@ public class ProxyFunctionTests
     }
 
     [TestMethod]
+    public void ConvertValueToType_NullAsDate_ReturnsNull()
+    {
+        var result = ProxyFunction.ConvertValueToType( null, ParameterSchemaDataType.Date );
+
+        Assert.IsNull( result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_ValidDateAsDate_ReturnsDateTime()
+    {
+        var expectedValue = new DateTime( 2025, 7, 30 );
+
+        var result = ProxyFunction.ConvertValueToType( "2025-07-30", ParameterSchemaDataType.Date );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_InvalidDateAsDate_ReturnsString()
+    {
+        var expectedValue = "today";
+
+        var result = ProxyFunction.ConvertValueToType( "today", ParameterSchemaDataType.Date );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_NullAsDateTime_ReturnsNull()
+    {
+        var result = ProxyFunction.ConvertValueToType( null, ParameterSchemaDataType.DateTime );
+
+        Assert.IsNull( result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_ValidDateAsDateTime_ReturnsDateTime()
+    {
+        var expectedValue = new DateTime( 2025, 7, 30, 18, 23, 12 );
+
+        var result = ProxyFunction.ConvertValueToType( "2025-07-30T18:23:12", ParameterSchemaDataType.DateTime );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
+    public void ConvertValueToType_InvalidDateAsDateTime_ReturnsString()
+    {
+        var expectedValue = "today at noon";
+
+        var result = ProxyFunction.ConvertValueToType( "today at noon", ParameterSchemaDataType.DateTime );
+
+        Assert.AreEqual( expectedValue, result );
+    }
+
+    [TestMethod]
     public void ConvertValueToType_StringAsUnknown_ReturnsNull()
     {
         var result = ProxyFunction.ConvertValueToType( "Hello World!", ( ParameterSchemaDataType ) 999 );

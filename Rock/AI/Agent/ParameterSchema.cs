@@ -38,6 +38,13 @@ namespace Rock.AI.Agent
         /// </summary>
         private KernelParameterMetadata _metadata;
 
+        /// <summary>
+        /// The text that will be appended to the usage hint for a collection.
+        /// This helps the LLM understand that multiple value sshould be passed
+        /// in a single call instead of making multiple calls.
+        /// </summary>
+        internal const string CollectionUsageHint = " CRITICAL: If multiple values are to be used, then they must all be passed in a single function call. Never call this function twice because of multiple values.";
+
         #endregion
 
         #region Properties
@@ -87,7 +94,9 @@ namespace Rock.AI.Agent
         private KernelJsonSchema GetSchemaJson()
         {
             var json = new JsonObject();
+            JsonObject typeDefinition;
             var type = GetDataTypeName();
+            var format = GetDataFormatName();
             JsonArray enumValues = null;
 
             if ( AllowedValues != null && AllowedValues.Count > 0 )
@@ -102,36 +111,36 @@ namespace Rock.AI.Agent
 
             if ( IsCollection )
             {
+                typeDefinition = new JsonObject();
+
                 json["type"] = "array";
-                var itemsObject = new JsonObject
-                {
-                    ["type"] = type
-                };
-
-                if ( enumValues != null )
-                {
-                    itemsObject["enum"] = enumValues;
-                }
-
-                json["items"] = itemsObject;
+                json["items"] = typeDefinition;
 
                 if ( UsageHint.IsNotNullOrWhiteSpace() )
                 {
-                    json["description"] = UsageHint + " CRITICAL: If multiple values are to be used, then they must all be passed in a single function call. Never call this function twice because of multiple values.";
+                    json["description"] = UsageHint + CollectionUsageHint;
                 }
             }
             else
             {
-                json["type"] = type;
-                if ( enumValues != null )
-                {
-                    json["enum"] = enumValues;
-                }
+                typeDefinition = json;
 
                 if ( UsageHint.IsNotNullOrWhiteSpace() )
                 {
                     json["description"] = UsageHint;
                 }
+            }
+
+            typeDefinition["type"] = type;
+
+            if ( enumValues != null )
+            {
+                typeDefinition["enum"] = enumValues;
+            }
+
+            if ( format != null )
+            {
+                typeDefinition["format"] = format;
             }
 
             return KernelJsonSchema.Parse( JsonSerializer.SerializeToElement( json ).GetRawText() );
@@ -146,9 +155,6 @@ namespace Rock.AI.Agent
         {
             switch ( DataType )
             {
-                case ParameterSchemaDataType.String:
-                    return "string";
-
                 case ParameterSchemaDataType.Number:
                     return "number";
 
@@ -157,6 +163,26 @@ namespace Rock.AI.Agent
 
                 default:
                     return "string";
+            }
+        }
+
+        /// <summary>
+        /// Gets the JSON Schema data format name that corresponds to the specified
+        /// <see cref="DataType"/>.
+        /// </summary>
+        /// <returns>The JSON schema format name to use for the data type.</returns>
+        private string GetDataFormatName()
+        {
+            switch ( DataType )
+            {
+                case ParameterSchemaDataType.Date:
+                    return "date";
+
+                case ParameterSchemaDataType.DateTime:
+                    return "date-time";
+
+                default:
+                    return null;
             }
         }
 

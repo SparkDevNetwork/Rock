@@ -528,7 +528,7 @@
         const functionCalls = logs
             .map(log => functionInvokingRegExp.exec(log.message ?? ""))
             .filter(m => !!m)
-            .map(m => m[1]);
+            .map(m => m![1]);
 
         if (!functionCalls || functionCalls.length === 0) {
             return [];

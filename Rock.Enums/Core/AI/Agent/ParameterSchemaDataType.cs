@@ -37,5 +37,17 @@ namespace Rock.Enums.Core.AI.Agent
         /// The parameter is defined as a boolean type.
         /// </summary>
         Boolean = 2,
+
+        /// <summary>
+        /// The parameter is defined as a Date type. This will be represented
+        /// as a DateTime value in Lava if possible, otherwise as a string.
+        /// </summary>
+        Date = 3,
+
+        /// <summary>
+        /// The parameter is defined as a DateTime type. This will be represented
+        /// as a DateTime value in Lava if possible, otherwise as a string.
+        /// </summary>
+        DateTime = 4,
     }
 }

@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using System;
 using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
@@ -155,13 +156,29 @@ namespace Rock.AI.Agent
                 {
                     return null;
                 }
-                else if ( value.GetType() == typeof(bool))
+                else if ( value.GetType() == typeof( bool ) )
                 {
                     return ( bool ) value;
                 }
                 else
                 {
                     return value.ToString().AsBoolean();
+                }
+            }
+            else if ( dataType == ParameterSchemaDataType.Date || dataType == ParameterSchemaDataType.DateTime )
+            {
+                if ( value == null )
+                {
+                    return null;
+                }
+
+                if ( DateTime.TryParse( value.ToString(), out var dateTime ) )
+                {
+                    return dateTime;
+                }
+                else
+                {
+                    return value?.ToString();
                 }
             }
             else
