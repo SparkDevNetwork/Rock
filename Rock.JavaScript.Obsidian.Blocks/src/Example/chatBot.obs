@@ -59,6 +59,7 @@
                     <template #inputGroupAppend>
                         <span class="input-group-btn">
                             <button class="btn btn-default dropup"
+                                    type="button"
                                     data-toggle="dropdown"
                                     :class="{ 'open': isActionMenuOpen }">
                                 <i class="ti ti-dots-vertical" style="font-size: initial;"></i>
@@ -69,6 +70,7 @@
                                 </ul>
                             </button>
                             <button class="btn btn-primary"
+                                    type="button"
                                     :disabled="isSendDisabled"
                                     @click.prevent="onSubmit">Send</button>
                         </span>
