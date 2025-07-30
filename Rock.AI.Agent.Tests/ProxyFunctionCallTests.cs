@@ -70,7 +70,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
         var (chat, output, logs) = ConfigureChatAgent( seed, function );
 
         await chat.AddMessageAsync( AuthorRole.User, prompt );
-        _ = await chat.GetChatMessageContentAsync();
+        _ = await chat.GetChatMessageResponseAsync();
 
         // That no function calls failed and that we had one succeed.
         Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
@@ -144,7 +144,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
         var (chat, output, logs) = ConfigureChatAgent( seed, function );
 
         await chat.AddMessageAsync( AuthorRole.User, prompt );
-        _ = await chat.GetChatMessageContentAsync();
+        _ = await chat.GetChatMessageResponseAsync();
 
         // That no function calls failed and that we had one succeed.
         Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
@@ -228,7 +228,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
         var (chat, output, logs) = ConfigureChatAgent( seed, function );
 
         await chat.AddMessageAsync( AuthorRole.User, prompt );
-        _ = await chat.GetChatMessageContentAsync();
+        _ = await chat.GetChatMessageResponseAsync();
 
         // That no function calls failed and that we had one succeed.
         Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );
@@ -313,7 +313,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
         var (chat, output, logs) = ConfigureChatAgent( seed, function );
 
         await chat.AddMessageAsync( AuthorRole.User, prompt );
-        _ = await chat.GetChatMessageContentAsync();
+        _ = await chat.GetChatMessageResponseAsync();
 
         // That no function calls failed and that we had one succeed.
         Assert.That.AreEqual( 0, logs.Count( l => l.Contains( "Function Test-Search failed." ) ), "Function call failed." );

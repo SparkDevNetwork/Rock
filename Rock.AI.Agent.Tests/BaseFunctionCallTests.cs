@@ -113,7 +113,8 @@ public abstract class BaseFunctionCallTests : MockDatabaseTestsBase
             sc =>
             {
                 sc.AddSingleton<ILoggerFactory>( loggerFactory );
-            } );
+            },
+            new ChatAgentOptions() );
 
         var chat = factory.Build();
 
