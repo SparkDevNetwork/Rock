@@ -127,7 +127,7 @@ namespace Rock.AI.Agent
             var agent = AIAgentCache.Get( agentId, rockContext );
             var settings = agent.GetAdditionalSettings<AgentSettings>();
 
-            _agentConfiguration = new AgentConfiguration( agentId, provider, string.Empty, settings, GetSkillConfigurations( agentId, rockContext ) );
+            _agentConfiguration = new AgentConfiguration( agentId, provider, agent.Persona, settings, GetSkillConfigurations( agentId, rockContext ) );
             sw.Stop();
 
             _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
@@ -213,7 +213,7 @@ namespace Rock.AI.Agent
         private void LoadPluginsForAgent( Kernel kernel )
         {
             LoadNativeSkills( kernel.Plugins, kernel.Services, _serviceProvider );
-            LoadVirtualSkills( kernel.Plugins );
+            LoadVirtualSkills( kernel.Plugins, kernel.Services );
         }
 
         /// <summary>
@@ -260,7 +260,7 @@ namespace Rock.AI.Agent
                 }
 
                 // Register dynamic functions
-                var virtualFunctions = GetVirtualSkillFunctions( skill.GetSemanticFunctions() );
+                var virtualFunctions = GetVirtualSkillFunctions( skill.GetSemanticFunctions(), kernelServiceProvider );
                 pluginFunctions.AddRange( virtualFunctions );
 
                 if ( pluginFunctions.Count == 0 )
@@ -281,11 +281,11 @@ namespace Rock.AI.Agent
         /// Loads the virtual skills. These are skills that are not native to the system but are defined in the database.
         /// </summary>
         /// <param name="kernel"></param>
-        private void LoadVirtualSkills( KernelPluginCollection pluginCollection )
+        private void LoadVirtualSkills( KernelPluginCollection pluginCollection, IServiceProvider kernelServiceProvider )
         {
             foreach ( var skill in _agentConfiguration.Skills )
             {
-                var pluginFunctions = GetVirtualSkillFunctions( skill.Functions );
+                var pluginFunctions = GetVirtualSkillFunctions( skill.Functions, kernelServiceProvider );
 
                 if ( pluginFunctions.Count > 0 )
                 {
@@ -300,10 +300,10 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="functions">The collection of agent functions to process.</param>
         /// <returns>A collection of kernel functions representing the agent's virtual skills.</returns>
-        private ICollection<KernelFunction> GetVirtualSkillFunctions( IReadOnlyCollection<AgentFunction> functions )
+        private ICollection<KernelFunction> GetVirtualSkillFunctions( IReadOnlyCollection<AgentFunction> functions, IServiceProvider kernelServiceProvider )
         {
             var pluginFunctions = new Dictionary<string, KernelFunction>();
-
+            var x = 1;
             if ( functions == null )
             {
                 return Array.Empty<KernelFunction>();
@@ -337,12 +337,12 @@ namespace Rock.AI.Agent
                 else if ( function.FunctionType == FunctionType.ExecuteLava )
                 {
                     var parameters = function.Parameters.Select( p => p.GetKernelParameterMetadata() ).ToList();
+                    var proxySkill = new ProxyFunction( kernelServiceProvider.GetRequiredService<AgentRequestContext>(), requestContext );
 
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
                         ( Func<Kernel, KernelArguments, string> ) ( ( Kernel kernel, KernelArguments args ) =>
                         {
                             // Create a ProxyFunction instance that will be used to run the function.
-                            var proxySkill = new ProxyFunction( kernel.Services.GetRequiredService<AgentRequestContext>(), requestContext );
                             return proxySkill.ExecuteLava( function, args );
                         } ),
                         functionName: function.Key,
