@@ -22,6 +22,7 @@ using System.Threading.Tasks;
 
 using Microsoft.Extensions.AI;
 using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
@@ -98,6 +99,12 @@ namespace Rock.AI.Agent
         private readonly Lazy<TiktokenTokenizer> _tokenizer = new Lazy<TiktokenTokenizer>( CreateTokenizer );
 
         /// <summary>
+        /// The options for the chat agent. This is used to configure various
+        /// aspects of the agent's behavior.
+        /// </summary>
+        private readonly ChatAgentOptions _options;
+
+        /// <summary>
         /// Indicates whether the chat history needs to be summarized before
         /// sending a new message to the language model.
         /// </summary>
@@ -121,12 +128,14 @@ namespace Rock.AI.Agent
         /// <param name="agentConfiguration">The configuration data for the agent.</param>
         /// <param name="rockContextFactory">The factory used when creating new <see cref="RockContext"/> objects.</param>
         /// <param name="rockRequestContextAccessor">The object that will provide the current <see cref="RockRequestContext"/> associated with the current request.</param>
-        public ChatAgent( Kernel kernel, AgentConfiguration agentConfiguration, IRockContextFactory rockContextFactory, IRockRequestContextAccessor rockRequestContextAccessor )
+        /// <param name="options">The options for the chat agent. This is used to configure various aspects of the agent's behavior.</param>
+        public ChatAgent( Kernel kernel, AgentConfiguration agentConfiguration, IRockContextFactory rockContextFactory, IRockRequestContextAccessor rockRequestContextAccessor, ChatAgentOptions options )
         {
             _kernel = kernel;
             _agentConfiguration = agentConfiguration;
             _rockContextFactory = rockContextFactory;
             _requestContext = rockRequestContextAccessor.RockRequestContext;
+            _options = options ?? throw new ArgumentNullException( nameof( options ) );
 
             _context = kernel.Services.GetRequiredService<AgentRequestContext>();
             _context.AgentId = _agentConfiguration.AgentId;
@@ -492,7 +501,7 @@ namespace Rock.AI.Agent
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageContent> GetChatMessageContentAsync()
+        public async Task<ChatMessageResponse> GetChatMessageResponseAsync()
         {
             var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
 
@@ -505,22 +514,29 @@ namespace Rock.AI.Agent
 
             await AddMessageAsync( AuthorRole.Assistant, result.Content, usage?.OutputTokenCount ?? CountTokens( result.Content ), usage?.TotalTokenCount ?? 0 );
 
-            return result;
+            return new ChatMessageResponse( result, usage, GetChatDebug() );
         }
 
-        //async internal Task<ChatMessageContent> GetChatMessageContentAsync( ChatHistory chatHistory, PromptExecutionSettings executionSettings )
-        //{
-        //    var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
-
-        //    var result = await chat.GetChatMessageContentAsync( chatHistory, executionSettings, _kernel );
-
-        //    return result;
-        //}
-
         /// <inheritdoc/>
-        public UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
+        private UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
         {
             return _agentConfiguration.Provider.GetMetricUsageFromResult( result );
+        }
+
+        /// <summary>
+        /// Gets the debug information for the currently executing request.
+        /// </summary>
+        /// <returns>An instance of <see cref="ChatMessageDebug"/>.</returns>
+        private ChatMessageDebug GetChatDebug()
+        {
+            var debug = new ChatMessageDebug();
+
+            if ( _kernel.Services.GetService<ILoggerFactory>() is ChatAgentDebugLoggerFactory debugLoggerFactory )
+            {
+                debug.Logs = debugLoggerFactory.GetLogs();
+            }
+
+            return debug;
         }
 
         /// <summary>

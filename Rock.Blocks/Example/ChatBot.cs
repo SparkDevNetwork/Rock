@@ -205,7 +205,7 @@ namespace Rock.Blocks.Example
         /// <param name="sessionId">The chat session identifier.</param>
         /// <returns>A block action result containing the assistant's response message and token usage metrics.</returns>
         [BlockAction]
-        public async Task<BlockActionResult> SendMessage( string message, int sessionId )
+        public async Task<BlockActionResult> SendMessage( SendMessageRequestBag request )
         {
             var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
             var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
@@ -215,21 +215,43 @@ namespace Rock.Blocks.Example
                 return ActionBadRequest( "No agent has been configured." );
             }
 
-            var agent = _agentBuilder.Build( agentCache.Id );
+            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
+            {
+                IsDebugEnabled = request.IsDebugEnabled
+            } );
 
-            await agent.LoadSessionAsync( sessionId );
-            await agent.AddMessageAsync( AuthorRole.User, message );
+            await agent.LoadSessionAsync( request.SessionId );
+            await agent.AddMessageAsync( AuthorRole.User, request.Message );
 
-            var result = await agent.GetChatMessageContentAsync();
-            var usage = agent.GetMetricUsageFromResult( result );
+            var response = await agent.GetChatMessageResponseAsync();
 
-            return ActionOk( new ChatMessageBag
+            var messageBag = new ChatMessageBag
             {
                 Role = AuthorRole.Assistant,
-                Message = result.Content,
-                TokenCount = usage.OutputTokenCount,
-                ConsumedTokenCount = usage.TotalTokenCount
-            } );
+                Message = response.Content,
+                TokenCount = response.Usage.OutputTokenCount,
+                ConsumedTokenCount = response.Usage.TotalTokenCount
+            };
+
+            var responseBag = new SendMessageResponseBag
+            {
+                Message = messageBag
+            };
+
+            if ( request.IsDebugEnabled )
+            {
+                responseBag.Logs = response.Debug
+                    ?.Logs
+                    ?.Select( l => new ChatLogBag
+                    {
+                        Category = l.Category,
+                        LogLevel = ( int ) l.LogLevel,
+                        LogLevelName = l.LogLevel.ToString(),
+                        Message = l.Message
+                    } ).ToList();
+            }
+
+            return ActionOk( responseBag );
         }
 
         /// <summary>
@@ -464,6 +486,54 @@ namespace Rock.Blocks.Example
             /// Gets or sets the cumulative token count consumed up to and including this message.
             /// </summary>
             public int ConsumedTokenCount { get; set; }
+        }
+
+        private class ChatLogBag
+        {
+            public string Category { get; set; }
+
+            public int LogLevel { get; set; }
+
+            public string LogLevelName { get; set; }
+
+            public string Message { get; set; }
+        }
+
+        /// <summary>
+        /// Represents a request to send a message to the chat agent.
+        /// </summary>
+        public class SendMessageRequestBag
+        {
+            /// <summary>
+            /// Gets or sets the message to send to the chat agent.
+            /// </summary>
+            public string Message { get; set; }
+
+            /// <summary>
+            /// Gets or sets the identifier of the chat session.
+            /// </summary>
+            public int SessionId { get; set; }
+
+            /// <summary>
+            /// Requests that additional debug information be included in the response.
+            /// </summary>
+            public bool IsDebugEnabled { get; set; }
+        }
+
+        /// <summary>
+        /// Represents the response from sending a message to the chat agent.
+        /// </summary>
+        private class SendMessageResponseBag
+        {
+            /// <summary>
+            /// The response message from the chat agent.
+            /// </summary>
+            public ChatMessageBag Message { get; set; }
+
+            /// <summary>
+            /// The debug logs that were collected during processing.
+            /// </summary>
+            public List<ChatLogBag> Logs { get; set; }
         }
 
         /// <summary>

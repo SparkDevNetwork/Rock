@@ -15,26 +15,27 @@
 // </copyright>
 //
 
+using Rock.Attribute;
+
 namespace Rock.AI.Agent
 {
     /// <summary>
-    /// <para>
-    /// Defines a builder for constructing <see cref="IChatAgent"/> instances
-    /// for a given agent identifier.
-    /// </para>
-    /// <para>
-    /// This should not be inherited by plugins as additional methods and
-    /// properties may be added in the future.
-    /// </para>
+    /// Extension methods for <see cref="IChatAgentBuilder"/>. These provide
+    /// additional convenience methods that build on the core methods provided
+    /// by the interface.
     /// </summary>
-    public interface IChatAgentBuilder
+    [RockInternal( "18.0" )]
+    public static class IChatAgentBuilderExtensions
     {
         /// <summary>
         /// Builds and returns an <see cref="IChatAgent"/> instance for the specified agent ID.
         /// </summary>
+        /// <param name="builder">The chat agent builder instance.</param>
         /// <param name="agentId">The unique identifier of the agent to build.</param>
-        /// <param name="options">The options that describe how the chat agent should be constructed.</param>
         /// <returns>An initialized chat agent instance.</returns>
-        IChatAgent Build( int agentId, ChatAgentOptions options );
+        public static IChatAgent Build( this IChatAgentBuilder builder, int agentId )
+        {
+            return builder.Build( agentId, new ChatAgentOptions() );
+        }
     }
 }

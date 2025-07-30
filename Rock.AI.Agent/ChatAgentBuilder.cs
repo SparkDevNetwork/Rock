@@ -25,23 +25,36 @@ using Rock.Net;
 
 namespace Rock.AI.Agent
 {
+    /// <summary>
+    /// Provides functionality to build instances of <see cref="IChatAgent"/>.
+    /// </summary>
     internal class ChatAgentBuilder : IChatAgentBuilder
     {
         private readonly IServiceProvider _serviceProvider;
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="ChatAgentBuilder"/> class.
+        /// </summary>
+        /// <param name="serviceProvider">The service provider used to resolve dependencies for the chat agent.</param>
         public ChatAgentBuilder( IServiceProvider serviceProvider )
         {
             _serviceProvider = serviceProvider;
         }
 
-        public IChatAgent Build( int agentId )
+        /// <inheritdoc/>
+        public IChatAgent Build( int agentId, ChatAgentOptions options )
         {
             var rockContext = _serviceProvider.GetRequiredService<RockContext>();
             var requestContextAccessor = _serviceProvider.GetRequiredService<IRockRequestContextAccessor>();
             var loggerFactory = _serviceProvider.GetRequiredService<ILoggerFactory>();
             var rockContextFactory = _serviceProvider.GetRequiredService<IRockContextFactory>();
 
-            var factory = new ChatAgentFactory( agentId, _serviceProvider, rockContext, requestContextAccessor, loggerFactory, rockContextFactory  );
+            if ( options.IsDebugEnabled )
+            {
+                loggerFactory = new ChatAgentDebugLoggerFactory( loggerFactory );
+            }
+
+            var factory = new ChatAgentFactory( agentId, _serviceProvider, rockContext, requestContextAccessor, loggerFactory, rockContextFactory, options  );
 
             return factory.Build();
         }

@@ -73,6 +73,11 @@ namespace Rock.AI.Agent
         private readonly IRockContextFactory _rockContextFactory;
 
         /// <summary>
+        /// The options for configuring the chat agent, such as debug settings and other behaviors.
+        /// </summary>
+        private readonly ChatAgentOptions _options;
+
+        /// <summary>
         /// The logger used for logging messages related to the chat agent factory.
         /// </summary>
         private readonly ILogger _logger;
@@ -89,13 +94,15 @@ namespace Rock.AI.Agent
         /// <param name="requestContextAccessor">Provides access to the current Rock request context.</param>
         /// <param name="loggerFactory">The logger factory used to create loggers.</param>
         /// <param name="rockContextFactory">Factory to create Rock database contexts.</param>
-        private ChatAgentFactory( IServiceProvider serviceProvider, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
+        /// <param name="options">Options for configuring the chat agent, such as debug settings.</param>
+        private ChatAgentFactory( IServiceProvider serviceProvider, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory, ChatAgentOptions options )
         {
             _serviceProvider = serviceProvider; ;
             _requestContextAccessor = requestContextAccessor;
             _loggerFactory = loggerFactory;
             _logger = loggerFactory.CreateLogger<ChatAgentFactory>();
             _rockContextFactory = rockContextFactory;
+            _options = options ?? throw new ArgumentNullException( nameof( options ) );
         }
 
         /// <summary>
@@ -108,8 +115,9 @@ namespace Rock.AI.Agent
         /// <param name="requestContextAccessor">Provides access to the current Rock request context.</param>
         /// <param name="loggerFactory">The logger factory used to create loggers.</param>
         /// <param name="rockContextFactory">Factory to create Rock database contexts.</param>
-        public ChatAgentFactory( int agentId, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory )
-            : this( serviceProvider, requestContextAccessor, loggerFactory, rockContextFactory )
+        /// <param name="options">Options for configuring the chat agent, such as debug settings.</param>
+        public ChatAgentFactory( int agentId, IServiceProvider serviceProvider, RockContext rockContext, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory, ChatAgentOptions options )
+            : this( serviceProvider, requestContextAccessor, loggerFactory, rockContextFactory, options )
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
@@ -136,8 +144,9 @@ namespace Rock.AI.Agent
         /// <param name="loggerFactory">The logger factory used to create loggers.</param>
         /// <param name="rockContextFactory">Factory to create Rock database contexts.</param>
         /// <param name="configureServices">Optional callback to configure additional kernel services.</param>
-        internal ChatAgentFactory( AgentProviderComponent provider, AgentConfiguration agentConfiguration, IServiceProvider serviceProvider, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory, Action<IServiceCollection> configureServices )
-            : this( serviceProvider, requestContextAccessor, loggerFactory, rockContextFactory )
+        /// <param name="options">Options for configuring the chat agent, such as debug settings.</param>
+        internal ChatAgentFactory( AgentProviderComponent provider, AgentConfiguration agentConfiguration, IServiceProvider serviceProvider, IRockRequestContextAccessor requestContextAccessor, ILoggerFactory loggerFactory, IRockContextFactory rockContextFactory, Action<IServiceCollection> configureServices, ChatAgentOptions options )
+            : this( serviceProvider, requestContextAccessor, loggerFactory, rockContextFactory, options )
         {
             var sw = System.Diagnostics.Stopwatch.StartNew();
 
@@ -159,11 +168,12 @@ namespace Rock.AI.Agent
         /// <param name="provider">The agent provider used to add chat completion services to the kernel.</param>
         /// <param name="configureServices">An optional delegate to further configure kernel services.</param>
         /// <returns>An initialized kernel builder instance.</returns>
-        private static IKernelBuilder CreateKernelBuilder( AgentProviderComponent provider, Action<IServiceCollection> configureServices )
+        private IKernelBuilder CreateKernelBuilder( AgentProviderComponent provider, Action<IServiceCollection> configureServices )
         {
             var kernelBuilder = Kernel.CreateBuilder();
             kernelBuilder.Services.AddSingleton<AgentRequestContext>();
-            kernelBuilder.Services.AddRockLogging();
+            kernelBuilder.Services.AddSingleton( _loggerFactory );
+            kernelBuilder.Services.AddSingleton( typeof( ILogger<> ), typeof( Logger<> ) );
 
             configureServices?.Invoke( kernelBuilder.Services );
 
@@ -193,7 +203,7 @@ namespace Rock.AI.Agent
 
             _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
 
-            return new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor );
+            return new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor, _options );
         }
 
         /// <summary>

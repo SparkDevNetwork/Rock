@@ -17,8 +17,6 @@
 
 using System.Threading.Tasks;
 
-using Microsoft.SemanticKernel;
-
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Enums.Core.AI.Agent;
@@ -133,15 +131,7 @@ namespace Rock.AI.Agent
         /// for processing and returns the response from the assistant.
         /// </summary>
         /// <returns>An object that represents the response from the assistant.</returns>
-        Task<ChatMessageContent> GetChatMessageContentAsync();
-
-        /// <summary>
-        /// Extracts the usage metric information from the result returned
-        /// by a previous call to <see cref="GetChatMessageContentAsync"/>.
-        /// </summary>
-        /// <param name="result">The result from a call to <see cref="GetChatMessageContentAsync"/>.</param>
-        /// <returns>The usage metrics for the specified chat request and response.</returns>
-        UsageMetric GetMetricUsageFromResult( ChatMessageContent result );
+        Task<ChatMessageResponse> GetChatMessageResponseAsync();
 
         #endregion
     }

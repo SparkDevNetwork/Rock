@@ -31,9 +31,34 @@
                 <div v-for="(message, index) in messages"
                      :key="index"
                      class="message"
-                     :class="getMessageClass(message)"
-                     :title="getTokenCounts(message)">
-                    <span class="message-text" v-html="parse(message.message ?? '')"></span>
+                     :class="getMessageClass(message)">
+                    <div class="message-text" v-html="parse(message.message ?? '')"></div>
+
+                    <div v-if="isDebugEnabled && message.role == AuthorRole.Assistant" class="message-debug">
+                        <span class="label label-info" title="Prompt Tokens">
+                            <i class="ti ti-upload"></i>
+                            {{ asFormattedString(message.consumedTokenCount - message.tokenCount) }}
+                        </span>
+
+                        <span class="label label-info" title="Completion Tokens">
+                            <i class="ti ti-download"></i>
+                            {{ asFormattedString(message.tokenCount) }}
+                        </span>
+
+                        <span v-if="doesMessageHaveLogData(message)"
+                              class="label label-info"
+                              title="Function Calls">
+                            <i class="ti ti-code"></i>
+                            {{ getDebugFunctionCalls(message).length }}
+                        </span>
+
+                        <button v-if="doesMessageHaveLogData(message)"
+                                class="btn btn-link btn-xs"
+                                type="button"
+                                @click.prevent="onShowMessageDebug(message)">
+                            <i class="ti ti-bug"></i>
+                        </button>
+                    </div>
                 </div>
 
                 <div v-if="isSending"
@@ -58,17 +83,21 @@
                          @keyup.enter="onSubmit">
                     <template #inputGroupAppend>
                         <span class="input-group-btn">
-                            <button class="btn btn-default dropup"
+                            <button :class="isDebugEnabled ? 'btn btn-warning' : 'btn btn-default'"
                                     type="button"
-                                    data-toggle="dropdown"
-                                    :class="{ 'open': isActionMenuOpen }">
-                                <i class="ti ti-dots-vertical" style="font-size: initial;"></i>
-                                <ul class="dropdown-menu dropdown-menu-right">
-                                    <li>
-                                        <a href="#" @click.prevent="onClearMessages">Clear Messages</a>
-                                    </li>
-                                </ul>
+                                    :title="isDebugEnabled ? 'Disable Debug Mode' : 'Enable Debug Mode'"
+                                    @click.prevent="onToggleDebugClick">
+                                <i v-if="isDebugEnabled" class="ti ti-bug"></i>
+                                <i v-else class="ti ti-bug-off"></i>
                             </button>
+
+                            <button class="btn btn-default"
+                                    type="button"
+                                    @click.prevent="onClearMessages"
+                                    title="Clear Chat History">
+                                <i class="ti ti-trash"></i>
+                            </button>
+
                             <button class="btn btn-primary"
                                     type="button"
                                     :disabled="isSendDisabled"
@@ -79,6 +108,47 @@
             </div>
         </div>
     </div>
+
+    <Modal v-model="isMessageDebugVisible"
+           title="Message Debug Information"
+           cancelText="Close">
+        <TabbedBar v-model="messageDebugTab"
+                   :tabs="['Function Calls', 'Logs']" />
+
+        <div v-if="messageDebugTab === 'Function Calls'" class="message-debug-function-calls">
+            <Panel v-for="func in getDebugFunctionCalls(debugMessage)"
+                   :title="func.name"
+                   :key="func.name"
+                   hasCollapse>
+                <template #headerActions>
+                    <div class="function-labels">
+                        <span v-if="!func.error" class="label label-success">Success</span>
+                        <span v-else class="label label-danger">Failed</span>
+                        <span class="label label-info">{{ func.duration }}</span>
+                    </div>
+                </template>
+
+                <div class="function-args">
+                    <h4>Arguments</h4>
+                    <pre v-html="highlightJavaScript(func.args)"></pre>
+                </div>
+
+                <div v-if="!func.error" class="function-result">
+                    <h4>Result</h4>
+                    <pre v-html="highlightJavaScript(func.result)"></pre>
+                </div>
+
+                <div v-if="func.error" class="function-error">
+                    <h4>Error</h4>
+                    <div>{{ func.error }}</div>
+                </div>
+            </Panel>
+        </div>
+
+        <div v-if="messageDebugTab === 'Logs'" class="message-debug-log">
+            <pre>{{ getDebugLogText(debugMessage) }}</pre>
+        </div>
+    </Modal>
 </template>
 
 <style scoped>
@@ -192,6 +262,12 @@
     opacity: 0.5;
 }
 
+.message-debug {
+    display: flex;
+    gap: var(--spacing-tiny);
+    justify-content: flex-end;
+}
+
 .anchors-container {
     display: flex;
     gap: var(--spacing-xsmall);
@@ -225,15 +301,36 @@
     cursor: pointer;
 }
 
-/* Hack to make the bootstrap dropdown menu work with incorrect DOM structure */
-.action-bar .input-group-btn.open .dropdown-menu {
-    display: block;
+/* Message Debug Modal */
+.message-debug-log > pre {
+    max-height: calc(100vh - 300px);
+}
+
+.message-debug-function-calls {
+    max-height: calc(100vh - 300px);
+    margin-top: var(--spacing-medium);
+    overflow-y: auto;
+}
+
+.function-labels {
+    display: flex;
+    gap: var(--spacing-tiny);
+    margin-right: var(--spacing-xsmall);
+}
+
+/* Hack to temporarily fix icon size. */
+:deep(.ti) {
+    font-size: 1em;
 }
 </style>
 
 <script setup lang="ts">
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import HighlightJs from "@Obsidian/Libs/highlightJs";
     import { parse } from "@Obsidian/Libs/marked";
     import { useConfigurationValues, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
@@ -267,6 +364,20 @@
         lastMessageDateTime?: string | null;
     };
 
+    type SendMessageRequestBag = {
+        message?: string | null;
+
+        sessionId: number;
+
+        isDebugEnabled: boolean;
+    };
+
+    type SendMessageResponseBag = {
+        message?: ChatMessageBag | null;
+
+        logs?: ChatLogBag[] | null;
+    };
+
     type ChatMessageBag = {
         role: AuthorRole;
 
@@ -275,6 +386,20 @@
         tokenCount: number;
 
         consumedTokenCount: number;
+    };
+
+    type ExtendedChatMessageBag = ChatMessageBag & {
+        logs?: ChatLogBag[] | null;
+    };
+
+    type ChatLogBag = {
+        category?: string | null;
+
+        logLevel: number;
+
+        logLevelName?: string | null;
+
+        message?: string | null;
     };
 
     type ChatAnchorBag = {
@@ -287,6 +412,18 @@
         name?: string | null;
     };
 
+    type FunctionCall = {
+        name: string;
+
+        args: string;
+
+        result: string;
+
+        error: string;
+
+        duration: string;
+    };
+
     const config = useConfigurationValues<ChatBotConfigurationBag>();
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -296,12 +433,15 @@
 
     const message = ref("");
     const isSending = ref(false);
-    const messages = reactive(config.messages ?? []);
+    const messages = reactive<ExtendedChatMessageBag[]>(config.messages ?? []);
     const sessions = reactive(config.sessions ?? []);
     const anchors = reactive(config.anchors ?? []);
     const sessionId = ref(config.sessionId ?? 0);
 
-    const isActionMenuOpen = ref(false);
+    const isDebugEnabled = ref(false);
+    const isMessageDebugVisible = ref(false);
+    const debugMessage = ref<ExtendedChatMessageBag | null>(null);
+    const messageDebugTab = ref<"Function Calls" | "Logs">("Function Calls");
 
     const isSendDisabled = computed((): boolean => {
         return isSending.value || !message.value;
@@ -320,16 +460,20 @@
         chatContainer.value.style.height = `${window.innerHeight - top - 75}px`;
     }
 
-    function getMessageClass(message: ChatMessageBag): string {
-        return message.role === AuthorRole.User ? "message-user" : "message-assistant";
-    }
+    function getMessageClass(message: ExtendedChatMessageBag): string[] {
+        const classes: string[] = [];
 
-    function getTokenCounts(message: ChatMessageBag): string {
-        if (message.role === AuthorRole.User) {
-            return `Tokens: ${asFormattedString(message.tokenCount)}`;
+        classes.push(message.role === AuthorRole.User ? "message-user" : "message-assistant");
+
+        if (message.logs && message.logs.length > 0) {
+            classes.push("has-logs");
         }
 
-        return `Input tokens: ${asFormattedString(message.consumedTokenCount - message.tokenCount)}; Output token: ${asFormattedString(message.tokenCount)}`;
+        return classes;
+    }
+
+    function doesMessageHaveLogData(message: ExtendedChatMessageBag): boolean {
+        return !!message.logs && message.logs.length > 0;
     }
 
     function updateSessionDate(): void {
@@ -359,6 +503,83 @@
         });
     }
 
+    function getDebugLogText(message: ExtendedChatMessageBag | null): string {
+        if (!message || !message.logs || message.logs.length === 0) {
+            return "No logs available.";
+        }
+
+        let logText = "";
+
+        for (const log of message.logs) {
+            logText += `[${log.logLevelName}] ${log.category}: ${log.message}\n`;
+        }
+
+        return logText;
+    }
+
+    function getDebugFunctionCalls(message: ExtendedChatMessageBag | null): FunctionCall[] {
+        const functionInvokingRegExp = /^Function ([a-zA-Z0-9_-]+) invoking\.$/;
+        const functionArgumentsRegExp = /^Function ([a-zA-Z0-9_-]+) arguments: ([\s\S]+)$/;
+        const functionResultRegExp = /^Function ([a-zA-Z0-9_-]+) result: ([\s\S]+)$/;
+        const functionErrorRegExp = /^Function ([a-zA-Z0-9_-]+) failed. Error: ([\s\S]+)$/;
+        const functionDurationRegExp = /^Function ([a-zA-Z0-9_-]+) completed. Duration: (.+)$/;
+
+        const logs = message?.logs ?? [];
+        const functionCalls = logs
+            .map(log => functionInvokingRegExp.exec(log.message ?? ""))
+            .filter(m => !!m)
+            .map(m => m[1]);
+
+        if (!functionCalls || functionCalls.length === 0) {
+            return [];
+        }
+
+        const functions: FunctionCall[] = [];
+
+        for (const functionName of functionCalls) {
+            const argsList = logs
+                .map(log => functionArgumentsRegExp.exec(log.message ?? ""))
+                .filter(m => !!m && m[1] === functionName)
+                .map(m => m![2]);
+            const args = argsList.length > 0 ? argsList[0] : "{}";
+
+            const resultList = logs
+                .map(log => functionResultRegExp.exec(log.message ?? ""))
+                .filter(m => !!m && m[1] === functionName)
+                .map(m => m![2]);
+            const result = resultList.length > 0 ? resultList[0] : "";
+
+            const errorList = logs
+                .map(log => functionErrorRegExp.exec(log.message ?? ""))
+                .filter(m => !!m && m[1] === functionName)
+                .map(m => m![2]);
+            const error = errorList.length > 0 ? errorList[0] : "";
+
+            const durationList = logs
+                .map(log => functionDurationRegExp.exec(log.message ?? ""))
+                .filter(m => !!m && m[1] === functionName)
+                .map(m => m![2]);
+            const duration = durationList.length > 0 ? durationList[0] : "";
+
+            functions.push({ name: functionName, args, result, error, duration });
+        }
+
+        return functions;
+    }
+
+    function highlightJavaScript(code: string): string {
+        try {
+            var jsonObject = JSON.parse(code);
+
+            return HighlightJs.highlight(JSON.stringify(jsonObject, null, 2), {
+                language: "json"
+            })?.value ?? code;
+        }
+        catch {
+            return code;
+        }
+    }
+
     async function onSubmit(): Promise<void> {
         if (!message.value) {
             return;
@@ -382,12 +603,19 @@
 
         isSending.value = true;
         try {
-            nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
+            const request: SendMessageRequestBag = {
+                message: msg,
+                sessionId: sessionId.value,
+                isDebugEnabled: isDebugEnabled.value
+            };
 
-            const response = await invokeBlockAction<ChatMessageBag>("SendMessage", { message: msg, sessionId: sessionId.value });
+            const response = await invokeBlockAction<SendMessageResponseBag>("SendMessage", { request });
 
-            if (response.isSuccess && response.data) {
-                messages.push(response.data);
+            if (response.isSuccess && response.data?.message) {
+                messages.push({
+                    ...response.data.message,
+                    logs: response.data.logs
+                });
                 updateSessionDate();
                 nextTick(() => messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight));
             }
@@ -508,6 +736,17 @@
         }
     }
 
+    function onToggleDebugClick(): void {
+        isDebugEnabled.value = !isDebugEnabled.value;
+        localStorage.setItem("Rock.Core.AI.ChatBot.DebugEnabled", isDebugEnabled.value ? "true" : "false");
+    }
+
+    function onShowMessageDebug(message: ExtendedChatMessageBag): void {
+        debugMessage.value = message;
+        messageDebugTab.value = "Function Calls";
+        isMessageDebugVisible.value = true;
+    }
+
     onMounted(() => {
         updateContainerHeight();
         messagesContainer.value?.scrollTo(0, messagesContainer.value.scrollHeight);
@@ -519,4 +758,6 @@
     onBeforeUnmount(() => {
         window.removeEventListener("resize", updateContainerHeight);
     });
+
+    isDebugEnabled.value = localStorage.getItem("Rock.Core.AI.ChatBot.DebugEnabled") === "true";
 </script>
