@@ -93,6 +93,13 @@
 
                             <button class="btn btn-default"
                                     type="button"
+                                    @click.prevent="onViewSessionContext"
+                                    title="View Session Context">
+                                <i class="ti ti-briefcase"></i>
+                            </button>
+
+                            <button class="btn btn-default"
+                                    type="button"
                                     @click.prevent="onClearMessages"
                                     title="Clear Chat History">
                                 <i class="ti ti-trash"></i>
@@ -116,6 +123,10 @@
                    :tabs="['Function Calls', 'Logs']" />
 
         <div v-if="messageDebugTab === 'Function Calls'" class="message-debug-function-calls">
+            <div v-if="getDebugFunctionCalls(debugMessage).length === 0" class="text-muted">
+                No function calls for this request.
+            </div>
+
             <Panel v-for="func in getDebugFunctionCalls(debugMessage)"
                    :title="func.name"
                    :key="func.name"
@@ -147,6 +158,24 @@
 
         <div v-if="messageDebugTab === 'Logs'" class="message-debug-log">
             <pre>{{ getDebugLogText(debugMessage) }}</pre>
+        </div>
+    </Modal>
+
+    <Modal v-model="isSessionContextVisible"
+           title="Session Context"
+           cancelText="Close">
+        <div class="session-context-data">
+            <template v-for="item in debugSessionContext">
+                <div style="white-space: nowrap;">
+                    <strong>{{ item.value }}</strong>
+                    <i v-if="item.disabled" class="ml-1 ti ti-eye-off" title="Internal"></i>
+                </div>
+                <div style="white-space: pre-wrap;" v-html="highlightJavaScript(item.text ?? '')"></div>
+            </template>
+
+            <div v-if="debugSessionContext.length === 0" class="text-muted">
+                No context data available for this session.
+            </div>
         </div>
     </Modal>
 </template>
@@ -318,6 +347,16 @@
     margin-right: var(--spacing-xsmall);
 }
 
+/** Session Context Modal */
+.session-context-data {
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    column-gap: var(--spacing-medium);
+    row-gap: var(--spacing-xsmall);
+}
+
 /* Hack to temporarily fix icon size. */
 :deep(.ti) {
     font-size: 1em;
@@ -336,6 +375,8 @@
     import { alert, confirm } from "@Obsidian/Utility/dialogs";
     import { asFormattedString } from "@Obsidian/Utility/numberUtils";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { escapeHtml } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 
     const enum AuthorRole {
@@ -442,6 +483,9 @@
     const isMessageDebugVisible = ref(false);
     const debugMessage = ref<ExtendedChatMessageBag | null>(null);
     const messageDebugTab = ref<"Function Calls" | "Logs">("Function Calls");
+
+    const isSessionContextVisible = ref(false);
+    const debugSessionContext = ref<ListItemBag[]>([]);
 
     const isSendDisabled = computed((): boolean => {
         return isSending.value || !message.value;
@@ -573,10 +617,10 @@
 
             return HighlightJs.highlight(JSON.stringify(jsonObject, null, 2), {
                 language: "json"
-            })?.value ?? code;
+            })?.value ?? escapeHtml(code);
         }
         catch {
-            return code;
+            return escapeHtml(code);
         }
     }
 
@@ -718,6 +762,18 @@
         }
         else {
             await alert(result.errorMessage ?? "Unknown error while trying to delete session.");
+        }
+    }
+
+    async function onViewSessionContext(): Promise<void> {
+        const result = await invokeBlockAction<ListItemBag[]>("GetSessionContext", { sessionId: sessionId.value });
+
+        if (result.isSuccess && result.data) {
+            debugSessionContext.value = result.data;
+            isSessionContextVisible.value = true;
+        }
+        else {
+            await alert(result.errorMessage ?? "Unknown error while trying to load session context.");
         }
     }
 

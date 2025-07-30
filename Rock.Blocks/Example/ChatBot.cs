@@ -9,6 +9,7 @@ using Rock.Attribute;
 using Rock.Enums.Cms;
 using Rock.Enums.Core.AI.Agent;
 using Rock.Model;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
 
@@ -370,6 +371,39 @@ namespace Rock.Blocks.Example
             RockContext.SaveChanges();
 
             return ActionOk();
+        }
+
+        /// <summary>
+        /// Gets the session context for the specified session ID, returning a list of context items.
+        /// </summary>
+        /// <param name="sessionId">The session identifier.</param>
+        /// <returns>A collection of <see cref="ListItemBag"/> objects.</returns>
+        [BlockAction]
+        public BlockActionResult GetSessionContext( int sessionId )
+        {
+            var sessionService = new AIAgentSessionService( RockContext );
+            var session = sessionService
+                .Queryable()
+                .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                    && s.Id == sessionId )
+                .FirstOrDefault();
+
+            if (session == null)
+            {
+                return ActionBadRequest( "Session not found." );
+            }
+
+            var items = session.GetSessionContextDictionary()
+                .Select( c => new ListItemBag
+                {
+                    Value = c.Key,
+                    Text = c.Value.Content,
+                    Disabled = c.Value.IsInternal
+                } )
+                .OrderBy( c => c.Value )
+                .ToList();
+
+            return ActionOk( items );
         }
 
         /// <summary>
