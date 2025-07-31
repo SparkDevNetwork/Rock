@@ -309,6 +309,10 @@ th {
   --color-sequential-9: #AFEECB;
   --color-sequential-10: #C9F4DC;
   --color-sequential-11: #E4F9ED;
+  --color-gender-male-bg: #E8F3FC;
+  --color-gender-female-bg: #FCE8FA;
+  --color-gender-male-text: #1A8AE5;
+  --color-gender-female-text: #DE69C3;
   --font-size-xsmall: 12px;
   --font-size-small: 14px;
   --font-size-regular: 16px;

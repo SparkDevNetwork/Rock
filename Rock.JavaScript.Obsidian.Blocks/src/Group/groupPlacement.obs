@@ -6,7 +6,8 @@
     <Panel v-else
            type="block"
            panelBodyCssClass="overflow-hidden"
-           class="styled-scroll">
+           class="styled-scroll"
+           :isFullscreen="isFullscreen">
         <template #title>
             <div class="d-flex align-items-center gap-3">
                 <span v-if="!isNullOrWhiteSpace(box.backPageUrl)" class="clickable text-sm" @click="onBack">
@@ -71,6 +72,12 @@
                             @click="openPlacementConfigSettings">
                     <i class="ti ti-settings"></i>
                 </RockButton>
+                <RockButton :btnType="BtnType.Default"
+                            :btnSize="BtnSize.Small"
+                            :isSquare="true"
+                            @click="toggleFullScreen">
+                    <i class="ti ti-maximize"></i>
+                </RockButton>
             </div>
         </template>
 
@@ -82,6 +89,7 @@
                 <Panel type="default"
                        title="People To Place"
                        panelBodyCssClass="h-100 overflow-hidden"
+                       isBorderlessPanel
                        :isDrawerOpen="isPersonFilterDrawerOpen"
                        @update:isDrawerOpen="isPersonFilterDrawerOpen = !isPersonFilterDrawerOpen">
                     <template #headerActions>
@@ -139,7 +147,7 @@
                         <div class="w-100 p-2 pb-0">
                             <div class="d-flex justify-content-start">
                                 <HighlightLabel v-if="sourcePerson" labelType="custom" customClass="source-person-label">
-                                    {{ sourcePerson.firstName }} {{ sourcePerson.lastName }} <i class="ti ti-x cursor-pointer" @click="removeSourcePerson"></i>
+                                    {{ sourcePerson.nickName }} {{ sourcePerson.lastName }} <i class="ti ti-x cursor-pointer" @click="removeSourcePerson"></i>
                                 </HighlightLabel>
                             </div>
                             <div class="d-flex justify-content-between align-items-center">
@@ -198,6 +206,7 @@
                 <Panel type="default"
                        title="Destination Groups"
                        panelBodyCssClass="h-100 overflow-hidden"
+                       isBorderlessPanel
                        :isDrawerOpen="isGroupFilterDrawerOpen"
                        @update:isDrawerOpen="isGroupFilterDrawerOpen = !isGroupFilterDrawerOpen">
                     <template #headerActions>
@@ -623,6 +632,7 @@
     const isPersonCardHovered = ref<boolean>(false);
     const isPersonFilterDrawerOpen = ref<boolean>(false);
     const isGroupFilterDrawerOpen = ref<boolean>(false);
+    const isFullscreen = ref<boolean>(false);
 
     // #endregion
 
@@ -1429,6 +1439,10 @@
      */
     function toggleGroupExpansion(): void {
         areGroupsExpanded.value = !areGroupsExpanded.value;
+    }
+
+    function toggleFullScreen(): void {
+        isFullscreen.value = !isFullscreen.value;
     }
 
     /**

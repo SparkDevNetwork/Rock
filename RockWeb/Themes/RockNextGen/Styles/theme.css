@@ -1272,3 +1272,8 @@ a.rock-bookmark {
     --spacing-huge: 80px;
 }
 /* CSS Overrides Bottom End */
+
+/*.borderless-panel {
+    border: none;
+    border-radius: 0;
+}*/

@@ -145,6 +145,12 @@
   --color-sequential-10:  #C9F4DC;
   --color-sequential-11:  #E4F9ED;
 
+  // GENDER COLORS
+  --color-gender-male-bg: #E8F3FC;
+  --color-gender-female-bg: #FCE8FA;
+  --color-gender-male-text: #1A8AE5;
+  --color-gender-female-text: #DE69C3;
+
   // ========================= END COLOR ==========================
 
 
@@ -293,6 +299,9 @@
   --color-success-strong:  color-mix(in srgb, var(--base-success) 50%, #fff var(--tint-white-percentage));
   --color-warning-strong:  color-mix(in srgb, var(--base-warning) 50%, #fff var(--tint-white-percentage));
   --color-critical-strong:  color-mix(in srgb, var(--base-critical) 50%, #fff var(--tint-white-percentage));
+
+  //--color-gender-male-bg: #244A64;
+  //--color-gender-female-bg: #5C2F47;
 
   --box-shadow:               rgba(145, 158, 171, 0.3) 0px 0px 2px 0px,rgba(145, 158, 171, .04) 0px 12px 24px -4px;
   --popup-box-shadow:         0 1rem 3rem rgba(255, 255, 255,.04);
