@@ -566,46 +566,68 @@
         const functionArgumentsRegExp = /^Function ([a-zA-Z0-9_-]+) arguments: ([\s\S]+)$/;
         const functionResultRegExp = /^Function ([a-zA-Z0-9_-]+) result: ([\s\S]+)$/;
         const functionErrorRegExp = /^Function ([a-zA-Z0-9_-]+) failed. Error: ([\s\S]+)$/;
-        const functionDurationRegExp = /^Function ([a-zA-Z0-9_-]+) completed. Duration: (.+)$/;
+        const functionCompletedRegExp = /^Function ([a-zA-Z0-9_-]+) completed. Duration: (.+)$/;
 
-        const logs = message?.logs ?? [];
-        const functionCalls = logs
-            .map(log => functionInvokingRegExp.exec(log.message ?? ""))
-            .filter(m => !!m)
-            .map(m => m![1]);
+        const logs = message?.logs?.map(l => l.message ?? "") ?? [];
 
-        if (!functionCalls || functionCalls.length === 0) {
+        if (logs.length === 0) {
             return [];
         }
 
         const functions: FunctionCall[] = [];
+        let currentFunction: FunctionCall | null = null;
 
-        for (const functionName of functionCalls) {
-            const argsList = logs
-                .map(log => functionArgumentsRegExp.exec(log.message ?? ""))
-                .filter(m => !!m && m[1] === functionName)
-                .map(m => m![2]);
-            const args = argsList.length > 0 ? argsList[0] : "{}";
+        for (const log of logs) {
+            if (currentFunction === null) {
+                const match = functionInvokingRegExp.exec(log);
+                if (match) {
+                    currentFunction = {
+                        name: match[1],
+                        args: "{}",
+                        result: "",
+                        error: "",
+                        duration: ""
+                    };
+                }
 
-            const resultList = logs
-                .map(log => functionResultRegExp.exec(log.message ?? ""))
-                .filter(m => !!m && m[1] === functionName)
-                .map(m => m![2]);
-            const result = resultList.length > 0 ? resultList[0] : "";
+                continue;
+            }
 
-            const errorList = logs
-                .map(log => functionErrorRegExp.exec(log.message ?? ""))
-                .filter(m => !!m && m[1] === functionName)
-                .map(m => m![2]);
-            const error = errorList.length > 0 ? errorList[0] : "";
+            // Look for the arguments for this function call.
+            let match = functionArgumentsRegExp.exec(log);
+            if (match) {
+                currentFunction.args = match[2];
 
-            const durationList = logs
-                .map(log => functionDurationRegExp.exec(log.message ?? ""))
-                .filter(m => !!m && m[1] === functionName)
-                .map(m => m![2]);
-            const duration = durationList.length > 0 ? durationList[0] : "";
+                continue;
+            }
 
-            functions.push({ name: functionName, args, result, error, duration });
+            // Look for the result of this function call.
+            match = functionResultRegExp.exec(log);
+            if (match) {
+                currentFunction.result = match[2];
+
+                continue;
+            }
+
+            // Look for an error for this function call.
+            match = functionErrorRegExp.exec(log);
+            if (match) {
+                currentFunction.error = match[2];
+
+                continue;
+            }
+
+            // Look for the completion of this function call.
+            match = functionCompletedRegExp.exec(log);
+            if (match) {
+                currentFunction.duration = match[2];
+
+                // Add the completed function call to the list.
+                functions.push(currentFunction);
+                currentFunction = null;
+
+                continue;
+            }
         }
 
         return functions;
