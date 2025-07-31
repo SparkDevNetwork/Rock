@@ -48,99 +48,24 @@
            title="Skill Function"
            @save="onSaveFunction"
            saveText="Save">
-        <div class="row">
-            <div class="col-md-6">
-                <TextBox v-model="editFunctionName"
-                         label="Name"
-                         :rules="['required', validFunctionName]" />
-            </div>
-
-            <div class="col-md-6">
-                <DropDownList v-model="editFunctionType"
-                              label="Type"
-                              :items="editFunctionTypeItems"
-                              rules="required" />
-            </div>
-        </div>
-
-        <TextBox v-model="editFunctionDescription"
-                 label="Description"
-                 rules="required"
-                 textMode="multiline" />
-
-        <TextBox v-model="editFunctionUsageHint"
-                 label="Usage Hint"
-                 rules="required"
-                 textMode="multiline"
-                 :rows="6" />
-
-        <div v-if="editFunctionType === FunctionType.AIPrompt.toString()"
-             class="row">
-            <div class="col-md-4">
-                <NumberBox v-model="editFunctionTemperature"
-                           label="Temperature"
-                           help="The temperature to use when generating the response. A higher value will produce more random results."
-                           rules="required"
-                           :minimumValue="0" />
-            </div>
-
-            <div class="col-md-4">
-                <NumberBox v-model="editFunctionMaxTokens"
-                           label="Max Tokens"
-                           help="The maximum number of tokens to generate in the response."
-                           :minimumValue="1" />
-            </div>
-
-            <div class="col-md-4">
-                <CheckBox v-model="editFunctionPreRenderLava"
-                          label="Pre-render Lava"
-                          help="Turning this on will render Lava over the prompt before it is processed by the language model." />
-            </div>
-        </div>
-
-        <CodeEditor v-model="editFunctionPrompt"
-                    label="Prompt"
-                    editor="monaco"
-                    :mode="editFunctionPromptMode"
-                    :maxEditorHeight="400"
-                    rules="required" />
-
-        <div class="form-group">
-            <RockLabel help="The parameters that will be passed to your Lava as merge fields. These are used by the language model to understand what data is passed in, but it is not guaranteed to perfectly honor what is defined here.">
-                Parameters Schema
-            </RockLabel>
-
-            <div class="control-wrapper">
-                <ParameterList v-model="editFunctionPromptParameters" />
-            </div>
-        </div>
+        <FunctionEditor v-model="editFunctionValue" />
     </Modal>
 </template>
 
 <script setup lang="ts">
-    import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
-    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import FunctionEditor from "./AISkillFunctionList/functionEditor.partial.obs";
     import Grid, { pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, EditColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import NumberBox from "@Obsidian/Controls/numberBox.obs";
-    import ParameterList from "./AISkillFunctionList/parameterList.partial.obs";
-    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
-    import TextBox from "@Obsidian/Controls/textBox.obs";
     import { onConfigurationValuesChanged, setPropertiesBoxValue, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { FunctionType, FunctionTypeDescription } from "@Obsidian/Enums/Core/AI/Agent/functionType";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import { AISkillFunctionListOptionsBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillFunctionList/aiSkillFunctionListOptionsBag";
-    import { computed, reactive, ref } from "vue";
+    import { reactive, ref } from "vue";
     import { BlockMessages } from "@Obsidian/Utility/browserBus";
-    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { AISkillFunctionBag } from "@Obsidian/ViewModels/Blocks/Core/AI/AISkillFunctionList/aiSkillFunctionBag";
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
-    import { toNumber } from "@Obsidian/Utility/numberUtils";
-    import { AugmentedParameterSchemaBag } from "./AISkillFunctionList/types.partial";
-    import { newGuid } from "@Obsidian/Utility/guid";
 
     const config = useConfigurationValues<ListBlockBox<AISkillFunctionListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -158,32 +83,7 @@
 
     const isEditFunctionVisble = ref(false);
     let editFunctionKey: string | undefined = undefined;
-    const editFunctionName = ref("");
-    const editFunctionType = ref("");
-    const editFunctionDescription = ref("");
-    const editFunctionUsageHint = ref("");
-    const editFunctionPreRenderLava = ref(false);
-    const editFunctionTemperature = ref(0.7);
-    const editFunctionMaxTokens = ref<number>();
-    const editFunctionPrompt = ref("");
-    const editFunctionPromptParameters = ref<AugmentedParameterSchemaBag[]>([]);
-
-    // They are not allowed to set a function type to C# code.
-    const editFunctionTypeItems = enumToListItemBag(FunctionTypeDescription)
-        .filter(i => i.value !== FunctionType.ExecuteCode.toString());
-
-    // #endregion
-
-    // #region Computed Values
-
-    const editFunctionPromptMode = computed((): "text" | "lava" => {
-        if (editFunctionType.value === FunctionType.ExecuteLava.toString()) {
-            return "lava";
-        }
-
-        return editFunctionType.value === FunctionType.AIPrompt.toString()
-            && editFunctionPreRenderLava.value ? "lava" : "text";
-    });
+    const editFunctionValue = ref<AISkillFunctionBag>({} as AISkillFunctionBag);
 
     // #endregion
 
@@ -204,42 +104,12 @@
 
         if (result.isSuccess && result.data?.bag) {
             editFunctionKey = result.data.bag.idKey ?? undefined;
-            editFunctionName.value = result.data.bag.name ?? "";
-            editFunctionType.value = result.data.bag.functionType.toString();
-            editFunctionDescription.value = result.data.bag.description ?? "";
-            editFunctionUsageHint.value = result.data.bag.usageHint ?? "";
-            editFunctionPreRenderLava.value = result.data.bag.preRenderLava;
-            editFunctionTemperature.value = result.data.bag.temperature;
-            editFunctionMaxTokens.value = result.data.bag.maxTokens ?? undefined;
-            editFunctionPrompt.value = result.data.bag.prompt ?? "";
-            editFunctionPromptParameters.value = result.data.bag.promptParameters
-                ?.map(p => ({ ...p, id: newGuid() }))
-                ?? [];
-
+            editFunctionValue.value = result.data.bag;
             isEditFunctionVisble.value = true;
         }
         else {
             await alert(result.errorMessage || "Unknown error while trying to load AI skill function for editing.");
         }
-    }
-
-    /**
-     * Validates the function name to ensure it only contains valid characters.
-     *
-     * @param value The value to validate.
-     *
-     * @returns A string with an error message if the value is invalid, or true if the value is valid.
-     */
-    function validFunctionName(value: unknown): string | true {
-        if (typeof value !== "string") {
-            return true;
-        }
-
-        if (value.match(/[^a-zA-Z0-9_ ]/)) {
-            return "may only contain letters, numbers, underscores and spaces.";
-        }
-
-        return true;
     }
 
     // #endregion
@@ -289,15 +159,15 @@
         const box: ValidPropertiesBox<AISkillFunctionBag> = {};
 
         setPropertiesBoxValue(box, "idKey", editFunctionKey ?? "");
-        setPropertiesBoxValue(box, "name", editFunctionName.value);
-        setPropertiesBoxValue(box, "functionType", <FunctionType>toNumber(editFunctionType.value));
-        setPropertiesBoxValue(box, "description", editFunctionDescription.value);
-        setPropertiesBoxValue(box, "usageHint", editFunctionUsageHint.value);
-        setPropertiesBoxValue(box, "preRenderLava", editFunctionPreRenderLava.value);
-        setPropertiesBoxValue(box, "temperature", editFunctionTemperature.value);
-        setPropertiesBoxValue(box, "maxTokens", editFunctionMaxTokens.value);
-        setPropertiesBoxValue(box, "prompt", editFunctionPrompt.value);
-        setPropertiesBoxValue(box, "promptParameters", editFunctionPromptParameters.value);
+        setPropertiesBoxValue(box, "name", editFunctionValue.value.name);
+        setPropertiesBoxValue(box, "functionType", editFunctionValue.value.functionType);
+        setPropertiesBoxValue(box, "description", editFunctionValue.value.description);
+        setPropertiesBoxValue(box, "usageHint", editFunctionValue.value.usageHint);
+        setPropertiesBoxValue(box, "preRenderLava", editFunctionValue.value.preRenderLava);
+        setPropertiesBoxValue(box, "temperature", editFunctionValue.value.temperature);
+        setPropertiesBoxValue(box, "maxTokens", editFunctionValue.value.maxTokens);
+        setPropertiesBoxValue(box, "prompt", editFunctionValue.value.prompt);
+        setPropertiesBoxValue(box, "promptParameters", editFunctionValue.value.promptParameters);
 
         const result = await invokeBlockAction<ValidPropertiesBox<AISkillFunctionBag>>("Save", {
             box
