@@ -7,7 +7,7 @@ using Rock.Enums.Core.AI.Agent;
 namespace Rock.AI.Agent.Tests
 {
     [TestClass]
-    public class ParameterSchemaTests
+    public class ParameterSchemaBuilderTests
     {
         [TestMethod]
         public void Metadata_IncludesName()
@@ -17,7 +17,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var metadata = parameter.GetKernelParameterMetadata();
+            var builder = new ParamaterSchemaBuilder();
+            var metadata = builder.BuildKernelParameterMetadata( parameter );
 
             Assert.AreEqual( "TestParameter", metadata.Name );
         }
@@ -31,9 +32,25 @@ namespace Rock.AI.Agent.Tests
                 UsageHint = "This is a test parameter.",
             };
 
-            var metadata = parameter.GetKernelParameterMetadata();
+            var builder = new ParamaterSchemaBuilder();
+            var metadata = builder.BuildKernelParameterMetadata( parameter );
 
             Assert.AreEqual( "This is a test parameter.", metadata.Description );
+        }
+
+        [TestMethod]
+        public void Metadata_IncludeDefaultValue()
+        {
+            var parameter = new ParameterSchema
+            {
+                Name = "TestParameter",
+                DefaultValue = "Test default value.",
+            };
+
+            var builder = new ParamaterSchemaBuilder();
+            var metadata = builder.BuildKernelParameterMetadata( parameter );
+
+            Assert.AreEqual( "Test default value.", metadata.DefaultValue );
         }
 
         [TestMethod]
@@ -51,27 +68,12 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var requiredMetadata = requiredParameter.GetKernelParameterMetadata();
-            var nonRequiredMetadata = nonRequiredParameter.GetKernelParameterMetadata();
+            var builder = new ParamaterSchemaBuilder();
+            var requiredMetadata = builder.BuildKernelParameterMetadata( requiredParameter );
+            var nonRequiredMetadata = builder.BuildKernelParameterMetadata( nonRequiredParameter );
 
             Assert.IsTrue( requiredMetadata.IsRequired );
             Assert.IsFalse( nonRequiredMetadata.IsRequired );
-        }
-
-        [TestMethod]
-        public void Metadata_WithMultipleCalls_ReturnsSameObject()
-        {
-            var parameter = new ParameterSchema
-            {
-                DataType = ParameterSchemaDataType.String,
-                Name = "TestParameter",
-                UsageHint = "This is a test parameter."
-            };
-
-            var metadata1 = parameter.GetKernelParameterMetadata();
-            var metadata2 = parameter.GetKernelParameterMetadata();
-
-            Assert.AreSame( metadata1, metadata2, "GetKernelParameterMetadata should return the same object on multiple calls." );
         }
 
         [TestMethod]
@@ -83,7 +85,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.AreEqual( "string", schema.RootElement.GetProperty( "type" ).GetString() );
         }
@@ -97,7 +100,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.AreEqual( "number", schema.RootElement.GetProperty( "type" ).GetString() );
         }
@@ -111,7 +115,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.AreEqual( "boolean", schema.RootElement.GetProperty( "type" ).GetString() );
         }
@@ -125,7 +130,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.AreEqual( "string", schema.RootElement.GetProperty( "type" ).GetString() );
         }
@@ -139,7 +145,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.AreEqual( "string", schema.RootElement.GetProperty( "type" ).GetString() );
         }
@@ -153,7 +160,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.AreEqual( "date", schema.RootElement.GetProperty( "format" ).GetString() );
         }
@@ -167,7 +175,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.AreEqual( "date-time", schema.RootElement.GetProperty( "format" ).GetString() );
         }
@@ -181,7 +190,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.IsFalse( schema.RootElement.TryGetProperty( "format", out _ ) );
         }
@@ -196,7 +206,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.IsTrue( schema.RootElement.TryGetProperty( "enum", out var enumProperty ) );
             Assert.IsTrue( enumProperty.ValueKind == JsonValueKind.Array );
@@ -217,7 +228,8 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
             Assert.IsTrue( schema.RootElement.TryGetProperty( "items", out var itemsProperty ) );
             Assert.IsTrue( itemsProperty.TryGetProperty( "enum", out var enumProperty ) );
@@ -239,9 +251,10 @@ namespace Rock.AI.Agent.Tests
                 Name = "TestParameter",
             };
 
-            var schema = parameter.GetKernelParameterMetadata().Schema;
+            var builder = new ParamaterSchemaBuilder();
+            var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
-            Assert.AreEqual( "This is a collection parameter." + ParameterSchema.CollectionUsageHint, schema.RootElement.GetProperty( "description" ).GetString() );
+            Assert.AreEqual( "This is a collection parameter." + ParamaterSchemaBuilder.CollectionUsageHint, schema.RootElement.GetProperty( "description" ).GetString() );
         }
     }
 }

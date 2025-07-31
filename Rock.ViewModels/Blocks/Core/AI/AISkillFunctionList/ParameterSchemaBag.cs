@@ -37,6 +37,11 @@ namespace Rock.ViewModels.Blocks.Core.AI.AISkillFunctionList
         public ParameterSchemaDataType DataType { get; set; }
 
         /// <summary>
+        /// The default value to use for the parameter if no value is provided.
+        /// </summary>
+        public string DefaultValue { get; set; }
+
+        /// <summary>
         /// A concise, but descriptive, hint to the language model that provides
         /// context about how to fill in this parameter.
         /// </summary>

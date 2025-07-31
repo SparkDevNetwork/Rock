@@ -74,6 +74,14 @@
                                  :rows="6" />
                     </div>
                     <div class="col-md-6">
+                        <TransitionVerticalCollapse>
+                            <div v-if="!isCollection">
+                                <TextBox v-model="defaultValue"
+                                         label="Default Value"
+                                         help="Optional default value for this parameter." />
+                            </div>
+                        </TransitionVerticalCollapse>
+
                         <ValueList v-if="dataType === ParameterSchemaDataType.String.toString()"
                                    v-model="allowedValues"
                                    label="Allowed Values"
@@ -144,6 +152,7 @@
     const dataType = ref(ParameterSchemaDataType.String.toString());
     const isCollection = ref(false);
     const usageHint = ref("");
+    const defaultValue = ref("");
     const allowedValues = ref<string[]>([]);
 
     const dataTypeItems = enumToListItemBag(ParameterSchemaDataTypeDescription);
@@ -174,6 +183,7 @@
         dataType.value = ParameterSchemaDataType.String.toString();
         isCollection.value = false;
         usageHint.value = "";
+        defaultValue.value = "";
         allowedValues.value = [];
 
         isEditingParameter.value = true;
@@ -192,6 +202,7 @@
         dataType.value = parameter.dataType.toString();
         isCollection.value = parameter.isCollection;
         usageHint.value = parameter.usageHint ?? "";
+        defaultValue.value = parameter.defaultValue ?? "";
         allowedValues.value = parameter.allowedValues ?? [];
 
         isEditingParameter.value = true;
@@ -237,6 +248,7 @@
         parameter.dataType = toNumber(dataType.value) as ParameterSchemaDataType;
         parameter.isCollection = isCollection.value;
         parameter.usageHint = usageHint.value;
+        parameter.defaultValue = defaultValue.value;
         parameter.allowedValues = allowedValues.value;
 
         isEditingParameter.value = false;

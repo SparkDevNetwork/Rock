@@ -207,7 +207,7 @@ namespace Rock.Blocks.Core.AI
                 Temperature = promptSettings.Temperature,
                 MaxTokens = promptSettings.MaxTokens,
                 Prompt = promptSettings.Prompt,
-                PromptParameters = promptSettings.PromptParameters?.Select( ToSchemaBag ).ToList(),
+                PromptParameters = promptSettings.PromptParameters?.Select( ToParameterBag ).ToList(),
             };
         }
 
@@ -323,32 +323,44 @@ namespace Rock.Blocks.Core.AI
                 () => promptSettings.Prompt = box.Bag.Prompt );
 
             box.IfValidProperty( nameof( box.Bag.PromptParameters ),
-                () => promptSettings.PromptParameters = box.Bag.PromptParameters?.Select( FromSchemaBag ).ToList() );
+                () => promptSettings.PromptParameters = box.Bag.PromptParameters?.Select( FromParameterBag ).ToList() );
 
             entity.SetAdditionalSettings( promptSettings );
 
             return true;
         }
 
-        private ParameterSchemaBag ToSchemaBag( ParameterSchema schema )
+        /// <summary>
+        /// Converts a <see cref="ParameterSchema"/> to a <see cref="ParameterSchemaBag"/>.
+        /// </summary>
+        /// <param name="parameter">The parameter to be converted.</param>
+        /// <returns>An instance of <see cref="ParameterSchemaBag"/>.</returns>
+        private ParameterSchemaBag ToParameterBag( ParameterSchema parameter )
         {
             return new ParameterSchemaBag
             {
-                AllowedValues = schema.AllowedValues?.ToList(),
-                DataType = schema.DataType,
-                UsageHint = schema.UsageHint,
-                IsRequired = schema.IsRequired,
-                IsCollection = schema.IsCollection,
-                Name = schema.Name,
+                AllowedValues = parameter.AllowedValues?.ToList(),
+                DataType = parameter.DataType,
+                DefaultValue = parameter.DefaultValue,
+                UsageHint = parameter.UsageHint,
+                IsRequired = parameter.IsRequired,
+                IsCollection = parameter.IsCollection,
+                Name = parameter.Name,
             };
         }
 
-        private ParameterSchema FromSchemaBag( ParameterSchemaBag bag )
+        /// <summary>
+        /// Converts a <see cref="ParameterSchemaBag"/> to a <see cref="ParameterSchema"/>.
+        /// </summary>
+        /// <param name="bag">The <see cref="ParameterSchemaBag"/> containing the parameter data to be converted.</param>
+        /// <returns>A <see cref="ParameterSchema"/> object populated with the data from the specified <paramref name="bag"/>.</returns>
+        private ParameterSchema FromParameterBag( ParameterSchemaBag bag )
         {
             return new ParameterSchema
             {
                 AllowedValues = bag.AllowedValues?.ToList(),
                 DataType = bag.DataType,
+                DefaultValue = bag.DefaultValue,
                 UsageHint = bag.UsageHint,
                 IsRequired = bag.IsRequired,
                 IsCollection = bag.IsCollection,

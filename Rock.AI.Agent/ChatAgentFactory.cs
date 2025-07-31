@@ -303,7 +303,7 @@ namespace Rock.AI.Agent
         private ICollection<KernelFunction> GetVirtualSkillFunctions( IReadOnlyCollection<AgentFunction> functions, IServiceProvider kernelServiceProvider )
         {
             var pluginFunctions = new Dictionary<string, KernelFunction>();
-            var x = 1;
+
             if ( functions == null )
             {
                 return Array.Empty<KernelFunction>();
@@ -311,6 +311,7 @@ namespace Rock.AI.Agent
 
             var requestContext = _requestContextAccessor.RockRequestContext;
             var mergeFields = requestContext.GetCommonMergeFields();
+            var schemaBuilder = new ParamaterSchemaBuilder();
 
             foreach ( var function in functions )
             {
@@ -336,15 +337,11 @@ namespace Rock.AI.Agent
 
                 else if ( function.FunctionType == FunctionType.ExecuteLava )
                 {
-                    var parameters = function.Parameters.Select( p => p.GetKernelParameterMetadata() ).ToList();
+                    var parameters = function.Parameters.Select( schemaBuilder.BuildKernelParameterMetadata ).ToList();
                     var proxySkill = new ProxyFunction( kernelServiceProvider.GetRequiredService<AgentRequestContext>(), requestContext );
 
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
-                        ( Func<Kernel, KernelArguments, string> ) ( ( Kernel kernel, KernelArguments args ) =>
-                        {
-                            // Create a ProxyFunction instance that will be used to run the function.
-                            return proxySkill.ExecuteLava( function, args );
-                        } ),
+                        method: ( Func<KernelArguments, string> ) ( args => proxySkill.ExecuteLava( function, args ) ),
                         functionName: function.Key,
                         description: function.UsageHint,
                         parameters: parameters,

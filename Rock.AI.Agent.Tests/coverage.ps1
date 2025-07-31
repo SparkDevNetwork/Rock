@@ -10,7 +10,6 @@ coverlet bin\Debug\net472\Rock.AI.Agent.Tests.dll `
     --target dotnet `
     --targetargs "vstest bin\Debug\net472\Rock.AI.Agent.Tests.dll /Tests:$tests"`
     --include "[Rock.AI.Agent]$include.*" `
-    --include "[Rock]$include.*" `
     --skipautoprops `
     --format opencover `
     --exclude-assemblies-without-sources=none `

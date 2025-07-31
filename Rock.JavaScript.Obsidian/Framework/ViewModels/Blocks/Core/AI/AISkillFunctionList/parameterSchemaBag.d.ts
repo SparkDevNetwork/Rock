@@ -34,6 +34,9 @@ export type ParameterSchemaBag = {
     /** The type of data allowed in the parameter. */
     dataType: ParameterSchemaDataType;
 
+    /** The default value to use for the parameter if no value is provided. */
+    defaultValue?: string | null;
+
     /**
      * Indicates that the parameter is a collection of values. If true, the
      * DataType represents the type of each item in the collection.
