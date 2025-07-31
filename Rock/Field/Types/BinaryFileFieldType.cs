@@ -50,6 +50,8 @@ namespace Rock.Field.Types
 
         private const string BINARY_FILE_TYPES_PROPERTY_KEY = "binaryFileTypes";
 
+        private const string BINARY_FILE_OPTIONS = "binaryFileOptions";
+
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicEditConfigurationProperties( Dictionary<string, string> privateConfigurationValues )
         {
@@ -164,42 +166,55 @@ namespace Rock.Field.Types
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPrivateConfigurationValues( Dictionary<string, string> publicConfigurationValues )
         {
-            var configurationProperties = base.GetPrivateConfigurationValues( publicConfigurationValues );
+            var configurationValues = base.GetPrivateConfigurationValues( publicConfigurationValues );
 
-            // Get the Guid value if one exists.
-            if ( publicConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
-            {
-                var publicValue = publicConfigurationValues[BINARY_FILE_TYPE].FromJsonOrNull<ListItemBag>();
+            var publicValue = publicConfigurationValues.GetValueOrNull( BINARY_FILE_TYPE )?.FromJsonOrNull<ListItemBag>()?.Value;
+            configurationValues[BINARY_FILE_TYPE] = publicValue ?? string.Empty;
 
-                if ( !string.IsNullOrWhiteSpace( publicValue?.Value ) )
-                {
-                    configurationProperties[BINARY_FILE_TYPE] = publicValue.Value;
-                }
-            }
+            configurationValues.Remove( BINARY_FILE_OPTIONS );
 
-            return configurationProperties;
+            return configurationValues;
         }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetPublicConfigurationValues( Dictionary<string, string> privateConfigurationValues, ConfigurationValueUsage usage, string value )
         {
-            var configurationProperties = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
-
-            if ( privateConfigurationValues.ContainsKey( BINARY_FILE_TYPE ) )
+            if ( usage != ConfigurationValueUsage.View )
             {
-                var guidValue = privateConfigurationValues[BINARY_FILE_TYPE];
-
-                if ( !string.IsNullOrWhiteSpace( guidValue ) && Guid.TryParse( guidValue, out Guid guid ) )
+                using ( var rockContext = new RockContext() )
                 {
-                    configurationProperties[BINARY_FILE_TYPE] = new ListItemBag()
+                    var configurationValues = base.GetPublicConfigurationValues( privateConfigurationValues, usage, value );
+
+                    var binaryFileTypeGuid = privateConfigurationValues.GetValueOrNull( BINARY_FILE_TYPE )?.AsGuidOrNull();
+                    var binaryFileType = BinaryFileTypeCache.Get( binaryFileTypeGuid ?? Guid.Empty );
+
+                    if ( binaryFileType != null )
                     {
-                        Text = BinaryFileTypeCache.Get( guidValue )?.Name,
-                        Value = guidValue.ToString()
-                    }.ToCamelCaseJson( false, true );
+                        configurationValues[BINARY_FILE_TYPE] = new ListItemBag()
+                        {
+                            Text = binaryFileType?.Name,
+                            Value = binaryFileTypeGuid.ToString()
+                        }.ToCamelCaseJson( false, true );
+
+                        configurationValues[BINARY_FILE_OPTIONS] = new BinaryFileService( rockContext )
+                            .Queryable()
+                            .Where( f => f.BinaryFileTypeId == binaryFileType.Id && !f.IsTemporary )
+                            .OrderBy( f => f.FileName )
+                            .Select( t => new ListItemBag
+                            {
+                                Value = t.Guid.ToString(),
+                                Text = t.FileName
+                            } )
+                            .ToList().ToCamelCaseJson( false, true );
+                    }
+
+                    return configurationValues;
                 }
             }
-
-            return configurationProperties;
+            else
+            {
+                return new Dictionary<string, string>();
+            }
         }
 
         #endregion

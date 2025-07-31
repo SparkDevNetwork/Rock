@@ -26,7 +26,7 @@
         </div>
         <div class="filter-rule-remove" v-if="!disableRemoval">
             <button class="btn btn-danger btn-square" @click.prevent="onRemoveRuleClick">
-                <i class="fa fa-times"></i>
+                <i class="ti ti-x"></i>
             </button>
         </div>
     </div>

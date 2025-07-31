@@ -79,15 +79,15 @@
         <span class="progress-bar-tooltip-label">Configured</span>
         <div class='progress-bar-tooltip-counts'>
             <span>
-                <i class='far fa-minus-square'></i>
+                <i class='ti ti-square-rounded-minus'></i>
                 ${minimumCapacity.value === 0 ? "-" : minimumCapacity.value}
             </span>
             <span>
-                <i class='far fa-star'></i>
+                <i class='ti ti-star'></i>
                 ${desiredCapacity.value === 0 ? "-" : desiredCapacity.value}
             </span>
             <span>
-                <i class='far fa-plus-square'></i>
+                <i class='ti ti-square-plus'></i>
                 ${maximumCapacity.value === 0 ? "-" : maximumCapacity.value}
             </span>
         </div>
@@ -95,9 +95,9 @@
     <div class='progress-bar-tooltip-responses'>
         <span class="progress-bar-tooltip-label">Responses</span>
         <div class='progress-bar-tooltip-counts'>
-            <span><i class='far fa-calendar-check'></i> ${confirmedCount.value}</span>
-            <span><i class='fa fa-question'></i> ${pendingCount.value}</span>
-            <span><i class='far fa-calendar-times'></i> ${declinedCount.value}</span>
+            <span><i class='ti ti-calendar-check'></i> ${confirmedCount.value}</span>
+            <span><i class='ti ti-question-mark'></i> ${pendingCount.value}</span>
+            <span><i class='ti ti-calendar-x'></i> ${declinedCount.value}</span>
         </div>
     </div>
 </div>`;

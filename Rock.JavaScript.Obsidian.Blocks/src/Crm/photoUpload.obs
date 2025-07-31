@@ -1,22 +1,22 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <NotificationBox v-if="errorMessage"
-        v-text="errorMessage"
-        alertType="warning" />
+                     v-text="errorMessage"
+                     alertType="warning" />
     <div class="d-flex flex-wrap gap-x-5">
         <ImageEditor
-            v-for="(person, index) in personPhotoList"
-            :key="index"
-            v-model="person.profilePhoto"
-            :binaryFileTypeGuid="BinaryFiletype.PersonImage"
-            :disabled="person.isStaffMemberDisabled || isLoading"
-            :label="person.fullName ?? ''"
-            :noPictureUrl="person.noPhotoUrl ?? '/Assets/Images/person-no-photo-unknown.svg'"
-            :hideDeleteButton="true"
-            :buttonCssClass="person.isStaffMemberDisabled ? 'btn btn-default btn-sm margin-t-sm text-muted' : 'btn btn-primary btn-sm margin-t-sm'"
-            :buttonIconCssClass="person.isStaffMemberDisabled ? 'fa fa-ban text-muted' : 'fa fa-pencil'"
-            :buttonText="person.isStaffMemberDisabled ? 'Staff Member' : 'Select Photo'"
-            @update:modelValue="updatePersonProfilePhoto(person.idKey ?? null, person.profilePhoto?.value ?? null)" />
+                     v-for="(person, index) in personPhotoList"
+                     :key="index"
+                     v-model="person.profilePhoto"
+                     :binaryFileTypeGuid="BinaryFiletype.PersonImage"
+                     :disabled="person.isStaffMemberDisabled || isLoading"
+                     :label="person.fullName ?? ''"
+                     :noPictureUrl="person.noPhotoUrl ?? '/Assets/Images/person-no-photo-unknown.svg'"
+                     :hideDeleteButton="true"
+                     :buttonCssClass="person.isStaffMemberDisabled ? 'btn btn-default btn-sm margin-t-sm text-muted' : 'btn btn-primary btn-sm margin-t-sm'"
+                     :buttonIconCssClass="person.isStaffMemberDisabled ? 'ti ti-ban text-muted' : 'ti ti-pencil'"
+                     :buttonText="person.isStaffMemberDisabled ? 'Staff Member' : 'Select Photo'"
+                     @update:modelValue="updatePersonProfilePhoto(person.idKey ?? null, person.profilePhoto?.value ?? null)" />
     </div>
 </template>
 

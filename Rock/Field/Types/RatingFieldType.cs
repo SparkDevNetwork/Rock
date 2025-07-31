@@ -107,7 +107,7 @@ namespace Rock.Field.Types
 
             for ( int i = 1; i <= GetMaxRating( privateConfigurationValues ); i++ )
             {
-                sb.AppendFormat( "<i class='fa fa-rating{0}'></i>", i > rating ? "-unselected" : "-selected" );
+                sb.AppendFormat( "<i class='ti {0}'></i>", i > rating ? "ti-star" : "ti-star-filled" );
             }
 
             return sb.ToString();
@@ -371,7 +371,7 @@ namespace Rock.Field.Types
             var sb = new StringBuilder();
             for ( int i = 1; i <= GetMaxRating( configurationValues ); i++ )
             {
-                sb.AppendFormat( "<i class='fa fa-rating{0}'></i>", i > rating ? "-unselected" : "-selected" );
+                sb.AppendFormat( "<i class='ti {0}'></i>", i > rating ? "ti-star" : "ti-star-filled" );
             }
 
             return sb.ToString();

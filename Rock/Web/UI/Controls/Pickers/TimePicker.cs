@@ -32,7 +32,7 @@ namespace Rock.Web.UI.Controls
         {
             base.OnInit( e );
             this.AddCssClass( "input-width-md" );
-            this.AppendText = "<span class='add-on'><i class='fa fa-clock-o'></i></span>";
+            this.AppendText = "<span class='add-on'><i class='ti ti-clock'></i></span>";
 
             if ( string.IsNullOrWhiteSpace( this.SourceTypeName ) )
             {
@@ -69,7 +69,7 @@ namespace Rock.Web.UI.Controls
         {
             writer.WriteLine( "<div class='timepicker-input js-timepicker-input'>" );
             base.RenderBaseControl( writer );
-            writer.WriteLine( "  <i class='fa fa-times js-timepicker-clear'></i>");
+            writer.WriteLine( "  <i class='ti ti-x js-timepicker-clear'></i>");
             writer.WriteLine( " </div>" );
         }
 

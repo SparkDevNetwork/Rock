@@ -4,7 +4,7 @@
     <ContentTemplate>
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-openid"></i>
+                <h1 class="panel-title"><i class="ti ti-lock"></i>
                     <asp:Literal ID="lTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">

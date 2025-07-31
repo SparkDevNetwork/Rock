@@ -27,9 +27,13 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Data;
-using Rock.Reporting;
 using Rock.Web.UI.Controls;
 using Newtonsoft.Json;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Rest.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Security;
 
 namespace Rock.Reporting.DataSelect
 {
@@ -113,6 +117,81 @@ namespace Rock.Reporting.DataSelect
             {
                 return "Formatted Field";
             }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            SelectionData data = DeserializeSelectionData( selection );
+
+            var propertyBags = GetPropertyList().Select( p => new ListItemBag { Text = p, Value = p } ).ToList();
+            var sortByPropertyBags = new List<ListItemBag>();
+
+            if ( data.Property.IsNotNullOrWhiteSpace() )
+            {
+                sortByPropertyBags = GetSortPropertyList( data.Property )
+                    .Select( p => new ListItemBag { Text = p, Value = p } )
+                    .ToList();
+            }
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/formattedFieldSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "propertyBags", propertyBags.ToCamelCaseJson(false, true) },
+                    { "sortByPropertyBags", sortByPropertyBags.ToCamelCaseJson(false, true) },
+                },
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            SelectionData data = DeserializeSelectionData( selection );
+
+            var result = new Dictionary<string, string>
+            {
+                { "property", data.Property ?? string.Empty },
+                { "sortByProperty", data.SortProperty ?? string.Empty },
+                { "template", data.Template ?? string.Empty }
+            };
+
+            return result;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var selection = new SelectionData();
+
+            selection.Template = data.GetValueOrNull( "template" );
+            selection.Property = data.GetValueOrNull( "property" );
+            selection.SortProperty = data.GetValueOrNull( "sortByProperty" );
+
+
+            return selection.ToJson();
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> ExecuteComponentRequest( Dictionary<string, string> request, SecurityGrant securityGrant, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var action = request.GetValueOrNull( "action" );
+            var options = request.GetValueOrNull( "options" )?.FromJsonOrNull<FormattedFieldSelectGetSortByPropertiesOptionsBag>();
+
+            if ( action == "GetSortByProperties" && options != null && options.Property.IsNotNullOrWhiteSpace() )
+            {
+                var sortByPropertyBags = GetSortPropertyList( options.Property )
+                        .Select( p => new ListItemBag { Text = p, Value = p } )
+                        .ToList();
+
+                return new Dictionary<string, string> { { "sortByPropertyBags", sortByPropertyBags.ToCamelCaseJson( false, true ) } };
+            }
+            return null;
         }
 
         #endregion
@@ -216,27 +295,9 @@ namespace Rock.Reporting.DataSelect
             ddlProperty.AutoPostBack = true;
             parentControl.Controls.Add( ddlProperty );
 
-            /* Get all the DataMember properties that are not hidden in reporting. */
-            var properties = typeof( TargetEntityType )
-                .GetProperties()
-                .Where( p => System.Attribute.IsDefined( p, typeof( DataMemberAttribute ) ) )
-                .Where( p => !System.Attribute.IsDefined( p, typeof( NotMappedAttribute ) ) )
-                .Where( p => !System.Attribute.IsDefined( p, typeof( HideFromReportingAttribute ) ) )
-                .Select( p => p.Name )
-                .ToList();
-
-            /* Some of the navigation properties are not marked as DataMember so add missing ones in. */
-            foreach ( var p in GetNavigationPropertyNames( typeof( TargetEntityType ) ) )
-            {
-                if ( !properties.Contains( p ) )
-                {
-                    properties.Add( p );
-                }
-            }
-
             /* Add each of the available properties to the drop down list. */
             ddlProperty.Items.Add( new ListItem() );
-            foreach ( var prop in properties.OrderBy( n => n ) )
+            foreach ( var prop in GetPropertyList() )
             {
                 ddlProperty.Items.Add( prop );
             }
@@ -262,6 +323,53 @@ namespace Rock.Reporting.DataSelect
             parentControl.Controls.Add( codeEditor );
 
             return new System.Web.UI.Control[] { ddlProperty, ddlSortProperty, codeEditor };
+        }
+
+        private IEnumerable<string> GetPropertyList()
+        {
+            /* Get all the DataMember properties that are not hidden in reporting. */
+            var properties = typeof( TargetEntityType )
+                .GetProperties()
+                .Where( p => System.Attribute.IsDefined( p, typeof( DataMemberAttribute ) ) )
+                .Where( p => !System.Attribute.IsDefined( p, typeof( NotMappedAttribute ) ) )
+                .Where( p => !System.Attribute.IsDefined( p, typeof( HideFromReportingAttribute ) ) )
+                .Select( p => p.Name )
+                .ToList();
+
+            /* Some of the navigation properties are not marked as DataMember so add missing ones in. */
+            foreach ( var p in GetNavigationPropertyNames( typeof( TargetEntityType ) ) )
+            {
+                if ( !properties.Contains( p ) )
+                {
+                    properties.Add( p );
+                }
+            }
+
+            return properties.OrderBy( n => n );
+        }
+
+        private IEnumerable<string> GetSortPropertyList( string propertyName )
+        {
+            if ( !string.IsNullOrWhiteSpace( propertyName ) )
+            {
+                var targetProperty = typeof( TargetEntityType ).GetProperty( propertyName );
+                if ( targetProperty != null )
+                {
+                    var properties = targetProperty
+                        .PropertyType
+                        .GetProperties()
+                        .Where( p => System.Attribute.IsDefined( p, typeof( DataMemberAttribute ) ) )
+                        .Where( p => !System.Attribute.IsDefined( p, typeof( NotMappedAttribute ) ) )
+                        .Where( p => !System.Attribute.IsDefined( p, typeof( HideFromReportingAttribute ) ) )
+                        .Where( p => !typeof( IEnumerable ).IsAssignableFrom( p.PropertyType ) )
+                        .Where( p => !typeof( IEntity ).IsAssignableFrom( p.PropertyType ) )
+                        .Select( p => p.Name );
+
+                    return properties;
+                }
+            }
+
+            return new List<string>();
         }
 
         /// <summary>
@@ -291,26 +399,11 @@ namespace Rock.Reporting.DataSelect
             ddlSortProperty.Items.Clear();
             ddlSortProperty.Items.Add( new ListItem() );
 
-            if ( !string.IsNullOrWhiteSpace( propertyName ) )
-            {
-                var targetProperty = typeof( TargetEntityType ).GetProperty( propertyName );
-                if ( targetProperty != null )
-                {
-                    var properties = targetProperty
-                        .PropertyType
-                        .GetProperties()
-                        .Where( p => System.Attribute.IsDefined( p, typeof( DataMemberAttribute ) ) )
-                        .Where( p => !System.Attribute.IsDefined( p, typeof( NotMappedAttribute ) ) )
-                        .Where( p => !System.Attribute.IsDefined( p, typeof( HideFromReportingAttribute ) ) )
-                        .Where( p => !typeof( IEnumerable ).IsAssignableFrom( p.PropertyType ) )
-                        .Where( p => !typeof( IEntity ).IsAssignableFrom( p.PropertyType ) )
-                        .Select( p => p.Name );
+            var properties = GetSortPropertyList( propertyName );
 
-                    foreach ( var prop in properties )
-                    {
-                        ddlSortProperty.Items.Add( prop );
-                    }
-                }
+            foreach ( var prop in properties )
+            {
+                ddlSortProperty.Items.Add( prop );
             }
 
             if ( ddlSortProperty.Items.FindByValue( oldSelection ) != null )
@@ -429,7 +522,7 @@ namespace Rock.Reporting.DataSelect
             var expr = Expression.Call( typeof( Queryable ),
                 "Select",
                 new Type[] { entityType, prop.PropertyType },
-                Expression.Constant(queryable),
+                Expression.Constant( queryable ),
                 pred );
 
             /* Wrap it in an IQueryable as that is what the helper method needs later */

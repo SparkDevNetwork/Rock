@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Note Watch List" )]
     [Category( "Core" )]
     [Description( "Displays a list of note watches." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

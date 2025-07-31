@@ -50,7 +50,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Login" )]
     [Category( "Security" )]
     [Description( "Allows the user to authenticate." )]
-    [IconCssClass( "fa fa-user-lock" )]
+    [IconCssClass( "ti ti-user-shield" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

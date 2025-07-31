@@ -64,7 +64,7 @@
                                                         <Rock:RockTextBox ID="rtbRoute" runat="server" Label="Route" Help="The route that the user is directed to after clicking the action button. This will be formatted using an EntitySetId in position {0}. If position {0} is not included in this value, then the EntitySetId will be included as a query parameter. Example: /CustomLaunchRoute/{0}" />
                                                     </div>
                                                     <div class="col-md-6">
-                                                        <Rock:RockTextBox ID="rtbIcon" runat="server" Label="Icon CSS Class" Help="The class of the icon to be used on the action button. Example: fa fa-cog" />
+                                                        <Rock:RockTextBox ID="rtbIcon" runat="server" Label="Icon CSS Class" Help="The class of the icon to be used on the action button. Example: ti ti-settings" />
                                                     </div>
                                                     <div class="col-md-12">
                                                         <Rock:RockTextBox ID="rtbHelp" runat="server" Label="Help Text" Help="The help text shown on mouse-over of the action button icon. Example: Click here to go to the Meal-Train kickoff page." />
@@ -73,7 +73,7 @@
                                             </div>
                                             <div class="col-md-1">
                                                 <asp:LinkButton ID="btnDeleteCustomAction" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteCustomAction_Click" >
-                                                    <i class="fa fa-times"></i>
+                                                    <i class="ti ti-x"></i>
                                                 </asp:LinkButton>
                                             </div>
                                         </div>
@@ -112,7 +112,7 @@
                                                 <Rock:CodeEditor ID="ceLavaTemplate" runat="server" Help="The properties of the item in each row can be accessed using the 'Row' merge field. <span class='tip tip-lava'></span>" Label="Lava Template" EditorMode="Lava" EditorHeight="275" />
                                             </div>
                                             <div class="col-md-1">
-                                            <asp:LinkButton ID="btnDeleteColumn" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteColumn_Click" ><i class="fa fa-times"></i></asp:LinkButton>
+                                            <asp:LinkButton ID="btnDeleteColumn" runat="server" CssClass="btn btn-danger btn-sm" OnClick="btnDeleteColumn_Click" ><i class="ti ti-x"></i></asp:LinkButton>
                                             </div>
                                         </div>
                                     </ItemTemplate>

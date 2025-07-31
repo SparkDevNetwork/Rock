@@ -2,7 +2,7 @@
 <template>
     <ContentDropDownPicker v-bind="formFieldProps"
                            :modelValue="internalValues"
-                           iconCssClass="fa fa-building-o"
+                           iconCssClass="ti ti-building"
                            :showClear="showClear"
                            @primaryButtonClicked="select"
                            @secondaryButtonClicked="cancel"
@@ -20,7 +20,7 @@
                 <TextBox v-model="searchValue" size="small">
                     <template #inputGroupAppend>
                         <span class="input-group-btn">
-                            <button class="btn btn-default" @click.prevent="search"><i class="fa fa-search"></i></button>
+                            <button class="btn btn-default" @click.prevent="search"><i class="ti ti-search"></i></button>
                         </span>
                     </template>
                 </TextBox>
@@ -35,7 +35,7 @@
                         <span class="text-muted text-sm" v-html="item.category || 'Top Level'"></span>
                     </div>
                     <button title="Remove From Preview" class="btn btn-link text-color btn-xs btn-square ml-auto flex-shrink-0 text-center" @click.prevent="removePreviewItem(toGuidOrNull(item.value) ?? emptyGuid)">
-                        <i class="fa fa-times"></i>
+                        <i class="ti ti-x"></i>
                     </button>
                 </div>
             </Loading>
@@ -93,11 +93,11 @@
                     :title="mode == 'tree' ? 'Preview' : 'Tree View'"
                     v-if="(multiple && internalValues.length > 0) || mode == 'search'"
                     @click.prevent="changeMode">
-                <i class="fa" :class="mode == 'tree' ? 'fa-list' : 'fa-sitemap'"></i>
+                <i class="ti" :class="mode == 'tree' ? 'ti-list' : 'ti-sitemap'"></i>
             </button>
 
             <label class="rock-checkbox-icon text-normal mb-0" v-if="showInactiveCheckbox">
-                <i :class="['fa', includeInactive ? 'fa-check-square-o' : 'fa-square-o']"></i> Show Inactive
+                <i :class="['ti', includeInactive ? 'ti-square-check' : 'ti-square']"></i> Show Inactive
                 <span style="display:none"><input type="checkbox" v-model="includeInactive"></span>
             </label>
         </template>
@@ -337,7 +337,7 @@
             const timeout = setTimeout(() => {
                 treeItems.value = [{
                     isActive: true,
-                    iconCssClass: "fa fa-spinner fa-spin",
+                    iconCssClass: "ti ti-rotate-2 ti-spin",
                     isFolder: false,
                     hasChildren: false
                 }];
@@ -361,7 +361,7 @@
             const timeout = setTimeout(() => {
                 parentNode.children = [{
                     isActive: true,
-                    iconCssClass: "fa fa-spinner fa-spin",
+                    iconCssClass: "ti ti-rotate-2 ti-spin",
                     isFolder: false,
                     hasChildren: false
                 }];
@@ -497,7 +497,7 @@
 
     // The picker should select on item click when we are not selecting multiple and we are not in search mode.
     watch(internalValues, (): void => {
-        if(!props.multiple && mode.value !== "search") {
+        if (!props.multiple && mode.value !== "search") {
             select();
         }
     });
@@ -533,7 +533,7 @@
                     return {
                         text: item.text,
                         value: item.value,
-                        category: item.category?.replace(/\^/gi, "<i class=\"fa fa-chevron-right px-1\" aria-hidden=\"true\"></i>")
+                        category: item.category?.replace(/\^/gi, "<i class=\"ti ti-chevron-right px-1\" aria-hidden=\"true\"></i>")
                     };
                 });
             }
@@ -599,7 +599,7 @@
                     return {
                         text: item.text,
                         value: item.value,
-                        category: item.category?.replace(/\^/gi, "<i class=\"fa fa-chevron-right px-1\" aria-hidden=\"true\"></i>")
+                        category: item.category?.replace(/\^/gi, "<i class=\"ti ti-chevron-right px-1\" aria-hidden=\"true\"></i>")
                     };
                 });
             }

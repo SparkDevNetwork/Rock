@@ -263,9 +263,9 @@
                                 '<div id="preview-item-' + node.id + '" class="d-flex align-items-center preview-item js-preview-item">' +
                                 '         <div class="flex-fill">' +
                                 '              <span class="text-color d-block">' + node.name + '</span>' +
-                                '              <span class="text-muted text-sm">' + node.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</span>' +
+                                '              <span class="text-muted text-sm">' + node.path.replaceAll('^', '<i class="ti ti-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</span>' +
                                 '         </div>' +
-                                '         <a id="lnk-remove-preview-' + node.id + '" title="Remove From Preview" class="btn btn-link text-color btn-xs btn-square ml-auto js-remove-preview" data-id="' + node.id + '"><i class="fa fa-times"></i></a>' +
+                                '         <a id="lnk-remove-preview-' + node.id + '" title="Remove From Preview" class="btn btn-link text-color btn-xs btn-square ml-auto js-remove-preview" data-id="' + node.id + '"><i class="ti ti-x"></i></a>' +
                                 '</div>';
                         });
 
@@ -642,7 +642,7 @@
                         $('	<div id="pnlSearch_' + controlId + '" class="input-group input-group-sm js-search-panel mb-2" > ' +
                             '		<input id="tbSearch_' + controlId + '" type="text" placeholder="Quick Find" class="form-control" autocapitalize="off" autocomplete="off" autocorrect="off" spellcheck="false" />' +
                             '		<span class="input-group-btn">' +
-                            '			<a id="btnSearch_' + controlId + '" class="btn btn-default btn-sm"><i class="fa fa-search"></i></a>' +
+                            '			<a id="btnSearch_' + controlId + '" class="btn btn-default btn-sm"><i class="ti ti-search"></i></a>' +
                             '		</span>' +
                             '	</div>');
 
@@ -735,7 +735,7 @@
                                             inputHtml +
                                             '        <span class="label-text">' +
                                             '              <span class="text-color d-block' + mutedText + '">' + node.title + '</span>' +
-                                            '              <span class="text-muted text-sm">' + node.path.replaceAll('^', '<i class="fa fa-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</span>' +
+                                            '              <span class="text-muted text-sm">' + node.path.replaceAll('^', '<i class="ti ti-chevron-right pl-1 pr-1" aria-hidden="true"></i>') + '</span>' +
                                             '        </span>' +
                                             '     </label>' +
                                             '</div>';

@@ -35,7 +35,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [DisplayName( "Group View" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows the user to view the details about a group." )]
-    [IconCssClass( "fa fa-user-friends" )]
+    [IconCssClass( "ti ti-users" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

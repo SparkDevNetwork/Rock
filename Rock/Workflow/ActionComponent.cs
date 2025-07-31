@@ -321,6 +321,26 @@ namespace Rock.Workflow
                     value = Security.Encryption.EncryptString( value );
                 }
 
+                /*
+                     7/17/2025 - NA
+
+                     This trims any time component that may be present in the
+                     original value because the FieldType only represents a Date.
+                     We leave the time component in the string value as "00:00:00"
+                     along with the timezone offset so that the value can be interpreted
+                     correctly based on localization.
+
+                     Reason: To address issue #6377 by storing only the Date portion of the value.
+                */
+                if ( attr.FieldType.Field is Field.Types.DateFieldType )
+                {
+                    var dateValue = value.AsDateTime();
+                    if ( dateValue != null )
+                    {
+                        value = dateValue.Value.Date.ToString( "o" );
+                    }
+                }
+
                 if ( attr.EntityTypeId == new Rock.Model.Workflow().TypeId )
                 {
                     action.Activity.Workflow.SetAttributeValue( attr.Key, value );

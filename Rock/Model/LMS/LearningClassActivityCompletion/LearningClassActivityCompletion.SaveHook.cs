@@ -198,7 +198,7 @@ namespace Rock.Model
                         // Some activities (assessment) may not clearly indicate if the Facilitator must
                         // grade the activity before it can be considered complete.
                         // Therefore; we are always evaluating grades until the class is considered over.
-                        ClassEndDate = a.LearningClassActivity.LearningClass.LearningSemester.EndDate,
+                        ClassEndDate = a.LearningClassActivity.LearningClass.LearningSemester?.EndDate,
                     } )
                     .ToList();
 
@@ -252,7 +252,7 @@ namespace Rock.Model
 
                 // Set the LearningParticipant current class grade values.
                 participant.LearningGradePercent = gradePercent;
-                participant.LearningGradingSystemScaleId = gradeScaleEarned.Id;
+                participant.LearningGradingSystemScaleId = gradeScaleEarned?.Id;
                 participant.LearningCompletionStatus = hasIncompleteAssignments || hasUngradedAssignments ? Enums.Lms.LearningCompletionStatus.Incomplete : currentGradePassFailStatus;
 
                 RockContext.SaveChanges();

@@ -1,18 +1,8 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="d-flex align-items-center">
-        <div class="form-control-static mr-1">
-            <span class="">Trigger when</span>
-        </div>
-
-        <Toggle v-model="triggerWhenAll"
-                trueText="All"
-                falseText="Any"
-                btnSize="xs" />
-
-        <div class="form-control-static">
-            <span class="ml-1">of the rules are true:</span>
-        </div>
-    </div>
+    <RadioButtonList v-model="triggerWhenAll"
+                     label="Trigger When Which Rules Are True"
+                     :items="triggerWhenAllItems" />
 
     <Grid :data="criteriaGridData"
           keyField="guid"
@@ -47,7 +37,7 @@
     import EditSimpleRule from "./editSimpleRule.partial.obs";
     import Grid, { Column, DeleteColumn, EditColumn, TextColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
-    import Toggle from "@Obsidian/Controls/toggle.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
     import { EntityChangeSimpleCriteriaBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/entityChangeSimpleCriteriaBag";
     import { EntityChangeSimpleCriteriaRuleBag } from "@Obsidian/ViewModels/Core/Automation/Triggers/entityChangeSimpleCriteriaRuleBag";
     import { computed, PropType, ref, watch } from "vue";
@@ -55,6 +45,7 @@
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
     import { updateRefValue } from "@Obsidian/Utility/component";
     import { EntityChangeSimpleChangeType } from "@Obsidian/Enums/Core/Automation/Triggers/entityChangeSimpleChangeType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         /**
@@ -80,8 +71,13 @@
 
     // #region Values
 
-    const triggerWhenAll = ref(true);
+    const triggerWhenAll = ref<"true" | "false">("true");
     const criteriaData = ref<EntityChangeSimpleCriteriaRuleBag[]>([]);
+
+    const triggerWhenAllItems: ListItemBag[] = [
+        { value: "false", text: "Any Rules Are True" },
+        { value: "true", text: "All Rules Are True" }
+    ];
 
     const showCriteriaModal = ref(false);
     const editCriteriaBag = ref<EntityChangeSimpleCriteriaRuleBag | null>(null);
@@ -104,7 +100,7 @@
     function setValues(): void {
         const criteria = safeParseJson<EntityChangeSimpleCriteriaBag>(props.modelValue);
 
-        updateRefValue(triggerWhenAll, criteria?.areAllRulesRequired ?? true);
+        updateRefValue(triggerWhenAll, (criteria?.areAllRulesRequired ?? true) ? "true" : "false");
         updateRefValue(criteriaData, criteria?.rules ?? []);
     }
 
@@ -208,7 +204,7 @@
 
     watch([triggerWhenAll, criteriaData], () => {
         const newValue: EntityChangeSimpleCriteriaBag = {
-            areAllRulesRequired: triggerWhenAll.value,
+            areAllRulesRequired: triggerWhenAll.value === "true" ? true : false,
             rules: criteriaData.value
         };
 

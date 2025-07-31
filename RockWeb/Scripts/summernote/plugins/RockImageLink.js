@@ -44,7 +44,7 @@
 
   // create button
   var button = ui.button({
-    contents: '<i class="fa fa-link"/>',
+    contents: '<i class="ti ti-link"/>',
     className: 'js-rockimagelink',
     tooltip: 'Set Image Link',
     click: function (a)

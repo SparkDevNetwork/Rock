@@ -23,6 +23,17 @@
     <ExcludeFromRockWebCopy>$(ExcludeFromRockWebCopy);System.Management.Automation.dll</ExcludeFromRockWebCopy>
   </PropertyGroup>
 
+  <ItemGroup>
+    <!-- jQuery 1.12.4 warnings. This package isn't actually used by us, but is a transient dependency. -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-6c3j-c64m-qhgq" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-jpcq-cgw6-v4j6" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-rmxg-73gg-4p98" />
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-gxr4-xjj5-5px2" />
+
+    <!-- RestSharp 105.2.3. This package can't be updated without it being a breaking change to plugins. -->
+    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-9pq7-rcxv-47vq" />
+  </ItemGroup>
+
   <PropertyGroup Label="Normalise stack trace file locations">
     <PathMap>$([System.IO.Path]::GetFullPath('$(MSBuildThisFileDirectory)'))=\</PathMap>
   </PropertyGroup>

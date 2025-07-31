@@ -1183,7 +1183,7 @@ namespace Rock.Communication.Chat
                     var saveChatChannelKeyByGroupIds = new Dictionary<int, string>();
 
                     // Keep track of the channels that should and should NOT trigger a group member sync.
-                    var channelsToTriggerGroupMemberSync = new List<ChatChannel>();
+                    var queryableKeysToTriggerGroupMemberSync = new HashSet<string>();
                     var queryableKeysToAvoidGroupMemberSync = new HashSet<string>();
 
                     // A mapping dictionary and local function to add a group to the outgoing results collection only AFTER
@@ -1287,13 +1287,13 @@ namespace Rock.Communication.Chat
                                     // If this channel was previously inactive and is now being reactivated, trigger a group member sync.
                                     if ( !existingChannel.IsActive && channel.IsActive )
                                     {
-                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                        queryableKeysToTriggerGroupMemberSync.Add( channel.QueryableKey );
                                     }
 
                                     // If the chat notification mode has changed, we need to re-sync all of the members.
                                     if ( HasChatNotificationModeChanged( existingChannel, channel ) )
                                     {
-                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                        queryableKeysToTriggerGroupMemberSync.Add( channel.QueryableKey );
                                     }
                                 }
                                 else
@@ -1303,7 +1303,7 @@ namespace Rock.Communication.Chat
 
                                     if ( syncConfig.ShouldSyncAllGroupMembers )
                                     {
-                                        channelsToTriggerGroupMemberSync.Add( channel );
+                                        queryableKeysToTriggerGroupMemberSync.Add( channel.QueryableKey );
                                     }
                                 }
                             }
@@ -1362,9 +1362,7 @@ namespace Rock.Communication.Chat
                         if ( createdKeys?.Any() == true )
                         {
                             createdKeys.ForEach( key => AddGroupToResult( key, ChatSyncType.Create ) );
-                            channelsToTriggerGroupMemberSync.AddRange(
-                                channelsToCreate.Where( c => createdKeys.Contains( c.QueryableKey ) )
-                            );
+                            queryableKeysToTriggerGroupMemberSync.UnionWith( createdKeys );
                         }
 
                         if ( createdResult?.HasException == true )
@@ -1384,13 +1382,7 @@ namespace Rock.Communication.Chat
 
                             if ( syncConfig.ShouldSyncAllGroupMembers )
                             {
-                                channelsToTriggerGroupMemberSync.AddRange(
-                                    channelsToUpdate.Where( c =>
-                                        !queryableKeysToAvoidGroupMemberSync.Contains( c.QueryableKey )
-                                        && !channelsToTriggerGroupMemberSync.Contains( c )
-                                        && updatedKeys.Contains( c.QueryableKey )
-                                    )
-                                );
+                                queryableKeysToTriggerGroupMemberSync.UnionWith( updatedKeys );
                             }
                         }
 
@@ -1434,10 +1426,15 @@ namespace Rock.Communication.Chat
                     }
 
                     // Do we have any groups whose group members should be synced to channel members?
-                    foreach ( var channel in channelsToTriggerGroupMemberSync )
+                    foreach ( var queryableKey in queryableKeysToTriggerGroupMemberSync )
                     {
+                        if ( queryableKeysToAvoidGroupMemberSync.Contains( queryableKey ) )
+                        {
+                            continue;
+                        }
+
                         // Try to sync the group members.
-                        if ( groupIdByQueryableKeys.TryGetValue( channel.QueryableKey, out var groupId ) )
+                        if ( groupIdByQueryableKeys.TryGetValue( queryableKey, out var groupId ) )
                         {
                             var membersResult = await SyncGroupMembersToChatProviderAsync( groupId, syncConfig );
 
@@ -2734,7 +2731,7 @@ namespace Rock.Communication.Chat
 
                 try
                 {
-                    var result = ChatProvider.GetChatToRockSyncCommands( webhookRequests );
+                    var result = ChatProvider.TransformChatToRockWebhooks( webhookRequests );
                     if ( result == null || result?.HasException == true )
                     {
                         Logger.LogError( result?.Exception, logMessage );
@@ -2743,6 +2740,11 @@ namespace Rock.Communication.Chat
                     if ( result?.SyncCommands?.Any() == true )
                     {
                         await SyncFromChatToRockAsync( result.SyncCommands );
+                    }
+
+                    if ( result?.MessageEvents?.Any() == true )
+                    {
+                        TriggerMessageAutomations( result.MessageEvents );
                     }
                 }
                 catch ( Exception ex )
@@ -3771,6 +3773,228 @@ namespace Rock.Communication.Chat
             }
         }
 
+        /// <summary>
+        /// Gets a list of <see cref="RockChatFallbackNotificationPerson"/>s who need to receive a fallback notification
+        /// to alert them of recent chat activity.
+        /// </summary>
+        /// <param name="config">The configuration object to provide filters when querying.</param>
+        /// <returns>
+        /// A list of <see cref="RockChatFallbackNotificationPerson"/>s who need to receive a fallback notification.
+        /// </returns>
+        /// <remarks>
+        /// This will target members of the specified channel who either don't have a personal device or don't have any
+        /// personal devices with notifications currently enabled.
+        /// </remarks>
+        internal List<RockChatFallbackNotificationPerson> GetPeopleNeedingFallbackChatNotifications( FallbackChatNotificationsConfig config )
+        {
+            var anyEventChannelMembers = config?.EventChannelMembers?.Any() == true;
+
+            if ( config == null
+                || config.SystemCommunicationId <= 0
+                || ( !config.GroupId.HasValue && !anyEventChannelMembers ) )
+            {
+                // We need a system communication AND either a group ID or a list of channel members to operate against.
+                return new List<RockChatFallbackNotificationPerson>();
+            }
+
+            // The UI allows an administrator to define a suppression window of zero minutes, indicating that fallback
+            // notifications should never be suppressed (the fallback individuals should receive a notification for
+            // every message sent within the channel).
+            var now = RockDateTime.Now;
+            DateTime? suppressOnOrAfterDateTime = null;
+            if ( config.NotificationSuppressionMinutes > 0 )
+            {
+                suppressOnOrAfterDateTime = now.AddMinutes( -config.NotificationSuppressionMinutes );
+            }
+
+            var personService = new PersonService( RockContext );
+
+            // We'll project into a temporary type while deciding which people to notify.
+            IQueryable<FallbackChatNotificationPerson> fallbackNotificationPersonQry = null;
+
+            if ( config.GroupId.HasValue )
+            {
+                // If group ID (channel) is defined, we'll treat Rock as the system of truth and operate against its
+                // known group member people.
+                fallbackNotificationPersonQry = new GroupMemberService( RockContext )
+                    .Queryable()
+                    .Include( gm => gm.Person.PhoneNumbers ) // Eager-load phone numbers for SMS notifications.
+                    .Where( gm => gm.GroupId == config.GroupId.Value )
+                    .Select( gm => new FallbackChatNotificationPerson
+                    {
+                        RecipientPerson = gm.Person,
+                        GroupMemberCommunicationPreference = gm.CommunicationPreference
+                    } );
+            }
+            else
+            {
+                // While highly unlikely, it's possible for Rock to receive this message event BEFORE receiving the
+                // corresponding event to create a new chat channel. In this case, we'll rely on the list of chat user
+                // keys provided by the external chat system along with this message event, since we may not have a
+                // GroupMember record yet.
+                var memberChatUserKeys = config.EventChannelMembers
+                    .Select( m => m.ChatPersonKey )
+                    .ToHashSet();
+
+                fallbackNotificationPersonQry = personService
+                    .GetPersonByChatUserKeysQuery( memberChatUserKeys )
+                    .Include( p => p.PhoneNumbers ) // Eager-load phone numbers for SMS notifications.
+                    .Select( p => new FallbackChatNotificationPerson
+                    {
+                        RecipientPerson = p,
+                        GroupMemberCommunicationPreference = null
+                    } );
+            }
+
+            if ( config.PersonIdToExclude.HasValue )
+            {
+                fallbackNotificationPersonQry = fallbackNotificationPersonQry.Where( p => p.RecipientPerson.Id != config.PersonIdToExclude.Value );
+            }
+
+            // Limit the query to people who either:
+            //  1) Don't have a personal device.
+            //  2) Don't have any active personal devices with notifications enabled that have been seen within the
+            //     required number of days in the past.
+            DateTime deviceSeenOnOrAfterDateTime = now.AddDays( -config.DeviceSeenWithinDays );
+            var personIdsWithEnabledDeviceQry = new PersonalDeviceService( RockContext )
+                .Queryable()
+                .Where( pd =>
+                    pd.IsActive
+                    && pd.NotificationsEnabled
+                    && !string.IsNullOrEmpty( pd.DeviceRegistrationId ) // Only mobile devices should have this value defined.
+                    && pd.LastSeenDateTime >= deviceSeenOnOrAfterDateTime
+                )
+                .Select( pd => pd.PersonAlias.PersonId )
+                .Distinct();
+
+            fallbackNotificationPersonQry = fallbackNotificationPersonQry.Where( p => !personIdsWithEnabledDeviceQry.Contains( p.RecipientPerson.Id ) );
+
+            // This will be the final return type for the method.
+            List<RockChatFallbackNotificationPerson> fallbackNotificationPeople;
+
+            if ( !suppressOnOrAfterDateTime.HasValue )
+            {
+                // If a suppression window wasn't provided, we'll send a notification for every message to all people.
+                fallbackNotificationPeople = fallbackNotificationPersonQry
+                    .Select( p => new RockChatFallbackNotificationPerson
+                    {
+                        RecipientPerson = p.RecipientPerson,
+                        GroupMemberCommunicationPreference = p.GroupMemberCommunicationPreference
+                    } )
+                    .ToList();
+            }
+            else
+            {
+                // Query the datetime (if any) each recipient was last sent a fallback notification, restricted to the
+                // suppression window.
+                var lastNotifiedQry = new CommunicationRecipientService( RockContext )
+                    .Queryable()
+                    .Where( cr =>
+                        cr.PersonAliasId != null
+                        && cr.SendDateTime >= suppressOnOrAfterDateTime
+                        && cr.Communication.SystemCommunicationId == config.SystemCommunicationId
+                    )
+                    .GroupBy( cr => cr.PersonAlias.PersonId )
+                    .Select( g => new
+                    {
+                        PersonId = g.Key,
+                        LastNotifiedRockDateTime = g.Max( cr => cr.SendDateTime.Value )
+                    } );
+
+                // [Left Outer] Join the two queries.
+                // (Include people who haven't already received a notification within the suppression window.)
+                fallbackNotificationPeople = fallbackNotificationPersonQry
+                    .GroupJoin(
+                        lastNotifiedQry,
+                        p => p.RecipientPerson.Id,
+                        l => l.PersonId,
+                        ( fallbackNotificationPerson, lastNotified ) => new
+                        {
+                            FallbackNotificationPerson = fallbackNotificationPerson,
+                            LastNotified = lastNotified
+                        }
+                    )
+                    .SelectMany(
+                        pair => pair.LastNotified.DefaultIfEmpty(),
+                        ( pair, lastNotified ) => new RockChatFallbackNotificationPerson
+                        {
+                            RecipientPerson = pair.FallbackNotificationPerson.RecipientPerson,
+                            GroupMemberCommunicationPreference = pair.FallbackNotificationPerson.GroupMemberCommunicationPreference,
+                            LastNotifiedRockDateTime = lastNotified != null ? lastNotified.LastNotifiedRockDateTime : ( DateTime? ) null
+                        }
+                    )
+                    .ToList(); // Materialize the query so we can perform the remaining logic in memory.
+
+                if ( !fallbackNotificationPeople.Any( p => p.LastNotifiedRockDateTime.HasValue ) || !anyEventChannelMembers )
+                {
+                    // Either:
+                    //  1) None of the people have already received a notification within the suppression window.
+                    //  2) The caller did not provide any event channel members to compare against.
+                    //
+                    // We'll notify only those people who have not been sent a notification within the suppression window.
+                    fallbackNotificationPeople = fallbackNotificationPeople
+                        .Where( p => !p.LastNotifiedRockDateTime.HasValue )
+                        .ToList();
+                }
+                else
+                {
+                    // Further refine the recipient list according to the following:
+                    //  1) If they haven't already been notified within the suppression window, notify them.
+                    //  2) If they HAVE already been notified within the suppression window, try to find a matching
+                    //     channel member and qualify them for another notification according to the rules below.
+
+                    // In order to find a given recipient's last read datetime among the provided channel members,
+                    // we'll need to get the mapping between Rock person IDs and external chat user keys.
+                    var personIds = fallbackNotificationPeople.Select( p => p.RecipientPerson.Id ).ToList();
+                    var rockChatUserKeys = personService.GetActiveRockChatUserKeys( personIds );
+
+                    fallbackNotificationPeople = fallbackNotificationPeople
+                        .Where( p =>
+                        {
+                            if ( !p.LastNotifiedRockDateTime.HasValue )
+                            {
+                                // They haven't been notified within the suppression window: notify them.
+                                return true;
+                            }
+
+                            // At this point, since we know we've already notified this person within the suppression
+                            // window, we'll ONLY re-notify them if we find a matching channel member who fully
+                            // qualifies below.
+
+                            var rockChatUserKey = rockChatUserKeys.FirstOrDefault( k => k.PersonId == p.RecipientPerson.Id );
+                            if ( rockChatUserKey == null )
+                            {
+                                // Unable to find a chat user key mapped to this person ID.
+                                return false;
+                            }
+
+                            var eventChannelMember = config.EventChannelMembers.FirstOrDefault( m => m.ChatPersonKey == rockChatUserKey.ChatUserKey );
+                            if ( eventChannelMember?.LastReadAtRockDateTime == null )
+                            {
+                                // Unable to find a channel member's last read datetime mapped to this person ID.
+                                return false;
+                            }
+
+                            // We found a mapping between the person ID and the provided list of channel members.
+                            // Notify them only if they haven’t already caught up: that is,
+                            //  1) They HAVE read the channel since their last notification, BUT
+                            //  2) They HAVEN'T read the channel since this message event took place.
+                            return eventChannelMember.LastReadAtRockDateTime > p.LastNotifiedRockDateTime
+                                && eventChannelMember.LastReadAtRockDateTime < config.EventRockDateTime;
+                        } )
+                        .ToList();
+                }
+            }
+
+            return fallbackNotificationPeople
+                .GroupBy( p => p.RecipientPerson.Id ) // Ensure we have only one instance per person.
+                .Select( g => g
+                    .OrderByDescending( p => p.GroupMemberCommunicationPreference.HasValue )
+                    .First()
+                )
+                .ToList();
+        }
+
         #endregion Rock Model CRUD
 
         #region Converters: From Rock Models To Rock Chat DTOs
@@ -4136,33 +4360,23 @@ namespace Rock.Communication.Chat
                     syncCommand.ResetForSyncAttempt();
 
                     int? groupId = syncCommand.GroupId;
-                    int? groupTypeId = syncCommand.GroupTypeId;
-
                     if ( !groupId.HasValue && syncCommand.ChatChannelKey.IsNullOrWhiteSpace() )
                     {
                         syncCommand.MarkAsUnrecoverable( "Rock group ID and chat channel key are both missing from sync command; unable to identify group." );
                         continue;
                     }
 
-                    if ( !groupTypeId.HasValue )
+                    // Only allow sync operations to be performed against chat-enabled Rock group types.
+                    var groupTypeCache = GroupTypeCache.Get( syncCommand.GroupTypeId );
+                    if ( groupTypeCache == null )
                     {
-                        syncCommand.MarkAsUnrecoverable( "Rock group type ID is missing from sync command." );
+                        syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {syncCommand.GroupTypeId} could not be found." );
                         continue;
                     }
-                    else
+                    else if ( !groupTypeCache.IsChatAllowed )
                     {
-                        // Only allow sync operations to be performed against chat-enabled Rock group types.
-                        var groupTypeCache = GroupTypeCache.Get( groupTypeId.Value );
-                        if ( groupTypeCache == null )
-                        {
-                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} could not be found." );
-                            continue;
-                        }
-                        else if ( !groupTypeCache.IsChatAllowed )
-                        {
-                            syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {groupTypeId} is not chat-enabled." );
-                            continue;
-                        }
+                        syncCommand.MarkAsUnrecoverable( $"Rock group type with ID {syncCommand.GroupTypeId} is not chat-enabled." );
+                        continue;
                     }
 
                     // We'll use a new rock context to keep each command isolated.
@@ -4240,7 +4454,7 @@ namespace Rock.Communication.Chat
                             {
                                 ParentGroupId = ChatDirectMessagesGroupId,
                                 Name = groupName,
-                                GroupTypeId = groupTypeId.Value,
+                                GroupTypeId = syncCommand.GroupTypeId,
                                 ChatChannelKey = syncCommand.ChatChannelKey,
                                 IsActive = syncCommand.IsActive
                             };
@@ -5023,6 +5237,96 @@ namespace Rock.Communication.Chat
             }
         }
 
+        /// <summary>
+        /// Triggers message automations when message events are received from the external chat system.
+        /// </summary>
+        /// <param name="messageEvents">The list of message events.</param>
+        private void TriggerMessageAutomations( List<ChatToRockMessageEvent> messageEvents )
+        {
+            messageEvents = messageEvents
+                ?.Where( e => e != null )
+                .ToList();
+
+            if ( !IsChatEnabled || messageEvents?.Any() != true )
+            {
+                return;
+            }
+
+            var logMessagePrefix = $"{LogMessagePrefix} {nameof( TriggerMessageAutomations ).SplitCase()}";
+            string structuredLog;
+
+            var groupTypeService = new GroupTypeService( RockContext );
+            var groupService = new GroupService( RockContext );
+            var personService = new PersonService( RockContext );
+
+            using ( var activity = ObservabilityHelper.StartActivity( "CHAT: Trigger Message Automations" ) )
+            {
+                foreach ( var messageEvent in messageEvents )
+                {
+                    // Ensure the channel type references a Rock group type.
+                    var groupTypeId = GetGroupTypeId( messageEvent.ChatChannelTypeKey );
+                    if ( !groupTypeId.HasValue )
+                    {
+                        structuredLog = "{ChatChannelTypeKey}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group type with chat channel type key '{structuredLog}' could not be found.", messageEvent.ChatChannelTypeKey );
+                        continue;
+                    }
+
+                    // Only allow message automations to be triggered against chat-enabled Rock group types.
+                    var groupType = groupTypeService.Get( groupTypeId.Value );
+                    if ( groupType == null )
+                    {
+                        structuredLog = "{GroupTypeId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group type with ID {structuredLog} could not be found.", structuredLog );
+                        continue;
+                    }
+                    else if ( !groupType.IsChatAllowed )
+                    {
+                        structuredLog = "{GroupTypeId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group type with ID {structuredLog} is not chat-enabled.", structuredLog );
+                        continue;
+                    }
+
+                    // Assign the group type to the message event.
+                    messageEvent.ChannelType = groupType;
+
+                    // Try to find a group match.
+                    var group = groupService
+                        .GetChatChannelGroupsQuery()
+                        .FirstOrDefault( g => g.ChatChannelKey == messageEvent.ChatChannelKey );
+
+                    if ( group?.GetIsChatEnabled() == false )
+                    {
+                        // If a group match was found, ensure it's chat-enabled.
+                        structuredLog = "{GroupId}";
+                        Logger.LogWarning( $"{logMessagePrefix} failed. Rock group with ID {structuredLog} is not chat-enabled.", structuredLog );
+                        continue;
+                    }
+
+                    // Assign the group to the message event (knowing that it might be null).
+                    messageEvent.Channel = group;
+
+                    // Try to find and assign the person.
+                    var senderPerson = personService.GetByChatUserKey( messageEvent.SenderChatPersonKey );
+                    messageEvent.SenderPerson = senderPerson;
+
+                    Core.Automation.Triggers.ChatMessageMonitor.ProcessMessageEvent( messageEvent );
+
+                    structuredLog = "Rock group type ID {GroupTypeId} ({GroupTypeName}), group ID {GroupId} ({GroupName}), chat message sender person ID {ChatMessageSenderPersonId} ({ChatMessageSenderPersonFullName})";
+
+                    Logger.LogDebug(
+                        $"{logMessagePrefix} succeeded for {structuredLog}.",
+                        groupType.Id,
+                        groupType.Name,
+                        group?.Id,
+                        group?.Name,
+                        senderPerson?.Id,
+                        senderPerson?.FullName
+                    );
+                }
+            }
+        }
+
         #endregion Synchronization: From Chat Provider To Rock
 
         #endregion Private Methods
@@ -5064,6 +5368,23 @@ namespace Rock.Communication.Chat
             /// Gets or sets the unrecoverable reason why the <see cref="Person"/> could not be found.
             /// </summary>
             public string UnrecoverableReason { get; set; }
+        }
+
+        /// <summary>
+        /// Represents a Rock <see cref="Person"/> who's a candidate to receive a fallback chat notification.
+        /// </summary>
+        private class FallbackChatNotificationPerson
+        {
+            /// <summary>
+            /// Gets or sets the <see cref="Person"/> who should receive a fallback notification.
+            /// </summary>
+            public Person RecipientPerson { get; set; }
+
+            /// <summary>
+            /// Gets or sets the <see cref="CommunicationType"/> preference of the <see cref="GroupMember"/> record that
+            /// represents this <see cref="ChatChannelMember"/>, if applicable.
+            /// </summary>
+            public CommunicationType? GroupMemberCommunicationPreference { get; set; }
         }
 
         #endregion Supporting Members

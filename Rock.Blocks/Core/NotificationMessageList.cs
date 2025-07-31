@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Notification Messages" )]
     [Category( "Core" )]
     [Description( "Displays notification messages for the current individual." )]
-    [IconCssClass( "fa fa-bell" )]
+    [IconCssClass( "ti ti-bell" )]
     [SupportedSiteTypes( SiteType.Web, SiteType.Mobile )]
 
     [Rock.SystemGuid.EntityTypeGuid( "5f6bb4e3-94b2-41fa-94d5-af49a97b21cb" )]

@@ -166,7 +166,7 @@ END
         private void ChopBlocksUp()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv17_1();
+            //ChopBlockTypesv17_1();
         }
 
         /// <summary>

@@ -73,7 +73,7 @@
                                             <asp:HiddenField ID="hfRowId" runat="server" Value='<%# Eval("Guid") %>' />
                                             <b><%# Eval("FullName") %></b> <span><%#Eval("RelationshipType") %></span>
                                             <div class="rollover-item control-actions pull-right">
-                                                <asp:LinkButton ID="lbDelete" runat="server" CommandName="delete" CommandArgument='<%# Eval("Guid") %>'><i class="fa fa-times"></i></asp:LinkButton>
+                                                <asp:LinkButton ID="lbDelete" runat="server" CommandName="delete" CommandArgument='<%# Eval("Guid") %>'><i class="ti ti-x"></i></asp:LinkButton>
                                             </div>
                                         </div>
                                     </ItemTemplate>
@@ -116,7 +116,7 @@
                                 <asp:Repeater ID="rptFamilyMembers" runat="server">
                                     <ItemTemplate>
                                         <button type="button" person-id='<%# Eval("Id") %>' class='<%# "btn btn-default btn-lg btn-checkbox" + ((bool)Eval("Selected") ? " active" : "") %>'>
-                                            <i class="fa <%# ((bool)Eval("Selected") ? "fa-check-circle-o" : "fa-circle-o") %>"></i>
+                                            <i class="ti <%# ((bool)Eval("Selected") ? "ti-circle-check" : "ti-circle") %>"></i>
                                             <span class="name"><%# Eval("FullName") %></span>
                                         </button>
                                     </ItemTemplate>
@@ -128,7 +128,7 @@
                                 <asp:Repeater ID="rptOtherMembers" runat="server">
                                     <ItemTemplate>
                                         <button type="button" person-id='<%# Eval("Id") %>' class='<%# "btn btn-default btn-lg btn-checkbox" + ((bool)Eval("Selected") ? " active" : "") %>'>
-                                            <i class="fa <%# ((bool)Eval("Selected") ? "fa-check-circle-o" : "fa-circle-o") %>"></i>
+                                            <i class="ti <%# ((bool)Eval("Selected") ? "ti-circle-check" : "ti-circle") %>"></i>
                                             <span class="name"><%# Eval("FullName") %></span>
                                             <span class="small"><%# Eval("RelationshipType") %></span>
                                         </button>
@@ -170,7 +170,7 @@
                 });
 
                 $('button.btn-checkbox').click( function() {{
-                    $(this).find('i').toggleClass('fa-check-circle-o').toggleClass('fa-circle-o');
+                    $(this).find('i').toggleClass('ti-circle-check').toggleClass('ti-circle');
                 }});
             })
 

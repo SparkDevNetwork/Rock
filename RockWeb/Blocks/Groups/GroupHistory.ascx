@@ -6,12 +6,12 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-history"></i>
+                    <i class="ti ti-history"></i>
                     <asp:Literal ID="lReadOnlyTitle" runat="server" />
                 </h1>
                 <div class="panel-labels">
                     <asp:HyperLink ID="hlMemberHistory" runat="server" CssClass="btn btn-xs btn-default">Member History</asp:HyperLink>
-                    <a class="btn btn-xs btn-default btn-square margin-l-sm" href="#" onclick="javascript: toggleOptions()"><i title="Options" class="fa fa-gear"></i></a>
+                    <a class="btn btn-xs btn-default btn-square margin-l-sm" href="#" onclick="javascript: toggleOptions()"><i title="Options" class="ti ti-settings"></i></a>
                 </div>
             </div>
 

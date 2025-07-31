@@ -719,7 +719,7 @@ namespace RockWeb.Blocks.Reminders
         /// <returns></returns>
         private string GetGroupTypeIconCss( int groupId )
         {
-            string defaultGroupIconCss = "fa fa-users";
+            string defaultGroupIconCss = "ti ti-users";
 
             using ( var rockContext = new RockContext() )
             {

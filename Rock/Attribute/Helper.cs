@@ -28,6 +28,8 @@ using System.Web.UI;
 using System.Web.UI.HtmlControls;
 using System.Web.UI.WebControls;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Core;
 using Rock.Data;
 using Rock.Model;
@@ -2266,7 +2268,7 @@ INNER JOIN @ValueId AS [valueId] ON  [valueId].[Id] = [AV].[Id]",
                 {
                     // Make this 5 minutes because on large data sets this could take a while.
                     // And by large I mean like 300,000 attribute values.
-                    rockContext.Database.CommandTimeout = 300;
+                    rockContext.Database.SetCommandTimeout( 300 );
 
                     var distinctValues = new AttributeValueService( rockContext )
                         .Queryable()

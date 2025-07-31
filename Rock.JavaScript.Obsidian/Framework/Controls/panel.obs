@@ -21,30 +21,30 @@
                     <span v-if="isZoomActive && hasZoom" class="mr-1 ml-1 panel-action-zoom-control">
                         <span class="input-group">
                             <span class="input-group-addon">
-                                <span class="btn btn-default" type="button" @click="onZoomDecreaseClick"><i class="fa fa-minus"></i></span>
+                                <span class="btn btn-default" type="button" @click="onZoomDecreaseClick"><i class="ti ti-minus"></i></span>
                             </span>
                             <input class="form-control text-center" type="text" style="width: 70px; pointer-events: none;" :value="zoomValue + '%'" />
                             <span class="input-group-addon">
-                                <span class="btn btn-default" type="button" @click="onZoomIncreaseClick"><i class="fa fa-plus"></i></span>
+                                <span class="btn btn-default" type="button" @click="onZoomIncreaseClick"><i class="ti ti-plus"></i></span>
                             </span>
                         </span>
                     </span>
 
                     <span v-if="hasZoom && isZoomSupported" class="action panel-action-zoom clickable" :class="{ active: isZoomActive }" @click="onZoomClick">
-                        <i class="fa fa-search-plus" />
+                        <i class="ti ti-zoom-in" />
                     </span>
 
                     <span v-if="$slots.helpContent" class="action panel-action-help clickable" @click="onHelpClick">
-                        <i class="fa fa-question"></i>
+                        <i class="ti ti-question-mark"></i>
                     </span>
 
                     <span v-if="hasFullscreen" class="action panel-action-fullscreen clickable" @click="onFullscreenClick">
-                        <i class="fa fa-expand"></i>
+                        <i class="ti ti-maximize"></i>
                     </span>
 
                     <template v-if="hasHeaderSecondaryActions">
                         <span class="action panel-action-context clickable" style="position: relative;">
-                            <i class="fa fa-ellipsis-v" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
+                            <i class="ti ti-dots-vertical" data-toggle="dropdown" ref="headerSecondaryActionMenu"></i>
                             <ul class="dropdown-menu dropdown-menu-right">
                                 <li v-for="action in headerSecondaryActions" :class="getHeaderSecondaryActionItemClass(action)">
                                     <a href="#" @click.prevent.stop="onActionClick(action, $event)">
@@ -57,8 +57,8 @@
                     </template>
 
                     <span v-if="hasCollapseAction" class="action clickable" @click="onPanelExpandClick">
-                        <i v-if="isPanelOpen" class="fa fa-chevron-up"></i>
-                        <i v-else class="fa fa-chevron-down"></i>
+                        <i v-if="isPanelOpen" class="ti ti-chevron-up"></i>
+                        <i v-else class="ti ti-chevron-down"></i>
                     </span>
                 </div>
             </div>
@@ -88,10 +88,19 @@
                     </div>
                 </TransitionVerticalCollapse>
 
-                <div class="drawer-pull" @click="onDrawerPullClick">
-                    <i :class="isDrawerOpen ? 'fa fa-chevron-up fa-xs' : 'fa fa-chevron-down fa-xs'"></i>
+                <div v-if="$slots.drawerToggle" @click="onDrawerPullClick" class="cursor-pointer">
+                    <slot name="drawerToggle" />
+                </div>
+
+                <div v-else class="drawer-pull" @click="onDrawerPullClick">
+                    <i :class="isDrawerOpen ? 'ti ti-chevron-up ti-xs' : 'ti ti-chevron-down ti-xs'"></i>
                 </div>
             </div>
+
+            <TabbedBar v-if="tabs && tabs.length > 0"
+                       v-model="selectedTab"
+                       :tabs="tabs"
+                       selectedTabQueryParameterKey="tab" />
 
             <template v-if="$slots.preBody">
                 <slot name="preBody" />
@@ -99,7 +108,11 @@
 
             <TransitionVerticalCollapse>
                 <div v-show="isPanelOpen" :class="panelBodyClass" :style="panelBodyStyle">
-                    <slot />
+                    <div v-if="worksurfaceMode" class="panel-scrollable-content">
+                        <slot />
+                    </div>
+
+                    <slot v-else />
 
                     <div v-if="!slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="actions">
                         <div class="footer-actions">
@@ -112,6 +125,10 @@
                     </div>
                 </div>
             </TransitionVerticalCollapse>
+
+            <div v-if="!slots.sidebar && isPanelOpen && $slots.footerContent" class="panel-footer-content">
+                <slot name="footerContent" />
+            </div>
         </div>
 
         <div v-if="slots.sidebar && ($slots.footerActions || $slots.footerSecondaryActions)" class="sidebar-footer">
@@ -124,6 +141,9 @@
                     <slot name="footerSecondaryActions" />
                 </div>
             </div>
+        </div>
+        <div v-if="slots.sidebar && $slots.footerContent" class="panel-footer-content panel-sidebar-footer-content">
+            <slot name="footerContent" />
         </div>
     </Fullscreen>
 </template>
@@ -143,6 +163,7 @@
     import Fullscreen from "./fullscreen.obs";
     import TransitionVerticalCollapse from "./transitionVerticalCollapse.obs";
     import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
+    import TabbedBar from "./tabbedBar.obs";
 
     const props = defineProps({
         /** True if the panel content is shown when hasCollapse is also true. */
@@ -217,6 +238,37 @@
             default: ""
         },
 
+        /**
+         * The array of optional tabs that will be displayed. It is the
+         * responsibility of the parent component to provide the content for
+         * each tab as well as swap the content when the tab is selected. See
+         * the `selectedTab` prop and `update:selectedTab` event.
+         */
+        tabs: {
+            type: Array as PropType<string[]>,
+            default: []
+        },
+
+        /**
+         * The currently selected tab. This is used in combination with the
+         * `tabs` prop to determine which tab is currently selected.
+         */
+        selectedTab: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * Enables the worksurface mode which allows the panel to be used on
+         * a full worksurface layout. This will cause the body content to
+         * automatically scroll if it is too large to fit in the panel. All
+         * other panel elements will remain in static positions.
+         */
+        worksurfaceMode: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         /** A list of action items to be included in the ellipsis. */
         headerSecondaryActions: {
             type: Array as PropType<PanelAction[]>,
@@ -239,7 +291,8 @@
     const emit = defineEmits([
         "update:modelValue",
         "update:isDrawerOpen",
-        "update:isFullscreen"
+        "update:isFullscreen",
+        "update:selectedTab",
     ]);
 
     const slots = useSlots();
@@ -252,6 +305,8 @@
 
     /** True if the panel should be shown in full screen mode. */
     const isFullscreen = useVModelPassthrough(props, "isFullscreen", emit);
+
+    const selectedTab = useVModelPassthrough(props, "selectedTab", emit);
 
     /** The HTML Element that is the main panel div. */
     const panelElement = ref<HTMLElement | null>(null);
@@ -288,6 +343,10 @@
 
         if (hasSidebar.value) {
             classes.push("flex-grow-1");
+        }
+
+        if (props.worksurfaceMode) {
+            classes.push("panel-worksurface");
         }
 
         return classes;

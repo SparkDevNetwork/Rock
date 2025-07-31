@@ -111,7 +111,7 @@ function updateConfigurationBarActions(blockContainerElement: HTMLElement, actio
         });
 
         const iconElement = document.createElement("i");
-        iconElement.className = action.iconCssClass ?? "fa fa-question";
+        iconElement.className = action.iconCssClass ?? "ti ti-question-mark";
 
         hyperlinkElement.appendChild(iconElement);
 

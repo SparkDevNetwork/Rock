@@ -41,7 +41,7 @@
                                   data-html="true"
                                   class="note-tooltip ml-2"
                                   :data-original-title="row.note">
-                                <i class='fa fa-file-text-o text-info'></i>
+                                <i class='ti ti-file-type-txt text-info'></i>
                             </span>
                         </span>
                         <div v-if="row.role" class="text-muted">{{ row.role }}</div>

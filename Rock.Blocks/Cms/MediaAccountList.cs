@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Media Account List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of media accounts." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

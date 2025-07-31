@@ -4,7 +4,7 @@
     <ContentTemplate>
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-copy"></i>&nbsp;Merge Records</h1>
+                <h1 class="panel-title"><i class="ti ti-copy"></i>&nbsp;Merge Records</h1>
             </div>
             <div class="panel-body">
 
@@ -72,7 +72,7 @@
 
         <script>
             function syncPersonSelection() {
-                var $selectedCheckbox = $('.js-person-merge-table').find('.js-header-checkbox-icon.fa-check-square-o');
+                var $selectedCheckbox = $('.js-person-merge-table').find('.js-header-checkbox-icon.ti-square-check');
                 var hasMultipleFamilies = $selectedCheckbox.parent().find('.js-person-header').hasClass('js-person-has-multiple-families');
 
                 $('.js-multiple-family-target-enable').each(function (index) {
@@ -89,9 +89,9 @@
                 // If a primary person was selected before postback, set the checkbox icon.
                 var selectedPersonId = $('#<%=hfSelectedColumnPersonId.ClientID%>').val();
                 if (selectedPersonId != '') {
-                    jQuery('.js-header-checkbox-icon').removeClass('fa-check-square-o').addClass('fa-square-o');
+                    jQuery('.js-header-checkbox-icon').removeClass('ti-square-check').addClass('ti-square');
                     jQuery("div").find('[data-person-id=' + selectedPersonId + ']').children('.js-header-checkbox-icon')
-                        .removeClass('fa-square-o').addClass('fa-check-square-o');
+                        .removeClass('ti-square').addClass('ti-square-check');
                 }
 
                 syncPersonSelection();
@@ -100,9 +100,9 @@
                     // The checkbox in the header was clicked, so we want to set the checkbox/radiobuttons as checked for all the person's selection controls
                     var $checkboxIcon = $(this).children('.js-header-checkbox-icon');
 
-                    if ($checkboxIcon.hasClass('fa-square-o')) {
-                        $checkboxIcon.removeClass('fa-square-o').addClass('fa-check-square-o');
-                        $('.js-header-checkbox-icon').not($checkboxIcon).removeClass('fa-check-square-o').addClass('fa-square-o');
+                    if ($checkboxIcon.hasClass('ti-square')) {
+                        $checkboxIcon.removeClass('ti-square').addClass('ti-square-check');
+                        $('.js-header-checkbox-icon').not($checkboxIcon).removeClass('ti-square-check').addClass('ti-square');
                         var personId = $(this).attr('data-person-id');
                         $('#<%=hfSelectedColumnPersonId.ClientID%>').val(personId);
 

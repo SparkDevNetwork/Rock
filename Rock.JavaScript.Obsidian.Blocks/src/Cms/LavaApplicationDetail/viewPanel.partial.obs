@@ -14,7 +14,7 @@
                 <dl v-if="configurationRigging">
                     <dt>Configuration Rigging</dt>
                     <dd>
-                        <RockButton btnType="default" btnSize="sm" @click="onPreviewClick"><i class="fa fa-search"></i></RockButton>
+                        <RockButton btnType="default" btnSize="sm" @click="onPreviewClick"><i class="ti ti-search"></i></RockButton>
                         &nbsp;<span v-if="jsonErrorMessage" class="label label-warning"> {{ jsonErrorMessage }}</span>
                     </dd>
                 </dl>

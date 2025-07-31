@@ -41,7 +41,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Category Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular category." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -447,7 +447,7 @@ namespace Rock.Blocks.Core
             {
                 actions.Add( new BlockCustomActionBag
                 {
-                    IconCssClass = "fa fa-edit",
+                    IconCssClass = "ti ti-edit",
                     Tooltip = "Settings",
                     ComponentFileUrl = "/Obsidian/Blocks/Core/categoryDetailCustomSettings.obs"
                 } );

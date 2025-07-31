@@ -17,6 +17,9 @@
 
 using System.Diagnostics;
 using System.Linq;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Model;
 
@@ -37,7 +40,7 @@ namespace Rock.Tasks
         public override void Execute( Message message )
         {
             var rockContext = new RockContext();
-            rockContext.Database.CommandTimeout = commandTimeout;
+            rockContext.Database.SetCommandTimeout( commandTimeout );
             var interactionComponentService = new InteractionComponentService( rockContext );
             var interactionService = new InteractionService( rockContext );
 
@@ -74,7 +77,7 @@ namespace Rock.Tasks
 
             using ( var bulkDeleteContext = new RockContext() )
             {
-                bulkDeleteContext.Database.CommandTimeout = commandTimeout;
+                bulkDeleteContext.Database.SetCommandTimeout( commandTimeout );
                 var keepDeleting = true;
                 while ( keepDeleting )
                 {

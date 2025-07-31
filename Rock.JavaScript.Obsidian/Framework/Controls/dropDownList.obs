@@ -41,13 +41,13 @@
                         </template>
 
                         <template #clearIcon>
-                            <i class="fa fa-times"></i>
+                            <i class="ti ti-x"></i>
                         </template>
 
                         <template #suffixIcon>
                             <slot name="suffixIcon">
-                                <i v-if="!computedLoading" class="fa fa-caret-down"></i>
-                                <i v-else class="fa fa-spinner fa-spin"></i>
+                                <i v-if="!computedLoading" class="ti ti-caret-down"></i>
+                                <i v-else class="ti ti-rotate-2 ti-spin"></i>
                             </slot>
                         </template>
 
@@ -58,7 +58,7 @@
                         </template>
 
                         <template #dropdownRender="{ menuNode: menu }">
-                            <div v-if="computedLoading" class="text-center"><i class="fa fa-spinner fa-spin"></i> Data is loading...</div>
+                            <div v-if="computedLoading" class="text-center"><i class="ti ti-rotate-2 ti-spin"></i> Data is loading...</div>
                             <v-nodes v-else :vnodes="menu" />
                         </template>
                     </AntSelect>

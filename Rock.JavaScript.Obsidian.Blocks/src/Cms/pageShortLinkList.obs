@@ -45,7 +45,7 @@
                       visiblePriority="xs" />
 
         <BooleanColumn name="isPinned"
-                       title="Is Pinned"
+                       title="Pinned"
                        field="isPinned"
                        :filter="booleanValueFilter"
                        visiblePriority="xs" />
@@ -59,7 +59,8 @@
     </Grid>
 
     <GridSettingsModal v-model="gridSettings"
-                       v-model:visible="isGridSettingsVisible" />
+                       v-model:visible="isGridSettingsVisible"
+                       :currentPerson="config.options?.currentPerson ?? {}" />
 </template>
 
 <script setup lang="ts">
@@ -75,6 +76,7 @@
     import { IGridState } from "@Obsidian/Types/Controls/grid";
     import GridSettingsModal from "./PageShortLinkList/gridSettingsModal.partial.obs";
     import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { parseSlidingDateRangeString, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
 
     const config = useConfigurationValues<ListBlockBox<PageShortLinkListOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -88,6 +90,8 @@
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
         createdBy: safeParseJson(preferences.getValue(PreferenceKey.FilterCreatedBy)),
+        filterPerson: safeParseJson(preferences.getValue(PreferenceKey.FilterPerson)),
+        createdDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterCreatedDateRange))
     });
 
     // #endregion
@@ -96,7 +100,9 @@
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.createdBy?.value;
+        return !!gridSettings.value.createdBy?.value
+            || !!gridSettings.value.filterPerson?.value
+            || !!gridSettings.value.createdDateRange;
     });
 
     // #endregion
@@ -192,6 +198,8 @@
 
     watch(gridSettings, async () => {
         preferences.setValue(PreferenceKey.FilterCreatedBy, JSON.stringify(gridSettings.value.createdBy));
+        preferences.setValue(PreferenceKey.FilterPerson, JSON.stringify(gridSettings.value.filterPerson));
+        preferences.setValue(PreferenceKey.FilterCreatedDateRange, gridSettings.value.createdDateRange ? slidingDateRangeToString(gridSettings.value.createdDateRange) : "");
 
         await preferences.save();
 

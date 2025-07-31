@@ -35,9 +35,11 @@ namespace Rock.Blocks.Group
     [DisplayName( "Group Member List" )]
     [Category( "Obsidian > Group" )]
     [Description( "Lists the members of a group." )]
-    [IconCssClass( "fa fa-users" )]
+    [IconCssClass( "ti ti-users" )]
 
-    public class GroupMemberList : RockObsidianBlockType
+    [Rock.SystemGuid.EntityTypeGuid( "8CD71FCE-5F8A-46E0-A45A-504925002260")]
+    [Rock.SystemGuid.BlockTypeGuid( "5959A986-A40B-45C6-A757-E66C67AE3BD9")]
+    public class GroupMemberList : RockBlockType
     {
         #region Actions
 

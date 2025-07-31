@@ -81,7 +81,7 @@ namespace Rock.Jobs
                 var recipients = new List<RockEmailMessageRecipient>();
 
                 var groupMemberList = new GroupMemberService( rockContext )
-                    .Queryable()
+                    .Queryable( "Person,Person.PhoneNumbers" )
                     .Where( gm => groupIds.Contains( gm.GroupId ) )
                     .Where( gm => gm.GroupMemberStatus == GroupMemberStatus.Active )
                     .ToList();
@@ -98,6 +98,8 @@ namespace Rock.Jobs
                                     ( int ) CommunicationType.Email,
                                     ( int ) CommunicationType.SMS,
                                     ( int ) CommunicationType.PushNotification,
+                                    systemCommunication,
+                                    person,
                                     groupMember.CommunicationPreference,
                                     person.CommunicationPreference );
 

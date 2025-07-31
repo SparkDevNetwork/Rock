@@ -38,7 +38,7 @@ namespace Rock.Web.UI.Controls
         {
             SetExtraRestParams();
 
-            this.IconCssClass = "fa fa-filter";
+            this.IconCssClass = "ti ti-filter";
             base.OnInit( e );
         }
 

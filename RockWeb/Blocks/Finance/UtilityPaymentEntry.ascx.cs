@@ -1397,7 +1397,7 @@ mission. We are so grateful for your commitment.</p>
                 var literal = new LiteralControl() { ID = "btnAddAccountLiteral" };
                 var openingHtml = $@"
 <div class=""btn-group js-button-dropdownlist"">
-    <button type=""button"" class=""btn btn-default dropdown-toggle js-buttondropdown-btn-select"" data-toggle=""dropdown"" aria-expanded=""false"">{GetAttributeValue( AttributeKey.AddAccountText )} <span class=""fa fa-caret-down""></span></button>
+    <button type=""button"" class=""btn btn-default dropdown-toggle js-buttondropdown-btn-select"" data-toggle=""dropdown"" aria-expanded=""false"">{GetAttributeValue( AttributeKey.AddAccountText )} <span class=""ti ti-caret-down""></span></button>
     <ul class=""dropdown-menu"">
 ";
 

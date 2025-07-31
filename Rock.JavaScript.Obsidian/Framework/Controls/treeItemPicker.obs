@@ -93,7 +93,7 @@
 
         iconCssClass: {
             type: String as PropType<string>,
-            default: "fa fa-folder-open"
+            default: "ti ti-folder-open"
         },
 
         disableFolderSelection: {
@@ -174,7 +174,7 @@
     });
 
     /** The CSS class to use for the picker icon. */
-    const pickerIconClass = computed((): string => `${props.iconCssClass} fa-fw`);
+    const pickerIconClass = computed((): string => `${props.iconCssClass} ti-fw`);
 
     /** Updates the model value from our internal value. */
     const updateModelValue = (): void => {

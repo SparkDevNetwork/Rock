@@ -1,59 +1,112 @@
 <template>
-    <SectionHeader :title="componentName" :description="description" />
-    <div class="galleryContent-mainRow mb-5 row">
-        <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-lg-6'">
-            <h4 class="mt-0">Test Control</h4>
-            <slot name="default" />
+    <div class="galleryContent-header">
+        <SectionHeader :title="componentName" :description="description" isSeparatorHidden>
+            <template #actions>
+                <InlineSwitch v-model="showUsage" label="Usage" />
+            </template>
+        </SectionHeader>
+    </div>
 
-            <div v-if="enableReflection && config.showReflection" class="mt-3">
-                <div class="mb-3 galleryContent-reflectionToggle">
-                    <Switch v-model="showReflection" text="Show Reflection" />
-                </div>
-                <TransitionVerticalCollapse>
-                    <div v-if="showReflection">
-                        <h4 class="mt-0">Control Reflection</h4>
-                        <slot name="default" />
+    <div class="galleryContent-main" :class="{ 'galleryContent-showUsage': showUsage }">
+        <div class="galleryContent-body">
+            <div class="row">
+                <div v-if="$slots.default" :class="value === void 0 ? 'col-sm-12' : 'col-lg-6'">
+                    <slot name="default" />
+
+                    <div v-if="enableReflection && config.showReflection" class="mt-3">
+                        <div class="mb-3 galleryContent-reflectionToggle">
+                            <Switch v-model="showReflection" text="Show Reflection" />
+                        </div>
+                        <TransitionVerticalCollapse>
+                            <div v-if="showReflection">
+                                <h4 class="mt-0">Control Reflection</h4>
+                                <slot name="default" />
+                            </div>
+                        </TransitionVerticalCollapse>
                     </div>
-                </TransitionVerticalCollapse>
+                </div>
+
+                <div v-if="value !== void 0" class="col-lg-6">
+                    <div class="well">
+                        <h4>Current Value<template v-if="hasMultipleValues">s</template></h4>
+                        <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
+                            <h5><code>{{ key }}</code></h5>
+                            <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
+                        </template>
+                        <pre v-else class="m-0 p-0 border-0 galleryContent-valueBox">{{ formattedValue }}</pre>
+                    </div>
+                </div>
             </div>
         </div>
-        <div v-if="value !== void 0" class="col-lg-6">
-            <div class="well">
-                <h4>Current Value<template v-if="hasMultipleValues">s</template></h4>
-                <template v-if="hasMultipleValues" v-for="value, key in formattedValue">
-                    <h5><code>{{ key }}</code></h5>
-                    <pre class="m-0 p-0 border-0 galleryContent-valueBox">{{ value }}</pre>
-                </template>
-                <pre v-else class="m-0 p-0 border-0 galleryContent-valueBox">{{ formattedValue }}</pre>
-            </div>
-        </div>
-    </div>
-    <div v-if="$slots.settings" class="mb-5">
-        <h4 class="mt-0">Demo Settings</h4>
-        <slot name="settings" />
-    </div>
-    <div v-if="importCode || exampleCode || $slots.usage || $slots.usageNotes" class="mb-5">
-        <h4 class="mt-0 mb-3">Usage Notes</h4>
-        <slot name="usageNotes" />
-        <slot name="usage">
-            <h5 v-if="importCode || $slots.importNotes" class="mt-3 mb-2">Import</h5>
-            <slot name="importNotes" />
+
+        <div class="galleryContent-usage">
+            <h4 v-if="importCode">Import</h4>
             <CodeSample v-if="importCode" :code="importCode" language="typescript" />
-            <h5 v-if="exampleCode || $slots.syntaxNotes" class="mt-3 mb-2">Template Syntax</h5>
+
+            <h4 v-if="$slots.usageNotes">Usage Notes</h4>
+            <slot name="usageNotes" />
+
+            <h5 v-if="exampleCode || $slots.syntaxNotes">Template Syntax</h5>
             <slot name="syntaxNotes" />
             <CodeSample v-if="exampleCode" :code="exampleCode" language="html" />
-        </slot>
+
+            <div v-if="$slots.props">
+                <h4 class="mt-0 mb-0">Props</h4>
+                <slot name="props" />
+            </div>
+        </div>
     </div>
 
-    <div v-if="$slots.props" class="mb-5">
-        <h4 class="mt-0 mb-3">Props</h4>
-        <slot name="props" />
+    <div v-if="$slots.settings" class="galleryContent-settings">
+        <slot name="settings" />
     </div>
 </template>
 
 <style scoped>
-.galleryContent-mainRow > div.well {
-    overflow-x: auto;
+.galleryContent-header {
+    margin: 0 -20px 20px;
+    padding: 0 20px 14px;
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
+.galleryContent-main {
+    position: relative;
+    flex-grow: 1;
+    overflow: hidden;
+}
+
+.galleryContent-body {
+    position: absolute;
+    height: 100%;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow: hidden auto;
+    transition: transform 0.65s ease-in-out;
+    transform: rotateY(0deg);
+    backface-visibility: hidden;
+}
+
+.galleryContent-usage {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    transition: transform 0.65s ease-in-out;
+    transform: rotateY(180deg);
+    backface-visibility: hidden;
+    pointer-events: none;
+}
+
+.galleryContent-showUsage .galleryContent-body {
+    transform: rotateY(180deg);
+}
+
+.galleryContent-showUsage .galleryContent-usage {
+    transform: rotateY(0deg);
+    pointer-events: initial;
 }
 
 .galleryContent-reflectionToggle {
@@ -66,36 +119,24 @@
     overflow: auto;
 }
 
-.galleryContent-codeSampleWrapper {
-    position: relative;
+.galleryContent-settings {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+    margin: 0 -20px;
+    padding: 12px 20px 0;
+    border-top: 1px solid var(--color-interface-soft);
 }
 
-.galleryContent-codeSample {
-    padding-right: 3rem;
-    overflow-x: auto;
-}
-
-.galleryContent-codeCopyButton {
-    position: absolute;
-    top: 1.4rem;
-    transform: translateY(-50%);
-    right: .5rem;
-    z-index: 1;
-}
-
-.galleryContent-codeCopyButton::before {
-    content: "";
-    position: absolute;
-    top: -0.3rem;
-    right: -0.5rem;
-    bottom: -0.3rem;
-    left: -0.5rem;
-    background: linear-gradient(to left, #f5f5f4, #f5f5f4 80%, #f5f5f500);
-    z-index: -1;
+.galleryContent-settings > :deep(.automatic-layout) {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    column-gap: var(--spacing-small);
 }
 </style>
 
 <script setup lang="ts">
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
     import SectionHeader from "@Obsidian/Controls/sectionHeader.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TransitionVerticalCollapse from "@Obsidian/Controls/transitionVerticalCollapse.obs";
@@ -138,10 +179,12 @@
         displayAsRaw: {
             type: Boolean as PropType<boolean>,
             default: false
-        }
+        },
     });
 
     const config = useConfigurationValues<ControlGalleryInitializationBox>();
+
+    const showUsage = ref(false);
 
     // Calculate a header based on the name of the component, adding spaces and stripping out the "Gallery" suffix
     const componentName = convertComponentName(getCurrentInstance()?.parent?.type?.name);

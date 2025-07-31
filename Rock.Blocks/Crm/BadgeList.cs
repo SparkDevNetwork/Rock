@@ -38,7 +38,7 @@ namespace Rock.Blocks.Crm
     [DisplayName( "Badge List" )]
     [Category( "CRM" )]
     [Description( "Displays a list of badges." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

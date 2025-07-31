@@ -17,7 +17,7 @@
 
         <asp:Panel ID="pnlDetails" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h3 class="panel-title"><i class="fa fa-mobile"></i>
+                <h3 class="panel-title"><i class="ti ti-device-mobile"></i>
                     <asp:Literal ID="lPageName" runat="server" /></h3>
 
                 <div class="panel-labels">
@@ -27,7 +27,7 @@
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Page Guid to Clipboard"
                         class="btn btn-info btn-xs btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Page Guid to Clipboard');return false;">
-                        <i class='fa fa-clipboard'></i>
+                        <i class='ti ti-clipboard'></i>
                     </button>
                 </div>
             </div>
@@ -168,7 +168,7 @@
 
         <asp:Panel ID="pnlBlocks" runat="server" CssClass="panel panel-block">
             <div class="panel-heading">
-                <h3 class="panel-title"><i class="fa fa-th-large"></i>Blocks</h3>
+                <h3 class="panel-title"><i class="ti ti-border-all"></i>Blocks</h3>
             </div>
 
             <div class="panel-body padding-all-none">
@@ -218,7 +218,7 @@
                                                             <div class="pull-right" style="min-width: 200px;">
 
                                                                 <a class="btn btn-default btn-sm btn-link panel-widget-reorder">
-                                                                    <i class="fa fa-bars js-reorder"></i>
+                                                                    <i class="ti ti-menu-2 js-reorder"></i>
                                                                 </a>
 
                                                                 <asp:PlaceHolder ID="phAdminButtons" runat="server" />

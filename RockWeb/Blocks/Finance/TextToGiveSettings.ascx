@@ -7,7 +7,7 @@
         <asp:Panel ID="pnlDetails" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-mobile-alt"></i>
+                    <i class="ti ti-device-mobile"></i>
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
             </div>

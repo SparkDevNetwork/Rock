@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Defined Type Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular defined type." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -86,8 +86,41 @@ namespace Rock.Blocks.Core
 
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions( box.IsEditable );
+            box.SecurityGrantToken = GetSecurityGrantToken();
 
             return box;
+        }
+
+        /// <inheritdoc/>
+        protected override string RenewSecurityGrantToken()
+        {
+            return GetSecurityGrantToken();
+        }
+
+        /// <summary>
+        /// Gets the security grant token that will be used by UI controls on
+        /// this block to ensure they have the proper permissions.
+        /// </summary>
+        /// <returns>A string that represents the security grant token.</string>
+        private string GetSecurityGrantToken()
+        {
+            var securityGrant = new Rock.Security.SecurityGrant();
+
+            var fieldTypes = FieldTypeCache.All();
+
+            foreach ( var fieldType in fieldTypes )
+            {
+                if ( fieldType.Field is Rock.Field.ISecurityGrantFieldType grantFieldType )
+                {
+                    grantFieldType.AddRulesToSecurityGrant( securityGrant, new Dictionary<string, string>() );
+                }
+            }
+
+            var entity = GetInitialEntity();
+            var attributes = AttributeCache.GetByEntityTypeQualifier( new DefinedValue().TypeId, "DefinedTypeId", entity.Id.ToString(), true );
+            securityGrant.AddRulesForAttributes( attributes );
+
+            return securityGrant.ToToken();
         }
 
         /// <summary>

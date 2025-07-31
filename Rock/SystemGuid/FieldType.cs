@@ -347,6 +347,11 @@ namespace Rock.SystemGuid
         public const string DEFINED_VALUE_RANGE = "B5C07B16-844D-4620-82E3-4CCA8F5FC350";
 
         /// <summary>
+        /// Device field type
+        /// </summary>
+        public const string DEVICE = "D7F5D737-BDC9-4656-951E-08325D0543FD";
+
+        /// <summary>
         /// Document Type field type
         /// </summary>
         public const string DOCUMENT_TYPE = "1FD31CDC-E5E2-431B-8D53-72FC0430044D";

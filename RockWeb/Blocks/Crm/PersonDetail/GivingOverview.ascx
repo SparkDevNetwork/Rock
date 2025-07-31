@@ -6,7 +6,7 @@
             <div class="panel panel-block">
                 <div class="panel-heading">
                     <h1 class="panel-title">
-                        <i class="fa fa-area-chart"></i>
+                        <i class="ti ti-chart-area"></i>
                         Giving Overview
                     </h1>
                 </div>
@@ -18,7 +18,7 @@
                                 <Rock:Badge ID="bdgLastGift" runat="server" BadgeType="success align-text-bottom" />
                             </div>
                             <div class="giving-alerts d-inline-flex align-items-center ml-sm-auto">
-                                <span class="text-sm mr-2"><i class="fa fa-fw fa-comment-alt text-muted"></i> Giving Alerts</span>
+                                <span class="text-sm mr-2"><i class="ti ti-fw ti-message text-muted"></i> Giving Alerts</span>
                                 <asp:Literal ID="lGivingAlertsBadgesHtml" runat="server" />
                             </div>
                         </div>
@@ -122,14 +122,14 @@
 
                         <div class="text-center margin-v-sm">
                             <asp:LinkButton runat="server" ID="lbShowMoreYearlySummary" class="btn btn-xs btn-default" OnClick="lbShowMoreYearlySummary_Click">
-                                <i class="fa fa-chevron-down"></i>
+                                <i class="ti ti-chevron-down"></i>
                                 Show More
-                                <i class="fa fa-chevron-down"></i>
+                                <i class="ti ti-chevron-down"></i>
                             </asp:LinkButton>
                             <asp:LinkButton runat="server" ID="lbShowLessYearlySummary" class="btn btn-xs btn-default" OnClick="lbShowLessYearlySummary_Click">
-                                <i class="fa fa-chevron-up"></i>
+                                <i class="ti ti-chevron-up"></i>
                                 Show Less
-                                <i class="fa fa-chevron-up"></i>
+                                <i class="ti ti-chevron-up"></i>
                             </asp:LinkButton>
                         </div>
                     </asp:Panel>

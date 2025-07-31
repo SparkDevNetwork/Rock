@@ -5,7 +5,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-check-square"></i>
+                    <i class="ti ti-checkbox"></i>
                     Assessment History
                 </h1>
             </div>
@@ -24,7 +24,7 @@
                             <asp:TemplateField ItemStyle-CssClass="grid-columncommand">
                                 <ItemTemplate>
                                     <asp:LinkButton ID="btnDelete" runat="server" OnClick="btnDelete_Click" CssClass="btn btn-danger btn-sm" CommandArgument='<%# (Container.DataItem as AssessmentViewModel).AssessmentId %>'>
-                                        <i class="fa fa-times"></i>
+                                        <i class="ti ti-x"></i>
                                     </asp:LinkButton>
                                 </ItemTemplate>
                             </asp:TemplateField>

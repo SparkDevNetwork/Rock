@@ -11,7 +11,7 @@
             <a v-if="hasPreviousQuestions && isQuestionsSectionVisible" @click.prevent="onPreviousClick" class="btn btn-default">Previous</a>
         </template>
         <template #footerSecondaryActions v-if="!blockErrorMessage">
-            <a @click.prevent="onStartClick" v-if="isInstructionSectionVisible" class="btn btn-primary">Start <i class="fa fa-chevron-right"></i></a>
+            <a @click.prevent="onStartClick" v-if="isInstructionSectionVisible" class="btn btn-primary">Start <i class="ti ti-chevron-right"></i></a>
             <a @click.prevent="onNextClick" v-if="isQuestionsSectionVisible && !isLastPage" type="submit" class="btn btn-primary">Next</a>
             <a @click.prevent="onFinishClick" v-if="isQuestionsSectionVisible && isLastPage" type="submit" class="btn btn-primary">Finish</a>
         </template>

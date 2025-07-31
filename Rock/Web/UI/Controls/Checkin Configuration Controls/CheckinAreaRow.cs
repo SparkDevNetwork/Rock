@@ -197,7 +197,7 @@ $('.checkin-area a.checkin-area-add-group').on('click', function (event) {
             _lbAddArea.Click += lbAddArea_Click;
             _lbAddArea.CausesValidation = false;
             _lbAddArea.ToolTip = "Add New Area";
-            _lbAddArea.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-folder-open'></i>" } );
+            _lbAddArea.Controls.Add( new LiteralControl { Text = "<i class='ti ti-plus'></i> <i class='ti ti-folder-open'></i>" } );
 
             _lbAddGroup = new LinkButton();
             _lbAddGroup.ID = this.ID + "_lbAddGroup";
@@ -205,7 +205,7 @@ $('.checkin-area a.checkin-area-add-group').on('click', function (event) {
             _lbAddGroup.Click += lbAddGroup_Click;
             _lbAddGroup.CausesValidation = false;
             _lbAddGroup.ToolTip = "Add New Group";
-            _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='fa fa-plus'></i> <i class='fa fa-check-circle'></i>" } );
+            _lbAddGroup.Controls.Add( new LiteralControl { Text = "<i class='ti ti-plus'></i> <i class='ti ti-circle-check'></i>" } );
 
             Controls.Add( _hfGroupTypeGuid );
             Controls.Add( _lblAreaRowName );
@@ -230,8 +230,8 @@ $('.checkin-area a.checkin-area-add-group').on('click', function (event) {
             // Hidden Field to track expansion
             _hfExpanded.RenderControl( writer );
 
-            writer.WriteLine( "<a class='checkin-area-reorder'><i class='fa fa-bars'></i></a>" );
-            writer.WriteLine( "<a class='checkin-area-expand'><i class='checkin-area-state fa fa-folder-open'></i></a>" );
+            writer.WriteLine( "<a class='checkin-area-reorder'><i class='ti ti-menu-2'></i></a>" );
+            writer.WriteLine( "<a class='checkin-area-expand'><i class='checkin-area-state ti ti-folder-open'></i></a>" );
 
             _lblAreaRowName.RenderControl( writer );
 

@@ -40,7 +40,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Media Element List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of media elements." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

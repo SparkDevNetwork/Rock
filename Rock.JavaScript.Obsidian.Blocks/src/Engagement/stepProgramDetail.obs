@@ -58,13 +58,13 @@
                             :btnSize="BtnSize.Small"
                             :btnType="BtnType.Default"
                             @click="onStepFlowClick">
-                    <i class="fas fa-project-diagram"></i> Step Flow
+                    <i class="ti ti-chart-dots-3"></i> Step Flow
                 </RockButton>
                 <RockButton v-if="panelMode === DetailPanelMode.View && stepProgramViewBag?.canAdministrate"
                             :btnSize="BtnSize.Small"
                             :btnType="BtnType.Default"
                             @click="onSecurityClick">
-                    <i class="fa fa-lock"></i>
+                    <i class="ti ti-lock"></i>
                 </RockButton>
             </template>
         </Panel>

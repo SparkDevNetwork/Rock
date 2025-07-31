@@ -11,7 +11,7 @@
 
         <div class="panel panel-block">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-comments-o"></i> Communication List</h1>
+                <h1 class="panel-title"><i class="ti ti-messages"></i> Communication List</h1>
             </div>
             <div class="panel-body">
 
@@ -47,7 +47,7 @@
                                     <span class="badge badge-danger" title="Failed" style='<%# (int)Eval("FailedRecipients") > 0 ? "display:inline-block" : "display:none" %>'><%# Eval("FailedRecipients") %></span>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>
-                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square" Text="<i class='fa fa-clone'></i>" OnClick="gCommunication_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                            <Rock:LinkButtonField HeaderText="Copy" CssClass="btn btn-default btn-sm btn-square" Text="<i class='ti ti-copy'></i>" OnClick="gCommunication_Copy" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             <Rock:DeleteField OnClick="gCommunication_Delete" />
                         </Columns>
                     </Rock:Grid>

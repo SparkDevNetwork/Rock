@@ -40,7 +40,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Campaign List" )]
     [Category( "Engagement" )]
     [Description( "Block for viewing list of campaign connection configurations." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

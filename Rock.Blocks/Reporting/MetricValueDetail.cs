@@ -41,7 +41,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Metric Value Detail" )]
     [Category( "Reporting" )]
     [Description( "Displays the details of a particular metric value." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "af69aa1a-3eee-4f25-8014-1a02ba82ac32" )]

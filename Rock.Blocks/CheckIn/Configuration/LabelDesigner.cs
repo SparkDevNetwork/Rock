@@ -44,7 +44,7 @@ namespace Rock.Blocks.CheckIn.Configuration
     [DisplayName( "Label Designer" )]
     [Category( "Check-in > Configuration" )]
     [Description( "Designs a check-in label with a nice drag and drop experience." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

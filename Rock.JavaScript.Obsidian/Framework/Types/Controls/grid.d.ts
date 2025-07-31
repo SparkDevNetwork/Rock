@@ -285,6 +285,19 @@ export type ExportValueFunction = (row: Record<string, unknown>, column: ColumnD
  */
 export type ColumnFilterMatchesFunction = (needle: unknown, haystack: unknown, column: ColumnDefinition, grid: IGridState) => boolean;
 
+/**
+ * A function that will be called to get the tooltip text to display for a cell.
+ * This function will be called when the cell is initialized so any changes to
+ * the value while the cell is visible will not be reflected in the tooltip.
+ *
+ * @param row The data object that represents the row.
+ * @param column The column definition for this operation.
+ * @param grid The grid that owns this operation.
+ *
+ * @returns The string of text to display in the tooltip. An empty string, `null`, or `undefined` will not display a tooltip.
+ */
+export type TooltipFunction = (row: Record<string, unknown>, column: ColumnDefinition, grid: IGridState) => string | undefined | null;
+
 // #endregion
 
 // #region Component Props
@@ -511,6 +524,25 @@ type StandardColumnProps = {
      * If 'true', disables sorting for this column.
      */
     disableSort: {
+        type: PropType<boolean>,
+        default: false
+    },
+
+    /**
+     * Either a string that represents the field to use when displaying the
+     * tooltip or a function that will be called to get the tooltip text.
+     */
+    tooltip: {
+        type: PropType<string | TooltipFunction>,
+        required: false
+    },
+
+    /**
+     * If `true` then the tooltip will be rendered as HTML. This is useful if
+     * you need to provide custom formatting inside the tooltip. Any plain text
+     * must be properly escaped.
+     */
+    tooltipHtml: {
         type: PropType<boolean>,
         default: false
     },
@@ -847,6 +879,19 @@ export type ColumnDefinition = {
      * If 'true', disables sorting for this column.
      */
     disableSort: boolean;
+
+    /**
+     * Either a string that represents the field to use when displaying the
+     * tooltip or a function that will be called to get the tooltip text.
+     */
+    tooltip?: string | TooltipFunction;
+
+    /**
+     * If `true` then the tooltip will be rendered as HTML. This is useful if
+     * you need to provide custom formatting inside the tooltip. Any plain text
+     * must be properly escaped.
+     */
+    tooltipHtml: boolean;
 };
 
 /**

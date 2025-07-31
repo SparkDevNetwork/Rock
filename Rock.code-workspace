@@ -80,7 +80,8 @@
 		"recommendations": [
 			"dbaeumer.vscode-eslint",
 			"vue.volar",
-			"orta.vscode-jest"
+			"orta.vscode-jest",
+            "EditorConfig.EditorConfig"
 		]
 	},
 	"folders": [
@@ -112,6 +113,8 @@
 		"vue.server.additionalExtensions": [
 			"obs"
 		],
+        "vue.suggest.propNameCasing": "alwaysCamelCase",
+        "vue.suggest.componentNameCasing": "alwaysPascalCase",
 		"files.trimTrailingWhitespace": true,
 		"html.format.wrapAttributes": "preserve-aligned",
 		"html.format.wrapLineLength": 0,
@@ -140,6 +143,7 @@
 		"css.lint.duplicateProperties": "warning",
 		"css.lint.zeroUnits": "warning",
 		"css.lint.propertyIgnoredDueToDisplay": "warning",
+        "dotnet.formatting.organizeImportsOnFormat": true,
 		"jest.disabledWorkspaceFolders": [
 			"Rock.JavaScript.Obsidian.Reporting"
 		]
@@ -227,8 +231,11 @@
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"base": "$vite",
+                    "pattern": {
+                        "regexp": ""
+                    },
 					"background": {
+                        "activeOnStart": true,
 						"beginsPattern": "^rollup v",
 						"endsPattern": "waiting for changes\\.\\.\\.$"
 					}
@@ -249,8 +256,11 @@
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"base": "$vite",
+                    "pattern": {
+                        "regexp": ""
+                    },
 					"background": {
+                        "activeOnStart": true,
 						"beginsPattern": "^rollup v",
 						"endsPattern": "waiting for changes\\.\\.\\.$"
 					}
@@ -271,8 +281,11 @@
 				},
 				"isBackground": true,
 				"problemMatcher": {
-					"base": "$vite",
+                    "pattern": {
+                        "regexp": ""
+                    },
 					"background": {
+                        "activeOnStart": true,
 						"beginsPattern": "^rollup v",
 						"endsPattern": "waiting for changes\\.\\.\\.$"
 					}

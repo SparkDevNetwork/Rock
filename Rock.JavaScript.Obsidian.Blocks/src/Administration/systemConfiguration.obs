@@ -23,6 +23,10 @@
                                 <span class="input-group-addon">days</span>
                             </template>
                         </NumberBox>
+
+                        <TextBox v-model="realTimeHostname"
+                                 label="Real-time Hostname"
+                                 help="Overrides the default hostname used to connect to Rock's real-time engine. Helpful when using a proxy or CDN." />
                     </div>
                     <div class="col-md-6">
                         <CheckBox v-model="showBusinessInPersonPicker"
@@ -178,7 +182,7 @@
             </RockForm>
         </Panel>
 
-        <Panel :isDrawerOpen="false" title="Experimental Settings" titleIconCssClass="fa fa-flask" :hasCollapse="true">
+        <Panel :isDrawerOpen="false" title="Experimental Settings" titleIconCssClass="ti ti-flask" :hasCollapse="true">
             <RockForm @submit="onSubmitExperimentalSettingsForm">
                 <DayOfWeekPicker v-model="startingDayOfWeek"
                                  label="Starting Day of Week"
@@ -362,6 +366,7 @@
     const enableMultipleTimeZoneSupport = ref(config.generalConfigurationBag?.isMultipleTimeZoneSupportEnabled ?? false);
     const pdfExternalRenderEndpoint = ref(config.generalConfigurationBag?.pdfExternalRenderEndpoint ?? "");
     const visitorCookiePersistenceLength = ref(config.generalConfigurationBag?.visitorCookiePersistenceLengthDays);
+    const realTimeHostname = ref(config.generalConfigurationBag?.realTimeHostname ?? "");
     const showBusinessInPersonPicker = ref(config.generalConfigurationBag?.includeBusinessInPersonPicker ?? false);
     const enableKeepAlive = ref(config.generalConfigurationBag?.enableKeepAlive ?? false);
     const personalizationCookieCacheLengthMinutes = ref(config.generalConfigurationBag?.personalizationCookieCacheLengthMinutes);
@@ -487,6 +492,7 @@
                 isMultipleTimeZoneSupportEnabled: enableMultipleTimeZoneSupport.value,
                 pdfExternalRenderEndpoint: pdfExternalRenderEndpoint.value,
                 personalizationCookieCacheLengthMinutes: personalizationCookieCacheLengthMinutes.value,
+                realTimeHostname: realTimeHostname.value,
                 visitorCookiePersistenceLengthDays: visitorCookiePersistenceLength.value,
                 countriesRestrictedFromAccessing: countriesRestrictedFromAccessing.value
             };

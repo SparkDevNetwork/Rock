@@ -337,7 +337,7 @@ namespace Rock.Web.UI.Controls.Communication
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
                 writer.AddAttribute( HtmlTextWriterAttribute.Onclick, 
                     string.Format( "removeAttachment( this, '{0}', '{1}' );", hfAttachments.ClientID, attachment.Key ) );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-times" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-x" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

@@ -43,7 +43,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Lava Endpoint Detail" )]
     [Category( "CMS" )]
     [Description( "Displays the details of a particular lava endpoint." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( SiteType.Web )]
 
     #region Block Attributes

@@ -36,7 +36,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Email Preference Entry" )]
     [Category( "Communication" )]
     [Description( "Allows user to set their email preference or unsubscribe from a communication list." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

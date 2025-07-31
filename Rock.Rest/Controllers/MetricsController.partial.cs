@@ -151,7 +151,7 @@ namespace Rock.Rest.Controllers
                         metricYTDData.GoalValue = null;
                     }
 
-                    metricsData.Add( metricYTDData.ToLiquid() );
+                    metricsData.Add( metricYTDData );
                 }
 
                 Dictionary<string, object> mergeValues = new Dictionary<string, object>();

@@ -12,8 +12,8 @@
                             :disabled="isProcessing"
                             @click="onScheduleClick(schedule)">
                     <span class="selection">
-                        <i v-if="isSelected(schedule)" class="fa fa-check-square"></i>
-                        <i v-else class="fa fa-square-o"></i>
+                        <i v-if="isSelected(schedule)" class="ti ti-checkbox"></i>
+                        <i v-else class="ti ti-square"></i>
                     </span>
 
                     <span class="title">{{ schedule.name }}</span>

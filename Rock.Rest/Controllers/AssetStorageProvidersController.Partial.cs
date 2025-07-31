@@ -94,7 +94,7 @@ namespace Rock.Rest.Controllers
                     {
                         var treeViewItem = new TreeViewItem();
                         treeViewItem.Id = Uri.EscapeDataString( $"{assetStorageProviderCache.Id},{folderAsset.Key}" );
-                        treeViewItem.IconCssClass = "fa fa-folder";
+                        treeViewItem.IconCssClass = "ti ti-folder";
                         treeViewItem.Name = folderAsset.Name;
 
                         // NOTE: This is not very performant. We should see if we can get a bool response from providers instead of getting the entire folder list for each subfolder.

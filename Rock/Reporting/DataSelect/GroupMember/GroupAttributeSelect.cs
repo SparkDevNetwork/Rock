@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -23,10 +23,12 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+
 using Rock.Data;
-using Rock.Field.Types;
 using Rock.Model;
-using Rock.Utility;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 using Rock.Web.Utilities;
@@ -39,64 +41,9 @@ namespace Rock.Reporting.DataSelect.GroupMember
     [Description( "Show Group Attribute Values" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Group Attribute Select" )]
-    [Rock.SystemGuid.EntityTypeGuid( "EC98933B-341B-4705-A7F6-60972D151AA7")]
+    [Rock.SystemGuid.EntityTypeGuid( "EC98933B-341B-4705-A7F6-60972D151AA7" )]
     public class GroupAttributeSelect : DataSelectComponent
     {
-        #region Private Methods
-
-        /// <summary>
-        /// Gets the Attributes associated to groups.
-        /// </summary>
-        /// <returns></returns>
-        private List<EntityField> GetGroupAttributeEntityFields()
-        {
-            var _groupAttributes = new List<EntityField>();
-
-            var rockContext = new RockContext();
-            var attributeService = new AttributeService( rockContext );
-            var groupTypeService = new GroupTypeService( rockContext );
-
-            var groupEntityTypeId = EntityTypeCache.GetId( typeof( Model.Group ) );
-
-            var groupAttributes = attributeService
-                .Queryable().AsNoTracking()
-                .Where( a =>
-                    a.EntityTypeId == groupEntityTypeId &&
-                    a.EntityTypeQualifierColumn == "GroupTypeId" )
-                .Join( groupTypeService.Queryable(),
-                    a => a.EntityTypeQualifierValue, gt => gt.Id.ToString(), ( a, gt ) =>
-                        new
-                        {
-                            a.Name,
-                            a.Guid,
-                            GroupTypeName = gt.Name
-                        } )
-                .OrderBy( a => a.GroupTypeName )
-                .ThenBy( a => a.Name )
-                .ToList();
-
-            int index = 0;
-            foreach ( var attribute in groupAttributes )
-            {
-                if ( !_groupAttributes.Any( e => e.AttributeGuid == attribute.Guid ) )
-                {
-                    var attributeCache = AttributeCache.Get( attribute.Guid );
-                    var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache, false );
-                    if ( entityField != null )
-                    {
-                        entityField.Title = $"{attribute.GroupTypeName}: {attribute.Name}";
-                        entityField.AttributeGuid = attribute.Guid;
-                        entityField.Index = index++;
-                        _groupAttributes.Add( entityField );
-                    }
-                }
-            }
-
-            return _groupAttributes;
-        }
-
-        #endregion
-
         #region Properties
 
         /// <summary>
@@ -119,6 +66,35 @@ namespace Rock.Reporting.DataSelect.GroupMember
         public override string ColumnPropertyName
         {
             get { return "Group Attribute"; }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var attributeOptions = GetGroupAttributeEntityFields( rockContext ).Select( aef => new ListItemBag { Text = aef.Title, Value = aef.AttributeGuid.ToString() } );
+            var options = new Dictionary<string, string> { ["attributeOptions"] = attributeOptions.ToCamelCaseJson( false, true ) };
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/GroupMember/groupAttributeSelect.obs" ),
+                Options = options,
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return new Dictionary<string, string> { ["attribute"] = selection };
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            return data.GetValueOrDefault( "attribute", string.Empty );
         }
 
         #endregion
@@ -161,8 +137,8 @@ namespace Rock.Reporting.DataSelect.GroupMember
             pnl.Controls.Add( ddlProperty );
 
             // Add empty selection as first item.
-            var groupAttributeEntityFields = GetGroupAttributeEntityFields();
             ddlProperty.Items.Add( new ListItem() );
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( new RockContext() );
             foreach ( var entityField in groupAttributeEntityFields )
             {
                 // Add the field to the dropdown of available fields
@@ -215,7 +191,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
         {
             var attributeGuid = selection.AsGuid();
 
-            var groupAttributeEntityFields = GetGroupAttributeEntityFields();
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( new RockContext() );
 
             var entityField = groupAttributeEntityFields.FirstOrDefault( f => f.AttributeGuid == attributeGuid );
             if ( entityField != null )
@@ -248,7 +224,7 @@ namespace Rock.Reporting.DataSelect.GroupMember
 
             var attributeGuid = selection.AsGuid();
 
-            var groupAttributeEntityFields = GetGroupAttributeEntityFields();
+            var groupAttributeEntityFields = GetGroupAttributeEntityFields( new RockContext() );
 
             var entityField = groupAttributeEntityFields.FirstOrDefault( f => f.AttributeGuid == attributeGuid );
             if ( entityField != null )
@@ -288,6 +264,60 @@ namespace Rock.Reporting.DataSelect.GroupMember
             }
 
             return null;
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Gets the Attributes associated to groups.
+        /// </summary>
+        /// <returns></returns>
+        private List<EntityField> GetGroupAttributeEntityFields( RockContext rockContext )
+        {
+            var _groupAttributes = new List<EntityField>();
+
+            var attributeService = new AttributeService( rockContext );
+            var groupTypeService = new GroupTypeService( rockContext );
+
+            var groupEntityTypeId = EntityTypeCache.GetId( typeof( Model.Group ) );
+
+            var groupAttributes = attributeService
+                .Queryable().AsNoTracking()
+                .Where( a =>
+                    a.EntityTypeId == groupEntityTypeId &&
+                    a.EntityTypeQualifierColumn == "GroupTypeId" )
+                .Join( groupTypeService.Queryable(),
+                    a => a.EntityTypeQualifierValue, gt => gt.Id.ToString(), ( a, gt ) =>
+                        new
+                        {
+                            a.Name,
+                            a.Guid,
+                            GroupTypeName = gt.Name
+                        } )
+                .OrderBy( a => a.GroupTypeName )
+                .ThenBy( a => a.Name )
+                .ToList();
+
+            int index = 0;
+            foreach ( var attribute in groupAttributes )
+            {
+                if ( !_groupAttributes.Any( e => e.AttributeGuid == attribute.Guid ) )
+                {
+                    var attributeCache = AttributeCache.Get( attribute.Guid );
+                    var entityField = EntityHelper.GetEntityFieldForAttribute( attributeCache, false );
+                    if ( entityField != null )
+                    {
+                        entityField.Title = $"{attribute.GroupTypeName}: {attribute.Name}";
+                        entityField.AttributeGuid = attribute.Guid;
+                        entityField.Index = index++;
+                        _groupAttributes.Add( entityField );
+                    }
+                }
+            }
+
+            return _groupAttributes;
         }
 
         #endregion

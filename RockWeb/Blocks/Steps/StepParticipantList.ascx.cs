@@ -295,7 +295,7 @@ namespace RockWeb.Blocks.Steps
 
                 if ( _showNoteColumn && step.Note.IsNotNullOrWhiteSpace() )
                 {
-                    sbNameHtml.Append( " <span class='js-member-note' data-toggle='tooltip' data-placement='top' title='" + step.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>" );
+                    sbNameHtml.Append( " <span class='js-member-note' data-toggle='tooltip' data-placement='top' title='" + step.Note.EncodeHtml() + "'><i class='ti ti-file-type-txt text-info'></i></span>" );
                 }
 
                 lNameWithHtml.Text = sbNameHtml.ToString();

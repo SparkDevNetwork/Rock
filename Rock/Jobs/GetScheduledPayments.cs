@@ -219,7 +219,7 @@ namespace Rock.Jobs
 
             if ( exceptionMsgs.Any() )
             {
-                summary.AppendLine( "\n<i class='fa fa-circle text-warning'></i> Some Financial Gateways have errors. See exception log for details." );
+                summary.AppendLine( "\n<i class='ti ti-circle text-warning'></i> Some Financial Gateways have errors. See exception log for details." );
                 summary.AppendLine();
             }
 

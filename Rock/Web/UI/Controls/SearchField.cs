@@ -77,7 +77,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( "class", "smartsearch " + this.CssClass );
             writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
-            writer.AddAttribute( "class", "fa fa-search" );
+            writer.AddAttribute( "class", "ti ti-search" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
             writer.RenderEndTag();
 
@@ -102,7 +102,7 @@ namespace Rock.Web.UI.Controls
             writer.RenderEndTag();
 
             // add carat
-            writer.AddAttribute( "class", "fa fa-caret-down" );
+            writer.AddAttribute( "class", "ti ti-caret-down" );
             writer.RenderBeginTag( HtmlTextWriterTag.B );
             writer.RenderEndTag();
 

@@ -41,6 +41,31 @@ namespace Rock.Model
     public partial class InteractionService
     {
         /// <summary>
+        /// The lazy backing field for the <see cref="FriendlyApplicationNameByUnfriendlyNames"/> property.
+        /// </summary>
+        private static readonly Lazy<Dictionary<string, string>> _friendlyApplicationNameByUnfriendlyNames = new Lazy<Dictionary<string, string>>( () =>
+        {
+            // Add new keys to this dictionary in alphabetical order (for ease of visual scanning).
+            return new Dictionary<string, string>
+            {
+                { "GmailImageProxy", "Gmail" },
+                { "Google", "Google Automation" },
+                { "lua-resty-http", "Automated HTTP Request" },
+                { "Mobile Safari UI/WKWebview", "Mobile Safari (In-App Browser)" },
+                { "YahooMailProxy", "Yahoo Mail" }
+            };
+        } );
+
+        /// <summary>
+        /// Gets a dictionary of friendly application names to be used when adding <see cref="InteractionDeviceType"/> records.
+        /// </summary>
+        /// <remarks>
+        /// This dictionary is used to provide friendly names for less-than-friendly application names that are provided
+        /// via 3rd party webhooks, parsed from user agent strings, Etc.
+        /// </remarks>
+        private static Dictionary<string, string> FriendlyApplicationNameByUnfriendlyNames => _friendlyApplicationNameByUnfriendlyNames.Value;
+
+        /// <summary>
         /// Creates a new interaction using the provided interaction info object
         /// and adds the new interaction to the context.
         /// <remarks>
@@ -472,6 +497,18 @@ namespace Rock.Model
             {
                 lookupTable = new ConcurrentDictionary<string, int>();
                 RockCacheManager<object>.Instance.AddOrUpdate( DeviceTypeIdLookupCacheKey, lookupTable );
+            }
+
+            if ( application.IsNotNullOrWhiteSpace() )
+            {
+                foreach ( var unfriendlyName in FriendlyApplicationNameByUnfriendlyNames.Keys )
+                {
+                    if ( application.StartsWith( unfriendlyName, StringComparison.OrdinalIgnoreCase ) )
+                    {
+                        application = FriendlyApplicationNameByUnfriendlyNames[unfriendlyName];
+                        break;
+                    }
+                }
             }
 
             var lookupKey = $"{application}|{operatingSystem}|{clientType}";

@@ -468,7 +468,7 @@ namespace RockWeb.Blocks.Finance
                                 lbDelete.CausesValidation = false;
                                 lbDelete.Click += lbDelete_Click;
                                 HtmlGenericControl buttonIcon = new HtmlGenericControl( "i" );
-                                buttonIcon.Attributes.Add( "class", "fa fa-close" );
+                                buttonIcon.Attributes.Add( "class", "ti ti-x" );
                                 lbDelete.Controls.Add( buttonIcon );
                                 tdEntityControls.Controls.Add( lbDelete );
                                 lbDelete.Visible = financialTransactionDetail.EntityTypeId == registrationEntityTypeId && financialTransactionDetail.EntityId.HasValue;

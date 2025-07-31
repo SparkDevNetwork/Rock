@@ -5,7 +5,7 @@
                        :description="actionHeaderDescription">
             <template #actions>
                 <a class="btn btn-default btn-sm btn-square" href="#" @click.prevent="onAddActionClick">
-                    <i class="fa fa-plus"></i>
+                    <i class="ti ti-plus"></i>
                 </a>
             </template>
         </SectionHeader>
@@ -17,7 +17,7 @@
                 <div class="action-item-count">{{ index + 1 }}</div>
                 <div class="action-item-body">
                     <span class="reorder-handle">
-                        <i class="fa fa-bars"></i>
+                        <i class="ti ti-menu-2"></i>
                     </span>
 
                     <div class="action-item-icon">
@@ -29,11 +29,11 @@
                     </div>
                     <div class="action-columncommand">
                         <a href="#" class="btn btn-default btn-sm btn-square mr-2" @click.prevent="onEditActionClick(action)">
-                            <i class="fa fa-pencil"></i>
+                            <i class="ti ti-pencil"></i>
                         </a>
 
                         <a href="#" class="btn btn-danger btn-sm btn-square" @click.prevent="onActionRemoveClick(action)">
-                            <i class="fa fa-times"></i>
+                            <i class="ti ti-x"></i>
                         </a>
                     </div>
                 </div>

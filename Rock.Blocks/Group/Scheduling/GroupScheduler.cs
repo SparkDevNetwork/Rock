@@ -41,7 +41,7 @@ namespace Rock.Blocks.Group.Scheduling
     [DisplayName( "Group Scheduler" )]
     [Category( "Group Scheduling" )]
     [Description( "Allows group schedules for groups and locations to be managed by a scheduler." )]
-    [IconCssClass( "fa fa-calendar-alt" )]
+    [IconCssClass( "ti ti-calendar-month" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

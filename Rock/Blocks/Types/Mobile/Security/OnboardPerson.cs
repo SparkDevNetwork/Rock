@@ -43,7 +43,7 @@ namespace Rock.Blocks.Types.Mobile.Security
     [DisplayName( "Onboard Person" )]
     [Category( "Mobile > Security" )]
     [Description( "Provides an interface for the user to safely identify themselves and create a login." )]
-    [IconCssClass( "fa fa-plane-departure" )]
+    [IconCssClass( "ti ti-plane-departure" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

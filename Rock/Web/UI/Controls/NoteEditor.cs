@@ -559,7 +559,7 @@ namespace Rock.Web.UI.Controls
             _aSecurity.ID = "_aSecurity";
             _aSecurity.Attributes["class"] = "btn btn-security btn-xs btn-square security js-notesecurity";
             _aSecurity.Attributes["data-entitytype-id"] = EntityTypeCache.Get( typeof( Rock.Model.Note ) ).Id.ToString();
-            _aSecurity.InnerHtml = "<i class='fa fa-lock'></i>";
+            _aSecurity.InnerHtml = "<i class='ti ti-lock'></i>";
             Controls.Add( _aSecurity );
 
             _dtCreateDate.ID = this.ID + "_tbCreateDate";

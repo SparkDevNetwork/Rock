@@ -178,6 +178,12 @@ namespace RockWeb.Blocks.Groups
         DefaultBooleanValue = false,
         Order = 19 )]
 
+    [LinkedPage( "Group Placement Page",
+        Key = AttributeKey.GroupPlacementPage,
+        Description = "The page used for performing group placements.",
+        IsRequired = false,
+        Order = 20 )]
+
     #endregion Block Attributes
 
     [Rock.SystemGuid.BlockTypeGuid( "582BEEA1-5B27-444D-BC0A-F60CEB053981" )]
@@ -216,6 +222,7 @@ namespace RockWeb.Blocks.Groups
             public const string EnableGroupTags = "EnableGroupTags";
             public const string AddAdministrateSecurityToGroupCreator = "AddAdministrateSecurityToGroupCreator";
             public const string IsScheduleTabVisible = "IsScheduleTabVisible";
+            public const string GroupPlacementPage = "GroupPlacementPage";
         }
 
         #endregion Attribute Keys
@@ -2593,7 +2600,7 @@ namespace RockWeb.Blocks.Groups
                     // Only show the growth icon and tooltip if growth enabled AND the strength is not "None".
                     if ( isRelationshipGrowthEnabled && finalRelationshipStrength > 0 )
                     {
-                        relationshipLabelIconsSb.Append( $@" <i class=""fa fa-chart-line""></i>" );
+                        relationshipLabelIconsSb.Append( $@" <i class=""ti ti-chart-line""></i>" );
 
                         relationshipGrowthTooltip = " The relationship is also set to strengthen over time.";
                     }
@@ -2601,7 +2608,7 @@ namespace RockWeb.Blocks.Groups
                     // Show the overridden icon if this group is overriding its parent group type's peer network configuration in any way.
                     if ( group.IsOverridingGroupTypePeerNetworkConfiguration )
                     {
-                        relationshipLabelIconsSb.Append( $@" <i class=""fa fa-star-of-life""></i>" );
+                        relationshipLabelIconsSb.Append( $@" <i class=""ti ti-asterisk""></i>" );
                     }
 
                     // Only show the overridden tooltip if the relationship strength itself has been overridden.
@@ -2624,7 +2631,7 @@ namespace RockWeb.Blocks.Groups
 
                 if ( ChatHelper.IsChatEnabled && group.GetIsChatEnabled() )
                 {
-                    hlChat.Text = $"Chat-Enabled <i class=\"fa fa-comments-o\"></i>";
+                    hlChat.Text = $"Chat-Enabled <i class=\"ti ti-messages\"></i>";
                     hlChat.Visible = true;
                 }
                 else
@@ -2741,6 +2748,30 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 hlGroupScheduler.Visible = false;
+            }
+
+            string groupPlacementUrl = LinkedPageUrl( AttributeKey.GroupPlacementPage, new Dictionary<string, string>
+            {
+                { "SourceGroup", group.Id.ToString() },
+                { "AllowMultiplePlacements", "false" },
+                { "ReturnUrl", GetCurrentPageUrl() }
+            } );
+            if ( groupPlacementUrl.IsNotNullOrWhiteSpace() )
+            {
+                hlGroupPlacement.Visible = groupType != null;
+                if ( group.DisableScheduling )
+                {
+                    hlGroupPlacement.Enabled = false;
+                }
+                else
+                {
+                    hlGroupPlacement.NavigateUrl = groupPlacementUrl;
+                    hlGroupPlacement.Enabled = true;
+                }
+            }
+            else
+            {
+                hlGroupPlacement.Visible = false;
             }
 
             string groupHistoryUrl = LinkedPageUrl( AttributeKey.GroupHistoryPage, pageParams );
@@ -3989,7 +4020,7 @@ namespace RockWeb.Blocks.Groups
             GroupRequirement requirement = e.Row.DataItem as GroupRequirement;
             if ( requirement != null )
             {
-                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"fa fa-check\"></i>" : string.Empty;
+                lAppliesToDataViewId.Text = requirement.AppliesToDataViewId.HasValue ? "<i class=\"ti ti-check\"></i>" : string.Empty;
             }
         }
 

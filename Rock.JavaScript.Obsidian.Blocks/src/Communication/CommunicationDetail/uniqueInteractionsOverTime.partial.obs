@@ -1,0 +1,257 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div v-if="chartData" class="communication-detail-unique-interactions-over-time">
+        <div class="communication-detail-unique-interactions-over-time-actions">
+            <RadioButtonList v-if="showPerformanceChartTimeframeFilter"
+                             v-model="performanceChartTimeframe"
+                             :items="performanceChartTimeframeItems"
+                             :horizontal="true"
+                             :disableLabel="true" />
+        </div>
+        <div class="communication-detail-unique-interactions-over-time-chart">
+            <Chart type="line"
+                   :data="chartData"
+                   :options="chartOptions" />
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.communication-detail-unique-interactions-over-time {
+    height: 100%;
+    display: flex;
+    flex-direction: column;
+}
+
+.communication-detail-unique-interactions-over-time-actions {
+    flex: 0 0 auto;
+}
+
+.communication-detail-unique-interactions-over-time-chart {
+    flex: 1 0 auto;
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType, ref } from "vue";
+    import { useChartStyles, useCommunicationDetail } from "./utils.partial";
+    import Chart from "@Obsidian/Controls/chart.obs";
+    import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
+    import { ChartData, ChartOptions } from "@Obsidian/Libs/chart";
+    import { getCssVariableValue } from "@Obsidian/Utility/cssUtils";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { isNullish } from "@Obsidian/Utility/util";
+    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
+
+    const communicationDetail = useCommunicationDetail();
+    const chartStyles = useChartStyles();
+
+    const enum PerformanceChartTimeframe {
+        First45Days = "First 45 Days",
+        AllTime = "All Time"
+    }
+
+    const performanceChartTimeframeItems = [
+        {
+            text: PerformanceChartTimeframe.First45Days,
+            value: PerformanceChartTimeframe.First45Days
+        },
+        {
+            text: PerformanceChartTimeframe.AllTime,
+            value: PerformanceChartTimeframe.AllTime
+        }
+    ];
+
+    const props = defineProps({
+        chartDataPoints: {
+            type: Array as PropType<ChartNumericDataPointBag[] | null | undefined>,
+            required: true
+        }
+    });
+
+    type InteractionDataPoint = ChartNumericDataPointBag & { date: RockDateTime };
+
+    // #region Values
+
+    const performanceChartTimeframe = ref(PerformanceChartTimeframe.First45Days);
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const communicationSendDate = computed((): RockDateTime | undefined => {
+        return communicationDetail.value?.sendDateTime
+            ? RockDateTime.parseISO(communicationDetail.value.sendDateTime)?.date
+            : undefined;
+    });
+
+    const fortyFifthDayDate = computed((): RockDateTime | undefined => {
+        return communicationSendDate.value?.addDays(44);
+    });
+
+    const dataPoints = computed((): InteractionDataPoint[] => {
+        if (!props.chartDataPoints || !communicationSendDate.value) {
+            return [];
+        }
+
+        // Enrich each data point with the parsed RockDateTime.
+        return props.chartDataPoints
+            .filter(dp =>
+                dp?.seriesName
+                && dp.label
+                && !isNullish(dp.value)
+                && dp.color
+            )
+            .map(dp => {
+                const date = RockDateTime.parseISO(dp.label!);
+                if (!date) {
+                    return null;
+                }
+                return { ...dp, date };
+            })
+            .filter((dp): dp is InteractionDataPoint => !!dp);
+    });
+
+    const showPerformanceChartTimeframeFilter = computed((): boolean => {
+        return !!(
+            fortyFifthDayDate.value
+            && dataPoints.value
+                .some(dp => dp.date > fortyFifthDayDate.value!)
+        );
+    });
+
+    const visibleDataPoints = computed((): ChartNumericDataPointBag[] => {
+        return dataPoints.value
+            .filter(dp => {
+                if (performanceChartTimeframe.value === PerformanceChartTimeframe.AllTime) {
+                    return true;
+                }
+
+                // Only show data points for the first 45 days.
+                return dp.date <= fortyFifthDayDate.value!;
+            })
+            .map(dp => ({
+                ...dp,
+                label: dp.date.toASPString("d")
+            }));
+    });
+
+    const chartData = computed((): ChartData | null => {
+        if (!visibleDataPoints.value.length) {
+            return null;
+        }
+
+        const labels = new Set<string>();
+        const seriesDataSets = new Map<string, {
+            label: string,
+            data: number[],
+            borderColor: string,
+            backgroundColor: string,
+            borderWidth: number
+        }>();
+
+        visibleDataPoints.value.forEach(dp => {
+            const seriesName = dp.seriesName!;
+            let seriesDataSet = seriesDataSets.get(seriesName);
+
+            const color = getCssVariableValue(dp.color!, chartStyles.value.fallbackColor);
+
+            if (!seriesDataSet) {
+                seriesDataSet = {
+                    label: dp.seriesName!,
+                    data: [],
+                    borderColor: color,
+                    backgroundColor: color,
+                    borderWidth: 1
+                };
+
+                seriesDataSets.set(seriesName, seriesDataSet);
+            }
+
+            labels.add(dp.label!);
+            seriesDataSet.data.push(dp.value!);
+        });
+
+        return {
+            labels: Array.from(labels),
+            datasets: Array.from(seriesDataSets.values())
+        };
+    });
+
+    const maxPercentage = computed((): number => {
+        if (!visibleDataPoints.value.length) {
+            return 0;
+        }
+
+        return Math.max(
+            ...visibleDataPoints.value
+                .map((dp => dp.value!))
+        );
+    });
+
+    const yStepSize = computed((): number => {
+        return maxPercentage.value > 50
+            ? 10
+            : 5;
+    });
+
+    const yMax = computed((): number => {
+        return maxPercentage.value > 50
+            ? 100
+            : 50;
+    });
+
+    const chartOptions = computed((): ChartOptions => {
+        return {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                title: {
+                    display: true,
+                    text: "Unique Interactions Over Time",
+                    color: chartStyles.value.fontColor,
+                    font: {
+                        family: chartStyles.value.fontFamily,
+                        size: chartStyles.value.fontSize,
+                        weight: chartStyles.value.fontWeight
+                    }
+                },
+                legend: {
+                    position: "bottom",
+                    align: "start",
+                    labels: {
+                        boxWidth: chartStyles.value.legendBoxSize,
+                        boxHeight: chartStyles.value.legendBoxSize,
+                        font: {
+                            family: chartStyles.value.fontFamily,
+                            size: chartStyles.value.fontSize,
+                            weight: chartStyles.value.fontWeight
+                        },
+                        color: chartStyles.value.fontColor
+                    }
+                },
+                tooltip: {
+                    callbacks: {
+                        label: context => {
+                            const label = context.dataset.label ?? "";
+                            const value = context.parsed.y;
+                            return `${label ? `${label}: ` : ""}${value}%`;
+                        }
+                    }
+                }
+            },
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    max: yMax.value,
+                    ticks: {
+                        stepSize: yStepSize.value,
+                        callback: v => `${v}%`
+                    }
+                }
+            }
+        };
+    });
+
+    // #endregion Computed Values
+</script>

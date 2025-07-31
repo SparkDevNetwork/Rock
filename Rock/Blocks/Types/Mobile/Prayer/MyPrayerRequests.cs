@@ -35,7 +35,7 @@ namespace Rock.Blocks.Types.Mobile.Prayer
     [DisplayName( "My Prayer Requests" )]
     [Category( "Mobile > Prayer" )]
     [Description( "Shows a list of prayer requests that the user has previously entered." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

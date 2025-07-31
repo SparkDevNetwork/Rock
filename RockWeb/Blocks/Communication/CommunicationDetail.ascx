@@ -6,7 +6,7 @@
         <Rock:NotificationBox ID="nbEditModeMessage" runat="server" NotificationBoxType="Warning" />
         <asp:Panel ID="pnlCommunicationView" runat="server" CssClass="panel panel-block styled-scroll">
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-comment-o"></i>
+                <h1 class="panel-title"><i class="ti ti-message"></i>
                     <asp:Literal ID="lTitle" runat="server" /></h1>
 
                 <div class="panel-labels">
@@ -40,7 +40,7 @@
                         <div class="recipient-status row">
                             <div class="col-sm-3">
                                 <div id="pnlPendingSummary" runat="server" class="metric-tile metric-pending clickable js-actions-statistic" title="The number of recipients that have not yet received the communication">
-                                    <div class="metric-icon"><i class="fa fa-clock"></i></div>
+                                    <div class="metric-icon"><i class="ti ti-clock"></i></div>
                                     <div class="value">
                                         <asp:Literal ID="lPending" runat="server"></asp:Literal>
                                         <small>Pending</small>
@@ -49,7 +49,7 @@
                             </div>
                             <div class="col-sm-3">
                                 <div id="pnlDeliveredSummary" runat="server" class="metric-tile metric-delivered clickable js-actions-statistic" title="The number of recipients that the communication was successfully delivered to">
-                                    <div class="metric-icon"><i class="fa fa-inbox"></i></div>
+                                    <div class="metric-icon"><i class="ti ti-inbox"></i></div>
                                     <div class="value">
                                         <asp:Literal ID="lDelivered" runat="server"></asp:Literal>
                                         <small>Delivered</small>
@@ -58,7 +58,7 @@
                             </div>
                             <div class="col-sm-3">
                                 <div id="pnlFailedSummary" runat="server" class="metric-tile metric-failed clickable js-actions-statistic" title="The number of recipients to whom the communication could not be sent">
-                                    <div class="metric-icon"><i class="fa fa-comment-slash"></i></div>
+                                    <div class="metric-icon"><i class="ti ti-message-off"></i></div>
                                     <div class="value">
                                         <asp:Literal ID="lFailed" runat="server"></asp:Literal>
                                         <small>Failed</small>
@@ -67,7 +67,7 @@
                             </div>
                             <div class="col-sm-3">
                                 <div id="pnlCancelledSummary" runat="server" class="metric-tile metric-cancelled clickable js-actions-statistic" title="The number of recipients for whom the communication was cancelled">
-                                    <div class="metric-icon"><i class="fa fa-ban"></i></div>
+                                    <div class="metric-icon"><i class="ti ti-ban"></i></div>
                                     <div class="value">
                                         <asp:Literal ID="lCancelled" runat="server"></asp:Literal>
                                         <small>Cancelled</small>

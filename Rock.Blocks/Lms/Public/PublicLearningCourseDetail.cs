@@ -34,7 +34,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Public Learning Course Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular public learning course." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CodeEditorField( "Lava Template",
@@ -250,7 +250,7 @@ namespace Rock.Blocks.Lms
                                         <div class=""text-muted"">You completed this class on {{
                                             classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}.</div>
 
-                                        {% if classInfo.StudentParticipant.LearningGradingSystemScale.Name != empty %}
+                                        {% if CourseInfo.IsCompletionOnly == false %}
                                         <div class=""mt-3"">
                                             <div class=""text-muted"">
                                                 <p class=""text-bold mb-0"">Grade</p>
@@ -279,7 +279,7 @@ namespace Rock.Blocks.Lms
                                         <div class=""text-muted"">You completed this class on {{
                                             classInfo.StudentParticipant.LearningCompletionDateTime | Date: 'sd' }}</div>
 
-                                        {% if classInfo.StudentParticipant.LearningGradingSystemScale.Name != empty %}
+                                        {% if CourseInfo.IsCompletionOnly == false %}
                                         <div class=""mt-3"">
                                             <div class=""text-muted"">
                                                 <p class=""text-bold mb-0"">Grade</p>

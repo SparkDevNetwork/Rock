@@ -7,7 +7,7 @@
 
         <div class="panel-body">
             <div>
-                <span class="mr-1"><i class="fa fa-spinner fa-spin"></i></span>
+                <span class="mr-1"><i class="ti ti-rotate-2 ti-spin"></i></span>
                 <span>{{ message }}</span>
             </div>
             <div v-if="isProgressBarShown" class="mt-1">

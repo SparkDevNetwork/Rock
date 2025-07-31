@@ -41,7 +41,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Benevolence Request List" )]
     [Category( "Finance" )]
     [Description( "Block used to list Benevolence Requests." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -250,7 +250,7 @@ namespace Rock.Blocks.Finance
             var benevolenceRequestService = new BenevolenceRequestService( rockContext );
 
             var benevolenceRequests = benevolenceRequestService
-                .Queryable( "BenevolenceResults,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person,RequestStatusValue,ConnectionStatusValue,Campus" ).AsNoTracking();
+                .Queryable( "BenevolenceResults,BenevolenceResults.ResultTypeValue,RequestedByPersonAlias,RequestedByPersonAlias.Person,CaseWorkerPersonAlias,CaseWorkerPersonAlias.Person,RequestStatusValue,ConnectionStatusValue,Campus,BenevolenceType" ).AsNoTracking();
 
             var benevolenceTypeFilter = GetAttributeValue( AttributeKey.FilterBenevolenceTypesAttributeKey )?.Split( ',' ).Where( v => v.IsNotNullOrWhiteSpace() ).Select( v => new Guid( v ) );
 
@@ -267,7 +267,7 @@ namespace Rock.Blocks.Finance
                 // Filter by First Name 
                 if ( !string.IsNullOrWhiteSpace( FilterFirstName ) )
                 {
-                    benevolenceRequests = benevolenceRequests.Where( b => b.FirstName.StartsWith( FilterFirstName ) );
+                    benevolenceRequests = benevolenceRequests.Where( b => b.FirstName.StartsWith( FilterFirstName ) || b.RequestedByPersonAlias.Person.NickName.StartsWith( FilterFirstName ) );
                 }
 
                 // Filter by Last Name 

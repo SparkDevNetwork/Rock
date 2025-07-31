@@ -588,7 +588,7 @@ namespace RockWeb.Blocks.Crm
                         primaryPerson.SetBirthDate( GetNewDateTimeValue( "BirthDate" ) );
                         primaryPerson.AnniversaryDate = GetNewDateTimeValue( "AnniversaryDate" );
                         primaryPerson.GraduationYear = GetNewIntValue( "GraduationYear" );
-                        primaryPerson.Email = GetNewStringValue( "Email" );
+                        primaryPerson.Email = GetNewStringValue( "Email" )?.Trim().ToLower();
                         primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive" ) ?? true;
                         primaryPerson.EmailNote = GetNewStringValue( "EmailNote" );
                         primaryPerson.EmailPreference = ( EmailPreference ) GetNewEnumValue( "EmailPreference", typeof( EmailPreference ) );
@@ -2349,12 +2349,12 @@ AND Attendance.Id != @FirstTimeRecordId
 
                         if ( phoneNumber.IsUnlisted )
                         {
-                            iconHtml += " <span class='label label-info' title='Unlisted' data-toggle='tooltip' data-placement='top'><i class='fa fa-phone-slash'></i></span>";
+                            iconHtml += " <span class='label label-info' title='Unlisted' data-toggle='tooltip' data-placement='top'><i class='ti ti-phone-off'></i></span>";
                         }
 
                         if ( phoneNumber.IsMessagingEnabled )
                         {
-                            iconHtml += " <span class='label label-success' title='SMS Enabled' data-toggle='tooltip' data-placement='top'><i class='fa fa-sms'></i></span>";
+                            iconHtml += " <span class='label label-success' title='SMS Enabled' data-toggle='tooltip' data-placement='top'><i class='ti ti-device-mobile-message'></i></span>";
                         }
 
                         AddProperty( key, phoneType.Value, person.Id, phoneNumber.Number, phoneNumber.NumberFormatted + iconHtml );
@@ -2398,12 +2398,12 @@ AND Attendance.Id != @FirstTimeRecordId
 
                             if ( address.IsMailingLocation )
                             {
-                                iconHtml += " <span class='label label-info' title='Mailing' data-toggle='tooltip' data-placement='top'><i class='fa fa-envelope'></i></span>";
+                                iconHtml += " <span class='label label-info' title='Mailing' data-toggle='tooltip' data-placement='top'><i class='ti ti-mail'></i></span>";
                             }
 
                             if ( address.IsMappedLocation )
                             {
-                                iconHtml += " <span class='label label-success' title='Mapped' data-toggle='tooltip' data-placement='top'><i class='fa fa-map-marker'></i></span>";
+                                iconHtml += " <span class='label label-success' title='Mapped' data-toggle='tooltip' data-placement='top'><i class='ti ti-map-pin'></i></span>";
                             }
 
                             var addressKey = key;
@@ -2632,9 +2632,20 @@ AND Attendance.Id != @FirstTimeRecordId
                 valuesRow.PersonPersonPropertyList = new List<ValuesRowPersonPersonProperty>();
 
                 // Check if this row should be considered "matching" and set the IsMatchingRow property
-                if ( personProperty.Values.Select( v => v.Value ).Distinct().Count() == 1 )
+                if ( personProperty.Key != "Email" )
                 {
-                    valuesRow.IsMatchingRow = true;
+                    if ( personProperty.Values.Select( v => v.Value ?? string.Empty ).Distinct().Count() == 1 )
+                    {
+                        valuesRow.IsMatchingRow = true;
+                    }
+                }
+                else
+                {
+                    // Disregard capitalization for email addresses
+                    if ( personProperty.Values.Select( v => v.Value?.Trim().ToLower() ?? string.Empty ).Distinct().Count() == 1 )
+                    {
+                        valuesRow.IsMatchingRow = true;
+                    }
                 }
 
                 foreach ( var person in People )

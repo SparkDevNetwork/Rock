@@ -38,7 +38,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Gateway List" )]
     [Category( "Finance" )]
     [Description( "Block for viewing list of financial gateways." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

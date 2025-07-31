@@ -58,6 +58,13 @@ namespace Rock.ViewModels.Blocks.Administration.SystemConfiguration
         public string PDFExternalRenderEndpoint { get; set; }
 
         /// <summary>
+        /// The hostname to use for connections to the Rock RealTime system.
+        /// If not set then the hostname connected to by the client for other
+        /// web requests will be used.
+        /// </summary>
+        public string RealTimeHostname { get; set; }
+
+        /// <summary>
         /// Gets or sets the visitor cookie persistence length days.
         /// </summary>
         /// <value>

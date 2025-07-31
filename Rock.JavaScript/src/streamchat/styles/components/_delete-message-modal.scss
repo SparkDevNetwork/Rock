@@ -1,0 +1,18 @@
+.delete-message-modal-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+
+    .delete-message-modal-text {
+        font-size: 16px;
+        color: var(--color-interface-strong);
+        margin: 0;
+        line-height: 1;
+    }
+
+    .delete-message-modal-actions {
+        display: flex;
+        justify-content: flex-end;
+        gap: 8px;
+    }
+}

@@ -7,7 +7,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-calendar-minus-o"></i> Schedule Exclusions</h1>
+                    <h1 class="panel-title"><i class="ti ti-calendar-minus"></i> Schedule Exclusions</h1>
                 </div>
                 <div class="panel-body">
 

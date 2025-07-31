@@ -20,6 +20,8 @@ using System.Data.Entity;
 using System.Linq;
 using System.Reflection;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock;
 using Rock.Data;
 using Rock.Web.Cache;
@@ -447,7 +449,7 @@ namespace Rock.Model
                                 .Select( a => a.Id )
                                 .ToList();
 
-                            rockContext.Database.CommandTimeout = 150;
+                            rockContext.Database.SetCommandTimeout( 150 );
 
                             foreach ( var attributeIdUsingFieldType in attributeIdsUsingFieldType )
                             {

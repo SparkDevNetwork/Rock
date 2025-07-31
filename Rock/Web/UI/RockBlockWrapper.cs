@@ -158,7 +158,7 @@ namespace Rock.Web.UI
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-arrow-circle-right" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-circle-arrow-right" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

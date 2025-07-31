@@ -121,17 +121,17 @@ namespace Rock.Jobs
 
             if ( _digestsSentCount > 0 )
             {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-success'></i> {_digestsSentCount} Digests sent" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-success'></i> {_digestsSentCount} Digests sent" );
             }
 
             foreach ( var warning in _warnings )
             {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-warning'></i> {warning}" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-warning'></i> {warning}" );
             }
 
             foreach ( var error in _errors )
             {
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> {error}" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-danger'></i> {error}" );
             }
 
             this.Result = jobSummaryBuilder.ToString();

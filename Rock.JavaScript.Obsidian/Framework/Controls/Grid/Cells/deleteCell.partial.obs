@@ -4,7 +4,7 @@
             title="Delete"
             :disabled="isDisabled"
             @click.prevent="onClick">
-        <i class="fa fa-times"></i>
+        <i class="ti ti-x"></i>
     </button>
 </template>
 

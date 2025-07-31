@@ -37,7 +37,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Lava Application List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of lava applications." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",

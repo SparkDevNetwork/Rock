@@ -252,7 +252,7 @@
             actions.push({
                 type: "default",
                 title: "Rebuild Index",
-                iconCssClass: !isIndexRebuilding.value ? "fa fa-download" : "fa fa-cog fa-spin",
+                iconCssClass: !isIndexRebuilding.value ? "ti ti-download" : "ti ti-settings ti-spin",
                 disabled: isIndexRebuilding.value,
                 handler: onRebuildIndex
             });

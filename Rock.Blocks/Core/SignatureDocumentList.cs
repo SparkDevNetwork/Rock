@@ -42,7 +42,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Signature Document List" )]
     [Category( "Core" )]
     [Description( "Block for viewing values for a signature document type." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -209,7 +209,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "status", a => a.Status.ToString() )
                 .AddDateTimeField( "lastInviteDate", a => a.LastInviteDate )
                 .AddDateTimeField( "signedDateTime", a => a.SignedDateTime )
-                .AddTextField( "fileText", a => a.BinaryFileId.HasValue ? "<i class='fa fa-file-alt fa-lg'></i>" : "<i class='fa fa-exclamation-triangle text-danger' title='File deleted'></i>" )
+                .AddTextField( "fileText", a => a.BinaryFileId.HasValue ? "<i class='ti ti-file ti-lg'></i>" : "<i class='ti ti-alert-triangle text-danger' title='File deleted'></i>" )
                 .AddField( "fileGuid", a => a.BinaryFile == null ? Guid.Empty : a.BinaryFile.Guid )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
                 .AddAttributeFields( GetGridAttributes() );

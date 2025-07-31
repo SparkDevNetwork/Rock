@@ -108,19 +108,19 @@ namespace RockWeb.Blocks.Communication
         {% case Communication.CommunicationType %}
             {% when 'Email' %}
                 <div class='avatar avatar-lg avatar-icon avatar-email'>
-                    <i class='fa fa-envelope'></i>
+                    <i class='ti ti-mail'></i>
                 </div>
             {% when 'SMS' %}
                 <div class='avatar avatar-lg avatar-icon avatar-sms'>
-                    <i class='fa fa-comment-alt'></i>
+                    <i class='ti ti-message'></i>
                 </div>
             {% when 'PushNotification' %}
                 <div class='avatar avatar-lg avatar-icon avatar-push'>
-                    <i class='fa fa-mobile-alt'></i>
+                    <i class='ti ti-device-mobile'></i>
                 </div>
             {% else %}
                 <div class='avatar avatar-lg avatar-icon avatar-othercomm'>
-                    <i class='fa fa-question-circle'></i>
+                    <i class='ti ti-zoom-question'></i>
                 </div>
         {% endcase %}
     </div>
@@ -129,8 +129,8 @@ namespace RockWeb.Blocks.Communication
             <div class='flex-fill pr-sm-3 leading-snug'>
                 <span class='d-block text-wrap text-break mb-1'>{{ Communication.Title }}</span>
                 <span class='d-block text-sm text-muted mb-1'>{{ Communication.Sender.FullName }}</span>
-                {% capture moreHtml %}<i class=&quot;fa fa-xs mr-1 fa-chevron-right&quot;></i> <span>More</span>{% endcapture %}
-                {% capture lessHtml %}<i class=&quot;fa fa-xs mr-1 fa-chevron-down&quot;></i> <span>Less</span>{% endcapture %}
+                {% capture moreHtml %}<i class=&quot;ti ti-xs mr-1 ti-chevron-right&quot;></i> <span>More</span>{% endcapture %}
+                {% capture lessHtml %}<i class=&quot;ti ti-xs mr-1 ti-chevron-down&quot;></i> <span>Less</span>{% endcapture %}
                 {% if HasDetail %}
                     <a href='#' class='text-xs py-1 d-inline-flex align-items-center' onclick=""toggleCommunicationDetail(this,'{{ Communication.RowId }}','{{ moreHtml }}','{{ lessHtml }}');return false;"">{{ lessHtml | HtmlDecode }}</a>
                 {% else %}
@@ -311,7 +311,7 @@ namespace RockWeb.Blocks.Communication
                                                 <td>
                                                     {{ item.Name }}
                                                     {% if item.Name == 'Click' %}
-                                                        <a class='help' href='#' tabindex='-1' data-toggle='tooltip' data-placement='auto' data-container='body' data-html='true' title='' data-original-title='{{ item.Details }}'><i class='fa fa-info-circle'></i></a>
+                                                        <a class='help' href='#' tabindex='-1' data-toggle='tooltip' data-placement='auto' data-container='body' data-html='true' title='' data-original-title='{{ item.Details }}'><i class='ti ti-info-circle'></i></a>
                                                     {% endif %}
                                                 </td>
                                                 {% if Communication.CommunicationType != 'PushNotification' %}

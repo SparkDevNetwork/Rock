@@ -59,7 +59,7 @@ namespace Rock.Badge.Component
                 return;
             }
 
-            writer.Write( $"<div class='rockbadge rockbadge-interactioninrange rockbadge-id-{badge.Id} fa-3x' data-toggle='tooltip' data-original-title=''>" );
+            writer.Write( $"<div class='rockbadge rockbadge-interactioninrange rockbadge-id-{badge.Id} ti-3x' data-toggle='tooltip' data-original-title=''>" );
             writer.Write( "</div>" );
         }
 

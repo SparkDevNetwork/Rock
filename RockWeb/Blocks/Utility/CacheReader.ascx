@@ -7,7 +7,7 @@
         
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-tachometer"></i> 
+                    <i class="ti ti-brand-speedtest"></i> 
                     Cache Reader
                 </h1>
 

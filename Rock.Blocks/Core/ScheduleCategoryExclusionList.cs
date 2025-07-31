@@ -37,7 +37,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Schedule Category Exclusion List" )]
     [Category( "Core" )]
     [Description( "List of dates that schedules are not active for an entire category." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [CategoryField( "Category",

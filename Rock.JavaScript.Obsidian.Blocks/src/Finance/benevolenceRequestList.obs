@@ -5,6 +5,7 @@
           keyField="idKey"
           :customActions="customActions"
           itemTerm="Benevolence Request"
+          title="Benevolence Requests"
           :entityTypeGuid="EntityType.BenevolenceRequest"
           stickyHeader
           liveUpdates
@@ -35,10 +36,15 @@
                 field="requestedBy"
                 :filter="pickExistingValueFilter"
                 :filterValue="getPersonNameFilterValue"
+                :quickFilterValue="getPersonNameFilterValue"
+                :exportValue="getPersonNameExportValue"
                 visiblePriority="xs">
             <template #format="{ row }">
-                <span v-if="row.requestedBy"><a :href="`/person/${row.requestedByIdKey}`">{{ row.requestedByFullName }}</a></span>
-                <span v-else>{{ row.firstName }} {{ row.lastName }}</span>
+                <div class="flex-grow-1">
+                    <span v-if="row.requestedBy"><a :href="`/person/${row.requestedByIdKey}`">{{ row.requestedByFullName }}</a></span>
+                    <span v-else>{{ row.firstName }} {{ row.lastName }}</span>
+                    <div class="text-muted">{{ row.connectionStatus }}</div>
+                </div>
             </template>
 
             <template #skeleton>
@@ -50,6 +56,7 @@
                     title="Connection Status"
                     field="connectionStatus"
                     :filter="pickExistingValueFilter"
+                    :hideOnScreen="true"
                     visiblePriority="md" />
 
         <TextColumn v-if="!config.options?.columnsToHide?.includes(ColumnKey.GovernmentId)"
@@ -79,19 +86,22 @@
                     title="Result Summary"
                     field="resultSummary"
                     :filter="textValueFilter"
+                    width="25%"
                     visiblePriority="md" />
 
         <Column name="resultSpecifics"
                 title="Result Specifics"
                 :filter="textValueFilter"
                 :filterValue="getResultSpecificsFilterValue"
+                :quickFilterValue="getResultSpecificsFilterValue"
+                :exportValue="getResultSpecificsExportValue"
                 visiblePriority="md"
                 width="20%">
             <template #format="{ row }">
-                <div class="text-lg">
+                <div class="flex-grow-1">
                     <div v-for="result of row.resultSpecifics">
                         <div v-if="result.amount">{{ result.result }} ({{ toCurrencyOrNull(result.amount, config.options?.currencyInfo) }})</div>
-                        <div v-else="result.amount">{{ result.result }}</div>
+                        <div v-else>{{ result.result }}</div>
                     </div>
                 </div>
             </template>
@@ -223,7 +233,7 @@
         if (config.options?.canAdministrate == true) {
             actions.push({
                 title: "Options",
-                iconCssClass: "fa fa-gear",
+                iconCssClass: "ti ti-settings",
                 handler: onBenevolenceTypesClick
             });
         }
@@ -303,10 +313,10 @@
         const requestedBy = row.requestedBy as PersonFieldBag;
 
         if (requestedBy) {
-            return row.requestedByFullName as string;
+            return row.requestedByFullName + ` ${row.connectionStatus}` as string;
         }
         else {
-            return `${row.firstName} ${row.lastName}`;
+            return `${row.firstName} ${row.lastName} ${row.connectionStatus}`;
         }
     }
 
@@ -318,6 +328,47 @@
     function getAssignedToFilterValue(row: Record<string, unknown>): string {
         const person = row["caseWorker"] as PersonFieldBag;
         return !person ? "" : `${person.nickName} ${person.lastName}`;
+    }
+
+    /**
+     * Gets the export value text to use for the person/requested-by name column.
+     *
+     * @param row The row to be exported.
+     */
+    function getPersonNameExportValue(row: Record<string, unknown>): string {
+        const requestedBy = row.requestedBy as PersonFieldBag;
+
+        if (requestedBy) {
+            return row.requestedByFullName as string;
+        }
+        else {
+            return `${row.firstName} ${row.lastName}`;
+        }
+    }
+
+    /**
+     * Gets the export value text to use for the ResultSpecifics column.
+     *
+     * @param row The row to be exported.
+     */
+    function getResultSpecificsExportValue(row: Record<string, unknown>): string {
+
+        const accounts = row.resultSpecifics as BenevolenceResultBag[];
+        let exportValue = "";
+
+        accounts.forEach((account, index) => {
+            const amountStr = toCurrencyOrNull(account.amount, config.options?.currencyInfo);
+
+            exportValue += account.amount != null
+                ? `${account.result} (${amountStr})`
+                : `${account.result}`;
+
+            if (index < accounts.length - 1) {
+                exportValue += "\r\n";
+            }
+        });
+
+        return exportValue;
     }
 
     /**

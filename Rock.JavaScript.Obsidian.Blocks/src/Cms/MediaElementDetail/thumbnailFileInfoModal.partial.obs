@@ -9,7 +9,7 @@
                              rules="required">
                         <template #inputGroupPrepend>
                             <span class="input-group-addon">
-                                <i class="fa fa-link"></i>
+                                <i class="ti ti-link"></i>
                             </span>
                         </template>
                     </TextBox>

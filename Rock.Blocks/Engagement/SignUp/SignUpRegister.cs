@@ -45,7 +45,7 @@ namespace Rock.Blocks.Engagement.SignUp
     [DisplayName( "Sign-Up Register" )]
     [Category( "Engagement > Sign-Up" )]
     [Description( "Block used to register for a sign-up group/project occurrence date time." )]
-    [IconCssClass( "fa fa-clipboard-check" )]
+    [IconCssClass( "ti ti-clipboard-check" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

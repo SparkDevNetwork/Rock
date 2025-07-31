@@ -1,0 +1,126 @@
+<template>
+    <div class="content-section-nav-wrapper"
+         :class="additionalSectionWrapperClasses">
+        <div v-if="showSidebar" class="sidebar">
+            <ContentSectionNav v-model:autoCollapse="autoCollapse"
+                               :sections="sections" />
+        </div>
+
+        <div class="content-section-stack">
+            <slot />
+        </div>
+    </div>
+</template>
+
+<style>
+.content-section-nav-wrapper {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-large);
+    height: auto;
+    width: 100%;
+    align-items: flex-start;
+}
+
+.content-section-nav-wrapper > .sidebar {
+    height: 100%;
+    flex: 0 0 20%;
+    position: sticky;
+    top: 0;
+}
+
+.content-section-nav-wrapper .content-section-stack {
+    display: flex;
+    flex-direction: column;
+    flex: 1 1 80%;
+    gap: var(--spacing-xlarge);
+    overflow-y: auto;
+    scroll-behavior: smooth;
+}
+
+.content-section-stack {
+    height: auto;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-xlarge);
+}
+
+.content-section-nav-wrapper.sidebar-right {
+    flex-direction: row-reverse;
+}
+</style>
+
+<script setup lang="ts">
+    import ContentSectionNav from "@Obsidian/Controls/Internal/contentSectionNav.obs";
+    import { IContentSectionHolder, IContentSectionWrapperHolder, provideSectionWrapper } from "@Obsidian/Core/Controls/contentSection";
+    import { usePersonPreferences } from "@Obsidian/Utility/block";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { computed, PropType, ref, shallowRef, watch } from "vue";
+
+    const props = defineProps({
+        /**
+         * Determines the visibility of the sidebar. If not provided, it will
+         * default to automatically showing the sidebar if there are multiple
+         * sections.
+         */
+        sidebar: {
+            type: Boolean as PropType<boolean | undefined>,
+            default: undefined
+        },
+
+        /**
+         * The position of the sidebar. This can be either "left" or "right".
+         */
+        sidebarPosition: {
+            type: String as PropType<"left" | "right">,
+            default: "left"
+        },
+    });
+
+    const preferences = usePersonPreferences().blockPreferences;
+
+    // #region Values
+
+    let nextSectionId = 1;
+    const sections = shallowRef<IContentSectionHolder[]>([]);
+    const autoCollapse = ref(asBooleanOrNull(preferences.getValue("content-section-auto-collapse")) ?? true);
+
+    const wrapper: IContentSectionWrapperHolder = {
+        addSection(section) {
+            section.anchor.value = `section-${nextSectionId++}`;
+
+            sections.value = [...sections.value, section];
+        },
+        removeSection(section) {
+            sections.value = sections.value.filter(s => s !== section);
+        }
+    };
+
+    // #endregion
+
+    // #region Computed Values
+
+    /** Determines whether the sidebar should be currently shown. */
+    const showSidebar = computed((): boolean => {
+        return props.sidebar ?? sections.value.length > 1;
+    });
+
+    /**
+     * Returns additional classes to apply to the section wrapper based on the
+     * configured settings of the component.
+     */
+    const additionalSectionWrapperClasses = computed((): string[] => {
+        return [
+            props.sidebarPosition === "right" ? "sidebar-right" : "sidebar-left"
+        ];
+    });
+
+    // #endregion
+
+    watch(autoCollapse, () => {
+        preferences.setValue("content-section-auto-collapse", autoCollapse.value ? "true" : "false");
+        preferences.save();
+    });
+
+    provideSectionWrapper(wrapper);
+</script>

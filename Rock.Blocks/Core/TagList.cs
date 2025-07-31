@@ -40,7 +40,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Tag List" )]
     [Category( "Core" )]
     [Description( "Block for viewing a list of tags." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [BooleanField( "Show Qualifier Columns",

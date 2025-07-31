@@ -46,31 +46,31 @@
         <div>
             <div class="panel panel-block">
                 <asp:Panel ID="pnlInitiate_Header" runat="server" CssClass="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-clipboard"></i>
+                    <h1 class="panel-title"><i class="ti ti-clipboard"></i>
                         Event Registration Wizard - Choose a Template</h1>
                 </asp:Panel>
                 <asp:Panel ID="pnlRegistration_Header" runat="server" CssClass="panel-heading" Visible="false">
-                    <h1 class="panel-title"><i class="fa fa-file-o"></i>
+                    <h1 class="panel-title"><i class="ti ti-file"></i>
                         Event Registration Wizard - Registration</h1>
                 </asp:Panel>
                 <asp:Panel ID="pnlGroup_Header" runat="server" CssClass="panel-heading" Visible="false">
-                    <h1 class="panel-title"><i class="fa fa-users"></i>
+                    <h1 class="panel-title"><i class="ti ti-users"></i>
                         Event Registration Wizard - Group</h1>
                 </asp:Panel>
                 <asp:Panel ID="pnlEvent_Header" runat="server" CssClass="panel-heading" Visible="false">
-                    <h1 class="panel-title"><i class="fa fa-calendar-check-o"></i>
+                    <h1 class="panel-title"><i class="ti ti-calendar-check"></i>
                         Event Registration Wizard - Event</h1>
                 </asp:Panel>
                 <asp:Panel ID="pnlEventOccurrence_Header" runat="server" CssClass="panel-heading" Visible="false">
-                    <h1 class="panel-title"><i class="fa fa-clock-o"></i>
+                    <h1 class="panel-title"><i class="ti ti-clock"></i>
                         Event Registration Wizard - Event Occurrence</h1>
                 </asp:Panel>
                 <asp:Panel ID="pnlSummary_Header" runat="server" CssClass="panel-heading" Visible="false">
-                    <h1 class="panel-title"><i class="fa fa-list-ul"></i>
+                    <h1 class="panel-title"><i class="ti ti-list"></i>
                         Event Registration Wizard - Summary</h1>
                 </asp:Panel>
                 <asp:Panel ID="pnlFinished_Header" runat="server" CssClass="panel-heading" Visible="false">
-                    <h1 class="panel-title"><i class="fa fa-check"></i>
+                    <h1 class="panel-title"><i class="ti ti-check"></i>
                         Event Registration Wizard - Finished</h1>
                 </asp:Panel>
 
@@ -81,7 +81,7 @@
                             <%-- Placeholder needed for bug. See: http://stackoverflow.com/questions/5539327/inner-image-and-text-of-asplinkbutton-disappears-after-postback--%>
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
-                                    <i class="fa fa-fw fa-clipboard"></i>
+                                    <i class="ti ti-fw ti-clipboard"></i>
                                 </div>
                                 <div class="wizard-item-label">
                                     Registration Template
@@ -94,7 +94,7 @@
                         <asp:LinkButton ID="lbRegistration" runat="server" OnClick="lbRegistration_Click" CausesValidation="false">
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
-                                    <i class="fa fa-fw fa-file-o"></i>
+                                    <i class="ti ti-fw ti-file"></i>
                                 </div>
                                 <div class="wizard-item-label">
                                     Registration
@@ -107,7 +107,7 @@
                         <asp:LinkButton ID="lbGroup" runat="server" OnClick="lbGroup_Click" CausesValidation="false">
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
-                                    <i class="fa fa-fw fa-users"></i>
+                                    <i class="ti ti-fw ti-users"></i>
                                 </div>
                                 <div class="wizard-item-label">
                                     Group
@@ -120,7 +120,7 @@
                         <asp:LinkButton ID="lbEvent" runat="server" OnClick="lbEvent_Click" CausesValidation="false">
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
-                                    <i class="fa fa-fw fa-calendar-check-o"></i>
+                                    <i class="ti ti-fw ti-calendar-check"></i>
                                 </div>
                                 <div class="wizard-item-label">
                                     Event
@@ -133,7 +133,7 @@
                         <asp:LinkButton ID="lbEventOccurrence" runat="server" OnClick="lbEventOccurrence_Click" CausesValidation="false" Enabled="false">
                             <asp:PlaceHolder runat="server">
                                 <div class="wizard-item-icon">
-                                    <i class="fa fa-fw fa-clock-o"></i>
+                                    <i class="ti ti-fw ti-clock"></i>
                                 </div>
                                 <div class="wizard-item-label">
                                     Event Occurrence
@@ -144,7 +144,7 @@
 
                     <div id="divSummary" runat="server" class="wizard-item">
                         <div class="wizard-item-icon">
-                            <i class="fa fa-fw fa-list-ul"></i>
+                            <i class="ti ti-fw ti-list"></i>
                         </div>
                         <div class="wizard-item-label">
                             Summary

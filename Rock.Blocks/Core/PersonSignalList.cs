@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Person Signal List" )]
     [Category( "Core" )]
     [Description( "Displays a list of person signals." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "db2e3ce3-94bd-4d12-8add-598bf938e8e1" )]
@@ -100,30 +100,27 @@ namespace Rock.Blocks.Core
             var entityService = new PersonSignalService( rockContext );
             error = null;
 
-            // Determine if we are editing an existing entity or creating a new one.
             if ( idKey.IsNotNullOrWhiteSpace() )
             {
-                // If editing an existing entity then load it and make sure it
-                // was found and can still be edited.
+                // If editing an existing entity, load it and check authorization.
                 entity = entityService.Get( idKey, !PageCache.Layout.Site.DisablePredictableIds );
+
+                if ( entity == null )
+                {
+                    error = ActionBadRequest( $"{PersonSignal.FriendlyTypeName} not found." );
+                    return false;
+                }
+
+                if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
+                {
+                    error = ActionBadRequest( "Not authorized to make changes to this signal." );
+                    return false;
+                }
             }
             else
             {
-                // Create a new entity.
                 entity = new PersonSignal();
                 entityService.Add( entity );
-            }
-
-            if ( entity == null )
-            {
-                error = ActionBadRequest( $"{PersonSignal.FriendlyTypeName} not found." );
-                return false;
-            }
-
-            if ( !entity.IsAuthorized( Rock.Security.Authorization.EDIT, RequestContext.CurrentPerson ) )
-            {
-                error = ActionBadRequest( "Not authorized to make changes to this signal." );
-                return false;
             }
 
             return true;
@@ -325,7 +322,7 @@ namespace Rock.Blocks.Core
 
             if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
             {
-                return ActionBadRequest( "Not authorized to make changes to this signal." );
+                return ActionBadRequest( "Not authorized to delete this signal." );
             }
 
             if ( !entityService.CanDelete( entity, out var errorMessage ) )

@@ -7,9 +7,9 @@
             </div>
 
             <ConnectedListItem aside="hello@triumph.tech"
-                               asideIconCssClass="fa fa-user"
+                               asideIconCssClass="ti ti-user"
                                badgeText="Step 1"
-                               iconCssClass="fa fa-chart-line"
+                               iconCssClass="ti ti-chart-line"
                                description="This step calculates weekly growth based on new signups."
                                :primaryActions="primaryActions"
                                :secondaryActions="secondaryActions"
@@ -21,9 +21,9 @@
             </div>
 
             <ConnectedListItem aside="hello@triumph.tech"
-                               asideIconCssClass="fa fa-user"
+                               asideIconCssClass="ti ti-user"
                                badgeText="Step 2"
-                               iconCssClass="fa fa-chart-line"
+                               iconCssClass="ti ti-chart-line"
                                description="This step calculates weekly growth based on new signups."
                                :primaryActions="primaryActions"
                                :secondaryActions="secondaryActions"
@@ -59,13 +59,13 @@
 
     const primaryActions: MenuAction[] = [
         {
-            iconCssClass: "fa fa-edit",
+            iconCssClass: "ti ti-edit",
             title: "Edit",
             type: "default",
             handler: () => alert("Edit clicked"),
         },
         {
-            iconCssClass: "fa fa-copy",
+            iconCssClass: "ti ti-copy",
             title: "Duplicate",
             type: "default",
             handler: () => alert("Duplicate clicked"),
@@ -74,7 +74,7 @@
 
     const secondaryActions: MenuAction[] = [
         {
-            iconCssClass: "fa fa-trash",
+            iconCssClass: "ti ti-trash",
             title: "Delete",
             type: "default",
             handler: () => alert("Delete clicked"),
@@ -88,9 +88,9 @@
     </div>
 ` : ""}
     <ConnectedListItem aside="hello@triumph.tech"
-                       asideIconCssClass="fa fa-user"
+                       asideIconCssClass="ti ti-user"
                        badgeText="Step 1"
-                       iconCssClass="fa fa-chart-line"
+                       iconCssClass="ti ti-chart-line"
                        description="This step calculates weekly growth based on new signups."
                        :primaryActions="${JSON.stringify(primaryActions, null, 2).replace(/\n/g, "\n                       ").replace(/"/g, "'")}"
                        :secondaryActions="${JSON.stringify(secondaryActions, null, 2).replace(/\n/g, "\n                       ").replace(/"/g, "'")}"
@@ -102,9 +102,9 @@
     </div>` : ""}
 
     <ConnectedListItem aside="hello@triumph.tech"
-                       asideIconCssClass="fa fa-user"
+                       asideIconCssClass="ti ti-user"
                        badgeText="Step 2"
-                       iconCssClass="fa fa-chart-line"
+                       iconCssClass="ti ti-chart-line"
                        description="This step calculates weekly growth based on new signups."
                        :primaryActions="${JSON.stringify(primaryActions, null, 2).replace(/\n/g, "\n                       ").replace(/"/g, "'")}"
                        :secondaryActions="${JSON.stringify(secondaryActions, null, 2).replace(/\n/g, "\n                       ").replace(/"/g, "'")}"

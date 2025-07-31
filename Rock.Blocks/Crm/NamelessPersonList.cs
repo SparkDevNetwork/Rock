@@ -36,7 +36,7 @@ namespace Rock.Blocks.Crm
     [DisplayName( "Nameless Person List" )]
     [Category( "CRM" )]
     [Description( "List unmatched phone numbers with an option to link to a person that has the same phone number." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.BlockTypeGuid( "6e9672e6-ee42-4aac-b0a9-b041c3b8368c" )]
@@ -258,6 +258,12 @@ namespace Rock.Blocks.Crm
                 .AsNoTracking();
 
             return qry;
+        }
+
+        /// <inheritdoc/>
+        protected override IQueryable<Person> GetOrderedListQueryable( IQueryable<Person> queryable, RockContext rockContext )
+        {
+            return queryable.OrderByDescending( a => a.CreatedDateTime );
         }
 
         /// <inheritdoc/>

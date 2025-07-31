@@ -7,7 +7,7 @@
         
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-network-wired"></i> 
+                    <i class="ti ti-schema"></i> 
                     Log
                 </h1>
             </div>

@@ -28,11 +28,12 @@ namespace Rock.Tests.CheckIn.v2.Filters
         {
             var firstGroupId = 10;
             var secondGroupId = 20;
+            int locationId = 30;
 
             var rockContextMock = GetRockContextMock();
             var filter = CreateFilter( rockContextMock.Object );
-            var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, false );
-            var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false );
+            var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, false, locationId );
+            var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false, locationId );
 
             var opportunities = new OpportunityCollection
             {
@@ -40,7 +41,15 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 {
                     firstGroupOpportunity,
                     secondGroupOpportunity
-                }
+                },
+                Locations = new List<LocationOpportunity>
+                {
+                    new LocationOpportunity
+                    {
+                        Id = IdHasher.Instance.GetHash( locationId ),
+                        IsClosed = false,
+                    }
+                },
             };
 
             filter.FilterGroups( opportunities );
@@ -53,11 +62,12 @@ namespace Rock.Tests.CheckIn.v2.Filters
         {
             var firstGroupId = 10;
             var secondGroupId = 20;
+            int locationId = 30;
 
             var rockContextMock = GetRockContextMock();
             var filter = CreateFilter( rockContextMock.Object );
-            var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true );
-            var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false );
+            var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true, locationId );
+            var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false, locationId );
 
             var opportunities = new OpportunityCollection
             {
@@ -65,7 +75,15 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 {
                     firstGroupOpportunity,
                     secondGroupOpportunity
-                }
+                },
+                Locations = new List<LocationOpportunity>
+                {
+                    new LocationOpportunity
+                    {
+                        Id = IdHasher.Instance.GetHash( locationId ),
+                        IsClosed = false,
+                    }
+                },
             };
 
             filter.FilterGroups( opportunities );
@@ -75,15 +93,16 @@ namespace Rock.Tests.CheckIn.v2.Filters
         }
 
         [TestMethod]
-        public void PreferredGroupsFilter_WithTwoPreferredGroups_IncludesAllPreferredGroups()
+        public void PreferredGroupsFilter_WithOnePreferredGroupLocationClosed_IncludesAllGroups()
         {
             var firstGroupId = 10;
             var secondGroupId = 20;
+            int locationId = 30;
 
             var rockContextMock = GetRockContextMock();
             var filter = CreateFilter( rockContextMock.Object );
-            var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true );
-            var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, true );
+            var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true, locationId );
+            var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, false, locationId );
 
             var opportunities = new OpportunityCollection
             {
@@ -91,7 +110,49 @@ namespace Rock.Tests.CheckIn.v2.Filters
                 {
                     firstGroupOpportunity,
                     secondGroupOpportunity
-                }
+                },
+                Locations = new List<LocationOpportunity>
+                {
+                    new LocationOpportunity
+                    {
+                        Id = IdHasher.Instance.GetHash( locationId ),
+                        IsClosed = true,
+                    }
+                },
+            };
+
+            filter.FilterGroups( opportunities );
+
+            Assert.That.AreEqual( 2, opportunities.Groups.Count );
+        }
+
+        [TestMethod]
+        public void PreferredGroupsFilter_WithTwoPreferredGroups_IncludesAllPreferredGroups()
+        {
+            var firstGroupId = 10;
+            var secondGroupId = 20;
+            int locationId = 30;
+
+            var rockContextMock = GetRockContextMock();
+            var filter = CreateFilter( rockContextMock.Object );
+            var firstGroupOpportunity = CreateGroupOpportunity( firstGroupId, true, locationId );
+            var secondGroupOpportunity = CreateGroupOpportunity( secondGroupId, true, locationId );
+
+            var opportunities = new OpportunityCollection
+            {
+                Groups = new List<GroupOpportunity>
+                {
+                    firstGroupOpportunity,
+                    secondGroupOpportunity
+                },
+                Locations = new List<LocationOpportunity>
+                {
+                    new LocationOpportunity
+                    {
+                        Id = IdHasher.Instance.GetHash( locationId ),
+                        IsClosed = false,
+                    }
+                },
             };
 
             filter.FilterGroups( opportunities );
@@ -139,12 +200,20 @@ namespace Rock.Tests.CheckIn.v2.Filters
         /// <param name="groupId">The group identifier.</param>
         /// <param name="isPreferred">The preferred state of the group.</param>
         /// <returns>A new instance of <see cref="GroupOpportunity"/>.</returns>
-        private GroupOpportunity CreateGroupOpportunity( int groupId, bool isPreferred )
+        private GroupOpportunity CreateGroupOpportunity( int groupId, bool isPreferred, int locationId )
         {
             return new GroupOpportunity
             {
                 Id = IdHasher.Instance.GetHash( groupId ),
-                IsPreferredGroup = isPreferred
+                IsPreferredGroup = isPreferred,
+                Locations = new List<LocationAndScheduleBag>
+                {
+                    new LocationAndScheduleBag
+                    {
+                        LocationId = IdHasher.Instance.GetHash( locationId ),
+                    }
+                },
+                OverflowLocations = new List<LocationAndScheduleBag>()
             };
         }
 

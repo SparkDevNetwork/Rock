@@ -1,7 +1,7 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <Block :title="config?.title ?? 'Asset Manager'" hasFullscreen>
-        <div style="margin:-18px">
+        <div v-bind="wrapperAttrs">
             <FileAssetManager v-model:openFolders="openFolders"
                               v-model:selectedFolder="selectedFolder"
                               :height="height"
@@ -37,12 +37,25 @@
     // #region Computed Values
 
     const height = computed(() => {
-        if (config.isStaticHeight && config.height) {
+        if (config.heightMode === "static" && config.height) {
             return config.height;
         }
         else {
             return "flexible";
         }
+    });
+
+    const wrapperAttrs = computed(() => {
+        if (config.heightMode === "full") {
+            return {
+                class: "panel-flex-fill-body",
+            };
+        }
+        return {
+            style: {
+                margin: "-18px"
+            }
+        };
     });
 
     // #endregion

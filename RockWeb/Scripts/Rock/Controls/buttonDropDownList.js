@@ -18,13 +18,13 @@
                 $('.dropdown-menu a', $control).on('click', function (e) {
                     var $el = $(this);
                     var text = $el.html();
-                    var textHtml = $el.html() + " <span class='fa fa-caret-down' ></span >";
+                    var textHtml = $el.html() + " <span class='ti ti-caret-down' ></span >";
                     var idValue = $el.attr('data-id');
                     var postbackScript = $el.attr('data-postback-script');
 
                     if (checkmarksEnabled) {
-                        $el.closest('.dropdown-menu').find('.js-selectionicon').removeClass('fa-check');
-                        $el.find('.js-selectionicon').addClass('fa-check');
+                        $el.closest('.dropdown-menu').find('.js-selectionicon').removeClass('ti-check');
+                        $el.find('.js-selectionicon').addClass('ti-check');
                     }
                     else {
                         $selectBtn.html(textHtml);

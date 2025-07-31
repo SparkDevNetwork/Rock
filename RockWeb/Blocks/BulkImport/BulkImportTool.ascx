@@ -65,7 +65,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-upload"></i>&nbsp;Bulk Import Tool</h1>
+                <h1 class="panel-title"><i class="ti ti-upload"></i>&nbsp;Bulk Import Tool</h1>
             </div>
             <div class="panel-body">
                 <asp:ValidationSummary ID="vsBulkImport" runat="server" HeaderText="Please correct the following:" CssClass="alert alert-validation"/>

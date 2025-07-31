@@ -939,7 +939,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( workflowType == null )
                     {
-                        // If the workflowType is still not set, try to find it from the "WorkflowType" from the IdKey.
+                        // If the workflowType is still not set, try to find it from the "WorkflowTypeId" as an IdKey.
                         var workflowTypeId = PageParameter( PageParameterKey.WorkflowTypeId );
                         if ( workflowTypeId.IsNotNullOrWhiteSpace() )
                         {
@@ -2807,7 +2807,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                 if ( buttonHtml.IsNullOrWhiteSpace() )
                 {
-                    buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"fa fa-refresh fa-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
+                    buttonHtml = "<a href=\"{{ ButtonLink }}\" onclick=\"{{ ButtonClick }}\" class='btn btn-primary' data-loading-text='<i class=\"ti ti-refresh ti-spin\"></i> {{ ButtonText }}'>{{ ButtonText }}</a>";
                 }
 
                 var buttonMergeFields = new Dictionary<string, object>();

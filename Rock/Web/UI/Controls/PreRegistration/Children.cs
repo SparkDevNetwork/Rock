@@ -74,7 +74,7 @@ namespace Rock.Web.UI.Controls
             _lbAddChild.CausesValidation = false;
 
             var iAddFilter = new HtmlGenericControl( "i" );
-            iAddFilter.AddCssClass( "fa fa-user" );
+            iAddFilter.AddCssClass( "ti ti-user" );
             _lbAddChild.Controls.Add( iAddFilter );
 
             var spanAddFilter = new HtmlGenericControl( "span" );

@@ -126,7 +126,7 @@
                 visiblePriority="md">
             <template #format="{ row }">
                 <RockButton @click="onSelectItem(row)" :btnType="BtnType.Default" :btnSize="BtnSize.Small">
-                    <i class="fa fa-file-text-o"></i>
+                    <i class="ti ti-file-type-txt"></i>
                 </RockButton>
             </template>
         </Column>

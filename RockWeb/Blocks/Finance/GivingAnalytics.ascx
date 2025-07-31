@@ -5,8 +5,8 @@
         $(".js-advanced").on("click", function (event) {
             var $parent = $(this).closest('.filter-options');
             var $icon = $(this).find("i")
-            $icon.toggleClass("fa-caret-up").toggleClass("fa-caret-down");
-            $parent.find(".js-advanced-visible").val($icon.hasClass('fa-caret-up'));
+            $icon.toggleClass("ti-caret-up").toggleClass("ti-caret-down");
+            $parent.find(".js-advanced-visible").val($icon.hasClass('ti-caret-up'));
             $parent.find(".js-advanced-settings").slideToggle(500);
         });
     });
@@ -24,20 +24,20 @@
         <div class="panel panel-block panel-analytics">
             <div class="panel-heading panel-follow">
                 <h1 class="panel-title">
-                    <i class="fa fa-check-square-o"></i>
+                    <i class="ti ti-square-check"></i>
                     Giving Analytics
                 </h1>
 
                 <div class="panel-labels">
 
                     <a href="#" onclick="$('.js-slidingdaterange-help').slideToggle()" class="btn btn-default btn-xs btn-square">
-                        <i class='fa fa-question'></i>
+                        <i class='ti ti-question-mark'></i>
                     </a>
                     <button id="btnCopyToClipboard" runat="server" disabled="disabled"
                         data-toggle="tooltip" data-placement="top" data-trigger="hover" data-delay="250" title="Copy Report Link to Clipboard"
                         class="btn btn-xs btn-square btn-default btn-copy-to-clipboard"
                         onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy Link to Clipboard');return false;">
-                        <i class='fa fa-clipboard'></i>
+                        <i class='ti ti-clipboard'></i>
                     </button>
                 </div>
                 <div class="rock-fullscreen-toggle js-fullscreen-trigger"></div>
@@ -56,7 +56,7 @@
 
                         <Rock:SlidingDateRangePicker ID="drpSlidingDateRange" runat="server" Label="Date Range" EnabledSlidingDateRangeTypes="Previous, Last, Current, DateRange"/>
                         <div class="clearfix">
-                            <asp:Label ID="lblAdvancedOptions" runat="server" CssClass="js-advanced btn pull-right btn-default btn-xs">Advanced Options <i class="fa fa-caret-down"></i></asp:Label>
+                            <asp:Label ID="lblAdvancedOptions" runat="server" CssClass="js-advanced btn pull-right btn-default btn-xs">Advanced Options <i class="ti ti-caret-down"></i></asp:Label>
                         </div>
                         <Rock:HiddenFieldWithClass ID="hfAdvancedVisible" runat="server" CssClass="js-advanced-visible" Value="false" />
                         <div id="divAdvancedSettings" runat="server" class="js-advanced-settings clearfix" >
@@ -88,10 +88,10 @@
                                         <Rock:HiddenFieldWithClass ID="hfShowBy" CssClass="js-hidden-selected" runat="server" />
                                         <div class="btn-group">
                                             <asp:LinkButton ID="btnShowChart" runat="server" CssClass="btn btn-default active" data-val="0" OnClick="btnShowChart_Click">
-                                                    <i class="fa fa-line-chart"></i> Chart
+                                                    <i class="ti ti-chart-line"></i> Chart
                                             </asp:LinkButton>
                                             <asp:LinkButton ID="btnShowDetails" runat="server" CssClass="btn btn-default" data-val="1" OnClick="btnShowDetails_Click">
-                                                    <i class="fa fa-users"></i> Details
+                                                    <i class="ti ti-users"></i> Details
                                             </asp:LinkButton>
                                         </div>
                                     </div>
@@ -99,7 +99,7 @@
                             </div>
                             <div class="col-sm-4">
                                 <div class="panel-actions text-right">
-                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary pull-right" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="fa fa-refresh"></i> Update</asp:LinkButton>
+                                    <asp:LinkButton ID="btnApply" runat="server" CssClass="btn btn-primary pull-right" ToolTip="Update the chart" OnClick="btnApply_Click"><i class="ti ti-refresh"></i> Update</asp:LinkButton>
                                 </div>
                             </div>
                         </div>
@@ -152,7 +152,7 @@
                                 <div class="row margin-t-sm">
                                     <div class="col-md-12">
                                         <div class="pull-right">
-                                            <asp:LinkButton ID="lShowChartAmountGrid" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Show Data <i class='fa fa-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowChartAmountGrid_Click" />
+                                            <asp:LinkButton ID="lShowChartAmountGrid" runat="server" CssClass="btn btn-default btn-xs margin-b-sm" Text="Show Data <i class='ti ti-chevron-down'></i>" ToolTip="Show Data" OnClick="lShowChartAmountGrid_Click" />
                                         </div>
                                     </div>
                                 </div>

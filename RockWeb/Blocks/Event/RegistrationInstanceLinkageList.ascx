@@ -10,7 +10,7 @@
                 <asp:Panel ID="pnlLinkages" runat="server" CssClass="panel panel-block">
                     <div class="panel-heading">
                         <h1 class="panel-title">
-                            <i class="fa fa-link"></i>
+                            <i class="ti ti-link"></i>
                             Linkages
                         </h1>
                     </div>

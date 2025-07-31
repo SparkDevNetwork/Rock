@@ -101,7 +101,7 @@
     const headerSecondaryActions = computed((): PanelAction[] => {
         return [
             {
-                iconCssClass: "fa fa-ellipsis-v",
+                iconCssClass: "ti ti-dots-vertical",
                 title: "Additional Details",
                 type: "default",
                 handler: async () => {
@@ -177,7 +177,7 @@
         if (displayMode.value === "Detail") {
             // In 'Detail' mode provide a link to the 'Summary' mode.
             footerActions.push({
-                iconCssClass: "fa fa-chalkboard",
+                iconCssClass: "ti ti-chalkboard",
                 title: "Back to Program Overview",
                 type: "default",
                 handler: async () => {
@@ -188,7 +188,7 @@
         else {
             // In 'Summary' mode provide a link to the 'Detail' mode.
             footerActions.push({
-                iconCssClass: "fa fa-cog",
+                iconCssClass: "ti ti-settings",
                 title: "Configure Program",
                 type: "default",
                 handler: async () => {

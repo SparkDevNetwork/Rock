@@ -7,7 +7,7 @@
                         :isSquare="true"
                         title="Back"
                         @click="$emit('complete')">
-                <i class="fa fa-chevron-right"></i>
+                <i class="ti ti-chevron-right"></i>
             </RockButton>
         </template>
 
@@ -19,7 +19,7 @@
                             :isSquare="true"
                             title="Save"
                             @click="$emit('save')">
-                    <i class="far fa-save"></i>
+                    <i class="ti ti-device-floppy"></i>
                 </RockButton>
 
                 <RockButton btnType="link"
@@ -28,7 +28,7 @@
                             :isSquare="true"
                             title="Clone"
                             @click="$emit('clone')">
-                    <i class="fa fa-clone"></i>
+                    <i class="ti ti-copy"></i>
                 </RockButton>
 
                 <RockButton btnType="link"
@@ -112,7 +112,7 @@
     };
 
     const readyDeleteStage: DeleteStage = {
-        iconCssClass: "fa fa-trash-o",
+        iconCssClass: "ti ti-trash",
         tooltip: "Delete",
 
         moveNextStage(): void {
@@ -121,7 +121,7 @@
     };
 
     const confirmDeleteStage: DeleteStage = {
-        iconCssClass: "fa fa-check-square",
+        iconCssClass: "ti ti-square-check",
         tooltip: "Confirm Delete",
 
         moveNextStage(): void {
@@ -131,7 +131,7 @@
     };
 
     const deletedDeleteStage: DeleteStage = {
-        iconCssClass: "fa fa-check",
+        iconCssClass: "ti ti-check",
         tooltip: "Deleted",
 
         moveNextStage(): void {
@@ -170,4 +170,3 @@
 
     // #endregion Watchers
 </script>
-

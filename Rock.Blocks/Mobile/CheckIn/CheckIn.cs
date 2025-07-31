@@ -29,7 +29,7 @@ namespace Rock.Blocks.Mobile.CheckIn
     [DisplayName( "Check-in" )]
     [Category( "Mobile > Check-in" )]
     [Description( "Check yourself or family members in/out." )]
-    [IconCssClass( "fa fa-clipboard-check" )]
+    [IconCssClass( "ti ti-clipboard-check" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes
@@ -297,7 +297,7 @@ namespace Rock.Blocks.Mobile.CheckIn
             {
                 actions.Add( new BlockCustomActionBag
                 {
-                    IconCssClass = "fa fa-edit",
+                    IconCssClass = "ti ti-edit",
                     Tooltip = "Settings",
                     ComponentFileUrl = "/Obsidian/Blocks/CheckIn/mobileCheckInCustomSettings.obs"
                 } );

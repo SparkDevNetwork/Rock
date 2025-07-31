@@ -39,7 +39,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Automation Trigger List" )]
     [Category( "Core" )]
     [Description( "Displays a list of automation triggers." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

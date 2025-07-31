@@ -2,7 +2,6 @@
 <template>
     <RockFormField :modelValue="number"
                    v-bind="formFieldProps"
-                   @change="onChange"
                    formGroupClasses="rock-phonenumber-box"
                    :rules="rules"
                    name="phonenumberbox">
@@ -10,12 +9,12 @@
             <div class="control-wrapper">
                 <div class="input-group phone-number-box" :class="inputGroupClasses">
                     <span v-if="availableCountryCodeOptions.length < 2" class="input-group-addon">
-                        <i class="fa fa-phone-square"></i>
+                        <i class="ti ti-phone"></i>
                     </span>
                     <InputGroupDropDown v-else :items="availableCountryCodeOptions" v-model="countryCode" inputGroupClasses="input-group-addon" />
                     <input v-model="number" :id="uniqueId" type="text" class="form-control" v-bind="field" />
                 </div>
-                <div v-if="showSmsOptIn ?? false">
+                <div v-if="(showSmsOptIn && !props.hideSms)">
                     <CheckBox
                               v-model="isMessagingEnabled"
                               label=""
@@ -49,6 +48,12 @@
         inputGroupClasses: {
             type: String as PropType<string>,
             default: ""
+        },
+
+        /** When this is enabled, the SMS option will be hidden regardless of server settings. */
+        hideSms: {
+            type: Boolean as PropType<boolean>,
+            default: false
         },
 
         ...standardRockFormFieldProps
@@ -155,17 +160,13 @@
 
     // #region Event Handlers
 
-    function onChange(): void {
-        number.value = formatPhoneNumber(number.value);
-    }
-
     // #endregion
 
     // #region Watchers
     watch(() => props.modelValue, () => {
         autoSyncModelValue = false;
         countryCode.value = props.modelValue?.countryCode ?? "";
-        number.value = formatPhoneNumber(stripPhoneNumber(props.modelValue?.number ?? ""), configuredRules.value);
+        number.value = props.modelValue?.number ?? "";
         isMessagingEnabled.value = props.modelValue?.isMessagingEnabled ?? false;
         autoSyncModelValue = true;
     }, { immediate: true });

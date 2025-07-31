@@ -9,7 +9,7 @@
                 </span>
                 <asp:PlaceHolder ID="phEditActions" runat="server">
                     <div class="panel-labels group-hover-item group-hover-show">
-                        <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn btn-link btn-xs" Text="Add Relationship" OnClick="lbAdd_Click" CausesValidation="false"><i class="fa fa-plus"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbAdd" runat="server" CssClass="btn btn-link btn-xs" Text="Add Relationship" OnClick="lbAdd_Click" CausesValidation="false"><i class="ti ti-plus"></i></asp:LinkButton>
                     </div>
                 </asp:PlaceHolder>
             </div>
@@ -27,9 +27,9 @@
                         <dd class="group-hover-item group-hover-hide"><%# ShowRole ? Eval("GroupRole.Name") : "" %></dd>
                         <div class="group-hover-item group-hover-show group-hover-0-show">
                                 <asp:LinkButton ID="lbEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" Text="Edit Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
-                                    CommandName="EditRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-pencil"></i></asp:LinkButton>
+                                    CommandName="EditRole" CommandArgument='<%# Eval("Id") %>'><i class="ti ti-pencil"></i></asp:LinkButton>
                                 <asp:LinkButton ID="lbRemove" runat="server" CssClass="btn btn-danger btn-xs btn-square" Text="Remove Relationship" Visible='<%# IsInverseRelationshipsOwner %>'
-                                    CommandName="RemoveRole" CommandArgument='<%# Eval("Id") %>'><i class="fa fa-times"></i></asp:LinkButton>
+                                    CommandName="RemoveRole" CommandArgument='<%# Eval("Id") %>'><i class="ti ti-x"></i></asp:LinkButton>
                         </div>
                     </dl>
                 </ItemTemplate>

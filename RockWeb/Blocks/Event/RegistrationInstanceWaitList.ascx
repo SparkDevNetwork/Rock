@@ -9,7 +9,7 @@
 
                 <asp:Panel ID="pnlWaitList" runat="server" CssClass="panel panel-block">
                     <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-clock-o"></i>Wait List</h1>
+                        <h1 class="panel-title"><i class="ti ti-clock"></i>Wait List</h1>
                     </div>
                     <div class="panel-body">
                         <Rock:ModalAlert ID="mdWaitListWarning" runat="server" />

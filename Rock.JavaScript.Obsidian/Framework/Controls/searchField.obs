@@ -1,9 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <div class="smartsearch searchinput" style="height: 40px;width: 340px;">
-        <i class="fa fa-search"></i>
+        <i class="ti ti-search"></i>
         <ul class="nav pull-right smartsearch-type">
-            <li class="dropdown"><a class="dropdown-toggle navbar-link" data-toggle="dropdown"><span>Name</span><b class="fa fa-caret-down"></b></a>
+            <li class="dropdown"><a class="dropdown-toggle navbar-link" data-toggle="dropdown"><span>Name</span><b class="ti ti-caret-down"></b></a>
                 <ul class="dropdown-menu">
                     <li v-for="(filter, key) in searchFilters" :key="key" :data-key="key" :data-target="filter.value"><a>{{ filter.text }}</a></li>
                 </ul>

@@ -36,7 +36,7 @@ namespace Rock.Blocks.Types.Mobile.Events
     [DisplayName( "Event Item Occurrence List By Audience Lava" )]
     [Category( "Mobile > Events" )]
     [Description( "Block that takes an audience and displays calendar item occurrences for it using Lava." )]
-    [IconCssClass( "fa fa-list-alt" )]
+    [IconCssClass( "ti ti-list-details" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

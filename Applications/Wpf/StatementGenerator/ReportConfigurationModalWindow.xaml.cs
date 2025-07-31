@@ -20,8 +20,7 @@ using System.Linq;
 using System.Windows;
 using System.Windows.Controls;
 
-using Rock.Client;
-using Rock.Client.Enums;
+using Rock.Apps.StatementGenerator.Client;
 
 namespace Rock.Apps.StatementGenerator
 {

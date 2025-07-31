@@ -776,7 +776,7 @@ $@"Rock.controls.itemPicker.initialize({{
             _btnSelectNone.Attributes["aria-label"] = "Clear selection";
             _btnSelectNone.Attributes["class"] = "btn picker-select-none";
             _btnSelectNone.ID = this.ID + "_btnSelectNone";
-            _btnSelectNone.InnerHtml = "<i class='fa fa-times'></i>";
+            _btnSelectNone.InnerHtml = "<i class='ti ti-x'></i>";
             _btnSelectNone.CausesValidation = false;
             _btnSelectNone.Style[HtmlTextWriterStyle.Display] = "none";
 
@@ -865,7 +865,7 @@ $@"Rock.controls.itemPicker.initialize({{
 
                     if (!string.IsNullOrEmpty(this.IconCssClass))
                     {
-                        pickerLabelHtmlFormat += $@"<i class='{this.IconCssClass} fa-fw'></i>";
+                        pickerLabelHtmlFormat += $@"<i class='{this.IconCssClass} ti-fw'></i>";
                     }
 
                     pickerLabelHtmlFormat += @"
@@ -876,7 +876,7 @@ $@"Rock.controls.itemPicker.initialize({{
                     writer.WriteLine();
 
                     _btnSelectNone.RenderControl( writer );
-                    writer.Write( $@"<b class='fa fa-caret-down'></b>" );
+                    writer.Write( $@"<b class='ti ti-caret-down'></b>" );
 
                     writer.RenderEndTag();
                 }

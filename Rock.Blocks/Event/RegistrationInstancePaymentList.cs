@@ -39,7 +39,7 @@ namespace Rock.Blocks.Event
     [DisplayName( "Registration Instance - Payment List" )]
     [Category( "Event" )]
     [Description( "Displays the payments related to an event registration instance." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage(

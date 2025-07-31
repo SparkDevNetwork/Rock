@@ -68,7 +68,7 @@
                                   @inputKeyDown="onInputKeyDown" />
 
                     <span v-else class="text-muted add-new-tags clickable" @click="onAddNewTagsClick">
-                        <i class="fa fa-plus"></i>
+                        <i class="ti ti-plus"></i>
                     </span>
                 </template>
             </div>

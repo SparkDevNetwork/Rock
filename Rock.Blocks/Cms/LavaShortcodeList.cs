@@ -36,7 +36,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Lava Shortcode List" )]
     [Category( "CMS" )]
     [Description( "Lists Lava Shortcode in the system." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [LinkedPage( "Detail Page", Key = AttributeKey.DetailPage )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 

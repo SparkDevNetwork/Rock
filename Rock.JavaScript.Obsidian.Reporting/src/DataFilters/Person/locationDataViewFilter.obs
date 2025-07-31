@@ -28,7 +28,7 @@
     }>();
 
     const dataView = ref(safeParseJson<ListItemBag>(props.modelValue.dataView ?? ""));
-    const locationTypeOptions: ListItemBag[] = safeParseJson(props.modelValue.locationTypeOptions) ?? [];
+    const locationTypeOptions: ListItemBag[] = safeParseJson(props.options.locationTypeOptions) ?? [];
     const locationType = ref<string>(props.modelValue.locationType ?? "");
 
     watch([dataView, locationType], () => {

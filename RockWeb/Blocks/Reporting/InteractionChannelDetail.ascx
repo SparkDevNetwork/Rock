@@ -8,7 +8,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-random"></i>
+                    <i class="ti ti-arrows-shuffle"></i>
                     <asp:Literal ID="lTitle" runat="server" />
                 </h1>
             </div>

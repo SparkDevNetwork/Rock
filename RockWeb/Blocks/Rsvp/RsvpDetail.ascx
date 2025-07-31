@@ -36,7 +36,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title pull-left">
-                    <i class="fa fa-user-check"></i>
+                    <i class="ti ti-user-check"></i>
                     <asp:Literal ID="lHeading" runat="server" Text="RSVP Detail" />
                 </h1>
             </div>
@@ -133,7 +133,7 @@
                 });
             </script>
             <div class="panel-heading">
-                <h1 class="panel-title pull-left"><i class="fa fa-door-open"></i>Invitees</h1>
+                <h1 class="panel-title pull-left"><i class="ti ti-door-enter"></i>Invitees</h1>
             </div>
             <div class="panel-body">
                 <div class="grid grid-panel">

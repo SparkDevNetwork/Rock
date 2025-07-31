@@ -49,9 +49,14 @@ namespace Rock.Tests.Integration.Performance.Crm
         /// <summary>
         /// Runs after all tests in this class is executed.
         /// </summary>
-        [ClassCleanup]
+        [ClassCleanup( ClassCleanupBehavior.EndOfClass )]
         public static void ClassCleanup()
         {
+            if ( IsContainersEnabled )
+            {
+                return;
+            }
+
             HistoryDataFactory.RemoveSampleData();
         }
 

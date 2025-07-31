@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
@@ -23,6 +24,9 @@ using System.Web.UI.WebControls;
 
 using Rock.Data;
 using Rock.Model;
+using Rock.Net;
+using Rock.ViewModels.Controls;
+using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI.Controls;
 
@@ -34,7 +38,7 @@ namespace Rock.Reporting.DataSelect.Person
     [Description( "Select the Last Public Note of the Person" )]
     [Export( typeof( DataSelectComponent ) )]
     [ExportMetadata( "ComponentName", "Select Last Public Note for a Person" )]
-    [Rock.SystemGuid.EntityTypeGuid( "230E6B5E-8472-47E3-91DC-30D5D044665C")]
+    [Rock.SystemGuid.EntityTypeGuid( "230E6B5E-8472-47E3-91DC-30D5D044665C" )]
     public class LastNoteSelect : DataSelectComponent
     {
         #region Properties
@@ -105,6 +109,61 @@ namespace Rock.Reporting.DataSelect.Person
             {
                 return "Last Note";
             }
+        }
+
+        #endregion
+
+        #region Configuration
+
+        /// <inheritdoc/>
+        public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var entityTypeIdPerson = EntityTypeCache.GetId<Rock.Model.Person>();
+            var noteTypeOptions = new NoteTypeService( rockContext ).Queryable()
+                .Where( a => a.EntityTypeId == entityTypeIdPerson )
+                .OrderBy( a => a.Order )
+                .ThenBy( a => a.Name )
+                .Select( a => new ListItemBag { Value = a.Guid.ToString(), Text = a.Name } )
+                .ToList();
+
+            return new DynamicComponentDefinitionBag
+            {
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataSelects/Person/lastNoteSelect.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["noteTypeOptions"] = noteTypeOptions.ToCamelCaseJson( false, true ),
+                }
+            };
+        }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var data = new Dictionary<string, string>();
+            var noteTypeId = selection.ToIntSafe();
+
+            if ( noteTypeId > 0 )
+            {
+                var noteType = new NoteTypeService( rockContext ).Get( noteTypeId );
+                data.Add( "noteType", noteType?.Guid.ToString() );
+            }
+
+            return data;
+        }
+
+        /// <inheritdoc/>
+        public override string GetSelectionFromObsidianComponentData( Type entityType, Dictionary<string, string> data, RockContext rockContext, RockRequestContext requestContext )
+        {
+            var noteTypeGuid = data.GetValueOrDefault( "noteType", string.Empty ).AsGuidOrNull();
+
+            if ( noteTypeGuid.HasValue )
+            {
+                var noteType = new NoteTypeService( rockContext ).Get( noteTypeGuid.Value );
+
+                return noteType?.Id.ToString() ?? string.Empty;
+            }
+
+            return string.Empty;
         }
 
         #endregion

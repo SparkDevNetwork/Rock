@@ -17,6 +17,8 @@
     import { RegistrationEntryVisibilityBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryVisibilityBag";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { RegistrationEntryFormFieldBag } from "@Obsidian/ViewModels/Blocks/Event/RegistrationEntry/registrationEntryFormFieldBag";
+    import { RegistrationPersonFieldType } from "@Obsidian/Enums/Event/registrationPersonFieldType";
+    import { FieldType } from "@Obsidian/SystemGuids/fieldType";
 
     const props = defineProps({
         field: {
@@ -93,11 +95,14 @@
         }
 
         const comparedToFormField = formFields.find(ff => areEqual(ff.guid, rule.comparedToRegistrationTemplateFormFieldGuid));
-        if (!comparedToFormField?.attribute?.fieldTypeGuid) {
+
+        // At time of writing, Gender is the only non-attribute person field that can be part of a rule
+        // as noted in Rock.Field.FieldVisibilityRules.GetSupportedFieldTypeCache
+        if (!comparedToFormField?.attribute?.fieldTypeGuid && comparedToFormField?.personFieldType !== RegistrationPersonFieldType.Gender) {
             return false;
         }
 
-        const fieldType = getFieldType(comparedToFormField.attribute.fieldTypeGuid);
+        const fieldType = comparedToFormField.attribute?.fieldTypeGuid ? getFieldType(comparedToFormField.attribute.fieldTypeGuid) : getFieldType(FieldType.Text);
 
         if (!fieldType) {
             return false;
@@ -112,7 +117,7 @@
             comparisonType: rule.comparisonValue.comparisonType
         };
 
-        return fieldType.doesValueMatchFilter(value, comparisonValue, comparedToFormField.attribute.configurationValues ?? {});
+        return fieldType.doesValueMatchFilter(value, comparisonValue, comparedToFormField.attribute?.configurationValues ?? {});
     }
 
     // #endregion

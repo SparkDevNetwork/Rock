@@ -2,7 +2,7 @@
 <template>
     <span ref="anchorElement" @click.prevent="onAnchorClick">
         <slot name="anchor">
-            <i class="fa fa-ellipsis-v"></i>
+            <i class="ti ti-dots-vertical"></i>
         </slot>
     </span>
 

@@ -6,11 +6,15 @@
       xmlns:fa="http://schemas.awesome.incremented/wpf/xaml/fontawesome.sharp"
       xmlns:utility="clr-namespace:Rock.CodeGeneration.Utility"
       xmlns:controls="clr-namespace:Rock.CodeGeneration.Controls"
+      xmlns:local="clr-namespace:Rock.CodeGeneration.Pages"
+      xmlns:vm="clr-namespace:Rock.CodeGeneration.ViewModels"
       mc:Ignorable="d" 
       d:DesignHeight="450" d:DesignWidth="800"
+      d:DataContext="{d:DesignInstance Type=vm:ObsidianViewModelsPageViewModel, IsDesignTimeCreatable=True}"
       Title="Obsidian View Models">
     <Page.Resources>
         <utility:InverseBooleanConverter x:Key="InverseBool" />
+        <utility:InverseBooleanToVisibilityConverter x:Key="InverseBoolToVis" />
         <BooleanToVisibilityConverter x:Key="BoolToVis" />
     </Page.Resources>
 
@@ -48,6 +52,18 @@
                             <Button Content="Select None"
                                     Margin="0,0,8,0"
                                     Click="SelectNone_Click" />
+                            <CheckBox Content="Grouped View"
+                                      Margin="8,0,8,0"
+                                      IsChecked="{Binding Settings.ObsidianViewModelsIsGroupedView, Mode=TwoWay}"
+                                      VerticalAlignment="Center" />
+                            <Button Content="Expand All"
+                                    Margin="0,0,8,0"
+                                    Click="ExpandAll_Click"
+                                    Visibility="{Binding Settings.ObsidianViewModelsIsGroupedView, Converter={StaticResource BoolToVis}}" />
+                            <Button Content="Collapse All"
+                                    Margin="0,0,8,0"
+                                    Click="CollapseAll_Click"
+                                    Visibility="{Binding Settings.ObsidianViewModelsIsGroupedView, Converter={StaticResource BoolToVis}}" />
                         </StackPanel>
                     </StackPanel>
                 </Border>
@@ -55,7 +71,9 @@
                 <ListBox Name="ViewModelsListBox"
                          Grid.Row="1"
                          Grid.Column="0"
-                         SelectionMode="Single">
+                         SelectionMode="Single"
+                         ItemsSource="{Binding TypeItems}"
+                         Visibility="{Binding Settings.ObsidianViewModelsIsGroupedView, Converter={StaticResource InverseBoolToVis}}">
                     <ListBox.ItemTemplate>
                         <DataTemplate>
                             <Grid>
@@ -83,6 +101,59 @@
                         </DataTemplate>
                     </ListBox.ItemTemplate>
                 </ListBox>
+                
+                <TreeView x:Name="ViewModelsTreeView"
+                          Grid.Row="1"
+                          Grid.Column="0"
+                          ItemsSource="{Binding GroupedTypeItems}"
+                          Visibility="{Binding Settings.ObsidianViewModelsIsGroupedView, Converter={StaticResource BoolToVis}}">
+                    <TreeView.ItemContainerStyle>
+                        <Style TargetType="{x:Type TreeViewItem}" BasedOn="{StaticResource {x:Type TreeViewItem}}">
+                            <Setter Property="IsExpanded" Value="{Binding IsExpanded, Mode=TwoWay}" />
+                        </Style>
+                    </TreeView.ItemContainerStyle>
+
+                    <TreeView.Resources>
+
+                        <!-- GROUP NODE (namespace header) -->
+                        <HierarchicalDataTemplate DataType="{x:Type local:TypeItemGroup}"
+                                                  ItemsSource="{Binding Items}">
+                            <StackPanel Orientation="Horizontal">
+                                <CheckBox IsThreeState="True"
+                                  IsChecked="{Binding IsExporting, Mode=TwoWay}"
+                                  Margin="0,0,4,0" />
+                                <TextBlock Text="{Binding Namespace}"
+                                       FontStyle="Italic"
+                                       Margin="0,0,0,2"/>
+                            </StackPanel>
+                        </HierarchicalDataTemplate>
+
+                        <!-- LEAF NODE (single TypeItem) -->
+                        <DataTemplate DataType="{x:Type local:TypeItem}">
+                            <Grid>
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="*" />
+                                    <ColumnDefinition Width="*" />
+                                </Grid.ColumnDefinitions>
+
+                                <CheckBox Grid.Column="0"
+                                          IsChecked="{Binding IsExporting}" />
+
+                                <StackPanel Grid.Column="1"
+                                            Orientation="Horizontal"
+                                            Margin="4,0,0,0">
+                                    <fa:IconBlock Icon="ExclamationTriangle"
+                                                  Foreground="Red"
+                                                  Visibility="{Binding IsInvalid, Converter={StaticResource BoolToVis}}"
+                                                  ToolTip="{Binding InvalidReason}"
+                                                  Margin="0,0,4,0"/>
+                                    <TextBlock Text="{Binding Name}" />
+                                </StackPanel>
+                            </Grid>
+                        </DataTemplate>
+
+                    </TreeView.Resources>
+                </TreeView>
             </Grid>
 
             <Grid Grid.Row="0"

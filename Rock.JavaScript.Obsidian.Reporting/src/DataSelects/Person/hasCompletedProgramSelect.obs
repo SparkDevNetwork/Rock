@@ -1,0 +1,39 @@
+<template>
+    <DropDownList v-model="program"
+                  :items="programOptions"
+                  label="Completed Program"
+                  help="The Learning Program that should have been completed during the specified time frame."
+                  showBlankItem
+                  rules="required" />
+
+    <SlidingDateRangePicker v-model="dateRange" label="Date Range" />
+</template>
+
+<script setup lang="ts">
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
+    import { ref, watch } from "vue";
+    import { dataViewFilterProps } from "@Obsidian/Utility/component";
+    import { safeParseJson } from "@Obsidian/Utility/stringUtils";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { parseSlidingDateRangeString, SlidingDateRange, slidingDateRangeToString } from "@Obsidian/Utility/slidingDateRange";
+    import { SlidingDateRangeType } from "@Obsidian/Enums/Controls/slidingDateRangeType";
+
+    const props = defineProps(dataViewFilterProps);
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: Record<string, string | null | undefined>): void
+    }>();
+
+    const programOptions = safeParseJson<ListItemBag[]>(props.options.programOptions) ?? [];
+    const program = ref<string>(props.modelValue.program ?? "");
+
+    const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
+
+    watch([program, dateRange], () => {
+        emit("update:modelValue", {
+            ...props.modelValue,
+            program: program.value,
+            dateRange: slidingDateRangeToString(dateRange.value ?? { rangeType: SlidingDateRangeType.All }),
+        });
+    });
+</script>

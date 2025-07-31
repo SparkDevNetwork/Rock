@@ -293,7 +293,7 @@ namespace RockWeb.Blocks.Communication
                 if ( route != null )
                 {
                     var url = ResolveRockUrl( $"~/{route.Route}/?SystemCommunicationId={systemCommunication.Id}" );
-                    lEmailPreview.Text = $"<a href='{url}' title='Preview' class='btn btn-default btn-sm'><i class='fa fa-search'></i></a>";
+                    lEmailPreview.Text = $"<a href='{url}' title='Preview' class='btn btn-default btn-sm'><i class='ti ti-search'></i></a>";
                 }
                 }
             }

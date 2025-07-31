@@ -9,7 +9,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-database"></i>
+                    <i class="ti ti-database"></i>
                     Persisted Data View List
                 </h1>
             </div>

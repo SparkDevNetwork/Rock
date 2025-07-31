@@ -5,8 +5,8 @@
          :alt="attachment.fileName"
          class="img-responsive attachment-image" />
     <div v-else
-        class="attachment-document">
-        <i class="fa fa-file"></i>
+         class="attachment-document">
+        <i class="ti ti-file"></i>
         <a :href="attachment.url">{{ attachment.fileName }}</a>
     </div>
 </template>
@@ -26,7 +26,7 @@
 
 }
 
-.attachment-document .fa {
+.attachment-document .ti {
     margin-right: 12px;
 }
 </style>

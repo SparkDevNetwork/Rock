@@ -3,11 +3,11 @@
     <div class="form-sidebar">
         <div class="sidebar-header">
             <div class="sidebar-back" @click="onBackClick">
-                <i class="fa fa-chevron-left"></i>
+                <i class="ti ti-chevron-left"></i>
             </div>
 
             <span class="title">
-                <i class="fa fa-fw fa-user icon"></i>
+                <i class="ti ti-fw ti-user icon"></i>
                 Person Entry
             </span>
         </div>

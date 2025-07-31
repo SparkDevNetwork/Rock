@@ -36,7 +36,7 @@
 </style>
 <div class="panel panel-block panel-analytics styled-scroll">
     <div class="panel-heading">
-        <h1 class="panel-title"><i class="fa-solid fa-align-left"></i>Form Builder</h1>
+        <h1 class="panel-title"><i class="ti ti-align-left"></i>Form Builder</h1>
     </div>
     <div class="panel-body">
         <Rock:NotificationBox ID="nbWarning" runat="server" NotificationBoxType="Warning" />
@@ -48,7 +48,7 @@
                         <strong class="d-block text-sm m-0">Form Categories</strong>
                         <div runat="server" id="divTreeviewActions" class="btn-group pull-right">
                             <button type="button" class="btn btn-link text-color btn-xs btn-square dropdown-toggle" data-toggle="dropdown" title='<asp:Literal ID="ltAddCategory" runat="server" Text="Add Category" />'>
-                                <i class="fa fa-folder-plus"></i>
+                                <i class="ti ti-folder-plus"></i>
                             </button>
                             <ul class="dropdown-menu dropdown-menu-right" role="menu">
                                 <li>
@@ -198,8 +198,8 @@
                                 </div>
                                 <div id="divFormListTopPanel" runat="server" class="ml-auto d-flex gap-1">
                                     <Rock:SecurityButton ID="btnSecurity" runat="server" class="btn btn-xs btn-square btn-security" />
-                                    <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEditCategory_Click"><i class="fa fa-pencil"></i></asp:LinkButton>
-                                    <asp:LinkButton ID="btnDeleteCategory" data-toggle="tooltip" data-trigger="hover" data-delay="250" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="fa fa-trash-alt"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnEdit" runat="server" CssClass="btn btn-default btn-xs btn-square" OnClick="btnEditCategory_Click"><i class="ti ti-pencil"></i></asp:LinkButton>
+                                    <asp:LinkButton ID="btnDeleteCategory" data-toggle="tooltip" data-trigger="hover" data-delay="250" runat="server" CssClass="btn btn-danger btn-xs btn-square btn-category-delete" OnClick="btnDeleteCategory_Click"><i class="ti ti-trash"></i></asp:LinkButton>
                                 </div>
                             </div>
                             <hr class="section-header-hr" />
@@ -209,7 +209,7 @@
                                 <div class="form-inline margin-b-md label-auto">
                                     <Rock:RockDropDownList ID="ddlSortBy" Label="Sort By" runat="server" FormGroupCssClass="form-group-sm" AutoPostBack="true" OnSelectedIndexChanged="ddlSortBy_SelectedIndexChanged" />
                                 </div>
-                                <asp:LinkButton ID="lbAddForm" runat="server" ToolTip="Add Form" CssClass="btn btn-sm btn-square btn-primary ml-2 ml-auto" OnClick="lbAddForm_Click"><i class="fa fa-plus"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbAddForm" runat="server" ToolTip="Add Form" CssClass="btn btn-sm btn-square btn-primary ml-2 ml-auto" OnClick="lbAddForm_Click"><i class="ti ti-plus"></i></asp:LinkButton>
                             </div>
                             <asp:Repeater ID="rForms" runat="server" OnItemDataBound="rForms_ItemDataBound" OnItemCommand="rForms_ItemCommand">
                                 <ItemTemplate>
@@ -220,13 +220,13 @@
                                                 <p class="text-muted text-sm group-hover-item pr-3 mt-1 leading-snug"><%# Eval("Description") %></p>
                                             </div>
                                             <asp:Panel ID="pnlSideMenu" class="d-flex align-items-center" runat="server">
-                                                <asp:LinkButton ID="lbSubmissions" runat="server" ToolTip="Submissions" CssClass="btn btn-default btn-sm btn-square ml-2" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-list'></i>" />
-                                                <asp:LinkButton ID="lbBuilder" runat="server" ToolTip="Builder" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Builder" Text="<i class='fa fa-edit'></i>" CommandArgument='<%# Eval( "Id" ) %>' />
-                                                <asp:LinkButton ID="lbAnalytics" runat="server" ToolTip="Analytics" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-chart-bar'></i>" />
-                                                <asp:LinkButton ID="lbLinkToForm" runat="server" ToolTip="Link To Form" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="LinkToForm" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='fa fa-link'></i>" />
+                                                <asp:LinkButton ID="lbSubmissions" runat="server" ToolTip="Submissions" CssClass="btn btn-default btn-sm btn-square ml-2" CommandName="Submissions" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='ti ti-list'></i>" />
+                                                <asp:LinkButton ID="lbBuilder" runat="server" ToolTip="Builder" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Builder" Text="<i class='ti ti-edit'></i>" CommandArgument='<%# Eval( "Id" ) %>' />
+                                                <asp:LinkButton ID="lbAnalytics" runat="server" ToolTip="Analytics" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="Analytics" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='ti ti-chart-bar'></i>" />
+                                                <asp:LinkButton ID="lbLinkToForm" runat="server" ToolTip="Link To Form" CssClass="btn btn-default btn-sm btn-square ml-1" CommandName="LinkToForm" CommandArgument='<%# Eval( "Id" ) %>' Text="<i class='ti ti-link'></i>" />
                                                 <div class="dropdown js-group-actions hide-dragging">
                                                     <button type="button" class="btn btn-default btn-sm btn-square dropdown-toggle ml-1" data-toggle="dropdown">
-                                                        <i class="fa fa-ellipsis-v"></i>
+                                                        <i class="ti ti-dots-vertical"></i>
                                                     </button>
                                                     <ul class="dropdown-menu">
                                                         <li>
@@ -308,7 +308,7 @@
                                                     title="Copy to Clipboard"
                                                     data-clipboard-text='<%# Eval( "RouteURL" ) %>'
                                                     onclick="$(this).attr('data-original-title', 'Copied').tooltip('show').attr('data-original-title', 'Copy to Clipboard');return false;">
-                                                <i class='fa fa-clipboard'></i> Copy Link
+                                                <i class='ti ti-clipboard'></i> Copy Link
                                             </button>
                                         </ItemTemplate>
                                     </Rock:RockTemplateFieldUnselected>

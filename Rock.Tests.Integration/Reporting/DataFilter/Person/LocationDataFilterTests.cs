@@ -63,8 +63,8 @@ namespace Rock.Tests.Integration.Reporting.DataFilter
             var personService = new PersonService( dataContext );
             var parameterExpression = personService.ParameterExpression;
 
-            var predicate = settingsFilter.GetExpression( typeof( Model.Person ), personService, parameterExpression, settings.ToSelectionString() );
-            var personQuery = GetFilteredEntityQuery<Model.Person>( dataContext, predicate, parameterExpression );
+            var predicate = settingsFilter.GetExpression( typeof( Rock.Model.Person ), personService, parameterExpression, settings.ToSelectionString() );
+            var personQuery = GetFilteredEntityQuery<Rock.Model.Person>( dataContext, predicate, parameterExpression );
 
             return personQuery;
         }

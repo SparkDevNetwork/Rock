@@ -62,7 +62,7 @@
         <template #gridFooterAppend>
             <div class="d-flex" style="padding: var(--table-cell-padding-y) 52px var(--table-cell-padding-y) var(--table-cell-padding-x);">
                 <RockButton @click="onUnfollowClick">
-                    <i class='fa fa-flag-o'></i> Unfollow
+                    <i class='ti ti-flag'></i> Unfollow
                 </RockButton>
             </div>
         </template>

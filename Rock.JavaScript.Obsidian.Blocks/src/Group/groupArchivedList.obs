@@ -57,7 +57,7 @@
                 <button class="btn btn-default btn-sm"
                         title="Unarchive"
                         @click.prevent="onUndoArchiveClick(row.idKey)">
-                    <i class="fa fa-undo"></i>
+                    <i class="ti ti-arrow-back-up"></i>
                 </button>
             </template>
         </Column>

@@ -38,7 +38,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Connection Opportunity List" )]
     [Category( "Engagement" )]
     [Description( "Displays a list of connection opportunities." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

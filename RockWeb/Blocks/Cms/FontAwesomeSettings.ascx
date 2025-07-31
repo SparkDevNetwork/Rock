@@ -7,7 +7,7 @@
 
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-font-awesome"></i>
+                    <i class="ti ti-favicon"></i>
                     Font Awesome Settings
                 </h1>
 

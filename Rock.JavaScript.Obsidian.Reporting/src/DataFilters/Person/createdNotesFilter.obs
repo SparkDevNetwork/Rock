@@ -34,7 +34,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const noteTypeOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.noteTypeOptions) ?? []);
+    const noteTypeOptions = safeParseJson<ListItemBag[]>(props.options.noteTypeOptions) ?? [];
     const noteTypes = ref<Guid[]>(safeParseJson(props.modelValue.noteTypes) ?? []);
     const dateRange = ref<SlidingDateRange | null>(parseSlidingDateRangeString(props.modelValue.dateRange ?? ""));
     const minimumCount = ref<number | null>(toNumberOrNull(props.modelValue.minimumCount));

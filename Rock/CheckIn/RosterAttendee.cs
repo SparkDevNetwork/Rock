@@ -454,11 +454,11 @@ namespace Rock.CheckIn
                     break;
                 case RosterAttendeeStatus.Present:
                     statusClass = "success";
-                    mobileIcon = "<i class='fa fa-check'></i>";
+                    mobileIcon = "<i class='ti ti-check'></i>";
                     break;
                 case RosterAttendeeStatus.CheckedOut:
                     statusClass = "danger";
-                    mobileIcon = "<i class='fa fa-minus'></i>";
+                    mobileIcon = "<i class='ti ti-minus'></i>";
                     break;
             }
 
@@ -554,7 +554,7 @@ namespace Rock.CheckIn
 
             if ( this.IsBirthdayWeek )
             {
-                badgesSb.Append( $"<div class='text-center text-success pull-left'><div><i class='fa fa-birthday-cake fa-2x'></i></div><div style='font-size: small;'>{this.Birthday}</div></div>" );
+                badgesSb.Append( $"<div class='text-center text-success pull-left'><div><i class='ti ti-cake ti-2x'></i></div><div style='font-size: small;'>{this.Birthday}</div></div>" );
             }
 
             if ( attributesForAlertIcons.Any() )
@@ -603,17 +603,17 @@ namespace Rock.CheckIn
                     var iconCssClass = attributeForAlertIcon.IconCssClass;
                     if ( iconCssClass.IsNullOrWhiteSpace() )
                     {
-                        // use fa-square-o if icon css class is not specified on the attribute
-                        iconCssClass = "fa fa-square-o";
+                        // use ti-square if icon css class is not specified on the attribute
+                        iconCssClass = "ti ti-square";
                     }
 
-                    badgesSb.Append( $"<div class='pull-left'>&nbsp;<i class='{iconCssClass} fa-2x' title='{attributeForAlertIcon.Name}' {style} ></i></div>" );
+                    badgesSb.Append( $"<div class='pull-left'>&nbsp;<i class='{iconCssClass} ti-2x' title='{attributeForAlertIcon.Name}' {style} ></i></div>" );
                 }
             }
 
             if ( this.IsFirstTime )
             {
-                badgesSb.Append( $"<div class='pull-left'>&nbsp;<i class='fa fa-star fa-2x text-warning' title='First Time'></i></div>" );
+                badgesSb.Append( $"<div class='pull-left'>&nbsp;<i class='ti ti-star ti-2x text-warning' title='First Time'></i></div>" );
             }
 
             return badgesSb.ToString();

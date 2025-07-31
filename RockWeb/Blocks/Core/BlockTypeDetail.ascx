@@ -7,7 +7,7 @@
             <asp:HiddenField ID="hfBlockTypeId" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-square"></i>
+                <h1 class="panel-title"><i class="ti ti-square"></i>
                     <asp:Literal ID="lActionTitle" runat="server" /></h1>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>

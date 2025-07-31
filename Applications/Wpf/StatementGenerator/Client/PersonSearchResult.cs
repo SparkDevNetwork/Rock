@@ -1,0 +1,135 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+using System;
+
+namespace Rock.Apps.StatementGenerator.Client
+{
+    /// <summary>
+    /// Search result item from api/People/Search
+    /// </summary>
+    public partial class PersonSearchResult
+    {
+        /// <summary />
+        public int Id { get; set; }
+
+        /// <summary />
+        public string Address { get; set; }
+
+        /// <summary />
+        public int Age { get; set; }
+
+        /// <summary />
+        public string CampusName { get; set; }
+
+        /// <summary />
+        public string CampusShortCode { get; set; }
+
+        /// <summary />
+        public string ConnectionStatus { get; set; }
+
+        /// <summary />
+        public string ConnectionStatusColor { get; set; }
+
+        /// <summary />
+        public string Email { get; set; }
+
+        /// <summary />
+        public string FormattedAge { get; set; }
+
+        /// <summary />
+        public string Gender { get; set; }
+
+        /// <summary />
+        public string ImageHtmlTag { get; set; }
+
+        /// <summary />
+        public string ImageUrl { get; set; }
+
+        /// <summary />
+        public bool IsActive { get; set; }
+
+        /// <summary />
+        public bool IsBusiness { get; set; }
+
+        /// <summary />
+        public bool IsDeceased { get; set; }
+
+        /// <summary />
+        public string Name { get; set; }
+
+        /// <summary />
+        public string PickerItemDetailsHtml { get; set; }
+
+        /// <summary />
+        public string PickerItemDetailsImageHtml { get; set; }
+
+        /// <summary />
+        public string PickerItemDetailsPersonInfoHtml { get; set; }
+
+        /// <summary />
+        public Guid PrimaryAliasGuid { get; set; }
+
+        /// <summary />
+        public string RecordStatus { get; set; }
+
+        /// <summary />
+        public string SearchDetailsHtml { get; set; }
+
+        /// <summary />
+        public string SpouseName { get; set; }
+
+        /// <summary />
+        public string SpouseNickName { get; set; }
+
+        /// <summary />
+        public Guid Guid { get; set; }
+
+        /// <summary>
+        /// Copies the base properties from a source PersonSearchResult object
+        /// </summary>
+        /// <param name="source">The source.</param>
+        public void CopyPropertiesFrom( PersonSearchResult source )
+        {
+            this.Id = source.Id;
+            this.Address = source.Address;
+            this.Age = source.Age;
+            this.CampusName = source.CampusName;
+            this.CampusShortCode = source.CampusShortCode;
+            this.ConnectionStatus = source.ConnectionStatus;
+            this.ConnectionStatusColor = source.ConnectionStatusColor;
+            this.Email = source.Email;
+            this.FormattedAge = source.FormattedAge;
+            this.Gender = source.Gender;
+            this.ImageHtmlTag = source.ImageHtmlTag;
+            this.ImageUrl = source.ImageUrl;
+            this.IsActive = source.IsActive;
+            this.IsBusiness = source.IsBusiness;
+            this.IsDeceased = source.IsDeceased;
+            this.Name = source.Name;
+            this.PickerItemDetailsHtml = source.PickerItemDetailsHtml;
+            this.PickerItemDetailsImageHtml = source.PickerItemDetailsImageHtml;
+            this.PickerItemDetailsPersonInfoHtml = source.PickerItemDetailsPersonInfoHtml;
+            this.PrimaryAliasGuid = source.PrimaryAliasGuid;
+            this.RecordStatus = source.RecordStatus;
+            this.SearchDetailsHtml = source.SearchDetailsHtml;
+            this.SpouseName = source.SpouseName;
+            this.SpouseNickName = source.SpouseNickName;
+            this.Guid = source.Guid;
+
+        }
+    }
+}

@@ -6,7 +6,7 @@
             <asp:HiddenField ID="hfBaseExceptionID" runat="server" />
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-bug"></i>
+                <h1 class="panel-title"><i class="ti ti-bug"></i>
                     <asp:Literal ID="lDetailTitle" runat="server" /></h1>
             </div>
             <div class="panel-body">
@@ -39,7 +39,7 @@
                                 <Rock:RockBoundField DataField="PageName" HeaderText="Page/URL" SortExpression="PageName" />
                                 <Rock:RockBoundField DataField="FullName" HeaderText="Logged In User" SortExpression="FullName" />
                                 <Rock:RockBoundField DataField="Description" HeaderText="Description" SortExpression="Description" ItemStyle-CssClass="wrap-contents" />
-                                <Rock:LinkButtonField ID="lbShowDetail" Text="<i class='fa fa-file-alt'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gExceptionList_ShowDetail" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
+                                <Rock:LinkButtonField ID="lbShowDetail" Text="<i class='ti ti-file'></i>" CssClass="btn btn-default btn-sm btn-square" OnClick="gExceptionList_ShowDetail" HeaderStyle-HorizontalAlign="Center" ItemStyle-HorizontalAlign="Center" />
                             </Columns>
                         </Rock:Grid>
                     </div>

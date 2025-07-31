@@ -48,7 +48,7 @@ namespace Rock.Blocks.Types.Mobile.Cms
     [DisplayName( "Log In" )]
     [Category( "Mobile > Cms" )]
     [Description( "Allows the user to log in on a mobile application." )]
-    [IconCssClass( "fa fa-user-lock" )]
+    [IconCssClass( "ti ti-user-shield" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

@@ -153,20 +153,15 @@ namespace Rock.Lava
             }
 
             // Add parameters for tracking the recursion depth.
-            int currentRecursionDepth = 0;
+            int originalRecursionDepth = context.GetMergeField( "RecursionDepth" ).ToStringSafe().AsInteger();
 
-            if ( parms.ContainsKey( "RecursionDepth" ) )
+            if ( originalRecursionDepth > _maxRecursionDepth )
             {
-                currentRecursionDepth = parms["RecursionDepth"].ToString().AsInteger() + 1;
-
-                if ( currentRecursionDepth > _maxRecursionDepth )
-                {
-                    result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
-                    return;
-                }
+                result.Write( "A recursive loop was detected and processing of this shortcode has stopped." );
+                return;
             }
 
-            parms.AddOrReplace( "RecursionDepth", currentRecursionDepth );
+            parms.AddOrReplace( "RecursionDepth", originalRecursionDepth + 1 );
 
             var securityCheckRequired = true;
 
@@ -224,12 +219,22 @@ namespace Rock.Lava
 
             // Set context variables related to the block content so they can be referenced by the shortcode template.
             var blockHasContent = residualMarkup.IsNotNullOrWhiteSpace();
+            var originalBlockContentExists = context.GetMergeField( "blockContentExists" );
+
+            // This "blockContentExists" parameter is not documented in the official
+            // "The Long & Short on Shortcodes" book, but I suppose someone could be using it in their code
+            // to tell if there is content in the shortcode 'block'. Otherwise I would consider this
+            // deprecated and they should just use {% if blockContent == '' %} instead.
             parms.AddOrReplace( "blockContentExists", blockHasContent );
+
+            // Get the original blockContent so we can replace it when we're done. This is needed for nested shortcodes
+            var originalBlockContent = context.GetMergeField( "blockContent" );
+
+            // Set the blockContent merge field even if there is no content to prevent parent shortcodes from bleeding into their children.
+            parms.AddOrReplace( "blockContent", residualMarkup );
 
             if ( blockHasContent )
             {
-                parms.AddOrReplace( "blockContent", residualMarkup );
-
                 if ( securityCheckRequired )
                 {
                     // If the commands enabled for the current render context are a superset of the commands enabled for the shortcode,
@@ -285,7 +290,7 @@ namespace Rock.Lava
                     var enabledCommands = context.GetEnabledCommands();
                     foreach ( var commandName in _shortcode.EnabledLavaCommands )
                     {
-                        if ( !enabledCommands.Contains(commandName) )
+                        if ( !enabledCommands.Contains( commandName ) )
                         {
                             enabledCommands.Add( commandName );
                         }
@@ -300,6 +305,11 @@ namespace Rock.Lava
             {
                 context.ExitChildScope();
             }
+
+            // Reset the original parameters in the context
+            context.SetMergeField( "blockContent", originalBlockContent );
+            context.SetMergeField( "RecursionDepth", originalRecursionDepth );
+            context.SetMergeField( "blockContentExists", originalBlockContentExists );
         }
 
         #endregion
@@ -374,7 +384,7 @@ namespace Rock.Lava
                             // add new parm to a collection of parms and as a single parm if none exist
                             if ( childParameters.ContainsKey( parmName + "s" ) )
                             {
-                                var parmList = (List<object>)childParameters[parmName + "s"];
+                                var parmList = ( List<object> ) childParameters[parmName + "s"];
                                 parmList.Add( dynamicParm );
                             }
                             else

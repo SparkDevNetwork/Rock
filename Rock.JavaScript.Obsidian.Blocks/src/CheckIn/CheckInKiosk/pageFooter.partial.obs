@@ -5,7 +5,7 @@
                     btnType="link"
                     class="configure-button"
                     @click="onConfigureClick">
-            <i class="fa fa-cog"></i>
+            <i class="ti ti-settings"></i>
         </RockButton>
 
         <div class="title">{{ props.title }}</div>

@@ -177,16 +177,73 @@ namespace Rock.Tests.Model
         [DataTestMethod]
         [DataRow( "Thu, Oct 1, 2020", 10, 1 )]
         [DataRow( "Sat, Dec 31, 2022", 1, 12 )]
-        [DataRow( "Sun, Jan 1, 2023", 1, 1 )]
+        [DataRow( "Sun, Jan 1, 2023", 1, 12 )] // Sun Jan 1, 2023 is the last day of the 12th month of FY2022
         [DataRow( "Mon, Jan 2, 2023", 1, 1 )]
         [DataRow( "Sat, April 1, 2023", 1, 4 )]
         [DataRow( "Sun, April 2, 2023", 1, 4 )]
         [DataRow( "Mon, April 3, 2023", 1, 4 )]
-        public void Date_WithVariousFiscalMonthStart_HasValidFiscalMonth( string date, int fiscalMonthStart, int expectedFiscalMonthNumber )
+        // Fiscal Start == April
+        /*
+            ----------------------------
+            FWK     Mo Tu We Th Fr Sa Su
+            ----------------------------
+                         2023
+            53 Mar  27 28 29 30 31
+            53 Apr                 01 02 <-- This should be Month 12 of FY2022
+            01      03 04 05 06 07 08 09 <-- start FY2024
+            02      10 11 12 13 14 15 16 
+            03      17 18 19 20 21 22 23 
+            04      24 25 26 27 28 29 30
+        */
+        [DataRow( "Sat, April 1, 2023", 4, 12 )] // FY2023 starts on Mon, April 3
+        [DataRow( "Sun, April 2, 2023", 4, 12 )] // ...
+        [DataRow( "Mon, April 3, 2023", 4, 1 )]  // Start of new fiscal year
+        public void Date_WithVariousFiscalMonthStart_HasValidFiscalMonthNumber( string date, int fiscalMonthStart, int expectedFiscalMonthNumber )
         {
             var dateTime = DateTime.Parse( date );
-            int fiscalMonthNumber = AnalyticsSourceDate.GetFiscalMonthNumber( dateTime, fiscalMonthStart );
+            int fiscalMonthNumber = AnalyticsSourceDate.GetFiscalMonthNumber( dateTime, fiscalMonthStart, DayOfWeek.Monday );
             Assert.AreEqual( expectedFiscalMonthNumber, fiscalMonthNumber );
+        }
+
+        /// <summary>
+        /// Tests that the correct fiscal month name is calculated for a given date,
+        /// based on a specified fiscal year start month. This helps verify edge cases across year transitions,
+        /// such as December to January and fiscal starts in months like October or April.
+        /// </summary>
+        /// <param name="date">The input date string</param>
+        /// <param name="fiscalMonthStart">The month the fiscal year starts (1 = January, 10 = October, etc.)</param>
+        /// <param name="expectedFiscalMonthNumber">The expected fiscal month number result for the input date</param>
+        [DataTestMethod]
+        [DataRow( "Thu, Oct 1, 2020", 10, "October" )]
+        [DataRow( "Wed, Nov 30, 2022", 1, "November" )]
+        [DataRow( "Thu, Dec 1, 2022", 1, "December" )]
+        [DataRow( "Sat, Dec 31, 2022", 1, "December" )]
+        [DataRow( "Sun, Jan 1, 2023", 1, "December" )] // Sun Jan 1, 2023 is the last day of the 12th month of FY2022
+        [DataRow( "Mon, Jan 2, 2023", 1, "January" )]
+        [DataRow( "Sat, April 1, 2023", 1, "April" )]
+        [DataRow( "Sun, April 2, 2023", 1, "April" )]
+        [DataRow( "Mon, April 3, 2023", 1, "April" )]
+        // Fiscal Start == April
+        /*
+            ----------------------------
+            FWK     Mo Tu We Th Fr Sa Su
+            ----------------------------
+                         2023
+            53 Mar  27 28 29 30 31
+            53 Apr                 01 02 <-- This should be Month 12 of FY2022
+            01      03 04 05 06 07 08 09 <-- start FY2024
+            02      10 11 12 13 14 15 16 
+            03      17 18 19 20 21 22 23 
+            04      24 25 26 27 28 29 30
+        */
+        [DataRow( "Sat, April 1, 2023", 4, "March" )] // FY2023 starts on Mon, April 3
+        [DataRow( "Sun, April 2, 2023", 4, "March" )] // ...
+        [DataRow( "Mon, April 3, 2023", 4, "April" )] // Start of new fiscal year
+        public void Date_WithVariousFiscalMonthStart_HasValidFiscalMonthName( string date, int fiscalYearMonthStart, string expectedFiscalMonthName )
+        {
+            var dateTime = DateTime.Parse( date );
+            var fiscalMonthName = AnalyticsSourceDate.GetFiscalMonthName( dateTime, fiscalYearMonthStart, DayOfWeek.Monday );
+            Assert.AreEqual( expectedFiscalMonthName, fiscalMonthName );
         }
 
         /// <summary>
@@ -199,13 +256,13 @@ namespace Rock.Tests.Model
         /// <param name="expectedFiscalYear">The expected fiscal year result for the input date</param>
         [DataTestMethod]
         /*
-            ------- FY 2022-2023 -------
+            ----------------------------
             FWK     Mo Tu We Th Fr Sa Su
             ----------------------------
-                         2022
+                         2023
             53 Mar  27 28 29 30 31
             53 Apr                 01 02 
-            01      03 04 05 06 07 08 09 <-- start FY2023
+            01      03 04 05 06 07 08 09 <-- start FY2024
             02      10 11 12 13 14 15 16 
             03      17 18 19 20 21 22 23 
             04      24 25 26 27 28 29 30 
@@ -216,7 +273,7 @@ namespace Rock.Tests.Model
             38      18 19 20 21 22 23 24 
             39      25 26 27 28 29 30 31
 
-                         2023
+                         2024
             40 Jan  01 02 03 04 05 06 07
             41      08 09 10 11 12 13 14 
             42      15 16 17 18 19 20 21 
@@ -224,7 +281,7 @@ namespace Rock.Tests.Model
             ...
             52 Mar  26 27 28 29 30 31
             52 Apr                    01 
-            01      02 03 04 05 06 07 08 <-- start FY2024
+            01      02 03 04 05 06 07 08 <-- start FY2025
          */
         [DataRow( "Saturday, April 1, 2023", 2023 )] // Because of the 4 day week rule, the 3rd is the first week in FY2024
         [DataRow( "Sunday, April 2, 2023", 2023 )]

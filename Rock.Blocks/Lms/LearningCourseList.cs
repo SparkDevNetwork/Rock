@@ -37,7 +37,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Course List" )]
     [Category( "LMS" )]
     [Description( "Displays a list of learning courses." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

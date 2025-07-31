@@ -32,7 +32,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [DisplayName( "Transaction Detail" )]
     [Category( "Mobile > Finance" )]
     [Description( "The Transaction Detail block." )]
-    [IconCssClass( "fa fa-receipt" )]
+    [IconCssClass( "ti ti-receipt" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     [Rock.SystemGuid.EntityTypeGuid( Rock.SystemGuid.EntityType.MOBILE_FINANCE_TRANSACTION_DETAIL_BLOCK_TYPE )]

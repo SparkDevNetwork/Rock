@@ -45,8 +45,8 @@
                     <asp:HiddenField ID="hfCurrentAttendanceIds" runat="server" />
                     <asp:HiddenField ID="hfPersonId" runat="server" />
                     <div>
-                        <asp:LinkButton ID="btnPersonAttendanceHistory" runat="server" OnClick="btnPersonAttendanceHistory_Click" ToolTip="Attendance History" CssClass="btn btn-default btn-sm my-2"><i class="fa fa-history"></i></asp:LinkButton>
-                        <asp:LinkButton ID="btnReprintLabels" runat="server" OnClick="btnReprintLabels_Click" ToolTip="Reprint Labels" CssClass="btn btn-default btn-sm my-2"><i class="fa fa-print"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnPersonAttendanceHistory" runat="server" OnClick="btnPersonAttendanceHistory_Click" ToolTip="Attendance History" CssClass="btn btn-default btn-sm my-2"><i class="ti ti-history"></i></asp:LinkButton>
+                        <asp:LinkButton ID="btnReprintLabels" runat="server" OnClick="btnReprintLabels_Click" ToolTip="Reprint Labels" CssClass="btn btn-default btn-sm my-2"><i class="ti ti-printer"></i></asp:LinkButton>
                     </div>
 
                     <Rock:ModalDialog ID="mdReprintLabels" runat="server" ValidationGroup="vgReprintLabels" Title="Label Reprints" OnSaveClick="mdReprintLabels_PrintClick" SaveButtonText="Print" Visible="false">
@@ -104,7 +104,7 @@
                             <asp:Literal ID="lActiveLabel" runat="server" /><br />
                         </ItemTemplate>
                     </Rock:RockTemplateField>
-                    <Rock:RockLiteralField ID="lChevronRight" Text="<i class='fa fa-chevron-right'></i>" ItemStyle-HorizontalAlign="Right" ItemStyle-CssClass="align-middle" />
+                    <Rock:RockLiteralField ID="lChevronRight" Text="<i class='ti ti-chevron-right'></i>" ItemStyle-HorizontalAlign="Right" ItemStyle-CssClass="align-middle" />
                 </Columns>
             </Rock:Grid>
         </asp:Panel>

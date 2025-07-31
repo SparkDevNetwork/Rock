@@ -149,7 +149,7 @@ namespace RockWeb.Blocks.CheckIn
 
         function GetPersonSelection() {{
             var ids = '';
-            $('div.checkin-person-list').find('i.fa-check-square').each( function() {{
+            $('div.checkin-person-list').find('i.ti-checkbox').each( function() {{
                 ids += $(this).closest('a').attr('data-person-id') + ',';
             }});
             if (ids == '') {{
@@ -166,9 +166,9 @@ namespace RockWeb.Blocks.CheckIn
 
         $('a.js-person-select').on('click', function() {{
             $(this).toggleClass('active');
-            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
+            $(this).find('i').toggleClass('ti-checkbox').toggleClass('ti-square');
             var ids = '';
-            $('div.checkin-person-list').find('i.fa-check-square').each( function() {{
+            $('div.checkin-person-list').find('i.ti-checkbox').each( function() {{
                 ids += $(this).closest('a').attr('data-person-id') + ',';
             }});
             $('#{hfPeople.ClientID}').val(ids);
@@ -176,7 +176,7 @@ namespace RockWeb.Blocks.CheckIn
 
         function GetOptionSelection() {{
             var keys = '';
-            $('div.checkin-option-list').find('i.fa-check-square').each( function() {{
+            $('div.checkin-option-list').find('i.ti-checkbox').each( function() {{
                 keys += $(this).closest('a').attr('data-key') + ',';
             }});
             if (keys == '') {{
@@ -193,13 +193,13 @@ namespace RockWeb.Blocks.CheckIn
 
         $('a.js-option-select').on('click', function() {{
             $(this).removeClass('btn-dimmed');
-            $(this).find('i').toggleClass('fa-check-square').toggleClass('fa-square-o');
+            $(this).find('i').toggleClass('ti-checkbox').toggleClass('ti-square');
             var scheduleId = $(this).attr('data-schedule-id');
-            var selected = $(this).find('i.fa-check-square').length != 0;
+            var selected = $(this).find('i.ti-checkbox').length != 0;
             $(this).siblings().each( function() {{
                 if ( $(this).attr('data-schedule-id') == scheduleId ) {{
                     if ( selected ) {{
-                        $(this).find('i').removeClass('fa-check-square').addClass('fa-square-o');
+                        $(this).find('i').removeClass('ti-checkbox').addClass('ti-square');
                         $(this).addClass('btn-dimmed');
                     }} else {{
                         $(this).removeClass('btn-dimmed');
@@ -590,7 +590,7 @@ namespace RockWeb.Blocks.CheckIn
 
         protected string GetCheckboxClass( bool selected )
         {
-            return selected ? "fa fa-check-square fa-3x" : "fa fa-square-o fa-3x";
+            return selected ? "ti ti-square-check" : "ti ti-square";
         }
 
         protected string GetPersonImageTag( object dataitem )

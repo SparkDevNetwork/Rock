@@ -132,14 +132,14 @@
             labels.push({
                 title: `Activity Type: ${learningActivityViewBag.value.activityComponent.name}`,
                 type: "default",
-                iconCssClass: learningActivityViewBag.value.activityComponent.iconCssClass || "fa fa-check-square"
+                iconCssClass: learningActivityViewBag.value.activityComponent.iconCssClass || "ti ti-square-check"
             });
         }
 
         labels.push({
             title: `Completions: ${learningActivityViewBag.value?.completeCount ?? "0"} (${learningActivityViewBag.value?.percentComplete?.toFixed(0) ?? 0}%)`,
             type: "info",
-            iconCssClass: "fa fa-group"
+            iconCssClass: "ti ti-users"
         });
 
         if (learningActivityViewBag.value?.isPastDue) {
@@ -186,7 +186,7 @@
 
         if (isEditable.value === true) {
             secondaryActions.push({
-                iconCssClass: "fa fa-copy",
+                iconCssClass: "ti ti-copy",
                 title: "Copy Activity",
                 type: "default",
                 handler: onCopy

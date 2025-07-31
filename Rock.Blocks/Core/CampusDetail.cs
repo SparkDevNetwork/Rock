@@ -42,7 +42,7 @@ namespace Rock.Blocks.Core
     [DisplayName( "Campus Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular campus." )]
-    [IconCssClass( "fa fa-building" )]
+    [IconCssClass( "ti ti-building" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -500,7 +500,7 @@ namespace Rock.Blocks.Core
                 IsActive = !entity.IsActive.HasValue || entity.IsActive.Value,
                 IsSystem = entity.IsSystem,
                 LeaderPersonAlias = entity.LeaderPersonAlias.ToListItemBag(),
-                Location = entity.Location.ToListItemBag(),
+                Location = entity.Location.ToListItemBag( entity.Location?.Name ),
                 Name = entity.Name,
                 ServiceTimes = ConvertServiceTimesToBags( entity.ServiceTimes ),
                 ShortCode = entity.ShortCode,
@@ -508,6 +508,7 @@ namespace Rock.Blocks.Core
                 Url = entity.Url,
                 ClosedDate = entity.ClosedDate,
                 OpenedDate = entity.OpenedDate,
+                AverageWeekendAttendance = entity.AverageWeekendAttendance
             };
         }
 

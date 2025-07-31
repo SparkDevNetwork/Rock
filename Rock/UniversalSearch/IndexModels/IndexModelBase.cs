@@ -214,7 +214,7 @@ namespace Rock.UniversalSearch.IndexModels
         /// The icon CSS class.
         /// </value>
         [RockIndexField( Index = IndexType.NotIndexed )]
-        public virtual string IconCssClass { get; set; } = "fa fa-file";
+        public virtual string IconCssClass { get; set; } = "ti ti-file";
 
         /// <summary>
         /// Gets or sets the score.

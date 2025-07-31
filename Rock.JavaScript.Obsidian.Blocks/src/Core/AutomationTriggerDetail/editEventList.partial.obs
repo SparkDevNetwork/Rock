@@ -13,7 +13,7 @@
                            :primaryActions="getPrimaryActions(ev)">
             <template #prepend>
                 <div>
-                    <i class="fa fa-bars reorder-handle" style="cursor: grab;"></i>
+                    <i class="ti ti-menu-2 reorder-handle" style="cursor: grab;"></i>
                 </div>
             </template>
         </ConnectedListItem>
@@ -185,14 +185,14 @@
 
         actions.push({
             title: "Edit",
-            iconCssClass: "fa fa-pencil-alt",
+            iconCssClass: "ti ti-pencil",
             type: "default",
             handler: () => onEditEvent(idKey)
         });
 
         actions.push({
             title: "Delete",
-            iconCssClass: "fa fa-times",
+            iconCssClass: "ti ti-x",
             type: "danger",
             handler: () => onDeleteEvent(idKey)
         });

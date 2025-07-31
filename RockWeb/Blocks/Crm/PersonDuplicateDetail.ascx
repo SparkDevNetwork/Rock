@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlView" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-user"></i> Person Duplicates</h1>
+                <h1 class="panel-title"><i class="ti ti-user"></i> Person Duplicates</h1>
             </div>
             <div class="panel-body">
 
@@ -72,13 +72,13 @@
                             <Rock:RockTemplateField ItemStyle-HorizontalAlign="Right"  HeaderStyle-HorizontalAlign="Right">
                                 <ItemTemplate>
                                     <p>
-                                        <a class="btn btn-square btn-default js-view-person" onclick="<%# GetPersonViewOnClick((int)Eval("PersonId")) %>" data-toggle="tooltip" title="View Person"><i class="fa fa-user fa-fw"></i></a>
+                                        <a class="btn btn-square btn-default js-view-person" onclick="<%# GetPersonViewOnClick((int)Eval("PersonId")) %>" data-toggle="tooltip" title="View Person"><i class="ti ti-user ti-fw"></i></a>
                                     </p>
                                     <p>
-                                        <asp:LinkButton runat="server" ID="btnNotDuplicate" CssClass="btn btn-square btn-default js-not-duplicate" data-toggle="tooltip" title="Not Duplicate" OnClick="btnNotDuplicate_Click" CommandName="NotDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-ban fa-fw"></i></asp:LinkButton>
+                                        <asp:LinkButton runat="server" ID="btnNotDuplicate" CssClass="btn btn-square btn-default js-not-duplicate" data-toggle="tooltip" title="Not Duplicate" OnClick="btnNotDuplicate_Click" CommandName="NotDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="ti ti-ban ti-fw"></i></asp:LinkButton>
                                     </p>
                                     <p>
-                                        <asp:LinkButton runat="server" ID="btnIgnoreDuplicate" CssClass="btn btn-square btn-default js-ignore-duplicate" data-toggle="tooltip" title="Ignore" OnClick="btnIgnoreDuplicate_Click" CommandName="IgnoreDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="fa fa-bell-slash fa-fw"></i></asp:LinkButton>
+                                        <asp:LinkButton runat="server" ID="btnIgnoreDuplicate" CssClass="btn btn-square btn-default js-ignore-duplicate" data-toggle="tooltip" title="Ignore" OnClick="btnIgnoreDuplicate_Click" CommandName="IgnoreDuplicate" CommandArgument='<%# Eval("PersonDuplicateId") %>'><i class="ti ti-bell-off ti-fw"></i></asp:LinkButton>
                                     </p>
                                 </ItemTemplate>
                             </Rock:RockTemplateField>

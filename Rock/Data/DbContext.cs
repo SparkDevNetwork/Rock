@@ -28,6 +28,8 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Web;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Bus.Message;
 using Rock.Model;
 using Rock.Net;
@@ -1145,9 +1147,9 @@ namespace Rock.Data
 
             // if the CommandTimeout is less than 5 minutes (or null with a default of 30 seconds), set timeout to 5 minutes
             int minTimeout = 300;
-            if ( this.Database.CommandTimeout.HasValue && this.Database.CommandTimeout.Value > minTimeout )
+            if ( this.Database.GetCommandTimeout().HasValue && this.Database.GetCommandTimeout().Value > minTimeout )
             {
-                EntityFramework.Utilities.Configuration.BulkCopyTimeout = this.Database.CommandTimeout.Value;
+                EntityFramework.Utilities.Configuration.BulkCopyTimeout = this.Database.GetCommandTimeout().Value;
             }
             else
             {
@@ -1196,7 +1198,7 @@ namespace Rock.Data
             var updatedExpression = rockExpressionVisitor.Visit( updateFactory ) as Expression<Func<T, T>> ?? updateFactory;
             int recordsUpdated = queryable.Update( updatedExpression, batchUpdateBuilder =>
             {
-                batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+                batchUpdateBuilder.Executing = ( e ) => { e.CommandTimeout = this.Database.GetCommandTimeout() ?? 30; };
             } );
             return recordsUpdated;
         }
@@ -1206,7 +1208,7 @@ namespace Rock.Data
         /// Example: rockContext.BulkDelete( groupMembersToDeleteQuery );
         /// NOTES:
         /// - This bypasses the Rock and a bunch of the EF Framework and automatically commits the changes to the database.
-        /// - This will use the Database.CommandTimeout value.
+        /// - This will use the Database.GetCommandTimeout() value.
         /// </summary>
         /// <typeparam name="T"></typeparam>
         /// <param name="queryable">The queryable for the records to delete</param>
@@ -1226,7 +1228,7 @@ namespace Rock.Data
             return queryable.Delete( d =>
             {
                 d.BatchSize = batchSize ?? 1500;
-                d.Executing = ( e ) => { e.CommandTimeout = this.Database.CommandTimeout ?? 30; };
+                d.Executing = ( e ) => { e.CommandTimeout = this.Database.GetCommandTimeout() ?? 30; };
             } );
         }
 

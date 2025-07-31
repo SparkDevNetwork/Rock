@@ -67,7 +67,7 @@
 
         <ButtonColumn v-if="config.options?.isBulkEntryColumnVisible"
                       name="bulkEntry"
-                      iconClass="fa fa-truck"
+                      iconClass="ti ti-truck"
                       visiblePriority="md"
                       @click="bulkEntry" />
 

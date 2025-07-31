@@ -540,6 +540,9 @@ namespace RockWeb.Blocks.Connection
 
                     connectionWorkflow.CopyPropertiesFrom( connectionWorkflowState );
                     connectionWorkflow.ConnectionTypeId = connectionTypeId;
+                    connectionWorkflow.AppliesToAgeClassification = connectionWorkflowState.AppliesToAgeClassification;
+                    connectionWorkflow.IncludeDataViewId = connectionWorkflowState.IncludeDataViewId;
+                    connectionWorkflow.ExcludeDataViewId = connectionWorkflowState.ExcludeDataViewId;
                 }
 
                 avcEditAttributes.GetEditValues( connectionType );
@@ -1658,6 +1661,10 @@ namespace RockWeb.Blocks.Connection
             connectionWorkflow.QualifierValue = String.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
             connectionWorkflow.ConnectionTypeId = 0;
             connectionWorkflow.ManualTriggerFilterConnectionStatusId = rblConnectionStatuses.SelectedValueAsInt();
+            connectionWorkflow.AppliesToAgeClassification = rblAppliesToAgeClassification.SelectedValue.AsIntegerOrNull().HasValue
+                ? (AppliesToAgeClassification)rblAppliesToAgeClassification.SelectedValue.AsInteger() : AppliesToAgeClassification.All;
+            connectionWorkflow.IncludeDataViewId = dvpIncludeDataView.SelectedValueAsId();
+            connectionWorkflow.ExcludeDataViewId = dvpExcludeDataView.SelectedValueAsId();
             if ( !connectionWorkflow.IsValid )
             {
                 return;
@@ -1712,13 +1719,32 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionWorkflowGuid">The connection workflow unique identifier.</param>
         protected void gWorkflows_ShowEdit( Guid connectionWorkflowGuid )
         {
+            rblAppliesToAgeClassification.Items.Clear();
+            foreach ( var ageClassification in Enum.GetValues( typeof( AppliesToAgeClassification ) ).Cast<AppliesToAgeClassification>() )
+            {
+                rblAppliesToAgeClassification.Items.Add( new ListItem( ageClassification.ConvertToString( true ), ( ( int ) ageClassification ).ToString() ) );
+            }
+            rblAppliesToAgeClassification.DataBind();
+
+            var personEntityType = EntityTypeCache.Get( typeof( Person ) );
+            dvpIncludeDataView.EntityTypeId = personEntityType?.Id;
+            dvpExcludeDataView.EntityTypeId = personEntityType?.Id;
+
             ConnectionWorkflow connectionWorkflow = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionWorkflowGuid ) );
             if ( connectionWorkflow != null )
             {
                 wpWorkflowType.SetValue( connectionWorkflow.WorkflowTypeId );
                 ddlTriggerType.SelectedValue = connectionWorkflow.TriggerType.ConvertToInt().ToString();
+                rblAppliesToAgeClassification.SetValue( ( (int)connectionWorkflow.AppliesToAgeClassification ).ToString() );
+                dvpIncludeDataView.SetValue( connectionWorkflow.IncludeDataViewId );
+                dvpExcludeDataView.SetValue( connectionWorkflow.ExcludeDataViewId );
             }
-
+            else
+            {
+                rblAppliesToAgeClassification.SetValue( ( (int)AppliesToAgeClassification.All ).ToString() );
+                dvpIncludeDataView.SetValue( null );
+                dvpExcludeDataView.SetValue( null );
+            }
 
             hfAddConnectionWorkflowGuid.Value = connectionWorkflowGuid.ToString();
             ShowDialog( "ConnectionWorkflows", true );
@@ -1834,6 +1860,20 @@ namespace RockWeb.Blocks.Connection
                 }
 
                 /*
+                    7/25/2025 - MSE
+
+                    Age Classification and Include/Exclude Data View filters are only visible to set when the workflow trigger type is "Manual".
+
+                    These filters are only evaluated for manual workflows in ConnectionRequestBoard.ascx.cs.
+                */
+
+                bool isManualTrigger = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() == ConnectionWorkflowTriggerType.Manual;
+                rblConnectionStatuses.Visible = isManualTrigger;
+                rblAppliesToAgeClassification.Visible = isManualTrigger;
+                dvpIncludeDataView.Visible = isManualTrigger;
+                dvpExcludeDataView.Visible = isManualTrigger;
+
+                /*
                     28/01/2022 - KA
 
                     The connectionWorkflow.QualifierValue value is formatted as |PrimaryQualifier|SecondaryQualifier|, splitDelimitedValues()
@@ -1841,9 +1881,7 @@ namespace RockWeb.Blocks.Connection
                     the first value is picked as the PrimaryQualifier since it is on the right of the first |, if the values are greater than 2
                     then the SecondaryQualifier is the third value since it is on the right side of the second |
                 */
-
-                rblConnectionStatuses.Visible = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() == ConnectionWorkflowTriggerType.Manual;
-
+                
                 if ( connectionWorkflow != null )
                 {
                     if ( connectionWorkflow.TriggerType == ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() )
@@ -1979,7 +2017,7 @@ namespace RockWeb.Blocks.Connection
             if ( connectionType == null )
             {
                 connectionType = new ConnectionType();
-                connectionType.IconCssClass = "fa fa-compress";
+                connectionType.IconCssClass = "ti ti-minimize";
             }
             if ( connectionType.Id == 0 )
             {

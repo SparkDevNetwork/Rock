@@ -530,7 +530,7 @@ namespace RockWeb.Blocks.Groups
                         {
                             string messagesFormat = @" <p>
                                                 <div class='alert alert-warning fade in'>Some groups could not be mapped.
-                                                    <button type='button' class='close' data-dismiss='alert' aria-hidden='true'><i class='fa fa-times'></i></button>
+                                                    <button type='button' class='close' data-dismiss='alert' aria-hidden='true'><i class='ti ti-x'></i></button>
                                                     <small><a data-toggle='collapse' data-parent='#accordion' href='#map-error-details'>Show Details</a></small>
                                                     <div id='map-error-details' class='collapse'>
                                                         <p class='margin-t-sm'>

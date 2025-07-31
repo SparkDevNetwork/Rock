@@ -22,6 +22,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Logging;
 
 using Rock.Attribute;
@@ -174,7 +175,7 @@ namespace Rock.Jobs
                 using ( var chatHelper = new ChatHelper( rockContext ) )
                 {
                     var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 3600;
-                    rockContext.Database.CommandTimeout = commandTimeout;
+                    rockContext.Database.SetCommandTimeout( commandTimeout );
 
                     // The chat helper methods that will be called by this job have been designed to never throw an
                     // unhandled exception, but will - instead - return an object that will contain any exceptions
@@ -829,7 +830,7 @@ namespace Rock.Jobs
                 var syncCommand = new SyncChatChannelToRockCommand( ChatSyncType.Create )
                 {
                     AttemptLimit = 1,
-                    GroupTypeId = groupTypeId,
+                    GroupTypeId = groupTypeId.Value,
                     ChatChannelKey = chatChannel.Key,
                     GroupName = chatChannel.Name,
                     IsActive = chatChannel.IsActive
@@ -1392,12 +1393,12 @@ namespace Rock.Jobs
             if ( exceptions.Any() )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. {enableErrorLogsMessage}" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-danger'></i> Some tasks have errors. View Rock's Exception List for more details. {enableErrorLogsMessage}" );
             }
             else if ( anyWarnings )
             {
                 jobSummaryBuilder.AppendLine( string.Empty );
-                jobSummaryBuilder.AppendLine( $"<i class='fa fa-circle text-warning'></i> Some tasks completed with warnings. {enableWarningLogsMessage}" );
+                jobSummaryBuilder.AppendLine( $"<i class='ti ti-circle text-warning'></i> Some tasks completed with warnings. {enableWarningLogsMessage}" );
             }
 
             this.Result = jobSummaryBuilder.ToString();
@@ -1437,18 +1438,18 @@ namespace Rock.Jobs
 
             if ( result.HasException )
             {
-                formattedResultSb.Append( $"<i class='fa fa-circle text-danger'></i> {title}" );
+                formattedResultSb.Append( $"<i class='ti ti-circle text-danger'></i> {title}" );
             }
             else if ( result.IsWarning )
             {
-                formattedResultSb.Append( $"<i class='fa fa-circle text-warning'></i> {title}" );
+                formattedResultSb.Append( $"<i class='ti ti-circle text-warning'></i> {title}" );
             }
             else
             {
-                formattedResultSb.Append( $"<i class='fa fa-circle text-success'></i> {title}" );
+                formattedResultSb.Append( $"<i class='ti ti-circle text-success'></i> {title}" );
             }
 
-            var iconSpacer = "<span style='visibility:hidden'><i class='fa fa-circle'></i></span>";
+            var iconSpacer = "<span style='visibility:hidden'><i class='ti ti-circle'></i></span>";
             foreach ( var detail in result.Details?.Where( d => d.IsNotNullOrWhiteSpace() ) )
             {
                 formattedResultSb.AppendLine( string.Empty );

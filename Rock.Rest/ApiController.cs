@@ -618,7 +618,13 @@ namespace Rock.Rest
             }
 
             // since DataViews can be secured at the DataView or Category level, specifically check for CanView
-            CheckCanView( dataView, GetPerson() );
+            // Note: We can't use CheckCanView because that will end up loading
+            // an instance of T with the Id of the DataView. Meaning, it might load
+            // a Group with the same Id number and then check security on that.
+            if ( !dataView.IsAuthorized( Rock.Security.Authorization.VIEW, GetPerson() ) )
+            {
+                throw new HttpResponseException( HttpStatusCode.Unauthorized );
+            }
         }
 
         /// <summary>

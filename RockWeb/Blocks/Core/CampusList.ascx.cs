@@ -36,12 +36,20 @@ namespace RockWeb.Blocks.Core
     [LinkedPage( "Detail Page",
         Key = AttributeKey.DetailPage )]
 
+    [BooleanField( "Show Campus Phone Number",
+        Key = AttributeKey.ShowCampusPhoneNumber,
+        Description = "When enabled, the Campus Phone Number column will be displayed.",
+        DefaultBooleanValue = false,
+        Order = 1
+         )]
+
     [Rock.SystemGuid.BlockTypeGuid( "C93D614A-6EBC-49A1-A80D-F3677D2B86A0" )]
     public partial class Campuses : RockBlock, ICustomGridColumns
     {
         public static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string ShowCampusPhoneNumber = "ShowCampusPhoneNumber";
         }
 
         #region fields
@@ -74,6 +82,13 @@ namespace RockWeb.Blocks.Core
             bool canAddEditDelete = IsUserAuthorized( Authorization.EDIT );
             gCampuses.Actions.ShowAdd = canAddEditDelete;
             gCampuses.IsDeleteEnabled = canAddEditDelete;
+
+            if ( !GetAttributeValue( AttributeKey.ShowCampusPhoneNumber ).AsBoolean() )
+            {
+                var phoneColumn = gCampuses.Columns.OfType<RockBoundField>()
+                    .FirstOrDefault( c => c.DataField == "PhoneNumber" );
+                phoneColumn.Visible = false;
+            }
 
             BindAttributes();
             AddDynamicControls();

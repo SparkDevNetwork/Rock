@@ -195,6 +195,7 @@
                                 <Rock:Grid ID="gConnectionOpportunityWorkflows" runat="server" AllowPaging="false" DisplayType="Light" RowItemText="Workflow"
                                     ShowConfirmDeleteDialog="false" OnRowDataBound="gConnectionOpportunityWorkflows_RowDataBound">
                                     <Columns>
+                                        <Rock:ReorderField />
                                         <Rock:RockBoundField DataField="WorkflowTypeName" HeaderText="Workflow Type" HtmlEncode="false" />
                                         <Rock:RockBoundField DataField="Trigger" HeaderText="Trigger" />
                                         <Rock:EditField OnClick="gConnectionOpportunityWorkflows_Edit" />
@@ -270,6 +271,18 @@
                         <Rock:RockDropDownList ID="ddlSecondaryQualifier" runat="server" Visible="false" ValidationGroup="WorkflowDetails" />
                     </div>
                     <div class="col-md-6">
+                    </div>
+                </div>
+
+                <div class="row">
+                    <div class="col-md-4">
+                        <Rock:RockRadioButtonList ID="rblAppliesToAgeClassification" runat="server" Label="Applies to Age Classification" RepeatDirection="Horizontal" Help="Restrict this workflow to requests for people of a certain age classification (All, Adults, Children)." />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:DataViewItemPicker ID="dvpIncludeDataView" runat="server" Label="Include Data View Filter" Help="Only show this workflow for requests where the person is included in this Data View. Leave blank for no filter." />
+                    </div>
+                    <div class="col-md-4">
+                        <Rock:DataViewItemPicker ID="dvpExcludeDataView" runat="server" Label="Exclude Data View Filter" Help="Hide this workflow for requests where the person is included in this Data View. Leave blank for no filter." />
                     </div>
                 </div>
 

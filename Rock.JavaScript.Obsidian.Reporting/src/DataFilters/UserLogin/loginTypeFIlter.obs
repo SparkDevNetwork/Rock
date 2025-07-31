@@ -20,7 +20,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const loginTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.loginTypeOptions) ?? [];
+    const loginTypeOptions = safeParseJson<ListItemBag[]>(props.options.loginTypeOptions) ?? [];
     const loginType = ref<Guid>(props.modelValue.loginType ?? "");
 
     watch(loginType, () => {

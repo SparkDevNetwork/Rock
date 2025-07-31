@@ -52,7 +52,7 @@ namespace Rock.Event.InteractiveExperiences.ActionTypeComponents
         #region Properties
 
         /// <inheritdoc/>
-        public override string IconCssClass => "fa fa-comment-o";
+        public override string IconCssClass => "ti ti-message";
 
         #endregion
 

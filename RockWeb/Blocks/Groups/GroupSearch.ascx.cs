@@ -153,7 +153,7 @@ namespace RockWeb.Blocks.Groups
 
             if ( !string.IsNullOrWhiteSpace( prefix ) )
             {
-                prefix += " <i class='fa fa-angle-right'></i> ";
+                prefix += " <i class='ti ti-chevron-right'></i> ";
             }
 
             var mergeFields = new Dictionary<string, object>( _commonMergeFields )

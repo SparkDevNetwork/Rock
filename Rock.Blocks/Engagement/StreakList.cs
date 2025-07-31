@@ -38,7 +38,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Streak List" )]
     [Category( "Streaks" )]
     [Description( "Lists all the people enrolled in a streak type." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     //[SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

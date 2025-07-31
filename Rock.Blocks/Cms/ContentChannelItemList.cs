@@ -44,7 +44,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Content Item List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of content channel items." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [ContextAware]

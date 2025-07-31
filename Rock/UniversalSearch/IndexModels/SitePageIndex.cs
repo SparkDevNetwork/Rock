@@ -110,12 +110,12 @@ namespace Rock.UniversalSearch.IndexModels
         {
             get
             {
-                return "fa fa-desktop";
+                return "ti ti-device-desktop";
             }
         }
 
         /// <summary>
-        /// Loads the by model.
+        /// Loads the indexable document from the Site.
         /// </summary>
         /// <param name="site">The site.</param>
         /// <returns></returns>

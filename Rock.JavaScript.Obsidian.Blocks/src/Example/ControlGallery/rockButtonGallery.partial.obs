@@ -2,7 +2,7 @@
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
         <RockButton :btnSize="btnSize" :btnType="btnType" @click="onClick" :isLoading="isLoading" :autoLoading="autoLoading" :autoDisable="autoDisable" :loadingText="loadingText" :isSquare="isSquare">
-            <i class="fa fa-cross" v-if="isSquare"></i>
+            <i class="ti ti-cross" v-if="isSquare"></i>
             <template v-else>Click Here to Fire Async Operation</template>
         </RockButton>
 

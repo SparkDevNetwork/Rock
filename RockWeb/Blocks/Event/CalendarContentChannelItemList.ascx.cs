@@ -350,7 +350,7 @@ namespace RockWeb.Blocks.Event
                 {
                     bool canEdit = UserCanEdit || contentChannel.IsAuthorized( Authorization.EDIT, CurrentPerson );
 
-                    string iconClass = "fa fa-bullhorn";
+                    string iconClass = "ti ti-speakerphone";
                     if ( !string.IsNullOrWhiteSpace( contentChannel.IconCssClass ) )
                     {
                         iconClass = contentChannel.IconCssClass;
@@ -391,7 +391,7 @@ namespace RockWeb.Blocks.Event
                         lbtnLinkExisting.CommandArgument = contentChannel.Id.ToString();
                         lbtnLinkExisting.CssClass = "btn btn-grid-action btn-default btn-sm";
                         lbtnLinkExisting.Click += lbtnLinkExisting_Click;
-                        lbtnLinkExisting.Text = "<i class='fa fa-link'></i>";
+                        lbtnLinkExisting.Text = "<i class='ti ti-link'></i>";
 
                         gItems.Actions.AddCustomActionControl( lbtnLinkExisting );
                     }

@@ -27,7 +27,7 @@
 
     const allowedPickerModes = (LocationPickerMode.Named | LocationPickerMode.Polygon) as LocationPickerModeFlag;
     const location = ref<ListItemBag | string | undefined>(safeParseJson(props.modelValue.location));
-    const locationTypeOptions = ref<ListItemBag[]>(safeParseJson(props.modelValue.locationTypeOptions) ?? []);
+    const locationTypeOptions = safeParseJson<ListItemBag[]>(props.options.locationTypeOptions) ?? [];
     const locationTypeGuid = ref<string>(props.modelValue.locationTypeGuid ?? "");
 
     watch([location, locationTypeGuid], () => {

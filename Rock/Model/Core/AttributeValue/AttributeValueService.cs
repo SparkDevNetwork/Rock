@@ -17,6 +17,9 @@
 
 using System.Collections.Generic;
 using System.Linq;
+
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 
 namespace Rock.Model
@@ -116,7 +119,7 @@ namespace Rock.Model
 
         /// <summary>
         /// Updates all AttributeValues to move date values from the [Value] field to the [ValueAsDateTime] field.  Temporarily adjusts the
-        /// RockContext.Database.CommandTimeout property to ensure that the command completes without a timeout.
+        /// Database CommandTimeout value to ensure that the command completes without a timeout.
         /// </summary>
         /// <param name="rockContext">The <see cref="RockContext"/>.</param>
         /// <param name="commandTimeout">The CommandTimeout property to set (default 120).</param>
@@ -147,14 +150,14 @@ namespace Rock.Model
             ";
 
             // Store current CommandTimeout setting and change it to 120 seconds.
-            var currentTimeoutSetting = rockContext.Database.CommandTimeout;
-            rockContext.Database.CommandTimeout = commandTimeout;
+            var currentTimeoutSetting = rockContext.Database.GetCommandTimeout();
+            rockContext.Database.SetCommandTimeout( commandTimeout );
 
             // Execute SQL command.
             var recordsAffected = rockContext.Database.ExecuteSqlCommand( updateSql );
 
             // Return CommandTimeout to previous setting.
-            rockContext.Database.CommandTimeout = currentTimeoutSetting;
+            rockContext.Database.SetCommandTimeout( currentTimeoutSetting );
 
             return recordsAffected;
         }

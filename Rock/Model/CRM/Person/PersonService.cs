@@ -25,7 +25,6 @@ using System.Text;
 using System.Web.UI.WebControls;
 
 using Rock;
-using Rock.Attribute;
 using Rock.BulkExport;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
@@ -2365,6 +2364,17 @@ namespace Rock.Model
         }
 
         /// <summary>
+        /// Gets any previous last names for this person sorted alphabetically by LastName
+        /// </summary>
+        /// <param name="personQuery">The person query.</param>
+        /// <returns></returns>
+        public IOrderedQueryable<PersonPreviousName> GetPreviousNames( IQueryable<Person> personQuery )
+        {
+            return new PersonPreviousNameService( this.Context as RockContext ).Queryable()
+                .Where( m => personQuery.Contains( m.PersonAlias.Person ) ).OrderBy( a => a.LastName );
+        }
+
+        /// <summary>
         /// Gets any search keys for this person
         /// </summary>
         /// <param name="personId">The person identifier.</param>
@@ -3018,7 +3028,7 @@ namespace Rock.Model
             //// 1) Both Persons are adults in the same family (GroupType = Family, GroupRole = Adult, and in same Group)
             //// 2) Opposite Gender as Person, if Gender of both Persons is known. This condition won't hold true if the church sets the Bible Strict Spouse setting to false.
             //// 3) Both Persons are Married
-            int marriedDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            var marriedDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
             var isBibleStrictSpouse = Rock.Web.SystemSettings.GetValue( SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
 
             if ( person.MaritalStatusValueId != marriedDefinedValueId )
@@ -3026,8 +3036,8 @@ namespace Rock.Model
                 return default( TResult );
             }
 
-            Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
-            int adultRoleId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
+            var adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+            var adultRoleId = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY ).Roles.First( a => a.Guid == adultGuid ).Id;
 
             // Businesses don't have a family role, so check for null before trying to get the Id.
             var familyRole = GetFamilyRole( person );
@@ -3047,6 +3057,68 @@ namespace Rock.Model
                 .ThenBy( m => m.PersonId )
                 .Select( selector )
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets spouses for a list of people, indexed by the person identifier.
+        /// </summary>
+        /// <param name="personQuery">The person query.</param>
+        /// <returns></returns>
+        public Dictionary<int, Person> GetSpouses( IQueryable<Person> personQuery )
+        {
+            // Note this logic is duplicated in SpouseNameSelect and SpouseTransform.
+            //// Spouse is determined if all these conditions are met
+            //// 1) Both Persons are adults in the same family (GroupType = Family, GroupRole = Adult, and in same Group)
+            //// 2) Opposite Gender as Person, if Gender of both Persons is known. This condition won't hold true if the church sets the Bible Strict Spouse setting to false.
+            //// 3) Both Persons are Married
+
+            var marriedDefinedValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid() ).Id;
+            var isBibleStrictSpouse = Rock.Web.SystemSettings.GetValue( SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
+
+            Guid adultGuid = new Guid( Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT );
+            var familyGroupType = GroupTypeCache.Get( Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY );
+            var adultRoleId = familyGroupType.Roles.First( r => r.Guid == adultGuid ).Id;
+            var groupTypeFamilyId = familyGroupType.Id;
+
+            // Get the queryable person IDs from the incoming personQuery
+            var marriedPersonIds = personQuery
+                .Where( p => p.MaritalStatusValueId == marriedDefinedValueId )
+                .Select( p => p.Id );
+
+            // GroupMembers of married people (adult in family group)
+            var marriedGroupMembers = new GroupMemberService( this.Context as RockContext ).Queryable().AsNoTracking()
+                .Where( gm =>
+                    marriedPersonIds.Contains( gm.PersonId ) &&
+                    gm.Group.GroupTypeId == groupTypeFamilyId &&
+                    gm.GroupRoleId == adultRoleId );
+
+            var spousesQuery = new GroupMemberService( this.Context as RockContext ).Queryable().AsNoTracking()
+                .Where( gm =>
+                    gm.Group.GroupTypeId == groupTypeFamilyId &&
+                    gm.GroupRoleId == adultRoleId )
+                .Join( marriedGroupMembers,
+                    spouse => spouse.GroupId,
+                    married => married.GroupId,
+                    ( spouse, married ) => new { MatchedPerson = married.Person, Spouse = spouse } )
+                .Where( m => m.Spouse.Person.MaritalStatusValueId == marriedDefinedValueId )
+                .Where( m =>
+                    !isBibleStrictSpouse ||
+                    m.MatchedPerson.Gender != m.Spouse.Person.Gender ||
+                    m.MatchedPerson.Gender == Gender.Unknown ||
+                    m.Spouse.Person.Gender == Gender.Unknown )
+                .OrderBy( m => m.Spouse.GroupOrder ?? int.MaxValue )
+                .ThenBy( m => Math.Abs( DbFunctions.DiffDays(
+                    m.Spouse.Person.BirthDate ?? new DateTime( 1, 1, 1 ),
+                    m.MatchedPerson.BirthDate ?? new DateTime( 1, 1, 1 )
+                ) ?? 0 ) )
+                .ThenBy( m => m.Spouse.PersonId );
+
+            var spouses = spousesQuery
+                .GroupBy( m => m.MatchedPerson.Id )
+                .Select( g => g.FirstOrDefault() ) // take best match for each person
+                .ToDictionary( m => m.MatchedPerson.Id, m => m.Spouse.Person );
+
+            return spouses;
         }
 
         /// <summary>
@@ -5404,6 +5476,59 @@ AND GroupTypeId = ${familyGroupType.Id}
             return Queryable()
                 .Where( p => p.Aliases.Any( a => a.ForeignKey == chatUserKey ) )
                 .FirstOrDefault();
+        }
+
+        /// <summary>
+        /// Gets a queryable collection of <see cref="Person"/> entities whose associated <see cref="ChatUser.Key"/>
+        /// values match those provided.
+        /// </summary>
+        /// <param name="chatUserKeys">A set of <see cref="ChatUser.Key"/> values to match against <see cref="Person"/>records.</param>
+        /// <param name="personQueryOptions">Optional filtering options for the person query.</param>
+        /// <returns>
+        /// An <see cref="IQueryable{Person}"/> of people whose associated chat user keys match those provided.
+        /// </returns>
+        /// <remarks>
+        /// Only the first 500 <paramref name="chatUserKeys"/> will be considered in order to prevent SQL query
+        /// performance degradation. If more than 500 keys need to be evaluated, the caller is responsible for batching
+        /// the input and invoking this method multiple times.
+        /// </remarks>
+        internal IQueryable<Person> GetPersonByChatUserKeysQuery( HashSet<string> chatUserKeys, PersonQueryOptions personQueryOptions = null )
+        {
+            var chatAliasGuids = chatUserKeys
+                ?.Take( 500 )
+                .Select( k => ChatHelper.GetPersonAliasGuid( k ) )
+                .Where( g => g.HasValue )
+                .Select( g => g.Value )
+                .ToHashSet();
+
+            if ( chatAliasGuids?.Any() != true )
+            {
+                return Enumerable.Empty<Person>().AsQueryable();
+            }
+
+            var rockContext = this.Context as RockContext;
+            var chatAliasQry = new PersonAliasService( rockContext ).Queryable();
+
+            if ( chatAliasGuids.Count == 1 )
+            {
+                // Most performant: limit queries to just this person.
+                var firstChatAliasGuid = chatAliasGuids.First();
+                chatAliasQry = chatAliasQry.Where( pa => pa.Guid.Equals( firstChatAliasGuid ) );
+            }
+            else if ( chatAliasGuids.Count < 1000 )
+            {
+                // Not ideal, but we're limited to a SQL `WHERE...IN` clause.
+                chatAliasQry = chatAliasQry.Where( pa => chatAliasGuids.Contains( pa.Guid ) );
+            }
+
+            return Queryable( personQueryOptions )
+                .Join(
+                    chatAliasQry,
+                    p => p.Id,
+                    pa => pa.PersonId,
+                    ( p, pa ) => p
+                )
+                .Distinct();
         }
     }
 }

@@ -174,7 +174,7 @@ namespace RockWeb.Blocks.WorkFlow
 
             if ( !string.IsNullOrWhiteSpace( category.IconCssClass ) )
             {
-                headingTitle.Controls.Add( new LiteralControl( string.Format( "<i class='{0} fa-fw'></i> ", category.IconCssClass ) ) );
+                headingTitle.Controls.Add( new LiteralControl( string.Format( "<i class='{0} ti-fw'></i> ", category.IconCssClass ) ) );
             }
             headingTitle.Controls.Add( new LiteralControl( category.Name ) );
 
@@ -211,7 +211,7 @@ namespace RockWeb.Blocks.WorkFlow
 
                     if ( !string.IsNullOrWhiteSpace( workflowType.IconCssClass ) )
                     {
-                        aNew.Controls.Add( new LiteralControl( string.Format( "<i class='{0} fa-fw'></i> ", workflowType.IconCssClass ) ) );
+                        aNew.Controls.Add( new LiteralControl( string.Format( "<i class='{0} ti-fw'></i> ", workflowType.IconCssClass ) ) );
                     }
 
                     aNew.Controls.Add( new LiteralControl( workflowType.Name ) );
@@ -225,7 +225,7 @@ namespace RockWeb.Blocks.WorkFlow
                         aManage.Attributes.Add( "href", LinkedPageUrl( "ManagePage", qryParms ) );
                         var iManageIcon = new HtmlGenericControl( "i" );
                         aManage.Controls.Add( iManageIcon );
-                        iManageIcon.AddCssClass( "fa fa-list" );
+                        iManageIcon.AddCssClass( "ti ti-list" );
                         li.Controls.Add( aManage );
                     }
                 }

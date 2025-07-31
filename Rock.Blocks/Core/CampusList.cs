@@ -38,12 +38,23 @@ namespace Rock.Blocks.Core
     [DisplayName( "Campus List" )]
     [Category( "Core" )]
     [Description( "Displays a list of campuses." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
+
+    #region Block Attributes
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the campus details.",
         Key = AttributeKey.DetailPage )]
+
+    [BooleanField( "Show Campus Phone Number",
+        Key = AttributeKey.ShowCampusPhoneNumber,
+        Description = "When enabled, the Campus Phone Number column will be displayed.",
+        DefaultBooleanValue = false,
+        Order = 1
+         )]
+
+    #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "a21a13c9-9429-4ba1-85b2-d2fa4e3d5081" )]
     [Rock.SystemGuid.BlockTypeGuid( "52df00e5-bc19-43f2-8533-a386db53c74f" )]
@@ -55,6 +66,7 @@ namespace Rock.Blocks.Core
         private static class AttributeKey
         {
             public const string DetailPage = "DetailPage";
+            public const string ShowCampusPhoneNumber = "ShowCampusPhoneNumber";
         }
 
         private static class NavigationUrlKey
@@ -89,6 +101,8 @@ namespace Rock.Blocks.Core
         private CampusListOptionsBag GetBoxOptions()
         {
             var options = new CampusListOptionsBag();
+
+            options.ShowCampusPhoneNumber = GetAttributeValue( AttributeKey.ShowCampusPhoneNumber ).AsBoolean();
 
             return options;
         }
@@ -136,6 +150,7 @@ namespace Rock.Blocks.Core
                 .AddTextField( "campusType", a => a.CampusTypeValue?.Value )
                 .AddTextField( "campusStatus", a => a.CampusStatusValue?.Value )
                 .AddTextField( "campusStatusGuid", a => a.CampusStatusValue?.Guid.ToString().ToUpper() )
+                .AddField( "averageWeekendAttendance", a => a.AverageWeekendAttendance )
                 .AddField( "isActive", a => a.IsActive )
                 .AddField( "isSystem", a => a.IsSystem )
                 .AddField( "Id", a => a.Id )

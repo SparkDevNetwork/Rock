@@ -18,7 +18,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const contentChannelOptions = safeParseJson<ListItemBag[]>(props.modelValue.contentChannelOptions);
+    const contentChannelOptions = safeParseJson<ListItemBag[]>(props.options.contentChannelOptions);
 
     const contentChannel = ref(props.modelValue.contentChannel ?? "");
 

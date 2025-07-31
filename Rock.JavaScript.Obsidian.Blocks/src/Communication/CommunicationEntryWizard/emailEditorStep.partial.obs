@@ -16,7 +16,7 @@
                                         labelType="success">
                             The communication has been saved.
                             <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSaveSuccessMessageShown = false">
-                                <i class="fa fa-times" aria-hidden="true"></i>
+                                <i class="ti ti-x" aria-hidden="true"></i>
                             </button>
                         </HighlightLabel>
 
@@ -26,12 +26,12 @@
                                         @dismiss="isSendTestErrorMessageShown = false">
                             <div v-html="sendTestErrorMessage" style="font-weight: var(--font-weight-regular)"></div>
                             <button type="button" class="close btn-dismiss-alert" aria-label="Hide This Alert" @click.prevent="isSendTestErrorMessageShown = false">
-                                <i class="fa fa-times" aria-hidden="true"></i>
+                                <i class="ti ti-x" aria-hidden="true"></i>
                             </button>
                         </HighlightLabel>
 
                         <HighlightLabel labelType="info">
-                            <template v-if="isFetchingRecipients"><i class="fas fa-spinner fa-pulse"></i> Recipients</template>
+                            <template v-if="isFetchingRecipients"><i class="ti ti-rotate-2 ti-pulse"></i> Recipients</template>
                             <template v-else>{{ recipientsLabel }}</template>
                         </HighlightLabel>
                     </div>
@@ -45,7 +45,7 @@
                     <i ref="previewElement"
                        data-toggle="tooltip"
                        title="Preview"
-                       class="fa fa-eye"></i>
+                       class="ti ti-eye"></i>
                 </span>
 
                 <span class="action panel-action-save clickable"
@@ -54,7 +54,7 @@
                     <i ref="saveElement"
                        data-toggle="tooltip"
                        title="Save Draft"
-                       class="fa fa-save"></i>
+                       class="ti ti-device-floppy"></i>
                 </span>
             </template>
 
@@ -87,7 +87,7 @@
             <template #footerSecondaryActions>
                 <RockButton :disabled="isDisabled"
                             @click="isSendTestModalShown = true">
-                    <i class="fa fa-paper-plane-o"></i> Send Test
+                    <i class="ti ti-send"></i> Send Test
                 </RockButton>
 
                 <RockButton v-shortcut="!areNavigationShortcutsDisabled && 'ArrowRight'"

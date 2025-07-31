@@ -15,7 +15,7 @@ namespace Rock.Blocks.Engagement
     [DisplayName( "Streak Map Editor" )]
     [Category( "Engagement" )]
     [Description( "Allows editing a streak occurrence, engagement, or exclusion map." )]
-    [IconCssClass( "fa fa-calendar-check" )]
+    [IconCssClass( "ti ti-calendar-check" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

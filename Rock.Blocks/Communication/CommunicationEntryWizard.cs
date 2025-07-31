@@ -161,7 +161,14 @@ namespace Rock.Blocks.Communication
         DefaultIntegerValue = 7,
         Order = 15 )]
 
-   [BooleanField( "Disable Navigation Shortcuts",
+    [BooleanField( "Allow Unrestricted Uploads",
+        Description = "If true, anyone with access to send messages can upload images or files. Otherwise, it'll use the permissions set for Communication Attachment binary file type.",
+        IsRequired = false,
+        DefaultValue = "True",
+        Key = AttributeKey.AllowUnrestrictedUploads,
+        Order = 11 )]
+
+    [BooleanField( "Disable Navigation Shortcuts",
        Key = AttributeKey.DisableNavigationShortcuts,
        Description = "When enabled, the block will turn off the keyboard shortcuts (arrow keys) used to navigate the steps.",
        DefaultBooleanValue = false,
@@ -198,6 +205,7 @@ namespace Rock.Blocks.Communication
             public const string PersonalizationSegmentCategory = "PersonalizationSegmentCategory";
             public const string MinimumShortLinkTokenLength = "MinimumShortLinkTokenLength";
             public const string DisableNavigationShortcuts = "DisableNavigationShortcuts";
+            public const string AllowUnrestrictedUploads = "AllowUnrestrictedUploads";
         }
 
         /// <summary>
@@ -917,7 +925,7 @@ namespace Rock.Blocks.Communication
                 // Get directly from the database just in case.
                 pageId = new PageService( this.RockContext ).GetId( pageGuid );
 
-                if ( pageId.HasValue ) 
+                if ( pageId.HasValue )
                 {
                     return ActionOk( pageId.Value );
                 }
@@ -1041,6 +1049,13 @@ namespace Rock.Blocks.Communication
             securityGrant.AddRule( new AssetAndFileManagerSecurityGrantRule( Authorization.DELETE ) );
             securityGrant.AddRule( new EmailEditorSecurityGrantRule() );
 
+            if ( GetAttributeValue( AttributeKey.AllowUnrestrictedUploads ).AsBoolean() )
+            {
+                // Enable uploading communication attachments without the normal permission restrictions
+                BinaryFileType binaryFileType = new BinaryFileTypeService( new RockContext() ).Get( Rock.SystemGuid.BinaryFiletype.COMMUNICATION_ATTACHMENT.AsGuid() );
+                securityGrant.AddRule( new EntitySecurityGrantRule( binaryFileType.TypeId, binaryFileType.Id, Authorization.EDIT ) );
+            }
+
             return securityGrant.ToToken();
         }
 
@@ -1122,7 +1137,7 @@ namespace Rock.Blocks.Communication
                     communicationTemplateInfo = communicationTemplateInfoList.FirstOrDefault( d => d.CommunicationTemplate.Guid == communicationTemplateGuidPersonPreference );
                 }
             }
-            
+
             // NOTE: Only set the selected template if the user has auth for this template
             // and the template supports the Email Wizard
             if ( communicationTemplateInfo?.CommunicationTemplate != null
@@ -1499,7 +1514,7 @@ namespace Rock.Blocks.Communication
         {
             return ( CommunicationEntryWizardPushOpenAction ) pushOpenAction;
         }
-        
+
         /// <summary>
         /// Converts a <see cref="CommunicationEntryWizardPushOpenAction"/> to a <see cref="PushOpenAction"/>.
         /// </summary>
@@ -1509,7 +1524,7 @@ namespace Rock.Blocks.Communication
         {
             return ( PushOpenAction ) pushOpenAction;
         }
-        
+
         /// <summary>
         /// Converts a <see cref="CommunicationType"/> to a <see cref="CommunicationEntryWizardCommunicationType"/>.
         /// </summary>
@@ -1519,7 +1534,7 @@ namespace Rock.Blocks.Communication
         {
             return ( CommunicationEntryWizardCommunicationType ) communicationType;
         }
-        
+
         /// <summary>
         /// Converts a <see cref="CommunicationEntryWizardCommunicationType"/> to a <see cref="CommunicationType"/>.
         /// </summary>
@@ -1558,7 +1573,7 @@ namespace Rock.Blocks.Communication
                     return SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid();
             }
         }
- 
+
         /// <summary>
         /// Retrieves a list of <see cref="CommunicationEntryWizardTemplateInfo"/> objects representing active communication templates.
         /// Allows for optional filtering at both the query and post-query levels.
@@ -1635,7 +1650,7 @@ namespace Rock.Blocks.Communication
 
             return bags;
         }
-        
+
         /// <summary>
         /// Converts a <see cref="CommunicationEntryWizardTemplateInfo"/> into a <see cref="CommunicationEntryWizardCommunicationTemplateListItemBag"/>.
         /// </summary>
@@ -1701,12 +1716,12 @@ namespace Rock.Blocks.Communication
                     return ConvertRecipientInfoListToBagList( recipients );
                 }
                 else
-                { 
+                {
                     return new List<CommunicationEntryWizardRecipientBag>();
                 }
             }
             else
-            { 
+            {
                 return new List<CommunicationEntryWizardRecipientBag>();
             }
         }
@@ -1749,10 +1764,10 @@ namespace Rock.Blocks.Communication
         /// <returns>A dictionary mapping person IDs to their primary mobile phone numbers.</returns>
         private Dictionary<int, string> FindMobilePhoneNumbers( RockContext rockContext, IQueryable<PersonAlias> personAliasQuery )
         {
-            var mobilePhoneDefinedValueId = DefinedValueCache.GetId(SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid());
+            var mobilePhoneDefinedValueId = DefinedValueCache.GetId( SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
             var personIdQuery = personAliasQuery.Select( pa => pa.PersonId );
 
-            return new PhoneNumberService(rockContext)
+            return new PhoneNumberService( rockContext )
                 .Queryable()
                 .AsNoTracking()
                 .Where( phone =>
@@ -1778,7 +1793,8 @@ namespace Rock.Blocks.Communication
         /// <param name="personAliasIds">A list of person alias IDs to check for notification-enabled devices.</param>
         /// <returns>A hash set containing person alias IDs with notification-enabled personal devices.</returns>
         private HashSet<int> FindPushEnabledDevices( RockContext rockContext, IQueryable<PersonAlias> personAliasQuery )
-        {;
+        {
+            ;
             var personAliasIdQuery = personAliasQuery.Select( pa => pa.Id );
 
             return new PersonalDeviceService( rockContext )
@@ -1951,7 +1967,7 @@ namespace Rock.Blocks.Communication
             return bag.Validate( "Request" ).IsNotNull( out validationResult )
                 && ( !bag.FutureSendDateTime.HasValue || bag.FutureSendDateTime.Value.Validate( "Send Date Time" ).IsNowOrFuture( out validationResult ) );
         }
-        
+
         /// <summary>
         /// Validates a request to save a metrics reminder.
         /// </summary>
@@ -1999,7 +2015,7 @@ namespace Rock.Blocks.Communication
         /// <returns><see langword="true"/> if the communication should be hidden; otherwise, <see langword="false"/>.</returns>
         private bool IsCommunicationHidden( Model.Communication communication, Person currentPerson )
         {
-            if (communication == null)
+            if ( communication == null )
             {
                 // Temporarily initialize a new communication for authorization checks.
                 communication = new Model.Communication
@@ -2858,10 +2874,10 @@ namespace Rock.Blocks.Communication
                 communicationInfo.CommunicationListGroupGuid = bag.CommunicationListGroupGuid.Value;
                 communicationInfo.PersonalizationSegmentIds = bag.PersonalizationSegmentIds;
                 communicationInfo.CommunicationGroupSegmentCriteria = bag.SegmentCriteria;
-            }            
+            }
 
             communicationInfo.CommunicationTemplateGuid = bag.CommunicationTemplateGuid;
-            
+
             communicationInfo.ExcludeDuplicateRecipientAddress = bag.ExcludeDuplicateRecipientAddress;
 
             var emailAttachmentBinaryFileGuids = bag.EmailAttachmentBinaryFiles
@@ -2975,7 +2991,7 @@ namespace Rock.Blocks.Communication
 
             using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Entry Wizard > Update Communication Recipients" ) )
             {
-                progressReporter?.UpdateTaskProgress(new TaskActivityProgressUpdateBag { CompletionPercentage = 3m, Message = "Initializing recipient update..." });
+                progressReporter?.UpdateTaskProgress( new TaskActivityProgressUpdateBag { CompletionPercentage = 3m, Message = "Initializing recipient update..." } );
 
                 var updatedCommunicationRecipients = GetUpdatedCommunicationRecipients( rockContext, bag );
 
@@ -3013,7 +3029,7 @@ namespace Rock.Blocks.Communication
                 {
                     var recipients = GetCommunicationRecipientDetailsForList( rockContext, listId.Value, bag.SegmentCriteria, bag.PersonalizationSegmentIds );
                     var groupMemberMap = recipients.ToDictionary( r => r.PrimaryAliasId, r => r.GroupMemberCommunicationPreference );
-                    
+
                     var personAliases = new PersonAliasService( rockContext )
                         .GetByIds( recipients.Select( r => r.PrimaryAliasId ).ToList() )
                         .Include( pa => pa.Person )
@@ -3222,7 +3238,7 @@ namespace Rock.Blocks.Communication
             /// Gets or sets the binary file GUID of the push notification image, if applicable.
             /// </summary>
             public Guid? PushImageBinaryFileGuid { get; set; }
-            
+
 
             /// <summary>
             /// Gets or sets the category GUID associated with this template, if any.
@@ -3437,12 +3453,12 @@ namespace Rock.Blocks.Communication
 
                 RemoveUnselectedRecipients( rockContext, existingRecipients, updatedCommunicationRecipientPersonAliasIds, progressReporter );
                 AddNewRecipients( rockContext, communication, updatedCommunicationRecipients, progressReporter );
-                
+
                 // Reload the recipients.
                 rockContext.Entry( communication )
                     .Collection( c => c.Recipients )
                     .Load();
-                
+
                 return communication;
             }
 
@@ -3503,7 +3519,7 @@ namespace Rock.Blocks.Communication
                         totalDeleted += deletedInBatch;
 
                     } while ( deletedInBatch > 0 );
-                    
+
                     progressReporter?.UpdateTaskProgress( new TaskActivityProgressUpdateBag { CompletionPercentage = 10m, Message = "Removed unselected recipients..." } );
                 }
             }
@@ -3521,11 +3537,11 @@ namespace Rock.Blocks.Communication
                     .Where( r => r.PersonAliasId.HasValue )
                     .Select( r => r.PersonAliasId.Value )
                     .ToHashSet();
-                
+
                 var emailMediumEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() ).Id;
                 var smsMediumEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() ).Id;
                 var pushMediumEntityTypeId = EntityTypeCache.Get( SystemGuid.EntityType.COMMUNICATION_MEDIUM_PUSH_NOTIFICATION.AsGuid() ).Id;
-                
+
                 var newCommunicationRecipients = updatedCommunicationRecipientPersonAliases
                     .Where( r => !existingCommunicationRecipientPersonAliasIds.Contains( r.PersonAlias.Id ) )
                     .Select(

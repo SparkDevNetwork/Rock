@@ -5,7 +5,7 @@
             <template #headerActions>
                 <div>
                     <HighlightLabel labelType="info">
-                        <template v-if="isFetchingRecipients"><i class="fas fa-spinner fa-pulse"></i> Recipients</template>
+                        <template v-if="isFetchingRecipients"><i class="ti ti-rotate-2 ti-pulse"></i> Recipients</template>
                         <template v-else>{{ recipientsLabel }}</template>
                     </HighlightLabel>
                 </div>
@@ -84,8 +84,8 @@
                                                     <RockButton btnSize="sm"
                                                                 :disabled="isFetchingRecipients"
                                                                 @click="isRecipientModalShown = true">
-                                                        <i v-if="isFetchingRecipients" class="fas fa-spinner fa-pulse"></i>
-                                                        <i v-else class="fa fa-eye"></i> View List
+                                                        <i v-if="isFetchingRecipients" class="ti ti-rotate-2 ti-pulse"></i>
+                                                        <i v-else class="ti ti-eye"></i> View List
                                                     </RockButton>
                                                 </div>
                                             </div>
@@ -141,68 +141,68 @@
                                                      :class="['medium', { 'selected': internalCommunicationType === CommunicationType.Email }]"
                                                      @click="internalCommunicationType = CommunicationType.Email">
                                                     <div class="medium-content">
-                                                        <i class="fa fa-envelope fa-2x"></i>
+                                                        <i class="ti ti-mail ti-2x"></i>
                                                         <h3>Email</h3>
                                                         <small>Send an email to everyone in your targeted segment.</small>
                                                     </div>
 
                                                     <HighlightLabel labelType="info">
-                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="fas fa-spinner fa-pulse"></i></template>
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-2 ti-pulse"></i></template>
                                                         <template v-else>Reachable Audience: {{ emailRecipientCount }}</template>
                                                     </HighlightLabel>
 
-                                                    <i :class="internalCommunicationType === CommunicationType.Email ? 'fa fa-dot-circle-o' : 'fa fa-circle-o'"></i>
+                                                    <i :class="internalCommunicationType === CommunicationType.Email ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                 </div>
 
                                                 <div v-if="allowedMediums.includes(CommunicationType.SMS)"
                                                      :class="['medium', { 'selected': internalCommunicationType === CommunicationType.SMS }]"
                                                      @click="internalCommunicationType = CommunicationType.SMS">
                                                     <div class="medium-content">
-                                                        <i class="fa fa-sms fa-2x"></i>
+                                                        <i class="ti ti-device-mobile-message ti-2x"></i>
                                                         <h3>SMS</h3>
                                                         <small>Send a text message to your targeted segment.</small>
                                                     </div>
 
                                                     <HighlightLabel labelType="info">
-                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="fas fa-spinner fa-pulse"></i></template>
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-2 ti-pulse"></i></template>
                                                         <template v-else>Reachable Audience: {{ smsRecipientCount }}</template>
                                                     </HighlightLabel>
 
-                                                    <i :class="internalCommunicationType === CommunicationType.SMS ? 'fa fa-dot-circle-o' : 'fa fa-circle-o'"></i>
+                                                    <i :class="internalCommunicationType === CommunicationType.SMS ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                 </div>
 
                                                 <div v-if="allowedMediums.includes(CommunicationType.PushNotification)"
                                                      :class="['medium', { 'selected': internalCommunicationType === CommunicationType.PushNotification }]"
                                                      @click="internalCommunicationType = CommunicationType.PushNotification">
                                                     <div class="medium-content">
-                                                        <i class="fa fa-bell fa-2x"></i>
+                                                        <i class="ti ti-bell ti-2x"></i>
                                                         <h3>Push Notifications</h3>
                                                         <small>Notify targeted segment via the church app.</small>
                                                     </div>
 
                                                     <HighlightLabel labelType="info">
-                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="fas fa-spinner fa-pulse"></i></template>
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-2 ti-pulse"></i></template>
                                                         <template v-else>Reachable Audience: {{ pushNotificationRecipientCount }}</template>
                                                     </HighlightLabel>
 
-                                                    <i :class="internalCommunicationType === CommunicationType.PushNotification ? 'fa fa-dot-circle-o' : 'fa fa-circle-o'"></i>
+                                                    <i :class="internalCommunicationType === CommunicationType.PushNotification ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                 </div>
 
                                                 <div v-if="allowedMediums.includes(CommunicationType.RecipientPreference)"
                                                      :class="['medium', { 'selected': internalCommunicationType === CommunicationType.RecipientPreference }]"
                                                      @click="internalCommunicationType = CommunicationType.RecipientPreference">
                                                     <div class="medium-content">
-                                                        <i class="fa fa-user fa-2x"></i>
+                                                        <i class="ti ti-user ti-2x"></i>
                                                         <h3>Personal Preference</h3>
                                                         <small>Notify targeted segment via person's preferred channel.</small>
                                                     </div>
 
                                                     <HighlightLabel labelType="info">
-                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="fas fa-spinner fa-pulse"></i></template>
+                                                        <template v-if="isFetchingRecipients">Reachable Audience: <i class="ti ti-rotate-2 ti-pulse"></i></template>
                                                         <template v-else>Reachable Audience: {{ personalPreferenceRecipientCount }}</template>
                                                     </HighlightLabel>
 
-                                                    <i :class="internalCommunicationType === CommunicationType.RecipientPreference ? 'fa fa-dot-circle-o' : 'fa fa-circle-o'"></i>
+                                                    <i :class="internalCommunicationType === CommunicationType.RecipientPreference ? 'ti ti-circle-dot' : 'ti ti-circle'"></i>
                                                 </div>
                                             </div>
                                         </div>
@@ -311,7 +311,7 @@
     color: var(--color-interface-strong);
 }
 
-.medium .fa-dot-circle-o {
+.medium .ti-circle-dot {
     color: var(--color-primary);
 }
 

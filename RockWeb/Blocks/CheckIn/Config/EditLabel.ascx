@@ -6,7 +6,7 @@
         <div class="panel panel-block" >
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-print"></i> <asp:Literal ID="lTitle" runat="server" Text="Edit Label"></asp:Literal></h1>
+                <h1 class="panel-title"><i class="ti ti-printer"></i> <asp:Literal ID="lTitle" runat="server" Text="Edit Label"></asp:Literal></h1>
             </div>
 
             <div class="panel-body">

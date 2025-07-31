@@ -6,7 +6,8 @@
                            v-model:showPopup="showPopup"
                            disableAutoCloseOnPrimaryAction
                            :pickerContentBoxHeight="useCustom ? '0' : '320px'"
-                           pickerContentBoxWidth="300px"
+                           pickerContentBoxWidth="310px"
+                           v-model:scrollContainer="scrollContainer"
                            iconCssClass=""
                            hideMainActionButtons
                            pickerClass="icon-picker-w-fit-content">
@@ -35,14 +36,22 @@
 
         <Loading v-if="!useCustom" :isLoading="loadingState.icons.isLoading.value">
 
-            <div class="d-flex gap-2 align-items-start flex-wrap">
-                <button v-for="iconOption in iconOptions" :key="iconOption.StyleClass ?? ''"
-                        class="btn btn-default icon-picker-select-btn"
-                        :class="icon === iconOption ? 'active' : ''"
-                        @click.prevent="selectIcon(iconOption)"
-                        :title="iconOption.Title ?? ''"
-                        v-html="iconOption.IconSvg ?? ''">
-                </button>
+            <div class="d-flex flex-column gap-2" ref="itemsContainer">
+                <div :style="beforePadStyle"></div>
+
+                <div v-for="iconRow in virtualItems"
+                     class="d-flex gap-2"
+                     :key="iconRow.key">
+                    <button v-for="iconOption in iconRow.icons"
+                            class="btn btn-default icon-picker-select-btn"
+                            :class="icon === iconOption ? 'active' : ''"
+                            @click.prevent="selectIcon(iconOption)"
+                            :title="iconOption.Title ?? ''"
+                            v-html="iconOption.IconSvg ?? ''">
+                    </button>
+                </div>
+
+                <div :style="afterPadStyle"></div>
             </div>
         </Loading>
 
@@ -103,6 +112,7 @@
 
 .search-box-wrapper {
     margin-top: -4px;
+    margin-right: 10px;
 }
 </style>
 
@@ -112,13 +122,24 @@
     import ContentDropDownPicker from "./contentDropDownPicker.obs";
     import Loading from "./loading.obs";
     import TextBox from "./textBox.obs";
-    import ButtonDropDownList from "@Obsidian/Controls/buttonDropDownList.obs";
+    import ButtonDropDownList from "./buttonDropDownList.obs";
     import { type ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { useSecurityGrantToken } from "@Obsidian/Utility/block";
     import { useHttp } from "@Obsidian/Utility/http";
     import { type IconPickerGetIconLibrariesOptionsBag } from "@Obsidian/ViewModels/Rest/Controls/iconPickerGetIconLibrariesOptionsBag";
     import { type IconBag, type IconLibraryBag } from "@Obsidian/ViewModels/Controls/iconLibraryBag.d";
     import { containsRequiredRule } from "@Obsidian/ValidationRules";
+    import { debounce } from "@Obsidian/Utility/util";
+    import { useVirtualScroller } from "@Obsidian/Core/Utilities/virtualScroll";
+
+    type SearchableIcon = IconBag & {
+        SearchableText: string; /* eslint-disable-line @typescript-eslint/naming-convention */
+    };
+
+    type IconRow = {
+        key: string;
+        icons: IconBag[];
+    };
 
     const props = defineProps({
         ...standardRockFormFieldProps,
@@ -135,6 +156,18 @@
 
     type Timeout = ReturnType<typeof setTimeout>;
 
+    // #region Field Control State
+
+    const showPopup = ref(false);
+    const isRequired = computed((): boolean => {
+        return containsRequiredRule(props.rules);
+    });
+    const formFieldProps = useStandardRockFormFieldProps(props);
+    const scrollContainer = ref<HTMLElement | undefined>();
+    const itemsContainer = ref<HTMLElement | undefined>();
+
+    // #endregion
+
     // #region Primary Data
 
     const library = ref("");
@@ -142,7 +175,7 @@
 
     const libraryPrefixes = ref<Record<string, string>>({});
     const libraries = ref<ListItemBag[]>([]);
-    const icons = ref<Record<string, IconBag[]>>({});
+    const icons = ref<Record<string, SearchableIcon[]>>({});
 
     const searchValue = ref("");
 
@@ -155,34 +188,26 @@
     });
 
     const iconsForSelectedLibrary = computed(() => {
-        return icons.value[library.value] ?? [];
+        let theIcons: SearchableIcon[] = [];
+
+        // If not required, add a blank option
+        if (!isRequired.value) {
+            theIcons.push({
+                StyleClass: "",
+                IconSvg: "<svg height=16 width=16 viewbox=\"0 0 16 16\"></svg>",
+                Title: "None",
+                SearchableText: "none"
+            } as SearchableIcon);
+        }
+
+        return theIcons.concat(icons.value[library.value] ?? []);
     });
 
     const libraryPrefix = computed(() => {
         return libraryPrefixes.value[library.value] ?? "";
     });
 
-    const iconOptions = computed((): IconBag[] => {
-        // If the search value is empty, return all icons.
-        if (searchValue.value !== "") {
-            return iconsForSelectedLibrary.value.filter(icon => {
-                const searchableText = ((icon.SearchTerms?.join(" ") ?? "") + " " + icon.StyleClass + " " + icon.Title).toLowerCase();
-                icon.Title === "arrow-left-to-arc" && console.log("searchableText", searchableText, searchValue.value);
-                return searchableText.includes(searchValue.value.toLowerCase());
-            });
-        }
-
-        if (isRequired.value) {
-            return iconsForSelectedLibrary.value;
-        }
-
-        // Otherwise, filter the icons based on the search value.
-        return ([{
-            StyleClass: "",
-            IconSvg: "<svg height=16 width=16 viewbox=\"0 0 16 16\"></svg>",
-            Title: "None",
-        }] as IconBag[]).concat(iconsForSelectedLibrary.value);
-    });
+    const iconOptions = ref(getIconOptions());
 
     const useCustom = computed((): boolean => {
         return library.value === "custom";
@@ -194,7 +219,6 @@
         icon.value = value;
 
         customIcon.value = "";
-        searchValue.value = "";
         showPopup.value = false;
     }
 
@@ -206,6 +230,17 @@
             return ((libraryPrefix.value ?? "") + " " + icon.value.StyleClass).trim();
         }
         return "";
+    });
+
+    const {
+        virtualItems,
+        beforePadStyle,
+        afterPadStyle
+    } = useVirtualScroller({
+        items: iconOptions,
+        itemKey: "key",
+        container: itemsContainer,
+        estimatedItemHeight: 48, // Height of row + padding
     });
 
     watch(internalModelValue, (newValue) => {
@@ -251,10 +286,16 @@
 
     watch(library, () => {
         icon.value = undefined;
-        if (iconsForSelectedLibrary.value.length == 0) {
+
+        // If the library isn't loaded, load it.
+        if ((icons.value[library.value] ?? [])?.length == 0) {
             getIcons();
         }
     });
+
+    watch([searchValue, iconsForSelectedLibrary], debounce(() => {
+        iconOptions.value = getIconOptions();
+    }, 150));
 
     function clearValue(): void {
         icon.value = undefined;
@@ -262,15 +303,30 @@
         customIcon.value = "";
     }
 
-    // #endregion
+    function getIconOptions(): IconRow[] {
+        let iconsToDisplay: SearchableIcon[] = [...iconsForSelectedLibrary.value];
 
-    // #region Field Control State
+        // If the search value is empty, return all icons.
+        if (searchValue.value !== "") {
+            iconsToDisplay = iconsForSelectedLibrary.value.filter(icon => {
+                return icon.SearchableText.includes(searchValue.value.toLowerCase());
+            });
+        }
 
-    const showPopup = ref(false);
-    const isRequired = computed((): boolean => {
-        return containsRequiredRule(props.rules);
-    });
-    const formFieldProps = useStandardRockFormFieldProps(props);
+        const iconRows: IconRow[] = [];
+
+        while (iconsToDisplay.length > 0) {
+            const icons = iconsToDisplay.splice(0, 6);
+
+            iconRows.push({
+                key: `row-${icons.map(i => i.StyleClass).join(";")}`,
+                icons: icons
+            });
+        }
+
+        console.log("got options", iconRows.length);
+        return iconRows;
+    }
 
     // #endregion
 
@@ -343,7 +399,10 @@
             const response = await http.get<IconLibraryBag>(library.value, undefined);
 
             if (response.isSuccess && response.data) {
-                icons.value[library.value] = response.data.Icons ?? [];
+                icons.value[library.value] = response.data.Icons?.map(icon => ({
+                    ...icon,
+                    SearchableText: ((icon.SearchTerms?.join(" ") ?? "") + " " + icon.StyleClass + " " + icon.Title).toLowerCase()
+                })) ?? [];
                 libraryPrefixes.value[library.value] = response.data.StyleClassPrefix ?? "";
             }
             else {
@@ -361,5 +420,4 @@
     getIconLibraries();
 
     // #endregion
-
 </script>

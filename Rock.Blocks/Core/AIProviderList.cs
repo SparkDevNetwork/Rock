@@ -38,8 +38,8 @@ namespace Rock.Blocks.Core
     [DisplayName( "AI Provider List" )]
     [Category( "Core" )]
     [Description( "Displays a list of ai providers." )]
-    [IconCssClass( "fa fa-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-list" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
         Description = "The page that will show the ai provider details.",

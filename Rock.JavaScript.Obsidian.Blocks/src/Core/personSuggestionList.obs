@@ -69,11 +69,11 @@
         <template #gridFooterAppend>
             <div class="d-flex" style="padding: var(--table-cell-padding-y) var(--table-cell-padding-x) var(--table-cell-padding-y) var(--table-cell-padding-x);">
                 <RockButton @click="onFollowClick" :btnType="BtnType.Primary" :btnSize="BtnSize.Small" class="mr-2">
-                    <i class='fa fa-flag'></i> Follow
+                    <i class='ti ti-flag'></i> Follow
                 </RockButton>
 
                 <RockButton @click="onIgnoreClick" :btnSize="BtnSize.Small">
-                    <i class='fa fa-flag-o'></i> Ignore
+                    <i class='ti ti-flag'></i> Ignore
                 </RockButton>
             </div>
         </template>

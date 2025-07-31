@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlContent" runat="server">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-file-text-o"></i> Requests</h1>
+                    <h1 class="panel-title"><i class="ti ti-file-type-txt"></i> Requests</h1>
                 </div>
                 <div class="panel-body">
                     <div class="grid grid-panel">
@@ -29,8 +29,8 @@
                                 <Rock:DateField DataField="ResponseDate" HeaderText="Completed" SortExpression="ResponseDate" ItemStyle-HorizontalAlign="left"/>
                                 <Rock:RockBoundField DataField="ReportStatus" HeaderText="Report Status" SortExpression="Status" HtmlEncode="false" ItemStyle-HorizontalAlign="left" />
                                 <Rock:RockBoundField ItemStyle-HorizontalAlign="Center" HeaderStyle-HorizontalAlign="Center" DataField="RecordFoundLabel" HeaderText="Record Found" SortExpression="RecordFound" HtmlEncode="false" />
-                                <Rock:LinkButtonField HeaderText="Report" Text="<i class='fa fa-file-pdf-o fa-lg'></i>" OnClick="gRequest_Data" HeaderStyle-CssClass="" ItemStyle-CssClass="" ColumnPriority="DesktopLarge" />
-                                <Rock:EditField OnClick="gRequest_ViewWorkflow" IconCssClass="fa fa-cogs" ToolTip="View Workflow" />
+                                <Rock:LinkButtonField HeaderText="Report" Text="<i class='ti ti-file-description ti-lg'></i>" OnClick="gRequest_Data" HeaderStyle-CssClass="" ItemStyle-CssClass="" ColumnPriority="DesktopLarge" />
+                                <Rock:EditField OnClick="gRequest_ViewWorkflow" IconCssClass="ti ti-settings-cog" ToolTip="View Workflow" />
                             </Columns>
                         </Rock:Grid>
                     </div>

@@ -52,7 +52,7 @@ namespace Rock.Lms
 
             public const string MultipleChoiceWeight = "multipleChoiceWeight";
 
-            public const string ShowMissedQuestionsOnResults = "shoeMissedQuestionsOnResults";
+            public const string ShowMissedQuestionsOnResults = "showMissedQuestionsOnResults";
 
             public const string ShowResultsOnCompletion = "showResultsOnCompletion";
         }
@@ -72,7 +72,7 @@ namespace Rock.Lms
         public override string HighlightColor => "#a9551d";
 
         /// <inheritdoc/>
-        public override string IconCssClass => "fa fa-list";
+        public override string IconCssClass => "ti ti-list";
 
         /// <inheritdoc/>
         public override string Name => "Assessment";

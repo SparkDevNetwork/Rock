@@ -300,6 +300,50 @@ namespace Rock.Web.Cache
             return childAccount ?? this;
         }
 
+        /// <summary>
+        /// <para>
+        /// Determines the mapped account to use for the given campus. This uses
+        /// campus matching logic to try and find a child account that matches the
+        /// specified campus.
+        /// </para>
+        /// <para>
+        /// <list type="bullet">
+        ///   <item>If <see cref="UsesCampusChildAccounts"/> is <c>false</c>, then this (the parent) account will be returned.</item>
+        ///   <item>If no campus is specified or available, then this (the parent) account will be returned.</item>
+        ///   <item>If an active direct child account has a campus that matches the specified campus, then the first matching child account will be returned.</item>
+        ///   <item>If no active direct child account matches the specified campus, then this (the parent) account will be returned.</item>
+        /// </list>
+        /// </para>
+        /// <para>
+        /// <strong>NOTE:</strong> This method is temporary and will be removed
+        /// in the future. It exists to allow blocks that have their own local
+        /// setting for UsesCampusChildAccounts to override early out check when
+        /// the parent account is set to <c>false</c>.
+        /// 
+        /// </para>
+        /// </summary>
+        /// <param name="campus">The campus to use when searching for a child account.</param>
+        /// <param name="forceChildAccounts">If this is <c>true</c> then child accounts will be checked, even if <see cref="UsesCampusChildAccounts"/> is <c>false</c>.</param>
+        /// <returns>The <see cref="FinancialAccountCache"/> object that should be used for a transaction, this will never be <c>null</c>.</returns>
+        internal FinancialAccountCache GetMappedAccountForCampus( CampusCache campus, bool forceChildAccounts )
+        {
+            if ( campus == null )
+            {
+                return this;
+            }
+
+            if ( !forceChildAccounts && !UsesCampusChildAccounts )
+            {
+                return this;
+            }
+
+            var childAccount = ChildAccounts
+                .Where( a => a.IsActive && a.CampusId == campus.Id )
+                .FirstOrDefault();
+
+            return childAccount ?? this;
+        }
+
         #endregion Methods
 
         /// <summary>

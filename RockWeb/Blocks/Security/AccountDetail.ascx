@@ -8,7 +8,7 @@
 
 <div class="panel panel-block">
     <div class="panel-heading">
-        <h1 class="panel-title"><i class="fa fa-user"></i> My Account</h1>
+        <h1 class="panel-title"><i class="ti ti-user"></i> My Account</h1>
     </div>
     <div class="panel-body">
         <Rock:NotificationBox ID="nbNotAuthorized" runat="server" Text="You must be logged in to view your account." NotificationBoxType="Danger" Visible="false" />
@@ -48,7 +48,7 @@
 
                             <asp:Literal ID="lAddress" runat="server" />
 
-                            <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPerson_Click"><i class="fa fa-pencil"></i> Edit</asp:LinkButton>
+                            <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-primary btn-xs" OnClick="lbEditPerson_Click"><i class="ti ti-pencil"></i> Edit</asp:LinkButton>
         
                         </div>
 

@@ -182,6 +182,7 @@ namespace RockWeb.Blocks.Connection
             gConnectionOpportunityWorkflows.Actions.ShowAdd = true;
             gConnectionOpportunityWorkflows.Actions.AddClick += gConnectionOpportunityWorkflows_Add;
             gConnectionOpportunityWorkflows.GridRebind += gConnectionOpportunityWorkflows_GridRebind;
+            gConnectionOpportunityWorkflows.GridReorder += gConnectionOpportunityWorkflows_GridReorder;
 
             gConnectionOpportunityConnectorGroups.DataKeyNames = new string[] { "Guid" };
             gConnectionOpportunityConnectorGroups.Actions.ShowAdd = true;
@@ -445,7 +446,14 @@ namespace RockWeb.Blocks.Connection
                     connectionOpportunityWorkflow.QualifierValue = workflowTypeStateObj.QualifierValue;
                     connectionOpportunityWorkflow.ConnectionOpportunityId = connectionOpportunity.Id;
                     connectionOpportunityWorkflow.ManualTriggerFilterConnectionStatusId = workflowTypeStateObj.ManualTriggerFilterConnectionStatusId;
+                    connectionOpportunityWorkflow.AppliesToAgeClassification = workflowTypeStateObj.AppliesToAgeClassification;
+                    connectionOpportunityWorkflow.IncludeDataViewId = workflowTypeStateObj.IncludeDataViewId;
+                    connectionOpportunityWorkflow.ExcludeDataViewId = workflowTypeStateObj.ExcludeDataViewId;
                 }
+
+                // Update the workflow order in AdditionalSettingsJson
+                var workflowTypeOrder = WorkflowsState.Where( w => w.WorkflowTypeId.HasValue ).Select( w => w.WorkflowTypeId.Value ).ToList();
+                connectionOpportunity.SetAdditionalSettings( "WorkflowTypeOrder", workflowTypeOrder );
 
                 // remove any group campuses that removed in the UI
                 var uiConnectorGroups = ConnectorGroupsState.Select( l => l.Guid );
@@ -1424,6 +1432,11 @@ namespace RockWeb.Blocks.Connection
             workflowTypeStateObj.QualifierValue = string.Format( "|{0}|{1}|", ddlPrimaryQualifier.SelectedValue, ddlSecondaryQualifier.SelectedValue );
             workflowTypeStateObj.ManualTriggerFilterConnectionStatusId = rblConnectionStatuses.SelectedValueAsInt();
 
+            workflowTypeStateObj.AppliesToAgeClassification = rblAppliesToAgeClassification.SelectedValue.AsIntegerOrNull().HasValue
+                ? (AppliesToAgeClassification)rblAppliesToAgeClassification.SelectedValue.AsInteger() : AppliesToAgeClassification.All;
+            workflowTypeStateObj.IncludeDataViewId = dvpIncludeDataView.SelectedValueAsId();
+            workflowTypeStateObj.ExcludeDataViewId = dvpExcludeDataView.SelectedValueAsId();
+
             BindWorkflowGrid();
             HideDialog();
         }
@@ -1486,6 +1499,28 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
+        /// Handles the GridReorder event of the gConnectionOpportunityWorkflows control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="GridReorderEventArgs"/> instance containing the event data.</param>
+        protected void gConnectionOpportunityWorkflows_GridReorder( object sender, GridReorderEventArgs e )
+        {
+            var movedItem = WorkflowsState[e.OldIndex];
+            WorkflowsState.RemoveAt( e.OldIndex );
+
+            if ( e.NewIndex >= WorkflowsState.Count )
+            {
+                WorkflowsState.Add( movedItem );
+            }
+            else
+            {
+                WorkflowsState.Insert( e.NewIndex, movedItem );
+            }
+
+            BindWorkflowGrid();
+        }
+
+        /// <summary>
         /// Handles the Edit event of the gConnectionOpportunityWorkflows control.
         /// </summary>
         /// <param name="sender">The source of the event.</param>
@@ -1502,11 +1537,31 @@ namespace RockWeb.Blocks.Connection
         /// <param name="connectionOpportunityWorkflowGuid">The connection opportunity workflow unique identifier.</param>
         protected void gConnectionOpportunityWorkflows_ShowEdit( Guid connectionOpportunityWorkflowGuid )
         {
+            rblAppliesToAgeClassification.Items.Clear();
+            foreach ( var ageClassification in Enum.GetValues( typeof( AppliesToAgeClassification ) ).Cast<AppliesToAgeClassification>() )
+            {
+                rblAppliesToAgeClassification.Items.Add( new ListItem( ageClassification.ConvertToString( true ), ( ( int ) ageClassification ).ToString() ) );
+            }
+            rblAppliesToAgeClassification.DataBind();
+
+            var personEntityType = EntityTypeCache.Get( typeof( Person ) );
+            dvpIncludeDataView.EntityTypeId = personEntityType?.Id;
+            dvpExcludeDataView.EntityTypeId = personEntityType?.Id;
+
             var workflowTypeStateObj = WorkflowsState.FirstOrDefault( l => l.Guid.Equals( connectionOpportunityWorkflowGuid ) );
             if ( workflowTypeStateObj != null )
             {
                 wpWorkflowType.SetValue( workflowTypeStateObj.WorkflowTypeId );
                 ddlTriggerType.SelectedValue = workflowTypeStateObj.TriggerType.ConvertToInt().ToString();
+                rblAppliesToAgeClassification.SetValue( ( (int)workflowTypeStateObj.AppliesToAgeClassification ).ToString() );
+                dvpIncludeDataView.SetValue( workflowTypeStateObj.IncludeDataViewId );
+                dvpExcludeDataView.SetValue( workflowTypeStateObj.ExcludeDataViewId );
+            }
+            else
+            {
+                rblAppliesToAgeClassification.SetValue( ( (int)AppliesToAgeClassification.All ).ToString() );
+                dvpIncludeDataView.SetValue( null );
+                dvpExcludeDataView.SetValue( null );
             }
 
             hfWorkflowGuid.Value = connectionOpportunityWorkflowGuid.ToString();
@@ -1630,7 +1685,19 @@ namespace RockWeb.Blocks.Connection
                     }
             }
 
-            rblConnectionStatuses.Visible = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() == ConnectionWorkflowTriggerType.Manual;
+            /*
+                7/25/2025 - MSE
+
+                Age Classification and Include/Exclude Data View filters are only visible to set when the workflow trigger type is "Manual".
+
+                These filters are only evaluated for manual workflows in ConnectionRequestBoard.ascx.cs.
+            */
+
+            bool isManualTrigger = ddlTriggerType.SelectedValueAsEnum<ConnectionWorkflowTriggerType>() == ConnectionWorkflowTriggerType.Manual;
+            rblConnectionStatuses.Visible = isManualTrigger;
+            rblAppliesToAgeClassification.Visible = isManualTrigger;
+            dvpIncludeDataView.Visible = isManualTrigger;
+            dvpExcludeDataView.Visible = isManualTrigger;
 
             if ( workflowTypeStateObj != null )
             {
@@ -1673,7 +1740,6 @@ namespace RockWeb.Blocks.Connection
                 Trigger = w.TriggerType.ConvertToString(),
                 w.ConnectionTypeId
             } )
-            .OrderByDescending( w => w.Inherited )
             .ToList();
             gConnectionOpportunityWorkflows.DataBind();
         }
@@ -1776,7 +1842,7 @@ namespace RockWeb.Blocks.Connection
             if ( connectionOpportunity.Id == 0 )
             {
                 lReadOnlyTitle.Text = ActionTitle.Add( ConnectionOpportunity.FriendlyTypeName ).FormatAsHtmlTitle();
-                connectionOpportunity.IconCssClass = "fa fa-long-arrow-right";
+                connectionOpportunity.IconCssClass = "ti ti-arrow-narrow-right";
                 hlStatus.Visible = false;
             }
             else
@@ -1815,6 +1881,16 @@ namespace RockWeb.Blocks.Connection
             {
                 WorkflowsState.Add( new WorkflowTypeStateObj( connectionWorkflow ) );
             }
+
+            var workflowTypeOrder = connectionOpportunity.GetAdditionalSettingsOrNull<List<int>>( "WorkflowTypeOrder" ) ?? new List<int>();
+
+            WorkflowsState = WorkflowsState
+                .OrderBy( wf =>
+                {
+                    var index = workflowTypeOrder.IndexOf( wf.WorkflowTypeId ?? -1 );
+                    return index == -1 ? int.MaxValue : index;
+                } )
+                .ToList();
 
             nbArchivedPlacementGroupWarning.Visible = false;
             nbArchivedConnectorGroupWarning.Visible = false;
@@ -2263,6 +2339,12 @@ namespace RockWeb.Blocks.Connection
 
             public int? ManualTriggerFilterConnectionStatusId { get; set; }
 
+            public AppliesToAgeClassification AppliesToAgeClassification { get; set; }
+
+            public int? IncludeDataViewId { get; set; }
+
+            public int? ExcludeDataViewId { get; set; }
+
             public WorkflowTypeStateObj()
             {
             }
@@ -2280,6 +2362,9 @@ namespace RockWeb.Blocks.Connection
                     WorkflowTypeName = connectionWorkflow.WorkflowType.Name;
                 }
                 ManualTriggerFilterConnectionStatusId = connectionWorkflow.ManualTriggerFilterConnectionStatusId;
+                AppliesToAgeClassification = connectionWorkflow.AppliesToAgeClassification;
+                IncludeDataViewId = connectionWorkflow.IncludeDataViewId;
+                ExcludeDataViewId = connectionWorkflow.ExcludeDataViewId;
             }
         }
 

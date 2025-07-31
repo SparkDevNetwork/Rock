@@ -9,7 +9,7 @@
 
                     <div class="panel-heading">
                         <h1 class="panel-title">
-                            <asp:Literal ID="lIconHtml" runat="server"><i class="fa fa-gear"></i></asp:Literal>
+                            <asp:Literal ID="lIconHtml" runat="server"><i class="ti ti-settings"></i></asp:Literal>
                             <asp:Literal ID="lTitle" runat="server">Workflow Entry</asp:Literal>
                         </h1>
                         <div class="panel-labels">
@@ -116,7 +116,7 @@
 
             <div id="divWorkflowActionUserFormNotes" runat="server" class="col-md-6">
                 <Rock:NoteContainer ID="ncWorkflowNotes" runat="server" NoteLabel="Note"
-                    ShowHeading="true" Title="Notes" TitleIconCssClass="fa fa-comment"
+                    ShowHeading="true" Title="Notes" TitleIconCssClass="ti ti-message"
                     DisplayType="Full" UsePersonIcon="false" ShowAlertCheckBox="true"
                     ShowPrivateCheckBox="false" ShowSecurityButton="false"
                     AllowAnonymousEntry="false" AddAlwaysVisible="false"

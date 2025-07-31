@@ -788,7 +788,7 @@ namespace RockWeb.Blocks.Connection
             {
                 get
                 {
-                    return string.Format( @"<i class=""{0} fa-star""></i>", IsFollowed ? "fas" : "far" );
+                    return string.Format( @"<i class=""{0}""></i>", IsFollowed ? "ti ti-star-filled" : "ti ti-star" );
                 }
             }
 

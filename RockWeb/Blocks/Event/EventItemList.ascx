@@ -11,7 +11,7 @@
 
                     <div class="panel-heading">
                         <h1 class="panel-title pull-left">
-                            <i class="fa fa-calendar-check-o"></i>
+                            <i class="ti ti-calendar-check"></i>
                             Event Items
                         </h1>
                     </div>

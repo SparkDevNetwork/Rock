@@ -4,7 +4,7 @@
                            @primaryButtonClicked="onSelect"
                            @secondaryButtonClicked="onCancel"
                            @clearButtonClicked="onClear"
-                           iconCssClass="fa fa-file fa-fw"
+                           iconCssClass="ti ti-file ti-fw"
                            :showClear="showClear"
                            :modelValue="internalValues"
                            :fullWidth="false"
@@ -17,7 +17,7 @@
                 <TextBox v-model="searchValue" size="small">
                     <template #inputGroupAppend>
                         <span class="input-group-btn">
-                            <button class="btn btn-default" @click.prevent="search"><i class="fa fa-search"></i></button>
+                            <button class="btn btn-default" @click.prevent="search"><i class="ti ti-search"></i></button>
                         </span>
                     </template>
                 </TextBox>
@@ -78,7 +78,7 @@
                     title="Tree View"
                     v-if="mode == 'search'"
                     @click.prevent="changeMode">
-                <i class="fa fa-sitemap"></i>
+                <i class="ti ti-sitemap"></i>
             </button>
         </template>
         <template #prepend="{ isInputGroupSupported }" v-if="$slots.prepend">

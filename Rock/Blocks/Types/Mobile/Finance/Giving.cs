@@ -45,7 +45,7 @@ namespace Rock.Blocks.Types.Mobile.Finance
     [DisplayName( "Giving" )]
     [Category( "Mobile > Finance" )]
     [Description( "Allows an individual to give. Apple and Google Pay are supported." )]
-    [IconCssClass( "fa fa-hand-holding-heart" )]
+    [IconCssClass( "ti ti-heart-handshake" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

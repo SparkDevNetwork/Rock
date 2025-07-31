@@ -89,6 +89,24 @@ namespace Rock.Model
         [DataMember]
         public int? ManualTriggerFilterConnectionStatusId { get; set; }
 
+        /// <summary>
+        /// Gets or sets the Age Classification this workflow applies to.
+        /// </summary>
+        [DataMember]
+        public AppliesToAgeClassification AppliesToAgeClassification { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DataViewId for inclusion filtering.
+        /// </summary>
+        [DataMember]
+        public int? IncludeDataViewId { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DataViewId for exclusion filtering.
+        /// </summary>
+        [DataMember]
+        public int? ExcludeDataViewId { get; set; }
+
         #endregion
 
         #region Navigation Properties
@@ -126,6 +144,18 @@ namespace Rock.Model
         [LavaVisible]
         public virtual ConnectionStatus ManualTriggerFilterConnectionStatus { get; set; }
 
+        /// <summary>
+        /// Gets or sets the DataView for inclusion filtering.
+        /// </summary>
+        [LavaVisible]
+        public virtual DataView IncludeDataView { get; set; }
+
+        /// <summary>
+        /// Gets or sets the DataView for exclusion filtering.
+        /// </summary>
+        [LavaVisible]
+        public virtual DataView ExcludeDataView { get; set; }
+
         #endregion
     }
 
@@ -145,6 +175,8 @@ namespace Rock.Model
             this.HasOptional( p => p.ConnectionOpportunity ).WithMany( p => p.ConnectionWorkflows ).HasForeignKey( p => p.ConnectionOpportunityId ).WillCascadeOnDelete( true );
             this.HasRequired( p => p.WorkflowType ).WithMany().HasForeignKey( p => p.WorkflowTypeId ).WillCascadeOnDelete( true );
             this.HasOptional( p => p.ManualTriggerFilterConnectionStatus ).WithMany().HasForeignKey( p => p.ManualTriggerFilterConnectionStatusId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.IncludeDataView ).WithMany().HasForeignKey( p => p.IncludeDataViewId ).WillCascadeOnDelete( false );
+            this.HasOptional( p => p.ExcludeDataView ).WithMany().HasForeignKey( p => p.ExcludeDataViewId ).WillCascadeOnDelete( false );
         }
     }
 

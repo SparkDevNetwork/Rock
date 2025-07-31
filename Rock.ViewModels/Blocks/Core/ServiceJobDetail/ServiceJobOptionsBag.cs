@@ -23,7 +23,7 @@ namespace Rock.ViewModels.Blocks.Core.ServiceJobDetail
     /// A container class for job type options that includes basic details about a job type
     /// </summary>
     /// <seealso cref="Rock.ViewModels.Utility.EntityBagBase" />
-    public class ServiceJobOptionsBag : EntityBagBase
+    public class ServiceJobOptionsBag
     {
         /// <summary>
         /// Gets or sets the list of available job type options.

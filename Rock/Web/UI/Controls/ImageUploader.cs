@@ -621,7 +621,7 @@ namespace Rock.Web.UI.Controls
 
             _aRemove = new HtmlAnchor();
             _aRemove.ID = this.ID + "_rmv";
-            _aRemove.InnerHtml = "<i class='fa fa-times'></i>";
+            _aRemove.InnerHtml = "<i class='ti ti-x'></i>";
             Controls.Add( _aRemove );
 
             _fileUpload = new FileUpload();
@@ -719,7 +719,7 @@ namespace Rock.Web.UI.Controls
 
             writer.Write( @"
         <div class='js-upload-progress upload-progress' style='display:none'>
-            <i class='fa fa-refresh fa-3x fa-spin'></i>                    
+            <i class='ti ti-refresh ti-3x ti-spin'></i>                    
         </div>" );
 
             writer.AddAttribute( "class", "imageupload-dropzone" );

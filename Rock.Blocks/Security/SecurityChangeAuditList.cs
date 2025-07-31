@@ -34,7 +34,7 @@ namespace Rock.Blocks.Security
     [DisplayName( "Security Change Audit List" )]
     [Category( "Security" )]
     [Description( "Block for Security Change Audit List." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [SystemGuid.EntityTypeGuid( "5a2e4f3c-9915-4b67-8ffe-87056d2e68df" )]

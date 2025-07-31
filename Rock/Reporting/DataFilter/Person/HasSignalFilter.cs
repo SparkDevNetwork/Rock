@@ -73,23 +73,26 @@ namespace Rock.Reporting.DataFilter.Person
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var signalTypeOptions = SignalTypeCache.All()
+                .Select( st => new ListItemBag { Value = st.Id.ToString(), Text = st.Name } )
+                .ToList();
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasSignalFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Person/hasSignalFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    ["signalTypeOptions"] = signalTypeOptions.ToCamelCaseJson( false, true )
+                }
             };
         }
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetObsidianComponentData( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
-            var signalTypeOptions = SignalTypeCache.All()
-                .Select( st => new ListItemBag { Value = st.Id.ToString(), Text = st.Name } )
-                .ToList();
-
             return new Dictionary<string, string>
             {
                 ["signalType"] = selection,
-                ["signalTypeOptions"] = signalTypeOptions.ToCamelCaseJson( false, true )
             };
         }
 

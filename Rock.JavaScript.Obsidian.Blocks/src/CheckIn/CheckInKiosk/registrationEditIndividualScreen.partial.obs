@@ -36,9 +36,9 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <TextBox label="First Name"
-                                 v-model="nickName"
-                                 rules="required" />
+                        <FirstNameTextBox v-model="nickName"
+                                          label="First Name"
+                                          :rules="['required', 'nospecialcharacters', 'noemojisorspecialfonts']" />
                     </div>
 
                     <div class="col-md-6">
@@ -150,6 +150,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import RockFormField from "@Obsidian/Controls/rockFormField.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
+    import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import Toggle from "@Obsidian/Controls/toggle.obs";
     import { computed, PropType, ref } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";

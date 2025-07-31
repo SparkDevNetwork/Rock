@@ -420,22 +420,22 @@ namespace RockWeb.Blocks.Crm.PersonDetail
             if ( last90DaysContribution == 0 )
             {
                 growthPercentClass = "default";
-                growthPercentIcon = "fa-minus";
+                growthPercentIcon = "ti-minus";
             }
             else if ( isGrowthPositive )
             {
                 growthPercentClass = "success";
-                growthPercentIcon = "fa-arrow-up";
+                growthPercentIcon = "ti-arrow-up";
             }
             else
             {
                 growthPercentClass = "danger";
-                growthPercentIcon = "fa-arrow-down";
+                growthPercentIcon = "ti-arrow-down";
             }
 
             var last90DaysSubValue =
 $@"<span title=""{growthPercentText}"" class=""small text-{growthPercentClass}"">
-    <i class=""fa {growthPercentIcon}""></i>
+    <i class=""ti {growthPercentIcon}""></i>
     {growthPercentDisplay}
 </span>
 <div class=""small"">{last90DayCountText}</div>";

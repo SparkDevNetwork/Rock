@@ -6,7 +6,7 @@
                 <template v-for="(item, index) in items" :key="item.key">
                     <li v-if="isCollapsed(index)" class="progress-step progress-tracker-more">
                         <div class="progress-step-link">
-                            <i class="fas fa-ellipsis-v"></i>
+                            <i class="ti ti-dots-vertical"></i>
                         </div>
                         <div class="progress-tracker-arrow">
                             <svg viewBox="0 0 22 80" fill="none" preserveAspectRatio="none">

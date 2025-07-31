@@ -40,7 +40,7 @@ namespace Rock.Web.UI.Controls
             var globalAttributes = GlobalAttributesCache.Get();
             if (globalAttributes != null)
             {
-                this.PrependText = "<i class='fa fa-envelope'></i>";
+                this.PrependText = "<i class='ti ti-mail'></i>";
             }
         }
 

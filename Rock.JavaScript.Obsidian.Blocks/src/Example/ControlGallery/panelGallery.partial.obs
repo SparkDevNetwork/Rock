@@ -1,7 +1,17 @@
 <template>
     <GalleryAndResult :importCode="importCode"
                       :exampleCode="exampleCode">
-        <Panel v-model="value" v-model:isDrawerOpen="drawerValue" :hasCollapse="collapsibleValue" :hasZoom="hasZoom" :hasFullscreen="hasFullscreen" :isFullscreenPageOnly="isFullscreenPageOnly" title="Panel Title" :headerSecondaryActions="headerSecondaryActions">
+        <Panel v-model="value"
+               v-model:isDrawerOpen="drawerValue"
+               v-model:selectedTab="selectedTab"
+               :hasCollapse="collapsibleValue"
+               :hasZoom="hasZoom"
+               :hasFullscreen="hasFullscreen"
+               :isFullscreenPageOnly="isFullscreenPageOnly"
+               title="Panel Title"
+               :headerSecondaryActions="headerSecondaryActions"
+               :tabs="tabs"
+               :worksurfaceMode="worksurfaceMode">
             <template v-if="simulateHelp" #helpContent>
                 This is some help text.
             </template>
@@ -16,11 +26,11 @@
 
             <template v-if="simulateHeaderActions" #headerActions>
                 <span class="action">
-                    <i class="fa fa-star-o"></i>
+                    <i class="ti ti-star"></i>
                 </span>
 
                 <span class="action">
-                    <i class="fa fa-user"></i>
+                    <i class="ti ti-user"></i>
                 </span>
             </template>
 
@@ -40,25 +50,76 @@
             </template>
 
             <template v-if="simulateFooterSecondaryActions" #footerSecondaryActions>
-                <RockButton btnType="default"><i class="fa fa-lock"></i></RockButton>
-                <RockButton btnType="default"><i class="fa fa-unlock"></i></RockButton>
+                <RockButton btnType="default"><i class="ti ti-lock"></i></RockButton>
+                <RockButton btnType="default"><i class="ti ti-lock-open"></i></RockButton>
             </template>
 
+            <template v-if="simulateFooterContent" #footerContent>
+                Footer Content
+            </template>
 
-            <h4>Romans 11:33-36</h4>
-            <p>
-                Oh, the depth of the riches<br />
-                and the wisdom and the knowledge of God!<br />
-                How unsearchable his judgments<br />
-                and untraceable his ways!<br />
-                For who has known the mind of the Lord?<br />
-                Or who has been his counselor?<br />
-                And who has ever given to God,<br />
-                that he should be repaid?<br />
-                For from him and through him<br />
-                and to him are all things.<br />
-                To him be the glory forever. Amen.
-            </p>
+            <template v-if="tabs.length > 0">
+                <template v-if="selectedTab === 'Mathew'">
+                    <h4>Mathew 1:1-10</h4>
+                    <p>
+                        The book of the genealogy of Jesus Christ, the son of David, the son of Abraham.<br />
+                        Abraham was the father of Isaac, and Isaac the father of Jacob, and Jacob the father of Judah and his brothers,<br />
+                        and Judah the father of Perez and Zerah by Tamar, and Perez the father of Hezron, and Hezron the father of Ram,<br />
+                        and Ram the father of Amminadab, and Amminadab the father of Nahshon, and Nahshon the father of Salmon,<br />
+                        and Salmon the father of Boaz by Rahab, and Boaz the father of Obed by Ruth, and Obed the father of Jesse.<br />
+                        And Jesse the father of David the king. And David was the father of Solomon by the wife of Uriah,<br />
+                        and Solomon the father of Rehoboam, and Rehoboam the father of Abijah, and Abijah the father of Asa,<br />
+                        and Asa the father of Jehoshaphat, and Jehoshaphat the father of Joram, and Joram the father of Uzziah,<br />
+                        and Uzziah the father of Jotham, and Jotham the father of Ahaz, and Ahaz the father of Hezekiah,<br />
+                        and Hezekiah the father of Manasseh, and Manasseh the father of Amos,<br />
+                        and Amos the father of Josiah,
+                    </p>
+                </template>
+                <template v-else-if="selectedTab === 'Mark'">
+                    <h4>Mark 1:1-3</h4>
+                    <p>
+                        The beginning of the gospel of Jesus Christ, the Son of God.<br />
+                        As it is written in Isaiah the prophet, "Behold, I send my messenger before your face,<br />
+                        who will prepare your way, the voice of one crying in the wilderness: 'Prepare the way of the Lord, make his paths straight.'"
+                    </p>
+                </template>
+                <template v-else-if="selectedTab === 'Luke'">
+                    <h4>Luke 1:1-4</h4>
+                    <p>
+                        Inasmuch as many have undertaken to compile a narrative of the things that have been accomplished among us,<br />
+                        just as those who from the beginning were eyewitnesses and ministers of the word have delivered them to us,<br />
+                        it seemed good to me also, having followed all things closely for some time past, to write an orderly account for you,<br />
+                        most excellent Theophilus, that you may have certainty concerning the things you have been taught.
+                    </p>
+                </template>
+                <template v-else-if="selectedTab === 'John'">
+                    <h4>John 1:1-5</h4>
+                    <p>
+                        In the beginning was the Word, and the Word was with God, and the Word was God.<br />
+                        He was in the beginning with God.<br />
+                        All things were made through him, and without him was not any thing made that was made.<br />
+                        In him was life, and the life was the light of men.<br />
+                        The light shines in the darkness, and the darkness has not overcome it.
+                    </p>
+                </template>
+            </template>
+
+            <template v-else>
+                <h4>Romans 11:33-36</h4>
+                <p>
+                    Oh, the depth of the riches<br />
+                    and the wisdom and the knowledge of God!<br />
+                    How unsearchable his judgments<br />
+                    and untraceable his ways!<br />
+                    For who has known the mind of the Lord?<br />
+                    Or who has been his counselor?<br />
+                    And who has ever given to God,<br />
+                    that he should be repaid?<br />
+                    For from him and through him<br />
+                    and to him are all things.<br />
+                    To him be the glory forever. Amen.
+                </p>
+            </template>
         </Panel>
 
         <template #settings>
@@ -68,6 +129,7 @@
                 <CheckBox formGroupClasses="col-sm-3" v-model="hasFullscreen" label="Has Fullscreen" />
                 <CheckBox formGroupClasses="col-sm-3" v-model="isFullscreenPageOnly" label="Page Only Fullscreen" />
                 <CheckBox formGroupClasses="col-sm-3" v-model="hasZoom" label="Has Zoom" />
+                <CheckBox formGroupClasses="col-sm-3" v-model="worksurfaceMode" label="Worksurface Mode" />
             </div>
             <CheckBoxList v-model="simulateValues" label="Simulate" :items="simulateOptions" horizontal :repeatColumns="4" />
 
@@ -75,6 +137,12 @@
         </template>
     </GalleryAndResult>
 </template>
+
+<style scoped>
+:deep(.panel-worksurface) {
+    height: 400px;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, ref } from "vue";
@@ -95,13 +163,13 @@
 
         return [
             {
-                iconCssClass: "fa fa-user",
+                iconCssClass: "ti ti-user",
                 title: "Action 1",
                 type: "default",
                 handler: () => alert("Action 1 selected.")
             },
             {
-                iconCssClass: "fa fa-group",
+                iconCssClass: "ti ti-users",
                 title: "Action 2",
                 type: "default",
                 handler: () => alert("Action 2 selected.")
@@ -113,6 +181,7 @@
     const drawerValue = ref(false);
     const hasFullscreen = ref(false);
     const hasZoom = ref(false);
+    const worksurfaceMode = ref(false);
     const simulateOptions = [
         {
             value: "drawer",
@@ -121,6 +190,10 @@
         {
             value: "sidebar",
             text: "Sidebar"
+        },
+        {
+            value: "tabs",
+            text: "Tabs"
         },
         {
             value: "headerActions",
@@ -147,12 +220,12 @@
             text: "Footer Secondary Actions"
         },
         {
-            value: "helpContent",
-            text: "Help Content"
+            value: "footerContent",
+            text: "Footer Content"
         },
         {
-            value: "largeBody",
-            text: "Large Body"
+            value: "helpContent",
+            text: "Help Content"
         }
     ];
     const simulateDrawer = computed((): boolean => simulateValues.value.includes("drawer"));
@@ -160,13 +233,24 @@
     const simulateHeaderActions = computed((): boolean => simulateValues.value.includes("headerActions"));
     const simulateSubheaderLeft = computed((): boolean => simulateValues.value.includes("subheaderLeft"));
     const simulateSubheaderRight = computed((): boolean => simulateValues.value.includes("subheaderRight"));
+    const simulateTabs = computed((): boolean => simulateValues.value.includes("tabs"));
     const simulateFooterActions = computed((): boolean => simulateValues.value.includes("footerActions"));
     const simulateFooterSecondaryActions = computed((): boolean => simulateValues.value.includes("footerSecondaryActions"));
-    const simulateLargeBody = computed((): boolean => simulateValues.value.includes("largeBody"));
+    const simulateFooterContent = computed((): boolean => simulateValues.value.includes("footerContent"));
     const simulateHelp = computed((): boolean => simulateValues.value.includes("helpContent"));
     const isFullscreenPageOnly = ref(true);
     const value = ref(true);
     const importCode = getSfcControlImportPath("panel");
+
+    const selectedTab = ref("Mathew");
+    const tabs = computed((): string[] => {
+        return simulateTabs.value ? ["Mathew", "Mark", "Luke", "John"] : [];
+    });
+
+    const panelWithSidebarHeight = computed((): string => {
+        return worksurfaceMode.value ? "400px" : "initial";
+    });
+
     const exampleCode = `<Panel v-model="isExanded" v-model:isDrawerOpen="false" title="Panel Title" :hasCollapse="true" :hasFullscreen="false" :isFullscreenPageOnly="true" :headerSecondaryActions="false">
     <template #helpContent>Help Content</template>
     <template #sidebar>Sidebar Content</template>
@@ -176,6 +260,7 @@
     <template #subheaderRight>Sub Header Right</template>
     <template #footerActions>Footer Actions</template>
     <template #footerSecondaryActions>Footer Secondary Actions</template>
+    <template #footerContent>Footer Content</template>
 
     Main Panel Content
 </Panel>`;

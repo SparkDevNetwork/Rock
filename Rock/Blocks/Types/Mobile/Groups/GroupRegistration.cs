@@ -36,7 +36,7 @@ namespace Rock.Blocks.Types.Mobile.Groups
     [DisplayName( "Group Registration" )]
     [Category( "Mobile > Groups" )]
     [Description( "Allows a person to register for a group." )]
-    [IconCssClass( "fa fa-user-plus" )]
+    [IconCssClass( "ti ti-user-plus" )]
     [SupportedSiteTypes( Model.SiteType.Mobile )]
 
     #region Block Attributes

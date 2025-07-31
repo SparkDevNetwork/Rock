@@ -2058,7 +2058,7 @@ export function createComponentBackgroundColorProvider(
     const bgcolorAttributeProvider = createDomWatcherProvider(
         componentElement,
         getPaddingWrapperTableSelector(componentTypeName),
-        (el) => attributeProvider(el, "bgcolor", hexConverter, undefined),
+        (el) => attributeProvider(el, "bgcolor", bgcolorConverter, undefined),
         backgroundColorInlineStyleProvider.value,
         {
             includeSelf: true
@@ -2134,7 +2134,7 @@ function createGlobalComponentBackgroundColorProvider(
         body,
         `.component:not([data-component-background-color="true"]) ${getPaddingWrapperTableSelector(componentTypeName)}`,
         (el) => {
-            return attributeProvider(el, "bgcolor", stringConverter);
+            return attributeProvider(el, "bgcolor", bgcolorConverter);
         },
         undefined
     );
@@ -2214,7 +2214,7 @@ export function createComponentOuterBackgroundColorProvider(
     const bgcolorAttributeProvider = createDomWatcherProvider(
         componentElement,
         `.${componentClass}.component.margin-wrapper`,
-        (el) => attributeProvider(el, "bgcolor", stringConverter),
+        (el) => attributeProvider(el, "bgcolor", bgcolorConverter),
         backgroundColorInlineStyleProvider.value,
         {
             includeSelf: true
@@ -2273,6 +2273,53 @@ export function getGlobalBodyBackgroundColorProvider(
 
 const globalBackgroundColorProviderCache = new WeakPair<Document, ValueProvider<string | null | undefined>>();
 
+function extendConverter(
+    converter: ValueConverter<string | null | undefined, string | null>,
+    {
+        toSourceAfter,
+        toSourceBefore,
+        toTargetAfter,
+        toTargetBefore
+    }: {
+        toSourceBefore?: (target: string | null) => string | null,
+        toSourceAfter?: (source: string | null | undefined) => string | null | undefined,
+        toTargetBefore?: (source: string | null | undefined) => string | null | undefined,
+        toTargetAfter?: (target: string | null) => string | null
+    }
+): ValueConverter<string | null | undefined, string | null> {
+    toSourceAfter = toSourceAfter ?? ((source) => source);
+    toSourceBefore = toSourceBefore ?? ((target) => target);
+    toTargetAfter = toTargetAfter ?? ((target) => target);
+    toTargetBefore = toTargetBefore ?? ((source) => source);
+
+    return {
+        toSource(target: string | null): string | null | undefined {
+            return toSourceAfter!(converter.toSource(toSourceBefore!(target)));
+        },
+
+        toTarget(source: string | null | undefined): string | null {
+            return toTargetAfter!(converter.toTarget(toTargetBefore!(source)));
+        }
+    };
+}
+
+const bgcolorConverter = extendConverter(hexConverter, {
+    toTargetAfter(target: string | null): string | null {
+        // bgcolor doesn't allow hex values with alpha values.
+        // If transparent, use the "transparent" named color instead.
+        if (target?.startsWith("#")
+            && (
+                (target.length === 5 && target.endsWith("0"))     // #RGBA
+                || (target.length === 9 && target.endsWith("00")) // #RRGGBBAA
+            )
+        ) {
+            return "transparent";
+        }
+
+        return target;
+    }
+});
+
 export function createGlobalBackgroundColorProvider(
     document: Document
 ): ValueProvider<string | null | undefined> {
@@ -2285,7 +2332,7 @@ export function createGlobalBackgroundColorProvider(
     const bgcolorAttributeProvider = createDomWatcherProvider(
         body,
         GlobalStylesCssSelectors.backgroundColor,
-        (el) => attributeProvider(el, "bgcolor", stringConverter),
+        (el) => attributeProvider(el, "bgcolor", bgcolorConverter),
         undefined
     );
 

@@ -26,7 +26,7 @@
 
                             <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
                                 <asp:Literal ID="lCurrentCampusSelection" runat="server" />
-                                <b class="fa fa-caret-down"></b>
+                                <b class="ti ti-caret-down"></b>
                             </a>
 
                             <ul class="dropdown-menu">
@@ -47,7 +47,7 @@
 
                             <a class="dropdown-toggle navbar-link" href="#" data-toggle="dropdown">
                                 <asp:Literal ID="lCurrentScheduleSelection" runat="server" />
-                                <b class="fa fa-caret-down"></b>
+                                <b class="ti ti-caret-down"></b>
                             </a>
 
                             <ul class="dropdown-menu">
@@ -65,7 +65,7 @@
             </div>
 
             <div class="setter-toggle pull-right">
-                <i class="fa fa-chevron-down cursor-pointer margin-h-sm js-setter-show-options"></i>
+                <i class="ti ti-chevron-down cursor-pointer margin-h-sm js-setter-show-options"></i>
             </div>
         </div>
 
@@ -77,7 +77,7 @@
 
                     $(this).parents('.js-setter').find('.js-setter-options').toggle();
                     $(this).parents('.js-setter').find('.js-setter-state').toggle();
-                    toggleControl.toggleClass('fa-chevron-up fa-chevron-down');
+                    toggleControl.toggleClass('ti-chevron-up ti-chevron-down');
                 });
             });
         </script>

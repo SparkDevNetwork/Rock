@@ -37,7 +37,7 @@ namespace Rock.Blocks.Reporting
     [DisplayName( "Persisted Data View List" )]
     [Category( "Reporting" )]
     [Description( "Shows a list of Data Views that have persistence enabled." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

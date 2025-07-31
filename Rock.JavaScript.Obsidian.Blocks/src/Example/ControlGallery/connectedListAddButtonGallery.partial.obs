@@ -34,19 +34,19 @@
         if (!hideActions.value) {
             return [
                 {
-                    iconCssClass: "fa fa-envelope",
+                    iconCssClass: "ti ti-mail",
                     title: "Email",
                     type: "default",
                     handler: () => alert("Email clicked"),
                 },
                 {
-                    iconCssClass: "fa fa-sms",
+                    iconCssClass: "ti ti-device-mobile-message",
                     title: "SMS",
                     type: "default",
                     handler: () => alert("SMS clicked"),
                 },
                 {
-                    iconCssClass: "fa fa-mobile-alt",
+                    iconCssClass: "ti ti-device-mobile",
                     title: "Push Notification",
                     type: "default",
                     handler: () => alert("Push Notification clicked"),

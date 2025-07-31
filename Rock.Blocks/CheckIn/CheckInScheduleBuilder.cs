@@ -18,7 +18,7 @@ namespace Rock.Blocks.CheckIn
     [DisplayName( "Schedule Builder" )]
     [Category( "Check-in" )]
     [Description( "Helps to build schedules used for check-in." )]
-    [IconCssClass( "fa fa-clipboard" )]
+    [IconCssClass( "ti ti-clipboard" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "28B9DAB2-C58A-4459-9EE7-8D1895C09592" )]

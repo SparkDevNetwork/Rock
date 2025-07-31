@@ -39,8 +39,8 @@ namespace Rock.Blocks.Core
     [DisplayName( "AI Provider Detail" )]
     [Category( "Core" )]
     [Description( "Displays the details of a particular ai provider." )]
-    [IconCssClass( "fa fa-question" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [IconCssClass( "ti ti-question-mark" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

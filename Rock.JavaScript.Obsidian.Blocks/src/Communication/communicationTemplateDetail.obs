@@ -83,7 +83,7 @@
             <Panel :modelValue="true"
                    :hasCollapse="true"
                    title="Email"
-                   titleIconCssClass="fa fa-envelope"
+                   titleIconCssClass="ti ti-mail"
                    type="widget">
                 <div class="row">
                     <div class="col-md-6">
@@ -170,7 +170,7 @@
                         <div class="attachment">
                             <ul class="attachment-content">
                                 <li v-for="binaryFileAttachment in attachments">
-                                    <a :href="`/GetFile.ashx?guid=${binaryFileAttachment.value}&fileName=${binaryFileAttachment.text}`" target="_blank" rel="noopener noreferrer">{{ binaryFileAttachment.text }}</a> <a :disabled="isSaving"><i class="fa fa-times" @click="onAttachmentRemoved(binaryFileAttachment)"></i></a>
+                                    <a :href="`/GetFile.ashx?guid=${binaryFileAttachment.value}&fileName=${binaryFileAttachment.text}`" target="_blank" rel="noopener noreferrer">{{ binaryFileAttachment.text }}</a> <a :disabled="isSaving"><i class="ti ti-x" @click="onAttachmentRemoved(binaryFileAttachment)"></i></a>
                                 </li>
                             </ul>
                         </div>
@@ -183,23 +183,23 @@
                         <div v-if="!isAdvancedShown" class="email-preview-buttons btn-group" data-toggle="buttons">
                             <RockButton btnType="default"
                                         :class="emailPreviewMode === 'desktop' ? 'email-preview-selected' : ''"
-                                        @click="emailPreviewMode = 'desktop'"><i class="fa fa-laptop"></i> Desktop</RockButton>
+                                        @click="emailPreviewMode = 'desktop'"><i class="ti ti-device-laptop"></i> Desktop</RockButton>
                             <RockButton btnType="default"
                                         :class="emailPreviewMode === 'mobile' ? 'email-preview-selected' : ''"
-                                        @click="emailPreviewMode = 'mobile'"><i class="fa fa-mobile-alt"></i> Mobile</RockButton>
+                                        @click="emailPreviewMode = 'mobile'"><i class="ti ti-device-mobile"></i> Mobile</RockButton>
                         </div>
                         <div v-if="!isAdvancedShown" class="email-actions">
                             <template v-if="isFeatureEnabled('EMAIL_BUILDER_FEATURE', version)">
                                 <RockButton v-if="!config.isEditRestrictedSystem"
                                             btnType="info"
                                             @click="onOpenEmailBuilder">
-                                    <i class="fa fa-drafting-compass"></i> Email Builder
+                                    <i class="ti ti-geometry"></i> Email Builder
                                 </RockButton>
                             </template>
 
                             <RockButton btnType="default"
                                         isSquare
-                                        @click="onShowAdvanced"><i class="fa fa-code"></i></RockButton>
+                                        @click="onShowAdvanced"><i class="ti ti-code"></i></RockButton>
                         </div>
                     </div>
 
@@ -233,7 +233,7 @@
             <Comment><!-- SMS PANEL (begin) --></Comment>
             <Panel :hasCollapse="true"
                    title="SMS"
-                   titleIconCssClass="fa fa-comments"
+                   titleIconCssClass="ti ti-messages"
                    type="widget">
                 <div class="row">
                     <div class="col-md-6">
@@ -261,7 +261,7 @@
             <Comment><!-- PUSH PANEL (begin) --></Comment>
             <Panel :hasCollapse="true"
                    title="Push"
-                   titleIconCssClass="fa fa-mobile-phone"
+                   titleIconCssClass="ti ti-device-mobile"
                    type="widget">
                 <div class="row">
                     <div class="col-md-6">
@@ -420,9 +420,10 @@
                 <EmailEditor :html="message"
                              :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
                              :disabled="isSaving"
-                             :videoProviderNames="undefined"
+                             :getHtmlRequest="getHtmlRequest"
                              :recipientPersonIds="undefined"
-                             :getHtmlRequest="getHtmlRequest" />
+                             usageType="template"
+                             :videoProviderNames="undefined" />
             </div>
         </template>
 

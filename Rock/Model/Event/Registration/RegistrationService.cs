@@ -28,6 +28,66 @@ namespace Rock.Model
     public partial class RegistrationService
     {
         /// <summary>
+        /// Attempts to deactivate (not delete) the payment plan for a registration.
+        /// </summary>
+        /// <param name="registration">The registration whose payment plan should be deactivated.</param>
+        /// <param name="financialScheduledTransactionService">The financial scheduled transaction service.</param>
+        /// <param name="error">Set to an error message if the operation fails.</param>
+        /// <param name="warning">Set to a warning message if the operation succeeds with a warning.</param>
+        /// <returns>True if successful, false if there was an error.</returns>
+        public bool TryCancelPaymentPlan( Registration registration, FinancialScheduledTransactionService financialScheduledTransactionService, out string error, out string warning )
+        {
+            if ( registration?.PaymentPlanFinancialScheduledTransaction == null || !registration.PaymentPlanFinancialScheduledTransaction.IsActive )
+            {
+                error = null;
+                warning = null;
+                return true;
+            }
+
+            var financialScheduledTransactionId = registration?.PaymentPlanFinancialScheduledTransactionId;
+            if ( !financialScheduledTransactionId.HasValue )
+            {
+                error = null;
+                warning = "This registration has no payment plan or it has already been canceled.";
+                return true;
+            }
+
+            var financialScheduledTransaction = financialScheduledTransactionService.Get( financialScheduledTransactionId.Value );
+
+            if ( financialScheduledTransaction == null )
+            {
+                error = null;
+                warning = "The payment plan record could not be found. It may have already been canceled.";
+                return true;
+            }
+
+            if ( !financialScheduledTransactionService.Cancel( financialScheduledTransaction, out var cancelErrorMessage ) )
+            {
+                error = $"An error occurred while canceling your scheduled transaction on the financial gateway. Message: {cancelErrorMessage}";
+                warning = null;
+                return false;
+            }
+
+            try
+            {
+                if ( !financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out var getStatusErrorMessage ) )
+                {
+                    error = null;
+                    warning = $"The scheduled transaction was canceled on the financial gateway but was not marked inactive in Rock. Message: {getStatusErrorMessage}";
+                    return true;
+                }
+            }
+            catch
+            {
+                // Ignore
+            }
+
+            error = null;
+            warning = null;
+            return true;
+        }
+
+        /// <summary>
         /// Gets the payments.
         /// </summary>
         /// <param name="registrationId">The registration identifier.</param>

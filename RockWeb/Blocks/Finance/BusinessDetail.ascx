@@ -6,13 +6,13 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-briefcase"></i>
+                    <h1 class="panel-title"><i class="ti ti-briefcase"></i>
                         <asp:Literal ID="lTitle" runat="server" /></h1>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlStatus" runat="server" />
 
                         <asp:Panel ID="pnlActionWrapper" runat="server" CssClass="js-button-dropdownlist panel-options pull-right dropdown-right btn-group">
-                            <button type="button" class="btn btn-default dropdown-toggle js-buttondropdown-btn-select" data-toggle="dropdown">Actions <i class="fa fa-caret-down"></i></button>
+                            <button type="button" class="btn btn-default dropdown-toggle js-buttondropdown-btn-select" data-toggle="dropdown">Actions <i class="ti ti-caret-down"></i></button>
                             <ul class="dropdown-menu">
                                 <asp:Literal ID="lActions" runat="server" />
                             </ul>

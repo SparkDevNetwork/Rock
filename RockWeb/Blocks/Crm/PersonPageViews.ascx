@@ -5,7 +5,7 @@
 
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-desktop"></i> <asp:Literal ID="lPersonName" runat="server" /></h1>
+                    <h1 class="panel-title"><i class="ti ti-device-desktop"></i> <asp:Literal ID="lPersonName" runat="server" /></h1>
                     <div class="form-inline panel-labels hidden-xs">
                         <Rock:DateRangePicker ID="drpDateFilter" runat="server" Label="Date Filter"  />
                         <asp:Button ID="btnFilter" runat="server" Text="Filter" CssClass="btn btn-action btn-xs" OnClick="btnFilter_Click" />
@@ -42,8 +42,8 @@
                 </asp:Repeater>
 
                     <div class="nav-paging">
-                        <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" Visible="false" runat="server" Text="<i class='fa fa-chevron-left'></i> Prev" />
-                        <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" Visible="false" runat="server" Text="Next <i class='fa fa-chevron-right'></i>" />
+                        <asp:HyperLink ID="hlPrev" CssClass="btn btn-primary btn-prev" Visible="false" runat="server" Text="<i class='ti ti-chevron-left'></i> Prev" />
+                        <asp:HyperLink ID="hlNext" CssClass="btn btn-primary btn-next" Visible="false" runat="server" Text="Next <i class='ti ti-chevron-right'></i>" />
                     </div>
 
                 </div>

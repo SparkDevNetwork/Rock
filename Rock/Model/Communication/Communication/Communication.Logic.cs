@@ -24,6 +24,8 @@ using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Communication;
 using Rock.Data;
 using Rock.Observability;
@@ -590,34 +592,47 @@ INNER JOIN @DuplicateRecipients dr
                 https://github.com/SparkDevNetwork/Rock/issues/5651
             */
 
+            /*
+                7/3/2025 - MSE
+
+                Fixed a bug where merging person records prior to the communication being sent
+                caused individuals to be removed from communication records entirely.
+
+                The logic ensures that for each person, at least one recipient record is retained (preferably the one with the primary alias).
+
+                Reason: Prevent loss of valid recipients in scheduled communications due to person merges.
+            */
+
             using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Remove Non-Primary Person Alias Recipients" ) )
             {
-                var communicationRecipientService = new CommunicationRecipientService( rockContext );
-
                 var recipientsQry = GetRecipientsQry( rockContext );
 
                 int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
                 if ( smsMediumEntityTypeId.HasValue )
                 {
-                    var duplicateSMSRecipientsQuery = recipientsQry
-                        .Where( a =>
-                            a.MediumEntityTypeId == smsMediumEntityTypeId.Value
-                            && a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId
+                    var smsRecipientsToDelete = recipientsQry
+                        .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId.Value )
+                        .GroupBy( r => r.PersonAlias.PersonId )
+                        .SelectMany( g => g
+                            .OrderByDescending( r => r.PersonAlias.PersonId == r.PersonAlias.AliasPersonId ? 1 : 0 )
+                            .ThenBy( r => r.Id )
+                            .Skip( 1 )
                         );
-
-                    rockContext.BulkDelete<CommunicationRecipient>( duplicateSMSRecipientsQuery );
+                    rockContext.BulkDelete( smsRecipientsToDelete );
                 }
 
                 int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
                 if ( emailMediumEntityTypeId.HasValue )
                 {
-                    var duplicateEmailRecipientsQry = recipientsQry
-                        .Where( a =>
-                            a.MediumEntityTypeId == emailMediumEntityTypeId.Value
-                            && a.PersonAlias.PersonId != a.PersonAlias.AliasPersonId
+                    var emailRecipientsToDelete = recipientsQry
+                        .Where( r => r.MediumEntityTypeId == emailMediumEntityTypeId.Value )
+                        .GroupBy( r => r.PersonAlias.PersonId )
+                        .SelectMany( g => g
+                            .OrderByDescending( r => r.PersonAlias.PersonId == r.PersonAlias.AliasPersonId ? 1 : 0 )
+                            .ThenBy( r => r.Id )
+                            .Skip( 1 )
                         );
-
-                    rockContext.BulkDelete<CommunicationRecipient>( duplicateEmailRecipientsQry );
+                    rockContext.BulkDelete( emailRecipientsToDelete );
                 }
             }
         }
@@ -831,10 +846,16 @@ INNER JOIN @DuplicateRecipients dr
         /// this method will determine which medium entity type id should be used and return that id.
         /// </summary>
         /// <remarks>
-        ///  NOTE: For the given communicationTypePreferences parameters array, in the event that CommunicationType.RecipientPreference is given,
-        ///  the logic below will use the *next* given CommunicationType to determine which medium/type is selected/returned. If none is available,
-        ///  it will return the email medium entity type id.  Typically is expected that the ordered params list eventually has either
-        ///  CommunicationType.Email, CommunicationType.SMS or CommunicationType.PushNotification.
+        /// <list type="bullet">
+        ///  <item>NOTE 1: If you have a SystemCommunication, we recommend using the DetermineMediumEntityTypeId overload that
+        ///          accepts a SystemCommunication parameter because it performs more checks to ensure that the SMS
+        ///          and/or Push mediums are valid for the given communication.</item>
+        ///          
+        ///  <item>NOTE 2: For the given communicationTypePreferences parameters array, in the event that CommunicationType.RecipientPreference is given,
+        ///          the logic below will use the *next* given CommunicationType to determine which medium/type is selected/returned.
+        ///          If none is available, it will return the email medium entity type id.  Typically is expected that the ordered
+        ///          params list eventually has either CommunicationType.Email, CommunicationType.SMS or CommunicationType.PushNotification.</item>
+        /// </list>
         /// </remarks>
         /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
         /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
@@ -865,6 +886,107 @@ INNER JOIN @DuplicateRecipients dr
                         }
 
                         return emailMediumEntityTypeId;
+                    default:
+                        throw new ArgumentException( $"Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()}", "communicationTypePreference" );
+                }
+            }
+
+            return emailMediumEntityTypeId;
+        }
+
+        /// <summary>
+        /// Determines the medium entity type identifier taking into account whether the Medium (SMS and Push) is active and
+        /// whether the communication has the required values set for that type.  For example, if the SMS Medium is active,
+        /// but the communication does not have an SMS From System Phone Number set, then it will not be returned as the
+        /// medium entity type id.
+        /// 
+        /// Given the email, SMS medium, and Push entity type ids, along with the available communication preferences,
+        /// this method will determine which medium entity type id should be used and return that id.
+        /// </summary>
+        /// 
+        /// <remarks>
+        /// NOTES:
+        ///     <list type="bullet">
+        ///     <item>If the person does not have an SMS number then SMS is not available for sending.</item>
+        ///     <item>If a medium is not active, then it is not available for sending.</item>
+        ///     <item>For the given communicationTypePreferences parameters array, in the event that CommunicationType.RecipientPreference is given,
+        ///       the logic below will use the *next* given CommunicationType to determine which medium/type is selected/returned.
+        ///     </item>
+        ///     <item>If no suitable medium entity type could be selected, it will fall back to Email.</item>
+        ///     </list>
+        /// </remarks>
+        /// <param name="emailMediumEntityTypeId">The email medium entity type identifier.</param>
+        /// <param name="smsMediumEntityTypeId">The SMS medium entity type identifier.</param>
+        /// <param name="pushMediumEntityTypeId">The push medium entity type identifier.</param>
+        /// <param name="communication">The <see cref="Rock.Model.SystemCommunication"/> that is intended to be sent.</param>
+        /// <param name="person">The <see cref="Rock.Model.Person"/> that the communication is being sent to.</param>
+        /// <param name="communicationTypePreference">An array of ordered communication type preferences.</param>
+        /// <returns></returns>
+        /// <exception cref="ArgumentException">Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()} - communicationTypePreference</exception>
+        /// <exception cref="Exception">Unexpected CommunicationType: " + currentCommunicationPreference.ConvertToString()</exception>
+        public static int DetermineMediumEntityTypeId( int emailMediumEntityTypeId, int smsMediumEntityTypeId, int pushMediumEntityTypeId, SystemCommunication communication, Person person, params CommunicationType[] communicationTypePreference )
+        {
+            var isSmsActive = MediumContainer.HasActiveSmsTransport();
+            var isPushActive = MediumContainer.HasActivePushTransport();
+
+            // Only check for the person's SMS number if SMS is one of the possible communications types being considered.
+            string personSmsNumber = string.Empty;
+            if ( communicationTypePreference.Contains( CommunicationType.SMS ) )
+            {
+                personSmsNumber = person?.PhoneNumbers != null
+                    ? person.PhoneNumbers.GetFirstSmsNumber()
+                    : null;
+            }
+
+            var isSmsAvailableForCommunication = communication.SmsFromSystemPhoneNumberId.HasValue && !string.IsNullOrWhiteSpace( personSmsNumber );
+            var isPushAvailableForCommunication = !( string.IsNullOrWhiteSpace( communication.PushMessage ) && string.IsNullOrWhiteSpace( communication.PushTitle ));
+
+            for ( var i = 0; i < communicationTypePreference.Length; i++ )
+            {
+                var currentCommunicationPreference = communicationTypePreference[i];
+                var hasNextCommunicationPreference = ( i + 1 ) < communicationTypePreference.Length;
+
+                switch ( currentCommunicationPreference )
+                {
+                    case CommunicationType.Email:
+                        return emailMediumEntityTypeId;
+
+                    case CommunicationType.SMS:
+                        if ( isSmsActive && isSmsAvailableForCommunication )
+                        {
+                            return smsMediumEntityTypeId;
+                        }
+                        if ( hasNextCommunicationPreference )
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                    case CommunicationType.PushNotification:
+                        if ( isPushActive && isPushAvailableForCommunication )
+                        {
+                            return pushMediumEntityTypeId;
+                        }
+                        if ( hasNextCommunicationPreference )
+                        {
+                            break;
+                        }
+                        else
+                        {
+                            continue;
+                        }
+
+                    case CommunicationType.RecipientPreference:
+                        if ( hasNextCommunicationPreference )
+                        {
+                            break;
+                        }
+
+                        return emailMediumEntityTypeId;
+
                     default:
                         throw new ArgumentException( $"Unexpected CommunicationType: {currentCommunicationPreference.ConvertToString()}", "communicationTypePreference" );
                 }
@@ -920,7 +1042,7 @@ INNER JOIN @DuplicateRecipients dr
                             Reason: Communications with a large number of recipients time out and don't send.
                             https://github.com/SparkDevNetwork/Rock/issues/5651
                         */
-                        rockContext.Database.CommandTimeout = 90;
+                        rockContext.Database.SetCommandTimeout( 90 );
 
                         if ( communication.ListGroupId.HasValue )
                         {
@@ -990,7 +1112,7 @@ INNER JOIN @DuplicateRecipients dr
                             Reason: Communications with a large number of recipients time out and don't send.
                             https://github.com/SparkDevNetwork/Rock/issues/5651
                         */
-                        rockContext.Database.CommandTimeout = 90;
+                        rockContext.Database.SetCommandTimeout( 90 );
 
                         if ( communication.ListGroupId.HasValue )
                         {

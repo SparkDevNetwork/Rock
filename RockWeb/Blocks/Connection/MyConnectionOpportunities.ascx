@@ -27,7 +27,7 @@
         <div class="panel panel-block">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class='fa fa-plug'></i>
+                    <i class='ti ti-plug'></i>
                     My Connection Requests</h1>
 
                 <div class="pull-right">
@@ -35,7 +35,7 @@
                     <Rock:Toggle ID="tglShowActive" CssClass="margin-r-sm pull-left" runat="server" OffText="All Types" ActiveButtonCssClass="btn-primary" ButtonSizeCssClass="btn-xs" OnText="Active Types" AutoPostBack="true" OnCheckedChanged="tglShowActive_CheckedChanged" Checked="true" />
                     <Rock:Toggle ID="tglMyOpportunities" CssClass="margin-r-sm pull-left" runat="server" OnText="My Requests" OnCssClass="btn-primary" OffCssClass="btn-outline-primary" ActiveButtonCssClass="btn-primary" ButtonSizeCssClass="btn-xs" OffText="All Requests" AutoPostBack="true" OnCheckedChanged="tglMyOpportunities_CheckedChanged" Checked="true" />
                     <asp:Label ID="lTotal" runat="server" CssClass="margin-r-sm pull-left label label-default" Style="line-height:1.6;" />
-                    <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"> <i title="Options" class="fa fa-gear"></i></asp:LinkButton>
+                    <asp:LinkButton ID="lbConnectionTypes" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right pull-right" OnClick="lbConnectionTypes_Click" CausesValidation="false"> <i title="Options" class="ti ti-settings"></i></asp:LinkButton>
                 </div>
 
             </div>

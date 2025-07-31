@@ -1,0 +1,122 @@
+<template>
+    <div class="content-stack" :class="additionalStackClasses">
+        <div v-if="title || description || $slots.header" class="sidebar">
+            <div class="content-stack-header">
+                <p v-if="title" class="content-stack-header-title">{{ title }}</p>
+                <p v-if="description" class="content-stack-header-description">{{ description }}</p>
+
+                <slot name="header" />
+            </div>
+        </div>
+
+        <div class="content-stack-body">
+            <slot />
+        </div>
+    </div>
+</template>
+
+<style>
+.content-stack {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-large);
+    width: 100%;
+    height: auto;
+}
+
+.content-stack-body {
+    flex: 1 1 80%
+}
+
+.content-stack > .sidebar {
+    max-width: 400px;
+    padding-top: 0;
+}
+
+.content-stack.sidebar-left > .sidebar {
+    flex: 0 0 20%;
+}
+
+.content-stack.sidebar-right > .sidebar {
+    flex: 0 0 30%;
+}
+
+.content-stack.sidebar-right {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.content-stack.sidebar-right .sidebar .content-stack-header-title {
+    display: none;
+}
+
+.content-stack.sidebar-right .content-stack-body {
+    padding-left: 0;
+    flex: 1 1 70%
+}
+
+.content-stack.sidebar-right .sidebar {
+    flex: 0 0 30%;
+}
+
+.content-stack-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+}
+
+.content-stack-header-title {
+    color: var(--color-interface-strong);
+    margin: 0;
+}
+
+.content-stack-header-description {
+    color: var(--color-interface-medium);
+
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+
+    const props = defineProps({
+        /**
+         * The title of the stack. This should be a brief, descriptive label
+         * about the contents of the stack.
+         */
+        title: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * The description of the stack. This should provide more context
+         * about the contents of the stack.
+         */
+        description: {
+            type: String as PropType<string>,
+            default: ""
+        },
+
+        /**
+         * The position of the sidebar. This can be either "left" or "right".
+         */
+        sidebarPosition: {
+            type: String as PropType<"left" | "right">,
+            default: "left"
+        },
+    });
+
+    // #region Computed Values
+
+    /**
+     * Additional classes to apply to the stack based on its configuration.
+     */
+    const additionalStackClasses = computed((): string[] => {
+        return [
+            props.sidebarPosition === "right" ? "sidebar-right" : "sidebar-left"
+        ];
+    });
+
+    // #endregion
+</script>

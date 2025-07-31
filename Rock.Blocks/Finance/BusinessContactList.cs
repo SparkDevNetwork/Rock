@@ -36,7 +36,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Business Contact List" )]
     [Category( "Finance" )]
     [Description( "Displays the list of contacts for a business." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Person Profile Page",

@@ -309,13 +309,13 @@ namespace RockWeb.Blocks.Groups
                         if ( groupInfo.IsSynced )
                         {
                             deleteButton.Enabled = false;
-                            buttonIcon.Attributes["class"] = "fa fa-exchange";
+                            buttonIcon.Attributes["class"] = "ti ti-switch-3";
 
                             deleteButton.ToolTip = string.Format( "Managed by group sync for role \"{0}\".", groupInfo.GroupRole );
                         }
                         else if ( groupInfo.GroupType.EnableGroupHistory && _groupsWithGroupHistory.Contains( groupInfo.Id ) )
                         {
-                            buttonIcon.Attributes["class"] = "fa fa-archive";
+                            buttonIcon.Attributes["class"] = "ti ti-archive";
                             deleteButton.AddCssClass( "btn-danger" );
                             deleteButton.ToolTip = "Archive";
                             e.Row.AddCssClass( "js-has-grouphistory" );
@@ -1037,7 +1037,7 @@ namespace RockWeb.Blocks.Groups
             else
             {
                 lTitle.Text = BlockName;
-                iIcon.AddCssClass( "fa fa-users" );
+                iIcon.AddCssClass( "ti ti-users" );
             }
 
             // if a SetPanelTitle is specified in block settings, use that instead

@@ -104,7 +104,7 @@
 
     const jobTypeErrorMessage = computed((): string => {
         const errorMessage = ref("");
-        if (props.modelValue?.class && !jobTypeOptions.some(option => option.jobType.value === props.modelValue?.class)) {
+        if (props.modelValue?.class && !jobTypeOptions.some(option => option.jobType?.value === props.modelValue?.class)) {
             errorMessage.value = "Unable to find Job Type: " + props.modelValue.class;
         }
 

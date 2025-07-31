@@ -40,7 +40,7 @@
     import { DetailPanelMode } from "@Obsidian/Enums/Controls/detailPanelMode";
     import EditPanel from "./DefinedTypeDetail/editPanel.partial.obs";
     import ViewPanel from "./DefinedTypeDetail/viewPanel.partial.obs";
-    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, useEntityDetailBlock, onConfigurationValuesChanged } from "@Obsidian/Utility/block";
+    import { useConfigurationValues, useInvokeBlockAction, useReloadBlock, useEntityDetailBlock, onConfigurationValuesChanged, getSecurityGrant, provideSecurityGrant } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./DefinedTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { DefinedTypeBag } from "@Obsidian/ViewModels/Blocks/Core/DefinedTypeDetail/definedTypeBag";
@@ -49,6 +49,8 @@
 
     const config = useConfigurationValues<DetailBlockBox<DefinedTypeBag, DefinedTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
+    const securityGrant = getSecurityGrant(config.securityGrantToken);
+    provideSecurityGrant(securityGrant);
 
     // #region Values
 

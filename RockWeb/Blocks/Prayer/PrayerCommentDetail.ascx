@@ -5,10 +5,10 @@
             <section class="widget persontimeline">
                 <header class="clearfix">
                     <h4>
-                        <i class="fa fa-comment"></i>
+                        <i class="ti ti-message"></i>
                         <asp:Literal ID="lTitle" runat="server"></asp:Literal>
                     </h4>
-                    <a class="btn btn-default btn-sm add-note"><i class="fa fa-plus"></i></a>
+                    <a class="btn btn-default btn-sm add-note"><i class="ti ti-plus"></i></a>
                 </header>
 
                 <div class="widget-content">

@@ -168,7 +168,7 @@ $('.workflow-action.editable > header').on('click', function () {
     $expanded = $(this).children('input.filter-expanded');
     $expanded.val($expanded.val() == 'True' ? 'False' : 'True');
 
-    $('i.workflow-action-state', this).toggleClass('fa-chevron-down fa-chevron-up');
+    $('i.workflow-action-state', this).toggleClass('ti-chevron-down ti-chevron-up');
 });
 
 // fix so that the Remove button will fire its event, but not the parent event
@@ -215,8 +215,8 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
     $expanded = $header.children('input.filter-expanded');
     $expanded.val('True');
 
-    $('i.workflow-action-state', $header).removeClass('fa-chevron-down');
-    $('i.workflow-action-state', $header).addClass('fa-chevron-up');
+    $('i.workflow-action-state', $header).removeClass('ti-chevron-down');
+    $('i.workflow-action-state', $header).addClass('ti-chevron-up');
 });
 ";
             ScriptManager.RegisterStartupScript( this, this.GetType(), "WorkflowActionTypeEditorScript", script, true );
@@ -418,7 +418,7 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
 
             var iDelete = new HtmlGenericControl( "i" );
             _lbDeleteActionType.Controls.Add( iDelete );
-            iDelete.AddCssClass( "fa fa-times" );
+            iDelete.AddCssClass( "ti ti-x" );
 
             _ddlCriteriaAttribute = new RockDropDownList();
             Controls.Add( _ddlCriteriaAttribute );
@@ -532,10 +532,10 @@ $('.workflow-action > .panel-body').on('validation-error', function() {
                 writer.RenderBeginTag( HtmlTextWriterTag.Div );
 
                 string criteriaExistsClass = _ddlCriteriaAttribute.SelectedValueAsGuid().HasValue ? " criteria-exists" : string.Empty;
-                writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link js-workflow-action-criteria{0}'><i class='fa fa-filter'></i></a>", criteriaExistsClass ) );
-                writer.WriteLine( "<a class='btn btn-xs btn-link workflow-action-reorder'><i class='fa fa-bars'></i></a>" );
-                writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-action-state fa {0}'></i></a>",
-                    Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" ) );
+                writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link js-workflow-action-criteria{0}'><i class='ti ti-filter'></i></a>", criteriaExistsClass ) );
+                writer.WriteLine( "<a class='btn btn-xs btn-link workflow-action-reorder'><i class='ti ti-menu-2'></i></a>" );
+                writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='workflow-action-state ti {0}'></i></a>",
+                    Expanded ? "ti-chevron-up" : "ti-chevron-down" ) );
 
                 if ( IsDeleteEnabled )
                 {

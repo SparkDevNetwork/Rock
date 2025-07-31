@@ -31,7 +31,6 @@
   border: 1px solid @panel-default-border;
   border-radius: @panel-border-radius;
   margin-bottom: var(--spacing-large);
-
   /* The sidebar panel content spans 1 of the 4 columns of the 1st row. */
   > .panel-sidebar-content {
     grid-column: 1;
@@ -81,6 +80,17 @@
           margin-left: 4px;
         }
       }
+    }
+  }
+}
+
+// Removes the padding from a panel's body
+.panel.panel-body-flush {
+  & > .panel-body {
+    padding: 0;
+
+    .actions:last-of-type {
+        margin: inherit;
     }
   }
 }

@@ -1,43 +1,55 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <fieldset>
-        <div class="row">
-            <div class="col-md-6">
-                <TextBox v-model="name"
-                         label="Name"
-                         rules="required" />
-            </div>
+    <ContentSectionWrapper :sidebar="false">
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
 
-            <div class="col-md-6">
-                <CheckBox v-model="isActive"
-                          label="Active" />
-            </div>
-        </div>
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive"
+                                  label="Active" />
+                    </div>
+                </div>
 
-        <TextBox v-model="description"
-                 label="Description"
-                 textMode="multiline" />
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
+            </ContentStack>
+        </ContentSection>
 
-        <div class="row">
-            <div class="col-md-6">
-                <DropDownList v-model="triggerType"
-                              label="Trigger Type"
-                              :items="options.triggerTypeItems ?? []"
-                              rules="required"
-                              :disabled="isTriggerTypeDisabled" />
-            </div>
-        </div>
+        <ContentSection title="Trigger Conditions"
+                        icon="ti ti-bolt">
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <DropDownList v-model="triggerType"
+                                      label="Trigger Type"
+                                      :items="options.triggerTypeItems ?? []"
+                                      rules="required"
+                                      :disabled="isTriggerTypeDisabled" />
+                    </div>
+                </div>
 
-        <DynamicComponent v-if="componentDefinition"
-                          v-model="componentData"
-                          :definition="componentDefinition"
-                          :executeRequest="onExecuteComponentRequest" />
-    </fieldset>
+                <DynamicComponent v-if="componentDefinition"
+                                  v-model="componentData"
+                                  :definition="componentDefinition"
+                                  :executeRequest="onExecuteComponentRequest" />
+            </ContentStack>
+        </ContentSection>
+    </ContentSectionWrapper>
 </template>
 
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";

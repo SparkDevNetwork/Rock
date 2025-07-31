@@ -120,14 +120,14 @@
 
         if (streakTypeViewBag.value?.isActive === true) {
             labels.push({
-                iconCssClass: "fa fa-lightbulb",
+                iconCssClass: "ti ti-bulb-filled",
                 title: "Active",
                 type: "success"
             });
         }
         else {
             labels.push({
-                iconCssClass: "far fa-lightbulb",
+                iconCssClass: "ti ti-bulb",
                 title: "Inactive",
                 type: "danger"
             });
@@ -145,44 +145,44 @@
     });
 
     const footerActions = computed((): PanelAction[] => {
-        if(panelMode.value != DetailPanelMode.View) {
+        if (panelMode.value != DetailPanelMode.View) {
             return [];
         }
         const footerActionsPanelActions: PanelAction[] = [
-        {
-            iconCssClass: "fa fa-medal",
-            title: "Achievements",
-            type: "default",
-            handler: () => {
-                window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.AchievementsPage] ?? "");
-            }
-        },
-        {
-            iconCssClass: "fa fa-calendar-check",
-            title: "Map Editor",
-            type: "default",
-            handler: () => {
-                window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.MapEditorPage] ?? "");
-            }
-        },
-        {
-            iconCssClass: "fa fa-calendar-times",
-            title: "Exclusions",
-            type: "default",
-            handler: () => {
-                window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.ExclusionsPage] ?? "");
-            }
-        }];
-        if(streakTypeViewBag.value?.structureType === 0 || streakTypeViewBag.value?.structureEntity != null) {
-            footerActionsPanelActions.push({
-            iconCssClass: "fa fa-redo-alt",
-            title: "Rebuild",
-            type: "danger",
-            handler: () => {
-                onRebuild();
+            {
+                iconCssClass: "ti ti-medal",
+                title: "Achievements",
+                type: "default",
+                handler: () => {
+                    window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.AchievementsPage] ?? "");
+                }
             },
-            disabled: !rebuildButtonEnabled.value
-        });
+            {
+                iconCssClass: "ti ti-calendar-check",
+                title: "Map Editor",
+                type: "default",
+                handler: () => {
+                    window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.MapEditorPage] ?? "");
+                }
+            },
+            {
+                iconCssClass: "ti ti-calendar-x",
+                title: "Exclusions",
+                type: "default",
+                handler: () => {
+                    window.location.href = makeUrlRedirectSafe(config.navigationUrls?.[NavigationUrlKey.ExclusionsPage] ?? "");
+                }
+            }];
+        if (streakTypeViewBag.value?.structureType === 0 || streakTypeViewBag.value?.structureEntity != null) {
+            footerActionsPanelActions.push({
+                iconCssClass: "ti ti-arrow-forward-up",
+                title: "Rebuild",
+                type: "danger",
+                handler: () => {
+                    onRebuild();
+                },
+                disabled: !rebuildButtonEnabled.value
+            });
         }
         return footerActionsPanelActions;
     });
@@ -197,7 +197,7 @@
      *
      * @returns false if it should stay on the page; or a string containing a redirect URL.
      */
-     async function onRebuild(): Promise<boolean> {
+    async function onRebuild(): Promise<boolean> {
         errorMessage.value = "";
         rebuildActionSuccessMessage.value = "";
         if (!await confirm("Are you sure you want to delete this data? Occurrence and enrollment map data belonging to this streak type will be deleted and rebuilt from attendance records! This process runs in separate process and may take several minutes to complete.")) {

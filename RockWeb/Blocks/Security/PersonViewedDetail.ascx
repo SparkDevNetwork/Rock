@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlContent" CssClass="panel panel-block" runat="server">
 
             <div class="panel-heading">
-                        <h1 class="panel-title"><i class="fa fa-eye"></i> <asp:Literal id="gridTitle" runat="server">Profile View Details</asp:Literal></h1>
+                        <h1 class="panel-title"><i class="ti ti-eye"></i> <asp:Literal id="gridTitle" runat="server">Profile View Details</asp:Literal></h1>
                     </div>
                     <div class="panel-body">
 

@@ -38,7 +38,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Lava Endpoint List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of endpoints in a lava application." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( SiteType.Web )]
 
     [LinkedPage( "Detail Page",

@@ -495,6 +495,16 @@ namespace Rock.SystemGuid
         public const string DATA_MIGRATIONS_171_CHOP_OBSIDIAN_BLOCKS = "C5AE8BF4-C83C-4695-9233-1B1D5D2801D7";
 
         /// <summary>
+        /// The job to run Post v17.3 Data Migrations to remove a redundant index on the AttendanceOccurrence table.
+        /// </summary>
+        public const string DATA_MIGRATIONS_173_UPDATE_ATTENDANCEOCCURRENCE_INDEX = "FFF8E02C-9FAA-4E23-99EE-4B008549F088";
+
+        /// <summary>
+        /// The job to run Post v17.3 Data Migrations to update the Nameless Schedules.
+        /// </summary>
+        public const string DATA_MIGRATIONS_173_UPDATE_NAMELESS_SCHEDULES = "4C7CC0FC-12A7-4578-B9B1-FEF2732EB912";
+
+        /// <summary>
         /// The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table.
         /// </summary>
         public const string DATA_MIGRATIONS_180_UPDATE_COMMUNICATIONRECIPIENT_INDEX = "FE519BCE-CCB8-42B7-A14C-1620859F23E8";
@@ -508,5 +518,15 @@ namespace Rock.SystemGuid
         /// The Job to run Post v18.0 Data Migrations to chop Block.
         /// </summary>
         public const string DATA_MIGRATIONS_180_CHOP_OBSIDIAN_BLOCKS = "6BFCE2DE-5B38-4B71-8737-423AF51A39B1";
+
+        /// <summary>
+        /// The job to run Post v18.0 Data Migrations to populate the newly-added [CommunicationRecipient].[DeliveredDateTime] field.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_POPULATE_COMMUNICATIONRECIPIENT_DELIVEREDDATETIME = "EF2CF0AC-7A83-4BEB-8824-41D3B5B8B832";
+
+        /// <summary>
+        /// The job to run Post v18.0 Data Migrations to Delete Self-Service Kiosk Site, Blocks, BlockTypes and KioskStark theme.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_DELETE_SELFSERVICE_KIOSK_SITE_AND_RELATED = "6696B495-3EB0-442B-8DAB-82E861B92B41";
     }
 }

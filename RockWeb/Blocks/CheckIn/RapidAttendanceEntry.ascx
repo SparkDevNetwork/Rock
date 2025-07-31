@@ -55,7 +55,7 @@
         <asp:Panel ID="pnlStart" runat="server" Visible="false">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-user-friends"></i>Contact Entry</h1>
+                    <h1 class="panel-title"><i class="ti ti-users"></i>Contact Entry</h1>
                 </div>
                 <div class="panel-body">
                     <div class="row">
@@ -85,11 +85,11 @@
         <asp:Panel ID="pnlMainPanel" runat="server" Visible="false">
             <div class="panel panel-block">
                 <div class="panel-heading">
-                    <h1 class="panel-title"><i class="fa fa-user-friends"></i>Contact Entry</h1>
+                    <h1 class="panel-title"><i class="ti ti-users"></i>Contact Entry</h1>
                     <div class="panel-labels">
                         <Rock:HighlightLabel ID="hlAttendance" runat="server" LabelType="Info" />
                         <Rock:HighlightLabel ID="hlCurrentCount" runat="server" LabelType="Success" />
-                        <asp:LinkButton ID="lbSetting" runat="server" CssClass="btn btn-default btn-square margin-l-sm btn-xs" OnClick="lbSetting_Click" CausesValidation="false"><i class="fa fa-cog"></i></asp:LinkButton>
+                        <asp:LinkButton ID="lbSetting" runat="server" CssClass="btn btn-default btn-square margin-l-sm btn-xs" OnClick="lbSetting_Click" CausesValidation="false"><i class="ti ti-settings"></i></asp:LinkButton>
                     </div>
                 </div>
                 <div>
@@ -99,7 +99,7 @@
                             <div class="col-md-3 d-flex align-items-center panel-sidebar">
                                 <div class="d-flex width-full padding-all-sm">
                                     <div class="resource-search js-resource-search flex-grow-1 input-group">
-                                        <span class="input-group-addon"><i class='fa fa-search'></i></span>
+                                        <span class="input-group-addon"><i class='ti ti-search'></i></span>
                                         <Rock:RockTextBox ID="tbSearch" runat="server" Placeholder="Search" spellcheck="false" onkeydown="javascript:return handleSearchKeyPress(this, event.keyCode);" onkeyup="javascript:handleSearchKeyPress(event.keyCode)" />
                                         <span class="input-group-btn">
                                             <asp:LinkButton ID="btnGo" runat="server" CssClass="btn btn-primary js-main-event" Text="Go" OnClick="btnGo_Click" />
@@ -113,8 +113,8 @@
                                         <asp:Literal ID="lFamilyDetail" runat="server" />
                                     </div>
                                     <div class="pull-right">
-                                        <asp:LinkButton ID="lbEditFamily" runat="server" CssClass="btn btn-xs btn-square btn-default js-main-event" CausesValidation="false" OnClick="lbEditFamily_Click"> <i title="Edit Family" class="fa fa-pencil"></i></asp:LinkButton>
-                                        <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-xs btn-square btn-default js-main-event" CausesValidation="false" OnClick="lbAddMember_Click"> <i title="Add Member" class="fa fa-user-plus"></i></asp:LinkButton>
+                                        <asp:LinkButton ID="lbEditFamily" runat="server" CssClass="btn btn-xs btn-square btn-default js-main-event" CausesValidation="false" OnClick="lbEditFamily_Click"> <i title="Edit Family" class="ti ti-pencil"></i></asp:LinkButton>
+                                        <asp:LinkButton ID="lbAddMember" runat="server" CssClass="btn btn-xs btn-square btn-default js-main-event" CausesValidation="false" OnClick="lbAddMember_Click"> <i title="Add Member" class="ti ti-user-plus"></i></asp:LinkButton>
                                     </div>
                                 </div>
                             </div>
@@ -134,7 +134,7 @@
                                                         <h5 class="strong d-inline"><%# Eval("Name") %></h5> <span class="age"><%# Eval("Age") %></span>
 
                                                         <% if ( IsAttendanceEnabled )
-                                                            { %>   <i class="fa fa-circle <%# (bool)Eval("IsAttended") ? "text-success":"text-muted" %> pull-right" aria-hidden="true"></i> <% } %>
+                                                            { %>   <i class="ti ti-circle <%# (bool)Eval("IsAttended") ? "text-success":"text-muted" %> pull-right" aria-hidden="true"></i> <% } %>
                                                         <%# !string.IsNullOrEmpty((string)Eval("CampusName")) ? "<span class='label label-campus pull-right margin-r-sm'>"+ Eval("CampusName").ToString() +"</span>" :"" %>
                                                 </div>
                                                         <%# !string.IsNullOrEmpty((string)Eval("FamilyMemberNames")) ?  "<span class='family-member-names'>"+Eval("FamilyMemberNames").ToString() +"</span>" :"" %>
@@ -150,7 +150,7 @@
                                     </div>
                                 </div>
                                 <div class="actions padding-all-sm padding-t-md">
-                                    <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-default btn-block js-main-event" OnClick="lbAddFamily_Click"><i class="fa fa-users"></i> Add Family</asp:LinkButton>
+                                    <asp:LinkButton ID="lbAddFamily" runat="server" CssClass="btn btn-default btn-block js-main-event" OnClick="lbAddFamily_Click"><i class="ti ti-users"></i> Add Family</asp:LinkButton>
                                 </div>
                             </div>
                         </div>
@@ -178,7 +178,7 @@
                                     </asp:Repeater>
                                 </ul>
                                 <asp:HiddenField ID="hfPersonDirty" runat="server" Value="false" />
-                                <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right margin-t-lg js-main-event" CausesValidation="false" OnClick="lbEditPerson_Click"> <i title="Edit Person" class="fa fa-pencil"></i></asp:LinkButton>
+                                <asp:LinkButton ID="lbEditPerson" runat="server" CssClass="btn btn-xs btn-square btn-default pull-right margin-t-lg js-main-event" CausesValidation="false" OnClick="lbEditPerson_Click"> <i title="Edit Person" class="ti ti-pencil"></i></asp:LinkButton>
                                 <asp:Literal ID="lPersonDetail" runat="server" />
 
                                 <Rock:RockCheckBoxList ID="rcbWorkFlowTypes" runat="server" RepeatDirection="Horizontal" RepeatColumns="3" FormGroupCssClass="margin-b-lg" CssClass="js-person-item-checkbox" />
@@ -201,7 +201,7 @@
                                     </div>
                                 </asp:Panel>
                                 <div class="actions margin-t-md">
-                                    <Rock:BootstrapButton ID="bbtnSave" CssClass="btn btn-primary" runat="server" AccessKey="s" ToolTip="Alt+s" DataLoadingText="&lt;i class='fa fa-refresh fa-spin'&gt;&lt;/i&gt; Saving"
+                                    <Rock:BootstrapButton ID="bbtnSave" CssClass="btn btn-primary" runat="server" AccessKey="s" ToolTip="Alt+s" DataLoadingText="&lt;i class='ti ti-refresh ti-spin'&gt;&lt;/i&gt; Saving"
                                         CompletedText="Success" CompletedMessage="<div class='margin-t-md alert alert-success'>Changes have been saved.</div>" Text="Save" OnClick="bbtnSave_Click" />
                                 </div>
                             </asp:Panel>
@@ -213,7 +213,7 @@
                                             <asp:Literal ID="lPreviousAddress" runat="server" />
                                         </div>
                                         <div class="pull-right mb-2">
-                                            <asp:LinkButton ID="lbMoved" CssClass="btn btn-default btn-xs" runat="server" OnClick="lbMoved_Click"><i class="fa fa-truck"></i> Moved</asp:LinkButton>
+                                            <asp:LinkButton ID="lbMoved" CssClass="btn btn-default btn-xs" runat="server" OnClick="lbMoved_Click"><i class="ti ti-truck"></i> Moved</asp:LinkButton>
                                         </div>
                                     </div>
 

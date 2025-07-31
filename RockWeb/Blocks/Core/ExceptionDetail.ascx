@@ -5,7 +5,7 @@
         <asp:Panel ID="pnlSummary" runat="server" CssClass="panel panel-block">
 
             <div class="panel-heading">
-                <h1 class="panel-title"><i class="fa fa-bug"></i>
+                <h1 class="panel-title"><i class="ti ti-bug"></i>
                     <asp:Literal ID="lPageTitle" runat="server" /></h1>
             </div>
 
@@ -20,11 +20,11 @@
 
                     <div class="panel-actions">
                         <a href="#" id="btnShowCookies" runat="server" class="js-btn-show-cookies btn btn-default">
-                            <i class="fa fa-laptop"></i>
+                            <i class="ti ti-device-laptop"></i>
                             Show Cookies
                         </a>
                         <a href="#" id="btnShowVariables" runat="server" class="js-btn-show-servervars btn btn-default">
-                            <i class="fa fa-hdd-o"></i>
+                            <i class="ti ti-server-2"></i>
                             Show Server Variables
 
                         </a>
@@ -76,7 +76,7 @@
                                     <td style="text-align: center;">
                                         <asp:PlaceHolder ID="phStackTraceButton" runat="server">
                                             <a id="<%# "lbToggleStackTrace_" + Eval("Id").ToString()  %>" href="#" onclick="<%# string.Format("return toggleStackTrace({0});", Eval("Id")) %>" class="btn btn-default">
-                                                <i class="fa fa-layer-group"></i>
+                                                <i class="ti ti-stack"></i>
                                                 Show Stack Trace
                                             </a>
                                         </asp:PlaceHolder>

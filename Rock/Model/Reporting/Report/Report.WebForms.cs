@@ -22,6 +22,8 @@ using System.Linq.Expressions;
 using System.Reflection;
 using System.Web.UI.WebControls;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Data;
 using Rock.Reporting;
 using Rock.Web.Cache;
@@ -85,7 +87,7 @@ namespace Rock.Model
 
             if ( databaseTimeoutSeconds.HasValue )
             {
-                reportDbContext.Database.CommandTimeout = databaseTimeoutSeconds.Value;
+                reportDbContext.Database.SetCommandTimeout( databaseTimeoutSeconds.Value );
             }
 
             var entityFields = reportGetQueryableArgs.EntityFields;

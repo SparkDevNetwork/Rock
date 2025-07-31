@@ -18,7 +18,7 @@
         (e: "update:modelValue", value: Record<string, string | null | undefined>): void
     }>();
 
-    const signalTypeOptions = safeParseJson<ListItemBag[]>(props.modelValue.signalTypeOptions);
+    const signalTypeOptions = safeParseJson<ListItemBag[]>(props.options.signalTypeOptions);
 
     const signalType = ref(props.modelValue.signalType ?? "");
 

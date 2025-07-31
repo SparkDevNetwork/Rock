@@ -1,0 +1,196 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="communication-list-display-name-cell-icon-container"
+         :data-original-title="CommunicationTypeDescription[row.type]"
+         :ref="applyTooltip">
+        <i :class="iconCssClass"></i>
+    </div>
+    <div class="communication-list-display-name-cell-details">
+        <div class="communication-list-display-name-cell-title">
+            {{ row.name }}
+        </div>
+        <div class="communication-list-display-name-cell-counts">
+            <span v-if="showDeliveredCount"
+                  :data-original-title="`Delivered: ${formattedDeliveredCount}`"
+                  :ref="applyTooltip">
+                <i class="ti ti-circle-check text-success"></i> {{ formattedDeliveredCount }}
+            </span>
+            <span v-if="showOpenedCount"
+                  :data-original-title="`Opened: ${formattedOpenedCount}`"
+                  :ref="applyTooltip">
+                <i class="ti ti-eye text-info"></i> {{ formattedOpenedCount }}
+            </span>
+            <span v-if="showFailedCount"
+                  :data-original-title="`Failed: ${formattedFailedCount}`"
+                  :ref="applyTooltip">
+                <i class="ti ti-alert-triangle text-warning"></i> {{ formattedFailedCount }}
+            </span>
+            <span v-if="showUnsubscribedCount"
+                  :data-original-title="`Unsubscribed: ${formattedUnsubscribedCount}`"
+                  :ref="applyTooltip">
+                <i class="ti ti-circle-minus text-danger"></i> {{ formattedUnsubscribedCount }}
+            </span>
+        </div>
+        <div v-if="row.summary" class="communication-list-display-name-cell-summary">
+            <Hint v-if="showSummaryHint" :type="HintType.AI" />
+            {{ row.summary }}
+        </div>
+    </div>
+</template>
+
+<style scoped>
+.communication-list-display-name-cell-icon-container {
+    align-self: start;
+    flex-shrink: 0;
+    width: 32px;
+    height: 32px;
+    background-color: var(--color-info-soft);
+    border-radius: var(--rounded-huge);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin-right: var(--spacing-medium);
+}
+
+.communication-list-display-name-cell-icon {
+    color: var(--color-info-strong);
+}
+
+.communication-list-display-name-cell-title {
+    color: var(--color-interface-strong);
+}
+
+.communication-list-display-name-cell-counts,
+.communication-list-display-name-cell-summary {
+    color: var(--color-interface-medium);
+    font-size: var(--font-size-xsmall);
+    margin-top: var(--spacing-tiny);
+}
+
+.communication-list-display-name-cell-summary .hint {
+    margin-right: var(--spacing-tiny);
+}
+
+.communication-list-display-name-cell-counts span:not(:last-of-type) {
+    margin-right: var(--spacing-xsmall);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, PropType } from "vue";
+    import { Row } from "./types.partial";
+    import Hint from "@Obsidian/Controls/hint.obs";
+    import { CommunicationType, CommunicationTypeDescription } from "@Obsidian/Enums/Communication/communicationType";
+    import { HintType } from "@Obsidian/Enums/Controls/hintType";
+    import { asFormattedString } from "@Obsidian/Utility/numberUtils";
+    import { tooltip } from "@Obsidian/Utility/tooltip";
+
+    const props = defineProps({
+        row: {
+            type: Object as PropType<Row>,
+            required: true
+        }
+    });
+
+    // #region Computed Values
+
+    /** The icon CSS class to use for this row. */
+    const iconCssClass = computed((): string => {
+        let icon = "";
+
+        switch (props.row.type) {
+            case CommunicationType.Email:
+                icon = "ti ti-mail ";
+                break;
+            case CommunicationType.SMS:
+                icon = "ti ti-message ";
+                break;
+            case CommunicationType.PushNotification:
+                icon = "ti ti-device-mobile ";
+                break;
+            case CommunicationType.RecipientPreference:
+                icon = "ti ti-user-circle ";
+                break;
+        }
+
+        return `${icon}communication-list-display-name-cell-icon`;
+    });
+
+    /** `true` if the communication type is SMS. */
+    const isSms = computed((): boolean => {
+        return props.row.type === CommunicationType.SMS;
+    });
+
+    /** `true` if the communication type is Push Notification. */
+    const isPush = computed((): boolean => {
+        return props.row.type === CommunicationType.PushNotification;
+    });
+
+    /** `true` if the delivered count should be displayed. */
+    const showDeliveredCount = computed((): boolean => {
+        return props.row.deliveredCount > 0;
+    });
+
+    /** `true` if the opened count should be displayed. */
+    const showOpenedCount = computed((): boolean => {
+        return props.row.openedCount > 0
+            && !isSms.value
+            && !isPush.value;
+    });
+
+    /** `true` if the failed count should be displayed. */
+    const showFailedCount = computed((): boolean => {
+        return props.row.failedCount > 0;
+    });
+
+    /** `true` if the unsubscribed count should be displayed. */
+    const showUnsubscribedCount = computed((): boolean => {
+        return props.row.unsubscribedCount > 0
+            && !isSms.value
+            && !isPush.value;
+    });
+
+    /** `true` if the "AI" summary hint should be displayed. */
+    const showSummaryHint = computed((): boolean => {
+        return !isSms.value && !isPush.value;
+    });
+
+    /** The formatted "Delivered" count for this row. */
+    const formattedDeliveredCount = computed((): string => {
+        return asFormattedString(props.row.deliveredCount);
+    });
+
+    /** The formatted "Opened" count for this row. */
+    const formattedOpenedCount = computed((): string => {
+        return asFormattedString(props.row.openedCount);
+    });
+
+    /** The formatted "Failed" count for this row. */
+    const formattedFailedCount = computed((): string => {
+        return asFormattedString(props.row.failedCount);
+    });
+
+    /** The formatted "Unsubscribed" count for this row. */
+    const formattedUnsubscribedCount = computed((): string => {
+        return asFormattedString(props.row.unsubscribedCount);
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    /**
+     * Applies a tooltip to an element. The element should have an
+     * `data-original-title` attribute containing the tooltip text.
+     *
+     * Typical use, `:ref="applyTooltip"`
+     */
+    function applyTooltip(el: unknown): void {
+        const htmlElement = el as HTMLElement;
+        if (htmlElement) {
+            tooltip(htmlElement);
+        }
+    }
+
+    // #endregion Functions
+</script>

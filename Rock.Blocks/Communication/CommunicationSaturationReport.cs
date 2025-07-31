@@ -40,7 +40,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Mass Communication Analytics" )]
     [Category( "Communication" )]
     [Description( "Shows analytics for communications." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -159,7 +159,7 @@ namespace Rock.Blocks.Communication
             options.DateRangeDelimitedString = dateRangePref.IsNotNullOrWhiteSpace() ? dateRangePref : options.DateRangeDelimitedString;
             options.DataView = DataViewCache.Get( dataViewPref.AsGuid() )?.ToListItemBag();
             options.ConnectionStatus = DefinedValueCache.Get( connectionStatusPref.AsGuid() )?.ToListItemBag();
-            options.Medium = mediumPref.Any() ? mediumPref : options.Medium;
+            options.Medium = mediumPref?.Any() == true ? mediumPref : options.Medium;
             options.BulkOnly = bulkOnlyPref.AsBooleanOrNull() ?? options.BulkOnly;
 
             return options;
@@ -186,7 +186,7 @@ namespace Rock.Blocks.Communication
         {
             return new GridBuilder<RecipientGridDataBag>()
                 //.WithBlock( this )
-                .AddField( "idKey", a => a.Person.IdKey )
+                .AddField( "idKey", a => a.Person?.IdKey )
                 .AddPersonField( "person", a => a.Person )
                 .AddTextField( "connectionStatus", a => a.ConnectionStatus )
                 .AddField( "messageCount", a => a.MessageCount );
@@ -205,7 +205,7 @@ namespace Rock.Blocks.Communication
                 .AddTextField( "name", a => a.Name )
                 .AddDateTimeField( "dateSent", a => a.SendDateTime )
                 .AddField( "messageCount", a => a.MessageCount )
-                .AddTextField( "sentBy", a => a.SentBy.FullName )
+                .AddTextField( "sentBy", a => a.SentBy?.FullName ?? string.Empty )
                 .AddTextField( "reviewedBy", a => a.ReviewedBy == null || a.ReviewedBy.Id == a.SentBy.Id ? "" : a.ReviewedBy?.FullName );
         }
 
@@ -221,8 +221,8 @@ namespace Rock.Blocks.Communication
 
             var computedFilters = new ComputedFilters( filters, BlockCache );
 
-            parameters.Add( "StartDate", computedFilters.StartDate );
-            parameters.Add( "EndDate", computedFilters.EndDate );
+            parameters.Add( "StartDate", computedFilters.StartDate.Value.Date );
+            parameters.Add( "EndDate", computedFilters.EndDate.Value.Date );
             parameters.Add( "BucketSize", computedFilters.BucketSize );
             parameters.Add( "CommunicationType", computedFilters.CommunicationType.Select( ct => ct.ConvertToInt() ).ToList().AsDelimited( "," ) );
             parameters.Add( "IncludeNonBulk", computedFilters.IncludeNonBulk );
@@ -267,8 +267,8 @@ namespace Rock.Blocks.Communication
                     && cr.PersonAlias.Person.Guid != anonymousVisitorGuid
                     && cr.PersonAlias.Person.RecordStatusValueId == activeRecordStatusValueId
                     && cr.PersonAlias.Person.AgeClassification == AgeClassification.Adult
-                    && cr.CreatedDateTime >= filters.StartDate
-                    && cr.CreatedDateTime < filters.EndDate
+                    && cr.Communication.SendDateTime >= filters.StartDate
+                    && cr.Communication.SendDateTime < filters.EndDate
                     && filters.CommunicationType.Contains( cr.Communication.CommunicationType )
                 );
 
@@ -327,8 +327,8 @@ namespace Rock.Blocks.Communication
         protected GridDataBag GetCommunicationsGridDataBag( RockContext rockContext )
         {
             int namelessRecordTypeValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_TYPE_NAMELESS.AsGuid() ).Id;
-            var anonymousVisitorGuid = Rock.SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid();
-            var activeRecordStatusValueId = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
+            var anonymousVisitorGuid = SystemGuid.Person.ANONYMOUS_VISITOR.AsGuid();
+            var activeRecordStatusValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.PERSON_RECORD_STATUS_ACTIVE ).Id;
 
             var filters = new ComputedFilters( GetFilterOptions(), BlockCache );
 
@@ -376,7 +376,7 @@ namespace Rock.Blocks.Communication
                 .Select( c => new CommunicationGridDataBag
                 {
                     Id = c.Communication.Id,
-                    Name = c.Communication.Name,
+                    Name = c.Communication.Name.IsNullOrWhiteSpace() ? c.Communication.Subject : c.Communication.Name,
                     SentBy = c.SentBy,
                     ReviewedBy = c.ReviewedBy,
                     MessageCount = c.MessageCount,
@@ -510,9 +510,7 @@ namespace Rock.Blocks.Communication
                     EndDate = dateRange.End;
                 }
 
-                var includedRatios = new List<int> { 1 };
-
-                var email = Rock.Enums.Communication.CommunicationType.Email.ToString();
+                var includedRatios = new List<int>();
 
                 if ( filterBag.Medium.Contains( Rock.Enums.Communication.CommunicationType.Email.ConvertToInt().ToString() ) )
                 {
@@ -529,7 +527,15 @@ namespace Rock.Blocks.Communication
                     includedRatios.Add( blockCache.GetAttributeValue( AttributeKey.PushNotificationBucketRatio ).AsInteger() );
                 }
 
-                decimal bucketRatio = includedRatios.Max();
+                if ( !includedRatios.Any() )
+                {
+                    // No mediums selected somehow despite the couple ways we have of setting a default of all of them, so add all of ratios
+                    includedRatios.Add( blockCache.GetAttributeValue( AttributeKey.EmailBucketRatio ).AsInteger() );
+                    includedRatios.Add( blockCache.GetAttributeValue( AttributeKey.SmsBucketRatio ).AsInteger() );
+                    includedRatios.Add( blockCache.GetAttributeValue( AttributeKey.PushNotificationBucketRatio ).AsInteger() );
+                }
+
+                decimal bucketRatio = includedRatios.Min();
                 decimal totalDays = ( dateRange.End - dateRange.Start )?.Days ?? 1;
 
                 BucketSize = ( int ) Math.Ceiling( totalDays / bucketRatio );

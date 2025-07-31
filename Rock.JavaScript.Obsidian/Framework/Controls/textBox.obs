@@ -45,7 +45,7 @@
                                    @input="onInput"
                                    @change="onChange" />
                             <i v-if="internalValue"
-                               class="fa fa-times text-muted clear-icon clear-position-with-slots"
+                               class="ti ti-x text-muted clear-icon clear-position-with-slots"
                                @click="onClear"></i>
                             <slot name="inputGroupAppend" :isInputGroupSupported="true" />
                         </template>
@@ -62,7 +62,7 @@
                                        @input="onInput"
                                        @change="onChange" />
                                 <i v-if="internalValue"
-                                   class="fa fa-times text-muted clear-icon"
+                                   class="ti ti-x text-muted clear-icon"
                                    @click="onClear"></i>
                             </div>
                         </template>

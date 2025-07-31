@@ -132,9 +132,20 @@ namespace Rock.Reporting.DataFilter.Group
         /// <inheritdoc/>
         public override DynamicComponentDefinitionBag GetComponentDefinition( Type entityType, string selection, RockContext rockContext, RockRequestContext requestContext )
         {
+            var groupTypes = new GroupTypeService( rockContext )
+                    .Queryable()
+                    .AsNoTracking()
+                    .Where( gt => gt.Id == this.SignUpGroupGroupTypeId || gt.InheritedGroupTypeId == this.SignUpGroupGroupTypeId )
+                    .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
+                    .ToList();
+
             return new DynamicComponentDefinitionBag
             {
-                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/signUpOpportunityHasNoAttendanceFilter.obs" )
+                Url = requestContext.ResolveRockUrl( "~/Obsidian/Reporting/DataFilters/Group/signUpOpportunityHasNoAttendanceFilter.obs" ),
+                Options = new Dictionary<string, string>
+                {
+                    { "groupTypes", groupTypes.ToCamelCaseJson(false, true) }
+                }
             };
         }
 
@@ -143,16 +154,8 @@ namespace Rock.Reporting.DataFilter.Group
         {
             var selectionConfig = SelectionConfig.Parse( selection );
 
-            var groupTypes = new GroupTypeService( rockContext )
-                    .Queryable()
-                    .AsNoTracking()
-                    .Where( gt => gt.Id == this.SignUpGroupGroupTypeId || gt.InheritedGroupTypeId == this.SignUpGroupGroupTypeId )
-                    .Select( gt => new ListItemBag { Text = gt.Name, Value = gt.Guid.ToString() } )
-                    .ToList();
-
             var data = new Dictionary<string, string>
             {
-                { "groupTypes", groupTypes.ToCamelCaseJson(false, true) },
                 { "groupTypeGuid", selectionConfig?.GroupTypeGuid ?? string.Empty },
                 { "includeProjectTypes", selectionConfig?.IncludeProjectTypes.ToJson() ?? string.Empty },
                 { "eventDateWithin", selectionConfig?.EventDateWithin ?? string.Empty },

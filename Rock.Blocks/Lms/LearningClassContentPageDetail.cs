@@ -39,7 +39,7 @@ namespace Rock.Blocks.Lms
     [DisplayName( "Learning Class Content Page Detail" )]
     [Category( "LMS" )]
     [Description( "Displays the details of a particular learning class content page." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
@@ -229,7 +229,8 @@ namespace Rock.Blocks.Lms
                 return new LearningClassContentPage
                 {
                     Id = 0,
-                    Guid = Guid.Empty
+                    Guid = Guid.Empty,
+                    LearningClassId = RequestContext.PageParameterAsId( PageParameterKey.LearningClassId )
                 };
             }
 

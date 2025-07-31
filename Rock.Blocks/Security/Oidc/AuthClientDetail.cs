@@ -38,7 +38,7 @@ namespace Rock.Blocks.Security.Oidc
     [DisplayName( "OpenID Connect Client Detail" )]
     [Category( "Security > OIDC" )]
     [Description( "Displays the details of the given OpenID Connect Client." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [Rock.SystemGuid.EntityTypeGuid( "d7b56608-70a9-42d2-9542-3301ddbec48b" )]

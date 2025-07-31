@@ -16,7 +16,7 @@
                              @update:modelValue="onSourceVideoUrlUpdated">
                         <template #inputGroupPrepend>
                             <span class="input-group-addon">
-                                <i class="fa fa-link"></i>
+                                <i class="ti ti-link"></i>
                             </span>
                         </template>
                         <template #inputGroupAppend>
@@ -34,7 +34,7 @@
                              @update:modelValue="onLinkTargetUrlUpdated">
                         <template #inputGroupPrepend>
                             <span class="input-group-addon">
-                                <i class="fa fa-link"></i>
+                                <i class="ti ti-link"></i>
                             </span>
                         </template>
                     </TextBox>
@@ -114,7 +114,7 @@
 
     const videoComponentHelper = getVideoComponentHelper();
     const componentHelper = ref(videoComponentHelper.getElements(props.componentElement));
-    const addonIconCssClass = ref<string>("fa fa-arrow-right");
+    const addonIconCssClass = ref<string>("ti ti-arrow-right");
     const imageElement = ref<HTMLImageElement | null | undefined>(props.componentElement.querySelector("img"));
     const anchorElement = ref<HTMLAnchorElement | null | undefined>(imageElement.value?.closest("a") === imageElement.value?.parentElement ? imageElement.value?.parentElement as HTMLAnchorElement : null);
     const sourceVideoUrl = ref<string>(props.componentElement.dataset[dataAttributeKey.imageSourceVideoUrl] ?? "");
@@ -161,7 +161,7 @@
 
     const refreshThumbnail = debounceAsync(async (cancellationToken: ICancellationToken): Promise<void> => {
         try {
-            addonIconCssClass.value = "fa fa-sync fa-spin";
+            addonIconCssClass.value = "ti ti-refresh ti-spin";
 
             const controller = new AbortController();
             const signal = controller.signal;
@@ -209,7 +209,7 @@
             }
         }
         finally {
-            addonIconCssClass.value = "fa fa-arrow-right";
+            addonIconCssClass.value = "ti ti-arrow-right";
         }
     }, {
         delay: 1000
@@ -306,7 +306,7 @@
             })
             : null;
         sourceVideoUrl.value = props.componentElement.dataset[dataAttributeKey.imageSourceVideoUrl] ?? "";
-        addonIconCssClass.value = "fa fa-arrow-right";
+        addonIconCssClass.value = "ti ti-arrow-right";
         linkTargetUrl.value = anchorElement.value?.getAttribute("href") ?? "";
     });
 

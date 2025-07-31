@@ -1,9 +1,19 @@
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode">
-
         <TabbedContent :tabs="list">
             <template #tabpane="{ item }">
-                This is the content for {{ item }}.
+                <div v-if="item === 'Matthew'">
+                    A former tax collector turned disciple of Jesus, Matthew is traditionally credited with writing a Gospel that emphasizes Jesus as the promised Messiah and teacher.
+                </div>
+                <div v-if="item === 'Mark'">
+                    Mark is believed to be the author of the second Gospel, which presents a vivid, action-oriented account of Jesus' life and ministry.
+                </div>
+                <div v-if="item === 'Luke'">
+                    Luke, a physician and companion of Paul, is credited with writing both the Gospel of Luke and the Acts of the Apostles, emphasizing compassion and social justice.
+                </div>
+                <div v-if="item === 'John'">
+                    John, the beloved disciple, is traditionally regarded as the author of the fourth Gospel, which focuses on the divinity of Christ and the theme of love.
+                </div>
             </template>
         </TabbedContent>
     </GalleryAndResult>
@@ -16,9 +26,20 @@
 
     const list = ["Matthew", "Mark", "Luke", "John"];
     const importCode = getSfcControlImportPath("tabbedContent");
-    const exampleCode = `<TabbedContent :tabs="arrayOfItems">
+    const exampleCode = `<TabbedContent :tabs="['Matthew', 'Mark', 'Luke', 'John']">
     <template #tabpane="{item}">
-        This is the content for {{item}}.
+        <div v-if="item === 'Matthew'">
+            A former tax collector turned disciple of Jesus, Matthew is traditionally credited with writing a Gospel that emphasizes Jesus as the promised Messiah and teacher.
+        </div>
+        <div v-if="item === 'Mark'">
+            Mark is believed to be the author of the second Gospel, which presents a vivid, action-oriented account of Jesus' life and ministry.
+        </div>
+        <div v-if="item === 'Luke'">
+            Luke, a physician and companion of Paul, is credited with writing both the Gospel of Luke and the Acts of the Apostles, emphasizing compassion and social justice.
+        </div>
+        <div v-if="item === 'John'">
+            John, the beloved disciple, is traditionally regarded as the author of the fourth Gospel, which focuses on the divinity of Christ and the theme of love.
+        </div>
     </template>
 </TabbedContent>`;
 </script>

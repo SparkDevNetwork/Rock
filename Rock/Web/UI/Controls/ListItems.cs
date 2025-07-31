@@ -333,8 +333,8 @@ namespace Rock.Web.UI.Controls
 
             StringBuilder valueHtml = new StringBuilder();
             valueHtml.Append( @"<div class=""controls controls-row form-control-group"">" );
-            valueHtml.AppendFormat( @"<div class=""input-group""><span class=""input-group-addon""><i class=""fa fa-bars""></i></span><input class=""form-control js-list-items-input"" data-id=""00000000-0000-0000-0000-000000000000"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
-            valueHtml.Append( @"</div><a href=""#"" class=""btn btn-sm btn-square btn-danger list-items-remove""><i class=""fa fa-times""></i></a></div>" );
+            valueHtml.AppendFormat( @"<div class=""input-group""><span class=""input-group-addon""><i class=""ti ti-menu-2""></i></span><input class=""form-control js-list-items-input"" data-id=""00000000-0000-0000-0000-000000000000"" type=""text"" placeholder=""{0}""></input>", ValuePrompt );
+            valueHtml.Append( @"</div><a href=""#"" class=""btn btn-sm btn-square btn-danger list-items-remove""><i class=""ti ti-x""></i></a></div>" );
 
             var hfValueHtml = new HtmlInputHidden();
             hfValueHtml.AddCssClass( "js-list-items-html" );
@@ -364,7 +364,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "minimal" );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.Write( "<i class='fa fa-bars'></i>" );
+                    writer.Write( "<i class='ti ti-menu-2'></i>" );
                     writer.RenderEndTag();
                     writer.RenderEndTag();
 
@@ -385,7 +385,7 @@ namespace Rock.Web.UI.Controls
                     writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
                     writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-sm btn-square btn-danger list-items-remove" );
                     writer.RenderBeginTag( HtmlTextWriterTag.A );
-                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-times" );
+                    writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-x" );
                     writer.RenderBeginTag( HtmlTextWriterTag.I );
                     writer.RenderEndTag();
                     writer.RenderEndTag();
@@ -405,7 +405,7 @@ namespace Rock.Web.UI.Controls
             writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-xs btn-action btn-square list-items-add" );
             writer.AddAttribute( HtmlTextWriterAttribute.Href, "#" );
             writer.RenderBeginTag( HtmlTextWriterTag.A );
-            writer.AddAttribute( HtmlTextWriterAttribute.Class, "fa fa-plus-circle" );
+            writer.AddAttribute( HtmlTextWriterAttribute.Class, "ti ti-circle-plus" );
             writer.RenderBeginTag( HtmlTextWriterTag.I );
 
             writer.RenderEndTag();

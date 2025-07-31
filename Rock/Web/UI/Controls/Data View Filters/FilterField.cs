@@ -733,7 +733,7 @@ namespace Rock.Web.UI.Controls
 
             var iDelete = new HtmlGenericControl( "i" );
             lbDelete.Controls.Add( iDelete );
-            iDelete.AddCssClass( "fa fa-times" );
+            iDelete.AddCssClass( "ti ti-times" );
 
             cbIncludeFilter = new RockCheckBox();
             cbIncludeFilter.ContainerCssClass = "filterfield-checkbox";
@@ -766,7 +766,7 @@ namespace Rock.Web.UI.Controls
                 if ( component != null )
                 {
                     clientFormatString =
-                       string.Format( "if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{ var $article = $(this).parents('article').first(); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description').first().html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
+                       string.Format( "if ($(this).find('.filter-view-state').children('i').hasClass('ti-chevron-up')) {{ var $article = $(this).parents('article').first(); var $content = $article.children('div.panel-body'); $article.find('div.filter-item-description').first().html({0}); }}", component.GetClientFormatSelection( FilteredEntityType ) );
                 }
 
                 if ( filterControls.Length >= 1 && filterControls[0] is ObsidianDynamicComponentWrapper )
@@ -779,7 +779,7 @@ namespace Rock.Web.UI.Controls
                     // something in the title bar.
                     if ( !entityTypeGuid.HasValue || filterType == null )
                     {
-                        clientFormatString = $@"if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{
+                        clientFormatString = $@"if ($(this).find('.filter-view-state').children('i').hasClass('ti-chevron-up')) {{
     var $article = $(this).parents('article').first();
     var $content = $article.children('div.panel-body');
     var $description = $article.find('div.filter-item-description').first();
@@ -794,7 +794,7 @@ namespace Rock.Web.UI.Controls
                             .AddRule( new EntitySecurityGrantRule( filterType.CachedEntityTypeId, filterType.Id ) )
                             .ToToken();
 
-                        clientFormatString = $@"if ($(this).find('.filter-view-state').children('i').hasClass('fa-chevron-up')) {{
+                        clientFormatString = $@"if ($(this).find('.filter-view-state').children('i').hasClass('ti-chevron-up')) {{
     var $article = $(this).parents('article').first();
     var $content = $article.children('div.panel-body');
     var $description = $article.find('div.filter-item-description').first();
@@ -804,7 +804,7 @@ namespace Rock.Web.UI.Controls
 
     fetch('/api/v2/controls/DataFilterFormatSelection', {{ method: 'POST', body: json, headers: {{ 'Content-Type': 'application/json'}}}})
         .then(res => {{ if (res.status === 200) {{ return res.json(); }} else {{ return '{FilterEntityTypeName}'; }} }})
-        .then(res => {{ if (!$icon.hasClass('fa-chevron-up')) {{ $description.text(res); }} }})
+        .then(res => {{ if (!$icon.hasClass('ti-chevron-up')) {{ $description.text(res); }} }})
 }}".Replace( "\r\n", " " ).Replace( "\n", " " );
                     }
                 }
@@ -884,7 +884,7 @@ namespace Rock.Web.UI.Controls
 
                 writer.AddAttribute( HtmlTextWriterAttribute.Class, "btn btn-link btn-xs filter-view-state" );
                 writer.RenderBeginTag( HtmlTextWriterTag.A );
-                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "fa fa-chevron-up" : "fa fa-chevron-down" );
+                writer.AddAttribute( HtmlTextWriterAttribute.Class, Expanded ? "ti ti-chevron-up" : "ti ti-chevron-down" );
                 writer.RenderBeginTag( HtmlTextWriterTag.I );
                 writer.RenderEndTag();
                 writer.RenderEndTag();

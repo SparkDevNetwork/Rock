@@ -32,7 +32,7 @@
         { value: "False", text: "Doesn't Have Phone Type" },
     ];
     const phoneType = ref<string>(props.modelValue.phoneType ?? "");
-    const phoneTypeOptions: ListItemBag[] = safeParseJson(props.modelValue.phoneTypeOptions) ?? [];
+    const phoneTypeOptions: ListItemBag[] = safeParseJson(props.options.phoneTypeOptions) ?? [];
     const hasSMS = ref<string>(props.modelValue.hasSMS ?? "");
     const hasSMSOptions = ref([
         { value: "True", text: "Yes" },

@@ -2011,8 +2011,9 @@ namespace Rock.Lava
         /// <param name="input">The input.</param>
         /// <param name="attributeKey">The attribute key.</param>
         /// <param name="qualifier">The qualifier.</param>
+        /// <param name="securityEnabled">If true, security is enabled; if false, security checks are bypassed. Defaults to true.</param>
         /// <returns></returns>
-        public static object Attribute( ILavaRenderContext context, object input, string attributeKey, string qualifier = "" )
+        public static object Attribute( ILavaRenderContext context, object input, string attributeKey, string qualifier = "", bool securityEnabled = true )
         {
             Attribute.IHasAttributes item = null;
 
@@ -2127,7 +2128,7 @@ namespace Rock.Lava
             {
                 Person currentPerson = GetCurrentPerson( context );
 
-                if ( attribute.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                if ( !securityEnabled || attribute.IsAuthorized( Authorization.VIEW, currentPerson ) )
                 {
                     // Check qualifier for 'Raw' if present, just return the raw unformatted value
                     if ( qualifier.Equals( "RawValue", StringComparison.OrdinalIgnoreCase ) )
@@ -3524,13 +3525,13 @@ namespace Rock.Lava
 
             for ( int i = 0; i < rating; i++ )
             {
-                starMarkup.Append( "<i class='fa fa-rating-on'></i>" );
+                starMarkup.Append( "<i class='ti ti-star-filled'></i>" );
                 starCounter++;
             }
 
             for ( int i = starCounter; i < 5; i++ )
             {
-                starMarkup.Append( "<i class='fa fa-rating-off'></i>" );
+                starMarkup.Append( "<i class='ti ti-star'></i>" );
             }
 
             return starMarkup.ToString();
@@ -3979,6 +3980,43 @@ namespace Rock.Lava
             CultureInfo cultureInfo = context.GetCultureInfo();
 
             return input.ToString().AsDoubleWithCultureOrNull( cultureInfo );
+        }
+
+        /// <summary>
+        /// Converts meters to miles, rounding to the specified number of decimal places.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="input"></param>
+        /// <param name="precision"></param>
+        /// <returns></returns>
+        public static double? MetersToMiles( ILavaRenderContext context, object input, int precision = 1 )
+        {
+            var meters = input.ToStringSafe().AsDoubleOrNull();
+
+            if ( meters == null )
+            {
+                return null;
+            }
+
+            return Math.Round( meters.Value / 1609.34, precision );
+        }
+
+        /// <summary>
+        /// Converts miles to meters.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="input"></param>
+        /// <returns></returns>
+        public static int? MilesToMeters( ILavaRenderContext context, object input )
+        {
+            var miles = input.ToStringSafe().AsDoubleOrNull();
+
+            if ( miles == null )
+            {
+                return null;
+            }
+
+            return ( int ) ( miles.Value * 1609.34 );
         }
 
         /// <summary>
@@ -5054,7 +5092,7 @@ namespace Rock.Lava
 
                     if ( entityTypeCache != null )
                     {
-                        RockContext _rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+                        RockContext rockContext = LavaHelper.GetRockContextFromLavaContext( context );
 
                         Type entityType = entityTypeCache.GetEntityType();
                         if ( entityType != null )
@@ -5062,7 +5100,7 @@ namespace Rock.Lava
                             Type[] modelType = { entityType };
                             Type genericServiceType = typeof( Rock.Data.Service<> );
                             Type modelServiceType = genericServiceType.MakeGenericType( modelType );
-                            Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { _rockContext } ) as IService;
+                            Rock.Data.IService serviceInstance = Activator.CreateInstance( modelServiceType, new object[] { rockContext } ) as IService;
 
                             MethodInfo getMethod = serviceInstance.GetType().GetMethod( "Get", new Type[] { typeof( int ) } );
 
@@ -5229,13 +5267,22 @@ namespace Rock.Lava
         /// <summary>
         /// Gets the integer value from from a key-hash string.
         /// </summary>
-        /// <param name="input"></param>
-        /// <returns></returns>
+        /// <param name="input">The input value to be parsed into integer form.</param>
+        /// <returns>An integer value or null if the integer could not be parsed.</returns>
+        /// <remarks>
+        /// If the provided input represents a non-hashed integer string, this integer value will be immediately returned.
+        /// </remarks>
         public static int? FromIdHash( string input )
         {
             if ( string.IsNullOrWhiteSpace( input ) )
             {
                 return null;
+            }
+
+            var inputAsInteger = input.AsIntegerOrNull();
+            if ( inputAsInteger.HasValue )
+            {
+                return inputAsInteger;
             }
 
             return IdHasher.Instance.GetId( input );

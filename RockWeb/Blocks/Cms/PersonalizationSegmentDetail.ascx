@@ -7,12 +7,14 @@
             <asp:HiddenField ID="hfPersonalizationSegmentId" runat="server" />
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-user-tag"></i>
+                    <i class="ti ti-user-dollar"></i>
                     <asp:Literal ID="lPanelTitle" runat="server" Text="" />
 
                 </h1>
                 <div class="panel-labels">
                     <Rock:HighlightLabel ID="hlInactive" runat="server" LabelType="Danger" Text="Inactive" />
+                    <Rock:HighlightLabel ID="hlblPersisted" LabelType="Info" Text="Persisted" Visible="false" runat="server" />
+                    <Rock:HighlightLabel ID="hlTimeToRun" runat="server" />
                 </div>
             </div>
             <Rock:PanelDrawer ID="pdAuditDetails" runat="server"></Rock:PanelDrawer>
@@ -41,6 +43,40 @@
                         <Rock:CategoryPicker ID="cpCategories" runat="server" AllowMultiSelect="true" Label="Categories" />
                     </div>
                 </div>
+
+                <%-- Persistence Schedule Settings --%>
+                <asp:UpdatePanel runat="server" UpdateMode="Conditional" class="panel panel-waterfall">
+                    <ContentTemplate>
+                        <div class="panel-heading">
+                            <h3 class="panel-title">Persistence Schedule</h3>
+                        </div>
+                        <asp:Panel runat="server" ID="pnlPersistenceSchedule" class="panel-body">
+                            <div class="row">
+                                <div class="col-xs-12 col-md-3 show-divider">
+                                    <Rock:RockRadioButtonList ID="rblPersistenceType" runat="server" Label="Type"
+                                        OnSelectedIndexChanged="rblPersistenceType_SelectedIndexChanged" AutoPostBack="true">
+                                        <asp:ListItem Text="Interval" Value="0"></asp:ListItem>
+                                        <asp:ListItem Text="Schedule" Value="1"></asp:ListItem>
+                                    </Rock:RockRadioButtonList>
+                                </div>
+                                <div id="divPersistenceSchedule" runat="server" class="col-xs-12 col-md-3" Visible="false">
+                                    <Rock:RockRadioButtonList ID="rblPersistenceSchedule" runat="server" Label="Persistence Schedule"
+                                        OnSelectedIndexChanged="rblPersistenceSchedule_SelectedIndexChanged" AutoPostBack="true">
+                                        <asp:ListItem Text="Unique" Value="0"></asp:ListItem>
+                                        <asp:ListItem Text="Named Schedule" Value="1"></asp:ListItem>
+                                    </Rock:RockRadioButtonList>
+                                </div>
+                                <div id="divScheduleSelect" runat="server" class="col-xs-12 col-md-6" Visible="false">
+                                    <Rock:RockDropDownList ID="ddlNamedSchedule" runat="server" Label="Named" Required="true" RequiredErrorMessage="A Named Schedule is required when Persistence is 'Named Schedule'" Visible="false" />
+                                    <Rock:ScheduleBuilder ID="sbUniqueSchedule" runat="server" Label="Unique" ShowScheduleFriendlyTextAsToolTip="true" Visible="false" />
+                                </div>
+                                <asp:Panel runat="server" ID="pnlScheduleIntervalControls" class="col-xs-12 col-md-9" Visible="false">
+                                    <Rock:IntervalPicker ID="ipPersistedScheduleInterval" runat="server" Label="Persistence Interval" DefaultValue="12" DefaultInterval="Hour" />
+                                </asp:Panel>
+                            </div>
+                        </asp:Panel>
+                    </ContentTemplate>
+                </asp:UpdatePanel>
 
                 <%-- Person Filters --%>
                 <asp:Panel ID="pnlPersonFilters" runat="server" CssClass="panel panel-section">

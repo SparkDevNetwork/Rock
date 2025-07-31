@@ -19,6 +19,8 @@ using System.Collections.Generic;
 using System.Data;
 using System.Data.SqlClient;
 
+using Microsoft.EntityFrameworkCore;
+
 using Rock.Configuration;
 
 namespace Rock.Data
@@ -77,9 +79,9 @@ namespace Rock.Data
                     using ( SqlCommand sqlCommand = new SqlCommand( commandText, con ) )
                     {
 
-                        if ( Context.Database.CommandTimeout.HasValue )
+                        if ( Context.Database.GetCommandTimeout().HasValue )
                         {
-                            sqlCommand.CommandTimeout = Context.Database.CommandTimeout.Value;
+                            sqlCommand.CommandTimeout = Context.Database.GetCommandTimeout().Value;
                         }
 
                         sqlCommand.CommandType = commandType;

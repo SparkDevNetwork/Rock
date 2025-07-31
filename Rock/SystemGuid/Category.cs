@@ -199,6 +199,11 @@ namespace Rock.SystemGuid
         /// </summary>
         public const string SCHEDULE_PERSISTED_DATASETS = "7D152006-C47D-47E6-BF0B-09C3C2D0AE84";
 
+        /// <summary>
+        /// Gets the Personalization Segment Schedules category guid
+        /// </summary>
+        public const string SCHEDULE_PERSONALIZATION_SEGMENTS = "568A8E6C-DD49-4AC8-84BB-799099EFD9C6";
+
         #endregion
 
         #region Person Attributes

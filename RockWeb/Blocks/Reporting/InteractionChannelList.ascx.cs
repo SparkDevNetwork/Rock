@@ -50,7 +50,7 @@ namespace RockWeb.Blocks.Reporting
 
                 <div class='panel-labels d-flex align-items-center'>
                     {% if InteractionChannel.ChannelTypeMediumValue != null and InteractionChannel.ChannelTypeMediumValue != '' %}<span class='label label-info'>{{ InteractionChannel.ChannelTypeMediumValue.Value }}</span>{% endif %}
-                    <i class='fa fa-chevron-right margin-l-md'></i>
+                    <i class='ti ti-chevron-right margin-l-md'></i>
                 </div>
             </div>
         </div>

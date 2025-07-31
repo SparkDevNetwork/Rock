@@ -42,7 +42,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Adaptive Message List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of adaptive messages." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

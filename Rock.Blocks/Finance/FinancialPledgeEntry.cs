@@ -44,7 +44,7 @@ namespace Rock.Blocks.Finance
     [DisplayName( "Pledge Entry" )]
     [Category( "Finance" )]
     [Description( "Allows a website visitor to create pledge for the configured accounts, start and end date. This block also creates a new person record if a matching person could not be found." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

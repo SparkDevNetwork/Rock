@@ -38,7 +38,7 @@ namespace Rock.Blocks.Cms
     [DisplayName( "Personalization Segment List" )]
     [Category( "CMS" )]
     [Description( "Displays a list of personalization segments." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",
@@ -140,6 +140,7 @@ namespace Rock.Blocks.Cms
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
                 .AddTextField( "filterDataViewName", a => a.FilterDataViewName )
+                .AddTextField( "persistedScheduleInfo", a => a.PersistedScheduleInfo )
                 .AddTextField( "knownIndividualsCount", a => a.KnownIndividualsCount )
                 .AddTextField( "anonymousIndividualsCount", a => a.AnonymousIndividualsCount )
                 .AddField( "timeToUpdateDurationMilliseconds", a => a.TimeToUpdateDurationMilliseconds )
@@ -170,6 +171,16 @@ namespace Rock.Blocks.Cms
 
             var personalizationSegmentList = personalizationSegmentService.Queryable().ToList();
 
+            var scheduleIds = personalizationSegmentList
+                .Where( ps => ps.PersistedScheduleId.HasValue )
+                .Select( ps => ps.PersistedScheduleId.Value )
+                .Distinct()
+                .ToList();
+
+            var schedules = new ScheduleService( rockContext )
+                .GetByIds( scheduleIds )
+                .ToDictionary( s => s.Id, s => s );
+
             foreach ( var personalizationSegment in personalizationSegmentList )
             {
                 if ( personalizationSegment.TimeToUpdateDurationMilliseconds.HasValue )
@@ -194,6 +205,11 @@ namespace Rock.Blocks.Cms
                 CanEdit = a.IsAuthorized( Authorization.EDIT, this.GetCurrentPerson() ),
                 IsSecurityDisabled = !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
                 Categories = a.Categories.Select( c => c.Name ).ToList(),
+                PersistedScheduleInfo = a.PersistedScheduleId.HasValue && schedules.ContainsKey( a.PersistedScheduleId.Value )
+                    ? schedules[a.PersistedScheduleId.Value].FriendlyScheduleText
+                    : a.PersistedScheduleIntervalMinutes.HasValue
+                        ? $"Every {new Rock.Utility.TimeIntervalSetting( a.PersistedScheduleIntervalMinutes, null )}"
+                        : "Not Persisted"
             } );
 
             return personalizationSegmentItemQuery.AsQueryable();
@@ -269,6 +285,8 @@ namespace Rock.Blocks.Cms
             public bool IsSecurityDisabled { get; set; }
 
             public List<string> Categories { get; set; }
+
+            public string PersistedScheduleInfo { get; set; }
         }
 
         #endregion

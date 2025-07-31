@@ -140,5 +140,10 @@ namespace Rock.ViewModels.Blocks.Core.CampusDetail
         /// </summary>
         /// <value>The campus topics.</value>
         public List<CampusTopicBag> CampusTopics { get; set; }
+
+        /// <summary>
+        /// Gets or sets the campus average weekend attendance.
+        /// </summary>
+        public int? AverageWeekendAttendance { get; set; }
     }
 }

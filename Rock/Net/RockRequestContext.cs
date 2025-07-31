@@ -953,9 +953,17 @@ namespace Rock.Net
 
             foreach ( var requestFilter in requestFilters )
             {
-                if ( requestFilter.RequestMeetsCriteria( this, _siteCache ) )
+                try
                 {
-                    requestFilterIds.Add( requestFilter.Id );
+                    if ( requestFilter.RequestMeetsCriteria( this, _siteCache ) )
+                    {
+                        requestFilterIds.Add( requestFilter.Id );
+                    }
+                }
+                catch ( Exception ex )
+                {
+                    ExceptionLogService.LogException( new Exception( $"Error processing personalization request filter: {requestFilter.Name ?? requestFilter.RequestFilterKey}.", ex ) );
+                    throw;
                 }
             }
 

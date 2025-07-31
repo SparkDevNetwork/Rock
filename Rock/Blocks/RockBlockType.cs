@@ -524,6 +524,8 @@ Obsidian.onReady(() => {{
                 configActions = customActionsBlock.GetCustomActions( canEdit, canAdministrate );
             }
 
+            var configurationValues = await GetBlockInitializationAsync( RockClientType.Web );
+
             var blockPreferences = new ObsidianBlockPreferencesBag
             {
                 EntityTypeKey = EntityTypeCache.Get<Rock.Model.Block>().IdKey,
@@ -538,7 +540,7 @@ Obsidian.onReady(() => {{
                 RootElementId = rootElementId,
                 BlockGuid = BlockCache.Guid,
                 BlockTypeGuid = BlockCache.BlockType.Guid,
-                ConfigurationValues = await GetBlockInitializationAsync( RockClientType.Web ),
+                ConfigurationValues = configurationValues,
                 CustomConfigurationActions = configActions,
                 Preferences = blockPreferences,
                 ReloadMode = reloadModeAttribute?.ReloadMode ?? Enums.Cms.BlockReloadMode.None

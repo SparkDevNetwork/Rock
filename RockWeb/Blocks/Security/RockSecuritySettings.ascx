@@ -6,7 +6,7 @@
         <asp:Panel ID="pnlList" CssClass="panel panel-block" runat="server">
             <div class="panel-heading">
                 <h1 class="panel-title">
-                    <i class="fa fa-shield-alt"></i>
+                    <i class="ti ti-shield-half"></i>
                     Security Settings</h1>
             </div>
             <div class="panel-body">
@@ -85,7 +85,7 @@
                             ID="cbDisablePredictableIds"
                             runat="server"
                             Label="Disable Predictable IDs"
-                            Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs." />
+                            Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs.  Note: Enabling this may cause plugins that are not yet compatible with this feature to stop working correctly." />
                     </div>
                 </div>
                 <div class="row mt-3">

@@ -11,7 +11,7 @@
                 <asp:Panel ID="pnlDiscounts" runat="server" CssClass="panel panel-block">
                     <div class="panel-heading">
                         <h1 class="panel-title">
-                            <i class="fa fa-gift"></i>
+                            <i class="ti ti-gift"></i>
                             Discounts
                         </h1>
                     </div>

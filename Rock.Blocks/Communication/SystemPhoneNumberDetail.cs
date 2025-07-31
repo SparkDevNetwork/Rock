@@ -40,7 +40,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "System Phone Number Detail" )]
     [Category( "Communication" )]
     [Description( "Displays the details of a particular system phone number." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

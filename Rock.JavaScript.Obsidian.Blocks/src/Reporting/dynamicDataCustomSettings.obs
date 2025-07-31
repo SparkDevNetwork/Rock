@@ -89,7 +89,7 @@
                             <RockButton :btnSize="BtnSize.ExtraSmall"
                                         @click="onReloadColumnsClick"
                                         :disabled="isDisabled">
-                                <i class="fa fa-redo" aria-hidden></i> Reload Columns From Query
+                                <i class="ti ti-arrow-forward-up" aria-hidden></i> Reload Columns From Query
                             </RockButton>
                         </div>
                     </template>
@@ -126,6 +126,7 @@
 
                             <Switch v-model="enableStickyHeader"
                                     text="Enable Sticky Header"
+                                    help="Note: If too many fields are selected in the query and cause the component to overflow, the sticky header property will not be applied to the table columns."
                                     :disabled="isDisabled" />
                         </div>
 

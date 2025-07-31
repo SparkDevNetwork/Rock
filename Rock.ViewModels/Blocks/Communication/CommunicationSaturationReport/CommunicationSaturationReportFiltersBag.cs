@@ -32,7 +32,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationSaturationReport
         /// <summary>
         /// String representing a range of time to filter results of the report by.
         /// </summary>
-        public string DateRangeDelimitedString { get; set; }
+        public string DateRangeDelimitedString { get; set; } = "Last|1|Month||";
 
         /// <summary>
         /// A data view of people to filter results of the report by.
@@ -47,7 +47,7 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationSaturationReport
         /// <summary>
         /// The communication medium(s) to filter results of the report by.
         /// </summary>
-        public List<string> Medium { get; set; } = new List<string> { CommunicationType.Email.ToString() };
+        public List<string> Medium { get; set; } = new List<string> { ( ( int ) CommunicationType.Email ).ToString(), ( ( int ) CommunicationType.SMS ).ToString(), ( ( int ) CommunicationType.PushNotification ).ToString() };
 
         /// <summary>
         /// Whether or not to include only bulk communications or all communications in the report.

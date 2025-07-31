@@ -47,6 +47,8 @@ export const DefinedType = {
     CampusType: "8C2260A8-6130-414A-BD32-22743FEAB256",
     /** Guid for the types of chart styles */
     ChartStyles: "FC684FD7-FE68-493F-AF38-1656FBF67E6B",
+    /** GUID for the Chat Reaction defined type. */
+    ChatReaction: "879C25EE-8BF3-46CE-8549-DB4CAF4074E9",
     /** The check in attendance types */
     CheckInAttendanceTypes: "C0508751-3BDD-40A7-BE37-8AA4FC56E00E",
     /** Guid for check-in search type */

@@ -74,6 +74,12 @@
             </template>
         </TextColumn>
 
+        <TextColumn name="persistedScheduleInfo"
+                    title="Persisted Schedule"
+                    field="persistedScheduleInfo"
+                    :filter="textValueFilter"
+                    visiblePriority="sm" />
+
         <NumberColumn name="timeToUpdateDurationMilliseconds"
                       title="Time To Update (ms)"
                       field="timeToUpdateDurationMilliseconds"
@@ -87,7 +93,7 @@
                        visiblePriority="xs" />
 
         <ButtonColumn name="segmentLink"
-                      iconClass="fa fa-users"
+                      iconClass="ti ti-users"
                       :excludeFromExport="true"
                       @click="onSegmentClick"
                       visiblePriority="xs" />

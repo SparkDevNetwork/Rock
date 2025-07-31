@@ -1436,7 +1436,7 @@ namespace RockWeb.Blocks.Steps
             {
                 stepType = new StepType
                 {
-                    IconCssClass = "fa fa-compress",
+                    IconCssClass = "ti ti-minimize",
                     IsDateRequired = true
                 };
             }

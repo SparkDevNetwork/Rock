@@ -21,6 +21,7 @@ using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.Security;
+using Rock.Utility;
 using Rock.Web.Cache;
 using Rock.Web.UI;
 using Rock.Web.UI.Controls;
@@ -178,6 +179,17 @@ namespace RockWeb.Blocks.Groups
                  * Reason: Campus Team Feature
                  */
                 var campusId = PageParameter( "CampusId" ).AsIntegerOrNull();
+
+                if ( campusId == null )
+                {
+                    // Fall ahead logic to allow working with Obsidian IdKey passing. Note: This can be removed
+                    // when converting to Obsidian.
+                    if ( IdHasher.Instance.TryGetId( PageParameter( "CampusId" ), out var campusIdNullable ) )
+                    {
+                        campusId = campusIdNullable;
+                    }
+                }
+
                 hfCampusId.Value = campusId.ToString();
 
                 // if we don't yet have a groupId, and a CampusId PageParameter is defined, attempt to determine the groupId from the Campus.TeamGroupId property
@@ -226,7 +238,7 @@ namespace RockWeb.Blocks.Groups
                     // Add a custom button with an EventHandler that is only in this block.
                     var customActionConfigEventButton = new CustomActionConfigEvent
                     {
-                        IconCssClass = "fa fa-comment",
+                        IconCssClass = "ti ti-message",
                         HelpText = "Communicate",
                         EventHandler = gGroupMembers_CommunicateClick,
                         Route = GetCommunicationPageRoute()
@@ -263,7 +275,7 @@ namespace RockWeb.Blocks.Groups
                     // Add a custom button with an EventHandler that is only in this block.
                     var customActionConfigRequirementEventButton = new CustomActionConfigEvent
                     {
-                        IconCssClass = "fa fa-comment",
+                        IconCssClass = "ti ti-message",
                         HelpText = "Communicate",
                         EventHandler = gGroupMemberRequirements_CommunicateClick
                     };
@@ -539,11 +551,11 @@ namespace RockWeb.Blocks.Groups
                 {
                     if ( _groupMemberIdsThatDoNotMeetGroupRequirements.Contains( groupMember.Id ) )
                     {
-                        sbNameHtml.Append( " <i class='fa fa-exclamation-triangle text-danger'></i>" );
+                        sbNameHtml.Append( " <i class='ti ti-alert-triangle text-danger'></i>" );
                     }
                     else if ( _groupMemberIdsThatHaveGroupRequirementWarnings.Contains( groupMember.Id ) )
                     {
-                        sbNameHtml.Append( " <i class='fa fa-exclamation-triangle text-warning'></i>" );
+                        sbNameHtml.Append( " <i class='ti ti-alert-triangle text-warning'></i>" );
                     }
                 }
 
@@ -553,20 +565,20 @@ namespace RockWeb.Blocks.Groups
                     {
                         sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title=" +
                             "'This person has multiple roles in this group. This is an unsupported configuration for groups with Group Scheduling enabled. The system does not support scheduling the same person with different roles.'>" +
-                            "<i class='fa fa-exclamation-circle text-warning'></i>" +
+                            "<i class='ti ti-exclamation-circle text-warning'></i>" +
                             "</span>" );
                     }
                 }
 
                 if ( !_showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
                 {
-                    sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + groupMember.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>" );
+                    sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + groupMember.Note.EncodeHtml() + "'><i class='ti ti-file-type-txt text-info'></i></span>" );
                 }
 
                 // If there is a required signed document that member has not signed, show an icon in the grid
                 if ( _showPersonsThatHaventSigned && !_personIdsThatHaveSigned.Contains( groupMember.PersonId ) )
                 {
-                    sbNameHtml.Append( " <i class='fa fa-edit text-danger'></i>" );
+                    sbNameHtml.Append( " <i class='ti ti-edit text-danger'></i>" );
                 }
 
                 lNameWithHtml.Text = sbNameHtml.ToString();
@@ -602,13 +614,13 @@ namespace RockWeb.Blocks.Groups
                     if ( _groupTypeRoleIdsWithGroupSync.Contains( groupMember.GroupRoleId ) )
                     {
                         deleteButton.Enabled = false;
-                        buttonIcon.Attributes["class"] = "fa fa-exchange";
+                        buttonIcon.Attributes["class"] = "ti ti-switch-3";
                         var groupTypeRole = _groupTypeCache.Roles.FirstOrDefault( a => a.Id == groupMember.GroupRoleId );
                         deleteButton.ToolTip = string.Format( "Managed by group sync for role \"{0}\".", groupTypeRole );
                     }
                     else if ( _groupTypeCache.EnableGroupHistory == true && _groupMembersWithGroupMemberHistory.Contains( groupMember.Id ) )
                     {
-                        buttonIcon.Attributes["class"] = "fa fa-archive";
+                        buttonIcon.Attributes["class"] = "ti ti-archive";
                         deleteButton.AddCssClass( "btn-danger" );
                         deleteButton.ToolTip = "Archive";
                         e.Row.AddCssClass( "js-has-grouphistory" );
@@ -921,20 +933,20 @@ namespace RockWeb.Blocks.Groups
                     {
                         sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title=" +
                             "'This person has multiple roles in this group. This is an unsupported configuration for groups with Group Scheduling enabled. The system does not support scheduling the same person with different roles.'>" +
-                            "<i class='fa fa-exclamation-circle text-warning'></i>" +
+                            "<i class='ti ti-exclamation-circle text-warning'></i>" +
                             "</span>" );
                     }
                 }
 
                 if ( !_showNoteColumn && groupMember.Note.IsNotNullOrWhiteSpace() )
                 {
-                    sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + groupMember.Note.EncodeHtml() + "'><i class='fa fa-file-text-o text-info'></i></span>" );
+                    sbNameHtml.Append( " <span class='js-group-member-note' data-toggle='tooltip' data-placement='top' title='" + groupMember.Note.EncodeHtml() + "'><i class='ti ti-file-type-txt text-info'></i></span>" );
                 }
 
                 // If there is a required signed document that member has not signed, show an icon in the grid
                 if ( _showPersonsThatHaventSigned && !_personIdsThatHaveSigned.Contains( groupMember.PersonId ) )
                 {
-                    sbNameHtml.Append( " <i class='fa fa-edit text-danger'></i>" );
+                    sbNameHtml.Append( " <i class='ti ti-edit text-danger'></i>" );
                 }
 
                 lNameWithHtml.Text = sbNameHtml.ToString();
@@ -1557,7 +1569,7 @@ namespace RockWeb.Blocks.Groups
             btnPlaceElsewhere.ItemStyle.HorizontalAlign = HorizontalAlign.Center;
             btnPlaceElsewhere.HeaderStyle.CssClass = "grid-columncommand";
             btnPlaceElsewhere.ItemStyle.CssClass = "grid-columncommand";
-            btnPlaceElsewhere.Text = "<i class='fa fa-share'></i>";
+            btnPlaceElsewhere.Text = "<i class='ti ti-share'></i>";
             btnPlaceElsewhere.CssClass = "btn btn-default btn-sm";
             btnPlaceElsewhere.ToolTip = "Place Elsewhere";
             btnPlaceElsewhere.Click += btnPlaceElsewhere_Click;

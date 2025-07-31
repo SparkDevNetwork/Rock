@@ -74,7 +74,7 @@ namespace RockWeb.Blocks.Core
 
                 $('.js-releasenote').on('click', function (event) {
                     var $top = $(event.target).closest('.releasenotes');
-                    $top.find('i').toggleClass('fa-caret-up').toggleClass('fa-caret-down');
+                    $top.find('i').toggleClass('ti-caret-up').toggleClass('ti-caret-down');
                     $top.find('.releasenotes-body').slideToggle(500);
                 });
             ";
@@ -560,7 +560,7 @@ namespace RockWeb.Blocks.Core
         private string CreatePendingRunOnceJobsMessage( List<string> pendingStartupRunOnceJobs, List<string> pendingScheduledRunOnceJobs )
         {
             StringBuilder stringBuilder = new StringBuilder();
-            stringBuilder.AppendLine( "<strong><i class=\"fa fa-info-circle\"></i> Migration Jobs Pending</strong>" );
+            stringBuilder.AppendLine( "<strong><i class=\"ti ti-info-circle\"></i> Migration Jobs Pending</strong>" );
             stringBuilder.AppendLine( "<p>The jobs listed below must finish before you can update to another version of Rock.</p>" );
 
             if ( pendingStartupRunOnceJobs.Any() )
