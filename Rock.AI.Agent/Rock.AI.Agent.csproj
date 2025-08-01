@@ -16,6 +16,8 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.ML.Tokenizers.Data.O200kBase" Version="1.0.2" />
     <PackageReference Include="Microsoft.SemanticKernel" Version="1.60.0" />
+    <PackageReference Include="Microsoft.Recognizers.Text" Version="1.8.13" />
+    <PackageReference Include="Microsoft.Recognizers.Text.DateTime" Version="1.8.13" />
   </ItemGroup>
 
   <ItemGroup>
