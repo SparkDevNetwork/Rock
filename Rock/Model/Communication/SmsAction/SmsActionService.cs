@@ -310,7 +310,7 @@ namespace Rock.Model
         {
             List<string> optOutKeywords = new List<string>
             {
-                "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT"
+                "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "REVOKE", "OPTOUT"
             };
 
             foreach ( var keyword in optOutKeywords )
