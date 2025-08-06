@@ -367,7 +367,7 @@ namespace Rock.Model
                     {
                         ToNumber = cleanedNumber,
                         FromNumber = message.ToNumber,
-                        Message = "You have opted out of messages."
+                        Message = "You have been unsubscribed from LCBC Updates & Alerts. No more messages will be sent. Reply HELP for help."
                     }
                 }
             };
