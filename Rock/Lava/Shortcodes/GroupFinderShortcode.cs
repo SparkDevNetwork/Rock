@@ -98,6 +98,11 @@ namespace Rock.Lava.Shortcodes
             /// Determines if null campus values should be considered when filtering by campus.
             /// </summary>
             public const string EnableStrictCampusFiltering = "enablestrictcampusfiltering";
+
+            /// <summary>
+            /// Determines if filtering public groups is enabled.
+            /// </summary>
+            public const string EnablePublicFilter = "enablepublicfilter";
         }
 
         /// <summary>
@@ -245,6 +250,17 @@ You can filter by time using multiple filters for ranges. Supported operators in
 	<li><strong>include</strong> – Appended to the query to eager-load group properties.</li>
 	<li><strong>hideovercapacitygroups</strong> (default: true) – Hides groups over capacity (group + role capacity).</li>
     <li><strong>enablestrictcampusfiltering</strong> (default: false) – When enabled, only returns groups that have a campus matching the filter. Groups with no campus are excluded.</li>
+    <li><strong>enablepublicfilter</strong> (default: true) - This setting lets you turn off the default filter that hides public groups.</li>
+</ul>
+
+<p>
+    Below are some other notes about how the shortcode works.
+</p>
+
+<ul>
+    <li>Only active groups will be returned.</li>
+    <li>Group security is currently not checked. Enabling security would add a performance overhead and makes returning a determined number of groups
+        difficult. Use the <code>HasRightsTo</code> Lava filter if you need this capability. You are also welcome to add a new Idea requesting it.
 </ul>
 
 <h5>Response Data</h5>
@@ -375,7 +391,8 @@ You may have noticed that distance values are returned in meters. If you're more
                 TravelMode = settings[ParameterKeys.TravelMode].ToString().ConvertToEnumOrNull<TravelMode>(),
                 Include = string.IsNullOrWhiteSpace( settings[ParameterKeys.Include] ) ? "Group.Schedule" : settings[ParameterKeys.Include],
                 HideOvercapacityGroups = settings[ParameterKeys.HideOvercapacityGroups].AsBooleanOrNull() ?? true,
-                EnableStrictCampusFiltering = settings[ParameterKeys.EnableStrictCampusFiltering].AsBooleanOrNull() ?? false
+                EnableStrictCampusFiltering = settings[ParameterKeys.EnableStrictCampusFiltering].AsBooleanOrNull() ?? false,
+                EnablePublicFilter = settings[ParameterKeys.EnablePublicFilter].AsBooleanOrNull() ?? true
             };
 
             // Create the initial queryable based on whether there is a origin provided.
@@ -472,6 +489,15 @@ You may have noticed that distance values are returned in meters. If you're more
         private IQueryable<GroupLocation> ApplyFilters( IQueryable<GroupLocation> groupQuery, Options options, List<ChildBlockElement> childElements )
         {
             groupQuery = ApplyFilterGroupOvercapacity( groupQuery, options );
+
+            // Filter out inactive groups
+            groupQuery = groupQuery.Where( g => g.Group.IsActive == true );
+
+            // Filter out non-public groups
+            if ( options.EnablePublicFilter == true )
+            {
+                groupQuery = groupQuery.Where( g => g.Group.IsPublic == true );
+            }
 
             // Process each of the settings they provided in the child elements.
             foreach ( var setting in childElements )
@@ -1103,6 +1129,11 @@ You may have noticed that distance values are returned in meters. If you're more
             /// Determines if null campus values should be returned when filtering on campuses.
             /// </summary>
             public bool EnableStrictCampusFiltering { get; set; }
+
+            /// <summary>
+            /// Determines if filtering for public groups should be enabled.
+            /// </summary>
+            public bool EnablePublicFilter { get; set; }
         }
 
         private class ChildBlockElement
