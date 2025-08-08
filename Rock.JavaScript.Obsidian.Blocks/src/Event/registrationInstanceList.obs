@@ -155,16 +155,26 @@
      * happens only if they have confirmed the delete action.
      */
     async function onDeleteClick(key: string): Promise<void> {
-        const confirmationResult = await confirm("Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!");
+        const row = gridData?.rows?.find(r => r["idKey"] === key);
+
+        if (!row) {
+            return;
+        }
+
+        const hasPaymentPlans = asBoolean(row["hasPaymentPlans"]);
+
+        let confirmationResult = await confirm("Are you sure you want to delete this registration instance? All of the registrations and registrants will also be deleted!");
 
         if (!confirmationResult) {
             return;
         }
 
-        const finalConfirmationResult = await confirm("Are you really sure?");
+        if (hasPaymentPlans) {
+            let finalConfirmationResult = await confirm("This instance also has registrations with payment plans. Are you sure that you want to delete the instance? The payment plans will be deactivated and will no longer be associated with a registration.");
 
-        if (!finalConfirmationResult) {
-            return;
+            if (!finalConfirmationResult) {
+                return;
+            }
         }
 
         const result = await invokeBlockAction<string>("Delete", {

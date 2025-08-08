@@ -127,6 +127,10 @@ namespace Rock.Blocks.Finance
         {
             public const string FilterActiveOnly = "filter-active-only";
         }
+        private static class PageParameterKey
+        {
+            public const string Accounts = "Accounts";
+        }
 
         #endregion Keys
 
@@ -209,15 +213,27 @@ namespace Rock.Blocks.Finance
                 .Include( a => a.PledgeFrequencyValue )
                 .Include( a => a.Group );
 
-            // If the 'LimitPledgesToCurrentPerson' option is enabled, filter by current person
+            // If 'LimitPledgesToCurrentPerson' is enabled, filter by the logged-in user
             if ( GetAttributeValue( AttributeKey.LimitPledgesToCurrentPerson ).AsBoolean() )
             {
-                var currentPersonId = RequestContext.CurrentPerson?.Id;
-
-                if ( currentPersonId.HasValue )
+                var currentPerson = RequestContext.CurrentPerson;
+                if ( currentPerson != null && !string.IsNullOrWhiteSpace( currentPerson.GivingId ) )
                 {
-                    query = query.Where( a => a.PersonAlias.PersonId == currentPersonId.Value );
+                    query = query.Where( a => a.PersonAlias.Person.GivingId == currentPerson.GivingId );
                 }
+            }
+            else
+            {
+                // Otherwise, use the selected context entity type
+                var contextEntity = GetContextEntity();
+                if ( contextEntity is Person contextPerson)
+                {
+                    if ( contextPerson != null && !string.IsNullOrWhiteSpace( contextPerson.GivingId ) )
+                    {
+                        query = query.Where( a => a.PersonAlias.Person.GivingId == contextPerson.GivingId );
+                    }
+                }
+                // else: show pledges for all people
             }
 
             // Filter by configured limit accounts if specified
@@ -225,6 +241,26 @@ namespace Rock.Blocks.Finance
             if ( accountGuids.Any() )
             {
                 query = query.Where( p => accountGuids.Contains( p.Account.Guid ) );
+            }
+
+            var accountIds = new List<int>();
+            foreach ( var accountIdentifier in PageParameter( PageParameterKey.Accounts ).Split( ',' ) )
+            {
+                var accountId = accountIdentifier.AsIntegerOrNull();
+                if ( !accountId.HasValue )
+                {
+                    accountId = FinancialAccountCache.GetByIdKey( accountIdentifier )?.Id;
+                }
+
+                if ( accountId.HasValue )
+                {
+                    accountIds.Add( accountId.Value );
+                }
+            }
+
+            if ( accountIds.Any() )
+            {
+                query = query.Where( p => p.AccountId.HasValue && accountIds.Contains( p.AccountId.Value ) );
             }
 
             // Filter by active pledges only

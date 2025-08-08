@@ -52,4 +52,7 @@ export type MediaAccountBag = {
 
     /** Gets or sets the Name of the MediaAccount. This property is required. */
     name?: string | null;
+
+    /** Gets or sets the value indicating whether manual entry is allowed for this media account. */
+    showDownloadButton: boolean;
 };

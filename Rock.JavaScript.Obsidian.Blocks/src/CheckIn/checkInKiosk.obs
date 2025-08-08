@@ -276,7 +276,8 @@
      * screens already.
      */
     const isConfigureHidden = computed((): boolean => {
-        return currentScreen.value >= SupervisorScreen.Login;
+        return !configuration.value.template?.isSupervisorEnabled
+            || currentScreen.value >= SupervisorScreen.Login;
     });
 
     // #endregion

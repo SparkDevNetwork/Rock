@@ -404,6 +404,59 @@ namespace Rock.Model
             return null;
         }
 
+        /// <summary>
+        /// Get's a list of the nearest groups to the person.
+        /// </summary>
+        /// <param name="point"></param>
+        /// <param name="groupTypeId"></param>
+        /// <param name="maxResults"></param>
+        /// <param name="returnOnlyClosestLocationPerGroup"></param>
+        /// <param name="maxDistance"></param>
+        /// <returns></returns>
+        public IQueryable<GroupLocation> GetNearestGroups( DbGeography point, int groupTypeId, int maxResults = 10, bool returnOnlyClosestLocationPerGroup = true, int? maxDistance = null )
+        {
+            var rockContext = ( RockContext ) this.Context;
+            var personService = new PersonService( rockContext );
+            
+            if ( point != null )
+            {
+                var groupLocation = this.Queryable()
+                    .Where( g =>
+                        g.GroupTypeId.Equals( groupTypeId ) )
+                    .SelectMany( g =>
+                        g.GroupLocations
+                            .Where( gl =>
+                                gl.Location != null &&
+                                gl.Location.GeoPoint != null
+                            )
+                    );
+
+                if  (maxDistance.HasValue )
+                {
+                    groupLocation = groupLocation.Where( gl => gl.Location.GeoPoint.Distance( point ) <= maxDistance );
+                }
+
+                // Return all locations
+                if( returnOnlyClosestLocationPerGroup == false )
+                { 
+                    return groupLocation
+                            .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) )
+                            .Take( maxResults );
+                }
+
+                // Return just the closest location
+                var closestLocationPerGroup = groupLocation
+                    .GroupBy( x => x.GroupId )
+                    .Select( g => g.OrderBy( x => x.Location.GeoPoint.Distance( point ) ).FirstOrDefault() );
+
+                return closestLocationPerGroup
+                        .OrderBy( gl => gl.Location.GeoPoint.Distance( point ) )
+                        .Take( maxResults );
+            }
+
+            return null;
+        }
+
         #endregion
 
         /// <summary>

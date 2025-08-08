@@ -184,15 +184,18 @@
                                     </div>
 
                                     <div class="row">
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <Rock:ColorPicker ID="cpBarBackgroundColor" runat="server" Label="Navigation Bar Background Color" Help="The background color of the navigation bar." />
                                         </div>
-                                        <div class="col-md-4">
+                                        <div class="col-md-3">
                                             <Rock:RockCheckBox ID="cbNavbarTransclucent" runat="server" AutoPostBack="true" OnCheckedChanged="CbNavbarTransclucent_CheckedChanged" Label="Enable Navigation Bar Transparency" Help="Please note, your bar background color must have an opacity less than 100% for this to work. Enable to view different blurring options. (iOS Only)" />
                                             <Rock:RockDropDownList ID="ddlNavbarBlurStyle" runat="server" Label="Navigation Bar Blur Style" Help="Select between the different blur styles of the navigation bar. (iOS Only)" />
                                         </div>
-                                        <div class="col-md-4">
-                                            <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Navigation Bar Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
+                                        <div class="col-md-3">
+                                            <Rock:ImageUploader ID="imgEditHeaderImage" runat="server" Label="Light Navigation Bar Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
+                                        </div>
+                                         <div class="col-md-3">
+                                            <Rock:ImageUploader ID="imgEditHeaderDarkImage" runat="server" Label="Dark Navigation Bar Image" Help="The image that appears on the top header. While the size is dependent on design we recommend a height of 120px and minimum width of 560px." />
                                         </div>
                                     </div>
                                 </div>

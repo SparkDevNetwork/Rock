@@ -208,10 +208,10 @@
                                 </div>
                                 <div class="activity-item-detail-container">
                                     <h5 class="activity-name">{{ item?.classActivityBag?.name }}</h5>
-                                    <div class="activity-item-time">
+                                    <div class="activity-item-time" v-if="getActivityTimeText(item)">
                                         <div class="text-muted" :class="{ 'text-warning': isDueSoonAndIncomplete(item) }">{{ getActivityTimeText(item) }}</div>
                                     </div>
-                                    <div class="activity-label-container" v-html="getActivityLabel(item)">
+                                    <div class="activity-label-container" v-if="getActivityTimeText(item)" v-html="getActivityLabel(item)">
                                     </div>
                                 </div>
                                 <div class="activity-item-grade-container">
@@ -508,7 +508,11 @@
     }
 
     /** The CSS classes to apply to the activity container. */
-    function getActivityContainerClasses(activity: LearningClassActivityCompletionBag): string {
+    function getActivityContainerClasses(activity: LearningClassActivityCompletionBag | null): string {
+        if (!activity) {
+            return "";
+        }
+
         const classes = activity.isAvailable === true ? ["available"] : ["not-available"];
 
         classes.push("activity-navigation-item-container");

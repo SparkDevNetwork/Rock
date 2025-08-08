@@ -384,9 +384,11 @@ namespace Rock.Security.Authentication
         {
             if ( !IsPasswordlessAuthenticationAllowedForProtectionProfile( user.Person ) )
             {
+                var securitySettings = new SecuritySettingsService().SecuritySettings;
+
                 return new OneTimePasscodeAuthenticationResult
                 {
-                    ErrorMessage = "Passwordless sign-in not available for your protection profile. Please request assistance from the organization administrator."
+                    ErrorMessage = securitySettings.MessageForDisabledPasswordlessSignIn
                 };
             }
 
@@ -498,9 +500,11 @@ namespace Rock.Security.Authentication
             // Check if passwordless authentication is allowed.
             if ( !IsPasswordlessAuthenticationAllowedForProtectionProfile( person ) )
             {
+                var securitySettings = new SecuritySettingsService().SecuritySettings;
+
                 return new OneTimePasscodeAuthenticationResult
                 {
-                    ErrorMessage = "Passwordless sign-in not available for your protection profile. Please request assistance from the organization administrator."
+                    ErrorMessage = securitySettings.MessageForDisabledPasswordlessSignIn
                 };
             }
 

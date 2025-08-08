@@ -85,7 +85,7 @@
                             ID="cbDisablePredictableIds"
                             runat="server"
                             Label="Disable Predictable IDs"
-                            Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs." />
+                            Help="When checked, the GetFile, GetImage and GetAvatar endpoints will use IdKeys and GUID values instead of predictable IDs.  Note: Enabling this may cause plugins that are not yet compatible with this feature to stop working correctly." />
                     </div>
                 </div>
                 <div class="row mt-3">
@@ -141,8 +141,8 @@
                                     ID="nbPasswordlessSignInDailyIpThrottle"
                                     NumberType="Integer"
                                     MinimumValue="1"
-                                    Label="Passwordless Sign In Daily IP Throttle"
-                                    Help="The maxiumum number of passwordless attempts that are allowed from a single IP address in a single day."
+                                    Label="Passwordless Sign-In Daily IP Throttle"
+                                    Help="The maximum number of passwordless attempts that are allowed from a single IP address in a single day."
                                     CssClass="input-width-sm" />
                             </div>
                             <div class="col-md-6">
@@ -162,10 +162,21 @@
                                 <Rock:RockCheckBoxList
                                     runat="server"
                                     ID="cblDisablePasswordlessSignInForAccountProtectionProfiles"
-                                    Label="Disable Passwordless Sign In for the Following Protection Profiles"
+                                    Label="Disable Passwordless Sign-In for the Following Protection Profiles"
                                     Help="Determines which individuals can use passwordless login depending on their protection profile. If you turn off Passwordless login for a Protection Profile, make sure two-factor authentication (2FA) for that Protection Profile is also turned off. If two-factor authentication (2FA) is enabled without Passwordless login, someone could get locked out."
                                     RepeatDirection="Horizontal" />
                             </div>
+                            <div class="col-md-6">
+                                <Rock:RockTextBox
+                                    runat="server"
+                                    ID="tbMessageForDisabledPasswordlessSignIn"
+                                    Label="Message for Disabled Passwordless Sign-In"
+                                    Help="The message shown when a passwordless sign-in fails due to the protection profile having passwordless sign-in disabled."
+                                    TextMode="MultiLine"
+                                    Rows="3" />
+                            </div>
+                        </div>
+                        <div class="row mt-3">
                             <div class="col-md-6">
                                 <Rock:RockDropDownList
                                     runat="server"

@@ -6,6 +6,7 @@
                 :editorHeight="642"
                 enableAssetManager
                 :mergeFields="mergeFields ?? []"
+                :commonMergeFields="commonMergeFields"
                 :shortLinkCheckToken="shortLinkCheckToken"
                 :shortLinkGetPageId="shortLinkGetPageId"
                 :shortLinkSites="shortLinkSites"
@@ -13,14 +14,19 @@
                 toolbar="light-compact" />
 
     <CodeEditor v-else-if="mode === 'code'"
-                v-model="innerHtml" />
+                v-model="innerHtml"
+                mode="lava" />
+
+    <NotificationBox v-if="usageType === 'template'" alertType="warning">{{ warningMessage }}</NotificationBox>
 </template>
 
 <script setup lang="ts">
     import { onUnmounted, PropType, ref, watch } from "vue";
+    import { UsageType } from "../types";
     import { RockCssClassContentEditable } from "../utils.partial";
     import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import HtmlEditor from "@Obsidian/Controls/htmlEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
@@ -55,16 +61,30 @@
         shortLinkTokenMinLength: {
             type: Number as PropType<number | null | undefined>
         },
+
+        usageType: {
+            type: String as PropType<UsageType>,
+            default: "email" as const
+        }
     });
 
     const emit = defineEmits<{
         (e: "change", value: string): void;
     }>();
 
+    const warningMessage = `To have Lava processed when the email is sent, wrap it in {% raw %} tags. Otherwise, it will be processed when the email is being authored.`;
+
     // #region Values
 
     // Initialized in the immediate watcher below.
     const innerHtml = ref<string>(props.element.innerHTML ?? "");
+
+    const commonMergeFields = [
+        "Person.FirstName^First Name|fa fa-user",
+        "Person.NickName^Nick Name|fa fa-user",
+        "Person.FullName^Full Name|fa fa-user",
+        "Communication.FromName^From Name|fa fa-envelope",
+    ];
 
     // #endregion
 

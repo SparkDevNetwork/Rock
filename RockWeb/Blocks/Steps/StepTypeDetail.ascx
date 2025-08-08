@@ -249,7 +249,7 @@
                             OnSelectedIndexChanged="ddlTriggerType_SelectedIndexChanged" AutoPostBack="true" Required="true" ValidationGroup="StepWorkflow" />
                     </div>
                     <div class="col-md-6">
-                        <Rock:WorkflowTypePicker ID="wpWorkflowType" runat="server" Label="Workflow Type" Required="true" ValidationGroup="StepWorkflow" />
+                        <Rock:WorkflowTypePicker ID="wpWorkflowType" runat="server" Label="Workflow Type" Required="true" ValidationGroup="StepWorkflow" Help="The Workflow Type to launch when the 'When' condition is met. If you want each workflow instance to be recorded and associated with the Step (for reporting or historical reference), the selected workflow type must be configured to be persisted." />
                     </div>
                 </div>
 

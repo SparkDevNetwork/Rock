@@ -397,7 +397,7 @@ namespace Rock.Rest.v2
                 if ( !options.Session.IsPending )
                 {
                     var cts = new CancellationTokenSource( 5000 );
-                    var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                    var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
 
                     clientLabelBags = clientLabels
                         .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
@@ -463,7 +463,7 @@ namespace Rock.Rest.v2
                 var result = session.ConfirmAttendance( options.SessionGuid );
 
                 var cts = new CancellationTokenSource( 5000 );
-                var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                var clientLabels = await director.LabelProvider.RenderAndPrintCheckInLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
 
                 var clientLabelBags = clientLabels
                     .Where( l => l.Data != null && l.Error.IsNullOrWhiteSpace() )
@@ -529,7 +529,7 @@ namespace Rock.Rest.v2
                 var result = session.Checkout( sessionRequest, options.AttendanceIds, kiosk );
 
                 var cts = new CancellationTokenSource( 5000 );
-                await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, new LabelPrintProvider(), cts.Token );
+                await director.LabelProvider.RenderAndPrintCheckoutLabelsAsync( result, kiosk, null, new LabelPrintProvider(), cts.Token );
 
                 return Ok( result );
             }

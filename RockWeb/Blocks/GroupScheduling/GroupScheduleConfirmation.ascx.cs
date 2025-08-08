@@ -73,7 +73,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Key = AttributeKey.SchedulerReceiveConfirmationEmails )]
 
     [BooleanField( "Require Decline Reasons",
-        Description = "If checked, a person must choose one of the 'Decline Reasons' to submit their decline status.",
+        Description = "If enabled, individuals will be required to select from the list of Decline Reasons when they decline. This setting overrides the Group Type's Requires Reason If Schedule Declined setting—forcing a reason to be chosen even if the Group Type does not require it. If left unchecked, the Group Type's setting will determine whether a reason is required.",
         DefaultBooleanValue = true,
         Order = 5,
         Key = AttributeKey.RequireDeclineReasons )]
@@ -98,7 +98,7 @@ namespace RockWeb.Blocks.GroupScheduling
         Key = AttributeKey.DeclineNoteTitle )]
 
     [SystemCommunicationField( "Scheduling Response Email",
-        Description = "The system email that will be used for sending responses back to the scheduler.",
+        Description = "The system email that will be used for sending responses back to the scheduler and/or scheduling coordinator.",
         IsRequired = false,
         DefaultSystemCommunicationGuid = Rock.SystemGuid.SystemCommunication.SCHEDULING_RESPONSE,
         Order = 9,
@@ -151,7 +151,7 @@ namespace RockWeb.Blocks.GroupScheduling
   {% endif %}
 
   {{ ScheduledItem.Occurrence.Group.Name }}<br />
-  {{ ScheduledItem.Location.Name }} {{ScheduledItem.Occurrence.Schedule.Name }}
+  {{ ScheduledItem.Occurrence.Location.Name }} {{ScheduledItem.Occurrence.Schedule.Name }}
 <i class='text-success fa fa-check-circle'></i><br /><br />
 {% endfor %}
 </p><p class='margin-b-lg'>Thanks again!<br /></p>";
@@ -171,7 +171,7 @@ namespace RockWeb.Blocks.GroupScheduling
   {% endif %}
 
   {{ ScheduledItem.Occurrence.Group.Name }}<br />
-  {{ ScheduledItem.Location.Name }} {{ScheduledItem.Occurrence.Schedule.Name }}<br /><br />
+  {{ ScheduledItem.Occurrence.Location.Name }} {{ ScheduledItem.Occurrence.Schedule.Name }}<br /><br />
 {% endfor %}
 </p>";
 
@@ -179,7 +179,7 @@ namespace RockWeb.Blocks.GroupScheduling
 <div class='alert alert-success'><strong>Thank You</strong> We'll try to schedule another person for:
 
 {% for ScheduledItem in ScheduledItems %}
-  <br />{{ ScheduledItem.Occurrence.Group.Name }}
+  <br />{{ ScheduledItem.Occurrence.Group.Name }} - {{ ScheduledItem.Occurrence.Location.Name }} {{ ScheduledItem.Occurrence.Schedule.Name }} {{ ScheduledItem.Occurrence.OccurrenceDate | Date:'dddd, MMMM d, yyyy' }}
 {% endfor %}
 </div>";
 
@@ -223,6 +223,79 @@ namespace RockWeb.Blocks.GroupScheduling
         #endregion Base Control Methods
 
         #region Events
+
+        /// <summary>
+        /// Handles the Click event of the btnAcceptAll control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnAcceptAll_Click( object sender, EventArgs e )
+        {
+            // To accept all, simply redirect to the same page with "IsConfirmed" set to true.
+            NavigateToCurrentPageReference( new Dictionary<string, string> { [PageParameterKey.IsConfirmed] = "true" } );
+        }
+
+        /// <summary>
+        /// Handles the Click event of the btnDeclineAll control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
+        protected void btnDeclineAll_Click( object sender, EventArgs e )
+        {
+            mdDeclineAll.Show();
+        }
+
+        /// <summary>
+        /// Handles the SaveClick event of the mdDeclineAll control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="EventArgs"/> instance containing the event data.</param>
+        protected void mdDeclineAll_SaveClick( object sender, EventArgs e )
+        {
+            var attendanceIds = GetAttendanceIdsFromParameters();
+            if ( !attendanceIds.Any() )
+            {
+                return;
+            }
+
+            SetSelectedPersonId();
+
+            int? declineReasonValueId = ddlDeclineAllReason.SelectedItem.Value.AsIntegerOrNull();
+            var rockContext = new RockContext();
+            var attendanceService = new AttendanceService( rockContext );
+            var attendanceList = new List<Attendance>();
+            foreach ( var attendanceId in attendanceIds )
+            {
+                var attendance = attendanceService.Queryable()
+                    .Where( a => a.Id == attendanceId && a.PersonAlias.PersonId == _selectedPerson.Id )
+                    .Include( a => a.PersonAlias.Person )
+                    .Include( a => a.ScheduledByPersonAlias.Person )
+                    .Include( a => a.Occurrence.Group )
+                    .Include( a => a.Occurrence.Schedule )
+                    .Include( a => a.Occurrence.Location )
+                    .FirstOrDefault();
+
+                if ( attendance == null )
+                {
+                    continue; // Only likely to happen if someone attempts to alter the attendance id query parameters.
+                }
+
+                attendanceList.Add( attendance );
+                attendanceService.ScheduledPersonDecline( attendance.Id, declineReasonValueId );
+                if ( !tbDeclineAllNote.Text.IsNullOrWhiteSpace() )
+                {
+                    attendance.Note = tbDeclineAllNote.Text;
+                }
+
+            }
+            rockContext.SaveChanges();
+
+            var mergeFields = MergeFields( attendanceList, attendanceList.FirstOrDefault().Occurrence.Group?.ScheduleCoordinatorPersonAlias?.Person );
+            ShowDeclineMessageAfterSubmit( attendanceIds, mergeFields );
+            pnlDeclineReason.Visible = false;
+            pnlSelectConfirmationOption.Visible = false;
+            mdDeclineAll.Hide();
+        }
 
         /// <summary>
         /// Handles the Click event of the btnSubmitDeclineReason control.
@@ -318,6 +391,26 @@ namespace RockWeb.Blocks.GroupScheduling
             btnDeclineAttend.CommandArgument = attendance.Id.ToString();
         }
 
+        /// <summary>
+        /// Handles the ItemDataBound event of the rptPendingConfirmations control.
+        /// </summary>
+        /// <param name="sender">The source of the event.</param>
+        /// <param name="e">The <see cref="RepeaterItemEventArgs"/> instance containing the event data.</param>
+        protected void rptSelectedConfirmations_ItemDataBound( object sender, RepeaterItemEventArgs e )
+        {
+            var litSectionBreak = e.Item.FindControl( "litSectionBreak" ) as Literal;
+            var litDate = e.Item.FindControl( "litDate" ) as Literal;
+            var litGroupName = e.Item.FindControl( "litGroupName" ) as Literal;
+            var litLocation = e.Item.FindControl( "litLocation" ) as Literal;
+            var attendance = e.Item.DataItem as SelectedAttendance;
+
+            litSectionBreak.Visible = attendance.IsFirstDateOccurrence && !attendance.IsFirstOverallOccurrence;
+            litDate.Visible = attendance.IsFirstDateOccurrence;
+            litDate.Text = attendance.Date.ToString( "dddd, MMMM d, yyyy" );
+            litGroupName.Text = attendance.GroupName;
+            litLocation.Text = attendance.Location + " " + attendance.Schedule;
+        }
+
         #endregion Events
 
         #region Methods
@@ -333,6 +426,10 @@ namespace RockWeb.Blocks.GroupScheduling
             ddlDeclineReason.DataSource = definedValues;
             ddlDeclineReason.DataBind();
             ddlDeclineReason.Items.Insert( 0, new ListItem() );
+
+            ddlDeclineAllReason.DataSource = definedValues;
+            ddlDeclineAllReason.DataBind();
+            ddlDeclineAllReason.Items.Insert( 0, new ListItem() );
         }
 
         /// <summary>
@@ -364,6 +461,74 @@ namespace RockWeb.Blocks.GroupScheduling
             else
             {
                 pnlPendingConfirmation.Visible = false;
+            }
+        }
+
+        /// <summary>
+        /// Binds the selected confirmations (for use with one-button confirmation email).
+        /// </summary>
+        private void BindSelectedConfirmations()
+        {
+            var selectedPersonId = hfSelectedPersonId.Value.AsIntegerOrNull();
+
+            if ( selectedPersonId == null )
+            {
+                return;
+            }
+
+            var attendanceIds = GetAttendanceIdsFromParameters();
+            if ( !attendanceIds.Any() )
+            {
+                return;
+            }
+
+            var rockContext = new RockContext();
+            var qryPendingConfirmations = new AttendanceService( rockContext )
+                .Queryable()
+                .AsNoTracking()
+                .Where( a => a.PersonAlias.PersonId == selectedPersonId && attendanceIds.Contains( a.Id ) )
+                .OrderBy( a => a.Occurrence.OccurrenceDate )
+                .Select( a => new SelectedAttendance
+                {
+                    Date = a.Occurrence.OccurrenceDate,
+                    IsFirstDateOccurrence = false,
+                    GroupName = a.Occurrence.Group.Name,
+                    Location = a.Occurrence.Location.Name,
+                    Schedule = a.Occurrence.Schedule.Name,
+                    RequireDeclineReason = a.Occurrence.Group.GroupType.RequiresReasonIfDeclineSchedule
+                } );
+
+            var pendingConfirmations = qryPendingConfirmations.ToList();
+            var lastDate = DateTime.MinValue;
+            var isFirstOccurrence = true;
+            var groupRequiresDeclineReason = false;
+
+            foreach ( var pendingConfirmation in pendingConfirmations )
+            {
+                pendingConfirmation.IsFirstOverallOccurrence = isFirstOccurrence;
+                isFirstOccurrence = false;
+
+                groupRequiresDeclineReason = groupRequiresDeclineReason || pendingConfirmation.RequireDeclineReason;
+
+                if ( pendingConfirmation.Date > lastDate )
+                {
+                    pendingConfirmation.IsFirstDateOccurrence = true;
+                    lastDate = pendingConfirmation.Date;
+                }
+            }
+
+            if ( pendingConfirmations.Count > 0 )
+            {
+                rptSelectedConfirmations.DataSource = pendingConfirmations;
+                rptSelectedConfirmations.DataBind();
+                rptSelectedConfirmations.Visible = true;
+                pnlSelectConfirmationOption.Visible = true;
+                ddlDeclineAllReason.Required = groupRequiresDeclineReason || GetAttributeValue( AttributeKey.RequireDeclineReasons ).AsBoolean();
+                tbDeclineAllNote.Visible = GetAttributeValue( AttributeKey.EnableDeclineNote ).AsBoolean();
+            }
+            else
+            {
+                pnlSelectConfirmationOption.Visible = false;
             }
         }
 
@@ -407,16 +572,23 @@ namespace RockWeb.Blocks.GroupScheduling
                 ddlDeclineReason.SelectedValue = attendance.DeclineReasonValueId.ToString();
             }
 
-            if ( PageParameter( PageParameterKey.IsConfirmed ).AsBoolean() )
+            var isConfirmed = PageParameter( PageParameterKey.IsConfirmed ).AsBooleanOrNull();
+            if ( isConfirmed == true )
             {
                 var mergeFields = MergeFields( attendanceList, attendance?.ScheduledByPersonAlias?.Person );
                 ShowConfirmationHeading( mergeFields );
+                BindPendingConfirmations();
             }
-            else
+            else if ( isConfirmed == false )
             {
                 // we send decline email from submit button
                 var mergeFields = MergeFields( attendanceList, attendance.Occurrence.Group?.ScheduleCoordinatorPersonAlias?.Person );
                 ShowDeclineHeading( mergeFields );
+                BindPendingConfirmations();
+            }
+            else
+            {
+                BindSelectedConfirmations();
             }
 
             lBlockTitle.Text = "Email Confirmation";
@@ -460,24 +632,7 @@ namespace RockWeb.Blocks.GroupScheduling
                 return false;
             }
 
-            if ( PageParameter( PageParameterKey.IsConfirmed ).AsBooleanOrNull() == null )
-            {
-                ShowIsConfirmedMissingParameterMessage();
-                return false;
-            }
-
             return true;
-        }
-
-        /// <summary>
-        /// Shows the is confirmed missing parameter message.
-        /// </summary>
-        private void ShowIsConfirmedMissingParameterMessage()
-        {
-            nbError.Title = "Sorry,";
-            nbError.NotificationBoxType = NotificationBoxType.Warning;
-            nbError.Text = "Something is not right with the link you used to get here.";
-            nbError.Visible = true;
         }
 
         /// <summary>
@@ -548,19 +703,21 @@ namespace RockWeb.Blocks.GroupScheduling
                         return;
                     }
 
-                    bool statusChangedToYes = false;
-
-                    bool isConfirmedParameter = this.PageParameter( PageParameterKey.IsConfirmed ).AsBoolean();
-                    if ( isConfirmedParameter )
+                    var isConfirmedParameter = this.PageParameter( PageParameterKey.IsConfirmed ).AsBooleanOrNull();
+                    if ( isConfirmedParameter == true )
                     {
                         if ( !attendance.IsScheduledPersonConfirmed() )
                         {
-                            statusChangedToYes = true;
                             attendanceService.ScheduledPersonConfirm( attendance.Id );
                             rockContext.SaveChanges();
+
+                            if ( attendance.RSVP == RSVP.Yes )
+                            {
+                                attendanceIdsChangedToRsvpYes.Add( attendanceId );
+                            }
                         }
                     }
-                    else
+                    else if ( isConfirmedParameter == false )
                     {
                         if ( !attendance.IsScheduledPersonDeclined() )
                         {
@@ -569,23 +726,11 @@ namespace RockWeb.Blocks.GroupScheduling
                         }
                     }
 
-                    if ( statusChangedToYes )
-                    {
-                        rockContext.SaveChanges();
-
-                        // Only send Confirm if the status has changed and change is to Yes
-                        if ( attendance.RSVP == RSVP.Yes )
-                        {
-                            attendanceIdsChangedToRsvpYes.Add( attendanceId );
-                        }
-                    }
-
                     attendanceList.Add( attendance );
                 }
 
                 DetermineRecipientAndSendResponseEmails( attendanceIdsChangedToRsvpYes );
                 ShowHeadingByIsConfirmed( attendanceList );
-                BindPendingConfirmations();
             }
         }
 
@@ -609,6 +754,8 @@ namespace RockWeb.Blocks.GroupScheduling
                             .Include( a => a.PersonAlias.Person )
                             .Include( a => a.ScheduledByPersonAlias.Person )
                             .Include( a => a.Occurrence.Group )
+                            .Include( a => a.Occurrence.Location )
+                            .Include( a => a.Occurrence.Schedule )
                             .FirstOrDefault();
 
                         if ( attendance != null )
@@ -820,7 +967,7 @@ namespace RockWeb.Blocks.GroupScheduling
             var mergeFields = Rock.Lava.LavaHelper.GetCommonMergeFields( this.RockPage, this._selectedPerson );
             mergeFields.Add( "ScheduledItems", attendanceList );
             mergeFields.Add( "Person", attendance.PersonAlias.Person );
-            mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias.Person );
+            mergeFields.Add( "Scheduler", attendance.ScheduledByPersonAlias?.Person );
 
             // This would be Scheduler or Cancellation Person depending on which recipientPerson was specified
             mergeFields.Add( "Recipient", recipientPerson );
@@ -829,5 +976,18 @@ namespace RockWeb.Blocks.GroupScheduling
         }
 
         #endregion Methods
+
+        #region Helper Class
+        private class SelectedAttendance
+        {
+            public DateTime Date { get; set; }
+            public bool IsFirstOverallOccurrence { get; set; }
+            public bool IsFirstDateOccurrence { get; set; }
+            public string GroupName { get; set; }
+            public string Location { get; set; }
+            public string Schedule { get; set; }
+            public bool RequireDeclineReason { get; set; }
+        }
+        #endregion
     }
 }

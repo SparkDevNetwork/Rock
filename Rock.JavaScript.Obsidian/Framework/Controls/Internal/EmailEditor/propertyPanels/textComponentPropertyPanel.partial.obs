@@ -17,7 +17,8 @@
                                        :shortLinkCheckToken="shortLinkCheckToken"
                                        :shortLinkGetPageId="shortLinkGetPageId"
                                        :shortLinkSites="shortLinkSites"
-                                       :shortLinkTokenMinLength="shortLinkTokenMinLength" />
+                                       :shortLinkTokenMinLength="shortLinkTokenMinLength"
+                                       :usageType="usageType" />
                 </Accordion>
 
                 <Accordion title="Text Styling">
@@ -66,6 +67,7 @@
     import InnerHtmlProperty from "../properties/innerHtmlProperty.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
     import { createComponentBackgroundColorProvider } from "../providers.partial";
+    import { UsageType } from "../types";
     import { getTextComponentHelper } from "../utils.partial";
     import { Guid } from "@Obsidian/Types";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -96,6 +98,11 @@
         shortLinkTokenMinLength: {
             type: Number as PropType<number | null | undefined>
         },
+
+        usageType: {
+            type: String as PropType<UsageType>,
+            default: "email" as const
+        }
     });
 
     defineEmits<{

@@ -409,9 +409,9 @@ namespace Rock.Transactions
 
             workflowService.Process( workflow, targetEntity, out workflowErrors );
 
-            if ( workflow.Id == 0 )
+            if ( workflow.IsPersisted && workflow.Id == 0 )
             {
-                ExceptionLogService.LogException( $"EntityChangeTransaction failed. Workflow instance could not be created [WorkflowName={ name }]." );
+                ExceptionLogService.LogException( $"EntityChangeTransaction failed. Workflow instance could not be created [WorkflowName={name}]." );
                 return;
             }
 
@@ -421,9 +421,13 @@ namespace Rock.Transactions
                 return;
             }
 
-            // Create a new EntityWorkflow instance to track the association between the target entity and the workflow.
-            // TODO: Create an interface IEntityWorkflowInstance(EntityId, WorkflowId, TriggerId) to allow the instance object to be created here using a generic implementation?
-            this.CreateWorkflowInstanceEntity( dataContext, targetEntity.Id, workflow.Id, triggerId );
+            // Save the StepWorkflow instance if the workflow is persisted.
+            if ( workflow.Id != 0 )
+            {
+                // Create a new EntityWorkflow instance to track the association between the target entity and the workflow.
+                // TODO: Create an interface IEntityWorkflowInstance(EntityId, WorkflowId, TriggerId) to allow the instance object to be created here using a generic implementation?
+                this.CreateWorkflowInstanceEntity( dataContext, targetEntity.Id, workflow.Id, triggerId );
+            }
 
             dataContext.SaveChanges();
         }

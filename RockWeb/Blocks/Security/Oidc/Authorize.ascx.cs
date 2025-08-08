@@ -202,11 +202,11 @@ namespace RockWeb.Blocks.Security.Oidc
             var action = PageParameter( PageParamKey.Action );
             var token = PageParameter( "token" );
 
-            if ( (action.IsNotNullOrWhiteSpace() && ValidateAntiForgeryToken( token ) ) || scopesPreviouslyApproved )
+            if ( ( action.IsNotNullOrWhiteSpace() && ValidateAntiForgeryToken( token ) ) || scopesPreviouslyApproved )
             {
-                if (action == "deny" )
+                if ( action == "deny" )
                 {
-                    DenyAuthorization( "The+user+declined+claim+permissions", LoginFailureReason.Other, authClient );
+                    DenyAuthorization( "The+individual+declined+claim+permissions", LoginFailureReason.Other, authClient );
                     base.OnLoad( e );
                     return;
                 }
@@ -395,7 +395,7 @@ namespace RockWeb.Blocks.Security.Oidc
 
             // Create a new authentication ticket holding the user identity.
             var ticket = new AuthenticationTicket( identity, new AuthenticationProperties() );
-            
+
             // We should set the scopes to the requested valid scopes.
             ticket.SetScopes( requestedScopes );
 

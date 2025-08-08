@@ -15,7 +15,7 @@
                     title="Name"
                     field="name"
                     :filter="textValueFilter"
-                    width="5%"
+                    width="25%"
                     visiblePriority="xs" />
 
         <TextColumn name="description"

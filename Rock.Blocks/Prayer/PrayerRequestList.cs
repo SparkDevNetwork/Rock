@@ -30,6 +30,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Prayer.PrayerRequestList;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Prayer
 {
@@ -47,6 +48,7 @@ namespace Rock.Blocks.Prayer
         Description = "The page that will show the prayer request details.",
         Key = AttributeKey.DetailPage )]
 
+    [ContextAware( typeof( Rock.Model.Person ) )]
     [Rock.SystemGuid.EntityTypeGuid( "e8be562a-bb24-47a9-b3df-63cfb508f831" )]
     [Rock.SystemGuid.BlockTypeGuid( "e860f577-f30d-4197-87f0-c3dc6132f537" )]
     [CustomizedGrid]
@@ -75,7 +77,7 @@ namespace Rock.Blocks.Prayer
             var builder = GetGridBuilder();
 
             box.IsAddEnabled = GetIsAddEnabled();
-            box.IsDeleteEnabled = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+            box.IsDeleteEnabled = GetIsDeleteEnabled();
             box.ExpectedRowCount = null;
             box.NavigationUrls = GetBoxNavigationUrls();
             box.Options = GetBoxOptions();
@@ -105,23 +107,50 @@ namespace Rock.Blocks.Prayer
         }
 
         /// <summary>
+        /// Determines if the delete button should be enabled in the grid.
+        /// <summary>
+        /// <returns>A boolean value that indicates if the delete button should be enabled.</returns>
+        private bool GetIsDeleteEnabled()
+        {
+            return BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
+        }
+
+        /// <summary>
         /// Gets the box navigation URLs required for the page to operate.
         /// </summary>
         /// <returns>A dictionary of key names and URL values.</returns>
         private Dictionary<string, string> GetBoxNavigationUrls()
         {
+            var qryParams = new Dictionary<string, string>();
+            qryParams.Add( "PrayerRequestId", "((Key))" );
+
+            var personContext = GetContextEntity();
+            if ( personContext != null )
+            {
+                qryParams.Add( "PersonId", personContext.Id.ToString() );
+            }
+
             return new Dictionary<string, string>
             {
-                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, "PrayerRequestId", "((Key))" )
+                [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, qryParams )
             };
         }
 
         /// <inheritdoc/>
         protected override IQueryable<PrayerRequest> GetListQueryable( RockContext rockContext )
         {
-            return base.GetListQueryable( rockContext )
+            var qry = base.GetListQueryable( rockContext )
                 .Include( a => a.Campus )
                 .Include( a => a.Category );
+
+            // Filter by person context if available
+            var personContext = GetContextEntity();
+            if ( personContext != null )
+            {
+                qry = qry.Where( p => p.RequestedByPersonAlias != null && p.RequestedByPersonAlias.PersonId == personContext.Id );
+            }
+
+            return qry;
         }
 
         /// <inheritdoc/>

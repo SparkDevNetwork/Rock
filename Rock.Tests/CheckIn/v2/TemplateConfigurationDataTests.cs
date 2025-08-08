@@ -52,22 +52,22 @@ namespace Rock.Tests.CheckIn.v2
         // KioskCheckInType has its own test.
         // FamilySearchType has its own test.
         [DataRow( nameof( TemplateConfigurationData.GradeAndAgeMatchingBehavior ), GradeAndAgeMatchingMode.PrioritizeGradeOverAge, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_GRADE_AND_AGE_MATCHING_BEHAVIOR )]
-        [DataRow( nameof( TemplateConfigurationData.IsAgeRequired ), true, "core_checkin_AgeRequired" )]
-        [DataRow( nameof( TemplateConfigurationData.IsCheckoutAtKioskAllowed ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK )]
-        [DataRow( nameof( TemplateConfigurationData.IsCheckoutInManagerAllowed ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER )]
-        [DataRow( nameof( TemplateConfigurationData.IsDuplicateCheckInPrevented ), true, "core_checkin_PreventDuplicateCheckin" )]
-        [DataRow( nameof( TemplateConfigurationData.IsGradeRequired ), true, "core_checkin_GradeRequired" )]
-        [DataRow( nameof( TemplateConfigurationData.IsInactivePersonExcluded ), true, "core_checkin_PreventInactivePeople" )]
-        [DataRow( nameof( TemplateConfigurationData.IsLocationCountDisplayed ), true, "core_checkin_DisplayLocationCount" )]
-        [DataRow( nameof( TemplateConfigurationData.IsNumericSecurityCodeRandom ), true, "core_checkin_SecurityCodeNumericRandom" )]
-        [DataRow( nameof( TemplateConfigurationData.IsOverrideAvailable ), true, "core_checkin_EnableOverride" )]
-        [DataRow( nameof( TemplateConfigurationData.IsPhotoHidden ), true, "core_checkin_HidePhotos" )]
+        [DataRow( nameof( TemplateConfigurationData.IsAgeRequired ), false, "core_checkin_AgeRequired" )] // Default is true, so flip it.
+        [DataRow( nameof( TemplateConfigurationData.IsCheckoutAtKioskAllowed ), false, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_KIOSK )] // Default is true, so flip it.
+        [DataRow( nameof( TemplateConfigurationData.IsCheckoutInManagerAllowed ), false, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_CHECKOUT_MANAGER )] // Default is true, so flip it.
+        [DataRow( nameof( TemplateConfigurationData.IsDuplicateCheckInPrevented ), false, "core_checkin_PreventDuplicateCheckin" )] // Default is true, so flip it.
+        [DataRow( nameof( TemplateConfigurationData.IsGradeRequired ), false, "core_checkin_GradeRequired" )] // Default is true, so flip it.
+        [DataRow( nameof( TemplateConfigurationData.IsInactivePersonExcluded ), false, "core_checkin_PreventInactivePeople" )] // Default is true, so flip it.
+        [DataRow( nameof( TemplateConfigurationData.IsLocationCountDisplayed ), false, "core_checkin_DisplayLocationCount" )] // Default is true, so flip it.
+        [DataRow( nameof( TemplateConfigurationData.IsNumericSecurityCodeRandom ), false, "core_checkin_SecurityCodeNumericRandom" )] // Default is true, so flip it.
+        [DataRow( nameof( TemplateConfigurationData.IsOverrideAvailable ), false, "core_checkin_EnableOverride" )] // Default is true, so flip it.
+        [DataRow( nameof( TemplateConfigurationData.IsPhotoHidden ), false, "core_checkin_HidePhotos" )] // Default is true, so flip it.
         [DataRow( nameof( TemplateConfigurationData.IsPresenceEnabled ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PRESENCE )]
         [DataRow( nameof( TemplateConfigurationData.IsProximityEnabled ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ENABLE_PROXIMITY_CHECKIN )]
         [DataRow( nameof( TemplateConfigurationData.IsRemoveFromFamilyAtKioskAllowed ), true, GroupTypeAttributeKey.CHECKIN_GROUPTYPE_ALLOW_REMOVE_FROM_FAMILY_KIOSK )]
         [DataRow( nameof( TemplateConfigurationData.IsSameCodeUsedForFamily ), true, "core_checkin_ReuseSameCode" )]
         [DataRow( nameof( TemplateConfigurationData.IsSameOptionUsed ), true, "core_checkin_UseSameOptions" )]
-        [DataRow( nameof( TemplateConfigurationData.IsSupervisorEnabled ), true, "core_checkin_EnableManagerOptions" )]
+        [DataRow( nameof( TemplateConfigurationData.IsSupervisorEnabled ), false, "core_checkin_EnableManagerOption" )] // Default is true, so flip it.
         [DataRow( nameof( TemplateConfigurationData.MaximumNumberOfResults ), 5, "core_checkin_MaxSearchResults" )]
         [DataRow( nameof( TemplateConfigurationData.MaximumPhoneNumberLength ), 10, "core_checkin_MaximumPhoneSearchLength" )]
         [DataRow( nameof( TemplateConfigurationData.MinimumPhoneNumberLength ), 7, "core_checkin_MinimumPhoneSearchLength" )]

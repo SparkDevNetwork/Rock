@@ -587,7 +587,7 @@ namespace RockWeb.Blocks.Crm
                         primaryPerson.SetBirthDate( GetNewDateTimeValue( "BirthDate" ) );
                         primaryPerson.AnniversaryDate = GetNewDateTimeValue( "AnniversaryDate" );
                         primaryPerson.GraduationYear = GetNewIntValue( "GraduationYear" );
-                        primaryPerson.Email = GetNewStringValue( "Email" );
+                        primaryPerson.Email = GetNewStringValue( "Email" )?.Trim().ToLower();
                         primaryPerson.IsEmailActive = GetNewBoolValue( "EmailActive" ) ?? true;
                         primaryPerson.EmailNote = GetNewStringValue( "EmailNote" );
                         primaryPerson.EmailPreference = ( EmailPreference ) GetNewEnumValue( "EmailPreference", typeof( EmailPreference ) );
@@ -2631,9 +2631,20 @@ AND Attendance.Id != @FirstTimeRecordId
                 valuesRow.PersonPersonPropertyList = new List<ValuesRowPersonPersonProperty>();
 
                 // Check if this row should be considered "matching" and set the IsMatchingRow property
-                if ( personProperty.Values.Select( v => v.Value ).Distinct().Count() == 1 )
+                if ( personProperty.Key != "Email" )
                 {
-                    valuesRow.IsMatchingRow = true;
+                    if ( personProperty.Values.Select( v => v.Value ?? string.Empty ).Distinct().Count() == 1 )
+                    {
+                        valuesRow.IsMatchingRow = true;
+                    }
+                }
+                else
+                {
+                    // Disregard capitalization for email addresses
+                    if ( personProperty.Values.Select( v => v.Value?.Trim().ToLower() ?? string.Empty ).Distinct().Count() == 1 )
+                    {
+                        valuesRow.IsMatchingRow = true;
+                    }
                 }
 
                 foreach ( var person in People )

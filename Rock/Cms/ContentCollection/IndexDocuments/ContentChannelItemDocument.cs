@@ -43,6 +43,18 @@ namespace Rock.Cms.ContentCollection.IndexDocuments
         {
             var documentId = GetDocumentId( contentChannelItem.Id, source.Id );
 
+            /*
+                7/1/2025 - NA
+
+                Note: If you add any additional navigation properties to this section of the code,
+                make sure those same properties are also eagerly loaded in the 
+                IndexContentCollectionDocumentAsync(...) method of ContentChannelItemIndexer. 
+
+                Reason: This method operates on the ContentChannelItem after the DbContext 
+                is no longer available. Any navigation properties that aren't preloaded will 
+                trigger an ObjectDisposedException at runtime. (See issue 6365)
+            */
+
             var document = new ContentChannelItemDocument
             {
                 Id = documentId,

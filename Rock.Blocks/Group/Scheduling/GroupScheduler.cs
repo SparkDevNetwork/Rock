@@ -1608,7 +1608,7 @@ namespace Rock.Blocks.Group.Scheduling
                     d.GroupId == source.GroupId
                     && d.LocationId == source.LocationId
                     && d.ScheduleId == source.ScheduleId
-                    && d.OccurrenceDateTime == source.OccurrenceDateTime.AddDays( daysDifference )
+                    && d.OccurrenceDateTime.Date == source.OccurrenceDateTime.Date.AddDays( daysDifference )
                 );
 
                 if ( destination == null )

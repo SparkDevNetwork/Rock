@@ -26,6 +26,7 @@ using Rock.Web.Cache;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 namespace Rock.Blocks.WebFarm
@@ -208,8 +209,11 @@ namespace Rock.Blocks.WebFarm
                 IsUnresponsive = entity.IsActive && !entity.StoppedDateTime.HasValue && entity.LastSeenDateTime < unresponsiveDateTime,
                 LastSeenDateTime = entity.LastSeenDateTime,
                 NodeName = entity.NodeName,
-                WebFarmNodeMetrics = entity.WebFarmNodeMetrics
+                WebFarmNodeMetrics = new WebFarmNodeMetricService( RockContext )
+                .Queryable()
+                .AsNoTracking()
                 .Where( wfnm =>
+                    wfnm.WebFarmNodeId == entity.Id &&
                     wfnm.MetricType == WebFarmNodeMetric.TypeOfMetric.CpuUsagePercent &&
                     wfnm.MetricValueDateTime >= ChartMinDate &&
                     wfnm.MetricValueDateTime <= ChartMaxDate )

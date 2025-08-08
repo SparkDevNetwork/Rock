@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System;
+using System.Collections.Generic;
 
 using Rock.Rest.Utility;
 
@@ -80,12 +81,18 @@ namespace Rock.Rest.Swagger
                 ? $":{rootUri.Port}"
                 : string.Empty;
 
+            // Because we pre-query the API at startup, the initial request comes
+            // in on port 80 which causes the cached schemes to be just "http".
+            // Then when a real request comes in on 443, we have the wrong scheme.
+            // So make sure we use the scheme for the current request.
+            var schemes = new List<string> { rootUri.Scheme.ToLower() };
+
             return new SwaggerDocument
             {
                 info = cachedDocument.info,
                 host = rootUri.Host + port,
                 basePath = ( rootUri.AbsolutePath != "/" ) ? rootUri.AbsolutePath : null,
-                schemes = cachedDocument.schemes,
+                schemes = schemes,
                 paths = cachedDocument.paths,
                 definitions = cachedDocument.definitions,
                 securityDefinitions = cachedDocument.securityDefinitions
