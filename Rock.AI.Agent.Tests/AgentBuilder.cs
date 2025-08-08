@@ -45,13 +45,13 @@ internal class AgentBuilder
     }
 
     /// <summary>
-    /// Adds a full skill configuration (group of functions) to the agent.
+    /// Adds one or more full skill configurations (groups of functions) to the agent.
     /// </summary>
-    /// <param name="skill">The skill to add.</param>
+    /// <param name="skills">The skills to add.</param>
     /// <returns>The builder for chaining.</returns>
-    internal AgentBuilder WithSkill( SkillConfiguration skill )
+    internal AgentBuilder WithSkill( params SkillConfiguration[] skills )
     {
-        _skills.Add( skill );
+        _skills.AddRange( skills );
         return this;
     }
 
@@ -160,7 +160,7 @@ internal class AgentBuilder
                 sc.AddSingleton<ILoggerFactory>( loggerFactory );
             },
             new ChatAgentOptions() );
-
+        
        return ( factory.Build(), output, messages );
     }
 
