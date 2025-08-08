@@ -16,15 +16,15 @@ namespace Rock.AI.Agent.Skills
     )]
     [AgentSkillGuid( "3406D2DC-6718-45A2-99D3-1DAA32BF2EFD" )]
     [EntityTypeGuid( "35CD02D0-1FF7-4256-B495-FBBFBC9A2C9C" )]
-    internal sealed class UtilitySkill : AgentSkillComponent
+    internal sealed class CoreUtility : AgentSkillComponent
     {
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="UtilitySkill"/> class.
+        /// Initializes a new instance of the <see cref="CoreUtility"/> class.
         /// </summary>
         /// <param name="logger"></param>
-        public UtilitySkill( ILogger<UtilitySkill> logger )
+        public CoreUtility( ILogger<CoreUtility> logger )
         {
         }
 
