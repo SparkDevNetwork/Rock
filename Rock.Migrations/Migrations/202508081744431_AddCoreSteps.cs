@@ -51,6 +51,7 @@ namespace Rock.Migrations
             Sql( @"
 INSERT INTO [StepProgram] (
     [Name],
+    [IconCssClass],
     [DefaultListView],
     [IsActive],
     [IsSystem],
@@ -59,6 +60,7 @@ INSERT INTO [StepProgram] (
 )
 VALUES (
     'Core Steps',
+    'ti ti-map',
     0,
     1,
     1,
@@ -87,7 +89,7 @@ INSERT INTO [StepType] (
 VALUES (
     @StepProgramId,
     'eRA',
-    'ti ti-calendar-event', -- using valid icon
+    'ti ti-calendar-star',
     1,
     1,
     0,
