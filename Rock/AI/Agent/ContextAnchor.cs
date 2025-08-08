@@ -39,6 +39,11 @@ namespace Rock.AI.Agent
         public int EntityId { get; set; }
 
         /// <summary>
+        /// Gets or sets the unique identifier for the entity instance.
+        /// </summary>
+        public string EntityIdKey { get; set; }
+
+        /// <summary>
         /// Gets or sets a display name for this anchor, often the entity's name or description.
         /// </summary>
         public string Name { get; set; }

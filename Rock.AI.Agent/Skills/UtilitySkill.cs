@@ -14,7 +14,8 @@ namespace Rock.AI.Agent.Skills
         "Provides common, non-domain-specific helper functions that can be used across multiple skills.\r\n" +
         "These include utilities for working with dates, times, and simple data conversions."
     )]
-    [EntityTypeGuid( "BBFFFB6E-3568-4D42-B9A6-D6BF521E4C06" )]
+    [AgentSkillGuid( "3406D2DC-6718-45A2-99D3-1DAA32BF2EFD" )]
+    [EntityTypeGuid( "35CD02D0-1FF7-4256-B495-FBBFBC9A2C9C" )]
     internal sealed class UtilitySkill : AgentSkillComponent
     {
         #region Constructors

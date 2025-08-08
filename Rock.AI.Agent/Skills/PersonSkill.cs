@@ -107,7 +107,7 @@ namespace Rock.AI.Agent.Skills
             "📦 Returns:\r\n" +
             "A JSON array where each item includes the site ID, name, and a list of pages the person visited, including visit counts.\r\n\r\n" +
             "🧭 Usage Guidance:\r\n" +
-            "- Set only `personId` to get data across all sites.\r\n" +
+            "- Set only `personKey` to get data across all sites.\r\n" +
             "- Set `siteId` to get data for one site only.\r\n" +
             "- Use `startDate` and `endDate` to define a date range. Defaults to the past year if omitted.\r\n\r\n" +
             "- You can use the site analytics function to check if a specific page (like \"Giving Page\") was visited by a person, by filtering the PagesVisited results.\r\n" +
@@ -134,7 +134,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( !personId.HasValue || personId <= 0 )
             {
-                errors.Add( "Invalid person ID. Provide a value greater than zero." );
+                errors.Add( "There was an invalid key provided for the person." );
             }
 
             if ( siteId.HasValue && siteId.Value <= 0 )
@@ -239,7 +239,7 @@ namespace Rock.AI.Agent.Skills
             /// <summary>
             /// Required. The person ID for whom to fetch website session insights.
             /// </summary>
-            [Description( "The person ID Key for whom to fetch website session insights." )]
+            [Description( "The key for the person for whom to fetch website session insights." )]
             public string PersonKey { get; set; }
         }
 
