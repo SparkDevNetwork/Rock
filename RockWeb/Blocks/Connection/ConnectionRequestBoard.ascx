@@ -194,7 +194,7 @@
                                 </button>
                                 <ul class="dropdown-menu dropdown-menu-mega js-dropdown-menu-mega">
                                     <li runat="server" id="liFavoritesHeader" class="dropdown-header">
-                                        <i class="far fa-star"></i>
+                                        <i class="fa fa-star"></i>
                                         Favorites
                                     </li>
                                     <asp:Repeater ID="rptFavoriteConnectionOpportunities" runat="server" OnItemCommand="rptFavoriteConnectionOpportunities_ItemCommand">

@@ -2537,9 +2537,10 @@ var headerText = dp.label;
                     if ( group.Groups != null )
                     {
                         foreach ( var childGroup in group.Groups
-                            .Where( a => a.IsActive || showInactive )
-                            .OrderBy( a => a.Order )
-                            .ThenBy( a => a.Name )
+                            .Where( g => g.IsActive || showInactive )
+                            .Where( g => !g.IsArchived )
+                            .OrderBy( g => g.Order )
+                            .ThenBy( g => g.Name )
                             .ToList() )
                         {
                             AddGroupControls( childGroup, checkBoxList, service, showGroupAncestry );

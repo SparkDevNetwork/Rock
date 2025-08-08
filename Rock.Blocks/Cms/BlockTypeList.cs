@@ -211,6 +211,12 @@ namespace Rock.Blocks.Cms
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<BlockTypeListBag> GetOrderedListQueryable( IQueryable<BlockTypeListBag> queryable, RockContext rockContext )
+        {
+            return queryable.OrderBy( a => a.Name ).ThenBy( a => a.Category );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<BlockTypeListBag> GetGridBuilder()
         {
             return new GridBuilder<BlockTypeListBag>()

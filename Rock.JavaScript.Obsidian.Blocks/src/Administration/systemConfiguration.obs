@@ -229,6 +229,7 @@
                                   class="input-width-xxl"
                                   label="Time Zone"
                                   :items="timeZones"
+                                  enhanceForLongLists
                                   help="The time zone you want Rock to operate in (regardless of what time zone the server is set to)." />
                     <CheckBox v-model="enableRunJobsInIISContext"
                               label="Enable Run Jobs In IIS Context"

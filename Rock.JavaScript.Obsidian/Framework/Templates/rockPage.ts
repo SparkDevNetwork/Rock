@@ -71,16 +71,45 @@ const contentDirective: Directive<Element, Node[] | Node | string | null | undef
         }
     },
     updated(el, binding) {
-        el.innerHTML = "";
         if (Array.isArray(binding.value)) {
+            if (binding.value.length === el.childNodes.length) {
+                let allEqual = true;
+
+                for (let i = 0; i < binding.value.length; i++) {
+                    if (binding.value[i] !== el.childNodes[i]) {
+                        allEqual = false;
+                        break;
+                    }
+                }
+
+                // If nothing changed then we don't do anything, otherwise it
+                // will cause a weird flicker in the DOM that can mess up
+                // the inspector and input focus.
+                if (allEqual) {
+                    return;
+                }
+            }
+
+            el.innerHTML = "";
+
             for (const v of binding.value) {
                 el.append(v);
             }
         }
         else if (typeof binding.value === "string") {
-            el.innerHTML = binding.value;
+            if (el.innerHTML !== binding.value) {
+                el.innerHTML = binding.value;
+            }
         }
         else if (binding.value) {
+            if (el.childNodes.length === 1 && el.childNodes[0] === binding.value) {
+                // If nothing changed then we don't do anything, otherwise it
+                // will cause a weird flicker in the DOM that can mess up
+                // the inspector and input focus.
+                return;
+            }
+
+            el.innerHTML = "";
             el.append(binding.value);
         }
     }

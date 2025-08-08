@@ -385,7 +385,7 @@ namespace Rock.Blocks.Lms
                 () => entity.IsFacilitatorCompleted = box.Bag.IsFacilitatorCompleted );
 
             box.IfValidProperty( nameof( box.Bag.DueDate ),
-                () => entity.DueDate = box.Bag.DueDate );
+                () => entity.DueDate = box.Bag.DueDate?.DateTime );
 
             if ( !entity.GradedByPersonAliasId.HasValue || box.Bag.PointsEarned != entity.PointsEarned )
             {

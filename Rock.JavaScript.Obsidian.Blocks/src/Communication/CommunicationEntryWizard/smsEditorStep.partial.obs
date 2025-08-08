@@ -56,6 +56,7 @@
                                                           :editorHeight="185"
                                                           :isCharacterCountShown="true"
                                                           :mergeFields="mergeFields"
+                                                          :commonMergeFields="commonMergeFields"
                                                           rules="required"
                                                           :shortLinkCheckToken="shortLinkCheckToken"
                                                           :shortLinkGetPageId="shortLinkGetPageId"
@@ -352,6 +353,12 @@
     const internalSmsFromSystemPhoneNumberGuid = useVModelPassthrough(props, "smsFromSystemPhoneNumberGuid", emit);
     const internalTestSmsPhoneNumber = useVModelPassthrough(props, "testSmsPhoneNumber", emit);
     const internalSmsAttachmentBinaryFiles = useVModelPassthrough(props, "smsAttachmentBinaryFiles", emit);
+
+    const commonMergeFields = [
+        "Person.FirstName^First Name|fa fa-user",
+        "Person.NickName^Nick Name|fa fa-user",
+        "Person.FullName^Full Name|fa fa-user",
+    ];
 
     // #endregion
 

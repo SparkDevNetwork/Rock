@@ -14,7 +14,8 @@
                     <InnerHtmlProperty :element="componentHelper.contentWrapper"
                                        label="Code"
                                        :mergeFields="mergeFields"
-                                       mode="code" />
+                                       mode="code"
+                                       :usageType="usageType" />
                 </div>
             </div>
 
@@ -41,6 +42,7 @@
     import ComponentPropertyPanelBase from "./componentPropertyPanelBase.partial.obs";
     import InnerHtmlProperty from "../properties/innerHtmlProperty.partial.obs";
     import PaddingProperty from "../properties/paddingProperty.partial.obs";
+    import { UsageType } from "../types";
     import { getCodeComponentHelper } from "../utils.partial";
 
     const props = defineProps({
@@ -52,6 +54,11 @@
         mergeFields: {
             type: Object as PropType<string[] | null | undefined>,
             required: false
+        },
+
+        usageType: {
+            type: String as PropType<UsageType>,
+            default: "email" as const
         }
     });
 

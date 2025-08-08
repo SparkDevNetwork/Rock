@@ -23,8 +23,6 @@ using System.Net;
 using Rock;
 using Rock.Data;
 using Rock.Model;
-
-using Ical.Net;
 using Ical.Net.DataTypes;
 using Calendar = Ical.Net.Calendar;
 
@@ -32,6 +30,7 @@ using System.Globalization;
 using System.Data.Entity;
 using Ical.Net.Serialization;
 using Ical.Net.CalendarComponents;
+using Rock.Web.Cache;
 
 namespace RockWeb
 {
@@ -80,7 +79,7 @@ namespace RockWeb
                 httpContext.Response.ContentType = "text/calendar";
                 httpContext.Response.Write( s );
             }
-            catch (Exception ex)
+            catch ( Exception ex )
             {
                 ExceptionLogService.LogException( ex, httpContext );
                 SendBadRequest( httpContext );
@@ -143,8 +142,17 @@ namespace RockWeb
                         currentScheduleId = schedule.Id;
                     }
 
+                    int groupId = attendanceOccurrenceService
+                        .Queryable()
+                        .AsNoTracking()
+                        .Where( a => a.Id == attendance.OccurrenceId )
+                        .Select( a => a.GroupId )
+                        .FirstOrDefault() ?? -1;
+
+                    var group = GroupCache.Get( groupId );
+
                     var iCalEvent = new CalendarEvent();
-                    iCalEvent.Summary = scheduleName;
+                    iCalEvent.Summary = $"{group.Name} - {locationName} - {scheduleName}";
                     iCalEvent.Location = locationName;
                     iCalEvent.DtStart = new CalDateTime( attendance.StartDateTime, icalendar.TimeZones[0].TzId );
                     iCalEvent.Duration = duration;
@@ -163,30 +171,6 @@ namespace RockWeb
 
                     // classification: "PUBLIC", "PRIVATE", "CONFIDENTIAL"
                     iCalEvent.Class = "PUBLIC";
-
-                    //Add contact info for the group leader
-                    int groupId = attendanceOccurrenceService
-                        .Queryable()
-                        .AsNoTracking()
-                        .Where( a => a.Id == attendance.OccurrenceId )
-                        .Select( a => a.GroupId )
-                        .FirstOrDefault() ?? -1;
-
-                    Person groupLeader = new GroupMemberService( rockContext ).GetLeaders( groupId ).AsNoTracking().Select( m => m.Person ).FirstOrDefault() ?? null;
-
-                    if ( groupLeader != null )
-                    {
-                        iCalEvent.Organizer = new Organizer( string.Format( "MAILTO:{0}", groupLeader.Email ) );
-                        iCalEvent.Organizer.CommonName = groupLeader.FullName;
-
-                        // Outlook doesn't seem to use Contacts or Comments
-                        string contactName = !string.IsNullOrEmpty( groupLeader.FullName ) ? "Name: " + groupLeader.FullName : string.Empty;
-                        string contactEmail = !string.IsNullOrEmpty( groupLeader.Email ) ? ", Email: " + groupLeader.Email : string.Empty;
-                        string contactInfo = contactName + contactEmail;
-
-                        iCalEvent.Contacts.Add( contactInfo );
-                        iCalEvent.Comments.Add( contactInfo );
-                    }
 
                     icalendar.Events.Add( iCalEvent );
                 }
@@ -263,7 +247,7 @@ namespace RockWeb
                 var personAliasService = new PersonAliasService( rockContext );
                 int? personId = personAliasService.Queryable().AsNoTracking().Where( pa => pa.Guid == personAliasGuid ).Select( pa => pa.PersonId ).Cast<int?>().FirstOrDefault();
 
-                if (personId == null )
+                if ( personId == null )
                 {
                     SendBadRequest( httpContext );
                     return null;
@@ -359,7 +343,7 @@ namespace RockWeb
             {
                 get
                 {
-                    return _endDate != null ? (DateTime) _endDate : DateTime.MaxValue;
+                    return _endDate != null ? ( DateTime ) _endDate : DateTime.MaxValue;
                 }
 
                 set

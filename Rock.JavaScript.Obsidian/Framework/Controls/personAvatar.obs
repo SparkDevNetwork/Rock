@@ -1,0 +1,138 @@
+<template>
+    <PopOver v-if="enableHoverInfo" placement="right" v-model:isVisible="isPopoverVisible">
+        <template #activator="activatorProps">
+            <div :class="cssClasses" :style="styles" v-bind="{ ...activatorProps, ...$attrs }"></div>
+        </template>
+        <div v-html="popupContent"></div>
+    </PopOver>
+
+    <div v-else :class="cssClasses" :style="styles" v-bind="$attrs"></div>
+</template>
+
+<script setup lang="ts">
+    import { computed, ref, watch, type PropType } from "vue";
+    import PopOver from "@Obsidian/Controls/popOver.obs";
+    import { useHttp } from "@Obsidian/Utility/http";
+
+    const props = defineProps({
+        /**
+         * ID key of the person whose avatar should be displayed. This is required if you wish to enable
+         * the popover info on hover. You can use the idKey or the id of the person.
+         */
+        personIdKey: {
+            type: String,
+            default: ""
+        },
+
+        /**
+         * The url of the image for the avatar.
+         */
+        photoUrl: {
+            type: String,
+            required: true
+        },
+
+        /**
+         * If true, when hovering the avatar, a popover will be shown with additional information
+         * about the person. This requires that the personIdKey is also specified.
+         */
+        enableHoverInfo: {
+            type: Boolean,
+            default: false
+        },
+
+        /**
+         * The diameter of the avatar photo. If "xs" or "sm" is specified, the photo will be sized via
+         * the photo-round-[xs/sm] class. If a number is specified, it will be used as the px width and height
+         * of the photo directly.
+         */
+        photoSize: {
+            type: [Number, String] as PropType<number | "xs" | "sm">,
+            default: 36
+        },
+
+        /**
+         * Size of the margin to the right of the avatar. This value is used to apply a margin class, either
+         * "margin-r-X" or "mr-X", whichever works correctly with the value provided.
+         */
+        marginRight: {
+            type: String as PropType<"0" | "1" | "2" | "3" | "4" | "5" | "auto" | "none" | "sm" | "md" | "lg" | "xl">,
+            default: "3"
+        }
+    });
+
+    defineOptions({
+        inheritAttrs: false
+    });
+
+    const popupContent = ref("");
+    const isPopoverVisible = ref(false);
+    const http = useHttp();
+
+    const marginClass = computed((): string => {
+        const mRValues = ["0", "1", "2", "3", "4", "5", "auto"];
+
+        if (mRValues.includes(props.marginRight)) {
+            return `mr-${props.marginRight}`;
+        }
+        else {
+            return `margin-r-${props.marginRight}`;
+        }
+    });
+
+    const imgSizeClass = computed((): string => {
+        if (props.photoSize === "xs" || props.photoSize === "sm") {
+            return `photo-round-${props.photoSize}`;
+        }
+        else {
+            return "";
+        }
+    });
+
+    const cssClasses = computed((): string => {
+        return `photo-icon photo-round flex-shrink-0 ${imgSizeClass.value} ${marginClass.value}`;
+    });
+
+    const styles = computed((): Record<string, string> => {
+        if (typeof props.photoSize === "number") {
+            return {
+                width: `${props.photoSize}px`,
+                height: `${props.photoSize}px`,
+                backgroundImage: `url( ${props.photoUrl} )`
+            };
+        }
+        else {
+            return {
+                backgroundImage: `url( ${props.photoUrl} )`
+            };
+        }
+    });
+
+    /* eslint-disable @typescript-eslint/naming-convention */
+    interface Response {
+        PickerItemDetailsHtml: string;
+    }
+
+    async function loadPopupContent(): Promise<void> {
+        try {
+            const dataUrl = `/api/People/PopupHtml/${props.personIdKey}/false`;
+            const response = await http.get<Response>(dataUrl);
+
+            if (response.data?.PickerItemDetailsHtml) {
+                popupContent.value = response.data.PickerItemDetailsHtml;
+            }
+            else {
+                popupContent.value = "<div>No information available</div>";
+            }
+        }
+        catch (error) {
+            popupContent.value = '<div class="text-danger">Error loading information</div>';
+        }
+    }
+
+    watch(isPopoverVisible, () => {
+        if (isPopoverVisible.value && popupContent.value === "") {
+            loadPopupContent();
+        }
+    });
+</script>

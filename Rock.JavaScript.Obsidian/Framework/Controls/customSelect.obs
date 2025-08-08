@@ -181,8 +181,14 @@
     }
 
     function onItemClick(item: TItem | null): void {
+        // Only emit if the id is different
+        const currId = internalValue.value?.[props.itemKey as keyof TItem];
+        const newId = item?.[props.itemKey as keyof TItem];
+
         if ((isExpanded.value || !isMobile.value) && item !== null && !isItemDisabled(item)) {
-            internalValue.value = item;
+            if (currId !== newId) {
+                internalValue.value = item;
+            }
             isExpanded.value = false;
         }
         else if (isMobile.value) {

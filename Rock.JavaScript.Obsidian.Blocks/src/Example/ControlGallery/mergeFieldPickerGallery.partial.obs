@@ -9,7 +9,7 @@
                     <CheckBox label="Multiple" v-model="multiple" />
                 </div>
                 <div class="col-md-4">
-                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" />
+                    <CheckBox label="Enhance For Long Lists" v-model="enhanceForLongLists" help="Enable search" />
                 </div>
                 <div class="col-md-4">
                     <TextBox label="Root Merge Fields" v-model="additionalFields" />
@@ -21,7 +21,7 @@
 </template>
 
 <script setup lang="ts">
-    import { ref } from "vue";
+    import { computed, ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import MergeFieldPicker from "@Obsidian/Controls/mergeFieldPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
@@ -43,6 +43,14 @@
     const multiple = ref(true);
     const enhanceForLongLists = ref(false);
     const additionalFields = ref("GlobalAttribute,Rock.Model.Person,Rock.Model.Group");
+
     const importCode = getSfcControlImportPath("mergeFieldPicker");
-    const exampleCode = `<MergeFieldPicker label="Merge Field" v-model="value" :multiple="false" additionalFields="GlobalAttribute,Rock.Model.Person,Rock.Model.Group" />`;
+
+    const exampleCode = computed(() => {
+        const fieldsProp = additionalFields.value ? ` additionalFields="${additionalFields.value}"` : "";
+        const multipleProp = multiple.value ? ` multiple` : "";
+        const enhanceForLongListsProp = enhanceForLongLists.value ? ` enhanceForLongLists` : "";
+
+        return `<MergeFieldPicker label="Merge Field" v-model="value"${fieldsProp}${multipleProp}${enhanceForLongListsProp} />`;
+    });
 </script>

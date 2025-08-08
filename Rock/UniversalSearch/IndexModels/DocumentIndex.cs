@@ -84,7 +84,7 @@ namespace Rock.UniversalSearch.IndexModels
         public bool IsSystem { get; set; }
 
         /// <summary>
-        /// Loads the by model.
+        /// Loads the indexable document from the Document.
         /// </summary>
         /// <param name="document">The document.</param>
         /// <returns></returns>

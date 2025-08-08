@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.ComponentModel.DataAnnotations.Schema;
+
 using Rock.Security;
 
 namespace Rock.Model
@@ -23,8 +25,29 @@ namespace Rock.Model
     {
         #region ISecured
 
-        /// <inheritdoc/>
-        public override ISecured ParentAuthority => LearningClass ?? base.ParentAuthority;
+        /// <summary>
+        /// Gets the parent authority.
+        /// </summary>
+        /// <value>
+        /// The parent authority.
+        /// </value>
+        [NotMapped]
+        public override Security.ISecured ParentAuthority
+        {
+            get
+            {
+                if ( this.LearningClass?.Id > 0 )
+                {
+                    return this.LearningClass;
+                }
+                else
+                {
+                    return this.LearningClassId > 0 ?
+                        new LearningClassService( new Data.RockContext() ).Get( this.LearningClassId ) :
+                        base.ParentAuthority;
+                }
+            }
+        }
 
         #endregion
     }

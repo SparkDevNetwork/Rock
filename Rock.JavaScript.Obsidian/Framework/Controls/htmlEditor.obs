@@ -45,7 +45,7 @@
 
             <PasteAsPlainTextPlugin ref="pasteAsPlainTextPlugin" />
 
-            <MergeFieldPlugin :mergeFields="mergeFields" ref="mergeFieldPlugin" />
+            <MergeFieldPlugin :mergeFields="mergeFields" :commonMergeFields="commonMergeFields" ref="mergeFieldPlugin" />
 
             <ImageBrowserPlugin ref="imageBrowserPlugin"
                                 :encryptedRootFolder="encryptedImageRootFolder"
@@ -216,6 +216,16 @@
          * "FieldName^EntityType|Label" // Same as previous but with a custom label.
          */
         mergeFields: {
+            type: Array as PropType<string[] | undefined>,
+            required: false
+        },
+
+        /**
+         * A list of common merge field to show below the picker for easy access. Should be an array of strings
+         * and the strings should be in the following format: "FieldName^Label|Icon" or just "FieldName^Label", where the FieldName is the
+         * name of the merge field, Label is the text to display on the button, and Icon is the CSS class for icon.
+         */
+        commonMergeFields: {
             type: Array as PropType<string[] | undefined>,
             required: false
         },

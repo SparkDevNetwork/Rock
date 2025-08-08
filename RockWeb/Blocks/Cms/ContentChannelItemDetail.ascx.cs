@@ -1102,7 +1102,23 @@ namespace RockWeb.Blocks.Cms
                 sceContent.Visible = false;
                 if ( !contentItem.ContentChannelType.DisableContentField )
                 {
-                    if ( contentItem.ContentChannel.IsStructuredContent )
+                    var useStructuredContent = contentItem.ContentChannel.IsStructuredContent;
+
+                    // If the content channel is set to structured content but
+                    // the item they are editing already exists and is in HTML
+                    // mode then do not use the structured editor. This allows
+                    // Admins to switch a Content Channel to use the structured
+                    // editor for new items but not break existing ones.
+                    if ( useStructuredContent && contentItem.Id != 0 && contentItem.StructuredContent.IsNullOrWhiteSpace() )
+                    {
+                        useStructuredContent = false;
+                    }
+                    else if ( !useStructuredContent && contentItem.Id != 0 && contentItem.StructuredContent.IsNotNullOrWhiteSpace() )
+                    {
+                        useStructuredContent = true;
+                    }
+
+                    if ( useStructuredContent )
                     {
                         sceContent.StructuredContent = contentItem.StructuredContent;
                         sceContent.StructuredContentToolValueId = contentItem.ContentChannel.StructuredContentToolValueId;

@@ -166,17 +166,33 @@ namespace Rock.Field.Types
         {
             var entityIdentifier = GetEntityIdentifier( value, out EntityTypeCache entityType );
 
-            if ( entityType == null )
+            if ( entityType == null || string.IsNullOrWhiteSpace( entityIdentifier ) )
             {
                 return null;
             }
 
             IService entityService;
             MethodInfo getMethod;
-            var methodParamTypes = new Type[] { typeof( int ) };
+            object[] parameters;
+            Type[] methodParamTypes;
 
-            // Person is handled differently since it's stored as PersonAlias's EntityType.Guid|PersonAlias.Id
-            // (we need to return the Person tied to the PersonAlias instance)
+            if ( entityIdentifier.AsIntegerOrNull().HasValue )
+            {
+                methodParamTypes = new Type[] { typeof( int ) };
+                parameters = new object[] { entityIdentifier.AsIntegerOrNull() };
+            }
+            else
+            {
+                var guid = entityIdentifier.AsGuidOrNull();
+                if ( !guid.HasValue )
+                {
+                    return null;
+                }
+
+                methodParamTypes = new Type[] { typeof( Guid ) };
+                parameters = new object[] { guid };
+            }
+
             if ( entityType.GetEntityType() == typeof( PersonAlias ) )
             {
                 entityService = new PersonAliasService( rockContext );
@@ -188,7 +204,12 @@ namespace Rock.Field.Types
                 getMethod = entityService.GetType().GetMethod( "Get", methodParamTypes );
             }
 
-            return ( IEntity ) getMethod.Invoke( entityService, new object[] { entityIdentifier } );
+            if ( getMethod == null )
+            {
+                return null;
+            }
+
+            return ( IEntity ) getMethod.Invoke( entityService, parameters );
         }
 
         #endregion

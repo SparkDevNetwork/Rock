@@ -119,6 +119,7 @@
     <Compile Include="Blocks\Cms\MediaAccountList\MediaAccountListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementBag.cs" />
     <Compile Include="Blocks\Cms\MediaElementDetail\MediaElementDetailOptionsBag.cs" />
+    <Compile Include="Blocks\Cms\MediaElementList\MediaElementListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\MediaFolderList\MediaFolderListOptionsBag.cs" />
     <Compile Include="Blocks\Cms\PersonalizationSegmentList\PersonalizationSegmentListOptionsBag.cs" />
     <Compile Include="Blocks\Communication\Chat\ChatConfiguration\ChatConfigurationBag.cs" />

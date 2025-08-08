@@ -1666,11 +1666,12 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
         }
 
         [TestMethod]
-        public void WriteRectangleField_WithFilled_SetsBorderToHeight()
+        public void WriteRectangleField_WithFilled_SetsBorderToMinimumBetweenWidthAndHeight()
         {
+            var fieldWidth = 1;
             var fieldHeight = 2.5;
             var dpi = 300;
-            var expectedPattern = new Regex( @"\^GB[0-9]+,[0-9]+,750" );
+            var expectedPattern = new Regex( @"\^GB[0-9]+,[0-9]+,300" );
 
             var renderer = new ZplLabelRenderer();
             var request = new PrintLabelRequest
@@ -1685,7 +1686,8 @@ namespace Rock.Tests.CheckIn.v2.Labels.Renderers
             var field = new Mock<LabelField>( MockBehavior.Strict, new LabelFieldBag
             {
                 FieldType = LabelFieldType.Rectangle,
-                Height = fieldHeight
+                Height = fieldHeight,
+                Width = fieldWidth
             } );
 
             field.Setup( f => f.GetConfiguration<RectangleFieldConfiguration>() )

@@ -420,9 +420,10 @@
                 <EmailEditor :html="message"
                              :mergeFields="['GlobalAttribute', 'Rock.Model.Person']"
                              :disabled="isSaving"
-                             :videoProviderNames="undefined"
+                             :getHtmlRequest="getHtmlRequest"
                              :recipientPersonIds="undefined"
-                             :getHtmlRequest="getHtmlRequest" />
+                             usageType="template"
+                             :videoProviderNames="undefined" />
             </div>
         </template>
 

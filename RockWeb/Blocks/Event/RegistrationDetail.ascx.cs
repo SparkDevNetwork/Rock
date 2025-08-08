@@ -405,52 +405,82 @@ namespace RockWeb.Blocks.Event
         /// <param name="e">The <see cref="EventArgs" /> instance containing the event data.</param>
         protected void btnDelete_Click( object sender, EventArgs e )
         {
-            RockContext rockContext = new RockContext();
-
-            if ( RegistrationId.HasValue )
+            using ( var rockContext = new RockContext() )
             {
-                var registrationService = new RegistrationService( rockContext );
-                Registration registration = registrationService.Get( RegistrationId.Value );
-
-                if ( registration != null )
+                if ( RegistrationId.HasValue )
                 {
-                    if ( !UserCanEdit &&
-                        !registration.IsAuthorized( "Register", CurrentPerson ) &&
-                        !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) &&
-                        !registration.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                    var registrationService = new RegistrationService( rockContext );
+                    var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+
+                    Registration registration = registrationService.Get( RegistrationId.Value );
+
+                    if ( registration != null )
                     {
-                        mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
-                        return;
-                    }
+                        if ( !UserCanEdit &&
+                            !registration.IsAuthorized( "Register", CurrentPerson ) &&
+                            !registration.IsAuthorized( Authorization.EDIT, this.CurrentPerson ) &&
+                            !registration.IsAuthorized( Authorization.ADMINISTRATE, this.CurrentPerson ) )
+                        {
+                            mdDeleteWarning.Show( "You are not authorized to delete this registration.", ModalAlertType.Information );
+                            return;
+                        }
 
-                    string errorMessage;
-                    if ( !registrationService.CanDelete( registration, out errorMessage ) )
-                    {
-                        mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
-                        return;
-                    }
+                        string errorMessage;
+                        if ( !registrationService.CanDelete( registration, out errorMessage ) )
+                        {
+                            mdDeleteWarning.Show( errorMessage, ModalAlertType.Information );
+                            return;
+                        }
 
-                    var changes = new History.HistoryChangeList();
-                    changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
+                        var success = registrationService.TryCancelPaymentPlan( registration, financialScheduledTransactionService, out var error, out var warning );
 
-                    rockContext.WrapTransaction( () =>
-                    {
-                        HistoryService.SaveChanges(
-                            rockContext,
-                            typeof( Registration ),
-                            Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
-                            registration.Id,
-                            changes );
+                        if ( !success )
+                        {
+                            mdDeleteWarning.Show( error ?? "An unknown error occurred while deactivating a payment plan. The registration was not deleted.", ModalAlertType.Warning );
+                            return;
+                        }
+                        if ( !string.IsNullOrWhiteSpace( warning ) )
+                        {
+                            mdDeleteWarning.Show( warning, ModalAlertType.Warning );
+                            return;
+                        }
 
-                        registrationService.Delete( registration );
+                        /*
+                            7/9/2025 - MSE
+
+                            At this point, the payment plan has been marked as cancelled in-memory by TryCancelPaymentPlan.
+
+                            The database save is intentionally performed here rather than inside TryCancelPaymentPlan to preserve transactional consistency.
+                            If TryCancelPaymentPlan encounters an error or warning, we exit early before the database save --- ensuring we don’t persist
+                            a cancelled payment plan without also deleting the associated registration record.
+
+                            This placement avoids a scenario where the payment plan is cancelled but the registration remains.
+                        */
 
                         rockContext.SaveChanges();
-                    } );
-                }
 
-                var pageParams = new Dictionary<string, string>();
-                pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
-                NavigateToParentPage( pageParams );
+                        var changes = new History.HistoryChangeList();
+                        changes.AddChange( History.HistoryVerb.Delete, History.HistoryChangeType.Record, "Registration" );
+
+                        rockContext.WrapTransaction( () =>
+                        {
+                            HistoryService.SaveChanges(
+                                rockContext,
+                                typeof( Registration ),
+                                Rock.SystemGuid.Category.HISTORY_EVENT_REGISTRATION.AsGuid(),
+                                registration.Id,
+                                changes );
+
+                            registrationService.Delete( registration );
+
+                            rockContext.SaveChanges();
+                        } );
+                    }
+
+                    var pageParams = new Dictionary<string, string>();
+                    pageParams.Add( "RegistrationInstanceId", RegistrationInstanceId.ToString() );
+                    NavigateToParentPage( pageParams );
+                }
             }
         }
 
@@ -1723,7 +1753,7 @@ namespace RockWeb.Blocks.Event
 
             BuildRegistrationControls( true );
 
-            bool anyPayments = registration.Payments.Any();
+            bool anyPayments = registration.PaymentPlanFinancialScheduledTransaction != null && registration.PaymentPlanFinancialScheduledTransaction.IsActive;
             hfHasPayments.Value = anyPayments.ToString();
             foreach ( RockWeb.Blocks.Finance.TransactionList block in RockPage.RockBlocks.Where( a => a is RockWeb.Blocks.Finance.TransactionList ) )
             {
@@ -1808,7 +1838,7 @@ namespace RockWeb.Blocks.Event
         Rock.dialogs.confirm('Are you sure you want to delete this Registration? All of the registrants will also be deleted!', function (result) {
             if (result) {
                 if ( $('input.js-has-payments').val() == 'True' ) {
-                    Rock.dialogs.confirm('This registration also has payments. Are you sure that you want to delete the registration?<br/><small>(Payments will not be deleted, but they will no longer be associated with a registration.)</small>', function (result) {
+                    Rock.dialogs.confirm('This registration also has payments. Are you sure that you want to delete the registration?<br/><small>The payment plan will be deactivated and will no longer be associated with a registration.</small>', function (result) {
                         if (result) {
                             window.location = e.target.href ? e.target.href : e.target.parentElement.href;
                         }
@@ -3412,71 +3442,6 @@ namespace RockWeb.Blocks.Event
             }
         }
 
-        /// <summary>
-        /// Deletes a payment plan.
-        /// </summary>
-        /// <param name="error"></param>
-        /// <param name="warning"></param>
-        private bool DeletePaymentPlan( out string error, out string warning )
-        {
-            /* 
-               2024-04-27 JMH (copied from mdDeleteTransaction_SaveClick() in ScheduledTransactionListLiquid.ascx.cs)
-              
-               2021-08-27 MDP
-               
-               We really don't want to actually delete a FinancialScheduledTransaction.
-               Just inactivate it, even if there aren't FinancialTransactions associated with it.
-               It is possible the the Gateway has processed a transaction on it that Rock doesn't know about yet.
-               If that happens, Rock won't be able to match a record for that downloaded transaction!
-               We also might want to match inactive or "deleted" schedules on the Gateway to a person in Rock,
-               so we'll need the ScheduledTransaction to do that.
-
-               So, don't delete ScheduledTransactions.
-            */
-
-            var registration = this.Registration;
-            var financialScheduledTransactionId = registration?.PaymentPlanFinancialScheduledTransactionId;
-            if ( !financialScheduledTransactionId.HasValue )
-            {
-                error = string.Empty;
-                warning = "This registration has no payment plan or it has already been deleted";
-                return true;
-            }
-
-            using ( var rockContext = new RockContext() )
-            {
-                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
-                var financialScheduledTransaction = financialScheduledTransactionService.Get( registration.PaymentPlanFinancialScheduledTransactionId.Value );
-
-                if ( !financialScheduledTransactionService.Cancel( financialScheduledTransaction, out var cancelErrorMessage ) )
-                {
-                    error = $"An error occurred while canceling your scheduled transaction on the financial gateway. Message: {cancelErrorMessage}";
-                    warning = null;
-                    return false;
-                }
-
-                try
-                {
-                    if ( !financialScheduledTransactionService.GetStatus( financialScheduledTransaction, out var getStatusErrorMessage ) )
-                    {
-                        error = null;
-                        warning = $"The scheduled transaction was canceled on the financial gateway but was not marked inactive in Rock. Message: {getStatusErrorMessage}";
-                        return true;
-                    }
-                }
-                catch
-                {
-                    // Ignore
-                }
-
-                rockContext.SaveChanges();
-
-                error = null;
-                warning = null;
-                return true;
-            }
-        }
-
         #endregion Payment Plan Methods
 
         #region Payment Plan Events
@@ -3512,30 +3477,39 @@ namespace RockWeb.Blocks.Event
             nbPaneAccountError.Visible = false;
             nbPaneAccountWarning.Visible = false;
 
-            var isSuccessfullyDeleted = DeletePaymentPlan( out var error, out var warning );
-
-            var hasError = error.IsNotNullOrWhiteSpace();
-            var hasWarning = warning.IsNotNullOrWhiteSpace();
-
-            if ( hasError )
+            using ( var rockContext = new RockContext() )
             {
-                nbPaneAccountError.Text = error;
-                nbPaneAccountError.Visible = true;
-            }
+                var financialScheduledTransactionService = new FinancialScheduledTransactionService( rockContext );
+                var registrationService = new Rock.Model.RegistrationService( new RockContext() );
 
-            if ( hasWarning )
-            {
-                nbPaneAccountWarning.Text = warning;
-                nbPaneAccountWarning.Visible = true;
-            }
+                var success = registrationService.TryCancelPaymentPlan( this.Registration, financialScheduledTransactionService, out var error, out var warning );
 
-            if ( isSuccessfullyDeleted )
-            {
-                // Reload the registration.
-                this.Registration = GetRegistration( this.RegistrationId );
-                
-                pnlPaymentPlanSummary.Visible = false;
-                mdDeletePaymentPlan.Hide();
+                var hasError = error.IsNotNullOrWhiteSpace();
+                var hasWarning = warning.IsNotNullOrWhiteSpace();
+
+                if ( hasError )
+                {
+                    nbPaneAccountError.Text = error;
+                    nbPaneAccountError.Visible = true;
+                }
+
+                if ( hasWarning )
+                {
+                    nbPaneAccountWarning.Text = warning;
+                    nbPaneAccountWarning.Visible = true;
+                }
+
+                if ( success )
+                {
+                    // Delete the payment plan from the registration.
+                    rockContext.SaveChanges();
+
+                    // Reload the registration.
+                    this.Registration = GetRegistration( this.RegistrationId );
+
+                    pnlPaymentPlanSummary.Visible = false;
+                    mdDeletePaymentPlan.Hide();
+                }
             }
         }
 

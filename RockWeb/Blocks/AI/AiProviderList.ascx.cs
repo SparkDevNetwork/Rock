@@ -49,7 +49,7 @@ namespace RockWeb.Blocks.AI
 
     #endregion
 
-    [Rock.SystemGuid.BlockTypeGuid( "3C5CEC83-7AB8-470D-994B-52679E12CF7D" )]
+    [Rock.SystemGuid.BlockTypeGuid( "B3F280BD-13F4-4195-A68A-AC4A64F574A5" )]
     public partial class AiProviderList : RockBlock, ICustomGridColumns
     {
         #region Attribute Keys

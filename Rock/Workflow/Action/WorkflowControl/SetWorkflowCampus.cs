@@ -1,4 +1,4 @@
-// <copyright>
+﻿// <copyright>
 // Copyright by the Spark Development Network
 //
 // Licensed under the Rock Community License (the "License");
@@ -107,10 +107,8 @@ namespace Rock.Workflow.Action.WorkflowControl
                 }
             }
 
-            SetWorkflowAttributeValue( action, AttributeKey.Campus, campus.Id );
-
             action.Activity.Workflow.CampusId = campus.Id;
-            action.AddLogEntry( string.Format( "Set Workflow Campus to '{0}'.", campus.Name ) );
+            action.AddLogEntry( string.Format( "Set Workflow Campus to '{0}' (ID: {1}).", campus.Name, campus.Id ) );
 
             return true;
         }

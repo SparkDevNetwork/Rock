@@ -1059,15 +1059,19 @@ namespace Rock.Blocks.Crm
                             GroupMemberStatus = GroupMemberStatus.Active
                         };
 
-                        if ( isNewFamily )
-                        {
-                            adult.GivingGroupId = primaryFamily.Id;
-                        }
-
                         groupMemberService.Add( currentFamilyMember );
-
                         rockContext.SaveChanges();
                     }
+                }
+
+                // If the family is new or one of the adults has a giving group Id, set the giving group Id for all adults in the family.
+                if ( isNewFamily || adults.Any( a => a.GivingGroupId == primaryFamily.Id ) )
+                {
+                    foreach ( var adult in adults )
+                    {
+                        adult.GivingGroupId = primaryFamily.Id;
+                    }
+                    rockContext.SaveChanges();
                 }
 
                 // Save the family address.
