@@ -9,15 +9,25 @@ using Rock.SystemGuid;
 
 namespace Rock.AI.Agent.Skills
 {
-    [Description( "Used for a variety of standard functions, such as retrieving the current date or converting simple data types." )]
-    [AgentSkillGuid( "7620AA36-A2FF-4BE7-8E51-14CB45C34392" )]
+    [Description(
+        "🎯 Purpose:\r\n" +
+        "Provides common, non-domain-specific helper functions that can be used across multiple skills.\r\n" +
+        "These include utilities for working with dates, times, and simple data conversions."
+    )]
     [EntityTypeGuid( "BBFFFB6E-3568-4D42-B9A6-D6BF521E4C06" )]
-    internal class UtilitySkill : AgentSkillComponent
+    internal sealed class UtilitySkill : AgentSkillComponent
     {
+        #region Constructors
 
+        /// <summary>
+        /// Initializes a new instance of the <see cref="UtilitySkill"/> class.
+        /// </summary>
+        /// <param name="logger"></param>
         public UtilitySkill( ILogger<UtilitySkill> logger )
         {
         }
+
+        #endregion
 
         #region Native Functions
 
@@ -32,13 +42,15 @@ namespace Rock.AI.Agent.Skills
             return DateTimeRecognitionHelper.RecognizeDateRange( query, DateTime.Now );
         }
 
-        [KernelFunction( "GetCurrentDateTime" )]
-        [Description( "🎯 Purpose:\r\n1. Determines the current date. Usage Guidance:\r\n1. Use this function any time you need to know the current date." )]
-        [AgentFunctionGuid( "E83F9B5A-53B0-4FE5-8DA3-0898BDA767D2" )]
-        public DateTime GetCurrentDateTime()
-        {
-            return DateTime.Now;
-        }
+        // BC: We have not proven to need this function yet.
+        // If we do, we can uncomment it (or delete it if we never need it).
+        //[KernelFunction( "GetCurrentDateTime" )]
+        //[Description( "🎯 Purpose:\r\n1. Determines the current date. Usage Guidance:\r\n1. Use this function any time you need to know the current date." )]
+        //[AgentFunctionGuid( "E83F9B5A-53B0-4FE5-8DA3-0898BDA767D2" )]
+        //public DateTime GetCurrentDateTime()
+        //{
+        //    return DateTime.Now;
+        //}
 
         #endregion
     }
