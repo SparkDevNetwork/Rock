@@ -21,16 +21,26 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+/** Defines how the steps in a program are ordered and how prerequisites are handled. */
+export const CompletionFlow = {
+    /** There will be no concept of a pre-req on linear required. Existing ones would be removed. The pre-req is the order. */
+    LinearRequired: 0,
 
-/** The additional configuration options for the Step Program Detail block. */
-export type StepProgramDetailOptionsBag = {
-    /** Gets or sets the value indicating if the View Mode options will be displayed on the Edit page. */
-    areViewDisplayOptionsVisible?: boolean | null;
+    /** The ordering will only be used for suggestions and the pre-req logic would be displayed and enforced. */
+    LinearPreferred: 1,
 
-    /** Gets or sets the trigger types. */
-    triggerTypes?: ListItemBag[] | null;
+    /** Order is just for display purposes. We'll still show the pre-req and enforce them though. */
+    NonLinear: 2
+} as const;
 
-    /** Gets or sets the view modes. */
-    viewModes?: ListItemBag[] | null;
+/** Defines how the steps in a program are ordered and how prerequisites are handled. */
+export const CompletionFlowDescription: Record<number, string> = {
+    0: "Linear (Required)",
+
+    1: "Linear (Preferred)",
+
+    2: "Non-Linear"
 };
+
+/** Defines how the steps in a program are ordered and how prerequisites are handled. */
+export type CompletionFlow = typeof CompletionFlow[keyof typeof CompletionFlow];

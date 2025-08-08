@@ -14,36 +14,31 @@
 // limitations under the License.
 // </copyright>
 //
+using System.ComponentModel;
 
-using Rock.ViewModels.Utility;
-using System.Collections.Generic;
-
-namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
+namespace Rock.Enums.Engagement
 {
     /// <summary>
-    /// The additional configuration options for the Step Program Detail block.
+    /// Defines how the steps in a program are ordered and how prerequisites are handled.
     /// </summary>
-    public class StepProgramDetailOptionsBag
+    public enum CompletionFlow
     {
         /// <summary>
-        /// Gets or sets the view modes.
+        /// There will be no concept of a pre-req on linear required. Existing ones would be removed. The pre-req is the order.
         /// </summary>
-        /// <value>
-        /// The view modes.
-        /// </value>
-        public List<ListItemBag> ViewModes { get; set; }
+        [Description( "Linear (Required)" )]
+        LinearRequired = 0,
 
         /// <summary>
-        /// Gets or sets the trigger types.
+        /// The ordering will only be used for suggestions and the pre-req logic would be displayed and enforced.
         /// </summary>
-        /// <value>
-        /// The trigger types.
-        /// </value>
-        public List<ListItemBag> TriggerTypes { get; set; }
+        [Description( "Linear (Preferred)" )]
+        LinearPreferred = 1,
 
         /// <summary>
-        /// Gets or sets the value indicating if the View Mode options will be displayed on the Edit page.
+        /// Order is just for display purposes. We'll still show the pre-req and enforce them though.
         /// </summary>
-        public bool? AreViewDisplayOptionsVisible { get; set; }
+        [Description( "Non-Linear" )]
+        NonLinear = 2,
     }
 }

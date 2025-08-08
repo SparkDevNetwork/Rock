@@ -15,6 +15,7 @@
 // </copyright>
 //
 
+using Rock.Enums.Engagement;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Utility;
 using System.Collections.Generic;
@@ -139,5 +140,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// The status options.
         /// </value>
         public List<ListItemBag> StatusOptions { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Completion Flow of the Step Program.
+        /// </summary>
+        public CompletionFlow? CompletionFlow { get; set; }
     }
 }

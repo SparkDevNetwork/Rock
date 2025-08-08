@@ -1,76 +1,79 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <fieldset>
-        <div class="row">
-            <div class="col-md-6">
-                <TextBox v-model="name"
-                         label="Name"
-                         rules="required" />
-            </div>
+    <ContentSectionWrapper :sidebar="false">
+        <ContentSection light>
+            <ContentStack>
+                <div class="row">
+                    <div class="col-md-6">
+                        <TextBox v-model="name"
+                                 label="Name"
+                                 rules="required" />
+                    </div>
 
-            <div class="col-md-6">
-                <CheckBox v-model="isActive"
-                          label="Active" />
-            </div>
-        </div>
-
-        <TextBox v-model="description"
-                 label="Description"
-                 textMode="multiline" />
-
-        <div class="row">
-            <div class="col-md-6">
-                <IconPicker v-model="iconCssClass" label="Icon CSS Class" />
-                <CategoryPicker v-model="category" label="Category" :entityTypeGuid="EntityType.StepProgram" />
-            </div>
-            <div class="col-md-6">
-                <RadioButtonList label="Default List View" v-model="defaultListView" :items="viewModes" horizontal />
-            </div>
-        </div>
-
-        <Panel title="Step Type Attributes" :hasCollapse="true">
-            <div class="panel-body">
-                <div class="grid grid-panel">
-                    <Grid :data="attributesGridData" keyField="key" itemTerm="Step Type Attribute" liveUpdates light @addItem="onAddAttribute">
-                        <TextColumn name="name" field="name" title="Attribute" />
-                        <TextColumn name="description" field="description" title="Description" />
-                        <BooleanColumn name="isRequired" field="isRequired" title="Required" />
-                        <EditColumn @click="onEditAttribute" />
-                        <DeleteColumn @click="onDeleteAttribute" disableConfirmation />
-                    </Grid>
+                    <div class="col-md-6">
+                        <CheckBox v-model="isActive"
+                                  label="Active" />
+                    </div>
                 </div>
-            </div>
 
-            <Modal v-model="isAttributeModalOpen" title="Step Participant Attributes">
+                <TextBox v-model="description"
+                         label="Description"
+                         textMode="multiline" />
 
-                <RockForm v-model:submit="saveAttribute" @submit="onSaveAttribute">
-                    <AttributeEditor v-model="stepAttribute" :reservedKeyNames="reservedKeyNames" />
-                </RockForm>
-
-                <template #customButtons>
-                    <RockButton :btnSize="BtnSize.Default"
-                                :btnType="BtnType.Primary"
-                                @click="onStartSaveAttribute">Save</RockButton>
-                </template>
-
-            </Modal>
-        </Panel>
-
-        <Panel title="Statuses" :hasCollapse="true">
-            <div class="panel-body">
-                <div class="grid grid-panel">
-                    <Grid :data="statusesGridData" keyField="key" itemTerm="Page Attribute" liveUpdates light @addItem="onAddStatus">
-                        <TextColumn name="name" field="name" title="Name" />
-                        <BooleanColumn name="isCompleteStatus" field="isCompleteStatus" title="Completion" />
-                        <EditColumn @click="onEditStatus" />
-                        <DeleteColumn @click="onDeleteStatus" disableConfirmation />
-                    </Grid>
+                <div class="row">
+                    <div class="col-md-3">
+                        <IconPicker v-model="iconCssClass"
+                                    label="Icon CSS Class" />
+                    </div>
                 </div>
-            </div>
 
-            <Modal v-model="isStatusModalOpen" title="Create Status">
+                <div class="row">
+                    <div class="col-md-3">
+                        <CategoryPicker v-model="category"
+                                        label="Category"
+                                        :entityTypeGuid="EntityType.StepProgram" />
+                    </div>
+                </div>
 
-                <RockForm v-model:submit="saveStatus" @submit="onSaveStatus">
+                <RadioButtonList label="Completion Flow"
+                                 v-model="completionFlow"
+                                 :help="completionFlowHelpText"
+                                 :items="completionFlows" />
+
+                <RadioButtonList v-if="areViewModesDisplayed"
+                                 label="Default List View"
+                                 v-model="defaultListView"
+                                 :items="viewModes" />
+            </ContentStack>
+        </ContentSection>
+
+        <ContentSection title="Statuses"
+                        icon="ti ti-flag">
+            <ContentStack>
+                <!-- TODO - Add reorder -->
+                <Grid :data="statusesGridData"
+                      keyField="key"
+                      itemTerm="Page Attribute"
+                      liveUpdates
+                      light
+                      @addItem="onAddStatus">
+                    <TextColumn name="name"
+                                field="name"
+                                title="Name" />
+                    <BooleanColumn name="isCompleteStatus"
+                                   field="isCompleteStatus"
+                                   title="Completion" />
+                    <EditColumn @click="onEditStatus" />
+                    <DeleteColumn @click="onDeleteStatus"
+                                  disableConfirmation />
+                </Grid>
+            </ContentStack>
+
+            <Modal v-model="isStatusModalOpen"
+                   title="Create Status">
+
+                <RockForm v-model:submit="saveStatus"
+                          @submit="onSaveStatus">
                     <fieldset>
                         <div class="row">
                             <div class="col-md-6">
@@ -102,23 +105,76 @@
                 </template>
 
             </Modal>
-        </Panel>
+        </ContentSection>
 
-        <Panel title="Workflows" :hasCollapse="true">
-            <div class="panel-body">
-                <div class="grid grid-panel">
-                    <Grid :data="workflowGridData" keyField="key" itemTerm="Workflow" liveUpdates light @addItem="onAddWorkflow">
-                        <TextColumn name="workflowType" field="workflowType" title="Workflow Type" />
-                        <TextColumn name="workflowTrigger" field="workflowTrigger" title="Trigger" />
-                        <EditColumn @click="onEditWorkflow" />
-                        <DeleteColumn @click="onDeleteWorkflow" disableConfirmation />
-                    </Grid>
-                </div>
-            </div>
+        <ContentSection title="Step Type Attributes"
+                        icon="ti ti-database">
+            <ContentStack>
+                <Grid :data="attributesGridData"
+                      keyField="key"
+                      itemTerm="Step Type Attribute"
+                      liveUpdates
+                      light
+                      @addItem="onAddAttribute">
+                    <TextColumn name="name"
+                                field="name"
+                                title="Attribute" />
+                    <TextColumn name="description"
+                                field="description"
+                                title="Description" />
+                    <BooleanColumn name="isRequired"
+                                   field="isRequired"
+                                   title="Required" />
+                    <EditColumn @click="onEditAttribute" />
+                    <DeleteColumn @click="onDeleteAttribute"
+                                  disableConfirmation />
+                </Grid>
+            </ContentStack>
 
-            <Modal v-model="isWorkflowModalOpen" title="Select Workflow">
+            <Modal v-model="isAttributeModalOpen"
+                   title="Step Participant Attributes">
 
-                <RockForm v-model:submit="saveWorkflow" @submit="onSaveWorkflow">
+                <RockForm v-model:submit="saveAttribute"
+                          @submit="onSaveAttribute">
+                    <AttributeEditor v-model="stepAttribute"
+                                     :reservedKeyNames="reservedKeyNames" />
+                </RockForm>
+
+                <template #customButtons>
+                    <RockButton :btnSize="BtnSize.Default"
+                                :btnType="BtnType.Primary"
+                                @click="onStartSaveAttribute">Save</RockButton>
+                </template>
+
+            </Modal>
+        </ContentSection>
+
+        <ContentSection title="Workflows"
+                        icon="ti ti-route-alt-right">
+            <ContentStack>
+                <Grid :data="workflowGridData"
+                      keyField="key"
+                      itemTerm="Workflow"
+                      liveUpdates
+                      light
+                      @addItem="onAddWorkflow">
+                    <TextColumn name="workflowType"
+                                field="workflowType"
+                                title="Workflow Type" />
+                    <TextColumn name="workflowTrigger"
+                                field="workflowTrigger"
+                                title="Trigger" />
+                    <EditColumn @click="onEditWorkflow" />
+                    <DeleteColumn @click="onDeleteWorkflow"
+                                  disableConfirmation />
+                </Grid>
+            </ContentStack>
+
+            <Modal v-model="isWorkflowModalOpen"
+                   title="Select Workflow">
+
+                <RockForm v-model:submit="saveWorkflow"
+                          @submit="onSaveWorkflow">
 
                     <fieldset>
                         <div class="row">
@@ -137,8 +193,14 @@
                         </div>
                         <div class="row" v-if="showQualifiers">
                             <div class="col-md-6">
-                                <DropDownList v-model="primaryQualifier" :items="stepStatusOptions" label="From" showBlankItem />
-                                <DropDownList v-model="secondaryQualifier" :items="stepStatusOptions" label="To" showBlankItem />
+                                <DropDownList v-model="primaryQualifier"
+                                              :items="stepStatusOptions"
+                                              label="From"
+                                              showBlankItem />
+                                <DropDownList v-model="secondaryQualifier"
+                                              :items="stepStatusOptions"
+                                              label="To"
+                                              showBlankItem />
                             </div>
                             <div class="col-md-6">
                             </div>
@@ -154,10 +216,13 @@
                 </template>
 
             </Modal>
-        </Panel>
+        </ContentSection>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
-    </fieldset>
+        <AttributeValuesContainer v-model="attributeValues"
+                                  :attributes="attributes"
+                                  isEditMode
+                                  :numberOfColumns="2" />
+    </ContentSectionWrapper>
 </template>
 
 <script setup lang="ts">
@@ -168,7 +233,6 @@
     import IconPicker from "@Obsidian/Controls/iconPicker.obs";
     import CategoryPicker from "@Obsidian/Controls/categoryPicker.obs";
     import RadioButtonList from "@Obsidian/Controls/radioButtonList.obs";
-    import Panel from "@Obsidian/Controls/panel.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
@@ -176,8 +240,11 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
+    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import Grid, { BooleanColumn, EditColumn, TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StepProgramBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramBag";
     import { StepProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramDetailOptionsBag";
@@ -192,10 +259,13 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
+    import { CompletionFlow, CompletionFlowDescription } from "@Obsidian/Enums/Engagement/completionFlow";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<StepProgramBag>,
+            type: Object as PropType<ValidPropertiesBox<StepProgramBag>>,
             required: true
         },
 
@@ -206,23 +276,32 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: StepProgramBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<StepProgramBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "iconCssClass");
-    const category = propertyRef(props.modelValue.category, "Category");
-    const defaultListView = propertyRef(props.modelValue.defaultListView?.toString() ?? {}, "DefaultListView");
-    const viewModes = ref(props.options.viewModes ?? []);
+    const defaultCompletionFlow = CompletionFlow.LinearRequired.toString();
+    const completionFlows = enumToListItemBag(CompletionFlowDescription);
+    const completionFlowHelpText = `Completion Flow determines how steps are ordered and how prerequisites are applied.<br/>
+        <strong>Linear (Required):</strong> Steps must be completed in order. Custom prerequisites are removed—step order becomes the prerequisite.<br/>
+        <strong>Linear (Preferred):</strong> Steps are suggested in order, but individuals can complete them in any sequence if prerequisites are met. Prerequisites are shown and enforced.<br/>
+        <strong>Non-Linear:</strong> Steps can be completed in any order. Prerequisites are still shown and enforced, but the order is just for display.`;
 
-    const stepStatuses = ref(props.modelValue.statuses ?? []);
+    const attributes = ref(props.modelValue?.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue?.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue?.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue?.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue?.bag?.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue?.bag?.iconCssClass ?? "", "iconCssClass");
+    const category = propertyRef(props.modelValue?.bag?.category, "Category");
+    const completionFlow = propertyRef(props.modelValue?.bag?.completionFlow?.toString() ?? defaultCompletionFlow, "CompletionFlow");
+    const defaultListView = propertyRef(props.modelValue?.bag?.defaultListView?.toString() ?? "", "DefaultListView");
+    const viewModes = ref(props.options.viewModes ?? []);
+    const areViewModesDisplayed = ref(props.options.areViewDisplayOptionsVisible ?? false);
+
+    const stepStatuses = ref(props.modelValue?.bag?.statuses ?? []);
     const isStatusModalOpen = ref(false);
     const saveStatus = ref(false);
     const stepStatusId = ref<number>(0);
@@ -234,14 +313,14 @@
     const isWorkflowModalOpen = ref(false);
     const triggerType = ref("");
     const triggerTypes = ref(props.options.triggerTypes ?? []);
-    const stepStatusOptions = ref(props.modelValue.statusOptions ?? []);
+    const stepStatusOptions = ref(props.modelValue?.bag?.statusOptions ?? []);
     const primaryQualifier = ref("");
     const secondaryQualifier = ref("");
     const workflow = ref<StepProgramWorkflowTriggerBag>({});
-    const workflows = ref(props.modelValue.workflowTriggers ?? []);
+    const workflows = ref(props.modelValue?.bag?.workflowTriggers ?? []);
     const saveWorkflow = ref(false);
 
-    const stepProgramAttributes = ref(props.modelValue.stepProgramAttributes ?? []);
+    const stepProgramAttributes = ref(props.modelValue?.bag?.stepProgramAttributes ?? []);
     const isAttributeModalOpen = ref(false);
     const saveAttribute = ref(false);
     const stepAttribute = ref<PublicEditableAttributeBag | null>(null);
@@ -249,7 +328,7 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, iconCssClass, category, defaultListView];
+    const propRefs = [description, isActive, name, iconCssClass, category, completionFlow, defaultListView];
 
     // #endregion
 
@@ -632,32 +711,34 @@
 
     // Watch for parental changes in our model value and update all our values.
     watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(defaultListView, props.modelValue.defaultListView.toString() ?? "");
-        updateRefValue(category, props.modelValue.category);
+        updateRefValue(attributes, props.modelValue?.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue?.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue?.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue?.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue?.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue?.bag?.iconCssClass ?? "");
+        updateRefValue(completionFlow, props.modelValue?.bag?.completionFlow?.toString() ?? defaultCompletionFlow);
+        updateRefValue(defaultListView, props.modelValue?.bag?.defaultListView.toString() ?? "");
+        updateRefValue(category, props.modelValue?.bag?.category);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, workflows, stepStatuses, stepProgramAttributes, ...propRefs], () => {
-        const newValue: StepProgramBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            iconCssClass: iconCssClass.value,
-            category: category.value,
-            stepProgramAttributes: stepProgramAttributes.value,
-            statuses: stepStatuses.value,
-            workflowTriggers: workflows.value,
-            defaultListView: toNumber(defaultListView.value)
+        const newValue: ValidPropertiesBox<StepProgramBag> = {
+            bag: { ...props.modelValue.bag } as StepProgramBag
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "category", category.value);
+        setPropertiesBoxValue(newValue, "stepProgramAttributes", stepProgramAttributes.value);
+        setPropertiesBoxValue(newValue, "statuses", stepStatuses.value);
+        setPropertiesBoxValue(newValue, "completionFlow", toNumber(completionFlow.value ?? defaultCompletionFlow) as CompletionFlow);
+        setPropertiesBoxValue(newValue, "defaultListView", toNumber(defaultListView.value));
 
         emit("update:modelValue", newValue);
     }, { deep: true });

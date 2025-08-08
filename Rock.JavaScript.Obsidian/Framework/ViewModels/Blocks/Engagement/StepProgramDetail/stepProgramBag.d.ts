@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { CompletionFlow } from "@Obsidian/Enums/Engagement/completionFlow";
 import { StepProgramWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramWorkflowTriggerBag";
 import { StepStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepStatusBag";
 import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
@@ -44,6 +45,9 @@ export type StepProgramBag = {
 
     /** Gets or sets the chart data. */
     chartData?: string | null;
+
+    /** Gets or sets the Completion Flow of the Step Program. */
+    completionFlow?: CompletionFlow | null;
 
     /** Gets or sets the default date range. */
     defaultDateRange?: SlidingDateRangeBag | null;

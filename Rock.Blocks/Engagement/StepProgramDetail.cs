@@ -25,6 +25,7 @@ using Rock.Attribute;
 using Rock.Chart;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.Engagement;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
@@ -73,11 +74,18 @@ namespace Rock.Blocks.Engagement
         Description = "The Lava used to render the Key Performance Indicators bar. <span class='tip tip-lava'></span>",
         Order = 2 )]
 
+    [BooleanField
+        ( "Enable List View Display Options",
+          Key = AttributeKey.EnableListViewDisplayOptions,
+          Description = "Allows selecting a display mode of Grid or Cards.",
+          DefaultValue = "false",
+          Order = 3 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "7260278e-efb7-4b98-a862-15bf0a40ba2e" )]
     [Rock.SystemGuid.BlockTypeGuid( "e2f965d1-7419-4062-9568-08613bb696e3" )]
-    public class StepProgramDetail : RockDetailBlockType, IBreadCrumbBlock
+    public class StepProgramDetail : RockEntityDetailBlockType<StepProgram, StepProgramBag>, IBreadCrumbBlock
     {
         #region Keys
 
@@ -96,6 +104,7 @@ namespace Rock.Blocks.Engagement
             public const string ShowChart = "Show Chart";
             public const string SlidingDateRange = "SlidingDateRange";
             public const string KpiLava = "KpiLava";
+            public const string EnableListViewDisplayOptions = "EnableListViewDisplayOptions";
         }
 
         private static class DefaultValue
@@ -119,46 +128,38 @@ namespace Rock.Blocks.Engagement
         /// <inheritdoc/>
         public BreadCrumbResult GetBreadCrumbs( PageReference pageReference )
         {
-            using ( var rockContext = new RockContext() )
+            var key = pageReference.GetPageParameter( PageParameterKey.StepProgramId );
+            var pageParameters = new Dictionary<string, string>();
+
+            var name = new StepProgramService( RockContext )
+                .GetSelect( key, mf => mf.Name );
+
+            if ( name != null )
             {
-                var key = pageReference.GetPageParameter( PageParameterKey.StepProgramId );
-                var pageParameters = new Dictionary<string, string>();
-
-                var name = new StepProgramService( rockContext )
-                    .GetSelect( key, mf => mf.Name );
-
-                if ( name != null )
-                {
-                    pageParameters.Add( PageParameterKey.StepProgramId, key );
-                }
-
-                var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
-                var breadCrumb = new BreadCrumbLink( name ?? "New Step Program", breadCrumbPageRef );
-
-                return new BreadCrumbResult
-                {
-                    BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
-                };
+                pageParameters.Add( PageParameterKey.StepProgramId, key );
             }
+
+            var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
+            var breadCrumb = new BreadCrumbLink( name ?? "New Step Program", breadCrumbPageRef );
+
+            return new BreadCrumbResult
+            {
+                BreadCrumbs = new List<IBreadCrumb> { breadCrumb }
+            };
         }
 
         /// <inheritdoc/>
         public override object GetObsidianBlockInitialization()
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var box = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>();
+            var box = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>();
 
-                var entity = GetInitialEntity( rockContext );
+            SetBoxInitialEntityState( box );
 
-                SetBoxInitialEntityState( box, rockContext, entity );
+            box.NavigationUrls = GetBoxNavigationUrls();
+            box.Options = GetBoxOptions();
+            box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StepProgram>();
 
-                box.NavigationUrls = GetBoxNavigationUrls();
-                box.Options = GetBoxOptions();
-                box.QualifiedAttributeProperties = AttributeCache.GetAttributeQualifiedColumns<StepProgram>();
-
-                return box;
-            }
+            return box;
         }
 
         /// <summary>
@@ -177,7 +178,9 @@ namespace Rock.Blocks.Engagement
                     new ListItemBag() { Text = "Step Completed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() },
                     new ListItemBag() { Text = "Status Changed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged.ToString() },
                     new ListItemBag() { Text = "Manual", Value = StepWorkflowTrigger.WorkflowTriggerCondition.Manual.ToString() }
-                }
+                },
+
+                AreViewDisplayOptionsVisible = GetAttributeValue( AttributeKey.EnableListViewDisplayOptions ).AsBoolean()
             };
 
             return options;
@@ -191,7 +194,7 @@ namespace Rock.Blocks.Engagement
         /// <param name="rockContext">The rock context.</param>
         /// <param name="errorMessage">On <c>false</c> return, contains the error message.</param>
         /// <returns><c>true</c> if the StepProgram is valid, <c>false</c> otherwise.</returns>
-        private bool ValidateStepProgram( StepProgram stepProgram, RockContext rockContext, out string errorMessage )
+        private bool ValidateStepProgram( StepProgram stepProgram, out string errorMessage )
         {
             errorMessage = null;
 
@@ -203,10 +206,10 @@ namespace Rock.Blocks.Engagement
         /// ErrorMessage properties depending on the entity and permissions.
         /// </summary>
         /// <param name="box">The box to be populated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <param name="entity">The rock entity.</param>
-        private void SetBoxInitialEntityState( DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box, RockContext rockContext, StepProgram entity )
+        private void SetBoxInitialEntityState( DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box )
         {
+            var entity = GetInitialEntity();
+
             if ( entity == null )
             {
                 box.ErrorMessage = $"The {StepProgram.FriendlyTypeName} was not found.";
@@ -216,7 +219,7 @@ namespace Rock.Blocks.Engagement
             var isViewable = entity.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson );
             box.IsEditable = entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson );
 
-            entity.LoadAttributes( rockContext );
+            entity.LoadAttributes( RockContext );
 
             if ( entity.Id != 0 )
             {
@@ -224,7 +227,6 @@ namespace Rock.Blocks.Engagement
                 if ( isViewable )
                 {
                     box.Entity = GetEntityBagForView( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
@@ -237,13 +239,14 @@ namespace Rock.Blocks.Engagement
                 if ( box.IsEditable )
                 {
                     box.Entity = GetEntityBagForEdit( entity );
-                    box.SecurityGrantToken = GetSecurityGrantToken( entity );
                 }
                 else
                 {
                     box.ErrorMessage = EditModeMessage.NotAuthorizedToEdit( StepProgram.FriendlyTypeName );
                 }
             }
+
+            PrepareDetailBox( box, entity );
         }
 
         /// <summary>
@@ -267,16 +270,13 @@ namespace Rock.Blocks.Engagement
                 IsActive = entity.IsActive,
                 Name = entity.Name,
                 DefaultListView = entity.DefaultListView.ConvertToInt(),
-                CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson )
+                CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
+                CompletionFlow = entity.Id > 0 ? ( CompletionFlow? ) entity.CompletionFlow : null,
             };
         }
 
-        /// <summary>
-        /// Gets the bag for viewing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for view purposes.</param>
-        /// <returns>A <see cref="StepProgramBag"/> that represents the entity.</returns>
-        private StepProgramBag GetEntityBagForView( StepProgram entity )
+        /// <inheritdoc/>
+        protected override StepProgramBag GetEntityBagForView( StepProgram entity )
         {
             if ( entity == null )
             {
@@ -312,12 +312,8 @@ namespace Rock.Blocks.Engagement
             return bag;
         }
 
-        /// <summary>
-        /// Gets the bag for editing the specified entity.
-        /// </summary>
-        /// <param name="entity">The entity to be represented for edit purposes.</param>
-        /// <returns>A <see cref="StepProgramBag"/> that represents the entity.</returns>
-        private StepProgramBag GetEntityBagForEdit( StepProgram entity )
+        /// <inheritdoc/>
+        protected override StepProgramBag GetEntityBagForEdit( StepProgram entity )
         {
             if ( entity == null )
             {
@@ -325,11 +321,10 @@ namespace Rock.Blocks.Engagement
             }
 
             var bag = GetCommonEntityBag( entity );
-            var rockContext = new RockContext();
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
-            bag.StepProgramAttributes = GetStepTypeAttributes( rockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttribute( e ) );
+            bag.StepProgramAttributes = GetStepTypeAttributes( RockContext, entity.Id.ToString() ).ConvertAll( e => PublicAttributeHelper.GetPublicEditableAttribute( e ) );
 
             bag.Statuses = entity.StepStatuses.Select( s => new StepStatusBag()
             {
@@ -353,7 +348,7 @@ namespace Rock.Blocks.Engagement
                     SecondaryQualifier = GetStepStatuses( entity ).Find( ss => ss.Id == new StepWorkflowTrigger.StatusChangeTriggerSettings( wt.TypeQualifier ).ToStatusId )?.Guid.ToString(),
                 } ).ToList();
 
-            bag.StatusOptions = new StepStatusService( rockContext ).Queryable().Where( s => s.StepProgramId == entity.Id ).AsEnumerable().ToListItemBagList();
+            bag.StatusOptions = new StepStatusService( RockContext ).Queryable().Where( s => s.StepProgramId == entity.Id ).AsEnumerable().ToListItemBagList();
 
             return bag;
         }
@@ -383,9 +378,8 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private ListItemBag GetTriggerType( StepWorkflowTrigger.WorkflowTriggerCondition condition, string typeQualifier )
         {
-            var rockContext = new RockContext();
             var qualifierSettings = new StepWorkflowTrigger.StatusChangeTriggerSettings( typeQualifier );
-            var text = new StepWorkflowTriggerService( rockContext ).GetTriggerSettingsDescription( condition, qualifierSettings );
+            var text = new StepWorkflowTriggerService( RockContext ).GetTriggerSettingsDescription( condition, qualifierSettings );
             var value = condition.ToStringSafe();
 
             return new ListItemBag() { Text = text, Value = value };
@@ -397,73 +391,64 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private List<StepStatus> GetStepStatuses( StepProgram entity )
         {
-            var rockContext = new RockContext();
             var stepProgramId = entity.Id;
 
-            return new StepStatusService( rockContext )
+            return new StepStatusService( RockContext )
                 .Queryable()
                 .Where( s => s.StepProgramId == stepProgramId )
                 .ToList();
         }
 
-        /// <summary>
-        /// Updates the entity from the data in the save box.
-        /// </summary>
-        /// <param name="entity">The entity to be updated.</param>
-        /// <param name="box">The box containing the information to be updated.</param>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns><c>true</c> if the box was valid and the entity was updated, <c>false</c> otherwise.</returns>
-        private bool UpdateEntityFromBox( StepProgram entity, DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box, RockContext rockContext )
+        /// <inheritdoc/>
+        protected override bool UpdateEntityFromBox( StepProgram entity, ValidPropertiesBox<StepProgramBag> box )
         {
             if ( box.ValidProperties == null )
             {
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Entity.Category ),
-                () => entity.CategoryId = box.Entity.Category.GetEntityId<Category>( rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Category ),
+                () => entity.CategoryId = box.Bag.Category.GetEntityId<Category>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.Description ),
-                () => entity.Description = box.Entity.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ),
+                () => entity.Description = box.Bag.Description );
 
-            box.IfValidProperty( nameof( box.Entity.IconCssClass ),
-                () => entity.IconCssClass = box.Entity.IconCssClass );
+            box.IfValidProperty( nameof( box.Bag.IconCssClass ),
+                () => entity.IconCssClass = box.Bag.IconCssClass );
 
-            box.IfValidProperty( nameof( box.Entity.IsActive ),
-                () => entity.IsActive = box.Entity.IsActive );
+            box.IfValidProperty( nameof( box.Bag.IsActive ),
+                () => entity.IsActive = box.Bag.IsActive );
 
-            box.IfValidProperty( nameof( box.Entity.Name ),
-                () => entity.Name = box.Entity.Name );
+            box.IfValidProperty( nameof( box.Bag.Name ),
+                () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Entity.DefaultListView ),
-                () => entity.DefaultListView = ( StepProgram.ViewMode ) box.Entity.DefaultListView );
+            box.IfValidProperty( nameof( box.Bag.DefaultListView ),
+                () => entity.DefaultListView = ( StepProgram.ViewMode ) box.Bag.DefaultListView );
 
-            box.IfValidProperty( nameof( box.Entity.Statuses ),
-                () => SaveStatuses( box.Entity, entity, rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.Statuses ),
+                () => SaveStatuses( box.Bag, entity, RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.WorkflowTriggers ),
-                () => SaveWorkflowTriggers( box.Entity, entity, rockContext ) );
+            box.IfValidProperty( nameof( box.Bag.WorkflowTriggers ),
+                () => SaveWorkflowTriggers( box.Bag, entity, RockContext ) );
 
-            box.IfValidProperty( nameof( box.Entity.AttributeValues ),
+            box.IfValidProperty( nameof( box.Bag.CompletionFlow ),
+                () => entity.CompletionFlow = box.Bag.CompletionFlow.Value );
+
+            box.IfValidProperty( nameof( box.Bag.AttributeValues ),
                 () =>
                 {
-                    entity.LoadAttributes( rockContext );
+                    entity.LoadAttributes( RockContext );
 
-                    entity.SetPublicAttributeValues( box.Entity.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
+                    entity.SetPublicAttributeValues( box.Bag.AttributeValues, RequestContext.CurrentPerson, enforceSecurity: true );
                 } );
 
             return true;
         }
 
-        /// <summary>
-        /// Gets the initial entity from page parameters or creates a new entity
-        /// if page parameters requested creation.
-        /// </summary>
-        /// <param name="rockContext">The rock context.</param>
-        /// <returns>The <see cref="StepProgram"/> to be viewed or edited on the page.</returns>
-        private StepProgram GetInitialEntity( RockContext rockContext )
+        /// <inheritdoc/>
+        protected override StepProgram GetInitialEntity()
         {
-            return GetInitialEntity<StepProgram, StepProgramService>( rockContext, PageParameterKey.StepProgramId );
+            return GetInitialEntity<StepProgram, StepProgramService>( RockContext, PageParameterKey.StepProgramId );
         }
 
         /// <summary>
@@ -479,46 +464,9 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <inheritdoc/>
-        protected override string RenewSecurityGrantToken()
+        protected override bool TryGetEntityForEditAction( string idKey, out StepProgram entity, out BlockActionResult error )
         {
-            using ( var rockContext = new RockContext() )
-            {
-                var entity = GetInitialEntity( rockContext );
-
-                if ( entity != null )
-                {
-                    entity.LoadAttributes( rockContext );
-                }
-
-                return GetSecurityGrantToken( entity );
-            }
-        }
-
-        /// <summary>
-        /// Gets the security grant token that will be used by UI controls on
-        /// this block to ensure they have the proper permissions.
-        /// </summary>
-        /// <returns>A string that represents the security grant token.</string>
-        private string GetSecurityGrantToken( StepProgram entity )
-        {
-            var securityGrant = new Rock.Security.SecurityGrant();
-
-            securityGrant.AddRulesForAttributes( entity, RequestContext.CurrentPerson );
-
-            return securityGrant.ToToken();
-        }
-
-        /// <summary>
-        /// Attempts to load an entity to be used for an edit action.
-        /// </summary>
-        /// <param name="idKey">The identifier key of the entity to load.</param>
-        /// <param name="rockContext">The database context to load the entity from.</param>
-        /// <param name="entity">Contains the entity that was loaded when <c>true</c> is returned.</param>
-        /// <param name="error">Contains the action error result when <c>false</c> is returned.</param>
-        /// <returns><c>true</c> if the entity was loaded and passed security checks.</returns>
-        private bool TryGetEntityForEditAction( string idKey, RockContext rockContext, out StepProgram entity, out BlockActionResult error )
-        {
-            var entityService = new StepProgramService( rockContext );
+            var entityService = new StepProgramService( RockContext );
             error = null;
 
             // Determine if we are editing an existing entity or creating a new one.
@@ -557,11 +505,10 @@ namespace Rock.Blocks.Engagement
         /// <param name="qualifierColumn"></param>
         /// <param name="qualifierValue"></param>
         /// <param name="viewStateAttributes"></param>
-        /// <param name="rockContext"></param>
-        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes, RockContext rockContext )
+        private void SaveAttributes( int entityTypeId, string qualifierColumn, string qualifierValue, List<PublicEditableAttributeBag> viewStateAttributes )
         {
             // Get the existing attributes for this entity type and qualifier value
-            var attributeService = new AttributeService( rockContext );
+            var attributeService = new AttributeService( RockContext );
             var attributes = attributeService.GetByEntityTypeQualifier( entityTypeId, qualifierColumn, qualifierValue, true ).ToList();
 
             // Delete any of those attributes that were removed in the UI
@@ -569,13 +516,13 @@ namespace Rock.Blocks.Engagement
             foreach ( var attr in attributes.Where( a => !selectedAttributeGuids.Contains( a.Guid ) ) )
             {
                 attributeService.Delete( attr );
-                rockContext.SaveChanges();
+                RockContext.SaveChanges();
             }
 
             // Update the Attributes that were assigned in the UI
             foreach ( var attributeState in viewStateAttributes )
             {
-                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, rockContext );
+                Helper.SaveAttributeEdits( attributeState, entityTypeId, qualifierColumn, qualifierValue, RockContext );
             }
         }
 
@@ -621,8 +568,7 @@ namespace Rock.Blocks.Engagement
         /// <returns></returns>
         private IQueryable<Step> GetStepsCompletedQuery( string delimitedDateRange, StepProgram stepProgram )
         {
-            var rockContext = new RockContext();
-            var stepService = new StepService( rockContext );
+            var stepService = new StepService( RockContext );
             var stepProgramId = stepProgram.Id;
 
             var query = stepService.Queryable()
@@ -690,8 +636,7 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            var rockContext = new RockContext();
-            var stepService = new StepService( rockContext );
+            var stepService = new StepService( RockContext );
 
             var query = stepService.Queryable()
                 .AsNoTracking()
@@ -733,8 +678,7 @@ namespace Rock.Blocks.Engagement
         private IQueryable<StepProgramService.PersonStepProgramViewModel> GetCompletedProgramQuery( string delimitedDateRange, StepProgram stepProgram )
         {
             var stepProgramId = stepProgram.Id;
-            var rockContext = new RockContext();
-            var service = new StepProgramService( rockContext );
+            var service = new StepProgramService( RockContext );
             var query = service.GetPersonCompletingProgramQuery( stepProgramId );
 
             if ( query == null )
@@ -781,8 +725,7 @@ namespace Rock.Blocks.Engagement
                 return null;
             }
 
-            var rockContext = new RockContext();
-            var stepService = new StepService( rockContext );
+            var stepService = new StepService( RockContext );
 
             var query = stepService.Queryable()
                 .AsNoTracking()
@@ -830,8 +773,7 @@ namespace Rock.Blocks.Engagement
             if ( showActivitySummary )
             {
                 // If the Step Type does not have any activity, hide the Activity Summary.
-                var rockContext = new RockContext();
-                var stepService = new StepService( rockContext );
+                var stepService = new StepService( RockContext );
                 var stepsQuery = stepService.Queryable()
                     .AsNoTracking()
                     .Where( x => x.StepType.StepProgramId == stepProgramId
@@ -1142,22 +1084,25 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Edit( string key )
         {
-            using ( var rockContext = new RockContext() )
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                var box = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                return ActionOk( box );
+                return actionError;
             }
+
+            entity.LoadAttributes( RockContext );
+
+            var box = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>
+            {
+                Entity = GetEntityBagForEdit( entity )
+            };
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<StepProgramBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -1166,80 +1111,83 @@ namespace Rock.Blocks.Engagement
         /// <param name="box">The box that contains all the information required to save.</param>
         /// <returns>A new entity bag to be used when returning to view mode, or the URL to redirect to after creating a new entity.</returns>
         [BlockAction]
-        public BlockActionResult Save( DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box )
+        public BlockActionResult Save( ValidPropertiesBox<StepProgramBag> box )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new StepProgramService( RockContext );
+
+            if ( !TryGetEntityForEditAction( box.Bag.IdKey, out var entity, out var actionError ) )
             {
-                var entityService = new StepProgramService( rockContext );
-
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
-                }
-
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
-                {
-                    return ActionBadRequest( "Invalid data." );
-                }
-
-                // Ensure everything is valid before saving.
-                if ( !ValidateStepProgram( entity, rockContext, out var validationMessage ) )
-                {
-                    return ActionBadRequest( validationMessage );
-                }
-
-                var isNew = entity.Id == 0;
-
-                rockContext.WrapTransaction( () =>
-                {
-                    rockContext.SaveChanges();
-                    entity.SaveAttributeValues( rockContext );
-                } );
-
-                SaveAttributes( new StepType().TypeId, "StepProgramId", entity.Id.ToString(), box.Entity.StepProgramAttributes, rockContext );
-
-                entity = entityService.Get( entity.Id );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( "This record is no longer valid, please reload your data." );
-                }
-
-                var currentPerson = GetCurrentPerson();
-
-                if ( !entity.IsAuthorized( Authorization.VIEW, currentPerson ) )
-                {
-                    entity.AllowPerson( Authorization.VIEW, currentPerson, rockContext );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, currentPerson ) )
-                {
-                    entity.AllowPerson( Authorization.EDIT, currentPerson, rockContext );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.MANAGE_STEPS, currentPerson ) )
-                {
-                    entity.AllowPerson( Authorization.MANAGE_STEPS, currentPerson, rockContext );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) )
-                {
-                    entity.AllowPerson( Authorization.ADMINISTRATE, currentPerson, rockContext );
-                }
-
-                if ( isNew )
-                {
-                    return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
-                    {
-                        [PageParameterKey.StepProgramId] = entity.IdKey
-                    } ) );
-                }
-
-                entity.LoadAttributes( rockContext );
-
-                return ActionOk( GetEntityBagForView( entity ) );
+                return actionError;
             }
+
+            // Update the entity instance from the information in the bag.
+            if ( !UpdateEntityFromBox( entity, box ) )
+            {
+                return ActionBadRequest( "Invalid data." );
+            }
+
+            // Ensure everything is valid before saving.
+            if ( !ValidateStepProgram( entity, out var validationMessage ) )
+            {
+                return ActionBadRequest( validationMessage );
+            }
+
+            var isNew = entity.Id == 0;
+
+            RockContext.WrapTransaction( () =>
+            {
+                RockContext.SaveChanges();
+                entity.SaveAttributeValues( RockContext );
+            } );
+
+            SaveAttributes( new StepType().TypeId, "StepProgramId", entity.Id.ToString(), box.Bag.StepProgramAttributes );
+
+            entity = entityService.Get( entity.Id );
+
+            if ( entity == null )
+            {
+                return ActionBadRequest( "This record is no longer valid, please reload your data." );
+            }
+
+            var currentPerson = GetCurrentPerson();
+
+            if ( !entity.IsAuthorized( Authorization.VIEW, currentPerson ) )
+            {
+                entity.AllowPerson( Authorization.VIEW, currentPerson, RockContext );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, currentPerson ) )
+            {
+                entity.AllowPerson( Authorization.EDIT, currentPerson, RockContext );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.MANAGE_STEPS, currentPerson ) )
+            {
+                entity.AllowPerson( Authorization.MANAGE_STEPS, currentPerson, RockContext );
+            }
+
+            if ( !entity.IsAuthorized( Authorization.ADMINISTRATE, currentPerson ) )
+            {
+                entity.AllowPerson( Authorization.ADMINISTRATE, currentPerson, RockContext );
+            }
+
+            if ( isNew )
+            {
+                return ActionContent( System.Net.HttpStatusCode.Created, this.GetCurrentPageUrl( new Dictionary<string, string>
+                {
+                    [PageParameterKey.StepProgramId] = entity.IdKey
+                } ) );
+            }
+
+            entity.LoadAttributes( RockContext );
+
+            var bag = GetEntityBagForEdit( entity );
+
+            return ActionOk( new ValidPropertiesBox<StepProgramBag>
+            {
+                Bag = bag,
+                ValidProperties = bag.GetType().GetProperties().Select( p => p.Name ).ToList()
+            } );
         }
 
         /// <summary>
@@ -1250,103 +1198,46 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new StepProgramService( RockContext );
+
+            if ( !TryGetEntityForEditAction( key, out var entity, out var actionError ) )
             {
-                var entityService = new StepProgramService( rockContext );
+                return actionError;
+            }
 
-                if ( !TryGetEntityForEditAction( key, rockContext, out var entity, out var actionError ) )
+            if ( !entity.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
+            {
+                return ActionBadRequest( "You are not authorized to delete this item." );
+            }
+
+            string errorMessage = null;
+            RockContext.WrapTransaction( () =>
+            {
+                var stepTypes = entity.StepTypes.ToList();
+                var stepTypeService = new StepTypeService( RockContext );
+
+                foreach ( var stepType in stepTypes )
                 {
-                    return actionError;
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
-                {
-                    return ActionBadRequest( "You are not authorized to delete this item." );
-                }
-
-                string errorMessage = null;
-                rockContext.WrapTransaction( () =>
-                {
-                    var stepTypes = entity.StepTypes.ToList();
-                    var stepTypeService = new StepTypeService( rockContext );
-
-                    foreach ( var stepType in stepTypes )
-                    {
-                        if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
-                        {
-                            return;
-                        }
-
-                        stepTypeService.Delete( stepType );
-                    }
-
-                    rockContext.SaveChanges();
-
-                    if ( !entityService.CanDelete( entity, out errorMessage ) )
+                    if ( !stepTypeService.CanDelete( stepType, out errorMessage ) )
                     {
                         return;
                     }
 
-                    entityService.Delete( entity );
-                    rockContext.SaveChanges();
-                } );
-
-                return string.IsNullOrWhiteSpace( errorMessage ) ? ActionOk( this.GetParentPageUrl() ) : ActionBadRequest( errorMessage );
-            }
-        }
-
-        /// <summary>
-        /// Refreshes the list of attributes that can be displayed for editing
-        /// purposes based on any modified values on the entity.
-        /// </summary>
-        /// <param name="box">The box that contains all the information about the entity being edited.</param>
-        /// <returns>A box that contains the entity and attribute information.</returns>
-        [BlockAction]
-        public BlockActionResult RefreshAttributes( DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag> box )
-        {
-            using ( var rockContext = new RockContext() )
-            {
-                if ( !TryGetEntityForEditAction( box.Entity.IdKey, rockContext, out var entity, out var actionError ) )
-                {
-                    return actionError;
+                    stepTypeService.Delete( stepType );
                 }
 
-                // Update the entity instance from the information in the bag.
-                if ( !UpdateEntityFromBox( entity, box, rockContext ) )
+                RockContext.SaveChanges();
+
+                if ( !entityService.CanDelete( entity, out errorMessage ) )
                 {
-                    return ActionBadRequest( "Invalid data." );
+                    return;
                 }
 
-                // Reload attributes based on the new property values.
-                entity.LoadAttributes( rockContext );
+                entityService.Delete( entity );
+                RockContext.SaveChanges();
+            } );
 
-                var refreshedBox = new DetailBlockBox<StepProgramBag, StepProgramDetailOptionsBag>
-                {
-                    Entity = GetEntityBagForEdit( entity )
-                };
-
-                var oldAttributeGuids = box.Entity.Attributes.Values.Select( a => a.AttributeGuid ).ToList();
-                var newAttributeGuids = refreshedBox.Entity.Attributes.Values.Select( a => a.AttributeGuid );
-
-                // If the attributes haven't changed then return a 204 status code.
-                if ( oldAttributeGuids.SequenceEqual( newAttributeGuids ) )
-                {
-                    return ActionStatusCode( System.Net.HttpStatusCode.NoContent );
-                }
-
-                // Replace any values for attributes that haven't changed with
-                // the value sent by the client. This ensures any unsaved attribute
-                // value changes are not lost.
-                foreach ( var kvp in refreshedBox.Entity.Attributes )
-                {
-                    if ( oldAttributeGuids.Contains( kvp.Value.AttributeGuid ) )
-                    {
-                        refreshedBox.Entity.AttributeValues[kvp.Key] = box.Entity.AttributeValues[kvp.Key];
-                    }
-                }
-
-                return ActionOk( refreshedBox );
-            }
+            return string.IsNullOrWhiteSpace( errorMessage ) ? ActionOk( this.GetParentPageUrl() ) : ActionBadRequest( errorMessage );
         }
 
         /// <summary>
