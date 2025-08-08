@@ -20,9 +20,11 @@ using System.ComponentModel;
 using System.Linq;
 using System.Reflection;
 
+using Microsoft.Extensions.DependencyInjection;
 using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent;
+using Rock.Configuration;
 using Rock.Data;
 using Rock.Enums.Core.AI.Agent;
 using Rock.SystemGuid;
@@ -54,27 +56,25 @@ namespace Rock.Model
                 RegisterFunction( skillId, method, existingFunctions, rockContext );
             }
 
-            if ( skillType.GetConstructor( Type.EmptyTypes ) != null )
+            var serviceProvider = RockApp.Current.CreateScope().ServiceProvider;
+            AgentSkillComponent instance;
+
+            try
             {
-                AgentSkillComponent instance;
+                instance = ( AgentSkillComponent ) ActivatorUtilities.CreateInstance( serviceProvider, skillType );
+            }
+            catch
+            {
+                // Intentionally ignore any exceptions that occur when
+                // trying to create an instance of the skill for registration.
+                return;
+            }
 
-                try
-                {
-                    instance = ( AgentSkillComponent ) Activator.CreateInstance( skillType );
-                }
-                catch
-                {
-                    // Intentionally ignore any exceptions that occur when
-                    // trying to create an instance of the skill for registration.
-                    return;
-                }
+            var semanticFunctions = instance.GetSemanticFunctions();
 
-                var semanticFunctions = instance.GetSemanticFunctions();
-
-                foreach ( var semanticFunction in semanticFunctions )
-                {
-                    RegisterSemanticFunction( skillId, semanticFunction, existingFunctions, rockContext );
-                }
+            foreach ( var semanticFunction in semanticFunctions )
+            {
+                RegisterSemanticFunction( skillId, semanticFunction, existingFunctions, rockContext );
             }
         }
 
@@ -103,7 +103,7 @@ namespace Rock.Model
             }
 
             var function = existingFunctions.FirstOrDefault( f => f.Guid == functionGuid.Value );
-            var name = kernelFunction.Name ?? method.Name.SplitCase();
+            var name = kernelFunction.Name.IsNotNullOrWhiteSpace() ? kernelFunction.Name.SplitCase() : method.Name.SplitCase();
             var description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
             var needSave = false;
 
