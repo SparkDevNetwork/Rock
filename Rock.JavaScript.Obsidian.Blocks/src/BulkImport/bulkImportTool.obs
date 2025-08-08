@@ -294,10 +294,6 @@ order by Gt.Id, Gt.Name, g.Name
     }
 
     async function onCheckForeignSystemKey(): Promise<void> {
-        if (!foreignSystemKey.value) {
-            return;
-        }
-
         const result = await invokeBlockAction<{ hasBeenUsed: boolean; tables: string[]; usedKeys: string[]; }>("CheckForeignSystemKey", {
             foreignSystemKey: foreignSystemKey.value
         });
@@ -306,13 +302,15 @@ order by Gt.Id, Gt.Name, g.Name
             let message = "";
             let alertType = "default";
 
-            if (result.data.hasBeenUsed) {
-                message = `Foreign System Key <strong>${foreignSystemKey.value}</strong> has already been used. Import again to insert any new records that are detected, and update any person records that have changed.`;
-                alertType = "info";
-            }
-            else {
-                message = `OK. Foreign System Key <strong>${foreignSystemKey.value}</strong> has not been used to import data.`;
-                alertType = "success";
+            if (foreignSystemKey.value) {
+                if (result.data.hasBeenUsed) {
+                    message = `Foreign System Key <strong>${foreignSystemKey.value}</strong> has already been used. Import again to insert any new records that are detected, and update any person records that have changed.`;
+                    alertType = "info";
+                }
+                else {
+                    message = `OK. Foreign System Key <strong>${foreignSystemKey.value}</strong> has not been used to import data.`;
+                    alertType = "success";
+                }
             }
 
             if (result.data.usedKeys.length > 0) {

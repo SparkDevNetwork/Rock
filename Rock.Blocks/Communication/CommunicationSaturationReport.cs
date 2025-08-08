@@ -259,6 +259,8 @@ namespace Rock.Blocks.Communication
             var filters = new ComputedFilters( GetFilterOptions(), BlockCache );
 
             // Get the queryable and make sure it is ordered correctly.
+            var startDate = filters.StartDate.Value.Date;
+            var endDate = filters.EndDate.Value.Date;
             var recipientsQry = new CommunicationRecipientService( rockContext )
                 .Queryable().AsNoTracking()
                 // Filter out nameless, anonymous, deceased, and inactive people
@@ -267,8 +269,8 @@ namespace Rock.Blocks.Communication
                     && cr.PersonAlias.Person.Guid != anonymousVisitorGuid
                     && cr.PersonAlias.Person.RecordStatusValueId == activeRecordStatusValueId
                     && cr.PersonAlias.Person.AgeClassification == AgeClassification.Adult
-                    && cr.Communication.SendDateTime >= filters.StartDate
-                    && cr.Communication.SendDateTime < filters.EndDate
+                    && cr.Communication.SendDateTime >= startDate
+                    && cr.Communication.SendDateTime < endDate
                     && filters.CommunicationType.Contains( cr.Communication.CommunicationType )
                 );
 

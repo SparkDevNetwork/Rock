@@ -1,16 +1,16 @@
 <template>
     <GalleryAndResult :importCode="importCode" :exampleCode="exampleCode" enableReflection>
 
-        <ConnectedListItem :aside="aside"
-                           :asideIconCssClass="asideIconCssClass"
-                           :badgeText="badgeText"
-                           :iconCssClass="iconCssClass"
-                           :iconLabelType="iconLabelCssClass || iconLabelType"
-                           :description="description"
-                           :primaryActions="primaryActions"
-                           :secondaryActions="secondaryActions"
-                           :title="title"
-                           :onClick="simulateNotClickable ? undefined : onClick">
+        <DisplayCard :aside="aside"
+                     :asideIconCssClass="asideIconCssClass"
+                     :badgeText="badgeText"
+                     :iconCssClass="iconCssClass"
+                     :iconLabelType="iconLabelCssClass || iconLabelType"
+                     :description="description"
+                     :primaryActions="primaryActions"
+                     :secondaryActions="secondaryActions"
+                     :title="title"
+                     :onClick="simulateNotClickable ? undefined : onClick">
 
             <template v-if="simulatePrependSlot" #prepend>
                 Prepend Slot Content
@@ -22,7 +22,7 @@
                 </div>
             </template>
 
-        </ConnectedListItem>
+        </DisplayCard>
 
         <template #settings>
             <div class="row">
@@ -38,7 +38,7 @@
             </div>
 
             <div class="row">
-                <TextBox v-model="asideIconCssClass" formGroupClasses="col-md-4" label="Aside Icon CSS Class" />
+                <IconPicker v-model="asideIconCssClass" formGroupClasses="col-md-4" label="Aside Icon CSS Class" />
                 <TextBox v-model="aside" formGroupClasses="col-md-4" label="Aside" />
             </div>
 
@@ -51,7 +51,7 @@
     import { computed, ref, watch } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import CheckBoxList from "@Obsidian/Controls/checkBoxList.obs";
-    import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import IconPicker from "@Obsidian/Controls/iconPicker.obs";
@@ -68,7 +68,7 @@
         { text: "Custom", value: "custom" },
     ];
 
-    const importCode = `import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";`;
+    const importCode = `import DisplayCard from "@Obsidian/Controls/displayCard.obs";`;
 
     const aside = ref<string>("hello@triumph.tech");
     const asideIconCssClass = ref<string>("ti ti-user");
@@ -150,7 +150,7 @@
     const simulateNotClickable = computed((): boolean => simulateValues.value.includes("notClickable"));
 
     const exampleCode = computed<string>(() => {
-        return `<ConnectedListItem aside="${aside.value}"
+        return `<DisplayCard aside="${aside.value}"
                    asideIconCssClass="${asideIconCssClass.value}"
                    badgeText="${badgeText.value}"
                    iconCssClass="${iconCssClass.value}"
@@ -166,7 +166,7 @@
     <template #description>
         <i class="ti ti-clock"></i> ${description.value}
     </template>` : ""}
-</ConnectedListItem>` : " />"}`;
+</DisplayCard>` : " />"}`;
     });
 
     function onClick(): void {

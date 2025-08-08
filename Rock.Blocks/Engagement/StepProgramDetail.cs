@@ -272,6 +272,7 @@ namespace Rock.Blocks.Engagement
                 DefaultListView = entity.DefaultListView.ConvertToInt(),
                 CanAdministrate = entity.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ),
                 CompletionFlow = entity.Id > 0 ? ( CompletionFlow? ) entity.CompletionFlow : null,
+                IsDeletable = !entity.IsSystem
             };
         }
 
@@ -333,7 +334,8 @@ namespace Rock.Blocks.Engagement
                 IsActive = s.IsActive,
                 IsCompleteStatus = s.IsCompleteStatus,
                 Name = s.Name,
-                StatusColor = s.StatusColor
+                StatusColor = s.StatusColor,
+                IsSystem = s.IsSystem
             } ).ToList();
 
             bag.WorkflowTriggers = entity.StepWorkflowTriggers
@@ -1208,6 +1210,11 @@ namespace Rock.Blocks.Engagement
             if ( !entity.IsAuthorized( Authorization.EDIT, GetCurrentPerson() ) )
             {
                 return ActionBadRequest( "You are not authorized to delete this item." );
+            }
+
+            if ( entity.IsSystem )
+            {
+                return ActionBadRequest( "You cannot delete a system Step Program." );
             }
 
             string errorMessage = null;

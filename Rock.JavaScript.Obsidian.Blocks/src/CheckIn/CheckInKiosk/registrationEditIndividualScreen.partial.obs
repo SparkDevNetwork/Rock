@@ -8,7 +8,7 @@
                       @submit="onSaveClick">
 
                 <div class="row">
-                    <div class="col-md-6">
+                    <div v-if="isChildAdultVisible" class="col-md-6">
                         <RockFormField modelValue=""
                                        name="toggle"
                                        label="&nbsp;">
@@ -29,7 +29,7 @@
                                       label="Relationship to Adult"
                                       v-model="relationshipToAdult"
                                       :items="relationshipToAdultItems"
-                                      :showBlankItem="false"
+                                      :showBlankItem="registrationData.forceSelectionOfKnownRelationshipType"
                                       rules="required" />
                     </div>
                 </div>
@@ -48,18 +48,21 @@
                     </div>
 
                     <div class="col-md-6">
-                        <DropDownList label="Suffix"
-                                      v-model="suffix"
-                                      :items="suffixItems" />
-                    </div>
-
-                    <div class="col-md-6">
                         <RequiredToggle v-model="isFemale"
                                         label="Gender"
                                         trueText="Female"
                                         falseText="Male" />
                     </div>
 
+                    <div class="col-md-6">
+                        <DropDownList v-if="isSuffixVisible"
+                                      label="Suffix"
+                                      v-model="suffix"
+                                      :items="suffixItems" />
+                    </div>
+                </div>
+
+                <div class="row">
                     <div class="col-md-6">
                         <DatePartsPicker v-if="isBirthdateVisible"
                                          label="Birthdate"
@@ -80,47 +83,44 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <PhoneNumberBox label="Mobile Phone"
+                        <PhoneNumberBox v-if="isMobilePhoneVisible"
+                                        label="Mobile Phone"
                                         v-model="phoneNumber"
-                                        v-model:countryCode="phoneCountryCode" />
+                                        v-model:countryCode="phoneCountryCode"
+                                        :rules="mobilePhoneRules">
+                            <template v-if="registrationData.isSmsButtonVisible" #inputGroupAppend>
+                                <span class="input-group-addon clickable" @click="isSmsDisabled = !isSmsDisabled">
+                                    <i v-if="isSmsDisabled" class="ti ti-square mr-1"></i>
+                                    <i v-else class="ti ti-checkbox mr-1"></i>
+                                    <template v-if="!isSmsDisabled">SMS Enabled</template>
+                                    <template v-else>SMS Disabled</template>
+                                </span>
+                            </template>
+                        </PhoneNumberBox>
                     </div>
 
-                    <div class="col-md-6">
-                        <div v-if="registrationData.isSmsButtonVisible"
-                             class="form-group">
-                            <label class="control-label"></label>
-                            <Toggle v-if="registrationData.isSmsButtonVisible"
-                                    v-model="isSmsDisabled"
-                                    trueText="No SMS"
-                                    falseText="SMS Enabled" />
-                        </div>
-                    </div>
-                </div>
-
-                <div class="row">
                     <div class="col-md-6">
                         <EmailBox v-if="isEmailVisible"
                                   label="Email"
                                   v-model="email" />
                     </div>
+                </div>
 
-                    <div class="col-md-6">
-                        <TextBox v-if="isAlternateIdVisible"
-                                 label="Alternate ID"
+                <div class="row">
+                    <div v-if="isAlternateIdVisible" class="col-md-6">
+                        <TextBox label="Alternate ID"
                                  v-model="alternateId" />
                     </div>
 
-                    <div class="col-md-6">
-                        <RacePicker v-if="isRaceVisible"
-                                    label="Race"
+                    <div v-if="isRaceVisible" class="col-md-6">
+                        <RacePicker label="Race"
                                     v-model="race"
                                     showBlankItem
                                     :rules="raceRules" />
                     </div>
 
-                    <div class="col-md-6">
-                        <EthnicityPicker v-if="isEthnicityVisible"
-                                         label="Ethnicity"
+                    <div v-if="isEthnicityVisible" class="col-md-6">
+                        <EthnicityPicker label="Ethnicity"
                                          v-model="ethnicity"
                                          showBlankItem
                                          :rules="ethnicityRules" />
@@ -152,17 +152,23 @@
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import FirstNameTextBox from "@Obsidian/Controls/firstNameTextBox.obs";
     import Toggle from "@Obsidian/Controls/toggle.obs";
-    import { computed, PropType, ref } from "vue";
+    import { computed, onBeforeUnmount, PropType, ref } from "vue";
     import { KioskConfigurationBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/kioskConfigurationBag";
-    import { RegistrationScreen, RegistrationScreenData, KioskButton } from "./types.partial";
+    import { AddIndividualOptionsBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/addIndividualOptionsBag";
+    import { SaveFamilyResponseBag } from "@Obsidian/ViewModels/Blocks/CheckIn/CheckInKiosk/saveFamilyResponseBag";
+    import { RegistrationScreen, RegistrationScreenData, KioskButton, AugmentedRegistrationPersonBag, NoNullishField } from "./types.partial";
     import { Gender } from "@Obsidian/Enums/Crm/gender";
     import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttributeBag";
     import { RequirementLevel } from "@Obsidian/Enums/Controls/requirementLevel";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { newGuid } from "@Obsidian/Utility/guid";
-    import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import { DatePartsPickerValueBag } from "@Obsidian/ViewModels/Controls/datePartsPickerValueBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { alert, showDialog } from "@Obsidian/Utility/dialogs";
+    import { CancellationTokenSource } from "@Obsidian/Utility/cancellation";
+    import { AdultsOrChildrenSelectionMode } from "@Obsidian/Enums/CheckIn/adultsOrChildrenSelectionMode";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         configuration: {
@@ -179,8 +185,11 @@
     const emit = defineEmits<{
         (event: "updateActions", actions: KioskButton[]): void;
         (event: "registrationScreen", screen: RegistrationScreen): void;
+        (event: "checkInFamily", familyId: string): void;
         (event: "closeRegistration"): void;
     }>();
+
+    const invokeBlockAction = useInvokeBlockAction();
 
     // #region Values
 
@@ -206,11 +215,24 @@
     const suffixItems: ListItemBag[] = props.registrationData.suffixes ?? [];
     const relationshipToAdultItems: ListItemBag[] = props.registrationData.relationships ?? [];
 
+    const cancellationTokenSource = new CancellationTokenSource();
+
     // #endregion
 
     // #region Computed Values
 
     const title = computed((): string => {
+        if (props.registrationData.addIndividualMode) {
+            if (props.configuration.kiosk?.allowAddingIndividualsToExistingFamilies === AdultsOrChildrenSelectionMode.AdultsOnly) {
+                return "Add Adult";
+            }
+            else if (props.configuration.kiosk?.allowAddingIndividualsToExistingFamilies === AdultsOrChildrenSelectionMode.ChildrenOnly) {
+                return "Add Child";
+            }
+
+            return "Add Individual";
+        }
+
         return props.registrationData.editPersonGuid
             ? "Edit Individual"
             : "Add Individual";
@@ -232,6 +254,25 @@
 
     // #region Computed Visibility Values
 
+    const isChildAdultVisible = computed((): boolean => {
+        if (!props.registrationData.addIndividualMode) {
+            return true;
+        }
+
+        return props.configuration.kiosk?.allowAddingIndividualsToExistingFamilies === AdultsOrChildrenSelectionMode.AdultsAndChildren;
+    });
+
+    const isSuffixVisible = computed((): boolean => {
+        if (isAdult.value) {
+            return props.registrationData.displaySuffix === AdultsOrChildrenSelectionMode.AdultsAndChildren
+                || props.registrationData.displaySuffix === AdultsOrChildrenSelectionMode.AdultsOnly;
+        }
+        else {
+            return props.registrationData.displaySuffix === AdultsOrChildrenSelectionMode.AdultsAndChildren
+                || props.registrationData.displaySuffix === AdultsOrChildrenSelectionMode.ChildrenOnly;
+        }
+    });
+
     const isEmailVisible = computed((): boolean => {
         return isAdult.value;
     });
@@ -246,6 +287,12 @@
         return isAdult.value
             ? isRequirementVisible(props.registrationData.displayBirthdateForAdults)
             : isRequirementVisible(props.registrationData.displayBirthdateForChildren);
+    });
+
+    const isMobilePhoneVisible = computed((): boolean => {
+        return isAdult.value
+            ? true
+            : isRequirementVisible(props.registrationData.displayMobilePhoneForChildren);
     });
 
     const isEthnicityVisible = computed((): boolean => {
@@ -274,6 +321,16 @@
         const requirement = isAdult.value
             ? props.registrationData.displayBirthdateForAdults
             : props.registrationData.displayBirthdateForChildren;
+
+        return requirement === RequirementLevel.Required
+            ? "required"
+            : "";
+    });
+
+    const mobilePhoneRules = computed((): string => {
+        const requirement = isAdult.value
+            ? RequirementLevel.Optional
+            : props.registrationData.displayMobilePhoneForChildren;
 
         return requirement === RequirementLevel.Required
             ? "required"
@@ -321,6 +378,15 @@
         const actions: KioskButton[] = [];
 
         actions.push({
+            key: "cancel",
+            title: "Cancel",
+            type: "default",
+            class: "cancel-button",
+            disabled: false,
+            handler: onCancelClick
+        });
+
+        actions.push({
             key: "save",
             title: "Done",
             type: "primary",
@@ -331,15 +397,6 @@
             }
         });
 
-        actions.push({
-            key: "cancel",
-            title: "Cancel",
-            type: "default",
-            class: "cancel-button",
-            disabled: false,
-            handler: onCancelClick
-        });
-
         emit("updateActions", actions);
     }
 
@@ -348,21 +405,32 @@
             .find(p => p.bag.guid === props.registrationData.editPersonGuid);
 
         if (!person) {
-            person = {
-                bag: {
-                    guid: newGuid(),
-                    isAdult: false,
-                    isMarried: false,
-                    gender: Gender.Unknown
-                },
-                validProperties: []
-            };
+            person = createPerson();
 
-            setPropertiesBoxValue(person, "id", "");
             props.registrationData.people.push(person);
             props.registrationData.editPersonGuid = person.bag.guid;
         }
 
+        updatePerson(person);
+    }
+
+    function createPerson(): NoNullishField<ValidPropertiesBox<AugmentedRegistrationPersonBag>> {
+        const person: NoNullishField<ValidPropertiesBox<AugmentedRegistrationPersonBag>> = {
+            bag: {
+                guid: newGuid(),
+                isAdult: false,
+                isMarried: false,
+                gender: Gender.Unknown
+            },
+            validProperties: []
+        };
+
+        setPropertiesBoxValue(person, "id", "");
+
+        return person;
+    }
+
+    function updatePerson(person: ValidPropertiesBox<AugmentedRegistrationPersonBag>): void {
         const relationship: ListItemBag = {
             value: relationshipToAdult.value,
             text: relationshipToAdultItems.find(r => r.value === relationshipToAdult.value)?.text
@@ -436,9 +504,29 @@
         else {
             isSmsDisabled.value = !props.registrationData.isSmsButtonCheckedByDefault;
         }
+
+        if (props.registrationData.addIndividualMode) {
+            // If we are in add individual mode, then we need to set some
+            // override values.
+
+            if (props.configuration.kiosk?.allowAddingIndividualsToExistingFamilies === AdultsOrChildrenSelectionMode.AdultsOnly) {
+                isAdult.value = true;
+            }
+            else if (props.configuration.kiosk?.allowAddingIndividualsToExistingFamilies === AdultsOrChildrenSelectionMode.ChildrenOnly) {
+                isAdult.value = false;
+            }
+        }
     }
 
     function getDefaultRelationship(): string {
+        // If we are adding a new person and the relationship type is required,
+        // then return an empty string so that the user is forced to select one.
+        if (!props.registrationData.editPersonGuid) {
+            if (props.registrationData.forceSelectionOfKnownRelationshipType) {
+                return "";
+            }
+        }
+
         if (props.registrationData.childRelationship?.value) {
             return props.registrationData.childRelationship.value;
         }
@@ -492,22 +580,126 @@
         return date?.toISOString() ?? "";
     }
 
+    /**
+     * Verifies that the grade value is set correctly based on the age of the person.
+     *
+     * @returns True if the grade value is valid or if the check was skipped, false otherwise.
+     */
+    async function verifyGradeValue(): Promise<boolean> {
+        // If grade is not  visible or if person is an adult, then we can skip
+        // the grade confirmation check.
+        if (!isGradeVisible.value || isAdult.value) {
+            return true;
+        }
+
+        // If grade confirmation age is not set or we have a grade, then we can
+        // skip the check.
+        if (!props.registrationData.gradeConfirmationAge || !!grade.value?.value) {
+            return true;
+        }
+
+        const birthday = birthDate.value
+            ? RockDateTime.fromParts(birthDate.value.year, birthDate.value.month, birthDate.value.day)
+            : undefined;
+
+        // If we have a birthdate, then we can check the age. Otherwise, we will
+        // always show the dialog.
+        if (birthday) {
+            const ageMilliseconds = RockDateTime.now().toMilliseconds() - birthday.toMilliseconds();
+            const millisecondsPerYear = 1000 * 60 * 60 * 24 * 365.25;
+            const ageInYears = ageMilliseconds / millisecondsPerYear;
+
+            if (ageInYears < props.registrationData.gradeConfirmationAge) {
+                return true;
+            }
+        }
+
+        const btn = await showDialog({
+            message: "If your child is in a grade, please select it to ensure proper placement.",
+            buttons: [
+                {
+                    key: "continue",
+                    label: "Continue Without Grade",
+                    className: "btn btn-primary"
+                },
+                {
+                    key: "cancel",
+                    label: "Go Back and Add Grade",
+                    className: "btn btn-link",
+                }
+            ],
+            cancellationToken: cancellationTokenSource.token
+        });
+
+        return btn === "continue";
+    }
+
+    async function saveIndividual(): Promise<boolean> {
+        const person = createPerson();
+        updatePerson(person);
+
+        const options: AddIndividualOptionsBag = {
+            templateId: props.configuration.template?.id,
+            kioskId: props.configuration.kiosk?.id,
+            familyId: props.registrationData.family.bag.id,
+            person: person,
+        };
+
+        const result = await invokeBlockAction<SaveFamilyResponseBag>("AddIndividual", { options });
+
+        if (result.isSuccess && result.data) {
+            if (result.data.isCheckInAllowed && result.data.familyId) {
+                emit("checkInFamily", result.data.familyId);
+            }
+            else {
+                emit("closeRegistration");
+            }
+        }
+        else {
+            await alert(result.errorMessage || "Unknown error encountered while trying to save the individual.");
+        }
+        return true;
+    }
+
     // #endregion
 
     // #region Event Handlers
 
     function onCancelClick(): void {
+        if (props.registrationData.addIndividualMode && props.registrationData.family.bag?.id) {
+            emit("checkInFamily", props.registrationData.family.bag.id);
+            return;
+        }
+
         emit("registrationScreen", RegistrationScreen.EditFamily);
     }
 
-    function onSaveClick(): void {
-        updateRegistrationData();
+    async function onSaveClick(): Promise<void> {
+        if (!await verifyGradeValue()) {
+            return;
+        }
 
-        emit("registrationScreen", RegistrationScreen.EditFamily);
+        if (props.registrationData.addIndividualMode) {
+            if (await saveIndividual()) {
+                if (props.registrationData.family.bag?.id) {
+                    emit("checkInFamily", props.registrationData.family.bag.id);
+                    return;
+                }
+            }
+        }
+        else {
+            updateRegistrationData();
+
+            emit("registrationScreen", RegistrationScreen.EditFamily);
+        }
     }
 
     // #endregion
 
     setInternalValues();
     updateActions();
+
+    onBeforeUnmount(() => {
+        cancellationTokenSource.cancel();
+    });
 </script>

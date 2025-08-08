@@ -59,6 +59,7 @@
                                     @next="onNextScreen"
                                     @replaceSession="onReplaceSession"
                                     @editFamily="onEditFamily"
+                                    @addIndividual="onAddIndividual"
                                     @updateActions="onUpdateActions($event, Screen.PersonSelect)" />
 
                 <AutoModeOpportunitySelectScreen v-if="currentScreen === Screen.AutoModeOpportunitySelect"
@@ -710,6 +711,12 @@
         previousScreens.value = [];
         registrationData.value = data;
         currentScreen.value = RegistrationScreen.EditFamily;
+    }
+
+    function onAddIndividual(data: RegistrationScreenData): void {
+        previousScreens.value = [];
+        registrationData.value = data;
+        currentScreen.value = RegistrationScreen.EditIndividual;
     }
 
     function onRegistrationScreen(screen: RegistrationScreen): void {

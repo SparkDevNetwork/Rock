@@ -775,12 +775,42 @@ export class Enumerable<T> {
      */
     firstOrDefault(defaultValue: T): T;
 
-    firstOrDefault(defaultValue?: T): T | undefined {
-        for (const item of this) {
-            return item;
-        }
+    /**
+     * Returns the first element of the sequence that satisfies the specified predicate,
+     * or `undefined` if no such element is found.
+     *
+     * @param predicate A function to test each element for a condition.
+     * @returns The first element that matches the predicate, or `undefined` if none match.
+     *
+     * @example
+     * const numbers = Enumerable.from([1, 2, 3, 4]);
+     * const firstEven = numbers.firstOrDefault(n => n % 2 === 0);
+     * console.log(firstEven); // Outputs: 2
+     *
+     * @example
+     * const empty = Enumerable.from<number>([]);
+     * const result = empty.firstOrDefault(n => n > 0);
+     * console.log(result); // Outputs: undefined
+     */
+    firstOrDefault(predicate: (item: T) => boolean): T | undefined;
 
-        return defaultValue;
+    firstOrDefault(arg?: T | ((item: T) => boolean)): T | undefined {
+        if (typeof arg === "function") {
+            const predicate = arg as (item: T) => boolean;
+
+            for (const item of this) {
+                if (predicate(item)) {
+                    return item;
+                }
+            }
+        }
+        else {
+            for (const item of this) {
+                return item;
+            }
+
+            return arg;
+        }
     }
 
     /**
@@ -889,12 +919,37 @@ export class Enumerable<T> {
      */
     lastOrDefault(defaultValue: T): T;
 
-    lastOrDefault(defaultValue?: T): T | undefined {
-        let last: T | undefined = defaultValue;
+    /**
+     * Returns the last element in the sequence that satisfies the given predicate,
+     * or `undefined` if no such element is found.
+     *
+     * @param predicate A function to test each element.
+     * @returns The last matching element, or `undefined`.
+     *
+     * @example
+     * const nums = Enumerable.from([1, 2, 3, 4]);
+     * console.log(nums.lastOrDefault(x => x % 2 === 0)); // 4
+     */
+    lastOrDefault(predicate: (item: T) => boolean): T | undefined;
 
-        for (const item of this) {
-            // Update `last` for each element.
-            last = item;
+    lastOrDefault(arg?: T | ((item: T) => boolean)): T | undefined {
+        let last: T | undefined;
+
+        if (typeof arg === "function") {
+            const predicate = arg as ((item: T) => boolean);
+
+            for (const item of this) {
+                // Update `last` for each element that satisfies the predicate.
+                if (predicate(item)) {
+                    last = item;
+                }
+            }
+        }
+        else {
+            for (const item of this) {
+                // Update `last` for each element.
+                last = item;
+            }
         }
 
         return last;
@@ -1139,14 +1194,6 @@ export class Enumerable<T> {
                 valueSelector ? valueSelector(item) : (item as unknown as TValue)
             ])
         );
-    }
-
-    /**
-     * Converts the sequence into a List.
-     * @returns An List containing all elements in the sequence.
-     */
-    toList(): List<T> {
-        return new List<T>(this.toArray());
     }
 
     /**

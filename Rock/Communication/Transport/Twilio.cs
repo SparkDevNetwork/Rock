@@ -19,18 +19,22 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 using System.Linq;
+using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemKey;
 using Rock.Utility;
 using Rock.Web.Cache;
+
 using Twilio;
 using Twilio.Rest.Api.V2010.Account;
-using TwilioTypes = Twilio.Types;
+
 using TwilioExceptions = Twilio.Exceptions;
+using TwilioTypes = Twilio.Types;
 
 namespace Rock.Communication.Transport
 {
@@ -471,6 +475,20 @@ namespace Rock.Communication.Transport
                     }
                 }
             }
+            catch ( TwilioExceptions.ApiException ex ) when ( ex.Code == 21610 )
+            {
+                // This recipient has previously opted out of receiving messages from this number (e.g. by texting "STOP").
+                // They'll need to text "START" to this number before they can receive messages again.
+                // https://www.twilio.com/docs/api/errors/21610
+
+                var unsubscribedMessageSb = new StringBuilder( UnsubscribedSmsRecipientMessage );
+                if ( ( smsMessage.FromSystemPhoneNumber?.Number ).IsNotNullOrWhiteSpace() )
+                {
+                    unsubscribedMessageSb.Append( $" To resume messaging, text START to {smsMessage.FromSystemPhoneNumber.Number}." );
+                }
+
+                sendMessageResult.Errors.Add( unsubscribedMessageSb.ToString() );
+            }
             catch ( Exception ex )
             {
                 sendMessageResult.Errors.Add( ex.Message );
@@ -538,14 +556,14 @@ namespace Rock.Communication.Transport
                     recipient.Status = CommunicationRecipientStatus.Failed;
                     recipient.StatusNote = "Twilio Exception: " + ex.Message;
 
-                    if( DisableSmsErrorCodes.Contains( ex.Code ) )
+                    if ( DisableSmsErrorCodes.Contains( ex.Code ) )
                     {
                         // Disable SMS for this number because the response indicates that Rock should not send messages to that number anymore.
                         var phoneNumber = recipient.PersonAlias.Person.PhoneNumbers.Where( p => p.IsMessagingEnabled ).FirstOrDefault();
                         if ( phoneNumber != null )
                         {
                             phoneNumber.IsMessagingEnabled = false;
-                            phoneNumber.IsMessagingOptedOut = true;                            
+                            phoneNumber.IsMessagingOptedOut = true;
                         }
 
                         // Add this to the Person Activity history

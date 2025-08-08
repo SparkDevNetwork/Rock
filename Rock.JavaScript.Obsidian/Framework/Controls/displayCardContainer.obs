@@ -1,23 +1,21 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="connected-list">
+    <div class="display-card-container">
         <template v-for="(entry, index) in decoratedChildren" :key="index">
-            <div class="connected-list-item-container">
-                <div v-if="index > 0"
-                     :class="[
-                        'connected-list-connector',
-                        entry.showConnectorTip ? 'connected-list-connector-tip' : '',
-                        hideConnectors ? 'connected-list-connector-transparent' : ''
-                    ]"></div>
+            <div v-if="index > 0"
+                 :class="[
+                    'display-card-connector',
+                    entry.showConnectorTip ? 'display-card-connector-tip' : '',
+                    !hasConnectors ? 'display-card-connector-transparent' : ''
+                ]"></div>
 
-                <component :is="entry.vnode" />
-            </div>
+            <component :is="entry.vnode" />
         </template>
     </div>
 </template>
 
 <style scoped>
-.connected-list-connector {
+.display-card-connector {
     width: 2px;
     height: var(--spacing-medium);
     background-color: var(--color-interface-soft);
@@ -25,7 +23,7 @@
     position: relative;
 }
 
-.connected-list-connector-tip::after {
+.display-card-connector-tip::after {
     content: "";
     position: absolute;
     bottom: 2px;
@@ -38,8 +36,8 @@
     background: transparent;
 }
 
-.connected-list-connector-transparent,
-.connected-list-connector-transparent::after {
+.display-card-connector-transparent,
+.display-card-connector-transparent::after {
     border-color: transparent;
     background-color: transparent;
 }
@@ -47,8 +45,8 @@
 
 <script setup lang="ts">
     import { computed, PropType, useSlots, VNode, VNodeTypes } from "vue";
-    import ConnectedListItem from "./connectedListItem.obs";
-    import ConnectedListAddButton from "./connectedListAddButton.obs";
+    import DisplayCard from "./displayCard.obs";
+    import DisplayCardAddButton from "./displayCardAddButton.obs";
 
     type DecoratedChild = {
         vnode: VNode;
@@ -56,7 +54,7 @@
     };
 
     const slots = useSlots();
-    const baseTippableConnectorTargets: VNodeTypes[] = [ConnectedListItem, ConnectedListAddButton];
+    const baseTippableConnectorTargets: VNodeTypes[] = [DisplayCard, DisplayCardAddButton];
 
     const props = defineProps({
         tippableConnectorTargets: {
@@ -64,7 +62,7 @@
             required: false
         },
 
-        hideConnectors: {
+        hasConnectors: {
             type: Boolean as PropType<boolean>,
             default: false
         }

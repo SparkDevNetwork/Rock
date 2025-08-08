@@ -1273,15 +1273,15 @@ export function createBackgroundSizeProvider(
                 })
                 .where(property => property?.property === "background" || property?.property === "background-size")
                 .ofType(isNotNullish)
-                .toList();
+                .toArray();
 
-            const backgroundSize = properties.lastOrUndefined(property => property.property === "background-size");
+            const backgroundSize = Enumerable.from(properties).lastOrDefault(property => property.property === "background-size");
             if (backgroundSize?.value) {
                 return backgroundSize.value;
             }
 
             // Try to harvest the background size from the background shorthand property.
-            const background = properties.lastOrUndefined(property => property.property === "background");
+            const background = Enumerable.from(properties).lastOrDefault(property => property.property === "background");
             if (background?.value) {
                 // Parse the background.
                 const backgroundStyles = parseBackgroundShorthand(background.value);

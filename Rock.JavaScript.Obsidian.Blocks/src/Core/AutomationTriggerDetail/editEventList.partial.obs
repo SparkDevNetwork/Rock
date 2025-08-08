@@ -4,22 +4,22 @@
     <div class="drag-container"
          v-dragSource="dragOptions"
          v-dragTarget="dragOptions">
-        <ConnectedListItem v-for="ev in events"
-                           :key="ev.idKey ?? undefined"
-                           :title="ev.name"
-                           :description="ev.description"
-                           :iconCssClass="ev.iconCssClass"
-                           :aside="ev.eventType?.text"
-                           :primaryActions="getPrimaryActions(ev)">
+        <DisplayCard v-for="ev in events"
+                     :key="ev.idKey ?? undefined"
+                     :title="ev.name"
+                     :description="ev.description"
+                     :iconCssClass="ev.iconCssClass"
+                     :aside="ev.eventType?.text"
+                     :primaryActions="getPrimaryActions(ev)">
             <template #prepend>
                 <div>
                     <i class="ti ti-menu-2 reorder-handle" style="cursor: grab;"></i>
                 </div>
             </template>
-        </ConnectedListItem>
+        </DisplayCard>
     </div>
 
-    <ConnectedListAddButton @click="onAddEvent" />
+    <DisplayCardAddButton @click="onAddEvent" />
 
     <Modal v-model="isEditVisible"
            title="Event Settings"
@@ -65,8 +65,8 @@
 
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
-    import ConnectedListAddButton from "@Obsidian/Controls/connectedListAddButton.obs";
-    import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
+    import DisplayCardAddButton from "@Obsidian/Controls/displayCardAddButton.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import DynamicComponent from "@Obsidian/Controls/dynamicComponent.obs";
     import Modal from "@Obsidian/Controls/modal.obs";

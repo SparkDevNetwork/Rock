@@ -10,72 +10,72 @@
                        body="On this page, you get to configure each of the messages that compose your flow. For each message, you can set what kind of medium it is, when and how it is triggered, and what content you want to send." />
 
             <fieldset>
-                <ConnectedList>
+                <DisplayCardContainer hasConnectors>
                     <template v-for="communication in orderedCommunications" :key="communication.communicationTemplate?.guid">
                         <CommunicationTrigger :communication="communication"
                                               :disabled="disabled"
                                               @update:communication="onCommunicationUpdated(communication, $event)" />
 
-                        <ConnectedListItem :aside="getConnectedListItemAside(communication)"
-                                           :asideIconCssClass="getConnectedListItemAsideIconCssClass(communication)"
-                                           :badgeText="`Step ${communication.order + 1}`"
-                                           :description="getConnectedListItemDescription(communication)"
-                                           :iconCssClass="getConnectedListItemIconCssClass(communication)"
-                                           :title="communication.name"
-                                           :secondaryActions="[
-                                            {
-                                                type: 'default',
-                                                iconCssClass: 'ti ti-chevrons-up',
-                                                title: 'Move Up',
-                                                handler: () => onMoveUpClicked(communication)
-                                            },
-                                            {
-                                                type: 'default',
-                                                iconCssClass: 'ti ti-chevrons-down',
-                                                title: 'Move Down',
-                                                handler: () => onMoveDownClicked(communication)
-                                            },
-                                            {
-                                                type: 'default',
-                                                iconCssClass: 'ti ti-edit text-info',
-                                                title: 'Edit',
-                                                handler: () => onEditClicked(communication)
-                                            },
-                                            {
-                                                type: 'default',
-                                                iconCssClass: 'ti ti-trash text-danger',
-                                                title: 'Delete',
-                                                handler: () => onDeleteClicked(communication)
-                                            },
-                                        ]"
-                                           @click="onEditClicked(communication)" />
+                        <DisplayCard :aside="getDisplayCardAside(communication)"
+                                     :asideIconCssClass="getDisplayCardAsideIconCssClass(communication)"
+                                     :badgeText="`Step ${communication.order + 1}`"
+                                     :description="getDisplayCardDescription(communication)"
+                                     :iconCssClass="getDisplayCardIconCssClass(communication)"
+                                     :title="communication.name"
+                                     :secondaryActions="[
+                                        {
+                                            type: 'default',
+                                            iconCssClass: 'ti ti-chevrons-up',
+                                            title: 'Move Up',
+                                            handler: () => onMoveUpClicked(communication)
+                                        },
+                                        {
+                                            type: 'default',
+                                            iconCssClass: 'ti ti-chevrons-down',
+                                            title: 'Move Down',
+                                            handler: () => onMoveDownClicked(communication)
+                                        },
+                                        {
+                                            type: 'default',
+                                            iconCssClass: 'ti ti-edit text-info',
+                                            title: 'Edit',
+                                            handler: () => onEditClicked(communication)
+                                        },
+                                        {
+                                            type: 'default',
+                                            iconCssClass: 'ti ti-trash text-danger',
+                                            title: 'Delete',
+                                            handler: () => onDeleteClicked(communication)
+                                        },
+                                    ]"
+                                     @click="onEditClicked(communication)" />
                     </template>
 
-                    <ConnectedListAddButton addText="Add Message"
-                                            :actions="[
-                                                {
-                                                    actionCssClass: 'add-message-action',
-                                                    type: 'default',
-                                                    iconCssClass: 'ti ti-mail text-info',
-                                                    title: 'Email',
-                                                    handler: onAddEmailClicked
-                                                },
-                                                {
-                                                    actionCssClass: 'add-message-action',
-                                                    type: 'default',
-                                                    iconCssClass: 'ti ti-message text-info',
-                                                    title: 'SMS',
-                                                    handler: onAddSmsClicked
-                                                },
-                                                {
-                                                    actionCssClass: 'add-message-action',
-                                                    type: 'default',
-                                                    iconCssClass: 'ti ti-device-mobile text-info',
-                                                    title: 'Push Notification',
-                                                    handler: onAddPushClicked
-                                                }
-                                            ]" />
-                </ConnectedList>
+                    <DisplayCardAddButton addText="Add Message"
+                                          :actions="[
+                                            {
+                                                actionCssClass: 'add-message-action',
+                                                type: 'default',
+                                                iconCssClass: 'ti ti-mail text-info',
+                                                title: 'Email',
+                                                handler: onAddEmailClicked
+                                            },
+                                            {
+                                                actionCssClass: 'add-message-action',
+                                                type: 'default',
+                                                iconCssClass: 'ti ti-message text-info',
+                                                title: 'SMS',
+                                                handler: onAddSmsClicked
+                                            },
+                                            {
+                                                actionCssClass: 'add-message-action',
+                                                type: 'default',
+                                                iconCssClass: 'ti ti-device-mobile text-info',
+                                                title: 'Push Notification',
+                                                handler: onAddPushClicked
+                                            }
+                                        ]" />
+                </DisplayCardContainer>
             </fieldset>
         </RockForm>
 
@@ -166,9 +166,9 @@
     import GuideWell from "./guideWell.partial.obs";
     import { DeleteTextArgs, SendTestOptions } from "./types.partial";
     import { getPreheaderText, isEnumValue, triggerTypeToText } from "./utils.partial";
-    import ConnectedList from "@Obsidian/Controls/connectedList.obs";
-    import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
-    import ConnectedListAddButton from "@Obsidian/Controls/connectedListAddButton.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
+    import DisplayCardAddButton from "@Obsidian/Controls/displayCardAddButton.obs";
+    import DisplayCardContainer from "@Obsidian/Controls/displayCardContainer.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import HighlightLabel from "@Obsidian/Controls/highlightLabel.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
@@ -343,7 +343,7 @@
 
     // #region Functions
 
-    function getConnectedListItemAside(communication: CommunicationFlowCommunicationBag): string | null | undefined {
+    function getDisplayCardAside(communication: CommunicationFlowCommunicationBag): string | null | undefined {
         if (communication.communicationType === CommunicationType.Email) {
             return communication.communicationTemplate?.fromEmail;
         }
@@ -358,7 +358,7 @@
         }
     }
 
-    function getConnectedListItemAsideIconCssClass(communication: CommunicationFlowCommunicationBag): string | null | undefined {
+    function getDisplayCardAsideIconCssClass(communication: CommunicationFlowCommunicationBag): string | null | undefined {
         if (communication.communicationType === CommunicationType.Email) {
             return "ti ti-address-book";
         }
@@ -373,7 +373,7 @@
         }
     }
 
-    function getConnectedListItemIconCssClass(communication: CommunicationFlowCommunicationBag): string | null | undefined {
+    function getDisplayCardIconCssClass(communication: CommunicationFlowCommunicationBag): string | null | undefined {
         if (communication.communicationType === CommunicationType.Email) {
             return "ti ti-mail fa-lg";
         }
@@ -388,7 +388,7 @@
         }
     }
 
-    function getConnectedListItemDescription(communication: CommunicationFlowCommunicationBag): string | null | undefined {
+    function getDisplayCardDescription(communication: CommunicationFlowCommunicationBag): string | null | undefined {
         if (communication.communicationType === CommunicationType.Email) {
             return getPreheaderText(communication.communicationTemplate?.message);
         }

@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
@@ -28,6 +29,7 @@ using Rock.Security;
 using Rock.ViewModels.Blocks;
 using Rock.ViewModels.Blocks.Engagement.StepTypeList;
 using Rock.Web.Cache;
+using Rock.Web.UI;
 
 namespace Rock.Blocks.Engagement
 {
@@ -38,7 +40,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Steps" )]
     [Description( "Shows a list of all step types for a program." )]
     [IconCssClass( "ti ti-list" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [StepProgramField(
         "Step Program",
@@ -63,7 +65,8 @@ namespace Rock.Blocks.Engagement
     [Rock.SystemGuid.EntityTypeGuid( "f3a7b501-61c4-4784-8f73-958e2f1fc353" )]
     [Rock.SystemGuid.BlockTypeGuid( "6a7c7c71-4760-4e6c-9d6f-6926c81caf8f" )]
     [CustomizedGrid]
-    public class StepTypeList : RockEntityListBlockType<StepType>
+    [ContextAware( typeof( Campus ) )]
+    public class StepTypeList : RockListBlockType<StepTypeList.StepTypeWithCounts>
     {
         #region Keys
 
@@ -99,10 +102,15 @@ namespace Rock.Blocks.Engagement
         #endregion Keys
 
         #region Fields
+
+        /// <summary>
+        /// The StepType attributes that are configured to show on the grid.
+        /// </summary>
+        private readonly Lazy<List<AttributeCache>> _gridAttributes = new Lazy<List<AttributeCache>>( BuildGridAttributes );
+
         #endregion
 
         #region Properties
-
         /// <summary>
         /// Gets the IsActive status filter.
         /// </summary>
@@ -157,7 +165,7 @@ namespace Rock.Blocks.Engagement
 
         /// <summary>
         /// Determines if the add button should be enabled in the grid.
-        /// <summary>
+        /// </summary>
         /// <returns>A boolean value that indicates if the add button should be enabled.</returns>
         private bool GetIsAddDeleteEnabled()
         {
@@ -182,71 +190,110 @@ namespace Rock.Blocks.Engagement
             return new Dictionary<string, string>
             {
                 [NavigationUrlKey.DetailPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, queryParams ),
-                [NavigationUrlKey.BulkEntryPage] = this.GetLinkedPageUrl( AttributeKey.DetailPage, PageParameterKey.StepTypeId, "((Key))" ),
+                [NavigationUrlKey.BulkEntryPage] = this.GetLinkedPageUrl( AttributeKey.BulkEntryPage, PageParameterKey.StepTypeId, "((Key))" ),
             };
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<StepType> GetListQueryable( RockContext rockContext )
+        protected override IQueryable<StepTypeWithCounts> GetListQueryable( RockContext rockContext )
         {
-            var queryable = new StepTypeService( rockContext ).Queryable();
-            var stepProgramId = GetStepProgram()?.Id ?? 0;
+            var stepProgram = GetStepProgram();
+            var stepTypeService = new StepTypeService( rockContext );
+            var stepTypeQueryable = stepTypeService.Queryable();
 
             // Filter by: Step Program
-            queryable = queryable.Where( x => x.StepProgramId == stepProgramId );
+            if ( stepProgram != null )
+            {
+                stepTypeQueryable = stepTypeQueryable.Where( x => x.StepProgramId == stepProgram.Id );
+            }
 
             // Filter by: Active
             switch ( FilterActiveStatus.ToUpperInvariant() )
             {
                 case "ACTIVE":
-                    return queryable.Where( a => a.IsActive );
+                    stepTypeQueryable = stepTypeQueryable.Where( a => a.IsActive );
+                    break;
                 case "INACTIVE":
-                    return queryable.Where( a => !a.IsActive );
+                    stepTypeQueryable = stepTypeQueryable.Where( a => !a.IsActive );
+                    break;
             }
 
+            var stepQueryable = new StepService( rockContext ).Queryable().AsNoTracking();
+
+            var campusContext = RequestContext.GetContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                stepQueryable = stepQueryable.Where( s => s.CampusId == campusContext.Id );
+            }
+
+            var stepCountsQueryable = stepQueryable
+                .GroupBy( s => s.StepTypeId )
+                .Select( g => new
+                {
+                    StepTypeId = g.Key,
+                    Started = g.Count(),
+                    Completed = g.Count( s => s.StepStatus != null && s.StepStatus.IsCompleteStatus )
+                } );
+
+            var queryable = stepTypeQueryable.GroupJoin( stepCountsQueryable, stepType => stepType.Id, stepCount => stepCount.StepTypeId, ( stepType, stepCounts ) => new
+            {
+                StepType = stepType,
+                Counts = stepCounts
+            } )
+            .Select( x => new StepTypeWithCounts
+            {
+                StepType = x.StepType,
+                StartedCount = x.Counts.Select( a => a.Started ).FirstOrDefault(),
+                CompletedCount = x.Counts.Select( a => a.Completed ).FirstOrDefault()
+            } );
             return queryable;
         }
 
         /// <inheritdoc/>
-        protected override List<StepType> GetListItems( IQueryable<StepType> queryable, RockContext rockContext )
+        protected override List<StepTypeWithCounts> GetListItems( IQueryable<StepTypeWithCounts> queryable, RockContext rockContext )
         {
             var items = queryable.ToList();
-            return items.Where( st => st.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
+            return items.Where( st => st.StepType.IsAuthorized( Authorization.VIEW, GetCurrentPerson() ) ).ToList();
         }
 
         /// <inheritdoc/>
-        protected override IQueryable<StepType> GetOrderedListQueryable( IQueryable<StepType> queryable, RockContext rockContext )
+        protected override IQueryable<StepTypeWithCounts> GetOrderedListQueryable( IQueryable<StepTypeWithCounts> queryable, RockContext rockContext )
         {
-            return queryable.OrderBy( b => b.Order ).ThenBy( b => b.Id );
+            return queryable.OrderBy( b => b.StepType.Order ).ThenBy( b => b.StepType.Id );
         }
 
         /// <inheritdoc/>
-        protected override GridBuilder<StepType> GetGridBuilder()
+        protected override GridBuilder<StepTypeWithCounts> GetGridBuilder()
         {
-            // Retrieve the Step Type data models and create corresponding view models to display in the grid.
-            var stepService = new StepService( RockContext );
-
-            var startedStepsQry = stepService.Queryable();
-            var completedStepsQry = stepService.Queryable().Where( x => x.StepStatus != null && x.StepStatus.IsCompleteStatus );
-
-            // Filter by CampusId
-            var campusContext = RequestContext.GetContextEntity<Campus>();
-            if ( campusContext != null )
-            {
-                startedStepsQry = startedStepsQry.Where( s => s.CampusId == campusContext.Id );
-                completedStepsQry = completedStepsQry.Where( s => s.CampusId == campusContext.Id );
-            }
-
-            return new GridBuilder<StepType>()
+            return new GridBuilder<StepTypeWithCounts>()
                 .WithBlock( this )
-                .AddTextField( "idKey", a => a.IdKey )
-                .AddTextField( "iconCssClass", a => a.IconCssClass )
-                .AddTextField( "name", a => a.Name )
-                .AddField( "hasEndDate", a => a.HasEndDate )
-                .AddField( "allowMultiple", a => a.AllowMultiple )
-                .AddField( "startedCount", a => startedStepsQry.Count( s => s.StepTypeId == a.Id ) )
-                .AddField( "completedCount", a => completedStepsQry.Count( s => s.StepTypeId == a.Id ) )
-                .AddField( "isSecurityDisabled", _ => !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
+                .AddTextField( "idKey", a => a.StepType.IdKey )
+                .AddTextField( "iconCssClass", a => a.StepType.IconCssClass )
+                .AddTextField( "name", a => a.StepType.Name )
+                .AddField( "hasEndDate", a => a.StepType.HasEndDate )
+                .AddField( "allowMultiple", a => a.StepType.AllowMultiple )
+                .AddField( "startedCount", a => a.StartedCount )
+                .AddField( "completedCount", a => a.CompletedCount )
+                .AddField( "isSecurityDisabled", _ => !BlockCache.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) )
+                .AddField( "isSystem", a => a.StepType.IsSystem )
+                .AddAttributeFieldsFrom( a => a.StepType, _gridAttributes.Value );
+        }
+
+        /// <summary>
+        /// Builds the list of grid attributes that should be included on the Grid.
+        /// </summary>
+        /// <remarks>
+        /// The default implementation returns only attributes that are not qualified.
+        /// </remarks>
+        /// <returns>A list of <see cref="AttributeCache"/> objects.</returns>
+        private static List<AttributeCache> BuildGridAttributes()
+        {
+            var entityTypeId = EntityTypeCache.Get<StepType>( false )?.Id;
+            if ( entityTypeId.HasValue )
+            {
+                return AttributeCache.GetOrderedGridAttributes( entityTypeId.Value, string.Empty, string.Empty );
+            }
+            return new List<AttributeCache>();
         }
 
         /// <summary>
@@ -267,7 +314,7 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
-        /// Makes the key unique to the current event calendar.
+        /// Makes the key unique to the current step program.
         /// </summary>
         /// <param name="key">The key.</param>
         /// <returns></returns>
@@ -296,24 +343,21 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult ReorderItem( string key, string beforeKey )
         {
-            using ( var rockContext = new RockContext() )
+            // Get the queryable and make sure it is ordered correctly.
+            var qry = GetListQueryable( RockContext );
+            qry = GetOrderedListQueryable( qry, RockContext );
+
+            // Get the entities from the database.
+            var items = GetListItems( qry, RockContext );
+            var stepTypes = items.Select( i => i.StepType ).ToList();
+            if ( !stepTypes.ReorderEntity( key, beforeKey ) )
             {
-                // Get the queryable and make sure it is ordered correctly.
-                var qry = GetListQueryable( rockContext );
-                qry = GetOrderedListQueryable( qry, rockContext );
-
-                // Get the entities from the database.
-                var items = GetListItems( qry, rockContext );
-
-                if ( !items.ReorderEntity( key, beforeKey ) )
-                {
-                    return ActionBadRequest( "Invalid reorder attempt." );
-                }
-
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( "Invalid reorder attempt." );
             }
+
+            RockContext.SaveChanges();
+
+            return ActionOk();
         }
 
         /// <summary>
@@ -324,31 +368,38 @@ namespace Rock.Blocks.Engagement
         [BlockAction]
         public BlockActionResult Delete( string key )
         {
-            using ( var rockContext = new RockContext() )
+            var entityService = new StepTypeService( RockContext );
+            var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
+
+            if ( entity == null )
             {
-                var entityService = new StepTypeService( rockContext );
-                var entity = entityService.Get( key, !PageCache.Layout.Site.DisablePredictableIds );
-
-                if ( entity == null )
-                {
-                    return ActionBadRequest( $"{StepType.FriendlyTypeName} not found." );
-                }
-
-                if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
-                {
-                    return ActionBadRequest( $"Not authorized to delete {StepType.FriendlyTypeName}." );
-                }
-
-                if ( !entityService.CanDelete( entity, out var errorMessage ) )
-                {
-                    return ActionBadRequest( errorMessage );
-                }
-
-                entityService.Delete( entity );
-                rockContext.SaveChanges();
-
-                return ActionOk();
+                return ActionBadRequest( $"{StepType.FriendlyTypeName} not found." );
             }
+
+            if ( !entity.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( $"Not authorized to delete {StepType.FriendlyTypeName}." );
+            }
+
+            if ( !entityService.CanDelete( entity, out var errorMessage ) )
+            {
+                return ActionBadRequest( errorMessage );
+            }
+
+            entityService.Delete( entity );
+            RockContext.SaveChanges();
+
+            return ActionOk();
+        }
+
+        #endregion
+
+        #region Helper Classes
+        public class StepTypeWithCounts
+        {
+            public StepType StepType { get; set; }
+            public int StartedCount { get; set; }
+            public int CompletedCount { get; set; }
         }
 
         #endregion

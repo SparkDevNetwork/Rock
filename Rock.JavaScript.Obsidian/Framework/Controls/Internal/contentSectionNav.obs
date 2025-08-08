@@ -1,7 +1,7 @@
 <template>
     <div class="list-group content-section-nav">
         <div class="content-section-nav-header">
-            <h5 class="content-section-nav-title">Sections</h5>
+            <h5 class="content-section-nav-header-title">Sections</h5>
 
             <span style="position: relative;">
                 <button type="button" class="btn btn-action"
@@ -28,7 +28,7 @@
 
         <a v-for="section in sections"
            :href="`#${section.anchor.value}`"
-           class="list-group-item nav-link"
+           class="list-group-item content-section-nav-link"
            :class="{ active: section.anchor.value === activeSectionId }"
            @click.prevent.stop="onOpenSectionClick(section)">
             <i v-if="section.icon.value" :class="section.icon.value"></i>
@@ -60,13 +60,13 @@
     margin-bottom: var(--spacing-tiny);
 }
 
-.content-section-nav > .nav-title {
+.content-section-nav > .content-section-nav-header-title {
     color: var(--color-interface-medium);
     font-size: var(--font-size-small);
     padding-left: var(--spacing-small);
 }
 
-.content-section-nav > .nav-link {
+.content-section-nav > .content-section-nav-link {
     border: none;
     border-radius: var(--rounded-small);
     background-color: transparent;
@@ -103,28 +103,22 @@
 
 <script setup lang="ts">
     import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
-    import { useVModelPassthrough } from "@Obsidian/Utility/component";
-    import { onBeforeMount, onMounted, PropType, ref } from "vue";
+    import { usePersonPreferences } from "@Obsidian/Utility/block";
+    import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
+    import { onBeforeMount, onMounted, PropType, ref, watch } from "vue";
 
     const props = defineProps({
         sections: {
             type: Array as PropType<IContentSectionHolder[]>,
             required: true
         },
-
-        autoCollapse: {
-            type: Boolean as PropType<boolean>,
-            default: true
-        }
     });
 
-    const emit = defineEmits<{
-        (e: "update:autoCollapse", value: boolean): void;
-    }>();
+    const preferences = usePersonPreferences().blockPreferences;
 
     // #region Values
 
-    const autoCollapse = useVModelPassthrough(props, "autoCollapse", emit);
+    const autoCollapse = ref(asBooleanOrNull(preferences.getValue("content-section-auto-collapse")) ?? true);
     const activeSectionId = ref(window.location.hash.replace("#", ""));
 
     // #endregion
@@ -147,13 +141,15 @@
      * @param section The section that was clicked.
      */
     function onOpenSectionClick(section: IContentSectionHolder): void {
-        props.sections
-            .filter(s => !!s.title.value)
-            .forEach(s => {
-                if (s !== section) {
-                    s.isCollapsed.value = true;
-                }
-            });
+        if (autoCollapse.value) {
+            props.sections
+                .filter(s => !!s.title.value)
+                .forEach(s => {
+                    if (s !== section) {
+                        s.isCollapsed.value = true;
+                    }
+                });
+        }
 
         section.isCollapsed.value = false;
 
@@ -162,6 +158,11 @@
     }
 
     // #endregion
+
+    watch(autoCollapse, () => {
+        preferences.setValue("content-section-auto-collapse", autoCollapse.value ? "true" : "false");
+        preferences.save();
+    });
 
     onMounted((): void => {
         window.addEventListener("hashchange", onHashChange);

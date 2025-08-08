@@ -6,6 +6,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Moq;
 
+using Rock.CheckIn;
 using Rock.CheckIn.v2;
 using Rock.Data;
 using Rock.Enums.CheckIn;
@@ -79,7 +80,7 @@ namespace Rock.Tests.CheckIn.v2
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeAlphaLength ), 3, "core_checkin_SecurityCodeAlphaLength" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeAlphaNumericLength ), 2, "core_checkin_SecurityCodeLength" )]
         [DataRow( nameof( TemplateConfigurationData.SecurityCodeNumericLength ), 1, "core_checkin_SecurityCodeNumericLength" )]
-        [DataRow( nameof( TemplateConfigurationData.SuccessLavaTemplateDisplay ), SuccessLavaTemplateDisplayMode.Append, GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE )]
+        [DataRow( nameof( TemplateConfigurationData.SuccessLavaTemplateDisplay ), Enums.CheckIn.SuccessLavaTemplateDisplayMode.Append, GroupTypeAttributeKey.CHECKIN_SUCCESS_LAVA_TEMPLATE_OVERRIDE_DISPLAY_MODE )]
         // Start Lava templates section.
         [DataRow( nameof( TemplateConfigurationData.AbilityLevelSelectHeaderLavaTemplate ), "testtemplate", GroupTypeAttributeKey.CHECKIN_ABILITY_LEVEL_SELECT_HEADER_LAVA_TEMPLATE )]
         [DataRow( nameof( TemplateConfigurationData.ActionSelectHeaderLavaTemplate ), "testtemplate", GroupTypeAttributeKey.CHECKIN_ACTION_SELECT_HEADER_LAVA_TEMPLATE )]
@@ -160,6 +161,98 @@ namespace Rock.Tests.CheckIn.v2
             {
                 Assert.AreEqual( expectedValue, propertyValue );
             }
+        }
+
+        [TestMethod]
+        public void Constructor_WithDisplayMobilePhoneOnChildrenSetting_InitializesProperty()
+        {
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+
+            var settings = new CheckInTemplateSettings
+            {
+                DisplayMobilePhoneOnChildren = RequirementLevel.Required
+            };
+
+            groupType.Object.SetAdditionalSettings( settings );
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.AreEqual( RequirementLevel.Required, instance.DisplayMobilePhoneForChildren );
+        }
+
+        [TestMethod]
+        public void Constructor_WithDisplaySuffixSetting_InitializesProperty()
+        {
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+
+            var settings = new CheckInTemplateSettings
+            {
+                DisplaySuffix = AdultsOrChildrenSelectionMode.ChildrenOnly
+            };
+
+            groupType.Object.SetAdditionalSettings( settings );
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.AreEqual( AdultsOrChildrenSelectionMode.ChildrenOnly, instance.DisplaySuffix );
+        }
+
+        [TestMethod]
+        public void Constructor_WithForceSelectionOfKnownRelationshipTypeSetting_InitializesProperty()
+        {
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+
+            var settings = new CheckInTemplateSettings
+            {
+                ForceSelectionOfKnownRelationshipType = true
+            };
+
+            groupType.Object.SetAdditionalSettings( settings );
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.IsTrue( instance.ForceSelectionOfKnownRelationshipType );
+        }
+
+        [TestMethod]
+        public void Constructor_WithGradeConfirmationAgeSetting_InitializesProperty()
+        {
+            var rockContextMock = GetRockContextMock();
+            rockContextMock.SetupDbSet<GroupType>();
+
+            var groupType = CreateEntityMock<GroupType>( 1, new Guid( "4b8fd000-2043-4f4b-a2f6-31d58e26123c" ) );
+
+            var settings = new CheckInTemplateSettings
+            {
+                GradeConfirmationAge = 2.34M
+            };
+
+            groupType.Object.SetAdditionalSettings( settings );
+
+            var groupTypeCache = new GroupTypeCache();
+            groupTypeCache.SetFromEntity( groupType.Object );
+
+            var instance = new TemplateConfigurationData( groupTypeCache, rockContextMock.Object );
+
+            Assert.AreEqual( 2.34M, instance.GradeConfirmationAge );
         }
 
         [DataRow( nameof( TemplateConfigurationData.DisplayBirthdateForAdults ), GroupTypeAttributeKey.CHECKIN_REGISTRATION_DISPLAYBIRTHDATEONADULTS )]
@@ -416,7 +509,7 @@ namespace Rock.Tests.CheckIn.v2
             // added so we can update the other tests to check for those
             // properties.
             var type = typeof( TemplateConfigurationData );
-            var expectedPropertyCount = 75;
+            var expectedPropertyCount = 79;
 
             var propertyCount = type.GetProperties().Length;
 

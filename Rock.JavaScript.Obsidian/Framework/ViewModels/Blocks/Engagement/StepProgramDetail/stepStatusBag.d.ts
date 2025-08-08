@@ -37,6 +37,9 @@ export type StepStatusBag = {
     /** Gets or sets a value indicating whether this status is complete. */
     isCompleteStatus: boolean;
 
+    /** Gets or sets the value indicating if this is a System Step Status. */
+    isSystem: boolean;
+
     /** Gets or sets the name. */
     name?: string | null;
 

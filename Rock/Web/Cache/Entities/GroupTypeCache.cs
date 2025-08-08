@@ -35,7 +35,7 @@ namespace Rock.Web.Cache
     /// </summary>
     [Serializable]
     [DataContract]
-    public class GroupTypeCache : ModelCache<GroupTypeCache, GroupType>
+    public class GroupTypeCache : ModelCache<GroupTypeCache, GroupType>, IHasReadOnlyAdditionalSettings
     {
         private TemplateConfigurationData _checkInConfiguration;
 
@@ -939,6 +939,10 @@ namespace Rock.Web.Cache
         [DataMember]
         public bool AllowGroupSpecificRecordSource { get; private set; }
 
+        /// <inheritdoc/>
+        [DataMember]
+        public string AdditionalSettingsJson { get; private set; }
+
         #endregion
 
         #region Public Methods
@@ -1288,6 +1292,7 @@ namespace Rock.Web.Cache
             ChatPushNotificationMode = groupType.ChatPushNotificationMode;
             GroupMemberRecordSourceValueId = groupType.GroupMemberRecordSourceValueId;
             AllowGroupSpecificRecordSource = groupType.AllowGroupSpecificRecordSource;
+            AdditionalSettingsJson = groupType.AdditionalSettingsJson;
         }
 
         /// <summary>

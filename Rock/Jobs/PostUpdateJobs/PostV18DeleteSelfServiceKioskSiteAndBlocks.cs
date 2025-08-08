@@ -159,7 +159,7 @@ AND [Id] != @SiteId;
                     .ToList();
 
                 var siteList = string.Join( ", ", siteNames );
-                var statusMessage = $"The following site{( siteNames.Count == 1 ? "" : "s" )} reference pages (as the LoginPageId, RegistrationPageId, MobilePageId, etc.) belonging to the Self-Service Kiosk (Preview) site: {siteList}. Please unlink them before running this job.";
+                var statusMessage = $"The following site{( siteNames.Count == 1 ? "" : "s" )} reference{( siteNames.Count == 1 ? "s" : "" )} page settings (such as LoginPage, RegistrationPage, MobilePage, etc.) from the Self-Service Kiosk (Preview) site: {siteList}. Please unlink these references before running this job.";
                 this.UpdateLastStatusMessage( statusMessage );
                 _customMessage = "has one or more sites that are using a page that belongs the Self-Service Kiosk (Preview) site which is going to be deleted";
                 throw new RockJobWarningException( statusMessage );

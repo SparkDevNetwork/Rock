@@ -53,17 +53,17 @@
 
                         <div class="communication-recipient-activity-timeline-date">{{ date }}</div>
 
-                        <ConnectedListItem v-for="(a, index) in activities" :key="`${date}-${index}`"
-                                           :iconCssClass="a.iconCssClass"
-                                           :iconLabelType="a.iconLabelType"
-                                           :title="a.activity"
-                                           :aside="a.description"
-                                           minWidth="237px"
-                                           iconTitleAndDescMinWidth="187px">
+                        <DisplayCard v-for="(a, index) in activities" :key="`${date}-${index}`"
+                                     :iconCssClass="a.iconCssClass"
+                                     :iconLabelType="a.iconLabelType"
+                                     :title="a.activity"
+                                     :aside="a.description"
+                                     minWidth="237px"
+                                     iconTitleAndDescMinWidth="187px">
                             <template v-if="a.activityDateTime" #description>
                                 <i class="ti ti-clock"></i> {{ a.activityDateTime }}
                             </template>
-                        </ConnectedListItem>
+                        </DisplayCard>
 
                     </div>
                 </template>
@@ -131,7 +131,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import { RecipientActivityIconCssClass, RecipientActivityIconLabelType, RecipientTimelineActivity } from "./CommunicationRecipientActivity/types.partial";
-    import ConnectedListItem from "@Obsidian/Controls/connectedListItem.obs";
+    import DisplayCard from "@Obsidian/Controls/displayCard.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import LoadingIndicator from "@Obsidian/Controls/loadingIndicator.obs";
     import NotifificationBox from "@Obsidian/Controls/notificationBox.obs";

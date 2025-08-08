@@ -53,7 +53,7 @@
         <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="3" />
 
         <Panel title="Step Attributes" :hasCollapse="true">
-            <Grid :definition="props.modelValue.stepTypeAttributesGridDefinition ?? undefined"
+            <Grid :definition="props.modelValue.bag?.stepTypeAttributesGridDefinition ?? undefined"
                   :data="attributesGridDataSource"
                   light
                   keyField="idKey"
@@ -99,7 +99,7 @@
 
         <Panel title="Workflows" :hasCollapse="true">
 
-            <Grid :definition="props.modelValue.workflowTriggerGridDefinition ?? undefined"
+            <Grid :definition="props.modelValue.bag?.workflowTriggerGridDefinition ?? undefined"
                   :data="workflowTriggersGridDataSource"
                   light
                   keyField="idKey"
@@ -211,7 +211,7 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
     import Grid, { BooleanColumn, EditColumn, TextColumn, textValueFilter, DeleteColumn } from "@Obsidian/Controls/grid";
-    import { watchPropertyChanges } from "@Obsidian/Utility/block";
+    import { setPropertiesBoxValue, watchPropertyChanges } from "@Obsidian/Utility/block";
     import { propertyRef, updateRefValue } from "@Obsidian/Utility/component";
     import { StepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeBag";
     import { StepTypeDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeDetailOptionsBag";
@@ -227,10 +227,11 @@
     import { FieldType } from "@Obsidian/SystemGuids/fieldType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { newGuid } from "@Obsidian/Utility/guid";
+    import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
 
     const props = defineProps({
         modelValue: {
-            type: Object as PropType<StepTypeBag>,
+            type: Object as PropType<ValidPropertiesBox<StepTypeBag>>,
             required: true
         },
 
@@ -241,29 +242,29 @@
     });
 
     const emit = defineEmits<{
-        (e: "update:modelValue", value: StepTypeBag): void,
+        (e: "update:modelValue", value: ValidPropertiesBox<StepTypeBag>): void,
         (e: "propertyChanged", value: string): void
     }>();
 
     // #region Values
 
-    const attributes = ref(props.modelValue.attributes ?? {});
-    const attributeValues = ref(props.modelValue.attributeValues ?? {});
-    const description = propertyRef(props.modelValue.description ?? "", "Description");
-    const isActive = propertyRef(props.modelValue.isActive ?? false, "IsActive");
-    const name = propertyRef(props.modelValue.name ?? "", "Name");
-    const iconCssClass = propertyRef(props.modelValue.iconCssClass ?? "", "IconCssClass");
-    const highlightColor = propertyRef(props.modelValue.highlightColor ?? "", "HighlightColor");
-    const allowMultiple = propertyRef(props.modelValue.allowMultiple, "AllowMultiple");
-    const hasEndDate = propertyRef(props.modelValue.hasEndDate, "HasEndDate");
-    const showCountOnBadge = propertyRef(props.modelValue.showCountOnBadge, "ShowCountOnBadge");
-    const isDateRequired = propertyRef(props.modelValue.isDateRequired, "IsDateRequired");
-    const autoCompleteDataView = propertyRef(props.modelValue.autoCompleteDataView ?? {}, "AutoCompleteDataViewId");
-    const audienceDataView = propertyRef(props.modelValue.audienceDataView ?? {}, "AudienceDataViewId");
-    const allowManualEditing = propertyRef(props.modelValue.allowManualEditing, "AllowManualEditing");
-    const preRequisites = ref(props.modelValue.preRequisites ?? []);
-    const availablePreRequisites = ref(props.modelValue.availablePreRequisites ?? []);
-    const cardLavaTemplate = propertyRef(props.modelValue.cardLavaTemplate ?? "", "CardLavaTemplate");
+    const attributes = ref(props.modelValue.bag?.attributes ?? {});
+    const attributeValues = ref(props.modelValue.bag?.attributeValues ?? {});
+    const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
+    const isActive = propertyRef(props.modelValue.bag?.isActive ?? false, "IsActive");
+    const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
+    const iconCssClass = propertyRef(props.modelValue.bag?.iconCssClass ?? "", "IconCssClass");
+    const highlightColor = propertyRef(props.modelValue.bag?.highlightColor ?? "", "HighlightColor");
+    const allowMultiple = propertyRef(props.modelValue.bag?.allowMultiple ?? false, "AllowMultiple");
+    const hasEndDate = propertyRef(props.modelValue.bag?.hasEndDate ?? false, "HasEndDate");
+    const showCountOnBadge = propertyRef(props.modelValue.bag?.showCountOnBadge ?? false, "ShowCountOnBadge");
+    const isDateRequired = propertyRef(props.modelValue.bag?.isDateRequired ?? false, "IsDateRequired");
+    const autoCompleteDataView = propertyRef(props.modelValue.bag?.autoCompleteDataView ?? {}, "AutoCompleteDataViewId");
+    const audienceDataView = propertyRef(props.modelValue.bag?.audienceDataView ?? {}, "AudienceDataViewId");
+    const allowManualEditing = propertyRef(props.modelValue.bag?.allowManualEditing ?? false, "AllowManualEditing");
+    const preRequisites = ref(props.modelValue.bag?.preRequisites ?? []);
+    const availablePreRequisites = ref(props.modelValue.bag?.availablePreRequisites ?? []);
+    const cardLavaTemplate = propertyRef(props.modelValue.bag?.cardLavaTemplate ?? "", "CardLavaTemplate");
 
     const isWorkflowModalOpen = ref(false);
     const triggerType = ref("");
@@ -272,17 +273,17 @@
     const primaryQualifier = ref("");
     const secondaryQualifier = ref("");
     const stepWorkflowTrigger = ref<StepTypeWorkflowTriggerBag>({});
-    const stepWorkflowTriggers = ref(props.modelValue.workflows ?? []);
+    const stepWorkflowTriggers = ref(props.modelValue.bag?.workflows ?? []);
     const submitWorkflowTrigger = ref(false);
-    const workflowTriggersGridData = reactive(props.modelValue.workflowTriggerGridData ?? {});
+    const workflowTriggersGridData = reactive(props.modelValue.bag?.workflowTriggerGridData ?? {});
     const workflowTriggersGridDataSource = ref<GridDataBag>(workflowTriggersGridData);
 
-    const stepAttributes = ref(props.modelValue.stepAttributes ?? []);
+    const stepAttributes = ref(props.modelValue.bag?.stepAttributes ?? []);
     const isAttributeModalOpen = ref(false);
     const submitEditAttribute = ref(false);
     const stepAttribute = ref<PublicEditableAttributeBag | null>(null);
     const reservedKeyNames = ref<string[]>([]);
-    const attributesGridData = reactive(props.modelValue.stepTypeAttributesGridData ?? {});
+    const attributesGridData = reactive(props.modelValue.bag?.stepTypeAttributesGridData ?? {});
     const attributesGridDataSource = ref<GridDataBag>(attributesGridData);
 
     // The properties that are being edited. This should only contain
@@ -537,49 +538,51 @@
     // #endregion
 
     // Watch for parental changes in our model value and update all our values.
-    watch(() => props.modelValue, () => {
-        updateRefValue(attributes, props.modelValue.attributes ?? {});
-        updateRefValue(attributeValues, props.modelValue.attributeValues ?? {});
-        updateRefValue(description, props.modelValue.description ?? "");
-        updateRefValue(isActive, props.modelValue.isActive ?? false);
-        updateRefValue(name, props.modelValue.name ?? "");
-        updateRefValue(iconCssClass, props.modelValue.iconCssClass ?? "");
-        updateRefValue(highlightColor, props.modelValue.highlightColor ?? "");
-        updateRefValue(allowMultiple, props.modelValue.allowMultiple ?? false);
-        updateRefValue(hasEndDate, props.modelValue.hasEndDate ?? false);
-        updateRefValue(showCountOnBadge, props.modelValue.showCountOnBadge ?? false);
-        updateRefValue(isDateRequired, props.modelValue.isDateRequired ?? false);
-        updateRefValue(autoCompleteDataView, props.modelValue.autoCompleteDataView ?? {});
-        updateRefValue(audienceDataView, props.modelValue.audienceDataView ?? {});
-        updateRefValue(allowManualEditing, props.modelValue.allowManualEditing ?? false);
-        updateRefValue(preRequisites, props.modelValue.preRequisites ?? []);
-        updateRefValue(availablePreRequisites, props.modelValue.availablePreRequisites ?? []);
-        updateRefValue(cardLavaTemplate, props.modelValue.cardLavaTemplate ?? "");
+    watch(() => props.modelValue.bag, () => {
+        updateRefValue(attributes, props.modelValue.bag?.attributes ?? {});
+        updateRefValue(attributeValues, props.modelValue.bag?.attributeValues ?? {});
+        updateRefValue(description, props.modelValue.bag?.description ?? "");
+        updateRefValue(isActive, props.modelValue.bag?.isActive ?? false);
+        updateRefValue(name, props.modelValue.bag?.name ?? "");
+        updateRefValue(iconCssClass, props.modelValue.bag?.iconCssClass ?? "");
+        updateRefValue(highlightColor, props.modelValue.bag?.highlightColor ?? "");
+        updateRefValue(allowMultiple, props.modelValue.bag?.allowMultiple ?? false);
+        updateRefValue(hasEndDate, props.modelValue.bag?.hasEndDate ?? false);
+        updateRefValue(showCountOnBadge, props.modelValue.bag?.showCountOnBadge ?? false);
+        updateRefValue(isDateRequired, props.modelValue.bag?.isDateRequired ?? false);
+        updateRefValue(autoCompleteDataView, props.modelValue.bag?.autoCompleteDataView ?? {});
+        updateRefValue(audienceDataView, props.modelValue.bag?.audienceDataView ?? {});
+        updateRefValue(allowManualEditing, props.modelValue.bag?.allowManualEditing ?? false);
+        updateRefValue(preRequisites, props.modelValue.bag?.preRequisites ?? []);
+        updateRefValue(availablePreRequisites, props.modelValue.bag?.availablePreRequisites ?? []);
+        updateRefValue(cardLavaTemplate, props.modelValue.bag?.cardLavaTemplate ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, stepAttributes, stepWorkflowTriggers, preRequisites, ...propRefs], () => {
-        const newValue: StepTypeBag = {
-            ...props.modelValue,
-            attributeValues: attributeValues.value,
-            description: description.value,
-            isActive: isActive.value,
-            name: name.value,
-            iconCssClass: iconCssClass.value,
-            highlightColor: highlightColor.value,
-            allowMultiple: allowMultiple.value,
-            hasEndDate: hasEndDate.value,
-            showCountOnBadge: showCountOnBadge.value,
-            isDateRequired: isDateRequired.value,
-            autoCompleteDataView: autoCompleteDataView.value,
-            allowManualEditing: allowManualEditing.value,
-            preRequisites: preRequisites.value,
-            cardLavaTemplate: cardLavaTemplate.value,
-            stepAttributes: stepAttributes.value,
-            workflows: stepWorkflowTriggers.value,
-            audienceDataView: audienceDataView.value
+        const newValue: ValidPropertiesBox<StepTypeBag> = {
+            bag: { ...props.modelValue.bag } as StepTypeBag,
+            validProperties: props.modelValue.validProperties
         };
+
+        setPropertiesBoxValue(newValue, "attributeValues", attributeValues.value);
+        setPropertiesBoxValue(newValue, "description", description.value);
+        setPropertiesBoxValue(newValue, "isActive", isActive.value);
+        setPropertiesBoxValue(newValue, "name", name.value);
+        setPropertiesBoxValue(newValue, "iconCssClass", iconCssClass.value);
+        setPropertiesBoxValue(newValue, "highlightColor", highlightColor.value);
+        setPropertiesBoxValue(newValue, "allowMultiple", allowMultiple.value);
+        setPropertiesBoxValue(newValue, "hasEndDate", hasEndDate.value);
+        setPropertiesBoxValue(newValue, "showCountOnBadge", showCountOnBadge.value);
+        setPropertiesBoxValue(newValue, "isDateRequired", isDateRequired.value);
+        setPropertiesBoxValue(newValue, "autoCompleteDataView", autoCompleteDataView.value);
+        setPropertiesBoxValue(newValue, "allowManualEditing", allowManualEditing.value);
+        setPropertiesBoxValue(newValue, "preRequisites", preRequisites.value);
+        setPropertiesBoxValue(newValue, "cardLavaTemplate", cardLavaTemplate.value);
+        setPropertiesBoxValue(newValue, "stepAttributes", stepAttributes.value);
+        setPropertiesBoxValue(newValue, "workflows", stepWorkflowTriggers.value);
+        setPropertiesBoxValue(newValue, "audienceDataView", audienceDataView.value);
 
         emit("update:modelValue", newValue);
     });

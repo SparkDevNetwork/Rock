@@ -21,11 +21,18 @@
 // </copyright>
 //
 
+import { AdultsOrChildrenSelectionMode } from "@Obsidian/Enums/CheckIn/adultsOrChildrenSelectionMode";
 import { CameraBarcodeConfiguration } from "@Obsidian/Enums/Core/cameraBarcodeConfiguration";
 import { KioskType } from "@Obsidian/Enums/Core/kioskType";
 
 /** Details about a single kiosk device. */
 export type KioskBag = {
+    /**
+     * Controls who can be added to an existing family during check-in,
+     * regardless of the IsAddingFamiliesEnabled value.
+     */
+    allowAddingIndividualsToExistingFamilies: AdultsOrChildrenSelectionMode;
+
     /** Determines how the camera should operate on this kiosk device. */
     cameraMode: CameraBarcodeConfiguration;
 

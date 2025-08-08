@@ -7,7 +7,7 @@
                         :isSquare="true"
                         title="Back"
                         @click="$emit('complete')">
-                <i :class="ltr ? 'fa fa-chevron-right' : 'fa fa-chevron-left'"></i>
+                <i :class="ltr ? 'ti ti-chevron-left' : 'ti ti-chevron-right'"></i>
             </RockButton>
         </template>
 

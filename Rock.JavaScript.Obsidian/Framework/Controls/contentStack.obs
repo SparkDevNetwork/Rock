@@ -1,6 +1,6 @@
 <template>
     <div class="content-stack" :class="additionalStackClasses">
-        <div v-if="title || description || $slots.header" class="sidebar">
+        <div v-if="title || description || $slots.header" class="content-stack-sidebar">
             <div class="content-stack-header">
                 <p v-if="title" class="content-stack-header-title">{{ title }}</p>
                 <p v-if="description" class="content-stack-header-description">{{ description }}</p>
@@ -28,34 +28,34 @@
     flex: 1 1 80%
 }
 
-.content-stack > .sidebar {
+.content-stack > .content-stack-sidebar {
     max-width: 400px;
     padding-top: 0;
 }
 
-.content-stack.sidebar-left > .sidebar {
+.content-stack.content-stack-left > .content-stack-sidebar {
     flex: 0 0 20%;
 }
 
-.content-stack.sidebar-right > .sidebar {
+.content-stack.content-stack-right > .content-stack-sidebar {
     flex: 0 0 30%;
 }
 
-.content-stack.sidebar-right {
+.content-stack.content-stack-right {
     display: flex;
     flex-direction: row-reverse;
 }
 
-.content-stack.sidebar-right .sidebar .content-stack-header-title {
+.content-stack.content-stack-right .content-stack-sidebar .content-stack-header-title {
     display: none;
 }
 
-.content-stack.sidebar-right .content-stack-body {
+.content-stack.content-stack-right .content-stack-body {
     padding-left: 0;
     flex: 1 1 70%
 }
 
-.content-stack.sidebar-right .sidebar {
+.content-stack.content-stack-right .content-stack-sidebar {
     flex: 0 0 30%;
 }
 
@@ -73,6 +73,12 @@
 .content-stack-header-description {
     color: var(--color-interface-medium);
 
+}
+
+@media (max-width: 767px) {
+    .content-stack.content-stack-right {
+        flex-direction: column-reverse;
+    }
 }
 </style>
 
@@ -114,7 +120,7 @@
      */
     const additionalStackClasses = computed((): string[] => {
         return [
-            props.sidebarPosition === "right" ? "sidebar-right" : "sidebar-left"
+            props.sidebarPosition === "right" ? "content-stack-right" : "content-stack-left"
         ];
     });
 

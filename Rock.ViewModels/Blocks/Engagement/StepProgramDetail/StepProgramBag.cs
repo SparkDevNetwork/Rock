@@ -145,5 +145,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// Gets or sets the Completion Flow of the Step Program.
         /// </summary>
         public CompletionFlow? CompletionFlow { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating wheter the Step Program can be deleted.
+        /// </summary>
+        public bool IsDeletable { get; set; }
     }
 }

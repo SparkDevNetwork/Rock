@@ -2,8 +2,8 @@
     <GalleryAndResult :importCode="importCode"
                       :exampleCode="exampleCode"
                       demoMode>
-        <ContentSectionWrapper :sidebar="sidebarValue"
-                               :sidebarPosition="rightSidebar ? 'right' : 'left'">
+        <ContentSectionContainer :sidebar="sidebarValue"
+                                 :sidebarPosition="leftSidebar ? 'left' : 'right'">
             <ContentSection v-for="index in sectionCount"
                             :key="index"
                             :title="`${getNumberWord(index)} Section`"
@@ -15,12 +15,12 @@
                     <TextBox modelValue="" label="Sample Field" />
                 </ContentStack>
             </ContentSection>
-        </ContentSectionWrapper>
+        </ContentSectionContainer>
 
         <template #settings>
             <div class="automatic-layout">
                 <DropDownList label="Sidebar" v-model="sidebar" :items="sidebarItems" :showBlankItem="false" />
-                <CheckBox label="Right Sidebar" v-model="rightSidebar" />
+                <CheckBox label="Left Sidebar" v-model="leftSidebar" />
                 <NumberUpDown label="Section Count" v-model="sectionCount" :min="1" :max="10" />
                 <NumberUpDown label="Stack Count" v-model="stackCount" :min="1" :max="10" />
             </div>
@@ -31,7 +31,7 @@
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
-    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
@@ -41,7 +41,7 @@
     import { ComponentUsage, getIconNumber, getNumberWord, getSfcControlImportPath } from "./common/utils.partial";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-    const rightSidebar = ref(true);
+    const leftSidebar = ref(false);
     const sidebar = ref<"auto" | "true" | "false">("auto");
     const sectionCount = ref(2);
     const stackCount = ref(2);
@@ -62,15 +62,15 @@
         return undefined;
     });
 
-    const importCode = getSfcControlImportPath("contentSectionWrapper");
+    const importCode = getSfcControlImportPath("contentSectionContainer");
     const exampleCode = computed(() => {
-        const usage = new ComponentUsage("ContentSectionWrapper");
+        const usage = new ComponentUsage("ContentSectionContainer");
 
         if (sidebar.value !== "auto") {
             usage.addAttribute("sidebar", sidebar.value === "true");
         }
 
-        if (!rightSidebar.value) {
+        if (leftSidebar.value) {
             usage.addAttribute("sidebarPosition", "left");
         }
 

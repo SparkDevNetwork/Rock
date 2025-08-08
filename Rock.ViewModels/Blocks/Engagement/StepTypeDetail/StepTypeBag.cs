@@ -192,5 +192,10 @@ namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
         /// The workflow trigger grid definition.
         /// </value>
         public GridDefinitionBag WorkflowTriggerGridDefinition { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the Step Type can be deleted. 
+        /// </summary>
+        public bool IsDeletable { get; set; }
     }
 }

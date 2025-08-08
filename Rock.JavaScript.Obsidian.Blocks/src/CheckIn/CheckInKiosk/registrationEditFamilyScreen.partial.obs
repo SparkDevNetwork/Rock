@@ -176,6 +176,15 @@
         const actions: KioskButton[] = [];
 
         actions.push({
+            key: "cancel",
+            title: "Cancel",
+            type: "default",
+            class: "cancel-button",
+            disabled: false,
+            handler: onCancelClick
+        });
+
+        actions.push({
             key: "save",
             title: "Save",
             type: "primary",
@@ -187,15 +196,6 @@
 
                 return savePcs.promise;
             }
-        });
-
-        actions.push({
-            key: "cancel",
-            title: "Cancel",
-            type: "default",
-            class: "cancel-button",
-            disabled: false,
-            handler: onCancelClick
         });
 
         emit("updateActions", actions);

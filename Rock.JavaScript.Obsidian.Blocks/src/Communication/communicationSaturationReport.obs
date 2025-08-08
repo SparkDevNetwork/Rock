@@ -16,7 +16,7 @@
                 <div class="col-sm-6 col-md-3">
                     <DataViewPicker v-model="dataView"
                                     label="Data View "
-                                    help="Choose a Data View to refine saturation metrics for your communications."
+                                    help="Choose a Data View to refine saturation metrics for your communications. Note: Only Persisted Data Views are available for selection."
                                     :entityTypeGuid="EntityType.Person"
                                     displayPersistedOnly />
                 </div>

@@ -1,24 +1,24 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="connected-list-add-button">
-        <DropDownMenu v-if="actions?.length" anchorButtonCssClass="connected-list-add-button-trigger"
+    <div class="display-card-add-button">
+        <DropDownMenu v-if="actions?.length" anchorButtonCssClass="display-card-add-button-trigger"
                       :items="actions ?? []"
                       @click.stop><i class="ti ti-circle-plus"></i> {{ addText }}</DropDownMenu>
 
         <RockButton v-else
-                    class="connected-list-add-button-trigger">
+                    class="display-card-add-button-trigger">
             <i class="ti ti-circle-plus"></i> {{ addText }}
         </RockButton>
     </div>
 </template>
 
 <style scoped>
-.connected-list-add-button {
+.display-card-add-button {
     white-space: nowrap;
 }
 
-.connected-list-add-button-trigger,
-:deep(.connected-list-add-button-trigger) {
+.display-card-add-button-trigger,
+:deep(.display-card-add-button-trigger) {
     height: 90px;
     display: flex;
     flex-direction: row;
@@ -36,8 +36,8 @@
     white-space: nowrap;
 }
 
-:deep(.connected-list-add-button-trigger:hover),
-.dropdown.open :deep(.connected-list-add-button-trigger) {
+:deep(.display-card-add-button-trigger:hover),
+.dropdown.open :deep(.display-card-add-button-trigger) {
     background-color: var(--color-info-soft);
 }
 

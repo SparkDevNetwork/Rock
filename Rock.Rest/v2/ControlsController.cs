@@ -3953,7 +3953,10 @@ namespace Rock.Rest.v2
                 emailSectionService.Add( emailSection );
 
                 // Ensure the binary file is no longer temporary.
-                emailSection.ThumbnailBinaryFile.IsTemporary = false;
+                if ( emailSection.ThumbnailBinaryFile != null )
+                {
+                    emailSection.ThumbnailBinaryFile.IsTemporary = false;
+                }
 
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", RockRequestContext.CurrentPerson );
                 rockContext.SaveChanges();

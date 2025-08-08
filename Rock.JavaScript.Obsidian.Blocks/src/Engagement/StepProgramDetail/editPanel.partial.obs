@@ -382,7 +382,8 @@
         return {
             key: stepStatus.id,
             name: stepStatus.name,
-            isCompleteStatus: stepStatus.isCompleteStatus
+            isCompleteStatus: stepStatus.isCompleteStatus,
+            isSystem: stepStatus.isSystem
         };
     }
 
@@ -674,7 +675,8 @@
                     isActive: isActiveStepStatus.value,
                     isCompleteStatus: isCompleteStepStatus.value,
                     statusColor: stepStatusDisplayColor.value,
-                    id: currentLength
+                    id: currentLength,
+                    isSystem: false
                 };
                 stepStatuses.value.push(stepStatus);
 

@@ -1,0 +1,128 @@
+<template>
+    <Modal v-model="isVisible"
+           title="Step Type Move"
+           cancelText="Cancel"
+           saveText="Transfer"
+           isNarrow
+           @save="onTransfer">
+        <NotificationBox v-if="errorMessage"
+                         alertType="warning"
+                         :dismissible="true"
+                         @dismiss="onMessageDismissed">{{ errorMessage }}</NotificationBox>
+        <div class="form-group">
+            <p class="overflow-modal">Select the Step Program you want to move this type to. You'll then need to re-map the statuses to align with the new program.</p>
+            <DropDownList v-model="targetStepProgram"
+                          label="Select Existing Step Program"
+                          :items="existingStepPrograms"
+                          rules="required" />
+        </div>
+        <div v-if="targetStepProgram && currentStepStatuses.length > 0" class="form-group">
+            <RockLabel>Status Mappings</RockLabel>
+            <p class="status-mapping-description">Select a new status for each of the existing statuses below.</p>
+
+            <template v-for="status in currentStepStatuses">
+                <div v-if="status.value" :key="status.value" class="status-mapping-row">
+                    <span class="status-mapping-cell text-truncate">{{ status.text }}</span>
+                    <div class="status-mapping-cell">
+                        <DropDownList v-model="statusMapping[status.value]"
+                                      :items="transferProgramStatuses"
+                                      :rules="getTargetStatusRules(status.text ?? '')" />
+                    </div>
+                </div>
+            </template>
+        </div>
+    </Modal>
+</template>
+
+<style scoped>
+.status-mapping-description {
+    font-size: var(--font-size-small);
+}
+
+.status-mapping-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid var(--color-interface-soft);
+    padding-bottom: var(--spacing-small);
+    margin-bottom: var(--spacing-small);
+}
+
+.status-mapping-cell {
+    width: 48%;
+}
+</style>
+
+<script setup lang="ts">
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { PropType, ref, computed } from "vue";
+    import { StepProgramBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepProgramBag";
+    import { StepTypeTransferBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeTransferBag";
+    import Modal from "@Obsidian/Controls/modal.obs";
+    import RockLabel from "@Obsidian/Controls/rockLabel.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import { createRuleWithReplacement, required } from "./utils.partial";
+    import { ValidationRule } from "@Obsidian/ValidationRules";
+    import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+
+    const props = defineProps({
+        modelValue: {
+            type: Boolean as PropType<boolean>,
+            required: true
+        },
+
+        currentStepStatuses: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
+        },
+
+        availableStepPrograms: {
+            type: Array as PropType<StepProgramBag[]>,
+            required: true
+        },
+
+        errorMessage: {
+            type: String as PropType<string>,
+            required: false
+        }
+    });
+
+    const emit = defineEmits<{
+        (e: "update:modelValue", value: boolean): void;
+        (e: "transfer", value: StepTypeTransferBag): void;
+        (e: "dismissMessage"): void
+    }>();
+
+    const isVisible = useVModelPassthrough(props, "modelValue", emit);
+    const targetStepProgram = ref<string>("");
+    const existingStepPrograms = ref<ListItemBag[]>(props.availableStepPrograms.map(s => s.stepProgram).filter((item): item is ListItemBag => !!item));
+    const statusMapping = ref<Record<string, string>>({});
+
+    const errorMessage = computed(() => props.errorMessage);
+
+    const transferProgramStatuses = computed(() => props.availableStepPrograms.filter(s => s.stepProgram?.value === targetStepProgram.value).flatMap(s => s.stepStatuses ?? []));
+
+    function onTransfer(): void {
+        const bag = <StepTypeTransferBag>{
+            targetStepProgramGuid: targetStepProgram.value,
+            stepStatusMappings: statusMapping.value
+        };
+
+        emit("transfer", bag);
+    }
+
+    function onMessageDismissed(): void {
+        emit("dismissMessage");
+    }
+
+    function getTargetStatusRules(sourceStatus: string): ValidationRule {
+        if (isNullOrWhiteSpace(sourceStatus)) {
+            return createRuleWithReplacement(required, "is required");
+        }
+        else {
+            return createRuleWithReplacement(required, `A Status Mapping is required for the Step Status: ${sourceStatus}`);
+        }
+    }
+</script>
