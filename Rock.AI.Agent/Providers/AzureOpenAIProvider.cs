@@ -52,7 +52,7 @@ namespace Rock.AI.Agent.Providers
     [DecimalField( "Default Temperature",
         Description = "The default temperature to use for chat completions and functions. This is a value between 0 and 1 where higher values will result in more creative responses.",
         IsRequired = false,
-        DefaultDecimalValue = 0,
+        DefaultDecimalValue = 1,
         Order = 12,
         Key = AttributeKey.DefaultTemperature )]
 
@@ -81,7 +81,7 @@ namespace Rock.AI.Agent.Providers
 
         private readonly Dictionary<ModelServiceRole, string> _modelToRoleMap = new Dictionary<ModelServiceRole, string>
         {
-            { ModelServiceRole.Default, "gpt-4o-mini" },
+            { ModelServiceRole.Default, "gpt-5-mini" },
             { ModelServiceRole.Code, "gpt-4o-mini" },
             { ModelServiceRole.Research, "gpt-4o-mini" }
         };
@@ -145,6 +145,9 @@ namespace Rock.AI.Agent.Providers
         /// <inheritdoc/>
         public override PromptExecutionSettings GetChatCompletionPromptExecutionSettings()
         {
+            // BC TODO: figure out what to do with temperature and top_p
+            // gpt-5 don't support temperature or top_p, so we should probably not set them.
+
             return new OpenAIPromptExecutionSettings()
             {
                 FunctionChoiceBehavior = FunctionChoiceBehavior.Auto(),
