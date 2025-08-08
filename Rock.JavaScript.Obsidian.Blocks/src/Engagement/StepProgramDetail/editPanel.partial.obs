@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <ContentSectionWrapper :sidebar="false">
+    <ContentSectionContainer :sidebar="false">
         <ContentSection light>
             <ContentStack>
                 <div class="row">
@@ -222,7 +222,7 @@
                                   :attributes="attributes"
                                   isEditMode
                                   :numberOfColumns="2" />
-    </ContentSectionWrapper>
+    </ContentSectionContainer>
 </template>
 
 <script setup lang="ts">
@@ -240,7 +240,7 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import ColorPicker from "@Obsidian/Controls/colorPicker.obs";
-    import ContentSectionWrapper from "@Obsidian/Controls/contentSectionWrapper.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import ContentSection from "@Obsidian/Controls/contentSection.obs";
     import ContentStack from "@Obsidian/Controls/contentStack.obs";
     import Grid, { BooleanColumn, EditColumn, TextColumn, DeleteColumn } from "@Obsidian/Controls/grid";
