@@ -24,6 +24,8 @@ using System.Linq;
 using System.Text;
 using System.Web.UI.WebControls;
 
+using FCM.Net;
+
 using Rock;
 using Rock.BulkExport;
 using Rock.Communication.Chat;
@@ -1769,6 +1771,166 @@ namespace Rock.Model
             }
 
             return similarNames;
+        }
+
+        /// <summary>
+        /// Get's a list of person records that match a full name using name similarity search (SoundEx)
+        /// </summary>
+        /// <param name="fullName"></param>
+        /// <param name="maxResults"></param>
+        /// <param name="includeDeceased"></param>
+        /// <returns></returns>
+        public List<Person> GetSimilarPersons( string fullName, int maxResults = 25, bool includeDeceased = false )
+        {
+            var splitName = SplitFullName( fullName );
+
+            if (splitName == null )
+            {
+                return new List<Person>();
+            }
+
+            var metaphones = this.Context.Set<Metaphone>();
+
+            string ln1 = string.Empty;
+            string ln2 = string.Empty;
+            Rock.Utility.DoubleMetaphone.doubleMetaphone( splitName.LastName, ref ln1, ref ln2 );
+            ln1 = ln1 ?? string.Empty;
+            ln2 = ln2 ?? string.Empty;
+
+            var lastNames = metaphones
+                .Where( m =>
+                    ( ln1 != "" && ( m.Metaphone1 == ln1 || m.Metaphone2 == ln1 ) ) ||
+                    ( ln2 != "" && ( m.Metaphone1 == ln2 || m.Metaphone2 == ln2 ) ) )
+                .Select( m => m.Name )
+                .Distinct()
+                .ToList();
+
+            if ( !lastNames.Any() )
+            {
+                return null;
+            }
+
+            string fn1 = string.Empty;
+            string fn2 = string.Empty;
+            Rock.Utility.DoubleMetaphone.doubleMetaphone( splitName.FirstName, ref fn1, ref fn2 );
+            fn1 = fn1 ?? string.Empty;
+            fn2 = fn2 ?? string.Empty;
+
+            var firstNames = metaphones
+                .Where( m =>
+                    ( fn1 != "" && ( m.Metaphone1 == fn1 || m.Metaphone2 == fn1 ) ) ||
+                    ( fn2 != "" && ( m.Metaphone1 == fn2 || m.Metaphone2 == fn2 ) ) )
+                .Select( m => m.Name )
+                .Distinct()
+                .ToList();
+
+            if ( !firstNames.Any() )
+            {
+                return null;
+            }
+
+            // TODO: search for previous last names
+
+            return Queryable( includeDeceased )
+            .Where( p =>
+                        lastNames.Contains( p.LastName )
+                        && ( firstNames.Contains( p.FirstName ) || firstNames.Contains( p.NickName ) )
+                        && ( !splitName.SuffixValueId.HasValue || p.SuffixValueId == splitName.SuffixValueId ) )
+            .OrderBy( p => p.LastName )
+            .ThenBy( p => p.NickName )
+            .Take( maxResults )
+            .ToList();
+        }
+
+        /// <summary>
+        /// Splits a full name into a first name and last name with some basic formatting assumptions. This method returns null
+        /// if it is unable to provide a successful parse.
+        /// Supported formats:
+        /// * Decker, Ted - Assumes the last name is before the command and everything after is the first name
+        /// </summary>
+        /// <param name="fullName"></param>
+        /// <returns></returns>
+        private SplitNameResult SplitFullName( string fullName )
+        {
+            if ( fullName.IsNullOrWhiteSpace() )
+            {
+                return null;
+            }
+
+            fullName = fullName.Trim();
+
+            // Fast path: "Last, First"
+            int comma = fullName.IndexOf( ',' );
+            if ( comma >= 0 )
+            {
+                var last = fullName.Substring( 0, comma ).Trim();
+                var first = ( comma + 1 < fullName.Length ) ? fullName.Substring( comma + 1 ).Trim() : string.Empty;
+
+                return new SplitNameResult
+                {
+                    FirstName = first,
+                    LastName = last
+                };
+            }
+
+            var nameParts = fullName.SplitDelimitedValues();
+            int namePartCount = nameParts.Length;
+
+            if ( namePartCount == 1 ) return null;  // Single part, name is not valid (sorry Prince, Cher and Madonna)
+
+            var result = new SplitNameResult();
+
+            // Process suffixes
+            var lastPart = nameParts[namePartCount - 1];
+            foreach ( var suffix in DefinedTypeCache.Get( SystemGuid.DefinedType.PERSON_SUFFIX.AsGuid() ).DefinedValues )
+            {
+                if ( string.Equals( suffix.Value.Trim( '.' ), lastPart.Trim( '.' ), StringComparison.OrdinalIgnoreCase ) )
+                {
+                    result.Suffix = suffix.Value;
+                    result.SuffixValueId = suffix.Id;
+
+                    // Remove the suffix from the part list
+                    namePartCount--;
+                }
+            }
+
+            // Process simple "First Last" (optional suffix)
+            if ( namePartCount == 2 )                          
+            {
+                result.FirstName = nameParts[0].Trim();
+                result.LastName = nameParts[1].Trim();
+                return result;
+            }
+
+            // Check if the second-to-last word is a last name prefix
+            int lastNameStartIndex = namePartCount - 1;
+            if ( LastNamePrefixes.Contains( nameParts[namePartCount - 2] ) )
+            {
+                lastNameStartIndex = namePartCount - 2;
+            }
+
+            // TODO: In the future we could do additional validation by looking at MetaFirstNameGenderLookup and MetaLastNameLookup
+            //       to see if our found values match. If not we could start looking for other permutations. This could help us
+            //       with Hispanic names that often have multi-word last names. This would also allow us to append a probable
+            //       gender to the result.
+
+            result.FirstName = string.Join( " ", nameParts, 0, lastNameStartIndex );
+            result.LastName = string.Join( " ", nameParts, lastNameStartIndex, namePartCount - lastNameStartIndex );
+
+            return result;
+        }
+
+        // Common last name prefixes that should be treated as part of the last name
+        private static readonly HashSet<string> LastNamePrefixes = new HashSet<string>( StringComparer.OrdinalIgnoreCase )
+        {
+            "van", "von", "de", "del", "di", "la", "le", "du", "da", "mac", "mc", "st", "st.", "san", "bin", "al"
+        };
+
+        private class SplitNameResult {
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+            public string Suffix { get; set; }
+            public int? SuffixValueId { get; set; }
         }
 
         /// <summary>

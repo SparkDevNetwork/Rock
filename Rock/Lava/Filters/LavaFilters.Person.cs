@@ -74,6 +74,31 @@ namespace Rock.Lava
     internal static partial class LavaFilters
     {
         /// <summary>
+        /// Returns a list of people who match the full name provided including those who sound similar.
+        /// </summary>
+        /// <param name="context"></param>
+        /// <param name="input"></param>
+        /// <param name="maxResults"></param>
+        public static List<Person> PersonSearch( ILavaRenderContext context, object input, int maxResults = 25 )
+        {
+            var fullName = input.ToString();
+
+            if ( fullName.IsNullOrWhiteSpace() )
+            {
+                return null; 
+            }
+
+            var rockContext = LavaHelper.GetRockContextFromLavaContext( context );
+
+            var personService = new PersonService( rockContext );
+
+            // Get Similar Matches
+            var similarMatches = personService.GetSimilarPersons( fullName, maxResults );
+
+            return similarMatches;
+        }
+
+        /// <summary>
         /// Sets the person preference.
         /// </summary>
         /// <param name="context">The Lava context.</param>
