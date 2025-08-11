@@ -3,13 +3,12 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlClient; // If you're on Microsoft.Data.SqlClient, swap the namespace.
 using System.Linq;
-using System.Threading.Tasks;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
+using Rock.AI.Agent.Utilities;
 using Rock.Data;
-using Rock.Enums.Core.AI.Agent;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -17,24 +16,25 @@ using Rock.Web.Cache;
 namespace Rock.AI.Agent.Skills
 {
     /// <summary>
-    /// Provides **person-centric data lookup and analytics functions** in Rock.
+    /// Provides data lookup and analytics functions focused on site activity in Rock RMS,
+    /// particularly person-centric website analytics such as page visits, grouped by site.
     /// </summary>
-    /// <remarks>
-    /// <list type="bullet">
-    ///   <item><description>Discovering context data for a person (e.g., site list, profile-related info)</description></item>
-    ///   <item><description>Retrieving detailed analytics (e.g., web page visits, grouped by site)</description></item>
-    ///   <item><description>Supporting summarization or downstream processing by other skills</description></item>
-    /// </list>
-    /// </remarks>
 
     [Description(
         "🎯 Purpose:\r\n" +
-        "Provides data insights for individuals in the Rock system, such as site activity, financial analytics, etc.\r\n\r\n" +
+        "Provides site-related insights and utilities in Rock RMS, with an emphasis on person-centric data " +
+        "such as activity, analytics, and contextual information. Intended as a central skill for retrieving " +
+        "and working with site data across multiple contexts.\r\n\r\n" +
         "🧭 Usage Guidance:\r\n" +
-        "- Use `LookupSites` to fetch available websites and populate context for other functions.\r\n"
+        "- Use this skill to discover available sites, retrieve analytics, and perform other site-level lookups.\r\n" +
+        "- Many functions will accept optional filters such as site ID, date ranges, or person identifiers.\r\n" +
+        "- Functions are designed to support summarization, reporting, and downstream processing by other skills.\r\n\r\n" +
+        "🛡 Guardrails:\r\n" +
+        "1. Follow each function’s specific guardrails for context requirements (e.g., call `LookupSites` before analytics).\r\n" +
+        "2. Avoid redundant or excessive calls when aggregation or filtering can be applied."
     )]
-    [AgentSkillGuid( "613D7110-6453-4BAB-892B-064222F8397C" )]
-    [EntityTypeGuid( "7A63570D-6FC3-4573-BDF2-89CFF605D5AB" )]
+    [AgentSkillGuid( "DD5FA7DD-3277-4C31-848D-285CD67AC7CA" )]
+    [EntityTypeGuid( "12E7BDEA-B67A-48D7-8D1E-245BF8E9B555" )]
     internal sealed class PersonSkill : AgentSkillComponent
     {
         #region Fields
@@ -47,7 +47,7 @@ namespace Rock.AI.Agent.Skills
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="PersonSkill"/> class.
+        /// Initializes a new instance of the <see cref="SiteSkill"/> class.
         /// </summary>
         /// <param name="rockContext">Rock data context used for database access.</param>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
@@ -61,24 +61,26 @@ namespace Rock.AI.Agent.Skills
 
         #region Agent Functions
 
-        /// <inheritdoc />
-        public override IReadOnlyCollection<AgentFunction> GetSemanticFunctions()
-        {
-            return new List<AgentFunction>
-            {
-                new AgentFunction
-                {
-                    FunctionType = FunctionType.AIPrompt,
-                    EnableLavaPreRendering = false,
-                    Temperature = 0.7,
-                    UsageHint = "Summarizes insights in a human-friendly way, given the output from LookupSiteAnalytics. " +
-                                "To use this function, first call a function that returns data (such as LookupSiteAnalytics), then pass its result as the insightData parameter.",
-                    Prompt = "Here is a list of web sessions and pages a user visited:\n\n{{ $insightData }}\n\nSummarize the user's web activity. Highlight repeated pages or long sessions, and call out any interesting patterns.",
-                    Name = "SummarizeAnalytics",
-                    Guid = new Guid("97FDE306-E415-40FE-A548-72D300234470"),
-                }
-            };
-        }
+        // BC: This is really not needed at this time, we may further
+        // want to customize the output so at that time we can
+        // uncomment this function and customize it as needed.
+        //public override IReadOnlyCollection<AgentFunction> GetSemanticFunctions()
+        //{
+        //    return new List<AgentFunction>
+        //    {
+        //        new AgentFunction
+        //        {
+        //            FunctionType = FunctionType.AIPrompt,
+        //            EnableLavaPreRendering = false,
+        //            Temperature = 0.7,
+        //            UsageHint = "Summarizes insights in a human-friendly way, given the output from LookupSiteAnalytics. " +
+        //                        "To use this function, first call a function that returns data (such as LookupSiteAnalytics), then pass its result as the insightData parameter.",
+        //            Prompt = "Here is a list of web sessions and pages a user visited:\n\n{{ $insightData }}\n\nSummarize the user's web activity. Highlight repeated pages or long sessions, and call out any interesting patterns.",
+        //            Name = "SummarizeAnalytics",
+        //            Guid = new Guid("97FDE306-E415-40FE-A548-72D300234470"),
+        //        }
+        //    };
+        //}
 
         /// <summary>
         /// Retrieves website analytics (page visits) for a specific person, optionally filtered by date and/or site.
@@ -86,7 +88,7 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="options">Query parameters including person id, optional site id, and optional start/end dates.</param>
         /// <returns>
-        /// A <see cref="LookupFunctionResult{T}"/> where <c>T</c> is <see cref="WebsiteSessionInsight"/>.
+        /// A <see cref="LookupFunctionResult{T}"/> where <c>T</c> is <see cref="SitePageVisitData"/>.
         /// The <see cref="LookupFunctionResult{T}.Status"/> will be:
         /// <list type="bullet">
         /// <item><description><c>Success</c> if rows are returned.</description></item>
@@ -99,44 +101,35 @@ namespace Rock.AI.Agent.Skills
         /// session context <c>"site-list"</c> for guardrail enforcement.
         /// Defaults the date range to [now - 1 year, now] if neither start nor end are provided.
         /// </remarks>
-        [KernelFunction( "LookupSiteAnalytics" )]
+        [KernelFunction]
         [Description(
             "🎯 Purpose:\r\n" +
-            "Retrieves website analytics (page visits) for a specific person, optionally filtered by date and/or site. " +
-            "Results are grouped by site and include visited pages with visit counts.\r\n\r\n" +
-            "📦 Returns:\r\n" +
-            "A JSON array where each item includes the site ID, name, and a list of pages the person visited, including visit counts.\r\n\r\n" +
-            "🧭 Usage Guidance:\r\n" +
-            "- Set only `personKey` to get data across all sites.\r\n" +
-            "- Set `siteId` to get data for one site only.\r\n" +
-            "- Use `startDate` and `endDate` to define a date range. Defaults to the past year if omitted.\r\n\r\n" +
-            "- You can use the site analytics function to check if a specific page (like \"Giving Page\") was visited by a person, by filtering the PagesVisited results.\r\n" +
+            "Retrieves page visits for a specific person, optionally filtered by date and/or site. \r\n" +
+            "Results are grouped by site and include the site type (web, mobile, tv), visited pages and visit counts.\r\n" +
+            "To maintain performance, the results are paginated (and the 'PageNumber' parameter is required. \r\n\r\n" +
             "🛡️ Guardrails:\r\n" +
-            "1. If no data is returned, do not retry the function with other person IDs. No data simply means no relevant activity was found.\r\n" +
-            "2. CRITICAL: This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n\r\n" +
-            "🛑 Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null."
+            "1. This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n" +
+            "2. Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null."
         )]
         [AgentFunctionGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
-        public LookupFunctionResult<WebsiteSessionInsight> LookupSiteAnalytics( LookupSiteAnalyticsParameters options )
+        public LookupFunctionResult<SitePageVisitData> ListPageVisitsForPerson( ListSiteVisitsParameters options )
         {
             var errors = new List<string>();
-
             if ( options == null )
             {
-                errors.Add( "Options are required." );
-                return LookupFunctionResult<WebsiteSessionInsight>.Error( string.Join( " ", errors ) );
+                return LookupFunctionResult<SitePageVisitData>.Error( "Options are required." );
             }
 
-            var siteId = options.SiteId;
             var start = options.StartDate;
             var end = options.EndDate;
-            var personId = IdHasher.Instance.GetId( options.PersonKey );
 
+            var personId = IdHasher.Instance.GetId( options.PersonKey );
             if ( !personId.HasValue || personId <= 0 )
             {
                 errors.Add( "There was an invalid key provided for the person." );
             }
 
+            var siteId = IdHasher.Instance.GetId( options.SiteKey );
             if ( siteId.HasValue && siteId.Value <= 0 )
             {
                 errors.Add( "Invalid site ID. Provide a value greater than zero." );
@@ -147,7 +140,7 @@ namespace Rock.AI.Agent.Skills
                 errors.Add( "Invalid date range. Start date cannot be after end date." );
             }
 
-            // Default: past year up to now if neither provided
+            // Defaults: past year → now
             if ( !start.HasValue && !end.HasValue )
             {
                 end = RockDateTime.Now;
@@ -157,11 +150,16 @@ namespace Rock.AI.Agent.Skills
             {
                 end = RockDateTime.Now;
             }
-            // else: only end provided → allow open start (SQL handles NULL)
+
+            // Paging
+            var pageNumber = Math.Max( 1, options.PageNumber );
+            var basePageSize = 100;
+            var offset = ( pageNumber - 1 ) * basePageSize;
+            var take = basePageSize + 1; // N+1 to compute hasMore
 
             if ( errors.Count > 0 )
             {
-                return LookupFunctionResult<WebsiteSessionInsight>.Error( string.Join( " ", errors ) );
+                return LookupFunctionResult<SitePageVisitData>.Error( string.Join( " ", errors ) );
             }
 
             try
@@ -171,28 +169,60 @@ namespace Rock.AI.Agent.Skills
                     new SqlParameter("@PersonId", personId),
                     GetParameterValueOrDbNull("@SiteId", siteId),
                     GetParameterValueOrDbNull("@StartDate", start),
-                    GetParameterValueOrDbNull("@EndDate", end)
+                    GetParameterValueOrDbNull("@EndDate", end),
+                    new SqlParameter("@PageSize",  take),    // request N+1
+                    new SqlParameter("@OffsetRows", offset), // offset uses base size
                 };
 
-                var results = _rockContext.Database
-                    .SqlQuery<WebsiteSessionInsight>( _websiteDataSql, parameters.ToArray() )
+                var rows = _rockContext.Database
+                    .SqlQuery<PageVisitGroup>( _websiteDataSql, parameters.ToArray() )
                     .ToList();
+
+                var hasMore = rows.Count > basePageSize;
+                if ( hasMore )
+                {
+                    rows.RemoveAt( rows.Count - 1 ); // drop lookahead row
+                }
 
                 var meta = new Dictionary<string, object>
                 {
-                    { "personId", personId },
-                    { "siteId", siteId },
+                    { "personKey", options.PersonKey },
                     { "startDate", start },
-                    { "endDate", end }
+                    { "endDate", end },
+                    { "pageNumber", pageNumber },
+                    { "pageSize", basePageSize },
+                    { "returnedRows", rows.Count },
+                    { "hasMore", hasMore }
                 };
 
-                return LookupFunctionResult<WebsiteSessionInsight>.Success( results, meta: meta );
+                if ( !rows.Any() )
+                {
+                    return LookupFunctionResult<SitePageVisitData>.NoData( meta: meta );
+                }
+
+                // Group by site
+                var groupedBySite = rows
+                    .GroupBy( r => r.SiteId )
+                    .Select( g => new SitePageVisitData
+                    {
+                        SiteKey = IdHasher.Instance.GetHash( g.Key ),
+                        SiteName = SiteCache.Get( g.Key )?.Name ?? "(Unknown)",
+                        SiteType = SiteCache.Get( g.Key )?.SiteType.ConvertToString( true ) ?? "Unknown",
+                        PageVisits = g.Select( v => new PageVisitGroup
+                        {
+                            PageName = v.PageName,
+                            VisitCount = v.VisitCount,
+                            LastVisit = v.LastVisit
+                        } ).ToList()
+                    } )
+                    .ToList();
+
+                return LookupFunctionResult<SitePageVisitData>.Success( groupedBySite, meta: meta );
             }
             catch ( Exception ex )
             {
-                // Surface a friendly message; log the full exception for diagnostics
                 _logger.LogError( ex, "LookupSiteAnalytics failed for PersonId={PersonId}, SiteId={SiteId}", personId, siteId );
-                return LookupFunctionResult<WebsiteSessionInsight>.Error( "Failed to retrieve site analytics. " + ex.Message );
+                return LookupFunctionResult<SitePageVisitData>.Error( "Failed to retrieve site analytics. " + ex.Message );
             }
         }
 
@@ -213,55 +243,35 @@ namespace Rock.AI.Agent.Skills
 
         #region DTOs
 
-        /// <summary>
-        /// Parameter object for <see cref="LookupSiteAnalytics(LookupSiteAnalyticsParameters)"/>.
-        /// </summary>
-        public class LookupSiteAnalyticsParameters
+        public class ListSiteVisitsParameters
         {
-            /// <summary>
-            /// Optional. The start date of the window to analyze (inclusive). Null to ignore.
-            /// </summary>
-            [Description( "Optional. The start date of the window to analyze (inclusive). Null to ignore." )]
             public DateTime? StartDate { get; set; }
-
-            /// <summary>
-            /// Optional. The end date of the window to analyze (inclusive). Null to ignore.
-            /// </summary>
-            [Description( "Optional. The end date of the window to analyze (inclusive). Null to ignore." )]
             public DateTime? EndDate { get; set; }
 
-            /// <summary>
-            /// Optional. The ID of the site to analyze. Null for all sites.
-            /// </summary>
-            [Description( "Optional. The ID of site to analyze." )]
-            public int? SiteId { get; set; }
+            [Description( "Optional. The ID Key of site to analyze." )]
+            public string SiteKey { get; set; }
 
-            /// <summary>
-            /// Required. The person ID for whom to fetch website session insights.
-            /// </summary>
-            [Description( "The key for the person for whom to fetch website session insights." )]
+            // Required: person key
             public string PersonKey { get; set; }
+
+            [Description( "Optional. The page number to return, starting at 1. Defaults to 1." )]
+            public int PageNumber { get; set; } = 1; // 1-based
         }
 
-        /// <summary>
-        /// Represents a grouped snapshot of website sessions/visits for a site.
-        /// </summary>
-        public class WebsiteSessionInsight
+        public class SitePageVisitData
         {
-            /// <summary>
-            /// The unique identifier of the site.
-            /// </summary>
-            public int SiteId { get; set; }
-
-            /// <summary>
-            /// The display name of the site.
-            /// </summary>
+            public string SiteKey { get; set; }
             public string SiteName { get; set; }
+            public string SiteType { get; set; } // e.g., Web, Mobile, TV
+            public List<PageVisitGroup> PageVisits { get; set; } = new List<PageVisitGroup>();
+        }
 
-            /// <summary>
-            /// JSON payload containing pages visited and visit counts for the person within the specified window.
-            /// </summary>
-            public string SessionSnapshot { get; set; }
+        public class PageVisitGroup
+        {
+            public int SiteId { get; set; }
+            public string PageName { get; set; }
+            public int VisitCount { get; set; }
+            public DateTime? LastVisit { get; set; }
         }
 
         #endregion
@@ -269,47 +279,44 @@ namespace Rock.AI.Agent.Skills
         #region SQL
 
         private const string _websiteDataSql = @"
--- Get interaction channels tied to a site and ""Website"" medium
-WITH InteractionChannels AS (
+;WITH Filtered AS (
     SELECT
-        ich.Id AS ChannelId,
+        PageName = COALESCE(NULLIF(LTRIM(RTRIM(i.InteractionSummary)), ''), '(Unknown)'),
+        i.InteractionDateTime,
         ich.ChannelEntityId AS SiteId
-    FROM [InteractionChannel] ich
-    INNER JOIN [DefinedValue] m ON m.Id = ich.ChannelTypeMediumValueId
+    FROM dbo.Interaction i
+    INNER JOIN dbo.InteractionSession   AS inse  ON inse.Id  = i.InteractionSessionId
+    INNER JOIN dbo.InteractionComponent AS icomp ON icomp.Id = i.InteractionComponentId
+    INNER JOIN dbo.InteractionChannel   AS ich   ON ich.Id   = icomp.InteractionChannelId
+    INNER JOIN dbo.PersonAlias          AS pa    ON pa.Id    = i.PersonAliasId
     WHERE (@SiteId IS NULL OR ich.ChannelEntityId = @SiteId)
-      AND m.Guid = 'e503e77d-cf35-e09f-41a2-b213184f48e8' -- Website
-)
-SELECT
-    s.Id AS SiteId,
-    s.Name AS SiteName,
-    (
-        SELECT
-            i.InteractionSummary AS PageName,
-            COUNT(*) AS VisitCount
-        FROM Interaction i
-        INNER JOIN InteractionComponent ic ON ic.Id = i.InteractionComponentId
-        INNER JOIN InteractionChannel ichInner ON ichInner.Id = ic.InteractionChannelId
-        INNER JOIN PersonAlias pa ON pa.Id = i.PersonAliasId
-        WHERE ichInner.ChannelEntityId = s.Id
-          AND pa.PersonId = @PersonId
-          AND (@StartDate IS NULL OR i.InteractionDateTime >= @StartDate)
-          AND (@EndDate IS NULL OR i.InteractionDateTime <= @EndDate)
-        GROUP BY i.InteractionSummary
-        FOR JSON PATH
-    ) AS SessionSnapshot
-FROM InteractionChannels ch
-INNER JOIN Site s ON s.Id = ch.SiteId
-WHERE EXISTS (
-    SELECT 1
-    FROM Interaction i
-    INNER JOIN InteractionComponent ic ON ic.Id = i.InteractionComponentId
-    INNER JOIN InteractionChannel ichInner ON ichInner.Id = ic.InteractionChannelId
-    INNER JOIN PersonAlias pa ON pa.Id = i.PersonAliasId
-    WHERE ichInner.ChannelEntityId = s.Id
+      AND i.Operation = 'View'
       AND pa.PersonId = @PersonId
       AND (@StartDate IS NULL OR i.InteractionDateTime >= @StartDate)
-      AND (@EndDate IS NULL OR i.InteractionDateTime <= @EndDate)
-);";
+      AND (@EndDate   IS NULL OR i.InteractionDateTime <= @EndDate)
+),
+Grouped AS (
+    SELECT
+        f.SiteId,
+        f.PageName,
+        VisitCount = COUNT(*),
+        LastVisit  = MAX(f.InteractionDateTime)
+    FROM Filtered f
+    GROUP BY f.SiteId, f.PageName
+)
+SELECT
+    g.SiteId,
+    g.PageName,
+    g.VisitCount,
+    g.LastVisit
+FROM Grouped g
+ORDER BY
+    g.LastVisit DESC,
+    g.SiteId,
+    g.PageName
+OFFSET @OffsetRows ROWS
+FETCH NEXT @PageSize ROWS ONLY
+OPTION (RECOMPILE);";
 
         #endregion
     }
