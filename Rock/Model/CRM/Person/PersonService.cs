@@ -1777,8 +1777,6 @@ namespace Rock.Model
         /// Get's a list of person records that match a full name using name similarity search (SoundEx)
         /// </summary>
         /// <param name="fullName"></param>
-        /// <param name="maxResults"></param>
-        /// <param name="campusIdFilter"></param>
         /// <param name="includeDeceased"></param>
         /// <returns></returns>
         public IQueryable<Person> GetSimilarPersons( string fullName, bool includeDeceased = false )
@@ -1838,8 +1836,7 @@ namespace Rock.Model
             .Where( p =>
                         lastNames.Contains( p.LastName )
                         && ( firstNames.Contains( p.FirstName ) || firstNames.Contains( p.NickName ) )
-                        && ( !splitName.SuffixValueId.HasValue || p.SuffixValueId == splitName.SuffixValueId )
-                        && ( !campusIdFilter.HasValue || p.PrimaryFamily.CampusId == campusIdFilter.Value ) );
+                        && ( !splitName.SuffixValueId.HasValue || p.SuffixValueId == splitName.SuffixValueId ) );
 
         }
 
