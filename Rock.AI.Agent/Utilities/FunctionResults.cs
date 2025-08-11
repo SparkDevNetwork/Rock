@@ -22,40 +22,57 @@ namespace Rock.AI.Agent.Utilities
         /// <summary>Primary payload; null when not applicable.</summary>
         public TPayload Payload { get; protected set; }
 
+        /// <summary>
+        /// LLM-facing guidance on what to do next when the result is not directly usable.
+        /// Example: "Ask the user for a valid email address" or a structured mini-plan.
+        /// Empty when not applicable.
+        /// </summary>
+        public string RecoveryInstructions { get; protected set; } = string.Empty;
+
         /// <summary>Extensible metadata (correlation IDs, timings, echoed inputs, etc.).</summary>
         public Dictionary<string, object> Meta { get; protected set; } = new Dictionary<string, object>();
 
         /// <summary>Create a successful result with an optional payload and metadata.</summary>
-        public static RockFunctionResult<TPayload> Success( TPayload payload = null, Dictionary<string, object> meta = null )
+        public static RockFunctionResult<TPayload> Success(
+            TPayload payload = null,
+            Dictionary<string, object> meta = null )
         {
             return new RockFunctionResult<TPayload>
             {
                 Status = FunctionStatus.Success,
                 Payload = payload,
-                Meta = meta ?? new Dictionary<string, object>()
+                Meta = meta ?? new Dictionary<string, object>(),
+                RecoveryInstructions = string.Empty
             };
         }
 
         /// <summary>Create a no-data result (commonly used by lookups).</summary>
-        public static RockFunctionResult<TPayload> NoData( Dictionary<string, object> meta = null )
+        public static RockFunctionResult<TPayload> NoData(
+            Dictionary<string, object> meta = null,
+            string recoveryInstructions = "" )
         {
             return new RockFunctionResult<TPayload>
             {
                 Status = FunctionStatus.NoData,
                 Payload = null,
-                Meta = meta ?? new Dictionary<string, object>()
+                Meta = meta ?? new Dictionary<string, object>(),
+                RecoveryInstructions = recoveryInstructions ?? string.Empty
             };
         }
 
         /// <summary>Create an error result with a message and optional metadata.</summary>
-        public static RockFunctionResult<TPayload> Error( string message, Dictionary<string, object> meta = null )
+        public static RockFunctionResult<TPayload> Error(
+            string message,
+            Dictionary<string, object> meta = null,
+            string recoveryInstructions = "" )
         {
             return new RockFunctionResult<TPayload>
             {
                 Status = FunctionStatus.Error,
                 ErrorMessage = message ?? string.Empty,
                 Payload = null,
-                Meta = meta ?? new Dictionary<string, object>()
+                Meta = meta ?? new Dictionary<string, object>(),
+                RecoveryInstructions = recoveryInstructions ?? string.Empty
             };
         }
     }
@@ -65,14 +82,20 @@ namespace Rock.AI.Agent.Utilities
     /// </summary>
     public sealed class RockFunctionResult : RockFunctionResult<object>
     {
-        public static RockFunctionResult Success( Dictionary<string, object> meta = null )
-            => ( RockFunctionResult ) RockFunctionResult<object>.Success( null, meta );
+        public static RockFunctionResult Success(
+            Dictionary<string, object> meta = null )
+            => ( RockFunctionResult ) RockFunctionResult<object>.Success(null, meta );
 
-        public static new RockFunctionResult NoData( Dictionary<string, object> meta = null )
-            => ( RockFunctionResult ) RockFunctionResult<object>.NoData( meta );
+        public static new RockFunctionResult NoData(
+            Dictionary<string, object> meta = null,
+            string recoveryInstructions = "" )
+            => ( RockFunctionResult ) RockFunctionResult<object>.NoData( meta, recoveryInstructions );
 
-        public static new RockFunctionResult Error( string message, Dictionary<string, object> meta = null )
-            => ( RockFunctionResult ) RockFunctionResult<object>.Error( message, meta );
+        public static new RockFunctionResult Error(
+            string message,
+            Dictionary<string, object> meta = null,
+            string recoveryInstructions = "" )
+            => ( RockFunctionResult ) RockFunctionResult<object>.Error( message, meta, recoveryInstructions );
     }
 
     /// <summary>
@@ -86,37 +109,47 @@ namespace Rock.AI.Agent.Utilities
         /// Creates a result with <see cref="FunctionStatus.Success"/> when <paramref name="results"/> has items,
         /// or <see cref="FunctionStatus.NoData"/> when it does not.
         /// </summary>
-        public static LookupFunctionResult<TItem> Success( IEnumerable<TItem> results, Dictionary<string, object> meta = null )
+        public static LookupFunctionResult<TItem> Success(
+            IEnumerable<TItem> results,
+            Dictionary<string, object> meta = null )
         {
             var list = results != null ? results.ToList() : new List<TItem>();
             return new LookupFunctionResult<TItem>
             {
                 Status = list.Any() ? FunctionStatus.Success : FunctionStatus.NoData,
                 Payload = list,
-                Meta = meta ?? new Dictionary<string, object>()
+                Meta = meta ?? new Dictionary<string, object>(),
+                RecoveryInstructions = string.Empty
             };
         }
 
         /// <summary>Create an explicit no-data result.</summary>
-        public static new LookupFunctionResult<TItem> NoData( Dictionary<string, object> meta = null )
+        public static new LookupFunctionResult<TItem> NoData(
+            Dictionary<string, object> meta = null,
+            string recoveryInstructions = "" )
         {
             return new LookupFunctionResult<TItem>
             {
                 Status = FunctionStatus.NoData,
                 Payload = new List<TItem>(),
-                Meta = meta ?? new Dictionary<string, object>()
+                Meta = meta ?? new Dictionary<string, object>(),
+                RecoveryInstructions = recoveryInstructions ?? string.Empty
             };
         }
 
         /// <summary>Create an error result with a message and optional metadata.</summary>
-        public static new LookupFunctionResult<TItem> Error( string message, Dictionary<string, object> meta = null )
+        public static new LookupFunctionResult<TItem> Error(
+            string message,
+            Dictionary<string, object> meta = null,
+            string recoveryInstructions = "" )
         {
             return new LookupFunctionResult<TItem>
             {
                 Status = FunctionStatus.Error,
                 ErrorMessage = message ?? string.Empty,
                 Payload = new List<TItem>(),
-                Meta = meta ?? new Dictionary<string, object>()
+                Meta = meta ?? new Dictionary<string, object>(),
+                RecoveryInstructions = recoveryInstructions ?? string.Empty
             };
         }
     }
