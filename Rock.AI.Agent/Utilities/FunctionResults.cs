@@ -84,7 +84,7 @@ namespace Rock.AI.Agent.Utilities
     {
         public static RockFunctionResult Success(
             Dictionary<string, object> meta = null )
-            => ( RockFunctionResult ) RockFunctionResult<object>.Success(null, meta );
+            => ( RockFunctionResult ) RockFunctionResult<object>.Success( null, meta );
 
         public static new RockFunctionResult NoData(
             Dictionary<string, object> meta = null,
