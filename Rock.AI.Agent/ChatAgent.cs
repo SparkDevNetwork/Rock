@@ -438,7 +438,8 @@ namespace Rock.AI.Agent
 
             if ( _requestContext?.CurrentPerson != null )
             {
-                _context.AddSystemMessage( $"CurrentPerson|The current person is {_requestContext.CurrentPerson.FullName} (id: {_requestContext.CurrentPerson.Id}) he is the Discipleship Pastor." );
+                // BC TODO: Remove the Id from here once we can.
+                _context.AddSystemMessage( $"CurrentPerson|The current person is {_requestContext.CurrentPerson.FullName} (key: {_requestContext.CurrentPerson.IdKey}, id: {_requestContext.CurrentPerson.Id})." );
             }
         }
 

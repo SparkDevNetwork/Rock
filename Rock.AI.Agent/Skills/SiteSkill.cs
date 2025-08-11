@@ -33,23 +33,23 @@ namespace Rock.AI.Agent.Skills
     )]
     [AgentSkillGuid( "613D7110-6453-4BAB-892B-064222F8397C" )]
     [EntityTypeGuid( "7A63570D-6FC3-4573-BDF2-89CFF605D5AB" )]
-    internal sealed class Site : AgentSkillComponent
+    internal sealed class SiteSkill : AgentSkillComponent
     {
         #region Fields
 
         private readonly RockContext _rockContext;
-        private readonly ILogger<Site> _logger;
+        private readonly ILogger<SiteSkill> _logger;
 
         #endregion
 
         #region Constructors
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="Site"/> class.
+        /// Initializes a new instance of the <see cref="SiteSkill"/> class.
         /// </summary>
         /// <param name="rockContext">Rock data context used for database access.</param>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public Site( RockContext rockContext, ILogger<Site> logger )
+        public SiteSkill( RockContext rockContext, ILogger<SiteSkill> logger )
         {
             _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
