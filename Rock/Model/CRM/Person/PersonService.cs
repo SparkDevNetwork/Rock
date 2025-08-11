@@ -1778,15 +1778,18 @@ namespace Rock.Model
         /// </summary>
         /// <param name="fullName"></param>
         /// <param name="maxResults"></param>
+        /// <param name="campusIdFilter"></param>
         /// <param name="includeDeceased"></param>
         /// <returns></returns>
-        public List<Person> GetSimilarPersons( string fullName, int maxResults = 25, bool includeDeceased = false )
+        public IQueryable<Person> GetSimilarPersons( string fullName, bool includeDeceased = false )
         {
             var splitName = SplitFullName( fullName );
 
+            var personQueryable = Queryable( includeDeceased );
+
             if (splitName == null )
             {
-                return new List<Person>();
+                return personQueryable;
             }
 
             var metaphones = this.Context.Set<Metaphone>();
@@ -1831,15 +1834,13 @@ namespace Rock.Model
 
             // TODO: search for previous last names
 
-            return Queryable( includeDeceased )
+            return personQueryable
             .Where( p =>
                         lastNames.Contains( p.LastName )
                         && ( firstNames.Contains( p.FirstName ) || firstNames.Contains( p.NickName ) )
-                        && ( !splitName.SuffixValueId.HasValue || p.SuffixValueId == splitName.SuffixValueId ) )
-            .OrderBy( p => p.LastName )
-            .ThenBy( p => p.NickName )
-            .Take( maxResults )
-            .ToList();
+                        && ( !splitName.SuffixValueId.HasValue || p.SuffixValueId == splitName.SuffixValueId )
+                        && ( !campusIdFilter.HasValue || p.PrimaryFamily.CampusId == campusIdFilter.Value ) );
+
         }
 
         /// <summary>

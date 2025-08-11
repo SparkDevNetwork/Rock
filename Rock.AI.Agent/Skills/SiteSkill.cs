@@ -92,7 +92,8 @@ namespace Rock.AI.Agent.Skills
                 Key = s.IdKey,
                 Name = s.Name,
                 Description = s.Description,
-                SiteType = s.SiteType.ConvertToString( true )
+                SiteType = s.SiteType.ConvertToString( true ),
+                ExternalUrl = s.ExternalUrl
             } ).ToList();
 
             // Store only essential properties in session context to keep it lean.
@@ -100,7 +101,8 @@ namespace Rock.AI.Agent.Skills
             {
                 site.Key,
                 site.Name,
-                site.SiteType
+                site.SiteType,
+                site
             } );
 
             await AgentRequestContext.ChatAgent.AddSessionContextAsync( "site-list", trimmedForContext.ToJson() );
@@ -121,6 +123,7 @@ namespace Rock.AI.Agent.Skills
             public string Name { get; set; }
             public string Description { get; set; }
             public string SiteType { get; set; }
+            public string ExternalUrl { get; set; }
         }
 
         #endregion

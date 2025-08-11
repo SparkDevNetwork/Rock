@@ -1,11 +1,18 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Utilities;
+using Rock.Cms.ContentCollection.Search;
 using Rock.SystemGuid;
+using Rock.Web.Cache;
+
+using static Rock.AI.Agent.Skills.PersonSkill;
+using static Rock.Web.Cache.CampusCache;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -43,6 +50,28 @@ namespace Rock.AI.Agent.Skills
             return DateTimeRecognitionHelper.RecognizeDateRange( query, DateTime.Now );
         }
 
+        public LookupFunctionResult<CampusLookupResult> LookupCampuses()
+        {
+            // TODOs:  
+            // 1. We need to add CampusSchedules to the CampusCache so that we can use it here.  
+
+            var campusResults = CampusCache.All()
+                .Select( c => new CampusLookupResult
+                {
+                    CampusKey = c.IdKey,
+                    IsActive = c.IsActive ?? false,
+                    Abbreviation = c.ShortCode,
+                    CampusType = c.CampusTypeValue?.Value ?? string.Empty,
+                    CampusTypeKey = c.CampusTypeValue.IdKey,
+                    CampusStatus = c.CampusStatusValue?.Value ?? string.Empty,
+                    CampusStatusKey = c.CampusStatusValue.IdKey,
+                    Location = c.Location,
+                    ServiceTimes = c.ServiceTimes
+                } );
+
+            return LookupFunctionResult<CampusLookupResult>.Success( campusResults );
+        }
+
         // BC: We have not proven to need this function yet.
         // If we do, we can uncomment it (or delete it if we never need it).
         //[KernelFunction( "GetCurrentDateTime" )]
@@ -52,6 +81,23 @@ namespace Rock.AI.Agent.Skills
         //{
         //    return DateTime.Now;
         //}
+
+        #endregion
+
+        #region POCOs
+        public class CampusLookupResult
+        {
+            public string CampusKey { get; set; }
+            public bool IsActive { get; set; }
+            public string Abbreviation { get; set; }
+            public string CampusType { get; set; }
+            public string CampusTypeKey { get; set; }
+            public string CampusStatus { get; set; }
+            public string CampusStatusKey { get; set; }
+            public CampusLocation Location { get; set; }
+            public List<ServiceTime> ServiceTimes { get; set; }
+            public Dictionary<string,string> Attributes { get; set; } = new Dictionary<string, string>();
+        }
 
         #endregion
     }

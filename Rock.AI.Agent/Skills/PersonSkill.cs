@@ -4,11 +4,16 @@ using System.ComponentModel;
 using System.Data.SqlClient; // If you're on Microsoft.Data.SqlClient, swap the namespace.
 using System.Linq;
 
+using DocumentFormat.OpenXml.Math;
+using DocumentFormat.OpenXml.Wordprocessing;
+
+using Microsoft.Azure.Amqp.Framing;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Utilities;
 using Rock.Data;
+using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
 using Rock.Web.Cache;
@@ -226,6 +231,98 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
+        /// <summary>
+        /// Searches for persons by full name, returning a list of matching persons with their details.
+        /// </summary>
+        /// <param name="options"></param>
+        /// <returns></returns>
+        [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
+        public LookupFunctionResult<SearchPersonData> SearchPerson( SearchPersonParameters options )
+        {
+            if ( options == null )
+            {
+                return LookupFunctionResult<SearchPersonData>.Error( "Options are required.", null, "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
+            }
+
+            if (options.FullName.IsNullOrWhiteSpace() )
+            {
+                return LookupFunctionResult<SearchPersonData>.Error( "Full name is required for search.", null, "The FullName parameter is required." );
+            }
+
+            var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+            var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+            var familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
+
+            var familyGroupMembers = new GroupMemberService( _rockContext ).Queryable()
+                        .Where( m => m.Group.GroupType.Guid == familyGuid );
+
+            var searchQueryable = new PersonService( _rockContext )
+                .GetSimilarPersons( options.FullName );
+
+            // Append campus filter if provided
+            var campusIdFilter = options.CampusKey.IsNullOrWhiteSpace()
+                ? null
+                : IdHasher.Instance.GetId( options.CampusKey );
+
+            if ( campusIdFilter.HasValue )
+            {
+                searchQueryable = searchQueryable
+                    .Where( p => p.PrimaryCampusId == campusIdFilter.Value );
+            }
+
+            // Get search results
+            var searchResults = searchQueryable
+                .OrderBy( p => p.LastName )
+                .ThenBy( p => p.NickName )
+                .Take( options.MaxResults + 1 )
+                .ToList()
+                .Select( p => new SearchPersonData
+                {
+                    PersonKey = p.IdKey,
+                    FirstName = p.FirstName,
+                    NickName = p.NickName,
+                    LastName = p.LastName,
+                    Suffix = p.SuffixValue?.Value ?? string.Empty,
+                    AgeClassification = p.AgeClassification.ToString(),
+                    Campus = p.GetCampus()?.Name ?? "",
+                    ConnectionStatus = p.ConnectionStatusValue.Value ?? string.Empty,
+                    RecordStatus = p.RecordStatusValue?.Value ?? string.Empty,
+                    SpouseName = p.GetSpouse()?.FullName ?? string.Empty,
+
+                    // Get list of child names
+                    Children = familyGroupMembers
+                        .Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
+                        .SelectMany( m => m.Group.Members )
+                        .Where( m => m.GroupRole.Guid == childGuid )
+                        .Select( m => new PersonNode { FirstName = m.Person.NickName, LastName = m.Person.LastName, PersonKey = m.Person.IdKey } )
+                        .ToList(),
+
+                    // Get list of parents names
+                    Parents = familyGroupMembers
+                        .Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
+                        .SelectMany( m => m.Group.Members )
+                        .Where( m => m.GroupRole.Guid == adultGuid )
+                        .Select( m => new PersonNode { FirstName = m.Person.NickName, LastName = m.Person.LastName, PersonKey = m.Person.IdKey } )
+                        .ToList()
+                } )
+                .ToList();
+
+            var hasMore = searchResults.Count > options.MaxResults;
+
+            if ( hasMore )
+            {
+                searchResults.RemoveAt( searchResults.Count - 1 );
+            }
+
+            var meta = new Dictionary<string, object>
+                {
+                    { "returnedRows", searchResults.Count },
+                    { "hasMore", hasMore }
+                };
+
+            return LookupFunctionResult<SearchPersonData>.Success( searchResults, meta );
+        }
+
         #endregion
 
         #region Helpers
@@ -242,6 +339,37 @@ namespace Rock.AI.Agent.Skills
         #endregion
 
         #region DTOs
+
+        public class SearchPersonParameters
+        {
+            [Description( "Required. The full name to search for. This should be in the format of first name last name with an optional suffix." )]
+            public string FullName { get; set; }
+            public int MaxResults { get; set; } = 10; // Default to 10 results
+            public string CampusKey { get; set; } = null;
+        }
+
+        public class SearchPersonData
+        {
+            public string PersonKey { get; set; }
+            public string FirstName { get; set; }
+            public string NickName { get; set; }
+            public string LastName { get; set; }
+            public string Suffix { get; set; }
+            public string AgeClassification { get; set; }
+            public string SpouseName { get; set; }
+            public List<PersonNode> Children { get; set; }
+            public List<PersonNode> Parents { get; set; }
+            public string Campus { get; set; }
+            public string ConnectionStatus { get; set; }
+            public string RecordStatus { get; set; }
+        }
+
+        public class PersonNode
+        {
+            public string PersonKey { get; set; }
+            public string FirstName { get; set; }
+            public string LastName { get; set; }
+        }
 
         public class ListSiteVisitsParameters
         {

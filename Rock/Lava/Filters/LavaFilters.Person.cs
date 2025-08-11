@@ -93,7 +93,11 @@ namespace Rock.Lava
             var personService = new PersonService( rockContext );
 
             // Get Similar Matches
-            var similarMatches = personService.GetSimilarPersons( fullName, maxResults );
+            var similarMatches = personService.GetSimilarPersons( fullName )
+                                    .OrderBy( p => p.LastName )
+                                    .ThenBy( p => p.NickName )
+                                    .Take( maxResults )
+                                    .ToList();
 
             return similarMatches;
         }
