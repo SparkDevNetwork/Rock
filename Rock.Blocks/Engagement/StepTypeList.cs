@@ -199,7 +199,9 @@ namespace Rock.Blocks.Engagement
         {
             var stepProgram = GetStepProgram();
             var stepTypeService = new StepTypeService( rockContext );
-            var stepTypeQueryable = stepTypeService.Queryable();
+            var stepTypeQueryable = stepTypeService
+                .Queryable()
+                .Include( st => st.OrganizationalObjectiveValue );
 
             // Filter by: Step Program
             if ( stepProgram != null )

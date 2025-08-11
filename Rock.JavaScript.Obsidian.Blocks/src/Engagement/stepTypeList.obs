@@ -36,34 +36,57 @@
                     field="name"
                     :filter="textValueFilter"
                     visiblePriority="xs"
-                    width="30%" />
+                    width="20%" />
 
-        <BooleanColumn name="hasEndDate"
-                       title="Spans Time"
-                       field="hasEndDate"
-                       :filter="booleanValueFilter"
-                       visiblePriority="md" />
+        <Column name="engagementType"
+                title="Engagement Type"
+                field="engagementType"
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div v-if="row.engagementType !== null && row.engagementType !== undefined"
+                     :class="'label label-info'" style="font-weight: bold;">
+                    {{ EngagementTypeDescription[row.engagementType] }}
+                </div>
+            </template>
+        </Column>
 
-        <BooleanColumn name="allowMultiple"
-                       title="Allow Multiple"
-                       field="allowMultiple"
-                       :filter="booleanValueFilter"
-                       visiblePriority="md" />
+        <Column name="objective"
+                title="Objective"
+                field="organizationalObjective"
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div v-if="row.organizationalObjective" class="label label-default" style="font-weight: bold;">
+                    {{ row.organizationalObjective }}
+                </div>
+            </template>
+        </Column>
+
+        <Column name="impactWeight"
+                title="Impact Weight"
+                field="impactWeight"
+                :filter="pickExistingValueFilter"
+                visiblePriority="md">
+            <template #format="{ row }">
+                <div v-if="row.impactWeight" class="label label-primary" style="font-weight: bold;">
+                    {{ row.impactWeight }}
+                </div>
+            </template>
+        </Column>
 
         <NumberColumn name="startedCount"
                       title="Started"
                       field="startedCount"
                       :filter="numberValueFilter"
-                      visiblePriority="md"
-                      width="5%" />
+                      visiblePriority="md" />
 
         <NumberColumn name="completedCount"
                       title="Completed"
                       field="completedCount"
                       :filter="numberValueFilter"
                       headerClass="text-nowrap"
-                      visiblePriority="md"
-                      width="20%" />
+                      visiblePriority="md" />
 
         <ButtonColumn v-if="config.options?.isBulkEntryColumnVisible"
                       name="bulkEntry"
@@ -83,7 +106,8 @@
 <script setup lang="ts">
     import { useConfigurationValues, useInvokeBlockAction, usePersonPreferences } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
-    import Grid, { BooleanColumn, TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn, Column, ButtonColumn, booleanValueFilter, numberValueFilter } from "@Obsidian/Controls/grid";
+    import { EngagementTypeDescription } from "@Obsidian/Enums/Engagement/engagementType";
+    import Grid, { TextColumn, textValueFilter, DeleteColumn, ReorderColumn, SecurityColumn, NumberColumn, Column, ButtonColumn, numberValueFilter, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import { alert } from "@Obsidian/Utility/dialogs";
     import { ListBlockBox } from "@Obsidian/ViewModels/Blocks/listBlockBox";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
