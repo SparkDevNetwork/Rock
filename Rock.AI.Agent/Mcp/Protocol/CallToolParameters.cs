@@ -15,20 +15,23 @@
 // </copyright>
 //
 
-using Microsoft.Extensions.DependencyInjection;
+using System.Text.Json;
 
-using Rock.AI.Agent.Mcp;
-
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent.Mcp.Protocol
 {
-    internal static class ServiceCollectionExtensions
+    /// <summary>
+    /// Used by the client to invoke a tool provided by the server.
+    /// </summary>
+    internal class CallToolParameters
     {
-        public static IServiceCollection AddChatAgent( this IServiceCollection services )
-        {
-            services.AddScoped<IChatAgentBuilder, ChatAgentBuilder>();
-            services.AddSingleton<IMcpServer, McpServer>();
+        /// <summary>
+        /// The name of the tool to call.
+        /// </summary>
+        public string Name { get; set; }
 
-            return services;
-        }
+        /// <summary>
+        /// The arguments to pass to the tool function.
+        /// </summary>
+        public JsonElement Arguments { get; set; }
     }
 }

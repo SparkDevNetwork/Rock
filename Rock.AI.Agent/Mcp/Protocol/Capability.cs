@@ -15,20 +15,22 @@
 // </copyright>
 //
 
-using Microsoft.Extensions.DependencyInjection;
-
-using Rock.AI.Agent.Mcp;
-
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent.Mcp.Protocol
 {
-    internal static class ServiceCollectionExtensions
+    /// <summary>
+    /// Represents a single capability that an MCP client or server can support.
+    /// </summary>
+    internal class Capability
     {
-        public static IServiceCollection AddChatAgent( this IServiceCollection services )
-        {
-            services.AddScoped<IChatAgentBuilder, ChatAgentBuilder>();
-            services.AddSingleton<IMcpServer, McpServer>();
+        /// <summary>
+        /// The capability supports notification when the list of items represented
+        /// by the cability changes.
+        /// </summary>
+        public bool ListChanged { get; set; }
 
-            return services;
-        }
+        /// <summary>
+        /// Support for subscribing to individual items' changes (resources only)
+        /// </summary>
+        public bool Subscribe { get; set; }
     }
 }

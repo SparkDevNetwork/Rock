@@ -33,12 +33,6 @@ namespace Rock.AI.Agent
         #region Fields
 
         /// <summary>
-        /// The cached kernel parameter metadata. This is only craeted when
-        /// first requested. Subsequent requests will return the cached instance.
-        /// </summary>
-        private KernelParameterMetadata _metadata;
-
-        /// <summary>
         /// The text that will be appended to the usage hint for a collection.
         /// This helps the LLM understand that multiple value sshould be passed
         /// in a single call instead of making multiple calls.

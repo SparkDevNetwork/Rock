@@ -15,20 +15,21 @@
 // </copyright>
 //
 
-using Microsoft.Extensions.DependencyInjection;
-
-using Rock.AI.Agent.Mcp;
-
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent.Mcp
 {
-    internal static class ServiceCollectionExtensions
+    /// <summary>
+    /// Represents an error that occurred during a JSON-RPC request.
+    /// </summary>
+    internal class JsonRpcError
     {
-        public static IServiceCollection AddChatAgent( this IServiceCollection services )
-        {
-            services.AddScoped<IChatAgentBuilder, ChatAgentBuilder>();
-            services.AddSingleton<IMcpServer, McpServer>();
+        /// <summary>
+        /// The error code that indicates the type of error that occurred.
+        /// </summary>
+        public int Code { get; set; }
 
-            return services;
-        }
+        /// <summary>
+        /// The error message that provides details about the error.
+        /// </summary>
+        public string Message { get; set; }
     }
 }

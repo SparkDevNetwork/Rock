@@ -15,20 +15,18 @@
 // </copyright>
 //
 
-using Microsoft.Extensions.DependencyInjection;
-
-using Rock.AI.Agent.Mcp;
-
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent.Mcp.Protocol
 {
-    internal static class ServiceCollectionExtensions
+    /// <summary>
+    /// Sent from the client to request a list of tools the server has.
+    /// </summary>
+    internal class ListToolsParameters
     {
-        public static IServiceCollection AddChatAgent( this IServiceCollection services )
-        {
-            services.AddScoped<IChatAgentBuilder, ChatAgentBuilder>();
-            services.AddSingleton<IMcpServer, McpServer>();
-
-            return services;
-        }
+        /// <summary>
+        /// An opaque token representing the current pagination position. If
+        /// provided, the server should return results starting after this
+        /// cursor.
+        /// </summary>
+        public string Cursor { get; set; }
     }
 }

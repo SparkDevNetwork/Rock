@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Microsoft.Extensions.AI;
@@ -117,6 +118,8 @@ namespace Rock.AI.Agent
         /// <inheritdoc/>
         public int? SessionId { get; private set; }
 
+        internal Kernel Kernel => _kernel;
+
         #endregion
 
         #region Constructors
@@ -147,7 +150,7 @@ namespace Rock.AI.Agent
         #region Methods
 
         /// <inheritdoc/>
-        public Task StartNewSessionAsync( int? entityTypeId, int? entityId )
+        public Task StartNewSessionAsync( int? entityTypeId, int? entityId, CancellationToken cancellationToken )
         {
             if ( _requestContext?.CurrentPerson?.PrimaryAliasId == null )
             {
@@ -179,7 +182,7 @@ namespace Rock.AI.Agent
         }
 
         /// <inheritdoc/>
-        public Task LoadSessionAsync( int sessionId )
+        public Task LoadSessionAsync( int sessionId, CancellationToken cancellationToken )
         {
             using ( var rockContext = _rockContextFactory.CreateRockContext() )
             {
@@ -258,24 +261,24 @@ namespace Rock.AI.Agent
         }
 
         /// <inheritdoc/>
-        public Task AddMessageAsync( AuthorRole role, string message )
+        public Task AddMessageAsync( AuthorRole role, string message, CancellationToken cancellationToken )
         {
             if ( role != AuthorRole.User && role != AuthorRole.Assistant )
             {
                 throw new ArgumentOutOfRangeException( nameof( role ), "An invalid author role was specified." );
             }
 
-            return AddMessageAsync( role, message, CountTokens( message ), 0 );
+            return AddMessageAsync( role, message, CountTokens( message ), 0, cancellationToken );
         }
 
         /// <inheritdoc/>
-        async private Task AddMessageAsync( AuthorRole role, string message, int tokenCount, int consumedTokenCount )
+        async private Task AddMessageAsync( AuthorRole role, string message, int tokenCount, int consumedTokenCount, CancellationToken cancellationToken )
         {
             if ( SessionId.HasValue )
             {
                 if ( role == AuthorRole.User && _historyNeedsSummary )
                 {
-                    await SummarizeChatHistoryAsync();
+                    await SummarizeChatHistoryAsync( cancellationToken );
                 }
 
                 using ( var rockContext = _rockContextFactory.CreateRockContext() )
@@ -314,7 +317,7 @@ namespace Rock.AI.Agent
         }
 
         /// <inheritdoc/>
-        public Task<ContextAnchor> AddAnchorAsync( IEntity entity )
+        public Task<ContextAnchor> AddAnchorAsync( IEntity entity, CancellationToken cancellationToken )
         {
             var entityTypeId = entity.TypeId;
 
@@ -348,7 +351,7 @@ namespace Rock.AI.Agent
         }
 
         /// <inheritdoc/>
-        public Task RemoveAnchorAsync( int entityTypeId )
+        public Task RemoveAnchorAsync( int entityTypeId, CancellationToken cancellationToken )
         {
             _context.RemoveAnchor( entityTypeId );
 
@@ -382,7 +385,7 @@ namespace Rock.AI.Agent
         }
 
         /// <inheritdoc/>
-        public Task AddSessionContextAsync( string key, SessionContext context )
+        public Task AddSessionContextAsync( string key, SessionContext context, CancellationToken cancellationToken )
         {
             _context.AddSessionContext( key, context );
 
@@ -407,7 +410,7 @@ namespace Rock.AI.Agent
         }
 
         /// <inheritdoc/>
-        public Task RemoveSessionContextAsync( string key )
+        public Task RemoveSessionContextAsync( string key, CancellationToken cancellationToken )
         {
             _context.RemoveSessionContext( key );
 
@@ -447,7 +450,7 @@ namespace Rock.AI.Agent
         /// only be called just before adding a user message, otherwise the
         /// results will be unexpected.
         /// </summary>
-        async private Task SummarizeChatHistoryAsync()
+        async private Task SummarizeChatHistoryAsync( CancellationToken cancellationToken )
         {
             using ( var rockContext = _rockContextFactory.CreateRockContext() )
             {
@@ -497,11 +500,11 @@ namespace Rock.AI.Agent
             }
 
             // Reload the session data.
-            await LoadSessionAsync( SessionId.Value );
+            await LoadSessionAsync( SessionId.Value, cancellationToken );
         }
 
         /// <inheritdoc/>
-        public async Task<ChatMessageResponse> GetChatMessageResponseAsync()
+        public async Task<ChatMessageResponse> GetChatMessageResponseAsync( CancellationToken cancellationToken )
         {
             var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
 
@@ -512,9 +515,36 @@ namespace Rock.AI.Agent
 
             var usage = GetMetricUsageFromResult( result );
 
-            await AddMessageAsync( AuthorRole.Assistant, result.Content, usage?.OutputTokenCount ?? CountTokens( result.Content ), usage?.TotalTokenCount ?? 0 );
+            await AddMessageAsync( AuthorRole.Assistant, result.Content, usage?.OutputTokenCount ?? CountTokens( result.Content ), usage?.TotalTokenCount ?? 0, cancellationToken );
 
             return new ChatMessageResponse( result, usage, GetChatDebug() );
+        }
+
+        /// <inheritdoc/>
+        public async Task<object> InvokeFunctionAsync( string skillKey, string functionKey, IDictionary<string, object> arguments, CancellationToken cancellationToken )
+        {
+            KernelArguments args;
+
+            if ( arguments is KernelArguments kargs )
+            {
+                args = kargs;
+            }
+            else
+            {
+                args = new KernelArguments();
+
+                if ( arguments != null )
+                {
+                    foreach ( var kvp in arguments )
+                    {
+                        args[kvp.Key] = kvp.Value;
+                    }
+                }
+            }
+
+            var result = await _kernel.InvokeAsync( skillKey, functionKey, args, cancellationToken );
+
+            return result.GetValue<object>();
         }
 
         /// <inheritdoc/>

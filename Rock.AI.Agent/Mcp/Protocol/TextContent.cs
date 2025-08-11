@@ -15,20 +15,21 @@
 // </copyright>
 //
 
-using Microsoft.Extensions.DependencyInjection;
-
-using Rock.AI.Agent.Mcp;
-
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent.Mcp.Protocol
 {
-    internal static class ServiceCollectionExtensions
+    /// <summary>
+    /// Represents the result of a tool call that returns text.
+    /// </summary>
+    internal class TextContent
     {
-        public static IServiceCollection AddChatAgent( this IServiceCollection services )
-        {
-            services.AddScoped<IChatAgentBuilder, ChatAgentBuilder>();
-            services.AddSingleton<IMcpServer, McpServer>();
+        /// <summary>
+        /// The type of unstructured tool result.
+        /// </summary>
+        public string Type => "text";
 
-            return services;
-        }
+        /// <summary>
+        /// The text content of the message.
+        /// </summary>
+        public string Text { get; set; }
     }
 }

@@ -15,20 +15,24 @@
 // </copyright>
 //
 
-using Microsoft.Extensions.DependencyInjection;
+using System.Collections.Generic;
 
-using Rock.AI.Agent.Mcp;
-
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent.Mcp.Protocol
 {
-    internal static class ServiceCollectionExtensions
+    /// <summary>
+    /// The server’s response to a tools/list request from the client.
+    /// </summary>
+    internal class ListToolsResult
     {
-        public static IServiceCollection AddChatAgent( this IServiceCollection services )
-        {
-            services.AddScoped<IChatAgentBuilder, ChatAgentBuilder>();
-            services.AddSingleton<IMcpServer, McpServer>();
+        /// <summary>
+        /// The list of tools available on the server.
+        /// </summary>
+        public List<Tool> Tools { get; set; }
 
-            return services;
-        }
+        /// <summary>
+        /// An opaque token representing the pagination position after the last
+        /// returned result. If present, there may be more results available.
+        /// </summary>
+        public string NextCursor { get; set; }
     }
 }

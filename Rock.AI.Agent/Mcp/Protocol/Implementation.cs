@@ -15,20 +15,26 @@
 // </copyright>
 //
 
-using Microsoft.Extensions.DependencyInjection;
-
-using Rock.AI.Agent.Mcp;
-
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent.Mcp.Protocol
 {
-    internal static class ServiceCollectionExtensions
+    /// <summary>
+    /// Represents the information of a client or server.
+    /// </summary>
+    internal class Implementation
     {
-        public static IServiceCollection AddChatAgent( this IServiceCollection services )
-        {
-            services.AddScoped<IChatAgentBuilder, ChatAgentBuilder>();
-            services.AddSingleton<IMcpServer, McpServer>();
+        /// <summary>
+        /// The short name that identifies the device.
+        /// </summary>
+        public string Name { get; set; }
 
-            return services;
-        }
+        /// <summary>
+        /// A friendly name that identifies the device.
+        /// </summary>
+        public string Title { get; set; }
+
+        /// <summary>
+        /// The version number of the device.
+        /// </summary>
+        public string Version { get; set; }
     }
 }

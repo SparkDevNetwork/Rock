@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+using System.Threading;
 using System.Threading.Tasks;
 
 using Rock.Attribute;
@@ -58,16 +60,18 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="entityTypeId">The identifier of the <see cref="Model.EntityType"/> this session is associated with.</param>
         /// <param name="entityId">The identifier of the <see cref="IEntity"/> this session is associated with.</param>
-        /// <returns></returns>
-        Task StartNewSessionAsync( int? entityTypeId, int? entityId );
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
+        /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
+        Task StartNewSessionAsync( int? entityTypeId, int? entityId, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Loads an existing session from the database. This will load the
         /// chat history, context and anchors associated with the session.
         /// </summary>
         /// <param name="sessionId">The identifier of the <see cref="Model.AIAgentSession"/> to load.</param>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task LoadSessionAsync( int sessionId );
+        Task LoadSessionAsync( int sessionId, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Adds a message to the current session. If no session has been
@@ -75,8 +79,9 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="role">The role that indicates who wrote the message.</param>
         /// <param name="message">The message to be appended to the chat history.</param>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task AddMessageAsync( AuthorRole role, string message );
+        Task AddMessageAsync( AuthorRole role, string message, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Adds an entity anchor to the current session. An anchor is a way
@@ -86,8 +91,9 @@ namespace Rock.AI.Agent
         /// loaded then the anchor will only exist in-memory.
         /// </summary>
         /// <param name="entity">The entity to be added as an anchor.</param>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="ContextAnchor"/> that represents the entity anchor.</returns>
-        Task<ContextAnchor> AddAnchorAsync( IEntity entity );
+        Task<ContextAnchor> AddAnchorAsync( IEntity entity, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Removes the entity anchor for the specified entity type from the
@@ -95,8 +101,9 @@ namespace Rock.AI.Agent
         /// this will only remove the anchor from in-memory data.
         /// </summary>
         /// <param name="entityTypeId">The identifier of the <see cref="Model.EntityType"/> whose anchor will be removed.</param>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task RemoveAnchorAsync( int entityTypeId );
+        Task RemoveAnchorAsync( int entityTypeId, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Adds a new session context item with the given key. If no session
@@ -106,8 +113,9 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="key">The unique key that identifies the context data.</param>
         /// <param name="context">The context data to be attached to the session.</param>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task AddSessionContextAsync( string key, SessionContext context );
+        Task AddSessionContextAsync( string key, SessionContext context, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Gets the session context <see cref="SessionContext.Content"/> value
@@ -123,15 +131,28 @@ namespace Rock.AI.Agent
         /// from in-memory data.
         /// </summary>
         /// <param name="key">The unique key that identifies the context data.</param>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task RemoveSessionContextAsync( string key );
+        Task RemoveSessionContextAsync( string key, CancellationToken cancellationToken = default );
 
         /// <summary>
         /// Sends the current chat history information to the language model
         /// for processing and returns the response from the assistant.
         /// </summary>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>An object that represents the response from the assistant.</returns>
-        Task<ChatMessageResponse> GetChatMessageResponseAsync();
+        Task<ChatMessageResponse> GetChatMessageResponseAsync( CancellationToken cancellationToken = default );
+
+        /// <summary>
+        /// Invokes a specific function on the chat agent. This is primarily
+        /// used by the MCP server to handle function calls from the client.
+        /// </summary>
+        /// <param name="skillKey">A string that matches the <see cref="SkillConfiguration.Key"/> value of a registered skill.</param>
+        /// <param name="functionKey">A string that matches the <see cref="AgentFunction.Key"/> value of a registered function in the skill.</param>
+        /// <param name="arguments">The arguments to pass to the function.</param>
+        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
+        /// <returns>The value returned from the function invocation.</returns>
+        Task<object> InvokeFunctionAsync( string skillKey, string functionKey, IDictionary<string, object> arguments, CancellationToken cancellationToken = default );
 
         #endregion
     }

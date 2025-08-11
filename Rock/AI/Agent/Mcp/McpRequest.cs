@@ -15,20 +15,18 @@
 // </copyright>
 //
 
-using Microsoft.Extensions.DependencyInjection;
+using System.IO;
 
-using Rock.AI.Agent.Mcp;
-
-namespace Rock.AI.Agent
+namespace Rock.AI.Agent.Mcp
 {
-    internal static class ServiceCollectionExtensions
+    /// <summary>
+    /// The details of a request to the MCP server.
+    /// </summary>
+    public class McpRequest
     {
-        public static IServiceCollection AddChatAgent( this IServiceCollection services )
-        {
-            services.AddScoped<IChatAgentBuilder, ChatAgentBuilder>();
-            services.AddSingleton<IMcpServer, McpServer>();
-
-            return services;
-        }
+        /// <summary>
+        /// The content of the request from the MCP client.
+        /// </summary>
+        public Stream Content { get; set; }
     }
 }
