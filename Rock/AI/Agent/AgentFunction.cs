@@ -19,7 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.RegularExpressions;
 
-using Rock.Enums.Core.AI.Agent;
+using Rock.Enums.AI.Agent;
 
 namespace Rock.AI.Agent
 {

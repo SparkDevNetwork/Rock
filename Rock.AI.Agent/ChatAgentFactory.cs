@@ -25,7 +25,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 using Rock.Data;
-using Rock.Enums.Core.AI.Agent;
+using Rock.Enums.AI.Agent;
 using Rock.Logging;
 using Rock.Net;
 using Rock.SystemGuid;

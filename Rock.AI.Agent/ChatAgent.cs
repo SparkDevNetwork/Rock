@@ -32,7 +32,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Net;
 
-using AuthorRole = Rock.Enums.Core.AI.Agent.AuthorRole;
+using AuthorRole = Rock.Enums.AI.Agent.AuthorRole;
 
 namespace Rock.AI.Agent
 {

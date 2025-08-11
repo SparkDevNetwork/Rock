@@ -23,7 +23,7 @@ using System.Text.Json;
 
 using Microsoft.SemanticKernel;
 
-using Rock.Enums.Core.AI.Agent;
+using Rock.Enums.AI.Agent;
 using Rock.Net;
 
 namespace Rock.AI.Agent

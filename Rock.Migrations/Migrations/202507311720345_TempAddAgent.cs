@@ -316,54 +316,54 @@ namespace Rock.Migrations
             #region Add Block Types
 
             // Add/Update Obsidian Block Entity Type
-            //   EntityType:Rock.Blocks.Core.AI.AIAgentDetail
-            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Core.AI.AIAgentDetail", "AI Agent Detail", "Rock.Blocks.Core.AI.AIAgentDetail, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "45AE85C7-1370-4C59-8F98-E1B0E268E54D" );
+            //   EntityType:Rock.Blocks.AI.AIAgentDetail
+            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.AI.AIAgentDetail", "AI Agent Detail", "Rock.Blocks.AI.AIAgentDetail, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "45AE85C7-1370-4C59-8F98-E1B0E268E54D" );
 
             // Add/Update Obsidian Block Entity Type
-            //   EntityType:Rock.Blocks.Core.AI.AIAgentList
-            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Core.AI.AIAgentList", "AI Agent List", "Rock.Blocks.Core.AI.AIAgentList, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "35F161D4-DE63-49EF-AF8A-B67CD7A755C6" );
+            //   EntityType:Rock.Blocks.AI.AIAgentList
+            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.AI.AIAgentList", "AI Agent List", "Rock.Blocks.AI.AIAgentList, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "35F161D4-DE63-49EF-AF8A-B67CD7A755C6" );
 
             // Add/Update Obsidian Block Entity Type
-            //   EntityType:Rock.Blocks.Core.AI.AISkillDetail
-            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Core.AI.AISkillDetail", "AI Skill Detail", "Rock.Blocks.Core.AI.AISkillDetail, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "A152A125-876C-4D0B-87B6-9A99CEC8DB51" );
+            //   EntityType:Rock.Blocks.AI.AISkillDetail
+            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.AI.AISkillDetail", "AI Skill Detail", "Rock.Blocks.AI.AISkillDetail, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "A152A125-876C-4D0B-87B6-9A99CEC8DB51" );
 
             // Add/Update Obsidian Block Entity Type
-            //   EntityType:Rock.Blocks.Core.AI.AISkillFunctionList
-            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Core.AI.AISkillFunctionList", "AI Skill Function List", "Rock.Blocks.Core.AI.AISkillFunctionList, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "FB397310-6BCB-49CD-9CCB-3506046CB14B" );
+            //   EntityType:Rock.Blocks.AI.AISkillFunctionList
+            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.AI.AISkillFunctionList", "AI Skill Function List", "Rock.Blocks.AI.AISkillFunctionList, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "FB397310-6BCB-49CD-9CCB-3506046CB14B" );
 
             // Add/Update Obsidian Block Entity Type
-            //   EntityType:Rock.Blocks.Core.AI.AISkillList
-            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.Core.AI.AISkillList", "AI Skill List", "Rock.Blocks.Core.AI.AISkillList, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "8C7DAF4B-DB53-438A-84C8-4296BA17473B" );
+            //   EntityType:Rock.Blocks.AI.AISkillList
+            RockMigrationHelper.UpdateEntityType( "Rock.Blocks.AI.AISkillList", "AI Skill List", "Rock.Blocks.AI.AISkillList, Rock.Blocks, Version=18.0.6.0, Culture=neutral, PublicKeyToken=null", false, false, "8C7DAF4B-DB53-438A-84C8-4296BA17473B" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Agent Detail
             //   Category:Core > AI
-            //   EntityType:Rock.Blocks.Core.AI.AIAgentDetail
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Agent Detail", "Displays the details of a particular ai agent.", "Rock.Blocks.Core.AI.AIAgentDetail", "Core > AI", "D898E9CE-FE9B-48F7-96BF-2D69DE3C8E7C" );
+            //   EntityType:Rock.Blocks.AI.AIAgentDetail
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Agent Detail", "Displays the details of a particular ai agent.", "Rock.Blocks.AI.AIAgentDetail", "Core > AI", "D898E9CE-FE9B-48F7-96BF-2D69DE3C8E7C" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Agent List
             //   Category:Core > AI
-            //   EntityType:Rock.Blocks.Core.AI.AIAgentList
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Agent List", "Displays a list of ai agents.", "Rock.Blocks.Core.AI.AIAgentList", "Core > AI", "4831074F-7B99-404E-B842-776B74765DE5" );
+            //   EntityType:Rock.Blocks.AI.AIAgentList
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Agent List", "Displays a list of ai agents.", "Rock.Blocks.AI.AIAgentList", "Core > AI", "4831074F-7B99-404E-B842-776B74765DE5" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Skill Detail
             //   Category:Core > AI
-            //   EntityType:Rock.Blocks.Core.AI.AISkillDetail
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Detail", "Displays the details of a particular ai skill.", "Rock.Blocks.Core.AI.AISkillDetail", "Core > AI", "B8B8CEE9-C058-45D3-A1C7-647CAD96FD1E" );
+            //   EntityType:Rock.Blocks.AI.AISkillDetail
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Detail", "Displays the details of a particular ai skill.", "Rock.Blocks.AI.AISkillDetail", "Core > AI", "B8B8CEE9-C058-45D3-A1C7-647CAD96FD1E" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Skill Function List
             //   Category:Core > AI
-            //   EntityType:Rock.Blocks.Core.AI.AISkillFunctionList
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Function List", "Displays a list of ai skill functions.", "Rock.Blocks.Core.AI.AISkillFunctionList", "Core > AI", "1E257602-9C31-4F6C-A362-67912F06E807" );
+            //   EntityType:Rock.Blocks.AI.AISkillFunctionList
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill Function List", "Displays a list of ai skill functions.", "Rock.Blocks.AI.AISkillFunctionList", "Core > AI", "1E257602-9C31-4F6C-A362-67912F06E807" );
 
             // Add/Update Obsidian Block Type
             //   Name:AI Skill List
             //   Category:Core > AI
-            //   EntityType:Rock.Blocks.Core.AI.AISkillList
-            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill List", "Displays a list of ai skills.", "Rock.Blocks.Core.AI.AISkillList", "Core > AI", "39F5C953-0080-441F-A77C-D45676147F91" );
+            //   EntityType:Rock.Blocks.AI.AISkillList
+            RockMigrationHelper.AddOrUpdateEntityBlockType( "AI Skill List", "Displays a list of ai skills.", "Rock.Blocks.AI.AISkillList", "Core > AI", "39F5C953-0080-441F-A77C-D45676147F91" );
 
             #endregion
 

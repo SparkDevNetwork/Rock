@@ -8,7 +8,7 @@ using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 using Rock.AI.Agent.Mcp;
 using Rock.AI.Agent.Mcp.Protocol;
-using Rock.Enums.Core.AI.Agent;
+using Rock.Enums.AI.Agent;
 using Rock.SystemGuid;
 using Rock.Tests.Shared.TestFramework;
 

@@ -20,7 +20,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
-using Rock.Enums.Core.AI.Agent;
+using Rock.Enums.AI.Agent;
 using Rock.Utility;
 
 namespace Rock.Model

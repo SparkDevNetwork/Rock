@@ -17,6 +17,8 @@
 
 using System.Collections.Generic;
 
+using Rock.Enums.AI.Agent;
+
 namespace Rock.AI.Agent
 {
     /// <summary>
@@ -25,7 +27,7 @@ namespace Rock.AI.Agent
     internal class PromptInformationSettings
     {
         /// <summary>
-        /// If the function is an <see cref="Enums.Core.AI.Agent.FunctionType.AIPrompt"/>
+        /// If the function is an <see cref="FunctionType.AIPrompt"/>
         /// and this is enabled, then the <see cref="Prompt"/> will be parsed by Lava before
         /// being sent to the langauge model.
         /// </summary>

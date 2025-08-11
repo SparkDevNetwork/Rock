@@ -23,6 +23,7 @@ using System.Runtime.Serialization;
 
 using Rock.AI.Agent;
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Model;
 
 namespace Rock.Web.Cache.Entities
@@ -126,7 +127,7 @@ namespace Rock.Web.Cache.Entities
                             Guid = function.Guid,
                             Name = function.Name,
                             UsageHint = function.UsageHint,
-                            Role = Enums.Core.AI.Agent.ModelServiceRole.Default, // TODO: Fix this
+                            Role = ModelServiceRole.Default, // TODO: Fix this
                             FunctionType = function.FunctionType,
                             Prompt = prompt.Prompt ?? string.Empty,
                             EnableLavaPreRendering = prompt.PreRenderLava,

@@ -21,7 +21,7 @@ using System.Threading.Tasks;
 
 using Rock.Attribute;
 using Rock.Data;
-using Rock.Enums.Core.AI.Agent;
+using Rock.Enums.AI.Agent;
 
 namespace Rock.AI.Agent
 {

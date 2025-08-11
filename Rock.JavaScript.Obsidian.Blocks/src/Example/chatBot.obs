@@ -816,7 +816,7 @@
 
     function onToggleDebugClick(): void {
         isDebugEnabled.value = !isDebugEnabled.value;
-        localStorage.setItem("Rock.Core.AI.ChatBot.DebugEnabled", isDebugEnabled.value ? "true" : "false");
+        localStorage.setItem("Rock.AI.ChatBot.DebugEnabled", isDebugEnabled.value ? "true" : "false");
     }
 
     function onShowMessageDebug(message: ExtendedChatMessageBag): void {
@@ -837,5 +837,5 @@
         window.removeEventListener("resize", updateContainerHeight);
     });
 
-    isDebugEnabled.value = localStorage.getItem("Rock.Core.AI.ChatBot.DebugEnabled") === "true";
+    isDebugEnabled.value = localStorage.getItem("Rock.AI.ChatBot.DebugEnabled") === "true";
 </script>
