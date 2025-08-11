@@ -45,7 +45,7 @@ namespace Rock.AI.Agent.Mcp
             var rpcRequest = new JsonRpcRequest( request.Content );
             var response = await HandleRequestAsync( chatAgent, rpcRequest, cancellationToken );
 
-            if ( !rpcRequest.Id.HasValue )
+            if ( response == null )
             {
                 return new McpResponse();
             }
@@ -69,9 +69,14 @@ namespace Rock.AI.Agent.Mcp
         /// <param name="request">The object that represents the request from the client.</param>
         /// <param name="cancellationToken">A token that indicates if the request should be cancelled.</param>
         /// <returns>The response to the request.</returns>
-        private async Task<JsonRpcResult> HandleRequestAsync( ChatAgent agent, JsonRpcRequest request, CancellationToken cancellationToken )
+        internal async Task<JsonRpcResult> HandleRequestAsync( ChatAgent agent, JsonRpcRequest request, CancellationToken cancellationToken )
         {
-            if ( request.Method == "initialize" )
+            if ( request.Method.StartsWith( "notifications/" ) || !request.Id.HasValue )
+            {
+                // Indicate no response should be sent.
+                return null;
+            }
+            else if ( request.Method == "initialize" )
             {
                 return ProcessInitialize( request );
             }
@@ -82,11 +87,6 @@ namespace Rock.AI.Agent.Mcp
             else if ( request.Method == "tools/call" )
             {
                 return await ProcessToolsCallAsync( request, agent, cancellationToken );
-            }
-            else if ( request.Method.StartsWith( "notifications/" ) )
-            {
-                // Indicate no response should be sent.
-                return null;
             }
             else
             {

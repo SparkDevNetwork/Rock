@@ -1,4 +1,6 @@
-﻿using Microsoft.VisualStudio.TestTools.UnitTesting;
+﻿using System.Reflection;
+
+using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Rock.Tests.Shared
 {
@@ -36,6 +38,15 @@ namespace Rock.Tests.Shared
         private bool ShouldExecute( ITestMethod testMethod, out string message )
         {
             foreach ( var attribute in testMethod.GetAttributes<BaseIgnoreIfAttribute>( inherit: true ) )
+            {
+                if ( !attribute.ShouldExecute( testMethod ) )
+                {
+                    message = attribute.SkipDetails;
+                    return false;
+                }
+            }
+
+            foreach ( var attribute in testMethod.MethodInfo.ReflectedType.GetCustomAttributes<BaseIgnoreIfAttribute>( inherit: true ) )
             {
                 if ( !attribute.ShouldExecute( testMethod ) )
                 {
