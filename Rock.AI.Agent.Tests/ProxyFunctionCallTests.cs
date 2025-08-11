@@ -85,9 +85,9 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
     }
 
     [ConditionalTestMethod]
-    [DataRow( 1234L, "search jason j", new[] { "jason/j//", "/jason/j/" } )]
-    [DataRow( 1234L, "search for the person entity with a name like jason j", new[] { "jason j/jason/j/", "/jason/j/" } )]
-    [DataRow( 1234L, "search for the decker group", new[] { "///decker" } )]
+    [DataRow( 1234L, "search jason j", new[] { "jason/j//", "/jason/j/", "jason j/Jason/J/", "jason j/Jason//" } )]
+    [DataRow( 1234L, "search for the person entity with a name like jason j", new[] { "jason j/jason/j/", "/jason/j/", "jason j/Jason/J/", "/Jason/J/" } )]
+    [DataRow( 1234L, "search for the decker group", new[] { "///decker", "decker group///decker group", "///Decker Group", "///decker group" } )]
     public async Task FunctionFourParameter_IsCalledOnce( long? seed, string prompt, string[] expectedOutput )
     {
         var parameters = new List<ParameterSchema>
@@ -159,9 +159,9 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
     }
 
     [ConditionalTestMethod]
-    [DataRow( 1234L, "search jason j", new[] { "/jason/j//person", "jason j////" } )]
-    [DataRow( 1234L, "search for the person entity with a name like jason j", new[] { "/jason/j//person" } )]
-    [DataRow( 1234L, "search for the decker group", new[] { "///decker/group" } )]
+    [DataRow( 1234L, "search jason j", new[] { "/jason/j//person", "jason j////", "jason j/Jason/J//person", "/Jason/J//person" } )]
+    [DataRow( 1234L, "search for the person entity with a name like jason j", new[] { "/jason/j//person", "jason j/Jason/J//person", "jason j/jason/j//person" } )]
+    [DataRow( 1234L, "search for the decker group", new[] { "///decker/group", "decker group///decker/group", "decker group///Decker Group/group", "decker group///decker group/group" } )]
     [DataRow( 1234L, "search for decker as either a person entity or group entity", new[] { "decker////person,group" } )]
     public async Task FunctionWithArrayParameter_IsCalledOnce( long? seed, string prompt, string[] expectedOutput )
     {
@@ -243,9 +243,9 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
     }
 
     [ConditionalTestMethod]
-    [DataRow( 1234L, "search jason j", new[] { "/jason/j//", "/j/j//", "/jason/j//person" } )]
-    [DataRow( 1234L, "search for the person entity with a name like jason j", new[] { "/jason/j//person" } )]
-    [DataRow( 1234L, "search for the decker group", new[] { "///decker/", "///decker/group" } )]
+    [DataRow( 1234L, "search jason j", new[] { "/jason/j//", "/j/j//", "/jason/j//person", "jason j/Jason/J//person" } )]
+    [DataRow( 1234L, "search for the person entity with a name like jason j", new[] { "/jason/j//person", "jason j/jason/j//person", "jason j/Jason/J//person" } )]
+    [DataRow( 1234L, "search for the decker group", new[] { "///decker/", "///decker/group", "decker///decker/group", "///decker group/group" } )]
     [DataRow( 1234L, "search for decker as either a person entity or group entity", new[] { "decker////person,group" } )]
     public async Task FunctionWithCommaDelimitedParameter_IsCalledOnce( long? seed, string prompt, string[] expectedOutput )
     {

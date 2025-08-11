@@ -114,7 +114,7 @@ public class UtilitySkillTests : MockDatabaseTestsBase
                 IsRequired = true
             }
         },
-            Temperature = 0,
+            Temperature = 1,
             MaxTokens = 128
         };
     }
@@ -132,7 +132,7 @@ public class UtilitySkillTests : MockDatabaseTestsBase
             // Outputs the current date for testing (could be fixed or dynamic for a real test)
             Prompt = "{% output %}2025-07-30T12:00:00{% endoutput %}2025-07-30T12:00:00",
             Parameters = new List<ParameterSchema>(), // No parameters for "get current date/time"
-            Temperature = 0,
+            Temperature = 1,
             MaxTokens = 128
         };
     }

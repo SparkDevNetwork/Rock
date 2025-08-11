@@ -55,7 +55,7 @@ public abstract class BaseFunctionCallTests : MockDatabaseTestsBase
 
         providerMock.Setup( m => m.GetAttributeValue( "ApiKey" ) ).Returns( apiKey );
         providerMock.Setup( m => m.GetAttributeValue( "Endpoint" ) ).Returns( endpoint );
-        providerMock.Setup( m => m.GetAttributeValue( "DefaultTemperature" ) ).Returns( "0" );
+        providerMock.Setup( m => m.GetAttributeValue( "DefaultTemperature" ) ).Returns( "1" );
         providerMock.Setup( m => m.GetAttributeValue( "DefaultTopP" ) ).Returns( "1" );
         providerMock.Setup( m => m.GetAttributeValue( "Seed" ) ).Returns( seed.ToString() );
 
