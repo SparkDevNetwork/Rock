@@ -1638,5 +1638,24 @@ namespace Rock.SystemGuid
         public const string CHAT_REACTION_WOW = "304DF5A2-142E-494D-8EEE-D4DBE81B1579";
 
         #endregion
+
+        #region Organizational Objective
+
+        /// <summary>
+        /// The outreach organizational objective.
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE_OUTREACH = "396B3980-EB66-446F-86B4-6C6E95FC74A7";
+
+        /// <summary>
+        /// The discipleship organizational objective.
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE_DISCIPLESHIP = "9DFD8F1E-922E-420D-AE00-F640A2EFF405";
+
+        /// <summary>
+        /// The activation organizational objective.
+        /// </summary>
+        public const string ORGANIZATIONAL_OBJECTIVE_TYPE_ACTIVATION = "283BC4AC-CCCD-4FCF-8C94-9848B6B5E734";
+
+        #endregion
     }
 }

@@ -21,6 +21,7 @@ using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 using Rock.Data;
+using Rock.Enums.Engagement;
 using Rock.Security;
 using Rock.Web.Cache;
 
@@ -198,6 +199,26 @@ namespace Rock.Model
         [DataMember( IsRequired = true )]
         public bool IsSystem { get; set; }
 
+        /// <summary>
+        /// Gets or sets the engagement type for this step type.
+        /// </summary>
+        [DataMember]
+        public EngagementType? EngagementType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the impact weight for this step type (1-5).
+        /// </summary>
+        [DataMember]
+        [Range( 1, 5 )]
+        public int? ImpactWeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets the organizational objective for this step type.
+        /// </summary>
+        [DataMember]
+        [DefinedValue( SystemGuid.DefinedType.ORGANIZATIONAL_OBJECTIVE_TYPE )]
+        public int? OrganizationalObjectiveValueId { get; set; }
+
         #endregion Entity Properties
 
         #region IHasActiveFlag
@@ -289,6 +310,12 @@ namespace Rock.Model
         public virtual MergeTemplate MergeTemplate { get; set; }
 
         /// <summary>
+        /// Gets or sets the <see cref="Rock.Model.DefinedValue"/> for the organizational objective.
+        /// </summary>
+        [DataMember]
+        public virtual DefinedValue OrganizationalObjectiveValue { get; set; }
+
+        /// <summary>
         /// Gets or sets a collection containing the <see cref="StepWorkflowTrigger">StepWorkflowTriggers</see> that are of this step type.
         /// </summary>
         [DataMember]
@@ -368,6 +395,7 @@ namespace Rock.Model
                 HasOptional( st => st.AudienceDataView ).WithMany().HasForeignKey( st => st.AudienceDataViewId ).WillCascadeOnDelete( false );
                 HasOptional( st => st.AutoCompleteDataView ).WithMany().HasForeignKey( st => st.AutoCompleteDataViewId ).WillCascadeOnDelete( false );
                 HasOptional( st => st.MergeTemplate ).WithMany().HasForeignKey( st => st.MergeTemplateId ).WillCascadeOnDelete( false );
+                HasOptional( st => st.OrganizationalObjectiveValue ).WithMany().HasForeignKey( st => st.OrganizationalObjectiveValueId ).WillCascadeOnDelete( false );
             }
         }
 
