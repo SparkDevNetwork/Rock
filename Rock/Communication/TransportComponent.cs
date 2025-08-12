@@ -32,7 +32,7 @@ namespace Rock.Communication
         /// The friendly error message that will be returned if we can detect that an SMS recipient has previously
         /// unsubscribed from messages at the transport level.
         /// </summary>
-        internal static string UnsubscribedSmsRecipientMessage = "This number previously replied STOP to our messages.";
+        internal static readonly string UnsubscribedSmsRecipientMessage = "This number previously replied STOP to our messages.";
 
         /// <summary>
         /// Gets a value indicating whether transport has ability to track recipients opening the communication.

@@ -324,7 +324,12 @@ namespace RockWeb.Blocks.Reporting
             BlockUpdated += DynamicData_BlockUpdated;
             AddConfigurationUpdateTrigger( upnlContent );
 
-            BuildControls( !Page.IsPostBack );
+            // Don't build controls if the block's page does not match the current page. This would be the case when
+            // editing the settings from 'Admin Tools > CMS Settings > Pages'.
+            if ( RockPage.PageId == BlockCache.PageId )
+            {
+                BuildControls( !Page.IsPostBack );
+            }
 
             _updatePage = GetAttributeValue( AttributeKey.UpdatePage ).AsBoolean( true );
         }

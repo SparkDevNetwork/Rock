@@ -3,6 +3,7 @@
     <Grid :definition="config.gridDefinition ?? undefined"
           :data="gridDataSource"
           itemTerm="Consumer"
+          title="Consumers"
           stickyHeader
           liveUpdates
           :showMergeTemplate="false"

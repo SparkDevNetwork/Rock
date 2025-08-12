@@ -22,12 +22,19 @@
 //
 
 import { CommunicationEntryWizardCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardCommunicationBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
-/** Bag containing information to get email preview HTML for the Communication Entry Wizard block. */
-export type CommunicationEntryWizardGetEmailPreviewHtmlBag = {
+/** Bag containing information to get a message preview for the Communication Entry Wizard block. */
+export type CommunicationEntryWizardGetPreviewBag = {
     /** Gets or sets the communication. */
     communication?: CommunicationEntryWizardCommunicationBag | null;
 
-    /** Gets or sets the preview HTML. */
-    previewHtml?: string | null;
+    /** Gets or sets the message preview. */
+    messagePreview?: string | null;
+
+    /** Gets or sets the "preview as" person alias. */
+    previewAsPersonAlias?: ListItemBag | null;
+
+    /** Gets or sets a value indicating whether the requested person was found. */
+    wasRequestedPersonFound?: boolean | null;
 };

@@ -1110,10 +1110,10 @@ namespace Rock.Blocks.Communication
                         .Select( f => f.CommunicationFlowInstance.CommunicationFlow.Name )
                         .FirstOrDefault(),
 
-                    CreatedByPersonNickName = c.CreatedByPersonAlias != null ? c.CreatedByPersonAlias.Person.NickName : string.Empty,
-                    CreatedByPersonLastName = c.CreatedByPersonAlias != null ? c.CreatedByPersonAlias.Person.LastName : string.Empty,
-                    CreatedByPersonSuffixValueId = c.CreatedByPersonAlias != null ? c.CreatedByPersonAlias.Person.SuffixValueId : null,
-                    CreatedByPersonRecordTypeValueId = c.CreatedByPersonAlias != null ? c.CreatedByPersonAlias.Person.RecordTypeValueId : null,
+                    SenderPersonNickName = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person.NickName : string.Empty,
+                    SenderPersonLastName = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person.LastName : string.Empty,
+                    SenderPersonSuffixValueId = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person.SuffixValueId : null,
+                    SenderPersonRecordTypeValueId = c.SenderPersonAlias != null ? c.SenderPersonAlias.Person.RecordTypeValueId : null,
 
                     ReviewerPersonNickName = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person.NickName : string.Empty,
                     ReviewerPersonLastName = c.ReviewerPersonAlias != null ? c.ReviewerPersonAlias.Person.LastName : string.Empty,
@@ -1192,10 +1192,10 @@ namespace Rock.Blocks.Communication
                     var communicationInfo = new CommunicationInfo
                     {
                         Communication = a.Communication,
-                        CreatedByPersonNickName = a.CreatedByPersonNickName,
-                        CreatedByPersonLastName = a.CreatedByPersonLastName,
-                        CreatedByPersonSuffixValueId = a.CreatedByPersonSuffixValueId,
-                        CreatedByPersonRecordTypeValueId = a.CreatedByPersonRecordTypeValueId,
+                        SenderPersonNickName = a.SenderPersonNickName,
+                        SenderPersonLastName = a.SenderPersonLastName,
+                        SenderPersonSuffixValueId = a.SenderPersonSuffixValueId,
+                        SenderPersonRecordTypeValueId = a.SenderPersonRecordTypeValueId,
                         ReviewerPersonNickName = a.ReviewerPersonNickName,
                         ReviewerPersonLastName = a.ReviewerPersonLastName,
                         ReviewerPersonSuffixValueId = a.ReviewerPersonSuffixValueId,
@@ -2221,11 +2221,11 @@ namespace Rock.Blocks.Communication
                 return null;
             }
 
-            var createdByPersonName = Person.FormatFullName(
-                communicationInfo.CreatedByPersonNickName,
-                communicationInfo.CreatedByPersonLastName,
-                communicationInfo.CreatedByPersonSuffixValueId,
-                communicationInfo.CreatedByPersonRecordTypeValueId
+            var sentByPersonName = Person.FormatFullName(
+                communicationInfo.SenderPersonNickName,
+                communicationInfo.SenderPersonLastName,
+                communicationInfo.SenderPersonSuffixValueId,
+                communicationInfo.SenderPersonRecordTypeValueId
             );
 
             var approvedByByPersonName = Person.FormatFullName(
@@ -2237,8 +2237,8 @@ namespace Rock.Blocks.Communication
 
             return new CommunicationMessagePreviewBag
             {
-                CreatedByPersonName = createdByPersonName,
-                CreatedDateTime = communication.CreatedDateTime,
+                SentByPersonName = sentByPersonName,
+                SendDateTime = communication.SendDateTime,
                 ApprovedByPersonName = approvedByByPersonName,
                 ApprovedDateTime = communication.ReviewedDateTime,
                 FromPersonName = communication.FromName,
@@ -2532,24 +2532,24 @@ namespace Rock.Blocks.Communication
             public Rock.Model.Communication Communication { get; set; }
 
             /// <summary>
-            /// Gets or sets the nickname of the person who created this communication.
+            /// Gets or sets the nickname of the person who sent this communication.
             /// </summary>
-            public string CreatedByPersonNickName { get; set; }
+            public string SenderPersonNickName { get; set; }
 
             /// <summary>
-            /// Gets or sets the last name of the person who created this communication.
+            /// Gets or sets the last name of the person who sent this communication.
             /// </summary>
-            public string CreatedByPersonLastName { get; set; }
+            public string SenderPersonLastName { get; set; }
 
             /// <summary>
-            /// Gets or sets the suffix <see cref="DefinedValue"/> identifier of the person who created this communication.
+            /// Gets or sets the suffix <see cref="DefinedValue"/> identifier of the person who sent this communication.
             /// </summary>
-            public int? CreatedByPersonSuffixValueId { get; set; }
+            public int? SenderPersonSuffixValueId { get; set; }
 
             /// <summary>
-            /// Gets or sets the record type <see cref="DefinedValue"/> identifier of the person who created this communication.
+            /// Gets or sets the record type <see cref="DefinedValue"/> identifier of the person who sent this communication.
             /// </summary>
-            public int? CreatedByPersonRecordTypeValueId { get; set; }
+            public int? SenderPersonRecordTypeValueId { get; set; }
 
             /// <summary>
             /// Gets or sets the nickname of the person who reviewed this communication.

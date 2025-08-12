@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Archived Group"
+          title="Archived Groups"
           :entityTypeGuid="EntityType.Group"
           stickyHeader
           liveUpdates

@@ -4,7 +4,7 @@
         <template #default="{ field, uniqueId }">
             <div class="dropdown">
                 <div :class="{ open: isDropDownOpen }" ref="dropdownElement">
-                    <RockButton class="dropdown-toggle" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
+                    <RockButton class="dropdown-toggle" :btnType="btnType" :aria-expanded="isDropDownOpen ? 'true' : 'false'" @click.prevent.stop="toggleOpen" :id="uniqueId" v-bind="field">
                         {{ selectionStyle === 'title' && internalValue ? selectedText : title }}
                         <span class="ti ti-caret-down"></span>
                     </RockButton>
@@ -38,6 +38,7 @@ li.disabled > button {
     import RockFormField from "./rockFormField.obs";
     import RockButton from "./rockButton.obs";
     import { standardRockFormFieldProps, useStandardRockFormFieldProps, useVModelPassthrough } from "@Obsidian/Utility/component";
+    import { BtnType } from "@Obsidian/Enums/Controls/btnType";
 
     const props = defineProps({
         /** The v-model value this control */
@@ -65,6 +66,11 @@ li.disabled > button {
         selectionStyle: {
             type: String as PropType<"title" | "checkmark">,
             default: "title"
+        },
+
+        btnType: {
+            type: String as PropType<BtnType>,
+            default: BtnType.Default
         },
 
         ...standardRockFormFieldProps

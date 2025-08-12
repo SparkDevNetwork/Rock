@@ -4,6 +4,7 @@
           :data="gridDataSource"
           keyField="idKey"
           itemTerm="Shortened Links"
+          title="Shortened Links"
           :entityTypeGuid="EntityType.PageShortLink"
           stickyHeader
           liveUpdates

@@ -9,16 +9,16 @@
                 </NotficationBox>
 
                 <div class="row d-flex flex-wrap">
-                    <div v-if="createdByPersonName" :class="infoItemCssClass">
+                    <div v-if="sentByPersonName" :class="infoItemCssClass">
                         <div :class="infoItemLabelCssClass">
-                            Created By:
+                            Sent By:
                         </div>
                         <div :class="infoItemValueCssClass">
-                            <span v-html="createdByPersonName || '&nbsp;'"></span>
-                            <span v-if="createdDateTimeElapsed"
-                                  :data-original-title="createdDateTimeTooltip"
+                            <span v-html="sentByPersonName || '&nbsp;'"></span>
+                            <span v-if="sendDateTimeElapsed"
+                                  :data-original-title="sendDateTimeTooltip"
                                   :ref="applyTooltip">
-                                ({{ createdDateTimeElapsed }})
+                                ({{ sendDateTimeElapsed }})
                             </span>
                         </div>
                     </div>
@@ -209,7 +209,7 @@
 
     // #region Values
 
-    const createdByPersonName = ref(props.messagePreview?.createdByPersonName ?? "");
+    const sentByPersonName = ref(props.messagePreview?.sentByPersonName ?? "");
     const approvedByPersonName = ref(props.messagePreview?.approvedByPersonName ?? "");
 
     // #endregion Values
@@ -255,17 +255,17 @@
         return communicationDetail.value?.type === CommunicationType.PushNotification;
     });
 
-    const createdRockDateTime = computed((): RockDateTime | null => {
-        return RockDateTime.parseISO(props.messagePreview?.createdDateTime ?? "")
+    const sendRockDateTime = computed((): RockDateTime | null => {
+        return RockDateTime.parseISO(props.messagePreview?.sendDateTime ?? "")
             ?? null;
     });
 
-    const createdDateTimeElapsed = computed((): string => {
-        return createdRockDateTime.value?.humanizeElapsed() ?? "";
+    const sendDateTimeElapsed = computed((): string => {
+        return sendRockDateTime.value?.humanizeElapsed() ?? "";
     });
 
-    const createdDateTimeTooltip = computed((): string => {
-        return createdRockDateTime.value?.toASPString("g") ?? "";
+    const sendDateTimeTooltip = computed((): string => {
+        return sendRockDateTime.value?.toASPString("g") ?? "";
     });
 
     const approvedRockDateTime = computed((): RockDateTime | null => {
@@ -278,7 +278,7 @@
     });
 
     const approvedDateTimeTooltip = computed((): string => {
-        return createdRockDateTime.value?.toASPString("g") ?? "";
+        return sendRockDateTime.value?.toASPString("g") ?? "";
     });
 
     const fromName = computed((): string => {
@@ -396,7 +396,7 @@
     const infoItemsWithValuesCount = computed((): number => {
         const items: string[] = [
             // Shared items.
-            createdByPersonName.value,
+            sentByPersonName.value,
             approvedByPersonName.value,
             fromName.value,
             listName.value,

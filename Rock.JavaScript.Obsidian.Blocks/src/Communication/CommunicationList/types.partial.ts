@@ -26,7 +26,7 @@ export const enum NavigationUrlKey {
 }
 
 export const enum PreferenceKey {
-    FilterCreatedBy = "filter-created-by",
+    FilterSentBy = "filter-sent-by",
     FilterCommunicationTypes = "filter-communication-types",
     FilterHideDrafts = "filter-hide-drafts",
     FilterSendDateRange = "filter-send-date-range",
@@ -38,7 +38,7 @@ export const enum PreferenceKey {
 }
 
 export type GridSettingsOptions = {
-    createdBy?: ListItemBag;
+    sentBy?: ListItemBag;
     hideDrafts: boolean;
     slidingDateRange: SlidingDateRange | null;
     recipientCountRange?: NumberRangeModelValue;

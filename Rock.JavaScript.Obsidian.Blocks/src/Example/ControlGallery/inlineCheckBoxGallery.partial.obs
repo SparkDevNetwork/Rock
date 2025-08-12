@@ -4,7 +4,17 @@
                       :exampleCode="exampleCode"
                       description="Check Box with label that is displayed beside it instead of above it"
                       enableReflection>
-        <InlineCheckBox label="Inline Label" v-model="isChecked" />
+        <InlineCheckBox label="Inline Label"
+                        v-model="isChecked"
+                        :help="showHelp ? 'This is sample help text!' : ''" />
+
+        <template #settings>
+            <div class="form-group">
+                <InlineSwitch v-model="showHelp"
+                              label="Show Help Text"
+                              help="Toggle this to show or hide help text." />
+            </div>
+        </template>
     </GalleryAndResult>
 </template>
 
@@ -12,9 +22,11 @@
     import { ref } from "vue";
     import GalleryAndResult from "./common/galleryAndResult.partial.obs";
     import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
+    import InlineSwitch from "@Obsidian/Controls/inlineSwitch.obs";
     import { getSfcControlImportPath } from "./common/utils.partial";
 
     const isChecked = ref(false);
-    const importCode = getSfcControlImportPath("checkBox");
-    const exampleCode = `<CheckBox label="Check Box" text="Enable" v-model="value" />`;
+    const showHelp = ref(false);
+    const importCode = getSfcControlImportPath("inlineCheckBox");
+    const exampleCode = `<InlineCheckBox label="Inline Checkbox" v-model="value" />`;
 </script>

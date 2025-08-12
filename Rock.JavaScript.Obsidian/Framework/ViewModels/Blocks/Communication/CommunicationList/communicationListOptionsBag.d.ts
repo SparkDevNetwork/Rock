@@ -32,6 +32,6 @@ export type CommunicationListOptionsBag = {
     /** Gets or sets whether an active SMS transport exists. */
     hasActiveSmsTransport: boolean;
 
-    /** Gets or sets whether to show the "created by" filter controls. */
-    showCreatedByFilter: boolean;
+    /** Gets or sets whether to show the "sent by" filter controls. */
+    showSentByFilter: boolean;
 };

@@ -20,9 +20,8 @@
                         <path d="M16.3878 20.1846C11.1878 20.9846 6.05449 18.1212 4.38783 16.2879C6.1057 12.1914 -4.50009 2.24186 2.49991 2.24148C4.11852 2.24148 5.50098 -1.9986 11.3878 1.1846C11.409 2.47144 11.3878 6.92582 11.3878 7.6842C11.3878 18.1842 17.3878 19.5813 16.3878 20.1846Z" />
                     </svg>
 
-                    <div class="sms-text">
-                        {{ smsMessage }}
-                    </div>
+                    <div v-if="!isLoading" class="sms-text" v-html="smsMessage.replace(/\r\n/g, '<br />').replace(/\n/g, '<br />')"></div>
+                    <LoadingIndicator v-else />
 
                     <div v-if="smsAttachmentLinks?.length"
                          class="sms-attachments">
@@ -105,10 +104,16 @@
 
 <script setup lang="ts">
     import { PropType } from "vue";
+    import LoadingIndicator from "../loadingIndicator.obs";
     import MobilePreview from "./MobilePreview/mobilePreview.partial.obs";
     import { BinaryFileAttachment } from "./MobilePreview/types.partial";
 
     defineProps({
+        isLoading: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
         smsMessage: {
             type: String as PropType<string>,
             required: true

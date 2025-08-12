@@ -169,7 +169,13 @@ namespace Rock.Blocks.Cms
                 .GroupBy( p => p.PersonalizationEntityId )
                 .ToDictionary( grp => grp.Key, grp => grp.Count() );
 
-            var personalizationSegmentList = personalizationSegmentService.Queryable().ToList();
+            var currentPerson = GetCurrentPerson();
+            var personalizationSegmentList = personalizationSegmentService
+                .Queryable()
+                .ToList()
+                // Only include personalization segments the current person can view.
+                .Where( p => p.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                .ToList();
 
             var scheduleIds = personalizationSegmentList
                 .Where( ps => ps.PersistedScheduleId.HasValue )

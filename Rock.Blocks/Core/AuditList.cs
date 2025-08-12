@@ -88,6 +88,13 @@ namespace Rock.Blocks.Core
         }
 
         /// <inheritdoc/>
+        protected override IQueryable<Audit> GetOrderedListQueryable( IQueryable<Audit> queryable, RockContext rockContext )
+        {
+            return queryable.AsNoTracking()
+                .OrderByDescending( q => q.Id );
+        }
+
+        /// <inheritdoc/>
         protected override GridBuilder<Audit> GetGridBuilder()
         {
             int? nullInt = null;
@@ -139,6 +146,7 @@ namespace Rock.Blocks.Core
                         a.OriginalValue,
                         a.CurrentValue
                     })
+                    .OrderBy( d => d.Property )
                     .ToList();
 
                 if ( !auditDetails.Any() )

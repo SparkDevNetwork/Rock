@@ -20,18 +20,18 @@
 
         <template #gridHeaderPrepend>
             <div class="communication-list-grid-header-button-filters d-flex flex-column flex-sm-row justify-content-sm-between px-3 py-2">
-                <div class="buttons-created-by">
-                    <template v-if="showCreatedByFilter">
-                        <RockButton :btnType="createdByMeBtnType"
+                <div class="communication-list-grid-header-sent-by-button-filters">
+                    <template v-if="showSentByFilter">
+                        <RockButton :btnType="sentByMeBtnType"
                                     :btnSize="BtnSize.Small"
                                     class="mr-1"
-                                    @click="onCreatedByMeClick">
-                            Created By Me
+                                    @click="onSentByMeClick">
+                            Sent By Me
                         </RockButton>
-                        <RockButton :btnType="createdByAnyoneBtnType"
+                        <RockButton :btnType="sentByAnyoneBtnType"
                                     :btnSize="BtnSize.Small"
-                                    @click="onCreatedByAnyoneClick">
-                            Created By Anyone
+                                    @click="onSentByAnyoneClick">
+                            Sent By Anyone
                         </RockButton>
                     </template>
                 </div>
@@ -106,7 +106,6 @@
                 field="recipientCount"
                 title="Recipients"
                 visiblePriority="sm"
-                :filter="numberValueFilter"
                 :quickFilterValue="getRecipientCountFilterTextValue">
             <template #format="{ row }">
                 <Badge :badgeType="BadgeType.Info" class="communication-list-grid-cell-recipients">
@@ -136,8 +135,6 @@
                 field="sendDateTime"
                 title="Send Date"
                 visiblePriority="lg"
-                :filter="dateValueFilter"
-                :filterValue="getSendDateTimeIsoValue"
                 :quickFilterValue="getSendDateTimeTextValue"
                 :sortValue="getSendDateTimeIsoValue"
                 :exportValue="getSendDateTimeTextValue">
@@ -176,7 +173,7 @@
 
     <GridSettingsModal v-model="gridSettings"
                        v-model:visible="isGridSettingsVisible"
-                       :showCreatedByFilter="showCreatedByFilter"
+                       :showSentByFilter="showSentByFilter"
                        :defaultSlidingDateRange="defaultSlidingDateRange" />
 </template>
 
@@ -201,7 +198,7 @@
     import StatusLabel from "./CommunicationList/statusLabel.partial.obs";
     import { GridSettingsOptions, NavigationUrlKey, PreferenceKey, Row } from "./CommunicationList/types.partial";
     import Badge from "@Obsidian/Controls/badge.obs";
-    import Grid, { Column, dateValueFilter, DeleteColumn, LabelColumn, numberValueFilter, PersonColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
+    import Grid, { Column, dateValueFilter, DeleteColumn, LabelColumn, PersonColumn, pickExistingValueFilter } from "@Obsidian/Controls/grid";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import { InferredCommunicationStatusDescription } from "@Obsidian/Enums/Communication/inferredCommunicationStatus";
@@ -253,7 +250,7 @@
 
     const isGridSettingsVisible = ref(false);
     const gridSettings = ref<GridSettingsOptions>({
-        createdBy: JSON.parse(preferences.getValue(PreferenceKey.FilterCreatedBy) || "{}"),
+        sentBy: JSON.parse(preferences.getValue(PreferenceKey.FilterSentBy) || "{}"),
         hideDrafts: asBoolean(preferences.getValue(PreferenceKey.FilterHideDrafts)),
         slidingDateRange: parseSlidingDateRangeString(preferences.getValue(PreferenceKey.FilterSendDateRange)) ?? defaultSlidingDateRange,
         recipientCountRange: {
@@ -279,7 +276,7 @@
 
     /** `true` if the grid settings is performing any filtering. */
     const hasSettingsFilters = computed((): boolean => {
-        return !!gridSettings.value.createdBy
+        return !!gridSettings.value.sentBy
             || !!gridSettings.value.slidingDateRange
             || !!gridSettings.value.recipientCountRange
             || !!gridSettings.value.topic
@@ -287,9 +284,9 @@
             || !!gridSettings.value.content;
     });
 
-    /** `true` if the "Created By" filter controls should be displayed. */
-    const showCreatedByFilter = computed((): boolean => {
-        return config.options?.showCreatedByFilter ?? false;
+    /** `true` if the "Sent By" filter controls should be displayed. */
+    const showSentByFilter = computed((): boolean => {
+        return config.options?.showSentByFilter ?? false;
     });
 
     /** `true` if the "Filter to Email" button should be displayed. */
@@ -309,7 +306,7 @@
 
     /** The CSS class[es] to use for the media filter buttons element. */
     const mediaButtonsCssClass = computed((): string => {
-        return `buttons-media${showCreatedByFilter.value ? " pt-1 pt-sm-0" : " align-self-end align-self-stretch-sm"}`;
+        return `buttons-media${showSentByFilter.value ? " pt-1 pt-sm-0" : " align-self-end align-self-stretch-sm"}`;
     });
 
     /** The person that is currently authenticated. */
@@ -318,11 +315,11 @@
     });
 
     const filteredByPersonGuidLower = computed((): string | undefined => {
-        return gridSettings.value.createdBy?.value?.toLowerCase();
+        return gridSettings.value.sentBy?.value?.toLowerCase();
     });
 
-    /** The button type to use for the "Created By Me" button. */
-    const createdByMeBtnType = computed((): BtnType => {
+    /** The button type to use for the "Sent By Me" button. */
+    const sentByMeBtnType = computed((): BtnType => {
         let isFilteredByMe = !!(
             filteredByPersonGuidLower.value
             && filteredByPersonGuidLower.value === currentPerson.value?.primaryAliasGuid.toLowerCase()
@@ -333,8 +330,8 @@
             : BtnType.Default;
     });
 
-    /** The button type to use for the "Created By Anyone" button. */
-    const createdByAnyoneBtnType = computed((): BtnType => {
+    /** The button type to use for the "Sent By Anyone" button. */
+    const sentByAnyoneBtnType = computed((): BtnType => {
         return !filteredByPersonGuidLower.value
             ? BtnType.Primary
             : BtnType.Default;
@@ -435,7 +432,7 @@
      * Debounces calls to the `savePreferences` function so it will only be
      * called once during the specified delay period (500ms). We're building in
      * this debounce because the block's design encourages rapid filter
-     * selection by way of the medium and "Created By .." buttons.
+     * selection by way of the medium and "Sent By .." buttons.
      */
     const savePreferencesDebounce = debounceAsync(savePreferences, { delay: 500 });
 
@@ -576,16 +573,16 @@
     // #region Event Handlers
 
     /**
-     * Called when the "Created By Me" button is clicked.
+     * Called when the "Sent By Me" button is clicked.
      *
      * @param event The mouse event.
      */
-    function onCreatedByMeClick(event: MouseEvent): void {
+    function onSentByMeClick(event: MouseEvent): void {
         (event.currentTarget as HTMLElement)?.blur();
 
         gridSettings.value = {
             ...gridSettings.value,
-            createdBy: {
+            sentBy: {
                 value: currentPerson.value?.primaryAliasGuid,
                 text: currentPerson.value?.fullName,
             }
@@ -593,16 +590,16 @@
     }
 
     /**
-     * Called when the "Created By Anyone" button is clicked.
+     * Called when the "Sent By Anyone" button is clicked.
      *
      * @param event The mouse event.
      */
-    function onCreatedByAnyoneClick(event: MouseEvent): void {
+    function onSentByAnyoneClick(event: MouseEvent): void {
         (event.currentTarget as HTMLElement)?.blur();
 
         gridSettings.value = {
             ...gridSettings.value,
-            createdBy: undefined
+            sentBy: undefined
         };
     }
 
@@ -687,7 +684,7 @@
             ? slidingDateRangeToString(gridSettings.value.slidingDateRange)
             : slidingDateRangeToString(defaultSlidingDateRange);
 
-        preferences.setValue(PreferenceKey.FilterCreatedBy, JSON.stringify(gridSettings.value.createdBy));
+        preferences.setValue(PreferenceKey.FilterSentBy, JSON.stringify(gridSettings.value.sentBy));
         preferences.setValue(PreferenceKey.FilterHideDrafts, asTrueOrFalseString(gridSettings.value.hideDrafts));
         preferences.setValue(PreferenceKey.FilterSendDateRange, slidingDateRangeString);
         preferences.setValue(PreferenceKey.FilterRecipientCountLower, gridSettings.value.recipientCountRange?.lower?.toString() ?? "");

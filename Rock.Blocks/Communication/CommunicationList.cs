@@ -86,7 +86,7 @@ namespace Rock.Blocks.Communication
 
         private static class PersonPreferenceKey
         {
-            public const string FilterCreatedBy = "filter-created-by";
+            public const string FilterSentBy = "filter-sent-by";
             public const string FilterCommunicationTypes = "filter-communication-types";
             public const string FilterHideDrafts = "filter-hide-drafts";
             public const string FilterSendDateRange = "filter-send-date-range";
@@ -124,10 +124,10 @@ namespace Rock.Blocks.Communication
         private PersonPreferenceCollection BlockPersonPreferences => this.GetBlockPersonPreferences();
 
         /// <summary>
-        /// Gets the unique identifier of the "created by" <see cref="PersonAlias"/> by whom to filter the results.
+        /// Gets the unique identifier of the "sent by" <see cref="PersonAlias"/> by whom to filter the results.
         /// </summary>
-        private Guid? FilterCreatedByPersonAliasGuid => BlockPersonPreferences
-            .GetValue( PersonPreferenceKey.FilterCreatedBy )
+        private Guid? FilterSentByPersonAliasGuid => BlockPersonPreferences
+            .GetValue( PersonPreferenceKey.FilterSentBy )
             .FromJsonOrNull<ListItemBag>()?.Value?.AsGuidOrNull();
 
         /// <summary>
@@ -246,7 +246,7 @@ namespace Rock.Blocks.Communication
             };
 
             var senderPersonAliasGuid = CanApprove
-                ? FilterCreatedByPersonAliasGuid        // Show the communications created by the selected person or all communication if no person is selected.
+                ? FilterSentByPersonAliasGuid           // Show the communications sent by the selected person or all communication if no person is selected.
                 : GetCurrentPerson().PrimaryAliasGuid;  // Only show the current person's communications.
 
             if ( senderPersonAliasGuid.HasValue )
@@ -513,7 +513,7 @@ ORDER BY ca.[IsDraftWithoutSendDate] DESC
         {
             var options = new CommunicationListOptionsBag
             {
-                ShowCreatedByFilter = CanApprove,
+                ShowSentByFilter = CanApprove,
                 HasActiveEmailTransport = MediumContainer.HasActiveEmailTransport(),
                 HasActiveSmsTransport = MediumContainer.HasActiveSmsTransport(),
                 HasActivePushTransport = MediumContainer.HasActivePushTransport()

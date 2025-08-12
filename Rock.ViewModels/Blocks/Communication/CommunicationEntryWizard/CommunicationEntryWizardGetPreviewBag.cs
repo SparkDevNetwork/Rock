@@ -15,12 +15,14 @@
 // </copyright>
 //
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
 {
     /// <summary>
-    /// Bag containing information to get email preview HTML for the Communication Entry Wizard block.
+    /// Bag containing information to get a message preview for the Communication Entry Wizard block.
     /// </summary>
-    public class CommunicationEntryWizardGetEmailPreviewHtmlBag
+    public class CommunicationEntryWizardGetPreviewBag
     {
         /// <summary>
         /// Gets or sets the communication.
@@ -28,8 +30,18 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard
         public CommunicationEntryWizardCommunicationBag Communication { get ;set; }
 
         /// <summary>
-        /// Gets or sets the preview HTML.
+        /// Gets or sets the message preview.
         /// </summary>
-        public string PreviewHtml { get; set; }
+        public string MessagePreview { get; set; }
+
+        /// <summary>
+        /// Gets or sets the "preview as" person alias.
+        /// </summary>
+        public ListItemBag PreviewAsPersonAlias { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether the requested person was found.
+        /// </summary>
+        public bool? WasRequestedPersonFound { get; set; }
     }
 }

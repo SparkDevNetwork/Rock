@@ -13,7 +13,7 @@
                              v-model:futureSendDateTime="futureSendDateTime"
                              v-model:individualRecipientPersonAliasGuids="individualRecipientPersonAliasGuids"
                              v-model:isBulkCommunication="isBulkCommunication"
-                             v-model:personalizationSegmentIds="personalizationSegmentIds"
+                             v-model:personalizationSegments="personalizationSegments"
                              v-model:recipients="recipients"
                              v-model:segmentCriteria="segmentCriteria"
                              :allowedMediums="allowedMediums"
@@ -30,7 +30,7 @@
                              :isIncompatibleCommunicationTemplateNotificationShown="isIncompatibleCommunicationTemplateNotificationShown"
                              :isUseSimpleEditorButtonShown="isUseSimpleEditorButtonShown"
                              :nextStepTitle="nextStep"
-                             :personalizationSegments="config.personalizationSegments ?? []"
+                             :personalizationSegmentItems="personalizationSegmentItems"
                              :personalPreferenceRecipientCount="personalPreferenceRecipients.length"
                              :pushNotificationRecipientCount="pushNotificationRecipients.length"
                              :recipientCount="selectedMediumRecipients.length"
@@ -77,6 +77,9 @@
             <EmailEditorStep v-else-if="step === 'Email Builder'"
                              v-model:communicationTemplateGuid="communicationTemplateGuid"
                              v-model:message="message"
+                             v-model:previewAsType="previewAsType"
+                             v-model:previewAsPersonAlias="previewAsPersonAlias"
+                             v-model:previewAsPersonalizationSegment="previewAsPersonalizationSegment"
                              v-model:testEmailAddress="testEmailAddress"
                              :areNavigationShortcutsDisabled="config.areNavigationShortcutsDisabled"
                              :communicationTemplates="communicationTemplateListItems"
@@ -84,7 +87,8 @@
                              :isFetchingRecipients="isFetchingRecipients"
                              :mergeFields="config.mergeFields ?? undefined"
                              :nextStepTitle="nextStep"
-                             :previewHtmlProcessor="previewHtmlProcessor"
+                             :personalizationSegments="personalizationSegments"
+                             :previewHtmlProcessor="previewEmailProcessor"
                              :recipientPersonIds="emailRecipients.map(e => e.personId)"
                              :recipientsLabel="emailRecipientsLabel"
                              :shortLinkCheckToken="onShortLinkCheckToken"
@@ -100,6 +104,9 @@
                              @saveAsTemplate="onSaveAsTemplate" />
 
             <SmsEditorStep v-else-if="step === 'SMS Editor'"
+                           v-model:previewAsPersonAlias="previewAsPersonAlias"
+                           v-model:previewAsPersonalizationSegment="previewAsPersonalizationSegment"
+                           v-model:previewAsType="previewAsType"
                            v-model:message="smsMessage"
                            v-model:smsAttachmentBinaryFiles="smsAttachmentBinaryFiles"
                            v-model:smsFromSystemPhoneNumberGuid="smsFromSystemPhoneNumberGuid"
@@ -109,6 +116,8 @@
                            :maxImageWidth="config.maxSmsImageWidth"
                            :mergeFields="config.mergeFields ?? undefined"
                            :nextStepTitle="nextStep"
+                           :personalizationSegments="personalizationSegments"
+                           :previewProcessor="previewSmsProcessor"
                            :recipientsLabel="smsRecipientsLabel"
                            :shortLinkCheckToken="onShortLinkCheckToken"
                            :shortLinkGetPageId="onShortLinkGetPageId"
@@ -127,6 +136,9 @@
                            @sendTestCommunication="onSendTestSms" />
 
             <PushNotificationEditorStep v-else-if="step === 'Push Notification Editor'"
+                                        v-model:previewAsPersonAlias="previewAsPersonAlias"
+                                        v-model:previewAsPersonalizationSegment="previewAsPersonalizationSegment"
+                                        v-model:previewAsType="previewAsType"
                                         v-model:pushData="pushData"
                                         v-model:pushMessage="pushMessage"
                                         v-model:pushOpenAction="pushOpenAction"
@@ -137,6 +149,8 @@
                                         :isUsingRockMobilePushTransport="config.isUsingRockMobilePushTransport"
                                         :mergeFields="config.mergeFields ?? undefined"
                                         :nextStepTitle="nextStep"
+                                        :personalizationSegments="personalizationSegments"
+                                        :previewProcessor="previewPushProcessor"
                                         :recipientsLabel="pushNotificationRecipientsLabel"
                                         :title="step"
                                         @nextStep="onNextStepClicked"
@@ -159,7 +173,12 @@
                               :futureSendDateTime="futureSendDateTime"
                               :isBulkCommunication="isBulkCommunication"
                               :message="message"
-                              :previewHtmlProcessor="previewHtmlProcessor"
+                              :previewAsPersonAlias="previewAsPersonAlias"
+                              :previewAsPersonalizationSegment="previewAsPersonalizationSegment"
+                              :previewAsType="previewAsType"
+                              :previewEmailProcessor="previewEmailProcessor"
+                              :previewPushProcessor="previewPushProcessor"
+                              :previewSmsProcessor="previewSmsProcessor"
                               :pushMessage="pushMessage"
                               :pushTitle="pushTitle"
                               :recipientsLabel="selectedMediumRecipientsLabel"
@@ -220,7 +239,7 @@
     import SendingStep from "./CommunicationEntryWizard/sendingStep.partial.obs";
     import SentStep from "./CommunicationEntryWizard/sentStep.partial.obs";
     import SmsEditorStep from "./CommunicationEntryWizard/smsEditorStep.partial.obs";
-    import { BinaryFileAttachment, BlockActionCallbacks } from "./CommunicationEntryWizard/types.partial";
+    import { BinaryFileAttachment, BlockActionCallbacks, PreviewAsType } from "./CommunicationEntryWizard/types.partial";
     import { useCache, useInvokeBlockActionHelper, usePersonPreferencesHelper } from "./CommunicationEntryWizard/utils.partial";
     import WizardStartStep from "./CommunicationEntryWizard/wizardStartStep.partial.obs";
     import { EmailEditorApi, GetHtmlResponse } from "@Obsidian/Controls/emailEditor";
@@ -249,6 +268,8 @@
     import { TaskActivityProgressUpdateBag } from "@Obsidian/ViewModels/Utility/taskActivityProgressUpdateBag";
     import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { CancellationTokenNone, CancellationTokenSource, ICancellationToken } from "@Obsidian/Utility/cancellation";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { CommunicationEntryWizardGetPreviewBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationEntryWizard/communicationEntryWizardGetPreviewBag";
 
     const config = useConfigurationValues<CommunicationEntryWizardInitializationBox>();
     const securityGrant = getSecurityGrant(config.securityGrantToken);
@@ -332,7 +353,7 @@
 
     // Cache the last 10 resolved email messages to reduce
     // the number of roundtrips to the server.
-    const messagePreviewCache = useCache<string | null | undefined>({ maxSize: 10 });
+    const messagePreviewCache = useCache<CommunicationEntryWizardGetPreviewBag>({ maxSize: 10 });
 
     // #region Values
 
@@ -361,6 +382,9 @@
     const wasCommunicationTemplateChanged = ref<boolean>(false);
     const isSaveCommunicationTemplateModalShown = ref<boolean>(false);
     const communicationTemplates = ref<CommunicationEntryWizardCommunicationTemplateListItemBag[]>(config.templates ?? []);
+    const previewAsType = ref<PreviewAsType>(PreviewAsType.Person);
+    const previewAsPersonAlias = ref<ListItemBag | null | undefined>();
+    const previewAsPersonalizationSegment = ref<ListItemBag | null | undefined>();
 
     // Communication state.
     const bccEmails = ref<string>(config.communication?.bccEmails ?? "");
@@ -381,7 +405,7 @@
     const individualRecipientPersonAliasGuids = ref<Guid[] | null | undefined>(config.communication?.individualRecipientPersonAliasGuids);
     const isBulkCommunication = ref<boolean>(config.communication?.isBulkCommunication ?? false);
     const message = ref<string>(config.communication?.message ?? "");
-    const personalizationSegmentIds = ref<number[]>(config.communication?.personalizationSegmentIds ?? []);
+    const personalizationSegments = ref<ListItemBag[] | null | undefined>(config.communication?.personalizationSegments);
     const pushData = ref<CommunicationEntryWizardPushNotificationOptionsBag | null | undefined>(config.communication?.pushData);
     const pushImageBinaryFileGuid = ref<Guid | null | undefined>(config.communication?.pushImageBinaryFileGuid);
     const pushMessage = ref<string>(config.communication?.pushMessage ?? "");
@@ -509,24 +533,29 @@
         }
     });
 
+    const personalizationSegmentItems = computed<ListItemBag[]>(() => {
+        // Join the authorized list of personalization segments with
+        // any that are already configured on the communication.
+        const authorizedPersonalizationSegments = config.personalizationSegments ?? [];
+        const communicationPersonalizationSegments = personalizationSegments.value ?? [];
+
+        return Enumerable
+            .from(authorizedPersonalizationSegments)
+            .concat(communicationPersonalizationSegments)
+            .distinctBy(c => c.value)
+            .toArray();
+    });
+
     const personalizationSegmentNames = computed<string[] | null | undefined>(() => {
-        if (personalizationSegmentIds.value.length) {
-            const names: string[] = [];
-
-            const personalizationSegments = config.personalizationSegments ?? [];
-            for (const personalizationSegmentId of personalizationSegmentIds.value) {
-                const personalizationSegment = personalizationSegments.find(c => c.value === `${personalizationSegmentId}`);
-
-                if (personalizationSegment?.text) {
-                    names.push(personalizationSegment.text);
-                }
-            }
-
-            return names.length ? names : null;
+        if (!personalizationSegments.value) {
+            return personalizationSegments.value;
         }
-        else {
-            return null;
-        }
+
+        return Enumerable
+            .from(personalizationSegments.value)
+            .select(c => c.text)
+            .ofType<string>((t): t is string => !isNullOrWhiteSpace(t))
+            .toArray();
     });
 
     const emailAttachmentNames = computed<string[] | null | undefined>(() => {
@@ -709,7 +738,7 @@
             futureSendDateTime: futureSendDateTime.value,
             individualRecipientPersonAliasGuids: individualRecipientPersonAliasGuids.value,
             isBulkCommunication: isBulkCommunication.value,
-            personalizationSegmentIds: personalizationSegmentIds.value,
+            personalizationSegments: personalizationSegments.value,
             segmentCriteria: segmentCriteria.value,
             status: status.value,
 
@@ -741,7 +770,13 @@
         };
     }
 
-    function updateFieldsFromCommunicationBag(bag: CommunicationEntryWizardCommunicationBag): void {
+    function updateFieldsFromCommunicationBag(
+        bag: CommunicationEntryWizardCommunicationBag,
+        options: {
+            ignoreSmsMessage?: boolean;
+            ignorePushMessage?: boolean;
+        } = {}
+    ): void {
         // Shared medium fields.
         communicationGuid.value = bag.communicationGuid;
         communicationId.value = bag.communicationId;
@@ -755,7 +790,7 @@
         futureSendDateTime.value = bag.futureSendDateTime;
         individualRecipientPersonAliasGuids.value = bag.individualRecipientPersonAliasGuids;
         isBulkCommunication.value = bag.isBulkCommunication ?? false;
-        personalizationSegmentIds.value = personalizationSegmentIds.value ?? [];
+        personalizationSegments.value = bag.personalizationSegments ?? [];
         segmentCriteria.value = bag.segmentCriteria ?? SegmentCriteria.All;
         status.value = bag.status ?? CommunicationStatus.Transient;
 
@@ -773,17 +808,21 @@
         // SMS fields.
         smsAttachmentBinaryFiles.value = bag.smsAttachmentBinaryFiles;
         smsFromSystemPhoneNumberGuid.value = bag.smsFromSystemPhoneNumberGuid;
-        smsMessage.value = bag.smsMessage ?? "";
         testSmsPhoneNumber.value = bag.testSmsPhoneNumber;
+        if (!options.ignoreSmsMessage) {
+            smsMessage.value = bag.smsMessage ?? "";
+        }
 
         // Push fields.
         pushData.value = bag.pushData;
-        pushMessage.value = bag.pushMessage ?? "";
         pushOpenAction.value = bag.pushOpenAction ?? PushOpenAction.NoAction;
         pushOpenMessageJson.value = bag.pushOpenMessageJson ?? undefined;
         pushTitle.value = bag.pushTitle ?? "";
         pushImageBinaryFileGuid.value = bag.pushImageBinaryFileGuid;
         pushOpenMessage.value = bag.pushOpenMessage ?? "";
+        if (!options.ignorePushMessage) {
+            pushMessage.value = bag.pushMessage ?? "";
+        }
     }
 
     /**
@@ -962,7 +1001,6 @@
         const result = await invokeBlockAction.sendTest(bag);
 
         if (result?.isSuccess) {
-            console.log("success!");
             callbacks.onSuccess();
         }
         else {
@@ -972,15 +1010,23 @@
         }
     }
 
-    async function previewHtmlProcessor(previewHtml: string): Promise<string | null | undefined> {
-        const hash = await createHashSha256(previewHtml);
-        console.log(hash);
+    async function previewEmailProcessor(previewHtml: string, previewAsPersonAliasGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined): Promise<string | null | undefined> {
+        const hash = await createHashSha256(`email:${previewHtml}:${previewAsPersonAliasGuid ?? ""}:${previewAsPersonalizationSegmentId ?? ""}`);
+
         if (messagePreviewCache.has(hash)) {
-            return messagePreviewCache.get(hash);
+            const cached = messagePreviewCache.get(hash)!;
+            previewAsPersonAlias.value = cached.wasRequestedPersonFound ? cached.previewAsPersonAlias : null;
+            return cached.messagePreview;
         }
         else {
+            // Store the current email message value.
             message.value = previewHtml;
-            const result = await invokeBlockAction.getEmailPreviewHtml(getCommunicationBag());
+
+            const result = await invokeBlockAction.getEmailPreviewHtml(
+                getCommunicationBag(),
+                previewAsPersonAliasGuid,
+                previewAsPersonalizationSegmentId
+            );
 
             if (result.isSuccess && result.data) {
                 // Keep the browser communication up-to-date with the server communication.
@@ -988,13 +1034,97 @@
                     updateFieldsFromCommunicationBag(result.data.communication);
                 }
 
-                messagePreviewCache.set(hash, result.data.previewHtml);
-                return result.data.previewHtml;
+                // Update preview values.
+                messagePreviewCache.set(hash, result.data);
+                previewAsPersonAlias.value = result.data.wasRequestedPersonFound ? result.data.previewAsPersonAlias : null;
+
+                return result.data.messagePreview;
             }
             else {
                 messagePreviewCache.remove(hash);
                 console.error(result.errorMessage ?? "An error occurred.");
-                return (result.errorMessage ?? "An error occurred.");
+                previewAsPersonAlias.value = null;
+                return result.errorMessage ?? "An error occurred.";
+            }
+        }
+    }
+
+    async function previewPushProcessor(message: string, previewAsPersonAliasGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined): Promise<string | null | undefined> {
+        const hash = await createHashSha256(`push:${message}:${previewAsPersonAliasGuid ?? ""}:${previewAsPersonalizationSegmentId ?? ""}`);
+
+        if (messagePreviewCache.has(hash)) {
+            const cached = messagePreviewCache.get(hash)!;
+            previewAsPersonAlias.value = cached.wasRequestedPersonFound ? cached.previewAsPersonAlias : null;
+            return cached.messagePreview;
+        }
+        else {
+            pushMessage.value = message;
+
+            const result = await invokeBlockAction.getPushPreview(
+                getCommunicationBag(),
+                previewAsPersonAliasGuid,
+                previewAsPersonalizationSegmentId
+            );
+
+            if (result.isSuccess && result.data) {
+                // Keep the browser communication up-to-date with the server communication.
+                if (result.data.communication) {
+                    updateFieldsFromCommunicationBag(result.data.communication, {
+                        ignorePushMessage: true
+                    });
+                }
+
+                // Update preview values.
+                messagePreviewCache.set(hash, result.data);
+                previewAsPersonAlias.value = result.data.wasRequestedPersonFound === false ? null : result.data.previewAsPersonAlias;
+
+                return result.data.messagePreview;
+            }
+            else {
+                messagePreviewCache.remove(hash);
+                console.error(result.errorMessage ?? "An error occurred.");
+                previewAsPersonAlias.value = null;
+                return result.errorMessage ?? "An error occurred.";
+            }
+        }
+    }
+
+    async function previewSmsProcessor(message: string, previewAsPersonAliasGuid?: Guid | null | undefined, previewAsPersonalizationSegmentId?: number | null | undefined): Promise<string | null | undefined> {
+        const hash = await createHashSha256(`sms:${message}:${previewAsPersonAliasGuid ?? ""}:${previewAsPersonalizationSegmentId ?? ""}`);
+
+        if (messagePreviewCache.has(hash)) {
+            const cached = messagePreviewCache.get(hash)!;
+            previewAsPersonAlias.value = cached.wasRequestedPersonFound ? cached.previewAsPersonAlias : null;
+            return cached.messagePreview;
+        }
+        else {
+            smsMessage.value = message;
+
+            const result = await invokeBlockAction.getSmsPreview(
+                getCommunicationBag(),
+                previewAsPersonAliasGuid,
+                previewAsPersonalizationSegmentId
+            );
+
+            if (result.isSuccess && result.data) {
+                // Keep the browser communication up-to-date with the server communication.
+                if (result.data.communication) {
+                    updateFieldsFromCommunicationBag(result.data.communication, {
+                        ignoreSmsMessage: true
+                    });
+                }
+
+                // Update preview values.
+                messagePreviewCache.set(hash, result.data);
+                previewAsPersonAlias.value = result.data.wasRequestedPersonFound === false ? null : result.data.previewAsPersonAlias;
+
+                return result.data.messagePreview;
+            }
+            else {
+                messagePreviewCache.remove(hash);
+                console.error(result.errorMessage ?? "An error occurred.");
+                previewAsPersonAlias.value = null;
+                return result.errorMessage ?? "An error occurred.";
             }
         }
     }
@@ -1172,13 +1302,11 @@
     }
 
     function onSendProgressUpdated(bag: TaskActivityProgressUpdateBag): void {
-        console.log(bag);
         sendingProgressMessage.value = bag.message || "Loading...";
         sendingCompletionPercentage.value = bag.completionPercentage;
     }
 
     function onSendCompleted(bag: TaskActivityProgressStatusBag): void {
-        console.log(bag);
         sendingCompletionPercentage.value = 100;
 
         if (bag.data?.["communicationId"]) {

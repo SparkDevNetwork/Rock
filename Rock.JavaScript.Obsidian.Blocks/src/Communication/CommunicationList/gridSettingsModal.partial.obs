@@ -8,13 +8,13 @@
         <div class="communication-list-filters-performance-tips well">
             <h5>Performance Tips</h5>
             <div class="performance-tips-detail">
-                The more filtered your data is, the faster the grid will load. Try filtering by Created By, Send Date Range, or Recipient Count to optimize loading performance.
+                {{ performanceTipsMessage }}
             </div>
         </div>
 
-        <PersonPicker v-if="showCreatedByFilter"
-                      v-model="createdBy"
-                      label="Created By"
+        <PersonPicker v-if="showSentByFilter"
+                      v-model="sentBy"
+                      label="Sent By"
                       :enableSelfSelection="true" />
 
         <CheckBox v-model="hideDrafts" label="Hide Drafts" />
@@ -64,7 +64,7 @@
 </style>
 
 <script setup lang="ts">
-    import { nextTick, PropType, ref, watch } from "vue";
+    import { computed, nextTick, PropType, ref, watch } from "vue";
     import { GridSettingsOptions } from "./types.partial";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
@@ -76,6 +76,7 @@
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { useVModelPassthrough } from "@Obsidian/Utility/component";
     import { RangeType, SlidingDateRange } from "@Obsidian/Utility/slidingDateRange";
+    import { asCommaAnd } from "@Obsidian/Utility/stringUtils";
     import { deepEqual } from "@Obsidian/Utility/util";
 
     const props = defineProps({
@@ -84,7 +85,7 @@
             required: true
         },
 
-        showCreatedByFilter: {
+        showSentByFilter: {
             type: Boolean as PropType<boolean>,
             default: true
         },
@@ -117,7 +118,7 @@
 
     const isVisible = useVModelPassthrough(props, "visible", emit);
 
-    const createdBy = ref(props.modelValue.createdBy);
+    const sentBy = ref(props.modelValue.sentBy);
     const hideDrafts = ref(props.modelValue.hideDrafts);
     const slidingDateRange = ref<SlidingDateRange | null>(props.modelValue.slidingDateRange ?? props.defaultSlidingDateRange);
     const recipientCountRange = ref(props.modelValue.recipientCountRange);
@@ -127,6 +128,23 @@
 
     // #endregion Values
 
+    // #region Computed Values
+
+    const performanceTipsMessage = computed((): string => {
+        const filters: string[] = [
+            "Send Date Range",
+            "Recipient Count"
+        ];
+
+        if (props.showSentByFilter) {
+            filters.unshift("Sent By");
+        }
+
+        return `The more filtered your data is, the faster the grid will load. Try filtering by ${asCommaAnd(filters, "or")} to optimize loading performance.`;
+    });
+
+    // #endregion Computed Values
+
     // #region Event Handlers
 
     /**
@@ -134,7 +152,7 @@
      */
     function onSave(): void {
         const value: GridSettingsOptions = {
-            createdBy: createdBy.value,
+            sentBy: sentBy.value,
             hideDrafts: hideDrafts.value,
             slidingDateRange: slidingDateRange.value,
             recipientCountRange: recipientCountRange.value,
@@ -155,7 +173,7 @@
     // #region Watchers
 
     watch(() => props.modelValue, () => {
-        createdBy.value = props.modelValue.createdBy;
+        sentBy.value = props.modelValue.sentBy;
         hideDrafts.value = props.modelValue.hideDrafts;
         slidingDateRange.value = props.modelValue.slidingDateRange ?? props.defaultSlidingDateRange;
         recipientCountRange.value = props.modelValue.recipientCountRange;

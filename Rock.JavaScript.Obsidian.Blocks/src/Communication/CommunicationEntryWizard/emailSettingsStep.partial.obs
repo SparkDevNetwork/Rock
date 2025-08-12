@@ -67,11 +67,18 @@
                         </TransitionVerticalCollapse>
 
                         <div class="row">
-                            <div class="col-sm-5">
+                            <div class="col-sm-6">
                                 <TextBox v-model="internalSubject"
                                          help="<span class='tip tip-lava'></span>"
                                          label="Email Subject"
                                          rules="required" />
+
+                                <TextBox v-if="emailPreviewElement"
+                                         v-model="emailPreviewText"
+                                         help="A short summary of the email which will show in the inbox before the email is opened."
+                                         label="Email Preview Text"
+                                         textMode="multiline" />
+
                                 <FileUploader v-model="currentAttachment"
                                               :binaryFileTypeGuid="attachmentBinaryFileTypeGuid"
                                               label="Attachments"
@@ -85,17 +92,6 @@
                                         </li>
                                     </ul>
                                 </div>
-                            </div>
-
-                            <div class="col-sm-7">
-                                <TextBox v-if="emailPreviewElement"
-                                         v-model="emailPreviewText"
-                                         help="A short summary of the email which will show in the inbox before the email is opened."
-                                         label="Email Preview"
-                                         textMode="multiline" />
-                            </div>
-
-                            <div class="col-sm-5">
                             </div>
                         </div>
                     </RockForm>

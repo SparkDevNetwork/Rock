@@ -41,12 +41,6 @@ export type CommunicationMessagePreviewBag = {
     /** Gets or sets the name of the communication list to which this communication should be sent. */
     communicationListName?: string | null;
 
-    /** Gets or sets the name of the person who created this communication. */
-    createdByPersonName?: string | null;
-
-    /** Gets or sets the datetime this communication was created. */
-    createdDateTime?: string | null;
-
     /** Gets or sets the email attachment binary files. */
     emailAttachmentBinaryFiles?: ListItemBag[] | null;
 
@@ -79,6 +73,12 @@ export type CommunicationMessagePreviewBag = {
 
     /** Gets or sets the email address to which replies to this communication should be sent. */
     replyToEmail?: string | null;
+
+    /** Gets or sets the datetime this communication was (or is being) sent. */
+    sendDateTime?: string | null;
+
+    /** Gets or sets the name of the person who sent this communication. */
+    sentByPersonName?: string | null;
 
     /** Gets or sets the SMS attachment binary files. */
     smsAttachmentBinaryFiles?: ListItemBag[] | null;

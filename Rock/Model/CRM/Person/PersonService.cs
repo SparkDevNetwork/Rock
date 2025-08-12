@@ -25,6 +25,7 @@ using System.Text;
 using System.Web.UI.WebControls;
 
 using Rock;
+using Rock.Attribute;
 using Rock.BulkExport;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
@@ -3060,11 +3061,28 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Gets spouses for a list of people, indexed by the person identifier.
+        /// Retrieves the full names of spouses for the specified set of people as a dictionary by the person's (not spouse) identifier.
         /// </summary>
-        /// <param name="personQuery">The person query.</param>
-        /// <returns></returns>
-        public Dictionary<int, Person> GetSpouses( IQueryable<Person> personQuery )
+        /// <param name="personQuery">An <see cref="IQueryable{Person}"/> representing the base query for the people
+        /// whose spouses should be determined. Any filtering should be applied before passing this query.</param>
+        /// <returns>
+        /// A <see cref="Dictionary{TKey, TValue}"/> where:
+        /// <list type="bullet">
+        ///   <item><description><c>TKey</c> = the <see cref="Person.Id"/> of the person (not the spouse).</description></item>
+        ///   <item><description><c>TValue</c> = the spouse’s full name as a <see cref="string"/>.</description></item>
+        /// </list>
+        /// Only people meeting the spouse criteria will be included in the dictionary.
+        /// </returns>
+        /// <remarks>
+        ///     <para>
+        ///         <strong>This is an internal API</strong> that supports the Rock
+        ///         infrastructure and not subject to the same compatibility standards
+        ///         as public APIs. It may be changed or removed without notice in any
+        ///         release and should therefore not be directly used in any plug-ins.
+        ///     </para>
+        /// </remarks>
+        [RockInternal( "17.2" )]
+        internal Dictionary<int, string> GetSpousesFullName( IQueryable<Person> personQuery )
         {
             // Note this logic is duplicated in SpouseNameSelect and SpouseTransform.
             //// Spouse is determined if all these conditions are met
@@ -3099,24 +3117,39 @@ namespace Rock.Model
                 .Join( marriedGroupMembers,
                     spouse => spouse.GroupId,
                     married => married.GroupId,
-                    ( spouse, married ) => new { MatchedPerson = married.Person, Spouse = spouse } )
+                    ( spouse, married ) => new { MatchedPerson = married, Spouse = spouse } )
                 .Where( m => m.Spouse.Person.MaritalStatusValueId == marriedDefinedValueId )
                 .Where( m =>
                     !isBibleStrictSpouse ||
-                    m.MatchedPerson.Gender != m.Spouse.Person.Gender ||
-                    m.MatchedPerson.Gender == Gender.Unknown ||
+                    m.MatchedPerson.Person.Gender != m.Spouse.Person.Gender ||
+                    m.MatchedPerson.Person.Gender == Gender.Unknown ||
                     m.Spouse.Person.Gender == Gender.Unknown )
                 .OrderBy( m => m.Spouse.GroupOrder ?? int.MaxValue )
                 .ThenBy( m => Math.Abs( DbFunctions.DiffDays(
                     m.Spouse.Person.BirthDate ?? new DateTime( 1, 1, 1 ),
-                    m.MatchedPerson.BirthDate ?? new DateTime( 1, 1, 1 )
+                    m.MatchedPerson.Person.BirthDate ?? new DateTime( 1, 1, 1 )
                 ) ?? 0 ) )
-                .ThenBy( m => m.Spouse.PersonId );
+                .ThenBy( m => m.Spouse.PersonId )
+                // IMPORTANT: project only primitives; DO NOT use Person.FullName here (it triggers lazy loading).
+                .Select( m => new
+                {
+                    PersonId = m.MatchedPerson.PersonId,
+                    SpouseNickName = m.Spouse.Person.NickName,
+                    SpouseLastName = m.Spouse.Person.LastName,
+                    SpouseSuffixValueId = m.Spouse.Person.SuffixValueId,
+                    SpouseRecordTypeValueId = m.Spouse.Person.RecordTypeValueId
+                } );
 
             var spouses = spousesQuery
-                .GroupBy( m => m.MatchedPerson.Id )
+                .GroupBy( x => x.PersonId )
                 .Select( g => g.FirstOrDefault() ) // take best match for each person
-                .ToDictionary( m => m.MatchedPerson.Id, m => m.Spouse.Person );
+                .AsEnumerable()                    // switch to client-side to safely build FullName
+                .ToDictionary(
+                    x => x.PersonId,
+                    x =>
+                    {
+                        return Person.FormatFullName( x.SpouseNickName, x.SpouseLastName, x.SpouseSuffixValueId, x.SpouseRecordTypeValueId );
+                    } );
 
             return spouses;
         }
