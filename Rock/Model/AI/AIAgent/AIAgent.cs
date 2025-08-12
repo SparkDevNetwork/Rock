@@ -15,6 +15,7 @@
 // </copyright>
 //
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.ComponentModel.DataAnnotations;
 using System.ComponentModel.DataAnnotations.Schema;
 using System.Data.Entity.ModelConfiguration;
@@ -26,23 +27,22 @@ using Rock.Utility;
 namespace Rock.Model
 {
     /// <summary>
-    /// Represents an AI skill in Rock. The skill defines a set of related
-    /// functions that the AI agent can perform, such as answering questions,
-    /// or performing data manipulation tasks.
+    /// Represents an AI chat agent in Rock. The agent and the related skills
+    /// define how the agent will interact with people and what features it
+    /// will support.
     /// </summary>
-    [RockDomain( "Core" )]
-    [Table( "AISkill" )]
+    [RockDomain( "AI" )]
+    [Table( "AIAgent" )]
     [DataContract]
     [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.
     [CodeGenerateRest( DisableEntitySecurity = true )]
-    [Rock.SystemGuid.EntityTypeGuid( "d953ab34-4ab6-47c6-857b-53044a99ed75" )]
-    public partial class AISkill : Model<AISkill>, IHasAdditionalSettings
+    [Rock.SystemGuid.EntityTypeGuid( "ee3fe609-5c7c-492e-b0e9-5461045fc825" )]
+    public partial class AIAgent : Model<AIAgent>, IHasAdditionalSettings
     {
         #region Entity Properties
 
         /// <summary>
-        /// The friendly name of the skill that will be used to identify it in
-        /// the UI.
+        /// The friendly name of the agent that will be used to identify it in the UI.
         /// </summary>
         [Required]
         [MaxLength( 100 )]
@@ -50,28 +50,27 @@ namespace Rock.Model
         public string Name { get; set; }
 
         /// <summary>
-        /// The description of the skill, which provides additional context or
+        /// The description of the agent, which provides additional context or
         /// information about its intended purpose and functionality.
         /// </summary>
         [DataMember]
         public string Description { get; set; }
 
         /// <summary>
-        /// A concise, but descriptive, hint to the language model that provides
-        /// context about when this skill's functions should be used in response
-        /// to an individual's input.
+        /// The identifier of the binary file that contains the image to use
+        /// as the avatar to represent the agent. This will be used in the
+        /// administrative UI and the chat UI to represent the agent visually.
         /// </summary>
         [DataMember]
-        public string UsageHint { get; set; }
+        public int? AvatarBinaryFileId { get; set; }
 
         /// <summary>
-        /// The entity type identifier that represents the C# class that
-        /// implements the functions for this skill. If this is not null then
-        /// the skill and related functions should not allow editing beyond
-        /// enabling or disabling them.
+        /// The persona of the agent, which is a string that describes how the
+        /// agent should behavor or respond. This can include tone, style, and
+        /// special instructions it should follow when interacting with people.
         /// </summary>
         [DataMember]
-        public int? CodeEntityTypeId { get; set; }
+        public string Persona { get; set; }
 
         /// <inheritdoc/>
         [DataMember]
@@ -82,27 +81,19 @@ namespace Rock.Model
         #region Navigation Properties
 
         /// <summary>
-        /// The entity type that represents the C# class that implements the
-        /// functions for this skill. If this is not null then the skill and
-        /// related functions should not allow editing beyond enabling or
-        /// disabling them.
+        /// The binary file that contains the image to use as the avatar to
+        /// represent the agent. This will be used in the administrative UI and
+        /// the chat UI to represent the agent visually.
         /// </summary>
         [DataMember]
-        public virtual EntityType CodeEntityType { get; set; }
+        public virtual BinaryFile AvatarBinaryFile { get; set; }
 
         /// <summary>
         /// A collection containing the <see cref="AIAgentSkill" /> entities
-        /// that represent the agents this skill is attached to.
+        /// that represent the skills attached to this agent.
         /// </summary>
         [DataMember]
-        public virtual ICollection<AIAgentSkill> AIAgentSkills { get; set; }
-
-        /// <summary>
-        /// A collection containing the <see cref="AISkillFunction" /> entities
-        /// that represent the functions this skill has.
-        /// </summary>
-        [DataMember]
-        public virtual ICollection<AISkillFunction> AISkillFunctions{ get; set; }
+        public virtual ICollection<AIAgentSkill> AIAgentSkills { get; set; } = new Collection<AIAgentSkill>();
 
         #endregion
 
@@ -122,14 +113,14 @@ namespace Rock.Model
     /// <summary>
     /// 
     /// </summary>
-    public partial class AISkillConfiguration : EntityTypeConfiguration<AISkill>
+    public partial class AIAgentConfiguration : EntityTypeConfiguration<AIAgent>
     {
         /// <summary>
-        /// Initializes a new instance of the <see cref="AISkillConfiguration"/> class.
+        /// Initializes a new instance of the <see cref="AIAgentConfiguration"/> class.
         /// </summary>
-        public AISkillConfiguration()
+        public AIAgentConfiguration()
         {
-            this.HasOptional( a => a.CodeEntityType ).WithMany().HasForeignKey( a => a.CodeEntityTypeId ).WillCascadeOnDelete( false );
+            this.HasOptional( a => a.AvatarBinaryFile ).WithMany().HasForeignKey( a => a.AvatarBinaryFileId ).WillCascadeOnDelete( false );
         }
     }
 

@@ -30,7 +30,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an existing chat session for a specific agent and person.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "AI" )]
     [Table( "AIAgentSession" )]
     [DataContract]
     [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.

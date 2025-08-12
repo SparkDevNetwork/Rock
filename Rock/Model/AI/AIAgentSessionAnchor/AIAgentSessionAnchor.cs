@@ -31,7 +31,7 @@ namespace Rock.Model
     /// on Person:Ted Decker as well on Group:Alisha Marble's Small Group. You
     /// cannot have multiple anchors on the same entity type.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "AI" )]
     [Table( "AIAgentSessionAnchor" )]
     [DataContract]
     [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.

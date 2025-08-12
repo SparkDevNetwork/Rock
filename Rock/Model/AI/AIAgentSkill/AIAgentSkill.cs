@@ -27,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents a link between an agent and a skill.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "AI" )]
     [Table( "AIAgentSkill" )]
     [DataContract]
     [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.

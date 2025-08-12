@@ -27,7 +27,7 @@ namespace Rock.Model
     /// <summary>
     /// Represents an AI provider in Rock.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "AI" )]
     [Table( "AIProvider" )]
     [DataContract]
     [CodeGenerateRest( DisableEntitySecurity = true )]

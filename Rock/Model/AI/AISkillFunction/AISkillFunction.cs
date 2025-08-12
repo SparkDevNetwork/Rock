@@ -30,7 +30,7 @@ namespace Rock.Model
     /// for a skill. The function will provide additional data back to the
     /// model or execute a specific action based on the individual's request.
     /// </summary>
-    [RockDomain( "Core" )]
+    [RockDomain( "AI" )]
     [Table( "AISkillFunction" )]
     [DataContract]
     [CodeGenExclude( CodeGenFeature.DefaultRestController )] // Do not generate a v1 API controller.
