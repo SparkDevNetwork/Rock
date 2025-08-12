@@ -15,7 +15,6 @@
 // </copyright>
 //
 
-using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
 
@@ -62,6 +61,27 @@ namespace Rock.AI.Agent.Providers
         DefaultDecimalValue = 1,
         Order = 13,
         Key = AttributeKey.DefaultTopP )]
+
+    [TextField( "Default Model",
+        Description = "The default model to use for chat completions and functions.",
+        IsRequired = true,
+        DefaultValue = "gpt-5-mini",
+        Order = 14,
+        Key = AttributeKey.DefaultModel )]
+
+    [TextField( "Code Model",
+        Description = "The model to use for code related tasks.",
+        IsRequired = true,
+        DefaultValue = "gpt-4o-mini",
+        Order = 15,
+        Key = AttributeKey.CodeModel )]
+
+    [TextField( "Research Model",
+        Description = "The model to use for research related tasks.",
+        IsRequired = true,
+        DefaultValue = "gpt-4o-mini",
+        Order = 16,
+        Key = AttributeKey.ResearchModel )]
     internal class AzureOpenAIProvider : AgentProviderComponent
     {
         #region Keys
@@ -72,19 +92,15 @@ namespace Rock.AI.Agent.Providers
             public const string Endpoint = "Endpoint";
             public const string DefaultTemperature = "DefaultTemperature";
             public const string DefaultTopP = "DefaultTopP";
+            public const string DefaultModel = "DefaultModel";
+            public const string CodeModel = "CodeModel";
+            public const string ResearchModel = "ResearchModel";
 
             // This is only used for unit testing.
             public const string Seed = "Seed";
         }
 
         #endregion
-
-        private readonly Dictionary<ModelServiceRole, string> _modelToRoleMap = new Dictionary<ModelServiceRole, string>
-        {
-            { ModelServiceRole.Default, "gpt-5-mini" },
-            { ModelServiceRole.Code, "gpt-4o-mini" },
-            { ModelServiceRole.Research, "gpt-4o-mini" }
-        };
 
         public AzureOpenAIProvider()
         {
@@ -95,12 +111,33 @@ namespace Rock.AI.Agent.Providers
         {
         }
 
+        /// <summary>
+        /// Gets the name of the language model to use for the specified role.
+        /// </summary>
+        /// <param name="role">The requested role.</param>
+        /// <returns>The name of the model to use when processing the request.</returns>
+        private string GetModelName( ModelServiceRole role )
+        {
+            switch ( role )
+            {
+                case ModelServiceRole.Code:
+                    return GetAttributeValue( AttributeKey.CodeModel );
+
+                case ModelServiceRole.Research:
+                    return GetAttributeValue( AttributeKey.ResearchModel );
+
+                case ModelServiceRole.Default:
+                default:
+                    return GetAttributeValue( AttributeKey.DefaultModel );
+            };
+        }
+
         /// <inheritdoc/>
         public override void AddChatCompletion( ModelServiceRole role, IServiceCollection serviceCollection )
         {
             serviceCollection.AddAzureOpenAIChatCompletion(
                 serviceId: GetServiceKeyForRole( role ),
-                deploymentName: _modelToRoleMap[role],
+                deploymentName: GetModelName( role ),
                 endpoint: GetAttributeValue( AttributeKey.Endpoint ),
                 apiKey: GetAttributeValue( AttributeKey.ApiKey ) );
         }
@@ -134,7 +171,7 @@ namespace Rock.AI.Agent.Providers
             return new OpenAIPromptExecutionSettings
             {
                 ServiceId = GetServiceKeyForRole( function.Role ),
-                ModelId = _modelToRoleMap[function.Role],
+                ModelId = GetModelName( function.Role ),
                 Temperature = function.Temperature ?? GetAttributeValue( AttributeKey.DefaultTemperature ).AsDoubleOrNull(),
                 TopP = GetAttributeValue( AttributeKey.DefaultTopP ).AsDoubleOrNull(),
                 Seed = GetSeed(),
