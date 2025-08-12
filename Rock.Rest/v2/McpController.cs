@@ -29,6 +29,11 @@ using Rock.AI.Agent;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
+using System.Linq;
+using Rock.Enums.AI.Agent;
+
+
+
 
 #if WEBFORMS
 using IActionResult = System.Web.Http.IHttpActionResult;
@@ -37,25 +42,25 @@ using RouteAttribute = System.Web.Http.RouteAttribute;
 using HttpPostAttribute = System.Web.Http.HttpPostAttribute;
 #endif
 
-namespace Rock.Rest.v2.Models.Actions
+namespace Rock.Rest.v2
 {
     /// <summary>
-    /// Provides action API endpoints for DataViews.
+    /// Provides API endpoints for MCP AI services.
     /// </summary>
-    [RoutePrefix( "api/v2/models/aiagents/actions" )]
-    [Rock.SystemGuid.RestControllerGuid( "0a73df31-46d0-41e2-a0f6-0a762b97fd07" )]
-    public class AIAgentsActionsController : ApiControllerBase
+    [RoutePrefix( "api/v2/mcp" )]
+    [SystemGuid.RestControllerGuid( "0a73df31-46d0-41e2-a0f6-0a762b97fd07" )]
+    public class McpController : ApiControllerBase
     {
         private readonly IMcpServer _mcpServer;
 
         private readonly IChatAgentBuilder _agentBuilder;
 
         /// <summary>
-        /// Initializes a new instance of the <see cref="AIAgentsActionsController"/> class.
+        /// Initializes a new instance of the <see cref="McpController"/> class.
         /// </summary>
         /// <param name="mcpServer">The server instance used to manage AI agent actions.</param>
         /// <param name="agentBuilder">The factory that will build our agent.</param>
-        public AIAgentsActionsController( IMcpServer mcpServer, IChatAgentBuilder agentBuilder )
+        public McpController( IMcpServer mcpServer, IChatAgentBuilder agentBuilder )
         {
             _mcpServer = mcpServer ?? throw new ArgumentNullException( nameof( mcpServer ) );
             _agentBuilder = agentBuilder ?? throw new ArgumentNullException( nameof( agentBuilder ) );
@@ -64,11 +69,11 @@ namespace Rock.Rest.v2.Models.Actions
         /// <summary>
         /// Executes an MCP request for the agent.
         /// </summary>
-        /// <param name="id">The agent identifier as either an Id, Guid or IdKey value.</param>
+        /// <param name="slug">The slug of the agent for this MCP request.</param>
         /// <param name="cancellationToken">Cancellation token to cancel the request.</param>
         /// <returns>The response data from the MCP request.</returns>
         [HttpPost]
-        [Route( "mcp/{id}" )]
+        [Route( "{slug}" )]
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_READ )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
@@ -78,12 +83,14 @@ namespace Rock.Rest.v2.Models.Actions
         [ProducesResponseType( HttpStatusCode.NotFound )]
         [ProducesResponseType( HttpStatusCode.Unauthorized )]
         [SystemGuid.RestActionGuid( "2c6194af-095a-42fa-9288-27e8b3494231" )]
-        public async Task<IActionResult> PostMcp( string id, CancellationToken cancellationToken )
+        public async Task<IActionResult> PostMcp( string slug, CancellationToken cancellationToken )
         {
             using ( var rockContext = new RockContext() )
             {
                 // TODO: Change this use a slug instead of an integer Id.
-                var agentCache = AIAgentCache.Get( id, true );
+                var agentCache = AIAgentCache.All()
+                    .FirstOrDefault( a => a.AgentType == AgentType.Mcp
+                        && a.GetAdditionalSettings<McpAgentSettings>().Slug == slug );
 
                 if ( agentCache == null )
                 {

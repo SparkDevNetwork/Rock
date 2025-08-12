@@ -82,7 +82,7 @@ public abstract class BaseFunctionCallTests : MockDatabaseTestsBase
         var agentConfiguration = new AgentConfiguration( 1,
             providerMock.Object,
             "You are a helpful assistant for Rock RMS.",
-            new AgentSettings(),
+            new ChatAgentSettings(),
             new List<SkillConfiguration>
             {
                 new SkillConfiguration( "Test",

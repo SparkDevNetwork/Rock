@@ -40,6 +40,15 @@ namespace Rock.AI.Agent
     /// </summary>
     internal abstract class AgentSkillComponent : LightComponent
     {
+        #region Constants
+
+        internal static readonly IReadOnlyCollection<Guid> SystemSkillGuids = new HashSet<Guid>
+        {
+            new Guid( "3406D2DC-6718-45A2-99D3-1DAA32BF2EFD" ), // CoreUtility
+        };
+
+        #endregion
+
         #region Properties
 
         /// <summary>

@@ -15,7 +15,7 @@
 // </copyright>
 //
 
-namespace Rock.AI.Agent.Mcp
+namespace Rock.AI.Agent.Mcp.Protocol
 {
     /// <summary>
     /// Represents an error that occurred during a JSON-RPC request.

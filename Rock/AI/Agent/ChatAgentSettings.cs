@@ -21,9 +21,10 @@ namespace Rock.AI.Agent
 {
     /// <summary>
     /// Additional settings for <see cref="Model.AIAgent"/> that do not need to
-    /// be directly queried from the database.
+    /// be directly queried from the database. These only apply when
+    /// <see cref="Model.AIAgent.AgentType"/> is <see cref="AgentType.Chat"/>.
     /// </summary>
-    internal class AgentSettings
+    internal class ChatAgentSettings
     {
         /// <summary>
         /// The token threshold before auto-summarization will be triggered
@@ -31,6 +32,13 @@ namespace Rock.AI.Agent
         /// sessions.
         /// </summary>
         public int AutoSummarizeThreshold { get; set; } = 2_000;
+
+        /// <summary>
+        /// Determines if system skills are excluded from this agent. These are
+        /// standard skills and functions that would generally be considered
+        /// required for other skills to operate correctly.
+        /// </summary>
+        public bool IsExcludingSystemSkills { get; set; }
 
         /// <summary>
         /// The role that the agent will use when determining which language

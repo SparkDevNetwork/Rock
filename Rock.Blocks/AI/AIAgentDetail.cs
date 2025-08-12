@@ -27,6 +27,7 @@ using Rock.AI.Agent;
 using Rock.Attribute;
 using Rock.Constants;
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.Security;
 using Rock.ViewModels.Blocks;
@@ -116,16 +117,27 @@ namespace Rock.Blocks.AI
         /// <returns>The options that provide additional details to the block.</returns>
         private AIAgentDetailOptionsBag GetBoxOptions( bool isEditable )
         {
+            var allSkills = AISkillCache.All( RockContext );
+
             var options = new AIAgentDetailOptionsBag
             {
-                AvailableSkills = AISkillCache.All()
+                AvailableSkills = allSkills
                     .Select( s => new ListItemBag
                     {
                         Value = s.Guid.ToString(),
                         Text = s.Name,
                         Category = s.Description
                     } )
-                    .ToList()
+                    .ToList(),
+                SystemSkills = allSkills
+                    .Where( s => AgentSkillComponent.SystemSkillGuids.Contains( s.Guid ) )
+                    .Select( s => new ListItemBag
+                    {
+                        Value = s.Guid.ToString(),
+                        Text = s.Name,
+                        Category = s.Description
+                    } )
+                    .ToList(),
             };
 
             return options;
@@ -141,6 +153,22 @@ namespace Rock.Blocks.AI
         private bool ValidateAIAgent( AIAgent aiAgent, out string errorMessage )
         {
             errorMessage = null;
+
+            if ( aiAgent.AgentType == AgentType.Mcp )
+            {
+                var mcpSettings = aiAgent.GetAdditionalSettings<McpAgentSettings>();
+
+                var hasConflictingSlug = AIAgentCache.All( RockContext )
+                    .Any( a => a.Id != aiAgent.Id
+                        && a.AgentType == AgentType.Mcp
+                        && a.GetAdditionalSettings<McpAgentSettings>().Slug == mcpSettings.Slug );
+
+                if ( hasConflictingSlug )
+                {
+                    errorMessage = "The slug must be unique across all MCP agents.";
+                    return false;
+                }
+            }
 
             return true;
         }
@@ -203,17 +231,23 @@ namespace Rock.Blocks.AI
                 return null;
             }
 
-            var settings = entity.GetAdditionalSettings<AgentSettings>();
+            var chatSettings = entity.GetAdditionalSettings<ChatAgentSettings>();
+            var mcpSettings = entity.GetAdditionalSettings<McpAgentSettings>();
 
             return new AIAgentBag
             {
                 IdKey = entity.IdKey,
-                AutoSummarizeThreshold = settings.AutoSummarizeThreshold,
+                AgentType = entity.AgentType,
+                AutoSummarizeThreshold = chatSettings.AutoSummarizeThreshold,
                 AvatarBinaryFile = entity.AvatarBinaryFile.ToListItemBag(),
                 Description = entity.Description,
                 Name = entity.Name,
-                Persona = entity.Persona,
-                Role = settings.Role
+                Instructions = entity.Instructions,
+                IsExcludingSystemSkills = entity.AgentType == AgentType.Chat
+                    ? chatSettings.IsExcludingSystemSkills
+                    : mcpSettings.IsExcludingSystemSkills,
+                Role = chatSettings.Role,
+                Slug = mcpSettings.Slug,
             };
         }
 
@@ -298,10 +332,15 @@ namespace Rock.Blocks.AI
                 return false;
             }
 
-            var settings = entity.GetAdditionalSettings<AgentSettings>();
+            if ( box.IsValidProperty( nameof( box.Bag.AgentType ) ) )
+            {
+                if ( entity.Id != 0 && entity.AgentType != box.Bag.AgentType )
+                {
+                    return false;
+                }
 
-            box.IfValidProperty( nameof( box.Bag.AutoSummarizeThreshold ),
-                () => settings.AutoSummarizeThreshold = box.Bag.AutoSummarizeThreshold );
+                entity.AgentType = box.Bag.AgentType;
+            }
 
             box.IfValidProperty( nameof( box.Bag.AvatarBinaryFile ),
                 () => entity.AvatarBinaryFileId = box.Bag.AvatarBinaryFile.GetEntityId<BinaryFile>( RockContext ) );
@@ -312,13 +351,36 @@ namespace Rock.Blocks.AI
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Bag.Persona ),
-                () => entity.Persona = box.Bag.Persona );
+            box.IfValidProperty( nameof( box.Bag.Instructions ),
+                () => entity.Instructions = box.Bag.Instructions );
 
-            box.IfValidProperty( nameof( box.Bag.Role ),
-                () => settings.Role = box.Bag.Role );
+            if ( entity.AgentType == AgentType.Chat )
+            {
+                var chatSettings = entity.GetAdditionalSettings<ChatAgentSettings>();
 
-            entity.SetAdditionalSettings( settings );
+                box.IfValidProperty( nameof( box.Bag.AutoSummarizeThreshold ),
+                    () => chatSettings.AutoSummarizeThreshold = box.Bag.AutoSummarizeThreshold );
+
+                box.IfValidProperty( nameof( box.Bag.IsExcludingSystemSkills ),
+                    () => chatSettings.IsExcludingSystemSkills = box.Bag.IsExcludingSystemSkills );
+
+                box.IfValidProperty( nameof( box.Bag.Role ),
+                    () => chatSettings.Role = box.Bag.Role );
+
+                entity.SetAdditionalSettings( chatSettings );
+            }
+            else if ( entity.AgentType == AgentType.Mcp )
+            {
+                var mcpSettings = entity.GetAdditionalSettings<McpAgentSettings>();
+
+                box.IfValidProperty( nameof( box.Bag.IsExcludingSystemSkills ),
+                    () => mcpSettings.IsExcludingSystemSkills = box.Bag.IsExcludingSystemSkills );
+
+                box.IfValidProperty( nameof( box.Bag.Slug ),
+                    () => mcpSettings.Slug = box.Bag.Slug.ToLower() );
+
+                entity.SetAdditionalSettings( mcpSettings );
+            }
 
             return true;
         }

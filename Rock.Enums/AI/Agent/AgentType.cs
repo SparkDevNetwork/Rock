@@ -15,26 +15,25 @@
 // </copyright>
 //
 
-using System.Text.Json.Serialization;
+using System.ComponentModel;
 
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.Enums.AI.Agent
 {
     /// <summary>
-    /// Represents a single capability that an MCP client or server can support.
+    /// The type of functionality the agent is configured to provide.
     /// </summary>
-    internal class Capability
+    public enum AgentType
     {
         /// <summary>
-        /// The capability supports notification when the list of items represented
-        /// by the cability changes.
+        /// The agent will provide chat services through a backend AI provider.
         /// </summary>
-        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
-        public bool ListChanged { get; set; }
+        Chat = 0,
 
         /// <summary>
-        /// Support for subscribing to individual items' changes (resources only)
+        /// The agent will act as an MCP server and provide function tools to
+        /// other AI clients.
         /// </summary>
-        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
-        public bool Subscribe { get; set; }
+        [Description( "MCP" )]
+        Mcp = 1,
     }
 }

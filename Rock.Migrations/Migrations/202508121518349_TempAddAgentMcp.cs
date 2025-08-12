@@ -14,27 +14,29 @@
 // limitations under the License.
 // </copyright>
 //
-
-using System.Text.Json.Serialization;
-
-namespace Rock.AI.Agent.Mcp.Protocol
+namespace Rock.Migrations
 {
     /// <summary>
-    /// Represents a single capability that an MCP client or server can support.
+    ///
     /// </summary>
-    internal class Capability
+    public partial class TempAddAgentMcp : Rock.Migrations.RockMigration
     {
         /// <summary>
-        /// The capability supports notification when the list of items represented
-        /// by the cability changes.
+        /// Operations to be performed during the upgrade process.
         /// </summary>
-        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
-        public bool ListChanged { get; set; }
+        public override void Up()
+        {
+            RenameColumn( "dbo.AIAgent", "Persona", "Instructions" );
+            AddColumn( "dbo.AIAgent", "AgentType", c => c.Int( nullable: false ) );
+        }
 
         /// <summary>
-        /// Support for subscribing to individual items' changes (resources only)
+        /// Operations to be performed during the downgrade process.
         /// </summary>
-        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingDefault )]
-        public bool Subscribe { get; set; }
+        public override void Down()
+        {
+            RenameColumn( "dbo.AIAgent", "Instructions", "Persona" );
+            DropColumn( "dbo.AIAgent", "AgentType" );
+        }
     }
 }

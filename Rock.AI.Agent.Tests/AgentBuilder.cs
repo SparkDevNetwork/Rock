@@ -26,7 +26,7 @@ internal class AgentBuilder
     private readonly List<AgentFunction> _individualFunctions = [];
     private readonly List<SkillConfiguration> _skills = [];
     private long? _seed;
-    private string _persona = "You are a helpful assistant for Rock RMS.";
+    private string _instructions = "You are a helpful assistant for Rock RMS.";
     private static int _agentIdCounter = 1;
 
     #endregion
@@ -69,11 +69,11 @@ internal class AgentBuilder
     /// <summary>
     /// Sets the system prompt/persona for the agent.
     /// </summary>
-    /// <param name="prompt">The prompt text.</param>
+    /// <param name="prompt">The instructions text.</param>
     /// <returns>The builder for chaining.</returns>
-    internal AgentBuilder WithPersona( string prompt )
+    internal AgentBuilder WithInstructions( string instructions )
     {
-        _persona = prompt;
+        _instructions = instructions;
         return this;
     }
 
@@ -135,8 +135,8 @@ internal class AgentBuilder
         var agentConfiguration = new AgentConfiguration(
             agentId: _agentIdCounter,
             provider: providerMock.Object,
-            persona: _persona,
-            settings: new AgentSettings(),
+            instructions: _instructions,
+            settings: new ChatAgentSettings(),
             skills: GetSkills()
         );
 

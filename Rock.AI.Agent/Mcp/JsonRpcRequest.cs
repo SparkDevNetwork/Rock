@@ -27,21 +27,6 @@ namespace Rock.AI.Agent.Mcp
     /// </summary>
     internal class JsonRpcRequest
     {
-        #region Constants
-
-        /// <summary>
-        /// The JSON serialization options used for parsing and serializing
-        /// JSON-RPC requests and responses.
-        /// </summary>
-        internal static readonly JsonSerializerOptions JsonOptions = new JsonSerializerOptions
-        {
-            DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull,
-            PropertyNameCaseInsensitive = true,
-            PropertyNamingPolicy = JsonNamingPolicy.CamelCase,
-        };
-
-        #endregion
-
         #region Fields
 
         /// <summary>
@@ -81,7 +66,7 @@ namespace Rock.AI.Agent.Mcp
         /// <param name="stream">The input stream containing the JSON payload to deserialize. Must not be <see langword="null"/>.</param>
         public JsonRpcRequest( Stream stream )
         {
-            _rootElement = JsonSerializer.Deserialize<JsonElement>( stream, JsonOptions );
+            _rootElement = JsonSerializer.Deserialize<JsonElement>( stream, McpServer.JsonSerializerOptions );
         }
 
         #endregion
@@ -99,7 +84,7 @@ namespace Rock.AI.Agent.Mcp
             {
                 try
                 {
-                    return JsonSerializer.Deserialize<T>( parameters.GetRawText(), JsonOptions );
+                    return JsonSerializer.Deserialize<T>( parameters.GetRawText(), McpServer.JsonSerializerOptions );
                 }
                 catch
                 {

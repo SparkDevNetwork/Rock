@@ -50,9 +50,9 @@ namespace Rock.AI.Agent
         public ModelServiceRole Role { get; }
 
         /// <summary>
-        /// Gets the persona string used to describe the agent’s role, behavior, or system prompt context.
+        /// Gets the instructions used to describe the agent’s role, behavior, or system prompt context.
         /// </summary>
-        public string Persona { get; }
+        public string Instructions { get; }
 
         /// <summary>
         /// Gets the collection of skills (semantic or native) enabled for this agent.
@@ -64,20 +64,20 @@ namespace Rock.AI.Agent
         /// </summary>
         /// <param name="agentId">The unique identifier for the agent.</param>
         /// <param name="provider">The provider component responsible for supplying AI/model capabilities to this agent.</param>
-        /// <param name="persona">The persona or system prompt context for this agent.</param>
+        /// <param name="instructions">The instructions or system prompt context for this agent.</param>
         /// <param name="settings">The agent settings object, including summarization threshold and model role.</param>
         /// <param name="skills">A list of skills (semantic or native) enabled for this agent.</param>
         public AgentConfiguration(
             int agentId,
             AgentProviderComponent provider,
-            string persona,
-            AgentSettings settings,
+            string instructions,
+            ChatAgentSettings settings,
             IReadOnlyList<SkillConfiguration> skills )
         {
             AgentId = agentId;
             AutoSummarizeThreshold = settings.AutoSummarizeThreshold;
             Provider = provider;
-            Persona = persona ?? string.Empty;
+            Instructions = instructions ?? string.Empty;
             Role = settings.Role;
             Skills = skills ?? new List<SkillConfiguration>();
         }

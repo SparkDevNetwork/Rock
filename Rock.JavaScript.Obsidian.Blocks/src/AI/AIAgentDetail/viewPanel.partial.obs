@@ -1,7 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-
         <ValueDetailList :modelValue="topValues" />
 
         <div class="row">
@@ -17,7 +16,8 @@
         <EditSkillList v-if="props.modelValue?.idKey"
                        v-model="skills"
                        :agentKey="props.modelValue.idKey"
-                       :availableSkills="props.options?.availableSkills ?? []" />
+                       :availableSkills="props.options?.availableSkills ?? []"
+                       :systemSkills="systemSkills" />
     </fieldset>
 </template>
 
@@ -31,6 +31,8 @@
     import { AIAgentDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/aiAgentDetailOptionsBag";
     import { ModelServiceRoleDescription } from "@Obsidian/Enums/AI/Agent/modelServiceRole";
     import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/agentSkillBag";
+    import { AgentType, AgentTypeDescription } from "@Obsidian/Enums/AI/Agent/agentType";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const props = defineProps({
         modelValue: {
@@ -64,8 +66,13 @@
             valueBuilder.addTextValue("Description", props.modelValue.description);
         }
 
-        if (props.modelValue.persona) {
-            valueBuilder.addTextValue("Persona", props.modelValue.persona);
+        if (props.modelValue.instructions) {
+            if (props.modelValue.agentType === AgentType.Chat) {
+                valueBuilder.addTextValue("Persona", props.modelValue.instructions);
+            }
+            else if (props.modelValue.agentType === AgentType.Mcp) {
+                valueBuilder.addTextValue("Instructions", props.modelValue.instructions);
+            }
         }
 
         return valueBuilder.build();
@@ -79,7 +86,14 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addTextValue("Role", ModelServiceRoleDescription[props.modelValue.role]);
+        if (props.modelValue.agentType === AgentType.Chat) {
+            valueBuilder.addTextValue("Role", ModelServiceRoleDescription[props.modelValue.role]);
+        }
+        else if (props.modelValue.agentType === AgentType.Mcp) {
+            if (props.modelValue.slug) {
+                valueBuilder.addTextValue("Slug", props.modelValue.slug);
+            }
+        }
 
         return valueBuilder.build();
     });
@@ -92,7 +106,17 @@
             return valueBuilder.build();
         }
 
+        valueBuilder.addTextValue("Type", AgentTypeDescription[props.modelValue.agentType]);
+
         return valueBuilder.build();
+    });
+
+    const systemSkills = computed((): ListItemBag[] => {
+        if (props.modelValue?.isExcludingSystemSkills) {
+            return [];
+        }
+
+        return props.options?.systemSkills ?? [];
     });
 
     // #endregion

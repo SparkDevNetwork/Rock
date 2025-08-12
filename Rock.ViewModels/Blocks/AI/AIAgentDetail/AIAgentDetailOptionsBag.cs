@@ -30,5 +30,11 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         /// The list of available skills that can be selected.
         /// </summary>
         public List<ListItemBag> AvailableSkills { get; set; }
+
+        /// <summary>
+        /// The list of system skills that are always present if they have not
+        /// been excluded by the agent configuration.
+        /// </summary>
+        public List<ListItemBag> SystemSkills { get; set; }
     }
 }

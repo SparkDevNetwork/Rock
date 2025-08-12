@@ -21,16 +21,24 @@
 // </copyright>
 //
 
-import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
-
-/** The additional configuration options for the AI Agent Detail block. */
-export type AIAgentDetailOptionsBag = {
-    /** The list of available skills that can be selected. */
-    availableSkills?: ListItemBag[] | null;
+/** The type of functionality the agent is configured to provide. */
+export const AgentType = {
+    /** The agent will provide chat services through a backend AI provider. */
+    Chat: 0,
 
     /**
-     * The list of system skills that are always present if they have not
-     * been excluded by the agent configuration.
+     * The agent will act as an MCP server and provide function tools to
+     * other AI clients.
      */
-    systemSkills?: ListItemBag[] | null;
+    Mcp: 1
+} as const;
+
+/** The type of functionality the agent is configured to provide. */
+export const AgentTypeDescription: Record<number, string> = {
+    0: "Chat",
+
+    1: "Mcp"
 };
+
+/** The type of functionality the agent is configured to provide. */
+export type AgentType = typeof AgentType[keyof typeof AgentType];

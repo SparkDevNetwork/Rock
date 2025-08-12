@@ -118,7 +118,15 @@ namespace Rock.AI.Agent
         /// <inheritdoc/>
         public int? SessionId { get; private set; }
 
+        /// <summary>
+        /// The native Kernel instance that provides access to Semantic Kernel.
+        /// </summary>
         internal Kernel Kernel => _kernel;
+
+        /// <summary>
+        /// The configuration data for the agent.
+        /// </summary>
+        internal AgentConfiguration AgentConfiguration => _agentConfiguration;
 
         #endregion
 
@@ -437,7 +445,7 @@ namespace Rock.AI.Agent
         private void AddSystemMessages()
         {
             _context.AddSystemMessage( CoreSystemPrompt );
-            _context.AddSystemMessage( $"Persona|{_agentConfiguration.Persona}" );
+            _context.AddSystemMessage( $"Persona|{_agentConfiguration.Instructions}" );
 
             if ( _requestContext?.CurrentPerson != null )
             {

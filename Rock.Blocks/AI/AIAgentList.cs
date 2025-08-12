@@ -22,6 +22,7 @@ using System.Linq;
 using Rock.AI.Agent;
 using Rock.Attribute;
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.Obsidian.UI;
 using Rock.Security;
@@ -130,7 +131,8 @@ namespace Rock.Blocks.AI
                 .AddTextField( "idKey", a => a.IdKey )
                 .AddTextField( "name", a => a.Name )
                 .AddTextField( "description", a => a.Description )
-                .AddTextField( "role", a => a.GetAdditionalSettings<AgentSettings>().Role.ToString() )
+                .AddTextField( "role", a => a.AgentType == AgentType.Chat ? a.GetAdditionalSettings<ChatAgentSettings>().Role.ToString() : string.Empty )
+                .AddTextField( "type", a => a.AgentType.GetDescription() ?? a.AgentType.ConvertToString() )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 

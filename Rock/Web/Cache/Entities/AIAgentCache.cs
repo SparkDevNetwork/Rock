@@ -47,9 +47,13 @@ namespace Rock.Web.Cache.Entities
         [DataMember]
         public int? AvatarBinaryFileId { get; private set; }
 
-        /// <inheritdoc cref="AIAgent.Persona"/>
+        /// <inheritdoc cref="AIAgent.Instructions"/>
         [DataMember]
-        public string Persona { get; private set; }
+        public string Instructions { get; private set; }
+
+        /// <inheritdoc cref="AIAgent.AgentType"/>
+        [DataMember]
+        public AgentType AgentType { get; private set; }
 
         /// <inheritdoc/>
         [DataMember]
@@ -76,10 +80,62 @@ namespace Rock.Web.Cache.Entities
             Name = agent.Name;
             Description = agent.Description;
             AvatarBinaryFileId = agent.AvatarBinaryFileId;
-            Persona = agent.Persona;
+            Instructions = agent.Instructions;
+            AgentType = agent.AgentType;
             AdditionalSettingsJson = agent.AdditionalSettingsJson;
         }
 
+        /// <summary>
+        /// Determines if this agent is excluding system skills.
+        /// </summary>
+        /// <returns><c>true</c> if system skills should be excluded; otherwise <c>false</c>.</returns>
+        private bool IsExcludingSystemSkills()
+        {
+            if ( AgentType == AgentType.Chat )
+            {
+                var settings = this.GetAdditionalSettingsOrNull<ChatAgentSettings>();
+                return settings?.IsExcludingSystemSkills ?? false;
+            }
+            else if ( AgentType == AgentType.Mcp )
+            {
+                var settings = this.GetAdditionalSettingsOrNull<McpAgentSettings>();
+                return settings?.IsExcludingSystemSkills ?? false;
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Adds the system skills to the provided list of skill configurations.
+        /// </summary>
+        /// <param name="skillConfigurations">The list of configuration skills to update.</param>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        private static void AddSystemSkills( List<SkillConfiguration> skillConfigurations, RockContext rockContext )
+        {
+            foreach ( var systemSkillGuid in AgentSkillComponent.SystemSkillGuids )
+            {
+                var systemSkill = AISkillCache.Get( systemSkillGuid, rockContext );
+
+                if ( systemSkill == null || !systemSkill.CodeEntityTypeId.HasValue )
+                {
+                    continue;
+                }
+
+                var entityType = EntityTypeCache.Get( systemSkill.CodeEntityTypeId.Value, rockContext );
+                var type = entityType?.GetEntityType();
+
+                if ( type != null )
+                {
+                    skillConfigurations.Add( new SkillConfiguration( systemSkill.Name, systemSkill.UsageHint, type, new AgentSkillSettings() ) );
+                }
+            }
+        }
+
+        /// <summary>
+        /// Gets the skill configurations for this agent.
+        /// </summary>
+        /// <param name="rockContext">The context to use when accessing the database.</param>
+        /// <returns>A collection of skill configuration objects.</returns>
         internal List<SkillConfiguration> GetSkillConfigurations( RockContext rockContext )
         {
             var agentSkills = new AIAgentSkillService( rockContext )
@@ -89,6 +145,11 @@ namespace Rock.Web.Cache.Entities
                 .ToList();
 
             var skillConfigurations = new List<SkillConfiguration>();
+
+            if ( !IsExcludingSystemSkills() )
+            {
+                AddSystemSkills( skillConfigurations, rockContext );
+            }
 
             foreach ( var agentSkill in agentSkills )
             {

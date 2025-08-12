@@ -22,6 +22,7 @@ using System.Data.Entity.ModelConfiguration;
 using System.Runtime.Serialization;
 
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Utility;
 
 namespace Rock.Model
@@ -65,12 +66,27 @@ namespace Rock.Model
         public int? AvatarBinaryFileId { get; set; }
 
         /// <summary>
-        /// The persona of the agent, which is a string that describes how the
-        /// agent should behavor or respond. This can include tone, style, and
-        /// special instructions it should follow when interacting with people.
+        /// <para>
+        /// When <see cref="AgentType"/> is <see cref="AgentType.Chat"/>, this
+        /// contains the persona of the agent, which is a string that describes
+        /// how the agent should behavor or respond. This can include tone,
+        /// style, and special instructions it should follow when interacting
+        /// with people.
+        /// </para>
+        /// <para>
+        /// When <see cref="AgentType"/> is <see cref="AgentType.Mcp"/>, this
+        /// contains the usage hint instructions that should be sent when a
+        /// client connects to the MCP server.
+        /// </para>
         /// </summary>
         [DataMember]
-        public string Persona { get; set; }
+        public string Instructions { get; set; }
+
+        /// <summary>
+        /// The type of agent represented by this instance.
+        /// </summary>
+        [DataMember]
+        public AgentType AgentType { get; set; }
 
         /// <inheritdoc/>
         [DataMember]

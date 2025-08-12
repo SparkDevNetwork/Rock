@@ -28,10 +28,9 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
     public class AIAgentBag : EntityBagBase
     {
         /// <summary>
-        /// A collection containing the Rock.Model.AIAgentSkill entities
-        /// that represent the skills attached to this agent.
+        /// The type of agent represented by this instance.
         /// </summary>
-        public List<AgentSkillBag> Skills { get; set; }
+        public AgentType AgentType { get; set; }
 
         /// <summary>
         /// The token threshold before auto-summarization will be triggered
@@ -54,20 +53,38 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public string Description { get; set; }
 
         /// <summary>
+        /// The instructions or persona of the agent. This has different meanings
+        /// depending on the type of agent.
+        /// </summary>
+        public string Instructions { get; set; }
+
+        /// <summary>
+        /// Determines if system skills are excluded from this agent. These are
+        /// standard skills and functions that would generally be considered
+        /// required for other skills to operate correctly.
+        /// </summary>
+        public bool IsExcludingSystemSkills { get; set; }
+
+        /// <summary>
         /// The friendly name of the agent that will be used to identify it in the UI.
         /// </summary>
         public string Name { get; set; }
 
         /// <summary>
-        /// The persona of the agent, which is a string that describes how the
-        /// agent should behavor or respond. This can include tone, style, and
-        /// special instructions it should follow when interacting with people.
-        /// </summary>
-        public string Persona { get; set; }
-
-        /// <summary>
         /// The role that this agent uses when determining which AI model to use.
         /// </summary>
         public ModelServiceRole Role { get; set; }
+
+        /// <summary>
+        /// A collection containing the Rock.Model.AIAgentSkill entities
+        /// that represent the skills attached to this agent.
+        /// </summary>
+        public List<AgentSkillBag> Skills { get; set; }
+
+        /// <summary>
+        /// The URL friendly slug that will be used to uniquely identify this
+        /// agent when used in MCP mode.
+        /// </summary>
+        public string Slug { get; set; }
     }
 }

@@ -20,7 +20,7 @@
             </template>
         </TextColumn>
 
-        <EditColumn @click="onEditSkill" />
+        <EditColumn :rowDisabled="r => !!r.isSystem" @click="onEditSkill" />
 
         <DeleteColumn disableConfirmation @click="onRemoveSkill" />
     </Grid>
@@ -93,6 +93,11 @@
         availableSkills: {
             type: Array as PropType<ListItemBag[]>,
             required: true
+        },
+
+        systemSkills: {
+            type: Array as PropType<ListItemBag[]>,
+            required: true
         }
     });
 
@@ -123,8 +128,16 @@
     // #region Computed Values
 
     const skillGridData = computed((): GridDataBag => {
+        const systemSkills: (AgentSkillBag & { isSystem: boolean })[] = props.systemSkills.map(skill => ({
+            guid: skill.value!,
+            description: skill.category,
+            isSystem: true,
+            name: skill.text,
+            skillGuid: skill.value!
+        }));
+
         return {
-            rows: skills.value
+            rows: [...systemSkills, ...skills.value]
         };
     });
 

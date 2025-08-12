@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { AgentType } from "@Obsidian/Enums/AI/Agent/agentType";
 import { ModelServiceRole } from "@Obsidian/Enums/AI/Agent/modelServiceRole";
 import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/agentSkillBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -28,6 +29,9 @@ import { PublicAttributeBag } from "@Obsidian/ViewModels/Utility/publicAttribute
 
 /** The item details for the AI Agent Detail block. */
 export type AIAgentBag = {
+    /** The type of agent represented by this instance. */
+    agentType: AgentType;
+
     /** Gets or sets the attributes. */
     attributes?: Record<string, PublicAttributeBag> | null;
 
@@ -57,15 +61,21 @@ export type AIAgentBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
-    /** The friendly name of the agent that will be used to identify it in the UI. */
-    name?: string | null;
+    /**
+     * The instructions or persona of the agent. This has different meanings
+     * depending on the type of agent.
+     */
+    instructions?: string | null;
 
     /**
-     * The persona of the agent, which is a string that describes how the
-     * agent should behavor or respond. This can include tone, style, and
-     * special instructions it should follow when interacting with people.
+     * Determines if system skills are excluded from this agent. These are
+     * standard skills and functions that would generally be considered
+     * required for other skills to operate correctly.
      */
-    persona?: string | null;
+    isExcludingSystemSkills: boolean;
+
+    /** The friendly name of the agent that will be used to identify it in the UI. */
+    name?: string | null;
 
     /** The role that this agent uses when determining which AI model to use. */
     role: ModelServiceRole;
@@ -75,4 +85,10 @@ export type AIAgentBag = {
      * that represent the skills attached to this agent.
      */
     skills?: AgentSkillBag[] | null;
+
+    /**
+     * The URL friendly slug that will be used to uniquely identify this
+     * agent when used in MCP mode.
+     */
+    slug?: string | null;
 };

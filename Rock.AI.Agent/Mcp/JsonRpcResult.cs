@@ -19,6 +19,8 @@ using System.IO;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 
+using Rock.AI.Agent.Mcp.Protocol;
+
 namespace Rock.AI.Agent.Mcp
 {
     /// <summary>
@@ -91,7 +93,7 @@ namespace Rock.AI.Agent.Mcp
         /// <param name="stream">The stream that the result should be written to.</param>
         public void ToJson( Stream stream )
         {
-            JsonSerializer.Serialize( stream, this, JsonRpcRequest.JsonOptions );
+            JsonSerializer.Serialize( stream, this, McpServer.JsonSerializerOptions );
             stream.Flush();
         }
 

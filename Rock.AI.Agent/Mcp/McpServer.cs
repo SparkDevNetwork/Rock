@@ -22,6 +22,7 @@ using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
+using Microsoft.Extensions.AI;
 using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Mcp.Protocol;
@@ -34,6 +35,25 @@ namespace Rock.AI.Agent.Mcp
     /// </summary>
     internal class McpServer : IMcpServer
     {
+        #region Constants
+
+        /// <summary>
+        /// Provides a lazily initialized instance of the JSON serializer options
+        /// we used for serializing and deserializing JSON-RPC requests and
+        /// responses.
+        /// </summary>
+        private static readonly Lazy<JsonSerializerOptions> _jsonSerializerOptions = new Lazy<JsonSerializerOptions>( () => new JsonSerializerOptions( AIJsonUtilities.DefaultOptions ) );
+
+        /// <summary>
+        /// The JSON serializer options used for parsing and serializing
+        /// JSON-RPC requests and responses.
+        /// </summary>
+        public static JsonSerializerOptions JsonSerializerOptions => _jsonSerializerOptions.Value;
+
+        #endregion
+
+        #region Methods
+
         /// <inheritdoc/>
         public async Task<McpResponse> HandleRequestAsync( IChatAgent agent, McpRequest request, CancellationToken cancellationToken )
         {
@@ -78,7 +98,7 @@ namespace Rock.AI.Agent.Mcp
             }
             else if ( request.Method == "initialize" )
             {
-                return ProcessInitialize( request );
+                return ProcessInitialize( request, agent );
             }
             else if ( request.Method == "tools/list" )
             {
@@ -100,7 +120,7 @@ namespace Rock.AI.Agent.Mcp
         /// </summary>
         /// <param name="rpcRequest">The JSON-RPC request to process.</param>
         /// <returns>A <see cref="JsonRpcResult"/> containing the server's protocol version, capabilities, and server information.
-        private JsonRpcResult ProcessInitialize( JsonRpcRequest rpcRequest )
+        private JsonRpcResult ProcessInitialize( JsonRpcRequest rpcRequest, ChatAgent agent )
         {
             var parameters = rpcRequest.GetParameters<InitializeParameters>();
 
@@ -121,6 +141,7 @@ namespace Rock.AI.Agent.Mcp
                     Name = "Rock RMS",
                     Version = VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
                 },
+                Instructions = agent.AgentConfiguration.Instructions
             };
 
             return rpcRequest.CreateResult( response );
@@ -179,7 +200,7 @@ namespace Rock.AI.Agent.Mcp
         {
             var parameters = rpcRequest.GetParameters<CallToolParameters>();
 
-            if ( parameters == null )
+            if ( parameters == null || parameters.Name == null )
             {
                 return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Missing or invalid request parameters." );
             }
@@ -199,7 +220,7 @@ namespace Rock.AI.Agent.Mcp
 
             try
             {
-                args = JsonSerializer.Deserialize<KernelArguments>( parameters.Arguments.GetRawText() );
+                args = JsonSerializer.Deserialize<KernelArguments>( parameters.Arguments.GetRawText(), JsonSerializerOptions );
             }
             catch
             {
@@ -220,7 +241,7 @@ namespace Rock.AI.Agent.Mcp
             {
                 response.Content.Add( new Protocol.TextContent
                 {
-                    Text = JsonSerializer.Serialize( result, JsonRpcRequest.JsonOptions )
+                    Text = JsonSerializer.Serialize( result, JsonSerializerOptions )
                 } );
 
                 response.StructuredContent = result;
@@ -228,5 +249,7 @@ namespace Rock.AI.Agent.Mcp
 
             return rpcRequest.CreateResult( response );
         }
+
+        #endregion
     }
 }
