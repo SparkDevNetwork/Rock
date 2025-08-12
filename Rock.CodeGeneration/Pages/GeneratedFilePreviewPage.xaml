@@ -33,6 +33,7 @@
                  SelectionMode="Single"
                  SelectionChanged="FileListBox_SelectionChanged"
                  ItemsSource="{Binding ExportFiles}"
+                 VirtualizingStackPanel.IsVirtualizing="False"
                  Visibility="{Binding Settings.ObsidianViewModelsIsGroupedView, Converter={StaticResource InverseBoolToVis}}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
