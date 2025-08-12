@@ -1,4 +1,21 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Data.SqlClient;
@@ -7,12 +24,12 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-using Rock.AI.Agent.Utilities;
+using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Utility;
-using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -20,20 +37,6 @@ namespace Rock.AI.Agent.Skills
     /// Provides data lookup and analytics functions focused on site activity in Rock RMS,
     /// particularly person-centric website analytics such as page visits, grouped by site.
     /// </summary>
-
-    [Description(
-        "🎯 Purpose:\r\n" +
-        "Provides site-related insights and utilities in Rock RMS, with an emphasis on person-centric data " +
-        "such as activity, analytics, and contextual information. Intended as a central skill for retrieving " +
-        "and working with site data across multiple contexts.\r\n\r\n" +
-        "🧭 Usage Guidance:\r\n" +
-        "- Use this skill to discover available sites, retrieve analytics, and perform other site-level lookups.\r\n" +
-        "- Many functions will accept optional filters such as site ID, date ranges, or person identifiers.\r\n" +
-        "- Functions are designed to support summarization, reporting, and downstream processing by other skills.\r\n\r\n" +
-        "🛡 Guardrails:\r\n" +
-        "1. Follow each function’s specific guardrails for context requirements (e.g., call `LookupSites` before analytics).\r\n" +
-        "2. Avoid redundant or excessive calls when aggregation or filtering can be applied."
-    )]
     [AgentSkillGuid( "DD5FA7DD-3277-4C31-848D-285CD67AC7CA" )]
     [EntityTypeGuid( "12E7BDEA-B67A-48D7-8D1E-245BF8E9B555" )]
     internal sealed class PersonSkill : AgentSkillComponent
@@ -62,41 +65,11 @@ namespace Rock.AI.Agent.Skills
 
         #region Agent Functions
 
-        // BC: This is really not needed at this time, we may further
-        // want to customize the output so at that time we can
-        // uncomment this function and customize it as needed.
-        //public override IReadOnlyCollection<AgentFunction> GetSemanticFunctions()
-        //{
-        //    return new List<AgentFunction>
-        //    {
-        //        new AgentFunction
-        //        {
-        //            FunctionType = FunctionType.AIPrompt,
-        //            EnableLavaPreRendering = false,
-        //            Temperature = 0.7,
-        //            UsageHint = "Summarizes insights in a human-friendly way, given the output from LookupSiteAnalytics. " +
-        //                        "To use this function, first call a function that returns data (such as LookupSiteAnalytics), then pass its result as the insightData parameter.",
-        //            Prompt = "Here is a list of web sessions and pages a user visited:\n\n{{ $insightData }}\n\nSummarize the user's web activity. Highlight repeated pages or long sessions, and call out any interesting patterns.",
-        //            Name = "SummarizeAnalytics",
-        //            Guid = new Guid("97FDE306-E415-40FE-A548-72D300234470"),
-        //        }
-        //    };
-        //}
-
         /// <summary>
         /// Retrieves website analytics (page visits) for a specific person, optionally filtered by date and/or site.
         /// Results are grouped by site and include visited pages with visit counts.
         /// </summary>
-        /// <param name="options">Query parameters including person id, optional site id, and optional start/end dates.</param>
-        /// <returns>
-        /// A <see cref="LookupFunctionResult{T}"/> where <c>T</c> is <see cref="SitePageVisitData"/>.
-        /// The <see cref="LookupFunctionResult{T}.Status"/> will be:
-        /// <list type="bullet">
-        /// <item><description><c>Success</c> if rows are returned.</description></item>
-        /// <item><description><c>NoData</c> if the query succeeds but returns no rows.</description></item>
-        /// <item><description><c>Error</c> if validation fails or an exception occurs.</description></item>
-        /// </list>
-        /// </returns>
+        /// <param name="arguments">Query parameters including person id, optional site id, and optional start/end dates.</param>
         /// <remarks>
         /// Requires <see cref="LookupSites"/> to have been called previously to populate
         /// session context <c>"site-list"</c> for guardrail enforcement.
@@ -106,31 +79,32 @@ namespace Rock.AI.Agent.Skills
         [Description(
             "🎯 Purpose:\r\n" +
             "Retrieves page visits for a specific person, optionally filtered by date and/or site. \r\n" +
-            "Results are grouped by site and include the site type (web, mobile, tv), visited pages and visit counts.\r\n" +
-            "To maintain performance, the results are paginated (and the 'PageNumber' parameter is required. \r\n\r\n" +
+            "Results include the site type (web, mobile, tv), visited pages and visit counts.\r\n" +
+            "The results are paginated (and the 'PageNumber' parameter is required. \r\n\r\n" +
+
             "🛡️ Guardrails:\r\n" +
             "1. This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n" +
             "2. Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null."
         )]
         [AgentFunctionGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
-        public LookupFunctionResult<SitePageVisitData> ListPageVisitsForPerson( ListSiteVisitsParameters options )
+        public RockFunctionResult ListPageVisitsForPerson( ListPageVisitsArguments arguments )
         {
             var errors = new List<string>();
-            if ( options == null )
+            if ( arguments == null )
             {
-                return LookupFunctionResult<SitePageVisitData>.Error( "Options are required." );
+                return RockFunctionResult.Error( "Options are required." );
             }
 
-            var start = options.StartDate;
-            var end = options.EndDate;
+            var start = arguments.StartDate;
+            var end = arguments.EndDate;
 
-            var personId = IdHasher.Instance.GetId( options.PersonKey );
+            var personId = IdHasher.Instance.GetId( arguments.PersonKey );
             if ( !personId.HasValue || personId <= 0 )
             {
                 errors.Add( "There was an invalid key provided for the person." );
             }
 
-            var siteId = IdHasher.Instance.GetId( options.SiteKey );
+            var siteId = IdHasher.Instance.GetId( arguments.SiteKey );
             if ( siteId.HasValue && siteId.Value <= 0 )
             {
                 errors.Add( "Invalid site ID. Provide a value greater than zero." );
@@ -153,14 +127,14 @@ namespace Rock.AI.Agent.Skills
             }
 
             // Paging
-            var pageNumber = Math.Max( 1, options.PageNumber );
+            var pageNumber = Math.Max( 1, arguments.PageNumber );
             var basePageSize = 100;
             var offset = ( pageNumber - 1 ) * basePageSize;
             var take = basePageSize + 1; // N+1 to compute hasMore
 
             if ( errors.Count > 0 )
             {
-                return LookupFunctionResult<SitePageVisitData>.Error( string.Join( " ", errors ) );
+                return RockFunctionResult.Error( string.Join( " ", errors ) );
             }
 
             try
@@ -176,7 +150,7 @@ namespace Rock.AI.Agent.Skills
                 };
 
                 var rows = _rockContext.Database
-                    .SqlQuery<PageVisitGroup>( _websiteDataSql, parameters.ToArray() )
+                    .SqlQuery<PageVisitResult>( _websiteDataSql, parameters.ToArray() )
                     .ToList();
 
                 var hasMore = rows.Count > basePageSize;
@@ -187,7 +161,7 @@ namespace Rock.AI.Agent.Skills
 
                 var meta = new Dictionary<string, object>
                 {
-                    { "personKey", options.PersonKey },
+                    { "personKey", arguments.PersonKey },
                     { "startDate", start },
                     { "endDate", end },
                     { "pageNumber", pageNumber },
@@ -198,32 +172,15 @@ namespace Rock.AI.Agent.Skills
 
                 if ( !rows.Any() )
                 {
-                    return LookupFunctionResult<SitePageVisitData>.NoData( meta: meta );
+                    return RockFunctionResult.NoData( meta: meta );
                 }
 
-                // Group by site
-                var groupedBySite = rows
-                    .GroupBy( r => r.SiteId )
-                    .Select( g => new SitePageVisitData
-                    {
-                        SiteKey = IdHasher.Instance.GetHash( g.Key ),
-                        SiteName = SiteCache.Get( g.Key )?.Name ?? "(Unknown)",
-                        SiteType = SiteCache.Get( g.Key )?.SiteType.ConvertToString( true ) ?? "Unknown",
-                        PageVisits = g.Select( v => new PageVisitGroup
-                        {
-                            PageName = v.PageName,
-                            VisitCount = v.VisitCount,
-                            LastVisit = v.LastVisit
-                        } ).ToList()
-                    } )
-                    .ToList();
-
-                return LookupFunctionResult<SitePageVisitData>.Success( groupedBySite, meta: meta );
+                return RockFunctionResult.Success( rows, meta: meta );
             }
             catch ( Exception ex )
             {
                 _logger.LogError( ex, "LookupSiteAnalytics failed for PersonId={PersonId}, SiteId={SiteId}", personId, siteId );
-                return LookupFunctionResult<SitePageVisitData>.Error( "Failed to retrieve site analytics. " + ex.Message );
+                return RockFunctionResult.Error( "Failed to retrieve site analytics. " + ex.Message );
             }
         }
 
@@ -233,16 +190,16 @@ namespace Rock.AI.Agent.Skills
         /// <param name="options"></param>
         /// <returns></returns>
         [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
-        public LookupFunctionResult<SearchPersonData> SearchPerson( SearchPersonParameters options )
+        public RockFunctionResult SearchPerson( SearchPersonArguments options )
         {
             if ( options == null )
             {
-                return LookupFunctionResult<SearchPersonData>.Error( "Options are required.", null, "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
+                return RockFunctionResult.Error( "Options are required.", instructions: "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
             }
 
             if (options.FullName.IsNullOrWhiteSpace() )
             {
-                return LookupFunctionResult<SearchPersonData>.Error( "Full name is required for search.", null, "The FullName parameter is required." );
+                return RockFunctionResult.Error( "Full name is required for search.", instructions: "The FullName parameter is required." );
             }
 
             var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
@@ -272,7 +229,7 @@ namespace Rock.AI.Agent.Skills
                 .ThenBy( p => p.NickName )
                 .Take( options.MaxResults + 1 )
                 .ToList()
-                .Select( p => new SearchPersonData
+                .Select( p => new SearchPersonResult
                 {
                     PersonKey = p.IdKey,
                     FirstName = p.FirstName,
@@ -290,7 +247,7 @@ namespace Rock.AI.Agent.Skills
                         .Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
                         .SelectMany( m => m.Group.Members )
                         .Where( m => m.GroupRole.Guid == childGuid )
-                        .Select( m => new PersonNode { FirstName = m.Person.NickName, LastName = m.Person.LastName, PersonKey = m.Person.IdKey } )
+                        .Select( m => new PersonResult { FirstName = m.Person.NickName, LastName = m.Person.LastName, PersonKey = m.Person.IdKey } )
                         .ToList(),
 
                     // Get list of parents names
@@ -298,7 +255,7 @@ namespace Rock.AI.Agent.Skills
                         .Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
                         .SelectMany( m => m.Group.Members )
                         .Where( m => m.GroupRole.Guid == adultGuid )
-                        .Select( m => new PersonNode { FirstName = m.Person.NickName, LastName = m.Person.LastName, PersonKey = m.Person.IdKey } )
+                        .Select( m => new PersonResult { FirstName = m.Person.NickName, LastName = m.Person.LastName, PersonKey = m.Person.IdKey } )
                         .ToList()
                 } )
                 .ToList();
@@ -316,7 +273,7 @@ namespace Rock.AI.Agent.Skills
                     { "hasMore", hasMore }
                 };
 
-            return LookupFunctionResult<SearchPersonData>.Success( searchResults, meta );
+            return RockFunctionResult.Success( searchResults, meta: meta );
         }
 
         #endregion
@@ -331,72 +288,6 @@ namespace Rock.AI.Agent.Skills
         /// <returns>A <see cref="SqlParameter"/> instance.</returns>
         private static SqlParameter GetParameterValueOrDbNull( string key, object value )
             => new SqlParameter( key, value ?? ( object ) DBNull.Value );
-
-        #endregion
-
-        #region DTOs
-
-        public class SearchPersonParameters
-        {
-            [Description( "Required. The full name to search for. This should be in the format of first name last name with an optional suffix." )]
-            public string FullName { get; set; }
-            public int MaxResults { get; set; } = 10; // Default to 10 results
-            public string CampusKey { get; set; } = null;
-        }
-
-        public class SearchPersonData
-        {
-            public string PersonKey { get; set; }
-            public string FirstName { get; set; }
-            public string NickName { get; set; }
-            public string LastName { get; set; }
-            public string Suffix { get; set; }
-            public string AgeClassification { get; set; }
-            public string SpouseName { get; set; }
-            public List<PersonNode> Children { get; set; }
-            public List<PersonNode> Parents { get; set; }
-            public string Campus { get; set; }
-            public string ConnectionStatus { get; set; }
-            public string RecordStatus { get; set; }
-        }
-
-        public class PersonNode
-        {
-            public string PersonKey { get; set; }
-            public string FirstName { get; set; }
-            public string LastName { get; set; }
-        }
-
-        public class ListSiteVisitsParameters
-        {
-            public DateTime? StartDate { get; set; }
-            public DateTime? EndDate { get; set; }
-
-            [Description( "Optional. The ID Key of site to analyze." )]
-            public string SiteKey { get; set; }
-
-            // Required: person key
-            public string PersonKey { get; set; }
-
-            [Description( "Optional. The page number to return, starting at 1. Defaults to 1." )]
-            public int PageNumber { get; set; } = 1; // 1-based
-        }
-
-        public class SitePageVisitData
-        {
-            public string SiteKey { get; set; }
-            public string SiteName { get; set; }
-            public string SiteType { get; set; } // e.g., Web, Mobile, TV
-            public List<PageVisitGroup> PageVisits { get; set; } = new List<PageVisitGroup>();
-        }
-
-        public class PageVisitGroup
-        {
-            public int SiteId { get; set; }
-            public string PageName { get; set; }
-            public int VisitCount { get; set; }
-            public DateTime? LastVisit { get; set; }
-        }
 
         #endregion
 

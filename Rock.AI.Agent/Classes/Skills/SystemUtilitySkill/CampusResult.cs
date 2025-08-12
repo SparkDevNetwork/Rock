@@ -1,0 +1,80 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//
+
+using System.Collections.Generic;
+
+using static Rock.Web.Cache.CampusCache;
+
+namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
+{
+    /// <summary>
+    /// Represents a campus, including identity, type/status, location, service times, and custom attributes.
+    /// </summary>
+    public class CampusResult
+    {
+        /// <summary>
+        /// Opaque campus identifier (Id Key). Use this value with other APIs instead of the numeric Id.
+        /// </summary>
+        public string CampusKey { get; set; }
+
+        /// <summary>
+        /// Indicates whether the campus is currently active.
+        /// </summary>
+        public bool IsActive { get; set; }
+
+        /// <summary>
+        /// Short campus code or abbreviation used for display.
+        /// </summary>
+        public string Abbreviation { get; set; }
+
+        /// <summary>
+        /// Display value of the campus type (e.g., Physical, Online).
+        /// </summary>
+        public string CampusType { get; set; }
+
+        /// <summary>
+        /// Key value (Id Key) corresponding to <see cref="CampusType"/>.
+        /// </summary>
+        public string CampusTypeKey { get; set; }
+
+        /// <summary>
+        /// Display value of the campus status (e.g., Open, Inactive).
+        /// </summary>
+        public string CampusStatus { get; set; }
+
+        /// <summary>
+        /// Key value (Id Key) corresponding to <see cref="CampusStatus"/>.
+        /// </summary>
+        public string CampusStatusKey { get; set; }
+
+        /// <summary>
+        /// Primary geographic location information for the campus.
+        /// </summary>
+        public CampusLocation Location { get; set; }
+
+        /// <summary>
+        /// Weekly service times for the campus, when available.
+        /// </summary>
+        public List<ServiceTime> ServiceTimes { get; set; }
+
+        /// <summary>
+        /// Arbitrary campus attributes represented as a key/value dictionary.
+        /// Keys are attribute keys; values are formatted strings.
+        /// </summary>
+        public Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>();
+    }
+}
