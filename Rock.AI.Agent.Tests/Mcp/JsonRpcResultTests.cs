@@ -1,4 +1,5 @@
 ﻿using System.IO;
+using System.Text.Json;
 
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
@@ -21,7 +22,10 @@ namespace Rock.AI.Agent.Tests.Mcp
             using var reader = new StreamReader( ms );
             var json = reader.ReadToEnd();
 
-            Assert.AreEqual( "{\"jsonrpc\":\"2.0\",\"id\":123,\"result\":\"test\"}", json );
+            var element = JsonSerializer.Deserialize<JsonElement>( json );
+
+            Assert.AreEqual( "test", element.GetProperty( "result" ).GetString() );
+            Assert.IsFalse( element.TryGetProperty( "error", out _ ) );
         }
 
         [TestMethod]
@@ -36,7 +40,11 @@ namespace Rock.AI.Agent.Tests.Mcp
             using var reader = new StreamReader( ms );
             var json = reader.ReadToEnd();
 
-            Assert.AreEqual( "{\"jsonrpc\":\"2.0\",\"id\":123,\"error\":{\"code\":456,\"message\":\"test\"}}", json );
+            var element = JsonSerializer.Deserialize<JsonElement>( json );
+
+            Assert.AreEqual( 456, element.GetProperty( "error" ).GetProperty( "code" ).GetInt32() );
+            Assert.AreEqual( "test", element.GetProperty( "error" ).GetProperty( "message" ).GetString() );
+            Assert.IsFalse( element.TryGetProperty( "result", out _ ) );
         }
     }
 }

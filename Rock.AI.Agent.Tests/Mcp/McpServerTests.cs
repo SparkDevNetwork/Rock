@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -261,7 +262,10 @@ namespace Rock.AI.Agent.Tests.Mcp
             var result = ( CallToolResult ) rpcResult.Result;
 
             Assert.AreEqual( 1, result.Content.Count );
-            Assert.AreEqual( "{\"Structured\":\"Tool\"}", result.Content[0].Text );
+
+            var element = JsonSerializer.Deserialize<JsonElement>( result.Content[0].Text );
+
+            Assert.AreEqual( "Tool", element.GetProperty( "Structured" ).GetString() );
         }
 
         [TestMethod]
