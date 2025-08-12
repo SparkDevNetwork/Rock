@@ -31,6 +31,7 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
+using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 
 using AuthorRole = Rock.Enums.AI.Agent.AuthorRole;
 
@@ -111,6 +112,11 @@ namespace Rock.AI.Agent
         /// </summary>
         private bool _historyNeedsSummary = false;
 
+        /// <summary>
+        /// The session needs an auto-generated name.
+        /// </summary>
+        private bool _sessionNeedsName = false;
+
         #endregion
 
         #region Properties
@@ -184,6 +190,7 @@ namespace Rock.AI.Agent
                 AddSystemMessages();
 
                 SessionId = session.Id;
+                _sessionNeedsName = true;
             }
 
             return Task.CompletedTask;
@@ -263,6 +270,7 @@ namespace Rock.AI.Agent
 
                 SessionId = sessionId;
                 _historyNeedsSummary = messages.Sum( m => m.TokenCount ) >= _agentConfiguration.AutoSummarizeThreshold;
+                _sessionNeedsName = session.Name.IsNullOrWhiteSpace();
             }
 
             return Task.CompletedTask;
@@ -517,6 +525,36 @@ namespace Rock.AI.Agent
         {
             var chat = _kernel.GetRequiredService<IChatCompletionService>( _agentConfiguration.Role.ToString() );
 
+            Task sessionNameTask = null;
+
+            if ( SessionId.HasValue && _sessionNeedsName )
+            {
+                sessionNameTask = Task.Run( async () =>
+                {
+                    using ( var sessionRockContext = _rockContextFactory.CreateRockContext() )
+                    {
+                        var session = new AIAgentSessionService( sessionRockContext ).Get( SessionId.Value );
+
+                        if ( session != null && session.AIAgentSessionHistories.Count > 0 )
+                        {
+                            var message = session.AIAgentSessionHistories.First().Message;
+                            var prompt = $"Please provide a name for this session (7 words or less, but it should read like proper english) title for a new chat session with the initial message: {message}";
+
+                            var sessionResult = await chat.GetChatMessageContentAsync(
+                                new ChatHistory { new ChatMessageContent( Microsoft.SemanticKernel.ChatCompletion.AuthorRole.User, prompt ) },
+                                executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+                                kernel: _kernel
+                            );
+
+                            session.Name = sessionResult.Content;
+                            sessionRockContext.SaveChanges();
+
+                            _sessionNeedsName = false;
+                        }
+                    }
+                } );
+            }
+
             var result = await chat.GetChatMessageContentAsync(
                 _context.GetChatHistory(),
                 executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
@@ -525,6 +563,11 @@ namespace Rock.AI.Agent
             var usage = GetMetricUsageFromResult( result );
 
             await AddMessageAsync( AuthorRole.Assistant, result.Content, usage?.OutputTokenCount ?? CountTokens( result.Content ), usage?.TotalTokenCount ?? 0, cancellationToken );
+
+            if ( sessionNameTask != null )
+            {
+                await sessionNameTask;
+            }
 
             return new ChatMessageResponse( result, usage, GetChatDebug() );
         }

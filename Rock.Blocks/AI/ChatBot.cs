@@ -133,14 +133,15 @@ namespace Rock.Blocks.AI
                 .Select( s => new
                 {
                     s.Id,
-                    s.LastMessageDateTime
+                    s.LastMessageDateTime,
+                    s.Name
                 } )
                 .ToList()
                 .Select( s => new ChatSessionBag
                 {
                     Id = s.Id,
                     LastMessageDateTime = s.LastMessageDateTime.ToRockDateTimeOffset(),
-                    Name = $"#{s.Id}"
+                    Name = s.Name
                 } )
                 .ToList();
         }
@@ -280,7 +281,6 @@ namespace Rock.Blocks.AI
             {
                 Id = agent.SessionId.Value,
                 LastMessageDateTime = RockDateTime.Now.ToRockDateTimeOffset(),
-                Name = $"#{agent.SessionId}"
             } );
         }
 
