@@ -46,7 +46,6 @@ namespace Rock.Model
         {
             var existingFunctions = new AISkillFunctionService( rockContext )
                 .Queryable()
-                .Where( f => f.AISkillId == skillId )
                 .ToList();
 
             var methods = skillType.GetMethods( BindingFlags.Public | BindingFlags.NonPublic | BindingFlags.Instance | BindingFlags.Static );
@@ -124,6 +123,12 @@ namespace Rock.Model
             }
             else
             {
+                if ( function.AISkillId != skillId )
+                {
+                    function.AISkillId = skillId;
+                    needSave = true;
+                }
+
                 if ( function.Name != name )
                 {
                     function.Name = name;
@@ -200,6 +205,12 @@ namespace Rock.Model
             }
             else
             {
+                if ( function.AISkillId != skillId )
+                {
+                    function.AISkillId = skillId;
+                    needSave = true;
+                }
+
                 if ( function.Name != name )
                 {
                     function.Name = name;
