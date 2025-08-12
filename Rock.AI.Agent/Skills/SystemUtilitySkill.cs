@@ -23,6 +23,7 @@ using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Skills.SystemUtilitySkill;
 using Rock.AI.Agent.Utilities;
 using Rock.SystemGuid;
 using Rock.Web.Cache;

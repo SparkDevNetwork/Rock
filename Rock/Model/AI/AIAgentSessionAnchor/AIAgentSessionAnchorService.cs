@@ -58,8 +58,7 @@ namespace Rock.Model
             {
                 context.EntityTypeId = anchor.EntityTypeId;
                 context.EntityTypeName = EntityTypeCache.Get( anchor.EntityTypeId, rockContext )?.Name;
-                context.EntityId = anchor.EntityId;
-                context.EntityIdKey = IdHasher.Instance.GetHash( anchor.EntityId );
+                context.EntityKey = IdHasher.Instance.GetHash( anchor.EntityId );
 
                 anchor.Name = context.Name.Truncate( 100, false );
                 anchor.PayloadJson = context.ToJson();
