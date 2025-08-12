@@ -455,6 +455,14 @@ namespace Rock.AI.Agent
             _context.AddSystemMessage( CoreSystemPrompt );
             _context.AddSystemMessage( $"Persona|{_agentConfiguration.Instructions}" );
 
+            foreach ( var skill in _agentConfiguration.Skills )
+            {
+                if ( skill.UsageHint.IsNotNullOrWhiteSpace() )
+                {
+                    _context.AddSystemMessage( $"Plugin {skill.Key} Instructions: {skill.UsageHint}" );
+                }
+            }
+
             if ( _requestContext?.CurrentPerson != null )
             {
                 // BC TODO: Remove the Id from here once we can.
