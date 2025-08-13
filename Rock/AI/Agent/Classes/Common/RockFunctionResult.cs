@@ -27,7 +27,6 @@ namespace Rock.AI.Agent.Classes.Common
         /// Outcome of the function.
         /// </summary>
         [JsonInclude]
-        [JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
         internal FunctionStatus Status { get; private set; }
 
         /// <summary>
