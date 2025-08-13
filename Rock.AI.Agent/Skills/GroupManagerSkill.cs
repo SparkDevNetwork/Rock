@@ -36,6 +36,7 @@ using Group = Rock.Model.Group;
 namespace Rock.AI.Agent.Skills
 {
     [Description( "Used for managing groups, such as adding or removing members, and getting group information." )]
+    [UserDescription( "Used for managing groups, such as adding or removing members, and getting group information." )]
     [AgentSkillGuid( "489e96d7-c66c-4683-b76b-92fbfda372f4" )]
     [EntityTypeGuid( "bed15fba-e033-4741-a894-e8ca6ca2b00a" )]
     internal class GroupManagerSkill : AgentSkillComponent
@@ -106,6 +107,7 @@ namespace Rock.AI.Agent.Skills
 
         [KernelFunction( "AddNoteToPerson" )]
         [Description( "Adds a note to a person." )]
+        [UserDescription( "Adds a note to a person." )]
         [AgentFunctionGuid( "eae482a7-4dde-4914-baa8-bcb4a103259a" )]
         public async Task<string> AddNoteToPerson( int personId, string noteText )
         {
@@ -154,6 +156,7 @@ This function is designed to be called multiple times in a progressive flow:
 
 This function may be called 2–3 times per user request and is responsible for guiding the user and the model through the group selection process.
 " )]
+        [UserDescription( @"Finds a group of people of a specific group type for a person." )]
         [AgentFunctionGuid( "468688c4-86ad-401f-ab46-ac0875de2452" )]
         public string GroupMemberOperations( Kernel kernel, int personId, int groupId,
             [Description( "The operation to preform (Add|Update|Delete)." )] GroupMemberOperation operation,
@@ -250,6 +253,7 @@ This function supports a two-phase flow:
 - Do not pass searchFilters or groupTypeId unless they were explicitly provided by the user or returned from this function.
 - If you're unsure about the valid filters or group type, start by calling this function with null values.
 " )]
+        [UserDescription( "Finds a group of a specific group type for a person." )]
         [AgentFunctionGuid( "34335be4-bf15-07b2-48c8-fac18be8bc46" )]
         public string GroupFinder( int personId, int? groupTypeId = null,
         [Description(

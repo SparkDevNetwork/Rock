@@ -86,6 +86,7 @@ namespace Rock.AI.Agent.Skills
             "1. This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n" +
             "2. Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null."
         )]
+        [UserDescription( "Lists page visits for a specific person." )]
         [AgentFunctionGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
         public RockFunctionResult ListPageVisitsForPerson( ListPageVisitsArguments arguments )
         {
@@ -189,6 +190,7 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
+        [UserDescription( "Searches for matching people by name." )]
         [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
         public RockFunctionResult SearchPerson( SearchPersonArguments options )
         {

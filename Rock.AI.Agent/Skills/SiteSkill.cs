@@ -70,6 +70,7 @@ namespace Rock.AI.Agent.Skills
         /// under the key <c>"site-list"</c> so that subsequent calls can reference it.
         /// </summary>
         [KernelFunction( "LookupSites" )]
+        [UserDescription( "Retrieves all configured websites in Rock." )]
         [AgentFunctionGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
         public async Task<RockFunctionResult> LookupSites()
         {

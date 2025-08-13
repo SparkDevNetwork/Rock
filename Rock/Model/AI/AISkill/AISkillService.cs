@@ -80,7 +80,8 @@ namespace Rock.Model
             var skillGuid = skillType.GetCustomAttribute<AgentSkillGuidAttribute>().Guid;
             var skill = existingSkills.FirstOrDefault( s => s.Guid == skillGuid );
             var name = skillType.Name.SplitCase();
-            var description = skillType.GetCustomAttribute<DescriptionAttribute>()?.Description;
+            var description = skillType.GetCustomAttribute<UserDescriptionAttribute>()?.Description;
+            var usageHint = skillType.GetCustomAttribute<DescriptionAttribute>()?.Description;
             var needSave = false;
 
             if ( skill == null )
@@ -89,8 +90,8 @@ namespace Rock.Model
 
                 skill.Guid = skillGuid;
                 skill.Name = name;
-                skill.Description = skillType.GetCustomAttribute<DescriptionAttribute>()?.Description;
-                skill.UsageHint = skill.Description;
+                skill.Description = description;
+                skill.UsageHint = usageHint;
 
                 // Skip the cache because there is almost zero chance it will
                 // be in cache already and that would just cause an additional
@@ -115,9 +116,9 @@ namespace Rock.Model
                     needSave = true;
                 }
 
-                if ( skill.UsageHint != description )
+                if ( skill.UsageHint != usageHint )
                 {
-                    skill.UsageHint = description;
+                    skill.UsageHint = usageHint;
                     needSave = true;
                 }
             }

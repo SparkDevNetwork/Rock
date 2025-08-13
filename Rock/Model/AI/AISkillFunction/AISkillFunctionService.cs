@@ -103,7 +103,8 @@ namespace Rock.Model
 
             var function = existingFunctions.FirstOrDefault( f => f.Guid == functionGuid.Value );
             var name = kernelFunction.Name.IsNotNullOrWhiteSpace() ? kernelFunction.Name.SplitCase() : method.Name.SplitCase();
-            var description = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
+            var description = method.GetCustomAttribute<UserDescriptionAttribute>()?.Description;
+            var usageHint = method.GetCustomAttribute<DescriptionAttribute>()?.Description;
             var needSave = false;
 
             if ( function == null )
@@ -114,7 +115,7 @@ namespace Rock.Model
                 function.AISkillId = skillId;
                 function.Name = name;
                 function.Description = description;
-                function.UsageHint = description;
+                function.UsageHint = usageHint;
                 function.FunctionType = FunctionType.ExecuteCode;
 
                 new AISkillFunctionService( rockContext ).Add( function );
@@ -141,9 +142,9 @@ namespace Rock.Model
                     needSave = true;
                 }
 
-                if ( function.UsageHint != description )
+                if ( function.UsageHint != usageHint )
                 {
-                    function.UsageHint = description;
+                    function.UsageHint = usageHint;
                     needSave = true;
                 }
 
@@ -185,7 +186,8 @@ namespace Rock.Model
 
             var function = existingFunctions.FirstOrDefault( f => f.Guid == semanticFunction.Guid );
             var name = semanticFunction.Name.SplitCase();
-            var description = semanticFunction.UsageHint;
+            var description = semanticFunction.Description;
+            var usageHint = semanticFunction.UsageHint;
             var needSave = false;
 
             if ( function == null )
@@ -196,7 +198,7 @@ namespace Rock.Model
                 function.AISkillId = skillId;
                 function.Name = name;
                 function.Description = description;
-                function.UsageHint = description;
+                function.UsageHint = usageHint;
                 function.FunctionType = semanticFunction.FunctionType;
 
                 new AISkillFunctionService( rockContext ).Add( function );
@@ -223,9 +225,9 @@ namespace Rock.Model
                     needSave = true;
                 }
 
-                if ( function.UsageHint != description )
+                if ( function.UsageHint != usageHint )
                 {
-                    function.UsageHint = description;
+                    function.UsageHint = usageHint;
                     needSave = true;
                 }
 

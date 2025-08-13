@@ -35,6 +35,7 @@ namespace Rock.AI.Agent.Skills
         "Provides common, non-domain-specific helper functions that can be used across multiple skills.\r\n" +
         "These include utilities for working with dates, times, and simple data conversions."
     )]
+    [UserDescription( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
     [AgentSkillGuid( "3406D2DC-6718-45A2-99D3-1DAA32BF2EFD" )]
     [EntityTypeGuid( "35CD02D0-1FF7-4256-B495-FBBFBC9A2C9C" )]
     internal sealed class SystemUtilitySkill : AgentSkillComponent
@@ -60,6 +61,7 @@ namespace Rock.AI.Agent.Skills
         /// <returns></returns>
         [KernelFunction( "DetermineDateRange" )]
         [Description( "🎯 Purpose:\r\n1. Determines a date range from a natural language string.\r\n\r\n\U0001f9ed Usage Guidance:\r\n1. This function is useful in cases where you need to determine a start date and end date for another\r\n   function, such as when you want to filter results by a specific date range." )]
+        [UserDescription( "Determines a date range from a natural language string." )]
         [AgentFunctionGuid( "87756092-9D52-448E-82EE-556A780DF7CF" )]
         public RockFunctionResult DetermineDateRange(
             [Description( "A natural language string, such as 'last week', 'tomorrow', or 'March 1st to March 10th'.")]

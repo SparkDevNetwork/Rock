@@ -187,6 +187,7 @@ namespace Rock.Web.Cache.Entities
                         {
                             Guid = function.Guid,
                             Name = function.Name,
+                            Description = function.Description,
                             UsageHint = function.UsageHint,
                             Role = ModelServiceRole.Default, // TODO: Fix this
                             FunctionType = function.FunctionType,

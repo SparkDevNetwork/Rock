@@ -56,9 +56,14 @@ namespace Rock.AI.Agent
 
         /// <summary>
         /// A short human-readable description of what the semantic function does.
-        /// Useful for documentation, auto-discovery, and UI-based function explorers.
-        /// Example: "Returns the capital city of a given country."
-        /// Leave blank when the name provides enough context.
+        /// This is displayed in the UI and helps users understand the function's purpose.
+        /// </summary>
+        public string Description { get; set; } = string.Empty;
+
+        /// <summary>
+        /// A short of what the semantic function does. This is used to provide
+        /// additional context to the language model. Leave blank when the name
+        /// provides enough context.
         /// </summary>
         public string UsageHint { get; set; } = string.Empty;
 
