@@ -29,6 +29,7 @@ using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
+using Rock.SystemKey;
 using Rock.Utility;
 
 namespace Rock.AI.Agent.Skills
@@ -204,13 +205,7 @@ namespace Rock.AI.Agent.Skills
                 return RockFunctionResult.Error( "Full name is required for search.", instructions: "The FullName parameter is required." );
             }
 
-            var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
-            var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
-            var familyGuid = Rock.SystemGuid.GroupType.GROUPTYPE_FAMILY.AsGuid();
-
-            var familyGroupMembers = new GroupMemberService( _rockContext ).Queryable()
-                        .Where( m => m.Group.GroupType.Guid == familyGuid );
-
+            // Get queryable with the metaphone and full name search.
             var searchQueryable = new PersonService( _rockContext )
                 .GetSimilarPersons( options.FullName );
 
@@ -225,62 +220,125 @@ namespace Rock.AI.Agent.Skills
                     .Where( p => p.PrimaryCampusId == campusIdFilter.Value );
             }
 
-            // Get search results
-            var searchResults = searchQueryable
-                .OrderBy( p => p.LastName )
-                .ThenBy( p => p.NickName )
-                .Take( options.MaxResults + 1 )
-                .ToList()
-                .Select( p => new SearchPersonResult
+            // Get search results. Returning an anonymous type as some of the values needed will
+            // not be returned to the client.
+            var results = searchQueryable
+                .Select( p => new PersonResult
                 {
-                    PersonKey = p.IdKey,
+                    PersonId = p.Id,
                     FirstName = p.FirstName,
                     NickName = p.NickName,
                     LastName = p.LastName,
-                    Suffix = p.SuffixValue?.Value ?? string.Empty,
-                    AgeClassification = p.AgeClassification.ToString(),
-                    Campus = p.GetCampus()?.Name ?? "",
-                    ConnectionStatus = p.ConnectionStatusValue.Value ?? string.Empty,
-                    RecordStatus = p.RecordStatusValue?.Value ?? string.Empty,
-                    SpouseName = p.GetSpouse()?.FullName ?? string.Empty,
-
-                    // Get list of child names
-                    Children = familyGroupMembers
-                        .Where( s => s.PersonId == p.Id && s.GroupRole.Guid == adultGuid )
-                        .SelectMany( m => m.Group.Members )
-                        .Where( m => m.GroupRole.Guid == childGuid )
-                        .Select( m => new PersonResult { FirstName = m.Person.NickName, LastName = m.Person.LastName, PersonKey = m.Person.IdKey } )
-                        .ToList(),
-
-                    // Get list of parents names
-                    Parents = familyGroupMembers
-                        .Where( s => s.PersonId == p.Id && s.GroupRole.Guid == childGuid )
-                        .SelectMany( m => m.Group.Members )
-                        .Where( m => m.GroupRole.Guid == adultGuid )
-                        .Select( m => new PersonResult { FirstName = m.Person.NickName, LastName = m.Person.LastName, PersonKey = m.Person.IdKey } )
-                        .ToList()
+                    Suffix = p.SuffixValue != null ? p.SuffixValue.Value : "",
+                    PrimaryFamilyId = p.PrimaryFamilyId,
+                    AgeClassification = p.AgeClassification,
+                    Campus = p.PrimaryCampus != null ? p.PrimaryCampus.Name : "",
+                    CampusId = p.PrimaryCampusId,
+                    PhotoId = p.PhotoId,
+                    RecordTypeValueId = p.RecordTypeValueId,
+                    ConnectionStatus = p.ConnectionStatusValue.Value,
+                    RecordStatus = p.RecordStatusValue != null ? p.RecordStatusValue.Value : "",
+                    MaritalStatusGuid = p.MaritalStatusValue != null ? p.MaritalStatusValue.Guid : Guid.Empty,
+                    MaritalStatus = p.MaritalStatusValue != null ? p.MaritalStatusValue.Value : "",
+                    Age = p.Age,
+                    Gender = p.Gender
                 } )
+                .OrderBy( p => p.LastName )
+                .ThenBy( p => p.NickName )
+                .Take( options.MaxResults + 1 )
                 .ToList();
 
-            var hasMore = searchResults.Count > options.MaxResults;
+            // Provide indication of more results.
+            var hasMore = results.Count > options.MaxResults;
 
             if ( hasMore )
             {
-                searchResults.RemoveAt( searchResults.Count - 1 );
+                results.RemoveAt( results.Count - 1 );
             }
 
+            results = AppendFamilyMembers( results );
+
+            // Define meta data
             var meta = new Dictionary<string, object>
                 {
-                    { "returnedRows", searchResults.Count },
+                    { "returnedRows", results.Count },
                     { "hasMore", hasMore }
                 };
 
-            return RockFunctionResult.Success( searchResults, meta: meta );
+            return RockFunctionResult.Success( results, meta: meta, instructions: "This data represents results that match the search query. These are both exact matches and those that are similar based on metaphone sounds like. All results should be displayed, even if they don't match exactly what was provided." );
         }
 
         #endregion
 
         #region Helpers
+
+        /// <summary>
+        /// Appends family members (children, adults, and spouse) to the search results.
+        /// </summary>
+        /// <param name="results"></param>
+        /// <returns></returns>
+        private List<PersonResult> AppendFamilyMembers( List<PersonResult> results )
+        {
+            // Get configuration for the family roles and marital status
+            var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
+            var adultGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_ADULT.AsGuid();
+
+            var marriedMaritalStatusGuid = Rock.SystemGuid.DefinedValue.PERSON_MARITAL_STATUS_MARRIED.AsGuid();
+
+            var isBibleStrictSpouse = Rock.Web.SystemSettings.GetValue( SystemSetting.BIBLE_STRICT_SPOUSE ).AsBoolean( true );
+
+            // Get families members for the individuals in the search results
+            var familyIds = results.Select( p => p.PrimaryFamilyId ).Distinct().ToList();
+
+            var familyMembers = new GroupMemberService( _rockContext ).Queryable()
+                .Where( m => familyIds.Contains( m.GroupId ) && m.GroupMemberStatus == GroupMemberStatus.Active )
+                .Select( m => new
+                {
+                    FirstName = m.Person.NickName,
+                    LastName = m.Person.LastName,
+                    GroupRoleGuid = m.GroupRole.Guid,
+                    PersonId = m.Person.Id,
+                    FamilyId = m.GroupId,
+                    Gender = m.Person.Gender,
+                    MaritalStatusGuid = m.Person.MaritalStatusValue != null ? m.Person.MaritalStatusValue.Guid : Guid.Empty,
+                    Suffix = m.Person.SuffixValue != null ? m.Person.SuffixValue.Value : string.Empty
+                } )
+                .ToList();
+
+            // Append family members to the search results records
+            foreach ( var result in results )
+            {
+                result.ChildrenInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
+                                                && m.GroupRoleGuid == childGuid
+                                                && m.PersonId != result.PersonId )
+                                            .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, PersonId = m.PersonId, Suffix = m.Suffix } )
+                                            .ToList();
+
+                result.AdultsInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
+                                                && m.GroupRoleGuid == adultGuid
+                                                && m.PersonId != result.PersonId )
+                                            .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, PersonId = m.PersonId, Suffix = m.Suffix } )
+                                            .ToList();
+
+                var personRoleInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId && m.PersonId == result.PersonId )
+                                            .Select( m => m.GroupRoleGuid )
+                                            .FirstOrDefault();
+
+                // Add spouse. This logic is copies from PersonService.GetSpouse()
+                if ( personRoleInFamily == adultGuid && result.MaritalStatusGuid == marriedMaritalStatusGuid )
+                {
+                    result.Spouse = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
+                                                && m.GroupRoleGuid == adultGuid
+                                                && m.PersonId != result.PersonId
+                                                && m.MaritalStatusGuid == marriedMaritalStatusGuid
+                                                && ( !isBibleStrictSpouse || m.Gender != result.Gender || m.Gender == Gender.Unknown || result.Gender == Gender.Unknown ) )
+                                             .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, PersonId = m.PersonId, Suffix = m.Suffix } )
+                                             .FirstOrDefault();
+                }
+            }
+
+            return results;
+        }
 
         /// <summary>
         /// Creates a SQL parameter with the specified key and value, substituting <see cref="DBNull.Value"/> when the value is <c>null</c>.
