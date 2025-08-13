@@ -829,7 +829,7 @@ namespace RockWeb.Blocks.Steps
         {
             var page = GetAttributeValue( AttributeKey.SuccessPage );
             var parameters = new Dictionary<string, string>();
-            var stepTypeIdParam = PageParameter( ParameterKey.StepTypeId ).AsIntegerOrNull();
+            var stepTypeIdParam = PageParameter( ParameterKey.StepTypeId );
             var personIdParam = PageParameter( ParameterKey.PersonId ).AsIntegerOrNull();
             var personKey = PageParameter( ParameterKey.Person );
 
@@ -844,9 +844,17 @@ namespace RockWeb.Blocks.Steps
             {
                 parameters.Add( ParameterKey.PersonId, personIdParam.Value.ToString() );
             }
-            else if ( stepTypeIdParam.HasValue )
+            else if ( stepTypeIdParam.IsNotNullOrWhiteSpace() )
             {
-                parameters.Add( ParameterKey.StepTypeId, stepTypeIdParam.Value.ToString() );
+                parameters.Add( ParameterKey.StepTypeId, stepTypeIdParam );
+            }
+            else
+            {
+                var stepType = GetStepType();
+                if ( stepType != null )
+                {
+                    parameters.Add( ParameterKey.StepTypeId, stepType.IdKey );
+                }
             }
 
             if ( page.IsNullOrWhiteSpace() )
@@ -871,13 +879,13 @@ namespace RockWeb.Blocks.Steps
         {
             if ( _step == null )
             {
-                var stepId = PageParameter( ParameterKey.StepId ).AsIntegerOrNull();
+                var stepId = PageParameter( ParameterKey.StepId );
 
-                if ( stepId.HasValue )
+                if ( stepId.IsNotNullOrWhiteSpace() )
                 {
                     var rockContext = GetRockContext();
                     var service = new StepService( rockContext );
-                    _step = service.Get( stepId.Value );
+                    _step = service.Get( stepId, !PageCache.Layout.Site.DisablePredictableIds );
                 }
 
                 if ( _step != null )
@@ -906,17 +914,22 @@ namespace RockWeb.Blocks.Steps
                 }
                 else
                 {
-                    var stepTypeId = GetAttributeValue( AttributeKey.StepType ).AsIntegerOrNull() ??
-                        PageParameter( ParameterKey.StepTypeId ).AsIntegerOrNull();
+                    var stepTypeId = GetAttributeValue( AttributeKey.StepType ).AsIntegerOrNull();
+                    var stepTypeKeyParam = PageParameter( ParameterKey.StepTypeId );
+
+                    var rockContext = GetRockContext();
+                    var service = new StepTypeService( rockContext );
 
                     if ( stepTypeId.HasValue )
                     {
-                        var rockContext = GetRockContext();
-                        var service = new StepTypeService( rockContext );
-
                         _stepType = service.Queryable()
                             .AsNoTracking()
                             .FirstOrDefault( st => st.Id == stepTypeId.Value && st.IsActive );
+                    }
+                    else if ( stepTypeKeyParam.IsNotNullOrWhiteSpace() )
+                    {
+                        var key = service.Get( stepTypeKeyParam, !PageCache.Layout.Site.DisablePredictableIds );
+                        _stepType = key != null && key.IsActive ? key : null;
                     }
                 }
             }
