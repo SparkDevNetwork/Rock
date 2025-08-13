@@ -59,7 +59,7 @@
                 :filter="pickExistingValueFilter"
                 visiblePriority="md">
             <template #format="{ row }">
-                <div v-if="row.organizationalObjective" class="label organization-objective--label">
+                <div v-if="row.organizationalObjective" class="label organizational-objective-label">
                     {{ row.organizationalObjective }}
                 </div>
             </template>
@@ -106,7 +106,7 @@
 </template>
 
 <style scoped>
-.organization-objective--label {
+.organizational-objective-label {
     background-color: var(--color-interface-soft);
     color: var(--text-color);
     font-weight: bold;

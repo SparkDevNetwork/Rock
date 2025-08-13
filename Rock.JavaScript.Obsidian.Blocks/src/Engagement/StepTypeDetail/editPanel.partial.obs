@@ -96,7 +96,7 @@
             </ContentStack>
         </ContentSection>
 
-        <ContentSection v-if="hasAttributeValues" title="Step Type Attributes" icon="ti ti-binary-tree-2">
+        <ContentSection v-if="hasAttributes" title="Step Type Attributes" icon="ti ti-binary-tree-2">
             <ContentStack title="Step Type Attributes"
                           description="Set the values for the Step Type Attributes configured from the Step Program level.">
                 <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="3" />
@@ -366,8 +366,8 @@
         return triggerType.value === "StatusChanged";
     });
 
-    const hasAttributeValues = computed(() => {
-        return Object.keys(attributeValues.value).length > 0;
+    const hasAttributes = computed(() => {
+        return Object.keys(attributes.value).length > 0;
     });
     // #endregion
 
