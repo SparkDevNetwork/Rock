@@ -23,13 +23,18 @@ namespace Rock.Enums.Engagement
     public enum EngagementType
     {
         /// <summary>
+        /// None - No specific engagement type
+        /// </summary>
+        None = 0,
+
+        /// <summary>
         /// Milestone - A significant achievement or event that marks progress
         /// </summary>
-        Milestone = 0,
+        Milestone = 1,
 
         /// <summary>
         /// Rhythm - A recurring pattern or habit that happens over time
         /// </summary>
-        Rhythm = 1
+        Rhythm = 2
     }
 }

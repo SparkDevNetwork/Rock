@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { EngagementType } from "@Obsidian/Enums/Engagement/engagementType";
 import { StepAttributeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepAttributeBag";
 import { StepTypeWorkflowTriggerBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeWorkflowTriggerBag";
 import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
@@ -57,6 +58,15 @@ export type StepTypeBag = {
     /** Gets or sets the available pre requisites. */
     availablePreRequisites?: ListItemBag[] | null;
 
+    /** Gets or sets the description displayed with the call to action button. */
+    callToActionDescription?: string | null;
+
+    /** Gets or sets the label for the call to action button. */
+    callToActionLabel?: string | null;
+
+    /** Gets or sets the URL link for the call to action button. */
+    callToActionLink?: string | null;
+
     /** Gets or sets the lava template used to render custom card details. */
     cardLavaTemplate?: string | null;
 
@@ -69,6 +79,9 @@ export type StepTypeBag = {
     /** Gets or sets a description of the step type. */
     description?: string | null;
 
+    /** Gets or sets the engagement type for this step type. */
+    engagementType?: EngagementType | null;
+
     /** Gets or sets a flag indicating if this step type happens over time (like being in a group) or is it achievement based (like attended a class). */
     hasEndDate: boolean;
 
@@ -80,6 +93,9 @@ export type StepTypeBag = {
 
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
+
+    /** Gets or sets the impact weight for this step type (1-5). */
+    impactWeight?: number | null;
 
     /** Gets or sets a flag indicating if this item is active or not. */
     isActive: boolean;
@@ -95,6 +111,9 @@ export type StepTypeBag = {
 
     /** Gets or sets the name of the step type. This property is required. */
     name?: string | null;
+
+    /** Gets or sets the organizational objective value. */
+    organizationalObjectiveValue?: ListItemBag | null;
 
     /** Gets or sets the pre requisites. */
     preRequisites?: string[] | null;

@@ -181,6 +181,8 @@ export const ServiceJob = {
     DataMigrations180DeleteGrouplocationhistoricalschedule: "6A76B67B-9C25-4C02-8BC6-06B23EC8C7C3",
     /** The job to run Post v18.0 Data Migrations to Delete Self-Service Kiosk Site, Blocks, BlockTypes and KioskStark theme. */
     DataMigrations180DeleteSelfserviceKioskSiteAndRelated: "6696B495-3EB0-442B-8DAB-82E861B92B41",
+    /** The job to run Post v18.0 Data Migrations to migrate existing eRA records from the History table to the Steps table. */
+    DataMigrations180MigrateEraDataToSteps: "64CB888D-0F81-473B-B200-8FA38337DAED",
     /** The job to run Post v18.0 Data Migrations to populate the newly-added [CommunicationRecipient].[DeliveredDateTime] field. */
     DataMigrations180PopulateCommunicationrecipientDelivereddatetime: "EF2CF0AC-7A83-4BEB-8824-41D3B5B8B832",
     /** The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table. */

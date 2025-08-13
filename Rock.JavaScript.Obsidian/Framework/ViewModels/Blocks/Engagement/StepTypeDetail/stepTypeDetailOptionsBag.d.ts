@@ -25,6 +25,12 @@ import { StepProgramBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeD
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type StepTypeDetailOptionsBag = {
+    /** Gets or sets a value indicating whether the reorder column should be visible in the Step Attributes grid. */
+    isReOrderColumnVisible: boolean;
+
+    /** Gets or sets the organizational objectives. */
+    organizationalObjectives?: ListItemBag[] | null;
+
     /** Gets or sets the step programs. */
     stepPrograms?: StepProgramBag[] | null;
 

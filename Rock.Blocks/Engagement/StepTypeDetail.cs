@@ -50,7 +50,7 @@ namespace Rock.Blocks.Engagement
     [Category( "Steps" )]
     [Description( "Displays the details of the given Step Type for editing." )]
     [IconCssClass( "ti ti-question-mark" )]
-    //[SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
     [ContextAware( typeof( Campus ) )]
 
     #region Block Attributes
@@ -212,7 +212,9 @@ namespace Rock.Blocks.Engagement
                     new ListItemBag() { Text = "Status Changed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.StatusChanged.ToString() },
                     new ListItemBag() { Text = "Manual", Value = StepWorkflowTrigger.WorkflowTriggerCondition.Manual.ToString() }
                 },
-                StepPrograms = GetStepPrograms( stepType?.StepProgramId )
+                StepPrograms = GetStepPrograms( stepType?.StepProgramId ),
+                OrganizationalObjectives = GetOrganizationalObjectives(),
+                IsReOrderColumnVisible = BlockCache.IsAuthorized( Authorization.EDIT, RequestContext.CurrentPerson )
             };
 
             return options;
@@ -270,6 +272,47 @@ namespace Rock.Blocks.Engagement
 
             return authorizedStepPrograms;
         }
+
+        /// <summary>
+        /// Gets all organizational objectives that the current person has view permissions for.
+        /// </summary>
+        /// <returns>Organizational objectives in a list of list item bags</returns>
+        private List<ListItemBag> GetOrganizationalObjectives()
+        {
+            var definedValueService = new DefinedValueService( RockContext );
+            var organizationalObjectiveType = DefinedTypeCache.Get( Rock.SystemGuid.DefinedType.ORGANIZATIONAL_OBJECTIVE_TYPE );
+
+            if ( organizationalObjectiveType == null )
+            {
+                return new List<ListItemBag>();
+            }
+
+            var organizationalObjectives = new List<ListItemBag>
+            {
+                new ListItemBag
+                {
+                    Text = "None",
+                    Value = Guid.Empty.ToString()
+                }
+            };
+
+            var objectives = definedValueService.Queryable()
+                .AsNoTracking()
+                .Where( dv => dv.DefinedTypeId == organizationalObjectiveType.Id && dv.IsActive )
+                .OrderBy( dv => dv.Order )
+                .ThenBy( dv => dv.Value )
+                .Select( dv => new ListItemBag
+                {
+                    Text = dv.Value,
+                    Value = dv.Guid.ToString()
+                } )
+                .ToList();
+
+            organizationalObjectives.AddRange( objectives );
+
+            return organizationalObjectives;
+        }
+
 
         /// <summary>
         /// Validates the StepType for any final information that might not be
@@ -367,7 +410,13 @@ namespace Rock.Blocks.Engagement
                 Name = entity.Name,
                 ShowCountOnBadge = entity.ShowCountOnBadge,
                 IconCssClass = entity.IconCssClass,
-                IsDeletable = !entity.IsSystem
+                IsDeletable = !entity.IsSystem,
+                EngagementType = entity.EngagementType,
+                ImpactWeight = entity.ImpactWeight,
+                OrganizationalObjectiveValue = entity.OrganizationalObjectiveValue.ToListItemBag(),
+                CallToActionLabel = entity.CallToActionLabel,
+                CallToActionLink = entity.CallToActionLink,
+                CallToActionDescription = entity.CallToActionDescription,
             };
         }
 
@@ -534,6 +583,24 @@ namespace Rock.Blocks.Engagement
 
             box.IfValidProperty( nameof( box.Bag.IconCssClass ),
                 () => entity.IconCssClass = box.Bag.IconCssClass );
+
+            box.IfValidProperty( nameof( box.Bag.EngagementType ),
+               () => entity.EngagementType = box.Bag.EngagementType );
+
+            box.IfValidProperty( nameof( box.Bag.OrganizationalObjectiveValue ),
+                () => entity.OrganizationalObjectiveValueId = box.Bag.OrganizationalObjectiveValue.GetEntityId<DefinedValue>( RockContext ) );
+
+            box.IfValidProperty( nameof( box.Bag.ImpactWeight ),
+                () => entity.ImpactWeight = box.Bag.ImpactWeight );
+
+            box.IfValidProperty( nameof( box.Bag.CallToActionLabel ),
+                () => entity.CallToActionLabel = box.Bag.CallToActionLabel );
+
+            box.IfValidProperty( nameof( box.Bag.CallToActionLink ),
+                () => entity.CallToActionLink = box.Bag.CallToActionLink );
+
+            box.IfValidProperty( nameof( box.Bag.CallToActionDescription ),
+                () => entity.CallToActionDescription = box.Bag.CallToActionDescription );
 
             box.IfValidProperty( nameof( box.Bag.HighlightColor ),
                 () => entity.HighlightColor = box.Bag.HighlightColor );
@@ -1474,6 +1541,32 @@ namespace Rock.Blocks.Engagement
         }
 
         #endregion
+
+        /// <summary>
+        /// Changes the ordered position of a single step attribute.
+        /// </summary>
+        /// <param name="key">The identifier of the step attribute that will be moved.</param>
+        /// <param name="beforeKey">The identifier of the step attribute it will be placed before.</param>
+        /// <returns>An empty result that indicates if the operation succeeded.</returns>
+        [BlockAction]
+        public BlockActionResult ReorderItem( string key, string beforeKey )
+        {
+            var stepType = GetStepType();
+            if ( stepType == null )
+            {
+                return ActionBadRequest( "Step type not found." );
+            }
+
+            var items = GetStepTypeAttributes( stepType.Id.ToString() );
+
+            if ( !items.ReorderEntity( key, beforeKey ) )
+            {
+                return ActionBadRequest( "Invalid reorder attempt." );
+            }
+
+            RockContext.SaveChanges();
+            return ActionOk();
+        }
 
         /// <summary>
         /// Stores information about a dataset to be displayed on a chart.

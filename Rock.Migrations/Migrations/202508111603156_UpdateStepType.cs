@@ -47,6 +47,9 @@ namespace Rock.Migrations
             AddColumn( "dbo.StepType", "EngagementType", c => c.Int() );
             AddColumn( "dbo.StepType", "ImpactWeight", c => c.Int() );
             AddColumn( "dbo.StepType", "OrganizationalObjectiveValueId", c => c.Int() );
+            AddColumn( "dbo.StepType", "CallToActionLabel", c => c.String() );
+            AddColumn( "dbo.StepType", "CallToActionLink", c => c.String() );
+            AddColumn( "dbo.StepType", "CallToActionDescription", c => c.String() );
 
             AddForeignKey( "dbo.StepType", "OrganizationalObjectiveValueId", "dbo.DefinedValue", "Id" );
         }
@@ -58,6 +61,9 @@ namespace Rock.Migrations
         {
             DropForeignKey( "dbo.StepType", "OrganizationalObjectiveValueId", "dbo.DefinedValue" );
 
+            DropColumn( "dbo.StepType", "CallToActionDescription" );
+            DropColumn( "dbo.StepType", "CallToActionLink" );
+            DropColumn( "dbo.StepType", "CallToActionLabel" );
             DropColumn( "dbo.StepType", "OrganizationalObjectiveValueId" );
             DropColumn( "dbo.StepType", "ImpactWeight" );
             DropColumn( "dbo.StepType", "EngagementType" );

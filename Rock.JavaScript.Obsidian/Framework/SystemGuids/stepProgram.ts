@@ -21,16 +21,8 @@
 // </copyright>
 //
 
-import { Guid } from "@Obsidian/Types";
-
-/** The Bag used to transfer step types */
-export type StepTypeTransferBag = {
-    /** Gets or sets the step status mappings for the transfer. */
-    stepStatusMappings?: Record<string, string> | null;
-
-    /** Gets or sets the IdKey for the Step Type that is being transferred. */
-    stepTypeIdKey?: string | null;
-
-    /** Gets or sets a Step Program. */
-    targetStepProgramGuid?: Guid | null;
+/** Guids for Step Programs. */
+export const StepProgram = {
+    /** Core Steps Step Program */
+    CoreSteps: "898972DA-E58C-4EE1-BCA0-CA3343470B09",
 };

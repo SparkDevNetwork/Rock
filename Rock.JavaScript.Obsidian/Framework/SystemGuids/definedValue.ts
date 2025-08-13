@@ -408,6 +408,12 @@ export const DefinedValue = {
     NoncashAssetStocksandbonds: "B29D7D89-357F-47F9-BE7B-52AFF3892007",
     /** Non-Cash Asset Type: Vehicles. */
     NoncashAssetVehicles: "C1DCBE74-88FE-4876-8943-5783499CBBE0",
+    /** The activation organizational objective. */
+    OrganizationalObjectiveTypeActivation: "283BC4AC-CCCD-4FCF-8C94-9848B6B5E734",
+    /** The discipleship organizational objective. */
+    OrganizationalObjectiveTypeDiscipleship: "9DFD8F1E-922E-420D-AE00-F640A2EFF405",
+    /** The outreach organizational objective. */
+    OrganizationalObjectiveTypeOutreach: "396B3980-EB66-446F-86B4-6C6E95FC74A7",
     /** The PBX CDR medium value */
     PbxCdrMediumValue: "B3904B57-62A2-57AC-43EA-94D4DEBA3D51",
     /** Person Connection Status - Attendee */

@@ -170,7 +170,9 @@
     });
 
     const options = computed((): StepTypeDetailOptionsBag => {
-        return config.options ?? {};
+        return config.options ?? {
+            isReOrderColumnVisible: false
+        };
     });
 
     // #endregion

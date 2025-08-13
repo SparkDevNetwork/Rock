@@ -15,10 +15,13 @@
 // </copyright>
 //
 
+using System.Collections.Generic;
+using System.Runtime.Serialization;
+
+using Rock.Enums.Engagement;
 using Rock.ViewModels.Controls;
 using Rock.ViewModels.Core.Grid;
 using Rock.ViewModels.Utility;
-using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
 {
@@ -78,6 +81,36 @@ namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
         /// Gets or sets a value indicating whether this step requires a date.
         /// </summary>
         public bool IsDateRequired { get; set; }
+
+        /// <summary>
+        /// Gets or sets the engagement type for this step type.
+        /// </summary>
+        public EngagementType? EngagementType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the impact weight for this step type (1-5).
+        /// </summary>
+        public int? ImpactWeight { get; set; }
+
+        /// <summary>
+        /// Gets or sets the organizational objective value.
+        /// </summary>
+        public ListItemBag OrganizationalObjectiveValue { get; set; }
+
+        /// <summary>
+        /// Gets or sets the label for the call to action button.
+        /// </summary>
+        public string CallToActionLabel { get; set; }
+
+        /// <summary>
+        /// Gets or sets the URL link for the call to action button.
+        /// </summary>
+        public string CallToActionLink { get; set; }
+
+        /// <summary>
+        /// Gets or sets the description displayed with the call to action button.
+        /// </summary>
+        public string CallToActionDescription { get; set; }
 
         /// <summary>
         /// Gets or sets the name of the step type. This property is required.

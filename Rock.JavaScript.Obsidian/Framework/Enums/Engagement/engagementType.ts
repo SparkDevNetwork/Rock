@@ -23,18 +23,23 @@
 
 /** Represents the type of engagement for a step type. */
 export const EngagementType = {
+    /** None - No specific engagement type */
+    None: 0,
+
     /** Milestone - A significant achievement or event that marks progress */
-    Milestone: 0,
+    Milestone: 1,
 
     /** Rhythm - A recurring pattern or habit that happens over time */
-    Rhythm: 1
+    Rhythm: 2
 } as const;
 
 /** Represents the type of engagement for a step type. */
 export const EngagementTypeDescription: Record<number, string> = {
-    0: "Milestone",
+    0: "None",
 
-    1: "Rhythm"
+    1: "Milestone",
+
+    2: "Rhythm"
 };
 
 /** Represents the type of engagement for a step type. */
