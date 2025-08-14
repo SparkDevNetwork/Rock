@@ -16,9 +16,11 @@
 //
 using System;
 using System.Net;
+using System.Net.Http.Headers;
 
 using Microsoft.AspNetCore.Mvc;
 
+using Rock.Enums.AI.Agent;
 using Rock.Data;
 using Rock.Rest.Filters;
 using Rock.Security;
@@ -30,10 +32,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Net.Http;
 using System.Linq;
-using Rock.Enums.AI.Agent;
-
-
-
 
 #if WEBFORMS
 using IActionResult = System.Web.Http.IHttpActionResult;
@@ -87,7 +85,6 @@ namespace Rock.Rest.v2
         {
             using ( var rockContext = new RockContext() )
             {
-                // TODO: Change this use a slug instead of an integer Id.
                 var agentCache = AIAgentCache.All()
                     .FirstOrDefault( a => a.AgentType == AgentType.Mcp
                         && a.GetAdditionalSettings<McpAgentSettings>().Slug == slug );
@@ -125,6 +122,8 @@ namespace Rock.Rest.v2
                     {
                         Content = new StreamContent( mcpResponse.Content )
                     };
+
+                    result.Content.Headers.ContentType = new MediaTypeHeaderValue( "application/json" );
 
                     return ResponseMessage( result );
                 }
