@@ -100,6 +100,10 @@ namespace Rock.AI.Agent.Mcp
             {
                 return ProcessInitialize( request, agent );
             }
+            else if ( request.Method == "ping" )
+            {
+                return request.CreateResult( new Dictionary<string, object>() );
+            }
             else if ( request.Method == "tools/list" )
             {
                 return ProcessToolsList( request, agent );
