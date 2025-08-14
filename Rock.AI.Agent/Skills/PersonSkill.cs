@@ -191,6 +191,7 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
+        [KernelFunction]
         [UserDescription( "Searches for matching people by name." )]
         [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
         public RockFunctionResult SearchPerson( SearchPersonArguments options )
