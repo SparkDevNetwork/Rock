@@ -10,6 +10,7 @@ using Rock.Attribute;
 using Rock.Enums.AI.Agent;
 using Rock.Enums.Cms;
 using Rock.Model;
+using Rock.Security;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
 using Rock.Web.Cache.Entities;
@@ -85,6 +86,14 @@ namespace Rock.Blocks.AI
                 return new Dictionary<string, object>
                 {
                     ["error"] = "No agent has been configured."
+                };
+            }
+
+            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return new Dictionary<string, object>
+                {
+                    ["error"] = "You are not authorized to access this agent."
                 };
             }
 
@@ -218,9 +227,15 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "No agent has been configured." );
             }
 
+            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
             var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
             {
-                IsDebugEnabled = request.IsDebugEnabled
+                IsDebugEnabled = request.IsDebugEnabled,
+                IsSecurityEnabled = true
             } );
 
             await agent.LoadSessionAsync( request.SessionId );
@@ -272,7 +287,15 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "No agent has been configured." );
             }
 
-            var agent = _agentBuilder.Build( agentCache.Id );
+            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
+            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
+            {
+                IsSecurityEnabled = true
+            } );
 
             // Start a new session.
             await agent.StartNewSessionAsync( null, null );
@@ -292,9 +315,23 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public BlockActionResult LoadSession( int sessionId )
         {
+            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
+            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+
+            if ( agentCache == null )
+            {
+                return ActionBadRequest( "No agent has been configured." );
+            }
+
+            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
             var foundSessionId = new AIAgentSessionService( RockContext )
                 .Queryable()
                 .Where( s => s.Id == sessionId
+                    && s.AIAgentId == agentCache.Id
                     && s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id )
                 .Select( s => s.Id )
                 .FirstOrDefault();
@@ -322,10 +359,24 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public BlockActionResult ClearSession( int sessionId )
         {
+            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
+            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+
+            if ( agentCache == null )
+            {
+                return ActionBadRequest( "No agent has been configured." );
+            }
+
+            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
             var sessionService = new AIAgentSessionService( RockContext );
             var session = sessionService
                 .Queryable()
                 .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                    && s.AIAgentId == agentCache.Id
                     && s.Id == sessionId )
                 .FirstOrDefault();
 
@@ -356,10 +407,24 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public BlockActionResult DeleteSession( int sessionId )
         {
+            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
+            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+
+            if ( agentCache == null )
+            {
+                return ActionBadRequest( "No agent has been configured." );
+            }
+
+            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
             var sessionService = new AIAgentSessionService( RockContext );
             var session = sessionService
                 .Queryable()
                 .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                    && s.AIAgentId == agentCache.Id
                     && s.Id == sessionId )
                 .FirstOrDefault();
 
@@ -382,10 +447,24 @@ namespace Rock.Blocks.AI
         [BlockAction]
         public BlockActionResult GetSessionContext( int sessionId )
         {
+            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
+            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
+
+            if ( agentCache == null )
+            {
+                return ActionBadRequest( "No agent has been configured." );
+            }
+
+            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
             var sessionService = new AIAgentSessionService( RockContext );
             var session = sessionService
                 .Queryable()
                 .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
+                    && s.AIAgentId == agentCache.Id
                     && s.Id == sessionId )
                 .FirstOrDefault();
 
@@ -425,6 +504,11 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "No agent has been configured." );
             }
 
+            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
             var entityTypeCache = EntityTypeCache.Get( "Rock.Model." + entityTypeName, false, RockContext );
 
             if ( entityTypeCache == null )
@@ -439,7 +523,10 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "Entity not found." );
             }
 
-            var agent = _agentBuilder.Build( agentCache.Id );
+            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
+            {
+                IsSecurityEnabled = true
+            } );
 
             await agent.LoadSessionAsync( sessionId );
             await agent.AddAnchorAsync( entity );
@@ -464,7 +551,15 @@ namespace Rock.Blocks.AI
                 return ActionBadRequest( "No agent has been configured." );
             }
 
-            var agent = _agentBuilder.Build( agentCache.Id );
+            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
+            {
+                return ActionBadRequest( "You are not authorized to access this agent." );
+            }
+
+            var agent = _agentBuilder.Build( agentCache.Id, new ChatAgentOptions
+            {
+                IsSecurityEnabled = true
+            } );
 
             await agent.LoadSessionAsync( sessionId );
             await agent.RemoveAnchorAsync( entityTypeId );

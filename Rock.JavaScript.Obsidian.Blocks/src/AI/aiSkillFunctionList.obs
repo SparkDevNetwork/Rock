@@ -39,6 +39,8 @@
         <EditColumn :rowDisabled="row => !!row.isCodeType"
                     @click="onEditItem" />
 
+        <SecurityColumn itemTitle="name" />
+
         <DeleteColumn v-if="config.isDeleteEnabled"
                       :rowDisabled="row => !!row.isCodeType"
                       @click="onDeleteClick" />
@@ -54,7 +56,7 @@
 
 <script setup lang="ts">
     import FunctionEditor from "./AISkillFunctionList/functionEditor.partial.obs";
-    import Grid, { pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, EditColumn } from "@Obsidian/Controls/grid";
+    import Grid, { pickExistingValueFilter, TextColumn, textValueFilter, DeleteColumn, SelectColumn, EditColumn, SecurityColumn } from "@Obsidian/Controls/grid";
     import Modal from "@Obsidian/Controls/modal.obs";
     import { onConfigurationValuesChanged, setPropertiesBoxValue, useBlockBrowserBus, useConfigurationValues, useInvokeBlockAction, useReloadBlock } from "@Obsidian/Utility/block";
     import { EntityType } from "@Obsidian/SystemGuids/entityType";

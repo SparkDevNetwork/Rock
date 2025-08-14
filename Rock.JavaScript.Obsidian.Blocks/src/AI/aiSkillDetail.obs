@@ -14,7 +14,7 @@
                  :isDeleteVisible="isDeletable"
                  :isEditVisible="isEditable"
                  :isFollowVisible="false"
-                 :isSecurityHidden="true"
+                 :isSecurityHidden="false"
                  @cancelEdit="onCancelEdit"
                  @delete="onDelete"
                  @edit="onEdit"

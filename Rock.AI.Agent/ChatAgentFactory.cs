@@ -361,11 +361,12 @@ namespace Rock.AI.Agent
         /// <param name="agentId">The ID of the agent to load skills for.</param>
         /// <param name="rockContext">The database context for data access.</param>
         /// <returns>A list of skill configurations associated with the agent.</returns>
-        private static List<SkillConfiguration> GetSkillConfigurations( int agentId, RockContext rockContext )
+        private List<SkillConfiguration> GetSkillConfigurations( int agentId, RockContext rockContext )
         {
             var agent = AIAgentCache.Get( agentId, rockContext );
+            var requestContext = _requestContextAccessor.RockRequestContext;
 
-            return agent.GetSkillConfigurations( rockContext );
+            return agent.GetSkillConfigurations( requestContext.CurrentPerson, _options.IsSecurityEnabled, rockContext );
         }
 
         #endregion

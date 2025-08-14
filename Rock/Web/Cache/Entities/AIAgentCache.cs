@@ -25,6 +25,7 @@ using Rock.AI.Agent;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
+using Rock.Security;
 
 namespace Rock.Web.Cache.Entities
 {
@@ -109,8 +110,10 @@ namespace Rock.Web.Cache.Entities
         /// Adds the system skills to the provided list of skill configurations.
         /// </summary>
         /// <param name="skillConfigurations">The list of configuration skills to update.</param>
+        /// <param name="currentPerson">The person that will be accessing the agent, used for filtering skills and functions by security.</param>
+        /// <param name="isSecurityEnabled">Indicates if security should be checked on skills and functions.</param>
         /// <param name="rockContext">The context to use when accessing the database.</param>
-        private static void AddSystemSkills( List<SkillConfiguration> skillConfigurations, RockContext rockContext )
+        private static void AddSystemSkills( List<SkillConfiguration> skillConfigurations, Person currentPerson, bool isSecurityEnabled, RockContext rockContext )
         {
             foreach ( var systemSkillGuid in AgentSkillComponent.SystemSkillGuids )
             {
@@ -121,12 +124,28 @@ namespace Rock.Web.Cache.Entities
                     continue;
                 }
 
+                if ( isSecurityEnabled && !systemSkill.IsAuthorized( Authorization.VIEW, currentPerson ) )
+                {
+                    continue;
+                }
+
                 var entityType = EntityTypeCache.Get( systemSkill.CodeEntityTypeId.Value, rockContext );
                 var type = entityType?.GetEntityType();
 
                 if ( type != null )
                 {
-                    skillConfigurations.Add( new SkillConfiguration( systemSkill.Name, systemSkill.UsageHint, type, new AgentSkillSettings() ) );
+                    var agentSkillSettings = new AgentSkillSettings();
+                    var deniedFunctions = new AISkillFunctionService( rockContext )
+                        .Queryable()
+                        .Where( f => f.AISkillId == systemSkill.Id )
+                        .ToList()
+                        .Where( f => isSecurityEnabled && !f.IsAuthorized( Authorization.VIEW, currentPerson ) );
+
+                    // Add the denied functions to the disabled list so that
+                    // they are not made available to the agent.
+                    agentSkillSettings.DisabledFunctions.AddRange( deniedFunctions.Select( f => f.Guid ) );
+
+                    skillConfigurations.Add( new SkillConfiguration( systemSkill.Name, systemSkill.UsageHint, type, agentSkillSettings ) );
                 }
             }
         }
@@ -134,21 +153,24 @@ namespace Rock.Web.Cache.Entities
         /// <summary>
         /// Gets the skill configurations for this agent.
         /// </summary>
+        /// <param name="currentPerson">The person that will be accessing the agent, used for filtering skills and functions by security.</param>
+        /// <param name="isSecurityEnabled">Indicates if security should be checked on skills and functions.</param>
         /// <param name="rockContext">The context to use when accessing the database.</param>
         /// <returns>A collection of skill configuration objects.</returns>
-        internal List<SkillConfiguration> GetSkillConfigurations( RockContext rockContext )
+        internal List<SkillConfiguration> GetSkillConfigurations( Person currentPerson, bool isSecurityEnabled, RockContext rockContext )
         {
             var agentSkills = new AIAgentSkillService( rockContext )
                 .Queryable()
                 .Include( aa => aa.AISkill )
                 .Where( aa => aa.AIAgentId == Id )
-                .ToList();
+                .ToList()
+                .Where( aa => !isSecurityEnabled || aa.AISkill.IsAuthorized( Authorization.VIEW, currentPerson ) );
 
             var skillConfigurations = new List<SkillConfiguration>();
 
             if ( !IsExcludingSystemSkills() )
             {
-                AddSystemSkills( skillConfigurations, rockContext );
+                AddSystemSkills( skillConfigurations, currentPerson, isSecurityEnabled, rockContext );
             }
 
             foreach ( var agentSkill in agentSkills )
@@ -162,6 +184,16 @@ namespace Rock.Web.Cache.Entities
 
                     if ( type != null )
                     {
+                        var deniedFunctions = new AISkillFunctionService( rockContext )
+                            .Queryable()
+                            .Where( f => f.AISkillId == agentSkill.AISkillId )
+                            .ToList()
+                            .Where( f => isSecurityEnabled && !f.IsAuthorized( Authorization.VIEW, currentPerson ) );
+
+                        // Add the denied functions to the disabled list so that
+                        // they are not made available to the agent.
+                        agentSkillSettings.DisabledFunctions.AddRange( deniedFunctions.Select( f => f.Guid ) );
+
                         skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.UsageHint, type, agentSkillSettings ) );
                     }
                 }
@@ -170,7 +202,8 @@ namespace Rock.Web.Cache.Entities
                     var functions = new AISkillFunctionService( rockContext )
                         .Queryable()
                         .Where( f => f.AISkillId == agentSkill.AISkillId )
-                        .ToList();
+                        .ToList()
+                        .Where( f => !isSecurityEnabled || f.IsAuthorized( Authorization.VIEW, currentPerson ) );
 
                     var skillFunctions = new List<AgentFunction>();
 
@@ -201,7 +234,10 @@ namespace Rock.Web.Cache.Entities
                         skillFunctions.Add( agentFunction );
                     }
 
-                    skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.UsageHint, skillFunctions ) );
+                    if ( skillFunctions.Count > 0 )
+                    {
+                        skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.UsageHint, skillFunctions ) );
+                    }
                 }
             }
 

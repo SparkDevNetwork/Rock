@@ -1,5 +1,10 @@
 <template>
-    <div class="chat-container" ref="chatContainer">
+    <NotificationBox v-if="config.error"
+                     alertType="warning">
+        {{ config.error }}
+    </NotificationBox>
+
+    <div v-else class="chat-container" ref="chatContainer">
         <div class="sessions-column">
             <div class="sessions-container" ref="sessionsContainer">
                 <div v-for="session in sessions"
@@ -441,6 +446,7 @@
 
 <script setup lang="ts">
     import Modal from "@Obsidian/Controls/modal.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import TabbedBar from "@Obsidian/Controls/tabbedBar.obs";

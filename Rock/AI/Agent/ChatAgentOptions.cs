@@ -29,5 +29,13 @@ namespace Rock.AI.Agent
         /// Enables additional debug information to be made available.
         /// </summary>
         public bool IsDebugEnabled { get; set; }
+
+        /// <summary>
+        /// When creating a new chat agent, this option can be used to specify
+        /// that security should be checked on the current person for the
+        /// active request. This only filters out skills and functions. It will
+        /// not check permissions for the agent itself.
+        /// </summary>
+        public bool IsSecurityEnabled { get; set; }
     }
 }
