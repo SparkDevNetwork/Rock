@@ -241,14 +241,17 @@ namespace Rock.Blocks.AI
             await agent.LoadSessionAsync( request.SessionId );
             await agent.AddMessageAsync( AuthorRole.User, request.Message );
 
+            var sw = System.Diagnostics.Stopwatch.StartNew();
             var response = await agent.GetChatMessageResponseAsync();
+            sw.Stop();
 
             var messageBag = new ChatMessageBag
             {
                 Role = AuthorRole.Assistant,
                 Message = response.Content,
                 TokenCount = response.Usage.OutputTokenCount,
-                ConsumedTokenCount = response.Usage.TotalTokenCount
+                ConsumedTokenCount = response.Usage.TotalTokenCount,
+                Duration = sw.ElapsedMilliseconds
             };
 
             var responseBag = new SendMessageResponseBag
@@ -265,7 +268,8 @@ namespace Rock.Blocks.AI
                         Category = l.Category,
                         LogLevel = ( int ) l.LogLevel,
                         LogLevelName = l.LogLevel.ToString(),
-                        Message = l.Message
+                        Message = l.Message,
+                        Timestamp = l.Timestamp.ToRockDateTimeOffset()
                     } ).ToList();
             }
 
@@ -598,6 +602,11 @@ namespace Rock.Blocks.AI
         private class ChatMessageBag
         {
             /// <summary>
+            /// The number of milliseconds it took to process this message in the AI agent.
+            /// </summary>
+            public long Duration { get; set; }
+
+            /// <summary>
             /// Gets or sets the role of the message author (e.g., User or Assistant).
             /// </summary>
             public AuthorRole Role { get; set; }
@@ -627,6 +636,8 @@ namespace Rock.Blocks.AI
             public string LogLevelName { get; set; }
 
             public string Message { get; set; }
+
+            public DateTimeOffset Timestamp { get; set; }
         }
 
         /// <summary>

@@ -57,6 +57,12 @@
                             {{ getDebugFunctionCalls(message).length }}
                         </span>
 
+                        <span v-if="message.duration"
+                              class="label label-info" title="Duration">
+                            <i class="ti ti-stopwatch"></i>
+                            {{ asFormattedString(message.duration / 1000, 3) }}s
+                        </span>
+
                         <button v-if="doesMessageHaveLogData(message)"
                                 class="btn btn-link btn-xs"
                                 type="button"
@@ -164,7 +170,7 @@
         </div>
 
         <div v-if="messageDebugTab === 'Logs'" class="message-debug-log">
-            <pre>{{ getDebugLogText(debugMessage) }}</pre>
+            <pre v-html="getDebugLogText(debugMessage)"></pre>
         </div>
     </Modal>
 
@@ -413,6 +419,9 @@
 
 /* Message Debug Modal */
 .message-debug-log > pre {
+    display: grid;
+    grid-template-columns: auto auto 1fr;
+    column-gap: var(--spacing-medium);
     max-height: calc(100vh - 300px);
 }
 
@@ -459,6 +468,7 @@
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { escapeHtml } from "@Obsidian/Utility/stringUtils";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { log } from "console";
     import { computed, nextTick, onBeforeUnmount, onMounted, reactive, ref } from "vue";
 
     const enum AuthorRole {
@@ -502,6 +512,8 @@
     };
 
     type ChatMessageBag = {
+        duration: number;
+
         role: AuthorRole;
 
         message?: string | null;
@@ -523,6 +535,8 @@
         logLevelName?: string | null;
 
         message?: string | null;
+
+        timestamp?: string | null;
     };
 
     type ChatAnchorBag = {
@@ -635,9 +649,15 @@
         }
 
         let logText = "";
+        const firstTimestamp = RockDateTime.parseISO(message.logs[0].timestamp!)?.toMilliseconds() ?? 0;
 
         for (const log of message.logs) {
-            logText += `[${log.logLevelName}] ${log.category}: ${log.message}\n`;
+            const timestamp = RockDateTime.parseISO(log.timestamp!)?.toMilliseconds() ?? 0;
+            const duration = asFormattedString(timestamp - firstTimestamp, 0);
+
+            logText += `<span class="log-time">@${duration}ms</span>`;
+            logText += `<span class="log-category" title="${log.category}">${log.logLevelName}</span>`;
+            logText += `<span class="log-message">${escapeHtml(log.message!)}</span>\n`;
         }
 
         return logText;
@@ -742,6 +762,7 @@
         }
 
         messages.push({
+            duration: 0,
             role: AuthorRole.User,
             message: msg,
             tokenCount: 0,

@@ -15,6 +15,8 @@
 // </copyright>
 //
 
+using System;
+
 using Microsoft.Extensions.Logging;
 
 namespace Rock.AI.Agent
@@ -40,6 +42,11 @@ namespace Rock.AI.Agent
         /// The text message that was logged.
         /// </summary>
         public string Message { get; }
+
+        /// <summary>
+        /// The date and time this message was logged.
+        /// </summary>
+        public DateTime Timestamp { get; } = RockDateTime.Now;
 
         #endregion
 
