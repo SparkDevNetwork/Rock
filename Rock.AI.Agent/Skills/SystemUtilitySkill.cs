@@ -25,6 +25,7 @@ using Microsoft.SemanticKernel;
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.SystemUtilitySkill;
 using Rock.AI.Agent.Utilities;
+using Rock.Core.Geography.Classes;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -78,7 +79,9 @@ namespace Rock.AI.Agent.Skills
             return RockFunctionResult.Success( dateRange );
         }
 
-        // TODO: Finish out this function.
+        [KernelFunction( "LookupCampuses" )]
+        [AgentFunctionGuid( "1FDDC83F-2911-5E86-4219-DB4A5F10BD42" )]
+        [UserDescription( "Provides information on the campuses." )]
         public RockFunctionResult LookupCampuses()
         {
             // TODOs:  
@@ -87,15 +90,30 @@ namespace Rock.AI.Agent.Skills
             var campusResults = CampusCache.All()
                 .Select( c => new CampusResult
                 {
-                    CampusKey = c.IdKey,
+                    Id = c.Id,
+                    CampusIdKey = c.IdKey,
                     IsActive = c.IsActive ?? false,
                     Abbreviation = c.ShortCode,
                     CampusType = c.CampusTypeValue?.Value ?? string.Empty,
                     CampusTypeKey = c.CampusTypeValue.IdKey,
                     CampusStatus = c.CampusStatusValue?.Value ?? string.Empty,
                     CampusStatusKey = c.CampusStatusValue.IdKey,
-                    Location = c.Location,
+                    Location = new LocationResult {
+                        Street1 = c.Location.Street1,
+                        Street2 = c.Location.Street2,
+                        City = c.Location.City,
+                        State = c.Location.State,
+                        PostalCode = c.Location.PostalCode,
+                        Country = c.Location.Country,
+                        GeographyPoint = ( c.Location.Latitude.HasValue && c.Location.Longitude.HasValue ) ? new GeographyPoint( c.Location.Latitude.Value, c.Location.Latitude.Value) : null
+                    },
                     ServiceTimes = c.ServiceTimes
+                                        .Select( st => new ServiceTimeResult
+                                        {
+                                            Day = st.Day,
+                                            Time = st.Time
+                                        } )
+                                        .ToList()
                 } )
                 .ToList();
 

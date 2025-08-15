@@ -16,8 +16,9 @@
 //
 
 using System.Collections.Generic;
+using System.Text.Json.Serialization;
 
-using static Rock.Web.Cache.CampusCache;
+using Rock.AI.Agent.Classes.Common;
 
 namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
 {
@@ -27,9 +28,15 @@ namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
     public class CampusResult
     {
         /// <summary>
+        /// The Id of the campus.s
+        /// </summary>
+        [JsonIgnore]
+        public int Id { get; set; }
+
+        /// <summary>
         /// Opaque campus identifier (Id Key). Use this value with other APIs instead of the numeric Id.
         /// </summary>
-        public string CampusKey { get; set; }
+        public string CampusIdKey { get; set; }
 
         /// <summary>
         /// Indicates whether the campus is currently active.
@@ -64,17 +71,33 @@ namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
         /// <summary>
         /// Primary geographic location information for the campus.
         /// </summary>
-        public CampusLocation Location { get; set; }
+        public LocationResult Location { get; set; }
 
         /// <summary>
         /// Weekly service times for the campus, when available.
         /// </summary>
-        public List<ServiceTime> ServiceTimes { get; set; }
+        public List<ServiceTimeResult> ServiceTimes { get; set; }
 
         /// <summary>
         /// Arbitrary campus attributes represented as a key/value dictionary.
         /// Keys are attribute keys; values are formatted strings.
         /// </summary>
         public Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>();
+    }
+
+    /// <summary>
+    /// POCO for storing service times
+    /// </summary>
+    public class ServiceTimeResult
+    {
+        /// <summary>
+        /// The day of the week.
+        /// </summary>
+        public string Day { get; set; }
+
+        /// <summary>
+        /// The time of the day.
+        /// </summary>
+        public string Time { get; set; }
     }
 }
