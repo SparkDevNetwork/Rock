@@ -125,9 +125,8 @@ namespace Rock.AI.Agent
             _kernelBuilder = CreateKernelBuilder( provider, null );
 
             var agent = AIAgentCache.Get( agentId, rockContext );
-            var settings = agent.GetAdditionalSettings<ChatAgentSettings>();
 
-            _agentConfiguration = new AgentConfiguration( agentId, provider, agent.Instructions, settings, GetSkillConfigurations( agentId, rockContext ) );
+            _agentConfiguration = new AgentConfiguration( agent, GetSkillConfigurations( agentId, rockContext ), provider );
             sw.Stop();
 
             _logger.LogInformation( "Initialized factory in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );

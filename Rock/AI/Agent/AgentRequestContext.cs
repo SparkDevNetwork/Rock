@@ -21,7 +21,10 @@ using System.Linq;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
+using Rock.Enums.AI.Agent;
 using Rock.Lava;
+
+using SKAuthorRole = Microsoft.SemanticKernel.ChatCompletion.AuthorRole;
 
 namespace Rock.AI.Agent
 {
@@ -72,6 +75,15 @@ namespace Rock.AI.Agent
         /// </summary>
         public int? AgentId { get; internal set; }
 
+        /// <inheritdoc cref="Model.AIAgent.Name"/>
+        public string AgentName { get; internal set; }
+
+        /// <inheritdoc cref="Model.AIAgent.AgentType"/>
+        public AgentType AgentType { get; internal set; }
+
+        /// <inheritdoc cref="Model.AIAgent.AudienceType"/>
+        public AudienceType AudienceType { get; internal set; }
+
         /// <summary>
         /// The chat agent instance that this request is being processed by.
         /// </summary>
@@ -98,7 +110,7 @@ namespace Rock.AI.Agent
         /// <param name="message">The message to add as a system message.</param>
         internal void AddSystemMessage( string message )
         {
-            _systemMessages.Add( new ChatMessageContent( AuthorRole.System, message ) );
+            _systemMessages.Add( new ChatMessageContent( SKAuthorRole.System, message ) );
             _chatHistory = null;
         }
 
@@ -108,7 +120,7 @@ namespace Rock.AI.Agent
         /// <param name="message">The message to add as a user message.</param>
         internal void AddUserMessage( string message )
         {
-            _chatMessages.Add( new ChatMessageContent( AuthorRole.User, message ) );
+            _chatMessages.Add( new ChatMessageContent( SKAuthorRole.User, message ) );
             _chatHistory = null;
         }
 
@@ -118,7 +130,7 @@ namespace Rock.AI.Agent
         /// <param name="message">The message to add as an assistant message.</param>
         internal void AddAssistantMessage( string message )
         {
-            _chatMessages.Add( new ChatMessageContent( AuthorRole.Assistant, message ) );
+            _chatMessages.Add( new ChatMessageContent( SKAuthorRole.Assistant, message ) );
             _chatHistory = null;
         }
 

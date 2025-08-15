@@ -33,6 +33,7 @@
     import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/agentSkillBag";
     import { AgentType, AgentTypeDescription } from "@Obsidian/Enums/AI/Agent/agentType";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { AudienceTypeDescription } from "@Obsidian/Enums/AI/Agent/audienceType";
 
     const props = defineProps({
         modelValue: {
@@ -81,14 +82,8 @@
             return valueBuilder.build();
         }
 
-        if (props.modelValue.agentType === AgentType.Chat) {
-            valueBuilder.addTextValue("Role", ModelServiceRoleDescription[props.modelValue.role]);
-        }
-        else if (props.modelValue.agentType === AgentType.Mcp) {
-            if (props.modelValue.slug) {
-                valueBuilder.addTextValue("Slug", props.modelValue.slug);
-            }
-        }
+        valueBuilder.addTextValue("Type", AgentTypeDescription[props.modelValue.agentType]);
+        valueBuilder.addTextValue("Audience", AudienceTypeDescription[props.modelValue.audienceType]);
 
         return valueBuilder.build();
     });
@@ -101,7 +96,14 @@
             return valueBuilder.build();
         }
 
-        valueBuilder.addTextValue("Type", AgentTypeDescription[props.modelValue.agentType]);
+        if (props.modelValue.agentType === AgentType.Chat) {
+            valueBuilder.addTextValue("Role", ModelServiceRoleDescription[props.modelValue.role]);
+        }
+        else if (props.modelValue.agentType === AgentType.Mcp) {
+            if (props.modelValue.slug) {
+                valueBuilder.addTextValue("Slug", props.modelValue.slug);
+            }
+        }
 
         return valueBuilder.build();
     });

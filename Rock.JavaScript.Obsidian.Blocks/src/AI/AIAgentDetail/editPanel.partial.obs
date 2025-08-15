@@ -7,13 +7,23 @@
                          label="Name"
                          rules="required" />
             </div>
+        </div>
 
+        <div class="row">
             <div class="col-md-6">
                 <DropDownList v-model="agentType"
                               label="Type"
                               :items="agentTypeItems"
                               :showBlankItem="false"
                               :disabled="!!props.modelValue.bag?.idKey"
+                              rules="required" />
+            </div>
+
+            <div class="col-md-6">
+                <DropDownList v-model="audienceType"
+                              label="Audience"
+                              :items="audienceTypeItems"
+                              :showBlankItem="false"
                               rules="required" />
             </div>
         </div>
@@ -83,6 +93,7 @@
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
     import { AgentType, AgentTypeDescription } from "@Obsidian/Enums/AI/Agent/agentType";
+    import { AudienceType, AudienceTypeDescription } from "@Obsidian/Enums/AI/Agent/audienceType";
 
     const props = defineProps({
         modelValue: {
@@ -105,6 +116,7 @@
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
     const agentType = propertyRef((props.modelValue.bag?.agentType ?? AgentType.Chat).toString(), "AgentType");
+    const audienceType = propertyRef((props.modelValue.bag?.audienceType ?? AudienceType.Internal).toString(), "AudienceType");
     const instructions = propertyRef(props.modelValue.bag?.instructions ?? "", "Instructions");
     const autoSummarizeThreshold = ref(props.modelValue.bag?.autoSummarizeThreshold ?? 0);
     const avatarBinaryFile = ref(props.modelValue.bag?.avatarBinaryFile ?? null);
@@ -114,10 +126,11 @@
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [agentType, description, name, instructions];
+    const propRefs = [agentType, audienceType, description, name, instructions];
 
     const roleItems = enumToListItemBag(ModelServiceRoleDescription);
     const agentTypeItems = enumToListItemBag(AgentTypeDescription);
+    const audienceTypeItems = enumToListItemBag(AudienceTypeDescription);
 
     // #endregion
 
@@ -156,6 +169,7 @@
         updateRefValue(description, props.modelValue.bag?.description ?? "");
         updateRefValue(name, props.modelValue.bag?.name ?? "");
         updateRefValue(agentType, (props.modelValue.bag?.agentType ?? AgentType.Chat).toString());
+        updateRefValue(audienceType, (props.modelValue.bag?.audienceType ?? AudienceType.Internal).toString());
         updateRefValue(instructions, props.modelValue.bag?.instructions ?? "");
         updateRefValue(avatarBinaryFile, props.modelValue.bag?.avatarBinaryFile ?? null);
         updateRefValue(role, (props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
@@ -173,6 +187,7 @@
         setPropertiesBoxValue(newValue, "description", description.value);
         setPropertiesBoxValue(newValue, "name", name.value);
         setPropertiesBoxValue(newValue, "agentType", toNumber(agentType.value) as AgentType);
+        setPropertiesBoxValue(newValue, "audienceType", toNumber(audienceType.value) as AudienceType);
         setPropertiesBoxValue(newValue, "instructions", instructions.value);
         setPropertiesBoxValue(newValue, "autoSummarizeThreshold", autoSummarizeThreshold.value);
         setPropertiesBoxValue(newValue, "avatarBinaryFile", avatarBinaryFile.value);

@@ -17,7 +17,9 @@
 
 using System.Collections.Generic;
 
+using Rock.Data;
 using Rock.Enums.AI.Agent;
+using Rock.Web.Cache.Entities;
 
 namespace Rock.AI.Agent
 {
@@ -34,11 +36,20 @@ namespace Rock.AI.Agent
         /// </summary>
         public int AgentId { get; }
 
+        /// <inheritdoc cref="Model.AIAgent.AgentType"/>
+        public AgentType AgentType { get; }
+
+        /// <inheritdoc cref="Model.AIAgent.AudienceType"/>
+        public AudienceType AudienceType { get; }
+
         /// <summary>
         /// Gets the token threshold before auto-summarization will be triggered
         /// when a new user message is added. This only applies to persisted sessions.
         /// </summary>
         public int AutoSummarizeThreshold { get; }
+
+        /// <inheritdoc cref="Model.AIAgent.Name"/>
+        public string Name { get; }
 
         /// <summary>
         /// Gets the provider component responsible for supplying AI/model capabilities to this agent.
@@ -63,20 +74,53 @@ namespace Rock.AI.Agent
         /// <summary>
         /// Initializes a new instance of the <see cref="AgentConfiguration"/> class with the specified settings.
         /// </summary>
+        /// <param name="agent">The cache object that represents the agent to define the configuration for.</param>
+        /// <param name="skills">A list of skills (semantic or native) enabled for this agent.</param>
+        /// <param name="provider">The provider component responsible for supplying AI/model capabilities to this agent.</param>
+        internal AgentConfiguration( AIAgentCache agent, List<SkillConfiguration> skills, AgentProviderComponent provider )
+        {
+            AgentId = agent.Id;
+            AgentType = agent.AgentType;
+            AudienceType = agent.AudienceType;
+            Instructions = agent.Instructions ?? string.Empty;
+            Name = agent.Name;
+            Provider = provider;
+            Skills = skills ?? new List<SkillConfiguration>();
+
+            var settings = agent.GetAdditionalSettings<ChatAgentSettings>();
+            AutoSummarizeThreshold = settings.AutoSummarizeThreshold;
+            Role = settings.Role;
+        }
+
+        /// <summary>
+        /// Initializes a new instance of the <see cref="AgentConfiguration"/> class with the specified settings.
+        /// </summary>
+        /// <remarks>
+        /// This should be used by unit testing only.
+        /// </remarks>
         /// <param name="agentId">The unique identifier for the agent.</param>
         /// <param name="provider">The provider component responsible for supplying AI/model capabilities to this agent.</param>
+        /// <param name="name">The name of the agent as configured in the UI.</param>
+        /// <param name="agentType">The type of agent represented by this instance.</param>
+        /// <param name="audienceType">The audience type for this agent, which determines its intended use case.</param>
         /// <param name="instructions">The instructions or system prompt context for this agent.</param>
         /// <param name="settings">The agent settings object, including summarization threshold and model role.</param>
         /// <param name="skills">A list of skills (semantic or native) enabled for this agent.</param>
-        public AgentConfiguration(
+        internal AgentConfiguration(
             int agentId,
             AgentProviderComponent provider,
+            string name,
+            AgentType agentType,
+            AudienceType audienceType,
             string instructions,
             ChatAgentSettings settings,
             IReadOnlyList<SkillConfiguration> skills )
         {
             AgentId = agentId;
+            AgentType = agentType;
+            AudienceType = audienceType;
             AutoSummarizeThreshold = settings.AutoSummarizeThreshold;
+            Name = name;
             Provider = provider;
             Instructions = instructions ?? string.Empty;
             Role = settings.Role;

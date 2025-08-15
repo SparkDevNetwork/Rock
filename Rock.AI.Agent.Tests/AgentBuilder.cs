@@ -13,6 +13,7 @@ using Rock.Lava;
 using Rock.Tests.Shared.TestFramework;
 using Microsoft.Extensions.Logging;
 using Rock.Model;
+using Rock.Enums.AI.Agent;
 
 namespace Rock.AI.Agent.Tests;
 
@@ -134,6 +135,9 @@ internal class AgentBuilder
 
         var agentConfiguration = new AgentConfiguration(
             agentId: _agentIdCounter,
+            name: "Test Agent",
+            agentType: AgentType.Chat,
+            audienceType: AudienceType.Internal,
             provider: providerMock.Object,
             instructions: _instructions,
             settings: new ChatAgentSettings(),

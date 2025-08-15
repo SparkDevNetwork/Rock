@@ -56,6 +56,10 @@ namespace Rock.Web.Cache.Entities
         [DataMember]
         public AgentType AgentType { get; private set; }
 
+        /// <inheritdoc cref="AIAgent.AudienceType"/>
+        [DataMember]
+        public AudienceType AudienceType { get; private set; }
+
         /// <inheritdoc/>
         [DataMember]
         public string AdditionalSettingsJson { get; private set; }
@@ -83,6 +87,7 @@ namespace Rock.Web.Cache.Entities
             AvatarBinaryFileId = agent.AvatarBinaryFileId;
             Instructions = agent.Instructions;
             AgentType = agent.AgentType;
+            AudienceType = agent.AudienceType;
             AdditionalSettingsJson = agent.AdditionalSettingsJson;
         }
 

@@ -22,6 +22,7 @@
 //
 
 import { AgentType } from "@Obsidian/Enums/AI/Agent/agentType";
+import { AudienceType } from "@Obsidian/Enums/AI/Agent/audienceType";
 import { ModelServiceRole } from "@Obsidian/Enums/AI/Agent/modelServiceRole";
 import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/agentSkillBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
@@ -37,6 +38,12 @@ export type AIAgentBag = {
 
     /** Gets or sets the attribute values. */
     attributeValues?: Record<string, string> | null;
+
+    /**
+     * The intended audience for this agent, which can be used to help
+     * determine the appropraite functionality to expose.
+     */
+    audienceType: AudienceType;
 
     /**
      * The token threshold before auto-summarization will be triggered

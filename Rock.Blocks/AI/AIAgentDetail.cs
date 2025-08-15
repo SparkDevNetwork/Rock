@@ -238,6 +238,7 @@ namespace Rock.Blocks.AI
             {
                 IdKey = entity.IdKey,
                 AgentType = entity.AgentType,
+                AudienceType = entity.AudienceType,
                 AutoSummarizeThreshold = chatSettings.AutoSummarizeThreshold,
                 AvatarBinaryFile = entity.AvatarBinaryFile.ToListItemBag(),
                 Description = entity.Description,
@@ -341,6 +342,9 @@ namespace Rock.Blocks.AI
 
                 entity.AgentType = box.Bag.AgentType;
             }
+
+            box.IfValidProperty( nameof( box.Bag.AudienceType ),
+                () => entity.AudienceType = box.Bag.AudienceType );
 
             box.IfValidProperty( nameof( box.Bag.AvatarBinaryFile ),
                 () => entity.AvatarBinaryFileId = box.Bag.AvatarBinaryFile.GetEntityId<BinaryFile>( RockContext ) );

@@ -175,6 +175,9 @@ Answer Style:
 
             _context = kernel.Services.GetRequiredService<AgentRequestContext>();
             _context.AgentId = _agentConfiguration.AgentId;
+            _context.AgentName = _agentConfiguration.Name;
+            _context.AgentType = _agentConfiguration.AgentType;
+            _context.AudienceType = _agentConfiguration.AudienceType;
             _context.ChatAgent = this;
         }
 

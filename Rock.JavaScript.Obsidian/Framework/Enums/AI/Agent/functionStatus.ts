@@ -21,24 +21,26 @@
 // </copyright>
 //
 
-/** The type of functionality the agent is configured to provide. */
-export const AgentType = {
-    /** The agent will provide chat services through a backend AI provider. */
-    Chat: 0,
+/** Indicates the overall outcome of a lookup operation. */
+export const FunctionStatus = {
+    /** The lookup executed successfully and returned one or more items. */
+    Success: 0,
 
-    /**
-     * The agent will act as an MCP server and provide function tools to
-     * other AI clients.
-     */
-    Mcp: 1
+    /** The lookup executed successfully but returned no items. */
+    NoData: 1,
+
+    /** The lookup failed. See the error message on the result for details. */
+    Error: 2
 } as const;
 
-/** The type of functionality the agent is configured to provide. */
-export const AgentTypeDescription: Record<number, string> = {
-    0: "Chat",
+/** Indicates the overall outcome of a lookup operation. */
+export const FunctionStatusDescription: Record<number, string> = {
+    0: "Success",
 
-    1: "MCP"
+    1: "No Data",
+
+    2: "Error"
 };
 
-/** The type of functionality the agent is configured to provide. */
-export type AgentType = typeof AgentType[keyof typeof AgentType];
+/** Indicates the overall outcome of a lookup operation. */
+export type FunctionStatus = typeof FunctionStatus[keyof typeof FunctionStatus];

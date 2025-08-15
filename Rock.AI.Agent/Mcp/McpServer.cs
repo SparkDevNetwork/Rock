@@ -159,7 +159,7 @@ namespace Rock.AI.Agent.Mcp
                 },
                 ServerInfo = new Implementation
                 {
-                    Name = "Rock RMS",
+                    Name = $"Rock RMS: {agent.AgentConfiguration.Name}",
                     Version = VersionInfo.VersionInfo.GetRockSemanticVersionNumber(),
                 },
                 Instructions = agent.AgentConfiguration.Instructions

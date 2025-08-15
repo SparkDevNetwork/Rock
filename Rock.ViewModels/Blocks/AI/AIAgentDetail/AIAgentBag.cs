@@ -33,6 +33,12 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public AgentType AgentType { get; set; }
 
         /// <summary>
+        /// The intended audience for this agent, which can be used to help
+        /// determine the appropraite functionality to expose.
+        /// </summary>
+        public AudienceType AudienceType { get; set; }
+
+        /// <summary>
         /// The token threshold before auto-summarization will be triggered
         /// when a new user message is added. This only applies to persisted
         /// sessions.

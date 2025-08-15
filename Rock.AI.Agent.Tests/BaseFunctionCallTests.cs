@@ -10,6 +10,7 @@ using Moq;
 using Rock.AI.Agent.Providers;
 using Rock.Configuration;
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Lava;
 using Rock.Lava.Fluid;
 using Rock.Model;
@@ -81,6 +82,9 @@ public abstract class BaseFunctionCallTests : MockDatabaseTestsBase
         // Create the agent configuration that will be used for this test.
         var agentConfiguration = new AgentConfiguration( 1,
             providerMock.Object,
+            "Test Agent",
+            AgentType.Chat,
+            AudienceType.Public,
             "You are a helpful assistant for Rock RMS.",
             new ChatAgentSettings(),
             new List<SkillConfiguration>
