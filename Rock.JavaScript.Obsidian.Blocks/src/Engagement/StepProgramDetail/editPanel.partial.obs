@@ -35,14 +35,16 @@
                     </div>
                 </div>
 
-                <RadioButtonList label="Completion Flow"
-                                 v-model="completionFlow"
+                <RadioButtonList v-model="completionFlow"
+                                 label="Completion Flow"
+                                 rules="required"
                                  :help="completionFlowHelpText"
                                  :items="completionFlows" />
 
                 <RadioButtonList v-if="areViewModesDisplayed"
-                                 label="Default List View"
                                  v-model="defaultListView"
+                                 rules="required"
+                                 label="Default List View"
                                  :items="viewModes" />
             </ContentStack>
         </ContentSection>
@@ -108,7 +110,7 @@
         </ContentSection>
 
         <ContentSection title="Step Type Attributes"
-                        icon="ti ti-database">
+                        icon="ti ti-binary-tree-2">
             <ContentStack>
                 <Grid :data="attributesGridData"
                       keyField="key"
@@ -147,6 +149,17 @@
                 </template>
 
             </Modal>
+        </ContentSection>
+
+        <ContentSection v-if="areEntityAttributesDisplayed"
+                        title="Step Program Entity Attributes"
+                        icon="ti ti-database">
+            <ContentStack>
+                <AttributeValuesContainer v-model="attributeValues"
+                                          :attributes="attributes"
+                                          isEditMode
+                                          :numberOfColumns="1" />
+            </ContentStack>
         </ContentSection>
 
         <ContentSection title="Workflows"
@@ -217,11 +230,6 @@
 
             </Modal>
         </ContentSection>
-
-        <AttributeValuesContainer v-model="attributeValues"
-                                  :attributes="attributes"
-                                  isEditMode
-                                  :numberOfColumns="2" />
     </ContentSectionContainer>
 </template>
 
@@ -348,6 +356,13 @@
 
     const showQualifiers = computed(() => {
         return triggerType.value === "StatusChanged";
+    });
+
+    const areEntityAttributesDisplayed = computed(() => {
+        if (attributes.value && Object.keys(attributes.value).length > 0) {
+            return true;
+        }
+        return false;
     });
 
     // #endregion

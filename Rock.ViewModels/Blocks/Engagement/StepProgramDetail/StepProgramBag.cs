@@ -86,6 +86,14 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         public List<StepStatusBag> Statuses { get; set; }
 
         /// <summary>
+        /// Gets or sets the Status filter options
+        /// </summary>
+        /// <value>
+        /// The status List Item Bags
+        /// </value>
+        public List<ListItemBag> StatusFilterOptions { get; set; }
+
+        /// <summary>
         /// Gets or sets the chart data.
         /// </summary>
         /// <value>
@@ -150,5 +158,15 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// Gets or sets a value indicating wheter the Step Program can be deleted.
         /// </summary>
         public bool IsDeletable { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Sep Flow Configuration settings used to display the Step Flow diagram.
+        /// </summary>
+        public SankeyDiagramSettingsBag StepFlowConfigurationBag { get; set; }
+
+        /// <summary>
+        /// Gets or sets the error message.
+        /// </summary>
+        public string ErrorMessage { get; set; }
     }
 }
