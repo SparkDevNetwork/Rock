@@ -31,7 +31,6 @@ using Microsoft.SemanticKernel.ChatCompletion;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
-using Rock.ViewModels.Blocks.Event.RegistrationEntry;
 
 using AuthorRole = Rock.Enums.AI.Agent.AuthorRole;
 

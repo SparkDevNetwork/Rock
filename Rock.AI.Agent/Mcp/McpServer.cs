@@ -133,9 +133,26 @@ namespace Rock.AI.Agent.Mcp
                 return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Missing or invalid request parameters." );
             }
 
+            var version = "2025-06-18";
+
+            if ( parameters.ProtocolVersion == "2025-03-26" )
+            {
+                version = "2025-03-26";
+            }
+
+            var instructions = agent.AgentConfiguration.Instructions;
+
+            foreach ( var plugin in agent.Kernel.Plugins )
+            {
+                if ( plugin.Description.IsNotNullOrWhiteSpace() )
+                {
+                    instructions += "\n" + plugin.Description;
+                }
+            }
+
             var response = new InitializeResult
             {
-                ProtocolVersion = "2025-06-18",
+                ProtocolVersion = version,
                 Capabilities = new Dictionary<string, Capability>
                 {
                     { "tools", new Capability() },
@@ -166,10 +183,9 @@ namespace Rock.AI.Agent.Mcp
                 return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Missing or invalid request parameters." );
             }
 
-            var kernel = agent.Kernel;
             var tools = new List<Tool>();
 
-            foreach ( var plugin in kernel.Plugins )
+            foreach ( var plugin in agent.Kernel.Plugins )
             {
                 foreach ( var function in plugin )
                 {
