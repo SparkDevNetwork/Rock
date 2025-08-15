@@ -77,8 +77,9 @@ namespace Rock.AI.Agent.Mcp
         /// Gets the parameters of the request as a strongly typed object.
         /// </summary>
         /// <typeparam name="T">The type of object to decode the parameters into.</typeparam>
-        /// <returns>An instance of <typeparamref name="T"/> or the default value, such as <c>null</c>, if it could not be parsed.</returns>
+        /// <returns>An instance of <typeparamref name="T"/> or a new instance if no parameters were provided.</returns>
         public T GetParameters<T>()
+            where T : new()
         {
             if ( _rootElement.TryGetProperty( "params", out var parameters ) )
             {
@@ -90,11 +91,11 @@ namespace Rock.AI.Agent.Mcp
                 {
                     // If deserialization fails, we can return default value.
                     // This allows for cases where parameters are not required or are empty.
-                    return default;
+                    return new T();
                 }
             }
 
-            return default;
+            return new T();
         }
 
         /// <summary>

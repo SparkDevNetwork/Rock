@@ -128,11 +128,6 @@ namespace Rock.AI.Agent.Mcp
         {
             var parameters = rpcRequest.GetParameters<InitializeParameters>();
 
-            if ( parameters == null )
-            {
-                return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Missing or invalid request parameters." );
-            }
-
             var version = "2025-06-18";
 
             if ( parameters.ProtocolVersion == "2025-03-26" )
@@ -178,11 +173,6 @@ namespace Rock.AI.Agent.Mcp
         {
             var parameters = rpcRequest.GetParameters<ListToolsParameters>();
 
-            if ( parameters == null )
-            {
-                return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Missing or invalid request parameters." );
-            }
-
             var tools = new List<Tool>();
 
             foreach ( var plugin in agent.Kernel.Plugins )
@@ -220,7 +210,7 @@ namespace Rock.AI.Agent.Mcp
         {
             var parameters = rpcRequest.GetParameters<CallToolParameters>();
 
-            if ( parameters == null || parameters.Name == null )
+            if ( parameters.Name == null )
             {
                 return rpcRequest.CreateErrorResult( JsonRpcErrorCode.InvalidParams, "Missing or invalid request parameters." );
             }
