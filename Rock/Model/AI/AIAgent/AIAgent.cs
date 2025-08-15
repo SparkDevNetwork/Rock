@@ -88,6 +88,12 @@ namespace Rock.Model
         [DataMember]
         public AgentType AgentType { get; set; }
 
+        /// <summary>
+        /// The type of audience that this agent is intended for.
+        /// </summary>
+        [DataMember]
+        public AudienceType AudienceType { get; set; }
+
         /// <inheritdoc/>
         [DataMember]
         public string AdditionalSettingsJson { get; set; }

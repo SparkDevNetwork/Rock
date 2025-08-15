@@ -26,17 +26,19 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
-            RenameColumn("dbo.AISkill", "UsageHint", "Instructions");
-            RenameColumn("dbo.AISkillFunction", "UsageHint", "Instructions");
+            AddColumn( "dbo.AIAgent", "AudienceType", c => c.Int( nullable: false ) );
+            RenameColumn( "dbo.AISkill", "UsageHint", "Instructions" );
+            RenameColumn( "dbo.AISkillFunction", "UsageHint", "Instructions" );
         }
-        
+
         /// <summary>
         /// Operations to be performed during the downgrade process.
         /// </summary>
         public override void Down()
         {
-            RenameColumn("dbo.AISkillFunction", "Instructions", "UsageHint");
-            RenameColumn("dbo.AISkill", "Instructions", "UsageHint");
+            RenameColumn( "dbo.AISkillFunction", "Instructions", "UsageHint" );
+            RenameColumn( "dbo.AISkill", "Instructions", "UsageHint" );
+            DropColumn( "dbo.AIAgent", "AudienceType" );
         }
     }
 }
