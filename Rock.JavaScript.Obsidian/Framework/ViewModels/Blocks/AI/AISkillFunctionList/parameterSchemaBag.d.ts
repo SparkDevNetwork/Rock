@@ -38,6 +38,12 @@ export type ParameterSchemaBag = {
     defaultValue?: string | null;
 
     /**
+     * A concise, but descriptive, hint to the language model that provides
+     * context about how to fill in this parameter.
+     */
+    instructions?: string | null;
+
+    /**
      * Indicates that the parameter is a collection of values. If true, the
      * DataType represents the type of each item in the collection.
      */
@@ -48,10 +54,4 @@ export type ParameterSchemaBag = {
 
     /** The name of the parameter that will be passed to the Lava prompt. */
     name?: string | null;
-
-    /**
-     * A concise, but descriptive, hint to the language model that provides
-     * context about how to fill in this parameter.
-     */
-    usageHint?: string | null;
 };

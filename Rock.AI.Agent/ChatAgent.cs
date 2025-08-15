@@ -472,13 +472,13 @@ Answer Style:
         private void AddSystemMessages()
         {
             _context.AddSystemMessage( CoreSystemPrompt );
-            _context.AddSystemMessage( $"Persona|{_agentConfiguration.Instructions}" );
+            _context.AddSystemMessage( $"Instructions|{_agentConfiguration.Instructions}" );
 
             foreach ( var skill in _agentConfiguration.Skills )
             {
-                if ( skill.UsageHint.IsNotNullOrWhiteSpace() )
+                if ( skill.Instructions.IsNotNullOrWhiteSpace() )
                 {
-                    _context.AddSystemMessage( $"Plugin {skill.Key} Instructions: {skill.UsageHint}" );
+                    _context.AddSystemMessage( $"Plugin {skill.Key} Instructions: {skill.Instructions}" );
                 }
             }
 

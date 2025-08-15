@@ -24,12 +24,12 @@ namespace Rock.AI.Agent.Tests
         }
 
         [TestMethod]
-        public void Metadata_IncludesUsageHint()
+        public void Metadata_IncludesInstructions()
         {
             var parameter = new ParameterSchema
             {
                 Name = "TestParameter",
-                UsageHint = "This is a test parameter.",
+                Instructions = "This is a test parameter.",
             };
 
             var builder = new ParamaterSchemaBuilder();
@@ -241,12 +241,12 @@ namespace Rock.AI.Agent.Tests
         }
 
         [TestMethod]
-        public void Schema_WithStringCollectionAllowedValues_IncludesCollectionUsageHint()
+        public void Schema_WithStringCollectionAllowedValues_IncludesCollectionInstructions()
         {
             var parameter = new ParameterSchema
             {
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "This is a collection parameter.",
+                Instructions = "This is a collection parameter.",
                 IsCollection = true,
                 Name = "TestParameter",
             };
@@ -254,7 +254,7 @@ namespace Rock.AI.Agent.Tests
             var builder = new ParamaterSchemaBuilder();
             var schema = builder.BuildKernelParameterMetadata( parameter ).Schema;
 
-            Assert.AreEqual( "This is a collection parameter." + ParamaterSchemaBuilder.CollectionUsageHint, schema.RootElement.GetProperty( "description" ).GetString() );
+            Assert.AreEqual( "This is a collection parameter." + ParamaterSchemaBuilder.CollectionInstructions, schema.RootElement.GetProperty( "description" ).GetString() );
         }
     }
 }

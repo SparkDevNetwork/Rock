@@ -68,8 +68,8 @@
 
                 <div class="row">
                     <div class="col-md-6">
-                        <TextBox v-model="usageHint"
-                                 label="Usage Hint"
+                        <TextBox v-model="instructions"
+                                 label="Instructions"
                                  textMode="multiline"
                                  :rows="6" />
                     </div>
@@ -151,7 +151,7 @@
     const isRequired = ref(false);
     const dataType = ref(ParameterSchemaDataType.String.toString());
     const isCollection = ref(false);
-    const usageHint = ref("");
+    const instructions = ref("");
     const defaultValue = ref("");
     const allowedValues = ref<string[]>([]);
 
@@ -182,7 +182,7 @@
         isRequired.value = false;
         dataType.value = ParameterSchemaDataType.String.toString();
         isCollection.value = false;
-        usageHint.value = "";
+        instructions.value = "";
         defaultValue.value = "";
         allowedValues.value = [];
 
@@ -201,7 +201,7 @@
         isRequired.value = parameter.isRequired;
         dataType.value = parameter.dataType.toString();
         isCollection.value = parameter.isCollection;
-        usageHint.value = parameter.usageHint ?? "";
+        instructions.value = parameter.instructions ?? "";
         defaultValue.value = parameter.defaultValue ?? "";
         allowedValues.value = parameter.allowedValues ?? [];
 
@@ -247,7 +247,7 @@
         parameter.isRequired = isRequired.value;
         parameter.dataType = toNumber(dataType.value) as ParameterSchemaDataType;
         parameter.isCollection = isCollection.value;
-        parameter.usageHint = usageHint.value;
+        parameter.instructions = instructions.value;
         parameter.defaultValue = defaultValue.value;
         parameter.allowedValues = allowedValues.value;
 

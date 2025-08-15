@@ -23,7 +23,7 @@
                  textMode="multiline" />
 
         <TextBox v-model="instructions"
-                 :label="agentType === AgentType.Chat.toString() ? 'Persona' : 'Instructions'"
+                 label="Instructions"
                  textMode="multiline" />
 
         <div v-if="agentType === AgentType.Chat.toString()" class="row">

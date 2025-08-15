@@ -33,11 +33,11 @@ namespace Rock.AI.Agent
         #region Fields
 
         /// <summary>
-        /// The text that will be appended to the usage hint for a collection.
+        /// The text that will be appended to the instructions for a collection.
         /// This helps the LLM understand that multiple value sshould be passed
         /// in a single call instead of making multiple calls.
         /// </summary>
-        internal const string CollectionUsageHint = " CRITICAL: If multiple values are to be used, then they must all be passed in a single function call. Never call this function twice because of multiple values.";
+        internal const string CollectionInstructions = " CRITICAL: If multiple values are to be used, then they must all be passed in a single function call. Never call this function twice because of multiple values.";
 
         #endregion
 
@@ -74,18 +74,18 @@ namespace Rock.AI.Agent
                 json["type"] = "array";
                 json["items"] = typeDefinition;
 
-                if ( parameter.UsageHint.IsNotNullOrWhiteSpace() )
+                if ( parameter.Instructions.IsNotNullOrWhiteSpace() )
                 {
-                    json["description"] = parameter.UsageHint + CollectionUsageHint;
+                    json["description"] = parameter.Instructions + CollectionInstructions;
                 }
             }
             else
             {
                 typeDefinition = json;
 
-                if ( parameter.UsageHint.IsNotNullOrWhiteSpace() )
+                if ( parameter.Instructions.IsNotNullOrWhiteSpace() )
                 {
-                    json["description"] = parameter.UsageHint;
+                    json["description"] = parameter.Instructions;
                 }
             }
 
@@ -156,7 +156,7 @@ namespace Rock.AI.Agent
         {
             return new KernelParameterMetadata( parameter.Name )
             {
-                Description = parameter.UsageHint,
+                Description = parameter.Instructions,
                 IsRequired = parameter.IsRequired,
                 Schema = GetSchemaJson( parameter ),
                 DefaultValue = parameter.DefaultValue,

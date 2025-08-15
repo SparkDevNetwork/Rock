@@ -25,10 +25,17 @@ import { AgentSkillBag } from "@Obsidian/ViewModels/Blocks/AI/AIAgentDetail/agen
 import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/** The response bag for editing a skill in the AI Agent Detail block. */
 export type EditSkillResponseBag = {
+    /** The functions that are available for the skill. */
     availableFunctions?: ListItemBag[] | null;
 
+    /**
+     * The component definition for the skill that will be used to render
+     * the custom UI for the skill configuration.
+     */
     componentDefinition?: DynamicComponentDefinitionBag | null;
 
+    /** Represents the current values for the skill being edited. */
     skill?: AgentSkillBag | null;
 };

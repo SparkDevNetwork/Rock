@@ -50,15 +50,15 @@ export type AISkillBag = {
     idKey?: string | null;
 
     /**
-     * The friendly name of the skill that will be used to identify it in
-     * the UI.
-     */
-    name?: string | null;
-
-    /**
      * A concise, but descriptive, hint to the language model that provides
      * context about when this skill's functions should be used in response
      * to an individual's input.
      */
-    usageHint?: string | null;
+    instructions?: string | null;
+
+    /**
+     * The friendly name of the skill that will be used to identify it in
+     * the UI.
+     */
+    name?: string | null;
 };

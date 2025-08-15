@@ -68,15 +68,15 @@ namespace Rock.Model
         /// <summary>
         /// <para>
         /// When <see cref="AgentType"/> is <see cref="AgentType.Chat"/>, this
-        /// contains the persona of the agent, which is a string that describes
+        /// contains the instructions for the agent, which is a string that describes
         /// how the agent should behavor or respond. This can include tone,
         /// style, and special instructions it should follow when interacting
         /// with people.
         /// </para>
         /// <para>
         /// When <see cref="AgentType"/> is <see cref="AgentType.Mcp"/>, this
-        /// contains the usage hint instructions that should be sent when a
-        /// client connects to the MCP server.
+        /// contains the instructions that should be sent when a client connects
+        /// to the MCP server.
         /// </para>
         /// </summary>
         [DataMember]

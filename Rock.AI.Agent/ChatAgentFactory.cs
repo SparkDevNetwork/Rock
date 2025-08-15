@@ -272,7 +272,7 @@ namespace Rock.AI.Agent
                     .DistinctBy( kf => kf.Name );
 
                 // Register the plug-in with the native and semantic functions.
-                var plugin = KernelPluginFactory.CreateFromFunctions( skillConfiguration.NativeType.Name, skillConfiguration.UsageHint, distinctFunctions );
+                var plugin = KernelPluginFactory.CreateFromFunctions( skillConfiguration.NativeType.Name, skillConfiguration.Instructions, distinctFunctions );
                 pluginCollection.Add( plugin );
             }
         }
@@ -289,7 +289,7 @@ namespace Rock.AI.Agent
 
                 if ( pluginFunctions.Count > 0 )
                 {
-                    var plugin = KernelPluginFactory.CreateFromFunctions( skill.Key, skill.UsageHint, pluginFunctions );
+                    var plugin = KernelPluginFactory.CreateFromFunctions( skill.Key, skill.Instructions, pluginFunctions );
                     pluginCollection.Add( plugin );
                 }
             }
@@ -327,7 +327,7 @@ namespace Rock.AI.Agent
                     var semanticFunction = KernelFunctionFactory.CreateFromPrompt(
                         promptTemplate: prompt,
                         functionName: function.Key,
-                        description: function.UsageHint,
+                        description: function.Instructions,
                         executionSettings: _agentConfiguration.Provider.GetFunctionPromptExecutionSettingsForRole( function ),
                         loggerFactory: _loggerFactory
                     );
@@ -343,7 +343,7 @@ namespace Rock.AI.Agent
                     var proxyFunction = KernelFunctionFactory.CreateFromMethod(
                         method: ( Func<KernelArguments, string> ) ( args => proxySkill.ExecuteLava( function, args ) ),
                         functionName: function.Key,
-                        description: function.UsageHint,
+                        description: function.Instructions,
                         parameters: parameters,
                         loggerFactory: _loggerFactory
                     );

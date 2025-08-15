@@ -145,7 +145,7 @@ namespace Rock.Web.Cache.Entities
                     // they are not made available to the agent.
                     agentSkillSettings.DisabledFunctions.AddRange( deniedFunctions.Select( f => f.Guid ) );
 
-                    skillConfigurations.Add( new SkillConfiguration( systemSkill.Name, systemSkill.UsageHint, type, agentSkillSettings ) );
+                    skillConfigurations.Add( new SkillConfiguration( systemSkill.Name, systemSkill.Instructions, type, agentSkillSettings ) );
                 }
             }
         }
@@ -194,7 +194,7 @@ namespace Rock.Web.Cache.Entities
                         // they are not made available to the agent.
                         agentSkillSettings.DisabledFunctions.AddRange( deniedFunctions.Select( f => f.Guid ) );
 
-                        skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.UsageHint, type, agentSkillSettings ) );
+                        skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.Instructions, type, agentSkillSettings ) );
                     }
                 }
                 else
@@ -221,7 +221,7 @@ namespace Rock.Web.Cache.Entities
                             Guid = function.Guid,
                             Name = function.Name,
                             Description = function.Description,
-                            UsageHint = function.UsageHint,
+                            Instructions = function.Instructions,
                             Role = ModelServiceRole.Default, // TODO: Fix this
                             FunctionType = function.FunctionType,
                             Prompt = prompt.Prompt ?? string.Empty,
@@ -236,7 +236,7 @@ namespace Rock.Web.Cache.Entities
 
                     if ( skillFunctions.Count > 0 )
                     {
-                        skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.UsageHint, skillFunctions ) );
+                        skillConfigurations.Add( new SkillConfiguration( agentSkill.AISkill.Name, agentSkill.AISkill.Instructions, skillFunctions ) );
                     }
                 }
             }

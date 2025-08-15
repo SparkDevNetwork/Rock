@@ -45,7 +45,7 @@ namespace Rock.ViewModels.Blocks.AI.AISkillFunctionList
         /// A concise, but descriptive, hint to the language model that provides
         /// context about how to fill in this parameter.
         /// </summary>
-        public string UsageHint { get; set; }
+        public string Instructions { get; set; }
 
         /// <summary>
         /// Indicates that the parameter is a collection of values. If true, the

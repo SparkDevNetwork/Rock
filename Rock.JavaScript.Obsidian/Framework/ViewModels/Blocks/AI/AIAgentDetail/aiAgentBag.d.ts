@@ -62,7 +62,7 @@ export type AIAgentBag = {
     idKey?: string | null;
 
     /**
-     * The instructions or persona of the agent. This has different meanings
+     * The instructions for the agent. This has different meanings
      * depending on the type of agent.
      */
     instructions?: string | null;

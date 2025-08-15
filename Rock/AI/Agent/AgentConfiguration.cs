@@ -23,8 +23,9 @@ namespace Rock.AI.Agent
 {
     /// <summary>
     /// Encapsulates the core configuration settings for a Rock AI agent,
-    /// including agent identity, persona, provider, skill set, summarization threshold, and model role.
-    /// This class is used by the chat agent factory and runtime to coordinate agent-specific behaviors and capabilities.
+    /// including agent identity, instructions, provider, skill set, summarization
+    /// threshold, and model role. This class is used by the chat agent
+    /// factory and runtime to coordinate agent-specific behaviors and capabilities.
     /// </summary>
     internal class AgentConfiguration
     {

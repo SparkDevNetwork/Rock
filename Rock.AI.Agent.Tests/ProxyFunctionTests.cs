@@ -372,7 +372,7 @@ public class ProxyFunctionTests
                     Name = "Name",
                     DataType = ParameterSchemaDataType.String,
                     IsRequired = true,
-                    UsageHint = "The name of the person to greet."
+                    Instructions = "The name of the person to greet."
                 }
             ]
         };

@@ -29,8 +29,8 @@
                     </div>
                 </div>
 
-                <TextBox v-model="editFunctionUsageHint"
-                         label="Usage Hint"
+                <TextBox v-model="editFunctionInstructions"
+                         label="Instructions"
                          rules="required"
                          textMode="multiline"
                          :rows="6" />
@@ -122,7 +122,7 @@
     const editFunctionName = ref("");
     const editFunctionType = ref("");
     const editFunctionDescription = ref("");
-    const editFunctionUsageHint = ref("");
+    const editFunctionInstructions = ref("");
     const editFunctionPreRenderLava = ref(false);
     const editFunctionTemperature = ref(0.7);
     const editFunctionMaxTokens = ref<number>();
@@ -175,7 +175,7 @@
         updateRefValue(editFunctionName, props.modelValue.name ?? "");
         updateRefValue(editFunctionType, props.modelValue.functionType.toString());
         updateRefValue(editFunctionDescription, props.modelValue.description ?? "");
-        updateRefValue(editFunctionUsageHint, props.modelValue.usageHint ?? "");
+        updateRefValue(editFunctionInstructions, props.modelValue.instructions ?? "");
         updateRefValue(editFunctionPreRenderLava, props.modelValue.preRenderLava);
         updateRefValue(editFunctionTemperature, props.modelValue.temperature);
         updateRefValue(editFunctionMaxTokens, props.modelValue.maxTokens ?? undefined);
@@ -185,12 +185,12 @@
             ?? []);
     }, { immediate: true });
 
-    watch([editFunctionName, editFunctionType, editFunctionDescription, editFunctionUsageHint, editFunctionPreRenderLava, editFunctionTemperature, editFunctionMaxTokens, editFunctionPrompt, editFunctionPromptParameters], () => {
+    watch([editFunctionName, editFunctionType, editFunctionDescription, editFunctionInstructions, editFunctionPreRenderLava, editFunctionTemperature, editFunctionMaxTokens, editFunctionPrompt, editFunctionPromptParameters], () => {
         emit("update:modelValue", {
             name: editFunctionName.value,
             functionType: <FunctionType>toNumber(editFunctionType.value),
             description: editFunctionDescription.value,
-            usageHint: editFunctionUsageHint.value,
+            instructions: editFunctionInstructions.value,
             preRenderLava: editFunctionPreRenderLava.value,
             temperature: editFunctionTemperature.value,
             maxTokens: editFunctionMaxTokens.value,

@@ -56,8 +56,8 @@
             valueBuilder.addTextValue("Description", props.modelValue.description);
         }
 
-        if (props.modelValue.usageHint) {
-            valueBuilder.addTextValue("Usage Hint", props.modelValue.usageHint);
+        if (props.modelValue.instructions) {
+            valueBuilder.addTextValue("Instructions", props.modelValue.instructions);
         }
 
         return valueBuilder.build();

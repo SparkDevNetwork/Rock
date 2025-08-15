@@ -65,7 +65,7 @@ namespace Rock.AI.Agent
         /// additional context to the language model. Leave blank when the name
         /// provides enough context.
         /// </summary>
-        public string UsageHint { get; set; } = string.Empty;
+        public string Instructions { get; set; } = string.Empty;
 
         /// <summary>
         /// The type of function:

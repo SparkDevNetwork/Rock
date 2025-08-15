@@ -24,10 +24,21 @@
 import { DynamicComponentDefinitionBag } from "@Obsidian/ViewModels/Controls/dynamicComponentDefinitionBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
+/**
+ * Represents the response data for retrieving a component definition. This
+ * contains the data required to display a custom Obsidian component in the
+ * UI when adding a skill to an AI agent.
+ */
 export type GetComponentDefinitionResponseBag = {
+    /** The list of functions defined on the skill that can be enabled. */
     availableFunctions?: ListItemBag[] | null;
 
+    /**
+     * The component definition that will be used to render the UI
+     * for the skill.
+     */
     componentDefinition?: DynamicComponentDefinitionBag | null;
 
+    /** The current configuration values for the skill. */
     configurationValues?: Record<string, string> | null;
 };

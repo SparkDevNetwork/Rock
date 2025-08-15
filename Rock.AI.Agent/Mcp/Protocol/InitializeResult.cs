@@ -35,8 +35,8 @@ namespace Rock.AI.Agent.Mcp.Protocol
         public Implementation ServerInfo { get; set; }
 
         /// <summary>
-        /// The usage hint for the client to understand how to interact with
-        /// the server.
+        /// The instructions for the client to understand how to interact with
+        /// the server. These are typically passed to the language model.
         /// </summary>
         public string Instructions { get; set; }
 

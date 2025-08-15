@@ -20,18 +20,41 @@ using System.Collections.Generic;
 
 namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
 {
+    /// <summary>
+    /// Represents a single skill being viewed or edited in the Agent
+    /// Detail block.
+    /// </summary>
     public class AgentSkillBag
     {
+        /// <summary>
+        /// The unique identifier of the agent skill record that links the
+        /// agent to the skill.
+        /// </summary>
         public Guid Guid { get; set; }
 
+        /// <summary>
+        /// The unique identifier of the skill being used by the agent.
+        /// </summary>
         public Guid SkillGuid { get; set; }
 
+        /// <summary>
+        /// The name of the skill being used by the agent.
+        /// </summary>
         public string Name { get; set; }
 
+        /// <summary>
+        /// The user-friendly description of the skill being used by the agent.
+        /// </summary>
         public string Description { get; set; }
 
+        /// <summary>
+        /// The list of functions that are enabled for the skill to use.
+        /// </summary>
         public List<Guid> EnabledFunctions { get; set; }
 
+        /// <summary>
+        /// The configuration values for the skill.
+        /// </summary>
         public Dictionary<string, string> ConfigurationValues { get; set; }
     }
 }

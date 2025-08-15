@@ -164,7 +164,7 @@
         setPropertiesBoxValue(box, "name", editFunctionValue.value.name);
         setPropertiesBoxValue(box, "functionType", editFunctionValue.value.functionType);
         setPropertiesBoxValue(box, "description", editFunctionValue.value.description);
-        setPropertiesBoxValue(box, "usageHint", editFunctionValue.value.usageHint);
+        setPropertiesBoxValue(box, "instructions", editFunctionValue.value.instructions);
         setPropertiesBoxValue(box, "preRenderLava", editFunctionValue.value.preRenderLava);
         setPropertiesBoxValue(box, "temperature", editFunctionValue.value.temperature);
         setPropertiesBoxValue(box, "maxTokens", editFunctionValue.value.maxTokens);

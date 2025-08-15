@@ -56,12 +56,12 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             {
                 Name = "searchTerm",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'.",
+                Instructions = "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'.",
                 IsRequired = true,
             }
         };
 
-        var usageHint = """
+        var instructions = """
             🎯 Purpose:
             1. This function searches the database for people, groups, content channels that match the query from the user.
 
@@ -72,7 +72,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
         var function = new AgentFunction
         {
             Name = "Search",
-            UsageHint = usageHint,
+            Instructions = instructions,
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}{% endoutput %}No Results Found.",
             Parameters = parameters,
@@ -109,33 +109,33 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             {
                 Name = "searchTerm",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'. For example, if searching for an entity type of person, then 'firstName' and 'lastName' are preferred this should be blank.",
+                Instructions = "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'. For example, if searching for an entity type of person, then 'firstName' and 'lastName' are preferred this should be blank.",
                 IsRequired = false,
             },
             new ParameterSchema
             {
                 Name = "firstName",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The first or nick name the person was looking for. Leave blank if they did not specify a value.",
+                Instructions = "The first or nick name the person was looking for. Leave blank if they did not specify a value.",
                 IsRequired = false,
             },
             new ParameterSchema
             {
                 Name = "lastName",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The last name the person was looking for. Leave blank if they did not specify a value.",
+                Instructions = "The last name the person was looking for. Leave blank if they did not specify a value.",
                 IsRequired = false,
             },
             new ParameterSchema
             {
                 Name = "groupName",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The name of the group. Leave blank if empty.",
+                Instructions = "The name of the group. Leave blank if empty.",
                 IsRequired = false,
             }
         };
 
-        var usageHint = """
+        var instructions = """
                 🎯 Purpose:
                 1. This function searches the database for people, groups, content channels that match the query from the user.
 
@@ -146,7 +146,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
         var function = new AgentFunction
         {
             Name = "Search",
-            UsageHint = usageHint,
+            Instructions = instructions,
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}{% endoutput %}No Results Found.",
             Parameters = parameters,
@@ -184,7 +184,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             {
                 Name = "entityTypes",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "Pass an array of strings for the type of entities to search for, such as 'person', 'group' or 'content channel'. Leave empty if not known, but make a good effort to fill this in based on the request.",
+                Instructions = "Pass an array of strings for the type of entities to search for, such as 'person', 'group' or 'content channel'. Leave empty if not known, but make a good effort to fill this in based on the request.",
                 IsRequired = false,
                 IsCollection = true,
                 AllowedValues = ["person", "group", "content channel"]
@@ -193,33 +193,33 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             {
                 Name = "searchTerm",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'. For example, if searching for an entity type of person, then 'firstName' and 'lastName' are preferred this should be blank.",
+                Instructions = "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'. For example, if searching for an entity type of person, then 'firstName' and 'lastName' are preferred this should be blank.",
                 IsRequired = false,
             },
             new ParameterSchema
             {
                 Name = "firstName",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The first or nick name the person was looking for. Leave blank if they did not specify a value.",
+                Instructions = "The first or nick name the person was looking for. Leave blank if they did not specify a value.",
                 IsRequired = false,
             },
             new ParameterSchema
             {
                 Name = "lastName",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The last name the person was looking for. Leave blank if they did not specify a value.",
+                Instructions = "The last name the person was looking for. Leave blank if they did not specify a value.",
                 IsRequired = false,
             },
             new ParameterSchema
             {
                 Name = "groupName",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The name of the group. Leave blank if empty.",
+                Instructions = "The name of the group. Leave blank if empty.",
                 IsRequired = false,
             }
         };
 
-        var usageHint = """
+        var instructions = """
                 🎯 Purpose:
                 1. This function searches the database for people, groups, content channels that match the query from the user.
 
@@ -230,7 +230,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
         var function = new AgentFunction
         {
             Name = "Search",
-            UsageHint = usageHint,
+            Instructions = instructions,
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}/{{ entityTypes | Join:',' }}{% endoutput %}No Results Found.",
             Parameters = parameters,
@@ -268,7 +268,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             {
                 Name = "entityTypes",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The type of entities to search for as a comma separated string, such as 'person', 'group' or 'content channel'. Leave empty if not known, but make a good effort to fill this in based on the request. CRITICAL: If multiple values are to be used, then they must all be passed in a single function call. Never call this function twice because of multiple values.",
+                Instructions = "The type of entities to search for as a comma separated string, such as 'person', 'group' or 'content channel'. Leave empty if not known, but make a good effort to fill this in based on the request. CRITICAL: If multiple values are to be used, then they must all be passed in a single function call. Never call this function twice because of multiple values.",
                 IsRequired = false,
                 //AllowedValues = ["person", "group", "content channel"]
             },
@@ -276,33 +276,33 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
             {
                 Name = "searchTerm",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'. For example, if searching for an entity type of person, then 'firstName' and 'lastName' are preferred this should be blank.",
+                Instructions = "The term the user wants to search for. For example: 't dec', 'michaels', 'a marble'. For example, if searching for an entity type of person, then 'firstName' and 'lastName' are preferred this should be blank.",
                 IsRequired = false,
             },
             new ParameterSchema
             {
                 Name = "firstName",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The first or nick name the person was looking for. Leave blank if they did not specify a value.",
+                Instructions = "The first or nick name the person was looking for. Leave blank if they did not specify a value.",
                 IsRequired = false,
             },
             new ParameterSchema
             {
                 Name = "lastName",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The last name the person was looking for. Leave blank if they did not specify a value.",
+                Instructions = "The last name the person was looking for. Leave blank if they did not specify a value.",
                 IsRequired = false,
             },
             new ParameterSchema
             {
                 Name = "groupName",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "The name of the group. Leave blank if empty.",
+                Instructions = "The name of the group. Leave blank if empty.",
                 IsRequired = false,
             }
         };
 
-        var usageHint = """
+        var instructions = """
                 🎯 Purpose:
                 1. This function searches the database for people, groups, content channels that match the query from the user.
 
@@ -315,7 +315,7 @@ public class ProxyFunctionCallTests : BaseFunctionCallTests
         var function = new AgentFunction
         {
             Name = "Search",
-            UsageHint = usageHint,
+            Instructions = instructions,
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ searchTerm }}/{{ firstName }}/{{ lastName }}/{{ groupName }}/{{ entityTypes }}{% endoutput %}No Results Found.",
             Parameters = parameters,

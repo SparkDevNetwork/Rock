@@ -22,12 +22,27 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
 {
+    /// <summary>
+    /// Represents the response data for retrieving a component definition. This
+    /// contains the data required to display a custom Obsidian component in the
+    /// UI when adding a skill to an AI agent.
+    /// </summary>
     public class GetComponentDefinitionResponseBag
     {
+        /// <summary>
+        /// The list of functions defined on the skill that can be enabled.
+        /// </summary>
         public List<ListItemBag> AvailableFunctions { get; set; }
 
+        /// <summary>
+        /// The current configuration values for the skill.
+        /// </summary>
         public Dictionary<string, string> ConfigurationValues { get; set; }
 
+        /// <summary>
+        /// The component definition that will be used to render the UI
+        /// for the skill.
+        /// </summary>
         public DynamicComponentDefinitionBag ComponentDefinition { get; set; }
     }
 }

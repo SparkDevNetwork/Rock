@@ -169,7 +169,7 @@ namespace Rock.Blocks.AI
                 CodeEntityType = entity.CodeEntityType.ToListItemBag(),
                 Description = entity.Description,
                 Name = entity.Name,
-                UsageHint = entity.UsageHint
+                Instructions = entity.Instructions
             };
         }
 
@@ -216,8 +216,8 @@ namespace Rock.Blocks.AI
                 box.IfValidProperty( nameof( box.Bag.Name ),
                     () => entity.Name = box.Bag.Name );
 
-                box.IfValidProperty( nameof( box.Bag.UsageHint ),
-                    () => entity.UsageHint = box.Bag.UsageHint );
+                box.IfValidProperty( nameof( box.Bag.Instructions ),
+                    () => entity.Instructions = box.Bag.Instructions );
             }
 
             return true;

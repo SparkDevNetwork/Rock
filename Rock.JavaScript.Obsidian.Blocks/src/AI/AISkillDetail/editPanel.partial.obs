@@ -14,8 +14,8 @@
                  label="Description"
                  textMode="multiline" />
 
-        <TextBox v-model="usageHint"
-                 label="Usage Hint"
+        <TextBox v-model="instructions"
+                 label="Instructions"
                  textMode="multiline"
                  :rows="6" />
     </fieldset>
@@ -50,11 +50,11 @@
 
     const description = propertyRef(props.modelValue.bag?.description ?? "", "Description");
     const name = propertyRef(props.modelValue.bag?.name ?? "", "Name");
-    const usageHint = propertyRef(props.modelValue.bag?.usageHint ?? "", "UsageHint");
+    const instructions = propertyRef(props.modelValue.bag?.instructions ?? "", "Instructions");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, name, usageHint];
+    const propRefs = [description, name, instructions];
 
     // #endregion
 
@@ -74,7 +74,7 @@
     watch(() => props.modelValue, () => {
         updateRefValue(description, props.modelValue.bag?.description ?? "");
         updateRefValue(name, props.modelValue.bag?.name ?? "");
-        updateRefValue(usageHint, props.modelValue.bag?.usageHint ?? "");
+        updateRefValue(instructions, props.modelValue.bag?.instructions ?? "");
     });
 
     // Determines which values we want to track changes on (defined in the
@@ -86,7 +86,7 @@
 
         setPropertiesBoxValue(newValue, "description", description.value);
         setPropertiesBoxValue(newValue, "name", name.value);
-        setPropertiesBoxValue(newValue, "usageHint", usageHint.value);
+        setPropertiesBoxValue(newValue, "instructions", instructions.value);
 
         emit("update:modelValue", newValue);
     });

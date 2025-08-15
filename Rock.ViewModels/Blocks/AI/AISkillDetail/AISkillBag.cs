@@ -39,16 +39,16 @@ namespace Rock.ViewModels.Blocks.AI.AISkillDetail
         public string Description { get; set; }
 
         /// <summary>
-        /// The friendly name of the skill that will be used to identify it in
-        /// the UI.
-        /// </summary>
-        public string Name { get; set; }
-
-        /// <summary>
         /// A concise, but descriptive, hint to the language model that provides
         /// context about when this skill's functions should be used in response
         /// to an individual's input.
         /// </summary>
-        public string UsageHint { get; set; }
+        public string Instructions { get; set; }
+
+        /// <summary>
+        /// The friendly name of the skill that will be used to identify it in
+        /// the UI.
+        /// </summary>
+        public string Name { get; set; }
     }
 }

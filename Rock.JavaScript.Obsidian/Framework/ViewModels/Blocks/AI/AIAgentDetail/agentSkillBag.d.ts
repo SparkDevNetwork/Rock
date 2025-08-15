@@ -23,16 +23,29 @@
 
 import { Guid } from "@Obsidian/Types";
 
+/**
+ * Represents a single skill being viewed or edited in the Agent
+ * Detail block.
+ */
 export type AgentSkillBag = {
+    /** The configuration values for the skill. */
     configurationValues?: Record<string, string> | null;
 
+    /** The user-friendly description of the skill being used by the agent. */
     description?: string | null;
 
+    /** The list of functions that are enabled for the skill to use. */
     enabledFunctions?: Guid[] | null;
 
+    /**
+     * The unique identifier of the agent skill record that links the
+     * agent to the skill.
+     */
     guid: Guid;
 
+    /** The name of the skill being used by the agent. */
     name?: string | null;
 
+    /** The unique identifier of the skill being used by the agent. */
     skillGuid: Guid;
 };

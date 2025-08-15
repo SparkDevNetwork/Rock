@@ -67,7 +67,7 @@ internal class AgentBuilder
     }
 
     /// <summary>
-    /// Sets the system prompt/persona for the agent.
+    /// Sets the instructions for the agent.
     /// </summary>
     /// <param name="prompt">The instructions text.</param>
     /// <returns>The builder for chaining.</returns>

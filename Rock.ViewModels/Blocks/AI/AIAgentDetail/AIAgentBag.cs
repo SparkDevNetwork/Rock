@@ -53,7 +53,7 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public string Description { get; set; }
 
         /// <summary>
-        /// The instructions or persona of the agent. This has different meanings
+        /// The instructions for the agent. This has different meanings
         /// depending on the type of agent.
         /// </summary>
         public string Instructions { get; set; }

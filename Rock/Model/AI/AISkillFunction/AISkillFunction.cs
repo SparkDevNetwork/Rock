@@ -69,7 +69,7 @@ namespace Rock.Model
         /// individual's input.
         /// </summary>
         [DataMember]
-        public string UsageHint { get; set; }
+        public string Instructions { get; set; }
 
         /// <summary>
         /// The type of function represented by this entity. This indicates

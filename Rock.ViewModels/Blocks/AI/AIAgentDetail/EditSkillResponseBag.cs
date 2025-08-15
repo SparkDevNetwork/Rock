@@ -22,12 +22,25 @@ using Rock.ViewModels.Utility;
 
 namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
 {
+    /// <summary>
+    /// The response bag for editing a skill in the AI Agent Detail block.
+    /// </summary>
     public class EditSkillResponseBag
     {
+        /// <summary>
+        /// Represents the current values for the skill being edited.
+        /// </summary>
         public AgentSkillBag Skill { get; set; }
 
+        /// <summary>
+        /// The functions that are available for the skill.
+        /// </summary>
         public List<ListItemBag> AvailableFunctions { get; set; }
 
+        /// <summary>
+        /// The component definition for the skill that will be used to render
+        /// the custom UI for the skill configuration.
+        /// </summary>
         public DynamicComponentDefinitionBag ComponentDefinition { get; set; }
     }
 }

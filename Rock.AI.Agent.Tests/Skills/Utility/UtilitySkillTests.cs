@@ -111,7 +111,7 @@ public class UtilitySkillTests : MockDatabaseTestsBase
         return new AgentFunction
         {
             Name = "DetermineDateRange",
-            UsageHint = "🎯 Purpose:\n1. Determines a date range from a natural language string.\n\n🧭 Usage Guidance:\n1. Use for extracting a start and end date from a user's query.",
+            Instructions = "🎯 Purpose:\n1. Determines a date range from a natural language string.\n\n🧭 Usage Guidance:\n1. Use for extracting a start and end date from a user's query.",
             FunctionType = FunctionType.ExecuteLava,
             Prompt = "{% output %}{{ query }}{% endoutput %}{\r\n  \"StartDate\": \"2025-07-01T00:00:00\",\r\n  \"EndDate\": \"2025-07-31T00:00:00\"\r\n}",
             Parameters = new List<ParameterSchema>
@@ -120,7 +120,7 @@ public class UtilitySkillTests : MockDatabaseTestsBase
             {
                 Name = "query",
                 DataType = ParameterSchemaDataType.String,
-                UsageHint = "A natural language string, such as 'last week', 'tomorrow', or 'March 1st to March 10th'.",
+                Instructions = "A natural language string, such as 'last week', 'tomorrow', or 'March 1st to March 10th'.",
                 IsRequired = true
             }
         },
@@ -137,7 +137,7 @@ public class UtilitySkillTests : MockDatabaseTestsBase
         return new AgentFunction
         {
             Name = "GetCurrentDateTime",
-            UsageHint = "🎯 Purpose:\n1. Returns the current system date/time as an ISO string.",
+            Instructions = "🎯 Purpose:\n1. Returns the current system date/time as an ISO string.",
             FunctionType = FunctionType.ExecuteLava,
             // Outputs the current date for testing (could be fixed or dynamic for a real test)
             Prompt = "{% output %}2025-07-30T12:00:00{% endoutput %}2025-07-30T12:00:00",

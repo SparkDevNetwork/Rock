@@ -39,9 +39,9 @@ namespace Rock.Web.Cache.Entities
         [DataMember]
         public string Description { get; private set; }
 
-        /// <inheritdoc cref="AISkillFunction.UsageHint"/>
+        /// <inheritdoc cref="AISkillFunction.Instructions"/>
         [DataMember]
-        public string UsageHint { get; private set; }
+        public string Instructions { get; private set; }
 
         /// <inheritdoc cref="AISkillFunction.FunctionType"/>
         [DataMember]
@@ -71,7 +71,7 @@ namespace Rock.Web.Cache.Entities
 
             Name = function.Name;
             Description = function.Description;
-            UsageHint = function.UsageHint;
+            Instructions = function.Instructions;
             FunctionType = function.FunctionType;
             AdditionalSettingsJson = function.AdditionalSettingsJson;
         }

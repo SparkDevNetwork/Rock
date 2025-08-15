@@ -67,12 +67,7 @@
         }
 
         if (props.modelValue.instructions) {
-            if (props.modelValue.agentType === AgentType.Chat) {
-                valueBuilder.addTextValue("Persona", props.modelValue.instructions);
-            }
-            else if (props.modelValue.agentType === AgentType.Mcp) {
-                valueBuilder.addTextValue("Instructions", props.modelValue.instructions);
-            }
+            valueBuilder.addTextValue("Instructions", props.modelValue.instructions);
         }
 
         return valueBuilder.build();

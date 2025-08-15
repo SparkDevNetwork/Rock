@@ -62,7 +62,7 @@ namespace Rock.Model
         /// to an individual's input.
         /// </summary>
         [DataMember]
-        public string UsageHint { get; set; }
+        public string Instructions { get; set; }
 
         /// <summary>
         /// The entity type identifier that represents the C# class that

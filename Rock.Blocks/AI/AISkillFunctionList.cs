@@ -202,7 +202,7 @@ namespace Rock.Blocks.AI
                 IdKey = entity.IdKey,
                 Description = entity.Description,
                 Name = entity.Name,
-                UsageHint = entity.UsageHint,
+                Instructions = entity.Instructions,
                 FunctionType = entity.FunctionType = entity.FunctionType,
                 PreRenderLava = promptSettings.PreRenderLava,
                 Temperature = promptSettings.Temperature,
@@ -306,8 +306,8 @@ namespace Rock.Blocks.AI
             box.IfValidProperty( nameof( box.Bag.Name ),
                 () => entity.Name = box.Bag.Name );
 
-            box.IfValidProperty( nameof( box.Bag.UsageHint ),
-                () => entity.UsageHint = box.Bag.UsageHint );
+            box.IfValidProperty( nameof( box.Bag.Instructions ),
+                () => entity.Instructions = box.Bag.Instructions );
 
             var promptSettings = entity.GetAdditionalSettings<PromptInformationSettings>();
 
@@ -343,7 +343,7 @@ namespace Rock.Blocks.AI
                 AllowedValues = parameter.AllowedValues?.ToList(),
                 DataType = parameter.DataType,
                 DefaultValue = parameter.DefaultValue,
-                UsageHint = parameter.UsageHint,
+                Instructions = parameter.Instructions,
                 IsRequired = parameter.IsRequired,
                 IsCollection = parameter.IsCollection,
                 Name = parameter.Name,
@@ -362,7 +362,7 @@ namespace Rock.Blocks.AI
                 AllowedValues = bag.AllowedValues?.ToList(),
                 DataType = bag.DataType,
                 DefaultValue = bag.DefaultValue,
-                UsageHint = bag.UsageHint,
+                Instructions = bag.Instructions,
                 IsRequired = bag.IsRequired,
                 IsCollection = bag.IsCollection,
                 Name = bag.Name,

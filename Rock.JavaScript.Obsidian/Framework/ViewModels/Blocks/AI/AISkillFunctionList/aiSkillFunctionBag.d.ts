@@ -49,6 +49,13 @@ export type AISkillFunctionBag = {
     /** Gets or sets the identifier key of this entity. */
     idKey?: string | null;
 
+    /**
+     * A concise, but descriptive, hint to the language model that provides
+     * context about when this function should be used in response to an
+     * individual's input.
+     */
+    instructions?: string | null;
+
     /** The maximum number of tokens that the language model should consume. */
     maxTokens?: number | null;
 
@@ -72,11 +79,4 @@ export type AISkillFunctionBag = {
 
     /** Determines the randomness of the response. */
     temperature: number;
-
-    /**
-     * A concise, but descriptive, hint to the language model that provides
-     * context about when this function should be used in response to an
-     * individual's input.
-     */
-    usageHint?: string | null;
 };
