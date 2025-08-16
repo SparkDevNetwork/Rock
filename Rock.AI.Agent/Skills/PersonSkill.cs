@@ -74,7 +74,6 @@ namespace Rock.AI.Agent.Skills
         /// <remarks>
         /// Requires <see cref="LookupSites"/> to have been called previously to populate
         /// session context <c>"site-list"</c> for guardrail enforcement.
-        /// Defaults the date range to [now - 1 year, now] if neither start nor end are provided.
         /// </remarks>
         [KernelFunction]
         [Description(
@@ -99,14 +98,14 @@ namespace Rock.AI.Agent.Skills
 
             var start = arguments.StartDate;
             var end = arguments.EndDate;
-
             var personId = IdHasher.Instance.GetId( arguments.PersonKey );
+            var siteId = IdHasher.Instance.GetId( arguments.SiteKey );
+
             if ( !personId.HasValue || personId <= 0 )
             {
                 errors.Add( "There was an invalid key provided for the person." );
             }
 
-            var siteId = IdHasher.Instance.GetId( arguments.SiteKey );
             if ( siteId.HasValue && siteId.Value <= 0 )
             {
                 errors.Add( "Invalid site ID. Provide a value greater than zero." );
@@ -117,15 +116,9 @@ namespace Rock.AI.Agent.Skills
                 errors.Add( "Invalid date range. Start date cannot be after end date." );
             }
 
-            // Defaults: past year → now
-            if ( !start.HasValue && !end.HasValue )
+            if ( errors.Count > 0 )
             {
-                end = RockDateTime.Now;
-                start = end.Value.AddYears( -1 );
-            }
-            else if ( start.HasValue && !end.HasValue )
-            {
-                end = RockDateTime.Now;
+                return RockFunctionResult.Error( string.Join( " ", errors ) );
             }
 
             // Paging
@@ -133,11 +126,6 @@ namespace Rock.AI.Agent.Skills
             var basePageSize = 100;
             var offset = ( pageNumber - 1 ) * basePageSize;
             var take = basePageSize + 1; // N+1 to compute hasMore
-
-            if ( errors.Count > 0 )
-            {
-                return RockFunctionResult.Error( string.Join( " ", errors ) );
-            }
 
             try
             {
@@ -189,31 +177,31 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Searches for persons by full name, returning a list of matching persons with their details.
         /// </summary>
-        /// <param name="options"></param>
+        /// <param name="arguments"></param>
         /// <returns></returns>
         [KernelFunction( "SearchPerson" )]
         [UserDescription( @"Searches for matching people by name. This will search by exact match as well as ""Sounds Like""." )]
         [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
-        public RockFunctionResult SearchPerson( SearchPersonArguments options )
+        public RockFunctionResult SearchPerson( SearchPersonArguments arguments )
         {
-            if ( options == null )
+            if ( arguments == null )
             {
                 return RockFunctionResult.Error( "Options are required.", instructions: "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
             }
 
-            if (options.FullName.IsNullOrWhiteSpace() )
+            if ( arguments.FullName.IsNullOrWhiteSpace() )
             {
                 return RockFunctionResult.Error( "Full name is required for search.", instructions: "The FullName parameter is required." );
             }
 
             // Get queryable with the metaphone and full name search.
             var searchQueryable = new PersonService( _rockContext )
-                .GetSimilarPersons( options.FullName );
+                .GetSimilarPersons( arguments.FullName );
 
             // Append campus filter if provided
-            var campusIdFilter = options.CampusKey.IsNullOrWhiteSpace()
+            var campusIdFilter = arguments.CampusKey.IsNullOrWhiteSpace()
                 ? null
-                : IdHasher.Instance.GetId( options.CampusKey );
+                : IdHasher.Instance.GetId( arguments.CampusKey );
 
             if ( campusIdFilter.HasValue )
             {
@@ -246,11 +234,11 @@ namespace Rock.AI.Agent.Skills
                 } )
                 .OrderBy( p => p.LastName )
                 .ThenBy( p => p.NickName )
-                .Take( options.MaxResults + 1 )
+                .Take( arguments.MaxResults + 1 )
                 .ToList();
 
             // Provide indication of more results.
-            var hasMore = results.Count > options.MaxResults;
+            var hasMore = results.Count > arguments.MaxResults;
 
             if ( hasMore )
             {

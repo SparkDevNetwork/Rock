@@ -21,7 +21,7 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
     /// <summary>
     /// Arguments for searching for a person by name.
     /// </summary>
-    public class SearchPersonArguments
+    internal class SearchPersonArguments
     {
         /// <summary>
         /// Required. The full name to search for. This should be in the format of first name last name with an optional suffix.

@@ -27,7 +27,7 @@ namespace Rock.AI.Agent.Classes.Common
     /// A common POCO for storing information about a person. Apply only the properties that are needed for the specific use case.
     /// Null properties will not be serialized.
     /// </summary>
-    class PersonResult
+    internal class PersonResult
     {
         #region Ignored Properties
         // These properties exist to help with internal logic but they should not be serialized to JSON.

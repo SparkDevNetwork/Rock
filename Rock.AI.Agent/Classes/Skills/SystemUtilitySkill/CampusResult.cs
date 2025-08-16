@@ -25,7 +25,7 @@ namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
     /// <summary>
     /// Represents a campus, including identity, type/status, location, service times, and custom attributes.
     /// </summary>
-    public class CampusResult
+    internal class CampusResult
     {
         /// <summary>
         /// The Id of the campus.s
