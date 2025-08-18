@@ -32,8 +32,7 @@ namespace Rock.Model
         /// <returns></returns>
         public IEntityCache GetCacheObject()
         {
-            // doesn't apply
-            return null;
+            return CampusScheduleCache.Get( Id );
         }
 
         /// <summary>
@@ -43,6 +42,8 @@ namespace Rock.Model
         /// <param name="dbContext">The database context.</param>
         public void UpdateCache( EntityState entityState, Rock.Data.DbContext dbContext )
         {
+            CampusCache.UpdateCachedEntity( Id, entityState );
+
             // CampusCache may get stale a if CampusSchedule is modified
             CampusCache.UpdateCachedEntity( this.CampusId, EntityState.Modified );
         }

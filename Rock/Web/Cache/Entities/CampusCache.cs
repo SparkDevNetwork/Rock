@@ -34,6 +34,17 @@ namespace Rock.Web.Cache
     [DataContract]
     public class CampusCache : ModelCache<CampusCache, Campus>
     {
+        #region Fields
+
+        /// <summary>
+        /// The identifiers of the <see cref="CampusSchedule"/> objects associated
+        /// with this campus. Unlike the <see cref="CampusScheduleIds"/> property,
+        /// this field holds the identifiers of the link records, not the schedules
+        /// themselves.
+        /// </summary>
+        private List<int> _campusScheduleIds = new List<int>();
+
+        #endregion
 
         #region Properties
 
@@ -325,6 +336,11 @@ namespace Rock.Web.Cache
         [DataMember]
         public decimal? TitheMetric { get; set; }
 
+        /// <summary>
+        /// The schedules that are associated with this campus.
+        /// </summary>
+        public List<CampusScheduleCache> CampusSchedules => CampusScheduleCache.GetMany( _campusScheduleIds ).ToList();
+
         #endregion
 
         #region Public Methods
@@ -384,6 +400,7 @@ namespace Rock.Web.Cache
             PhoneNumber = campus.PhoneNumber;
             LeaderPersonAliasId = campus.LeaderPersonAliasId;
             RawServiceTimes = campus.ServiceTimes;
+            _campusScheduleIds = campus.CampusSchedules.Select( s => s.Id ).ToList();
             CampusScheduleIds = campus.CampusSchedules.Select( s => s.ScheduleId ).ToList();
             Order = campus.Order;
             OpenedDate = campus.OpenedDate;
