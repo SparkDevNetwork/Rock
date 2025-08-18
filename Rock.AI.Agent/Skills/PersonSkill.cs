@@ -31,6 +31,7 @@ using Rock.Model;
 using Rock.SystemGuid;
 using Rock.SystemKey;
 using Rock.Utility;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -201,7 +202,7 @@ namespace Rock.AI.Agent.Skills
                 return RockFunctionResult.Error( "Options are required.", instructions: "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
             }
 
-            if (options.FullName.IsNullOrWhiteSpace() )
+            if ( options.FullName.IsNullOrWhiteSpace() )
             {
                 return RockFunctionResult.Error( "Full name is required for search.", instructions: "The FullName parameter is required." );
             }
@@ -210,15 +211,45 @@ namespace Rock.AI.Agent.Skills
             var searchQueryable = new PersonService( _rockContext )
                 .GetSimilarPersons( options.FullName );
 
-            // Append campus filter if provided
-            var campusIdFilter = options.CampusKey.IsNullOrWhiteSpace()
-                ? null
-                : IdHasher.Instance.GetId( options.CampusKey );
-
-            if ( campusIdFilter.HasValue )
+            // If the queryable is null that means that no individuals with that first name or last name were found
+            if ( searchQueryable == null )
             {
+                var specificErrorInstructions = string.Empty;
+
+                // Provide some special instructions for senior and junior as these can commonly be used by voice ai.
+                if ( options.FullName.EndsWith( "Senior") )
+                {
+                    specificErrorInstructions = "Please retry providing the suffix of Sr. instead of Senior";
+                }
+
+                if ( options.FullName.EndsWith( "Junior" ) )
+                {
+                    specificErrorInstructions = "Please retry providing the suffix of Jr. instead of Junior";
+                }
+
+                return RockFunctionResult.Error( "Could not find anyone with the name provided.", instructions: specificErrorInstructions );
+            }
+            
+            // Append campus filter if provided
+            if ( options.CampusIdKey.IsNotNullOrWhiteSpace() )
+            {
+                var campusId = IdHasher.Instance.GetId( options.CampusIdKey );
+
+                if ( !campusId.HasValue || campusId <= 0 )
+                {
+                    return RockFunctionResult.Error( "Invalid CampusIdKey provided.", "Provide a valid CampusIdKey. You can get a list of them by calling the LookupCampus function." );
+                }
+
+                // Confirm that the campusId is valid and filter the search results.
+                var campus = CampusCache.Get( campusId.Value );
+
+                if ( campus == null )
+                {
+                    return RockFunctionResult.Error( "Invalid CampusIdKey provided.", "The CampusIdKey provided does not match any existing campus. Use the LookupCampus function to get a list of valid campuses." );
+                }
+
                 searchQueryable = searchQueryable
-                    .Where( p => p.PrimaryCampusId == campusIdFilter.Value );
+                    .Where( p => p.PrimaryCampusId == campusId.Value );
             }
 
             // Get search results. Returning an anonymous type as some of the values needed will

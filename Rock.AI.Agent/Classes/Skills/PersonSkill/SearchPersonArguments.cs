@@ -15,6 +15,7 @@
 // </copyright>
 
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
 
 namespace Rock.AI.Agent.Classes.Skills.PersonSkill
 {
@@ -27,7 +28,7 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
         /// Required. The full name to search for. This should be in the format of first name last name with an optional suffix.
         /// </summary>
         [Description( "Required. The full name to search for. This should be in the format of first name last name with an optional suffix." )]
-        public string FullName { get; set; }
+        public string FullName { get; set; } = string.Empty;
 
         /// <summary>
         /// The maximum number of results to return. Defaults to 10.
@@ -35,8 +36,8 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
         public int MaxResults { get; set; } = 10;
 
         /// <summary>
-        /// Optional. The campus key to filter the search results by.
+        /// Optional. The campus id key to filter the search results by.
         /// </summary>
-        public string CampusKey { get; set; } = null;
+        public string CampusIdKey { get; set; } = null;
     }
 }
