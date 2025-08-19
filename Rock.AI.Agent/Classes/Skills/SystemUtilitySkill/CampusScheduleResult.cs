@@ -33,10 +33,5 @@ namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
         /// The schedule type.
         /// </summary>
         public string ScheduleType { get; set; }
-
-        /// <summary>
-        /// The day of the week of the campus schedule.
-        /// </summary>
-        public DayOfWeek DayOfWeek { get; set; }
     }
 }
