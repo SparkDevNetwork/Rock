@@ -54,19 +54,9 @@ namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
         public string CampusType { get; set; }
 
         /// <summary>
-        /// Key value (Id Key) corresponding to <see cref="CampusType"/>.
-        /// </summary>
-        public string CampusTypeKey { get; set; }
-
-        /// <summary>
         /// Display value of the campus status (e.g., Open, Inactive).
         /// </summary>
         public string CampusStatus { get; set; }
-
-        /// <summary>
-        /// Key value (Id Key) corresponding to <see cref="CampusStatus"/>.
-        /// </summary>
-        public string CampusStatusKey { get; set; }
 
         /// <summary>
         /// Primary geographic location information for the campus.
@@ -74,30 +64,14 @@ namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
         public LocationResult Location { get; set; }
 
         /// <summary>
-        /// Weekly service times for the campus, when available.
+        /// Schedules for the campus.
         /// </summary>
-        public List<ServiceTimeResult> ServiceTimes { get; set; }
+        public List<CampusScheduleResult> CampusSchedules { get; set; }
 
         /// <summary>
         /// Arbitrary campus attributes represented as a key/value dictionary.
         /// Keys are attribute keys; values are formatted strings.
         /// </summary>
-        public Dictionary<string, string> Attributes { get; set; } = new Dictionary<string, string>();
-    }
-
-    /// <summary>
-    /// POCO for storing service times
-    /// </summary>
-    public class ServiceTimeResult
-    {
-        /// <summary>
-        /// The day of the week.
-        /// </summary>
-        public string Day { get; set; }
-
-        /// <summary>
-        /// The time of the day.
-        /// </summary>
-        public string Time { get; set; }
+        public List<AttributeResult> Attributes { get; set; } = new List<AttributeResult>();
     }
 }

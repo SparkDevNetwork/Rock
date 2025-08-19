@@ -13,31 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
+//
 
-using System.ComponentModel;
-using System.ComponentModel.DataAnnotations;
+using System;
 
-namespace Rock.AI.Agent.Classes.Skills.PersonSkill
+namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
 {
     /// <summary>
-    /// Arguments for searching for a person by name.
+    /// POCO result for campus schedule information.
     /// </summary>
-    public class SearchPersonArguments
+    public class CampusScheduleResult
     {
         /// <summary>
-        /// Required. The full name to search for. This should be in the format of first name last name with an optional suffix.
+        /// The name of the schedule.
         /// </summary>
-        [Description( "Required. The full name to search for. This should be in the format of first name last name with an optional suffix." )]
-        public string FullName { get; set; } = string.Empty;
+        public string ScheduleName { get; set; }
 
         /// <summary>
-        /// The maximum number of results to return. Defaults to 10.
+        /// The schedule type.
         /// </summary>
-        public int MaxResults { get; set; } = 10;
+        public string ScheduleType { get; set; }
 
         /// <summary>
-        /// Optional. The campus id key to filter the search results by.
+        /// The day of the week of the campus schedule.
         /// </summary>
-        public string CampusIdKey { get; set; } = null;
+        public DayOfWeek DayOfWeek { get; set; }
     }
 }

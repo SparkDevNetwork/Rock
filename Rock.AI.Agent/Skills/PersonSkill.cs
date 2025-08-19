@@ -193,23 +193,18 @@ namespace Rock.AI.Agent.Skills
         /// <param name="options"></param>
         /// <returns></returns>
         [KernelFunction( "SearchPerson" )]
-        [UserDescription( @"Searches for matching people by name. This will search by exact match as well as ""Sounds Like""." )]
+        [UserDescription( @"Searches for matching people by name. This will search by exact match as well as ""Sounds Like"". Suffixes should be provide in the format of Sr., Jr. III, IV." )]
         [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
-        public RockFunctionResult SearchPerson( SearchPersonArguments options )
+        public RockFunctionResult SearchPerson( string fullName, int maxResults = 10, string campusIdKey = null )
         {
-            if ( options == null )
+            if ( fullName == null || fullName.IsNullOrWhiteSpace() )
             {
-                return RockFunctionResult.Error( "Options are required.", instructions: "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
-            }
-
-            if ( options.FullName.IsNullOrWhiteSpace() )
-            {
-                return RockFunctionResult.Error( "Full name is required for search.", instructions: "The FullName parameter is required." );
+                return RockFunctionResult.Error( "Full name is required.", instructions: "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
             }
 
             // Get queryable with the metaphone and full name search.
             var searchQueryable = new PersonService( _rockContext )
-                .GetSimilarPersons( options.FullName );
+                .GetSimilarPersons( fullName );
 
             // If the queryable is null that means that no individuals with that first name or last name were found
             if ( searchQueryable == null )
@@ -217,12 +212,12 @@ namespace Rock.AI.Agent.Skills
                 var specificErrorInstructions = string.Empty;
 
                 // Provide some special instructions for senior and junior as these can commonly be used by voice ai.
-                if ( options.FullName.EndsWith( "Senior") )
+                if ( fullName.EndsWith( "Senior") )
                 {
                     specificErrorInstructions = "Please retry providing the suffix of Sr. instead of Senior";
                 }
 
-                if ( options.FullName.EndsWith( "Junior" ) )
+                if ( fullName.EndsWith( "Junior" ) )
                 {
                     specificErrorInstructions = "Please retry providing the suffix of Jr. instead of Junior";
                 }
@@ -231,9 +226,9 @@ namespace Rock.AI.Agent.Skills
             }
             
             // Append campus filter if provided
-            if ( options.CampusIdKey.IsNotNullOrWhiteSpace() )
+            if ( campusIdKey.IsNotNullOrWhiteSpace() )
             {
-                var campusId = IdHasher.Instance.GetId( options.CampusIdKey );
+                var campusId = IdHasher.Instance.GetId( campusIdKey );
 
                 if ( !campusId.HasValue || campusId <= 0 )
                 {
@@ -277,11 +272,11 @@ namespace Rock.AI.Agent.Skills
                 } )
                 .OrderBy( p => p.LastName )
                 .ThenBy( p => p.NickName )
-                .Take( options.MaxResults + 1 )
+                .Take( maxResults + 1 )
                 .ToList();
 
             // Provide indication of more results.
-            var hasMore = results.Count > options.MaxResults;
+            var hasMore = results.Count > maxResults;
 
             if ( hasMore )
             {

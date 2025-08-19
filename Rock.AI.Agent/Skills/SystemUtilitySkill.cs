@@ -16,8 +16,11 @@
 //
 
 using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
+
+using Amazon.Runtime.Internal.Util;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -84,10 +87,31 @@ namespace Rock.AI.Agent.Skills
         [UserDescription( "Provides information on the campuses." )]
         public RockFunctionResult LookupCampuses()
         {
-            // TODOs:  
-            // 1. We need to add CampusSchedules to the CampusCache so that we can use it here.  
+            foreach( var cs in  CampusCache.All()[0].CampusSchedules )
+            {
+                var schedule = cs.Schedule;
+            }
 
-            var campusResults = CampusCache.All()
+            var campusResults = RockCache.GetOrAddExisting( "rock.core.aiagent.lookupcampuses", null, () =>
+            {
+                return LoadCampuses();
+            }, TimeSpan.FromMinutes( 3 ) ) as List<CampusResult>;
+
+            return RockFunctionResult.Success( campusResults );
+        }
+
+        #endregion
+
+        #region Private Methods
+
+        /// <summary>
+        /// Loads the campuses from the cache and converts them to a list of CampusResult objects.
+        /// </summary>
+        /// <returns></returns>
+        private List<CampusResult> LoadCampuses()
+        {
+            return CampusCache.All()
+                .Where( c => c.IsActive == true )
                 .Select( c => new CampusResult
                 {
                     Id = c.Id,
@@ -95,29 +119,27 @@ namespace Rock.AI.Agent.Skills
                     IsActive = c.IsActive ?? false,
                     Abbreviation = c.ShortCode,
                     CampusType = c.CampusTypeValue?.Value ?? string.Empty,
-                    CampusTypeKey = c.CampusTypeValue.IdKey,
                     CampusStatus = c.CampusStatusValue?.Value ?? string.Empty,
-                    CampusStatusKey = c.CampusStatusValue.IdKey,
-                    Location = new LocationResult {
+                    Location = new LocationResult
+                    {
                         Street1 = c.Location.Street1,
                         Street2 = c.Location.Street2,
                         City = c.Location.City,
                         State = c.Location.State,
                         PostalCode = c.Location.PostalCode,
                         Country = c.Location.Country,
-                        GeographyPoint = ( c.Location.Latitude.HasValue && c.Location.Longitude.HasValue ) ? new GeographyPoint( c.Location.Latitude.Value, c.Location.Latitude.Value) : null
+                        GeographyPoint = ( c.Location.Latitude.HasValue && c.Location.Longitude.HasValue ) ? new GeographyPoint( c.Location.Latitude.Value, c.Location.Latitude.Value ) : null
                     },
-                    ServiceTimes = c.ServiceTimes
-                                        .Select( st => new ServiceTimeResult
+                    CampusSchedules = c.CampusSchedules
+                                        .Where( s => s.Schedule.IsActive )
+                                        .Select( s => new CampusScheduleResult
                                         {
-                                            Day = st.Day,
-                                            Time = st.Time
+                                            ScheduleName = s.Schedule.FriendlyScheduleText,
+                                            ScheduleType = s.ScheduleTypeValue.Value,
                                         } )
                                         .ToList()
                 } )
                 .ToList();
-
-            return RockFunctionResult.Success( campusResults );
         }
 
         #endregion
