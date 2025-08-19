@@ -1863,10 +1863,11 @@ Obsidian.init({{ debug: true, fingerprint: ""v={_obsidianFingerprint}"" }});
                     Page.Header.Controls.Add( new LiteralControl( "<meta name=\"robots\" content=\"noindex, nofollow\"/>" ) );
                 }
 
-                // Add response headers to request that the client tell us if they prefer dark mode
-                Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme" );
+                // Add response headers to request that the client tell us if they prefer dark mode, and which platform version they are using
+                Response.Headers.Add( "Accept-CH", "Sec-CH-Prefers-Color-Scheme, Sec-CH-UA-Platform, Sec-CH-UA-Platform-Version" );
                 Response.Headers.Add( "Vary", "Sec-CH-Prefers-Color-Scheme" );
-                Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme" );
+                Response.Headers.Add( "Critical-CH", "Sec-CH-Prefers-Color-Scheme, Sec-CH-UA-Platform-Version" );
+                Response.Headers.Add( "Permissions-Policy", "ch-ua-platform-version=(self)" );
 
                 if ( _showDebugTimings )
                 {
@@ -2717,7 +2718,8 @@ Sys.Application.add_load(function () {
                     PostalCode = geolocation?.PostalCode,
                     Latitude = geolocation?.Latitude,
                     Longitude = geolocation?.Longitude,
-                    InteractionChannelCustom1 = Activity.Current?.TraceId.ToString()
+                    InteractionChannelCustom1 = Activity.Current?.TraceId.ToString(),
+                    UserAgentPlatformVersion = Request.UserAgentPlatformVersion()
                 };
 
                 // If we have a UTM cookie, add the information to the interaction.

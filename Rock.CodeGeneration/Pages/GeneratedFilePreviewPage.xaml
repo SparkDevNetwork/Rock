@@ -33,6 +33,7 @@
                  SelectionMode="Single"
                  SelectionChanged="FileListBox_SelectionChanged"
                  ItemsSource="{Binding ExportFiles}"
+                 VirtualizingStackPanel.IsVirtualizing="False"
                  Visibility="{Binding Settings.ObsidianViewModelsIsGroupedView, Converter={StaticResource InverseBoolToVis}}">
             <ListBox.ItemTemplate>
                 <DataTemplate>
@@ -142,12 +143,11 @@
                 <Rectangle Fill="#ccc" Height="1" />
             </StackPanel>
 
-            <TextBox Name="FilePreviewContent"
+            <RichTextBox Name="FilePreviewContent"
                      Grid.Row="1"
                      Grid.Column="0"
                      BorderThickness="0"
                      IsReadOnly="True"
-                     TextWrapping="NoWrap"
                      FontFamily="Courier New"
                      HorizontalScrollBarVisibility="Auto"
                      VerticalScrollBarVisibility="Visible" />

@@ -1375,21 +1375,29 @@ namespace RockWeb.Blocks.Connection
         }
 
         /// <summary>
-        /// Get the selected campus identitfiers or the single campus id if no campuses were selected and there is only one campus.
+        /// Get the selected campus identifiers or all campus ids if no campuses were selected.
         /// </summary>
         /// <param name="cbl">The campus checkbox list.</param>
         /// <returns></returns>
         private List<int> campusCblSelectedItemsAsInt( CheckBoxList campusCbl )
         {
             var values = cblSelectedItemsAsInt( campusCbl );
-            
-            // if no campuses were selected and there is only a single campus, manually add it
-            if ( !values.Any() && !rcwCampus.Visible )
+
+            if ( !values.Any() )
             {
-                int? singleCampusId = CampusCache.SingleCampusId;
-                if ( singleCampusId.HasValue )
+                // if no campuses selected and there is only a single campus, manually add it
+                if ( !rcwCampus.Visible )
                 {
-                    values.Add( singleCampusId.Value );
+                    int? singleCampusId = CampusCache.SingleCampusId;
+                    if ( singleCampusId.HasValue )
+                    {
+                        values.Add( singleCampusId.Value );
+                    }
+                }
+                else
+                {
+                    // If no campuses selected and multiple campuses exist, add all campuses
+                    values = CampusCache.All().Select( c => c.Id ).ToList();
                 }
             }
 

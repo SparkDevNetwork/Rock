@@ -160,14 +160,14 @@
 <style scoped>
 :deep(.panel.panel-block) {
     height: 100%;
-    margin-bottom: 24px;
+    margin-bottom: var(--spacing-large);
 }
 
 .gender-section {
     grid-column: 1 / -1;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: var(--spacing-small);
 }
 
 .loading-section {
@@ -179,7 +179,7 @@
 
 .gender-section .group-role-wrapper {
     padding: 0;
-    padding-top: 12px;
+    padding-top: var(--spacing-small);
 }
 
 .gender-highlight-label {
@@ -188,13 +188,13 @@
 }
 
 .male-label {
-    background-color: var(--color-gender-male-bg);
-    color: var(--color-gender-male-text);
+    background-color: var(--color-gender-male-soft);
+    color: var(--color-gender-male-shade);
 }
 
 .female-label {
-    background-color: var(--color-gender-female-bg);
-    color: var(--color-gender-female-text);
+    background-color: var(--color-gender-female-soft);
+    color: var(--color-gender-female-shade);
 }
 
 .unknown-label {
@@ -207,7 +207,7 @@
     grid-column: 1 / -1;
     display: flex;
     justify-content: center;
-    padding: 0.5rem;
+    padding: var(--spacing-xsmall);
     border: 1px dashed var(--color-interface-soft);
     color: var(--color-interface-soft);
 }
@@ -221,7 +221,7 @@
 }
 
 .panel-inline .panel-heading {
-    padding: 8px 16px;
+    padding: var(--spacing-xsmall) var(--spacing-medium);
     background-color: var(--color-interface-softer);
     border-top: 1px solid var(--color-interface-soft);
     border-radius: 0;
@@ -236,8 +236,8 @@
 }
 
 .panel-inline .panel-title {
-    font-size: 14px;
-    font-weight: 600
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
 }
 
 .placement-capacity-label {
@@ -255,11 +255,11 @@
 }
 
 .male-badge {
-    background-color: var(--color-gender-male-text) !important;
+    background-color: var(--color-gender-male-shade) !important;
 }
 
 .female-badge {
-    background-color: var(--color-gender-female-text) !important;
+    background-color: var(--color-gender-female-shade) !important;
 }
 
 .unknown-badge {
@@ -286,9 +286,9 @@
 
 .group-role-wrapper {
     display: grid;
-    gap: 1rem;
+    gap: var(--spacing-medium);
     grid-template-columns: 1fr;
-    padding: 16px;
+    padding: var(--spacing-medium);
 }
 
 @media (min-width: 1024px) {

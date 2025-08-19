@@ -18,6 +18,7 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.ComponentModel.Composition;
+using System.Linq;
 
 using Rock.Attribute;
 using Rock.Cms.StructuredContent;
@@ -58,6 +59,8 @@ namespace Rock.Lms
 
         #endregion
 
+        #region Properties
+
         /// <inheritdoc/>
         public override string HighlightColor => "#e6c229";
 
@@ -69,6 +72,10 @@ namespace Rock.Lms
 
         /// <inheritdoc/>
         public override string ComponentUrl => @"/Obsidian/Controls/Internal/LearningActivity/contentArticleLearningActivity.obs";
+
+        #endregion
+
+        #region Methods
 
         /// <inheritdoc/>
         public override Dictionary<string, string> GetActivityConfiguration( LearningClassActivity activity, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
@@ -110,6 +117,56 @@ namespace Rock.Lms
                 };
             }
         }
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetComponentData( LearningClassActivity activity, Dictionary<string, string> componentSettings, RockContext rockContext, RockRequestContext requestContext )
+        {
+            // This is a cheat, we shouldn't really be trying to access the original
+            // JSON this way, but we don't have a better way to do it.
+            var oldData = activity.LearningActivity?.ActivityComponentSettingsJson?.FromJsonOrNull<Dictionary<string, string>>();
+
+            // Apply any database changes to the header content.
+            new StructuredContentHelper( componentSettings?.GetValueOrNull( SettingKey.Header ) )
+                .DetectAndApplyDatabaseChanges( oldData?.GetValueOrNull( SettingKey.Header ), rockContext );
+
+            // Get the text items from the old component settings.
+            var oldTextItems = oldData?.GetValueOrNull( SettingKey.Items )
+                ?.FromJsonOrNull<List<ContentArticleItem>>()
+                ?.Where( i => i.Type == ContentArticleItemType.Text )
+                .ToList()
+                ?? new List<ContentArticleItem>();
+
+            // Get the text items from the new component settings.
+            var newTextItems = componentSettings?.GetValueOrNull( SettingKey.Items )
+                ?.FromJsonOrNull<List<ContentArticleItem>>()
+                ?.Where( i => i.Type == ContentArticleItemType.Text )
+                .ToList()
+                ?? new List<ContentArticleItem>();
+
+            var deletedItems = oldTextItems
+                .Where( i => !newTextItems.Any( ni => ni.UniqueId == i.UniqueId ) )
+                .ToList();
+
+            // Apply any database changes to the text items that were deleted.
+            foreach ( var item in deletedItems )
+            {
+                new StructuredContentHelper( string.Empty )
+                    .DetectAndApplyDatabaseChanges( item.Text, rockContext );
+            }
+
+            // Apply any database changes to the text items that were added or updated.
+            foreach ( var item in newTextItems )
+            {
+                var oldItem = oldTextItems.FirstOrDefault( i => i.UniqueId == item.UniqueId );
+
+                new StructuredContentHelper( item.Text )
+                    .DetectAndApplyDatabaseChanges( oldItem?.Text, rockContext );
+            }
+
+            return base.GetComponentData( activity, componentSettings, rockContext, requestContext );
+        }
+
+        #endregion
 
         #region Support Classes
 

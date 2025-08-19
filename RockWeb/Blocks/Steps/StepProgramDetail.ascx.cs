@@ -966,6 +966,7 @@ namespace RockWeb.Blocks.Steps
             else
             {
                 stepProgram = stepProgramService.Queryable()
+                                                .Where( x => x.Id == stepProgramId )
                                                 .Include( x => x.StepTypes )
                                                 .Include( x => x.StepStatuses )
                                                 .Include( x => x.StepWorkflowTriggers )

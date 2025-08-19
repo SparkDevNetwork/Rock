@@ -1,0 +1,84 @@
+// Content Stack Control - For grouping form content within a content section
+
+// =============================================================
+// Table of Content
+//  + Base Style
+//  + Right Sidebar
+// =============================================================
+
+
+// ======================== BASE STYLE ========================
+
+.contentstack {
+    display: flex;
+    flex-direction: row;
+    gap: var(--spacing-large);
+    width: 100%;
+    height: auto;
+}
+
+.contentstack-body {
+    flex: 1 1 80%
+}
+
+.contentstack > .contentstack-sidebar {
+    max-width: 400px;
+    padding-top: 0;
+}
+
+.contentstack.contentstack-left > .contentstack-sidebar {
+    flex: 0 0 20%;
+}
+
+.contentstack.contentstack-right > .contentstack-sidebar {
+    flex: 0 0 30%;
+}
+
+.contentstack.contentstack-right {
+    display: flex;
+    flex-direction: row-reverse;
+}
+
+.contentstack.contentstack-right .contentstack-sidebar .contentstack-header-title {
+    display: none;
+}
+
+.contentstack.contentstack-right .contentstack-body {
+    padding-left: 0;
+    flex: 1 1 70%
+}
+
+.contentstack.contentstack-right .contentstack-sidebar {
+    flex: 0 0 30%;
+}
+
+.contentstack-header {
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-tiny);
+}
+
+.contentstack-header-title {
+    color: var(--color-interface-strong);
+    margin: 0;
+}
+
+.contentstack-header-description {
+    color: var(--color-interface-medium);
+
+}
+
+@media (max-width: 767px) {
+
+    .contentstack {
+        flex-direction: column;
+        gap: var(--spacing-tiny);
+    }
+
+    .contentstack.contentstack-right {
+        flex-direction: column-reverse;
+        gap: var(--spacing-tiny);
+    }
+}
+
+// ======================== END BASE STYLE ========================

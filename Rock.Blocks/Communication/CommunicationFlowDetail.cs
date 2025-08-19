@@ -1007,6 +1007,9 @@ namespace Rock.Blocks.Communication
                 pushData.Url = bag.PushUrl;
             }
 
+            new StructuredContentHelper( newPushOpenMessageJson )
+                .DetectAndApplyDatabaseChanges( communicationTemplate.PushOpenMessageJson, rockContext );
+
             communicationTemplate.PushOpenMessage = newPushOpenMessage;
             communicationTemplate.PushOpenMessageJson = newPushOpenMessageJson;
             communicationTemplate.PushData = pushData.ToJson();

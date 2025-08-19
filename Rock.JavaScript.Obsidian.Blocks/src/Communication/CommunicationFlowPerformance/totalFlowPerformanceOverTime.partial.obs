@@ -4,19 +4,10 @@
            hasFullscreen
            panelBodyCssClass="chart-container"
            title="Total Flow Performance Over Time">
-        <LineChart :modelValue="dataPoints"
-                   :axes="{
-                    label: { type: labelType },
-                    value: {
-                        type: 'percent',
-                        maxDecimalPlaces: 2,
-                        limits: { min: 0 }
-                    }
-                }"
-                   :legend="{
-                    position: 'top'
-                }"
-                   :seriesSort="[SeriesName.ConversionRate, SeriesName.UnsubscribeRate]" />
+        <LineChart :data="series"
+                   :labels="labels"
+                   :labelDateFormat="dateUnit"
+                   type="percent" />
     </Panel>
 
     <NothingToShow v-else title="Total Flow Performance Over Time" />
@@ -34,11 +25,10 @@
     import NothingToShow from "./nothingToShow.partial.obs";
     import { isRockDateTime, useRockDateTimeParser } from "./utils.partial";
     import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import { alignDataPointsByDate, LineSeries, XYPoint, XYPointEnumerable } from "@Obsidian/Core/Controls/chart";
     import Panel from "@Obsidian/Controls/panel.obs";
-    import { buildCumulativeRates } from "@Obsidian/Utility/chartUtils";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
     import { isNullish } from "@Obsidian/Utility/util";
 
@@ -78,100 +68,182 @@
         return Enumerable.from(props.messages).any(m => !!m.sentDateTime);
     });
 
-    const labelType = computed<"date.day" | "date.week" | "date.month">(() => {
-        return props.dateUnit === "day"
-            ? "date.day"
-            : props.dateUnit === "week"
-                ? "date.week"
-                : "date.month";
+    const series = computed<LineSeries[]>(() => {
+        return dataPoints.value.series;
     });
 
-    const dateFormatter = computed<(d: RockDateTime) => string>(() => {
-        return (d: RockDateTime) => {
-            return d.toASPString("yyyy-MM-dd");
-        };
+    const labels = computed<string[]>(() => {
+        return dataPoints.value.labels;
     });
 
-    const dateTransformer = computed<(d: RockDateTime) => RockDateTime>(() => {
-        return (d: RockDateTime) => {
-            switch (props.dateUnit) {
-                case "week":
-                    return d.startOfWeek();
-                case "month":
-                    return d.startOfMonth();
-                case "day":
-                default:
-                    return d;
-            }
-        };
-    });
-
-    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
-        const messageCount = Enumerable.from(props.messages).count();
-
-        if (messageCount <= 0) {
-            return [];
+    const dataPoints = computed<{ labels: string[]; series: LineSeries[] }>(() => {
+        if (props.messages.length === 0) {
+            return {
+                labels: [],
+                series: []
+            };
         }
-        const messageEnumerable = Enumerable.from(props.messages).where(m => !isNullish(m.personAliasIdKey));
 
-        const conversionRateDataPoints = buildCumulativeRates(
-            // Conversion dates.
-            // Get the first conversion date for each person.
-            // This ensures that if a person has multiple conversion events,
-            // they are only counted once since this metric is about people, not events.
-            messageEnumerable
-                .groupBy(m => m.personAliasIdKey!)
-                .select(g => g
-                    .select(m => parseRockDateTime(m.convertedDateTime))
-                    .firstOrDefault())
-                .ofType(isRockDateTime),
-            {
-                seriesName: SeriesName.ConversionRate,
-                color: "#68D391",
-                totalCount: props.uniquePersonCount,
-                dateTransformer: dateTransformer.value,
-                dateFormatter: dateFormatter.value
-            }
-        );
-
-        const unsubscribeRateDataPoints = buildCumulativeRates(
-            // Unsubscribe dates.
-            // Get all unsubscribe dates for each person.
-            messageEnumerable
-                .select(m => parseRockDateTime(m.unsubscribedDateTime))
-                .ofType(isRockDateTime),
-            {
-                seriesName: SeriesName.UnsubscribeRate,
-                color: "#FC8181",
-                totalCount: messageCount,
-                dateTransformer: dateTransformer.value,
-                dateFormatter: dateFormatter.value
-            });
-
-        const dataPoints = conversionRateDataPoints
-            .concat(unsubscribeRateDataPoints)
-            .orderBy(d => d.rockDateTime.toMilliseconds()) // Re-order so the data are all in chronological order.
-            .toArray();
+        const messageEnumerable = Enumerable.from(props.messages);
 
         // Ensure the data points include the earliest instance start date.
         const earliestInstanceSentDate = messageEnumerable
             .select(m => parseRockDateTime(m.communicationFlowInstanceStartDate))
-            .ofType(isRockDateTime)
+            .cast<RockDateTime>(isRockDateTime)
             .orderBy(d => d.toMilliseconds())
-            .select(d => dateTransformer.value(d))
+            .select(d => d.toISOString())
             .firstOrDefault();
 
-        if (earliestInstanceSentDate && !dataPoints.some(d => d.rockDateTime.isEarlierThan(earliestInstanceSentDate))) {
-            dataPoints.unshift({
-                rockDateTime: earliestInstanceSentDate,
-                seriesName: SeriesName.ConversionRate,
-                color: "#68D391",
-                value: 0,
-                label: dateFormatter.value(earliestInstanceSentDate)
-            });
+        if (!earliestInstanceSentDate) {
+            return {
+                labels: [],
+                series: []
+            };
         }
 
-        return dataPoints;
+        const conversionDataPoints = XYPointEnumerable
+            .fromData(messageEnumerable
+                .where(m => !!m.personAliasIdKey && !!m.convertedDateTime)
+                .groupBy(m => m.personAliasIdKey!)
+                .select<RockDateTime>(g => g
+                    .select(m => parseRockDateTime(m.convertedDateTime))
+                    .cast<RockDateTime>((r): r is RockDateTime => !isNullish(r))
+                    .first())
+                .select<XYPoint>(r => {
+                    return {
+                        x: r, // Represents a datetime that a person converted (only a person's first conversion date is counted)
+                        y: 1  // Each conversion datetime is counted as 1.
+                    };
+                })
+            )
+            .selectWithStartingPoint(
+                {
+                    x: earliestInstanceSentDate,
+                    y: 0
+                },
+                (date1, date2) => {
+                    return parseRockDateTime(date1.x)?.toMilliseconds() === parseRockDateTime(date2.x)?.toMilliseconds();
+                }
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray();
+
+        const unsubscribeDataPoints = XYPointEnumerable
+            .fromData(
+                messageEnumerable
+                    .where(m => !!m.personAliasIdKey && !!m.unsubscribedDateTime)
+                    .groupBy(m => m.personAliasIdKey!)
+                    .select<RockDateTime>(g => g
+                        .select(m => parseRockDateTime(m.unsubscribedDateTime))
+                        .cast<RockDateTime>((r): r is RockDateTime => !isNullish(r))
+                        .first())
+                    .select<XYPoint>(r => {
+                        return {
+                            x: r, // Represents a datetime that a person unsubscribed (only a person's first unsubscribe date is counted)
+                            y: 1  // Each unsubscribe datetime is counted as 1.
+                        };
+                    })
+            )
+            .selectWithStartingPoint(
+                {
+                    x: earliestInstanceSentDate,
+                    y: 0
+                },
+                (date1, date2) => {
+                    return parseRockDateTime(date1.x)?.date.toMilliseconds() === parseRockDateTime(date2.x)?.date.toMilliseconds();
+                }
+            )
+            .selectSquishedByDate()
+            .selectAccumulated()
+            .selectAsDecimalPercentage(props.uniquePersonCount)
+            .toArray();
+
+        const alignedData = alignDataPointsByDate(
+            [
+                conversionDataPoints,
+                unsubscribeDataPoints
+            ],
+            {
+                fillWith: "previousValueOrZero"
+            });
+
+        return {
+            labels: alignedData.labels,
+            series: [
+                {
+                    label: SeriesName.ConversionRate,
+                    data: alignedData.values[0]
+                },
+                {
+                    label: SeriesName.UnsubscribeRate,
+                    data: alignedData.values[1]
+                }
+            ]
+        };
+
+        // const dataPoints = conversionRateDataPoints
+        //     .concat(unsubscribeRateDataPoints)
+        //     .orderBy(d => d.rockDateTime.toMilliseconds()) // Re-order so the data are all in chronological order.
+        //     .toArray();
+
+        // if (earliestInstanceSentDate && !dataPoints.some(d => d.rockDateTime.isEarlierThan(earliestInstanceSentDate))) {
+        //     dataPoints.unshift({
+        //         rockDateTime: earliestInstanceSentDate,
+        //         seriesName: SeriesName.ConversionRate,
+        //         color: "#68D391",
+        //         value: 0,
+        //         label: dateFormatter.value(earliestInstanceSentDate)
+        //     });
+        // }
+
+        // if (earliestInstanceSentDate && !uniqueLabels.some(d => d.rockDateTime.isEarlierThan(earliestInstanceSentDate))) {
+        //     uniqueLabels.unshift({
+        //         rockDateTime: earliestInstanceSentDate,
+        //         label: earliestInstanceSentDate.toISOString()
+        //     });
+        // }
+
+        // const fixedConversionData = Enumerable
+        //     .from(uniqueLabels)
+        //     .select(l => {
+        //         const conversionData = conversionSeriesData
+        //             .firstOrDefault(d => d.label === l.label);
+
+        //         return {
+        //             label: l,
+        //             value: conversionData ? conversionData.value : 0
+        //         };
+        //     });
+
+        // const fixedUnsubscribeData = Enumerable
+        //     .from(uniqueLabels)
+        //     .select(l => {
+        //         const unsubscribeData = unsubscribeSeriesData
+        //             .firstOrDefault(d => d.label === l.label);
+
+        //         return {
+        //             label: l,
+        //             value: unsubscribeData ? unsubscribeData.value : 0
+        //         };
+        //     });
+
+        // return {
+        //     labels: uniqueLabels.map(l => l.label!),
+        //     series: [
+        //         {
+        //             label: SeriesName.ConversionRate,
+        //             data: fixedConversionData.select(c => c.value).toArray(),
+        //             color: "#68D391",
+        //         },
+        //         {
+        //             label: SeriesName.UnsubscribeRate,
+        //             data: fixedUnsubscribeData.select(c => c.value).toArray(),
+        //             color: "#FC8181"
+        //         }
+        //     ]
+        // };
     });
 
     // #endregion Computed Values

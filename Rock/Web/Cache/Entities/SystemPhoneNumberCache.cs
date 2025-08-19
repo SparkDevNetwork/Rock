@@ -19,8 +19,6 @@ using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
 using System.Linq;
 using System.Runtime.Serialization;
-using System.Data.Entity.Spatial;
-using Rock.Lava;
 
 using Rock.Data;
 using Rock.Model;
@@ -106,7 +104,7 @@ namespace Rock.Web.Cache
         /// Gets a value indicating whether this phone number will
         /// forward incoming messages to <see cref="AssignedToPersonAliasId"/>.
         /// </summary>
-        /// <value><c>true</c> if this phohe number will forward incoming messages; otherwise, <c>false</c>.</value>
+        /// <value><c>true</c> if this phone number will forward incoming messages; otherwise, <c>false</c>.</value>
         [DataMember]
         public bool IsSmsForwardingEnabled { get; private set; }
 
@@ -143,6 +141,34 @@ namespace Rock.Web.Cache
         /// </value>
         [DataMember]
         public string ProviderIdentifier { get; private set; }
+
+        /// <summary>
+        /// Gets or sets whether to prevent Rock from sending automatic SMS replies to opt-in or opt-out messages.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if Rock should not send automatic replies; otherwise, <c>false</c>.
+        /// </value>
+        /// <remarks>
+        /// Use this when the messaging provider handles these responses. Otherwise, SMS pipelines will need to manage
+        /// them manually (not recommended).
+        /// </remarks>
+        [DataMember]
+        public bool SuppressSmsOptInOutAutoReplies { get; private set; }
+
+        /// <summary>
+        /// Gets or sets whether to prevent Rock from updating an individual's SMS status when they opt in or out of
+        /// receiving SMS messages.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if Rock should not update an individual's SMS status; otherwise, <c>false</c>.
+        /// </value>
+        /// <remarks>
+        /// This should be used with caution, as an individual's SMS-enabled phone number will not be marked as opted-out
+        /// or SMS-disabled when they opt out. It's understood that an organization will become responsible for complying
+        /// with carrier regulatory requirements, industry standards, and applicable law if this tracking is disabled.
+        /// </remarks>
+        [DataMember]
+        public bool DisableSmsOptInOutTracking { get; private set; }
 
         #endregion
 
@@ -191,6 +217,8 @@ namespace Rock.Web.Cache
             SmsNotificationGroupId = systemPhoneNumber.SmsNotificationGroupId;
             MobileApplicationSiteId = systemPhoneNumber.MobileApplicationSiteId;
             ProviderIdentifier = systemPhoneNumber.ProviderIdentifier;
+            SuppressSmsOptInOutAutoReplies = systemPhoneNumber.SuppressSmsOptInOutAutoReplies;
+            DisableSmsOptInOutTracking = systemPhoneNumber.DisableSmsOptInOutTracking;
         }
 
         /// <summary>

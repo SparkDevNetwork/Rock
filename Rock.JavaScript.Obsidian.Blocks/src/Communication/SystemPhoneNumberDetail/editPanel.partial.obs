@@ -1,87 +1,104 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
     <fieldset>
-        <div class="row">
-            <div class="col-md-6">
-                <TextBox v-model="name"
-                         label="Name"
-                         rules="required" />
-            </div>
+        <ContentSectionContainer :sidebar="false">
+            <ContentSection light disableCollapse>
+                <div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox v-model="name"
+                                     label="Name"
+                                     rules="required" />
+                        </div>
 
-            <div class="col-md-6">
-                <CheckBox v-model="isActive"
-                          label="Active" />
-            </div>
-        </div>
+                        <div class="col-md-6">
+                            <CheckBox v-model="isActive"
+                                      label="Active" />
+                        </div>
+                    </div>
 
-        <TextBox v-model="description"
-                 label="Description"
-                 textMode="multiline" />
+                    <TextBox v-model="description"
+                             label="Description"
+                             textMode="multiline" />
 
-        <div class="row">
-            <div class="col-md-6">
-                <TextBox v-model="phoneNumber"
-                         label="Phone Number"
-                         rules="required"
-                         help="The phone number in the format of +16235553324." />
-            </div>
+                    <div class="row">
+                        <div class="col-md-6">
+                            <TextBox v-model="phoneNumber"
+                                     label="Phone Number"
+                                     rules="required"
+                                     help="The phone number in the format of +16235553324." />
+                        </div>
+                    </div>
 
-            <div class="col-md-6">
-                <PersonPicker v-model="assignedToPersonAlias"
-                              label="Assigned to Person"
-                              help="The person who should receive responses to the SMS number. This person must have a phone number with SMS enabled or no response will be sent." />
-            </div>
-        </div>
+                    <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+                </div>
+            </ContentSection>
 
-        <div class="row">
-            <div class="col-md-6">
-                <CheckBox v-model="isSmsEnabled"
-                          label="SMS Enabled"
-                          help="Determines if SMS features should be enabled for this phone number." />
-            </div>
+            <ContentSection title="Messaging Settings"
+                            icon="ti ti-message-cog">
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="isSmsEnabled"
+                                  label="SMS Enabled"
+                                  help="Determines if SMS features should be enabled for this phone number." />
+                        <PersonPicker v-model="assignedToPersonAlias"
+                                      label="Assigned to Person"
+                                      help="The person who should receive responses to the SMS number. This person must have a phone number with SMS enabled or no response will be sent." />
 
-            <div class="col-md-6">
-                <CheckBox v-model="isSmsForwardingEnabled"
-                          label="SMS Forwarding"
-                          help="Determines if messages received on this number should be forwarded to the assigned person." />
-            </div>
-        </div>
+                        <ConditionalWell>
+                            <CheckBox v-model="isSmsForwardingEnabled"
+                                      label="SMS Forwarding"
+                                      help="Determines if messages received on this number should be forwarded to the assigned person." />
+                        </ConditionalWell>
 
-        <div class="row">
-            <div class="col-md-6">
-                <WorkflowTypePicker v-model="smsReceivedWorkflowType"
-                                    label="SMS Received Workflow"
-                                    help="The workflow type to launch when a response is received. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: FromPhone, Message, SMSFromDefinedValue, FromPerson, ToPerson." />
-            </div>
+                        <WorkflowTypePicker v-model="smsReceivedWorkflowType"
+                                            label="SMS Received Workflow"
+                                            help="The workflow type to launch when a response is received. Additionally if the workflow type has any of the following attribute keys defined, those attribute values will also be set: FromPhone, Message, SMSFromDefinedValue, FromPerson, ToPerson." />
 
-            <div class="col-md-6">
-                <GroupPicker v-model="smsNotificationGroup"
-                             label="SMS Notification Group"
-                             help="Active members of this group will receive push notifications when new SMS messages arrive. These notifications require a mobile app powered by Rock Mobile." />
-            </div>
-        </div>
+                        <GroupPicker v-model="smsNotificationGroup"
+                                     label="SMS Notification Group"
+                                     help="Active members of this group will receive push notifications when new SMS messages arrive. These notifications require a mobile app powered by Rock Mobile." />
 
-        <div class="row">
-            <div class="col-md-6">
-                <DropDownList v-model="mobileApplication"
-                              label="Mobile Application"
-                              help="Determines which mobile application to use when sending notifications."
-                              :items="options.mobileSites ?? []" />
-            </div>
-            <div class="col-md-6">
-            </div>
-        </div>
+                        <DropDownList v-model="mobileApplication"
+                                      label="Linked Mobile App"
+                                      help="Select the mobile app to link with this number. Unread message notifications will appear in the selected app."
+                                      :items="options.mobileSites ?? []" />
+                    </div>
+                </div>
+            </ContentSection>
 
-        <AttributeValuesContainer v-model="attributeValues" :attributes="attributes" isEditMode :numberOfColumns="2" />
+            <ContentSection title="Opt-In/Opt-Out Handling" icon="ti ti-message-2-off">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="form-field">
+                            <InlineCheckBox v-model="suppressSmsOptInOutAutoReplies"
+                                            label="Suppress Opt-In/Opt-Out Auto-Replies"
+                                            help="Prevents Rock from sending automatic replies to opt-in or opt-out messages. Use this when your messaging provider handles these responses. Otherwise, you'll need to manage them manually (not recommended)."
+                                            :disabled="isSuppressSmsOptInOutAutoRepliesDisabled" />
+                        </div>
+
+                        <div class="form-field">
+                            <InlineCheckBox v-model="disableSmsOptInOutTracking"
+                                            label="Disable Opt-Out Tracking"
+                                            help="Prevents Rock from updating the individual's SMS status when they opt out. Their number won't be marked as opted out or SMS disabled." />
+                        </div>
+                    </div>
+                </div>
+            </ContentSection>
+        </ContentSectionContainer>
     </fieldset>
 </template>
 
 <script setup lang="ts">
-    import { PropType, ref, watch } from "vue";
+    import { computed, PropType, ref, watch } from "vue";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import ConditionalWell from "@Obsidian/Controls/conditionalWell.obs";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentSectionContainer from "@Obsidian/Controls/contentSectionContainer.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import GroupPicker from "@Obsidian/Controls/groupPicker.obs";
+    import InlineCheckBox from "@Obsidian/Controls/inlineCheckBox.obs";
     import PersonPicker from "@Obsidian/Controls/personPicker.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import WorkflowTypePicker from "@Obsidian/Controls/workflowTypePicker.obs";
@@ -121,14 +138,20 @@
     const smsReceivedWorkflowType = propertyRef(props.modelValue.smsReceivedWorkflowType ?? undefined, "SmsReceivedWorkflowTypeId");
     const smsNotificationGroup = propertyRef(props.modelValue.smsNotificationGroup ?? undefined, "SmsNotificationGroupId");
     const mobileApplication = propertyRef(props.modelValue.mobileApplicationSite?.value ?? "", "MobileApplicationSiteId");
+    const suppressSmsOptInOutAutoReplies = propertyRef(props.modelValue.suppressSmsOptInOutAutoReplies ?? false, "SuppressSmsOptInOutAutoReplies");
+    const disableSmsOptInOutTracking = propertyRef(props.modelValue.disableSmsOptInOutTracking ?? false, "DisableSmsOptInOutTracking");
 
     // The properties that are being edited. This should only contain
     // objects returned by propertyRef().
-    const propRefs = [description, isActive, name, phoneNumber, assignedToPersonAlias, isSmsEnabled, isSmsForwardingEnabled, smsReceivedWorkflowType, smsNotificationGroup, mobileApplication];
+    const propRefs = [description, isActive, name, phoneNumber, assignedToPersonAlias, isSmsEnabled, isSmsForwardingEnabled, smsReceivedWorkflowType, smsNotificationGroup, mobileApplication, suppressSmsOptInOutAutoReplies, disableSmsOptInOutTracking];
 
     // #endregion
 
     // #region Computed Values
+
+    const isSuppressSmsOptInOutAutoRepliesDisabled = computed((): boolean => {
+        return disableSmsOptInOutTracking.value && suppressSmsOptInOutAutoReplies.value;
+    });
 
     // #endregion
 
@@ -154,11 +177,17 @@
         updateRefValue(smsReceivedWorkflowType, props.modelValue.smsReceivedWorkflowType ?? undefined);
         updateRefValue(smsNotificationGroup, props.modelValue.smsNotificationGroup ?? undefined);
         updateRefValue(mobileApplication, props.modelValue.mobileApplicationSite?.value ?? "");
+        updateRefValue(suppressSmsOptInOutAutoReplies, props.modelValue.suppressSmsOptInOutAutoReplies ?? false);
+        updateRefValue(disableSmsOptInOutTracking, props.modelValue.disableSmsOptInOutTracking ?? false);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
     watch([attributeValues, ...propRefs], () => {
+        if (disableSmsOptInOutTracking.value) {
+            suppressSmsOptInOutAutoReplies.value = true;
+        }
+
         const newValue: SystemPhoneNumberBag = {
             ...props.modelValue,
             attributeValues: attributeValues.value,
@@ -171,7 +200,9 @@
             isSmsForwardingEnabled: isSmsForwardingEnabled.value,
             smsReceivedWorkflowType: smsReceivedWorkflowType.value,
             smsNotificationGroup: smsNotificationGroup.value,
-            mobileApplicationSite: mobileApplication.value ? { value: mobileApplication.value } : null
+            mobileApplicationSite: mobileApplication.value ? { value: mobileApplication.value } : null,
+            suppressSmsOptInOutAutoReplies: suppressSmsOptInOutAutoReplies.value,
+            disableSmsOptInOutTracking: disableSmsOptInOutTracking.value
         };
 
         emit("update:modelValue", newValue);

@@ -1,6 +1,6 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="display-card"
+    <div class="displaycard"
          :class="{
             'is-hovering': isHovering,
             'clickable': !!props.onClick
@@ -10,18 +10,18 @@
          @click="onMainClick">
         <slot name="prepend" />
 
-        <div v-if="badgeText" class="display-card-badge">
+        <div v-if="badgeText" class="displaycard-badge">
             <Badge badgeType="success">{{ badgeText }}</Badge>
         </div>
 
-        <div class="display-card-icon-title-and-desc">
-            <div v-if="iconCssClass" class="display-card-icon">
+        <div class="displaycard-heading">
+            <div v-if="iconCssClass" class="displaycard-heading-icon">
                 <HighlightLabel :labelType="internalIconLabelType" :iconCssClass="`${iconCssClass}`" :customClass="internalIconLabelCustomClass" />
             </div>
 
-            <div v-if="title || description || $slots.description" class="display-card-title-and-desc">
-                <h4 v-if="title" class="display-card-title">{{ title }}</h4>
-                <small v-if="description || $slots.description" class="display-card-description text-muted">
+            <div v-if="title || description || $slots.description" class="displaycard-heading-text">
+                <h5 v-if="title" class="displaycard-heading-text-title">{{ title }}</h5>
+                <small v-if="description || $slots.description" class="displaycard-heading-text-description">
                     <slot name="description">
                         {{ description }}
                     </slot>
@@ -29,13 +29,13 @@
             </div>
         </div>
 
-        <div v-if="asideIconCssClass || aside" class="display-card-aside">
-            <i v-if="asideIconCssClass" :class="`${asideIconCssClass} text-muted`"></i>
-            <small v-if="aside" class="text-muted">{{ aside }}</small>
+        <div v-if="asideIconCssClass || aside" class="displaycard-aside">
+            <i v-if="asideIconCssClass" :class="`${asideIconCssClass}`"></i>
+            <small v-if="aside">{{ aside }}</small>
         </div>
 
-        <div v-if="primaryActions?.length || secondaryActions?.length" class="display-card-actions">
-            <div v-if="primaryActions?.length" class="display-card-primary-actions">
+        <div v-if="primaryActions?.length || secondaryActions?.length" class="displaycard-actions">
+            <div v-if="primaryActions?.length" class="displaycard-primary-actions">
                 <template v-for="action in primaryActions" :key="`${action.title}${action.iconCssClass}`">
                     <RockButton v-if="action.iconCssClass" isSquare btnSize="sm" :btnType="action.type" :tooltip="action.title" @click.stop="action.handler">
                         <i :class="action.iconCssClass"></i>
@@ -47,7 +47,7 @@
                 </template>
             </div>
 
-            <div v-if="secondaryActions?.length" class="display-card-secondary-actions">
+            <div v-if="secondaryActions?.length" class="displaycard-secondary-actions">
                 <DropDownMenu align="right"
                               :items="secondaryActions"
                               @click.stop
@@ -57,113 +57,6 @@
         </div>
     </div>
 </template>
-
-<style>
-.display-card {
-    height: 90px;
-    display: flex;
-    flex-direction: row;
-    gap: var(--spacing-large);
-    align-items: center;
-    padding: var(--spacing-large);
-    background-color: var(--color-interface-softest);
-    border-radius: var(--border-radius-base);
-    border: 1px solid var(--color-interface-medium);
-    transition: background-color .15s ease-in-out;
-
-    /* May need to revisit this if a mobile version of the UI is needed */
-    min-width: v-bind(minWidth);
-}
-
-/* Only show hover state if the item is clickable. */
-.display-card.clickable.is-hovering {
-    background-color: var(--color-info-soft);
-}
-
-.display-card-badge {
-    /* Prevent the badge from shrinking. */
-    flex: 0 auto;
-}
-
-.display-card-icon .label {
-    padding: var(--spacing-xsmall);
-}
-
-.display-card-icon-title-and-desc {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--spacing-medium);
-    flex: 1 1 0;
-    overflow: hidden;
-
-    /* The icon+title+desc container needs a min width;
-       otherwise, it'll shrink until it's hidden
-       before the aside shrinks. */
-    min-width: v-bind(iconTitleAndDescMinWidth);
-}
-
-.display-card-title-and-desc {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-xsmall);
-    overflow: hidden;
-}
-
-.display-card-title {
-    margin: 0;
-    /* line-height: var(--line-height-compact) (line-height: 1.055) clips the bottom of "g" and "y"
-       for small text, so making a little larger. */
-    line-height: 1.2;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.display-card-description,
-.display-card-description > * {
-    font-size: var(--font-size-small);
-    /* line-height: var(--line-height-tight) (line-height: 1.1) clips the bottom of "g" and "y"
-       for small text, so making a little larger. */
-    line-height: 1.2;
-    white-space: nowrap;
-    text-overflow: ellipsis;
-    overflow: hidden;
-}
-
-.display-card-aside {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--spacing-xsmall);
-    flex: 0 1 auto;
-    white-space: nowrap;
-
-    /* Force min-width of 0 so the aside can shrink properly. */
-    min-width: 0;
-}
-
-.display-card-aside small {
-    white-space: nowrap;
-    overflow: hidden;
-    text-overflow: ellipsis;
-}
-
-.display-card-actions {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--spacing-tiny);
-    flex: 0 auto;
-}
-
-.display-card-primary-actions {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    gap: var(--spacing-tiny);
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType, ref } from "vue";

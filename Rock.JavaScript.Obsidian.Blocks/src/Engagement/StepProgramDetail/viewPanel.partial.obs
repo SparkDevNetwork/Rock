@@ -74,6 +74,9 @@
         <div v-show="isChartShown" :style="chartStyle()" class="col-md-12">
             <div class="chart-container" style="height: 100%;">
                 <canvas ref="canvasElement"></canvas>
+                <NotificationBox v-if="props.modelValue && !props.modelValue.isDeletable" alertType="warning" class="col-md-12 margin-y-xsmall">
+                    The {{ props.modelValue.name }} Step Program is used by Rock and cannot be deleted.
+                </NotificationBox>
             </div>
         </div>
 
@@ -115,6 +118,10 @@
     color: var(--color-interface-strong);
     font-size: var(--font-size-small);
     font-weight: var(--font-weight-semibold);
+}
+
+.margin-y-xsmall {
+    margin: var(--spacing-xsmall) 0;
 }
 </style>
 

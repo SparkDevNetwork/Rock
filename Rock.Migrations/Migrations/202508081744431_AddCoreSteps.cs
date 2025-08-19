@@ -49,23 +49,29 @@ namespace Rock.Migrations
             AddColumn( "dbo.StepProgram", "IsSystem", c => c.Boolean( nullable: false ) );
 
             Sql( @"
+DECLARE @Now DATETIME = GETDATE();
+
 INSERT INTO [StepProgram] (
     [Name],
+    [Description],
     [IconCssClass],
     [DefaultListView],
     [IsActive],
     [IsSystem],
     [Order],
-    [Guid]
+    [Guid],
+    [CreatedDateTime]
 )
 VALUES (
     'Core Steps',
+    'This program provides the foundation for all core steps.',
     'ti ti-map',
     0,
     1,
     1,
     0,
-    '898972DA-E58C-4EE1-BCA0-CA3343470B09'
+    '898972DA-E58C-4EE1-BCA0-CA3343470B09',
+    @Now
 );
 
 DECLARE @StepProgramId INT;
@@ -74,6 +80,7 @@ SET @StepProgramId = SCOPE_IDENTITY();
 INSERT INTO [StepType] (
     [StepProgramId],
     [Name],
+    [Description],
     [IconCssClass],
     [AllowMultiple],
     [HasEndDate],
@@ -83,12 +90,14 @@ INSERT INTO [StepType] (
     [IsActive],
     [Order],
     [Guid],
+    [CreatedDateTime],
     [IsDateRequired],
     [IsSystem]
 )
 VALUES (
     @StepProgramId,
     'eRA',
+    'This Step Type records entry and exit from regular attender status.',
     'ti ti-calendar-star',
     1,
     1,
@@ -98,6 +107,7 @@ VALUES (
     1,
     0,
     'E57468BE-15BF-48B6-AAB2-F8E2B02720F3',
+    @Now,
     1,
     1
 );
@@ -110,7 +120,8 @@ INSERT INTO [StepStatus] (
 	[IsActive],
 	[Order],
     [IsSystem],
-	[Guid]
+	[Guid],
+    [CreatedDateTime]
 )
 VALUES 
 	(
@@ -121,7 +132,8 @@ VALUES
 		1,
 		0,
         1,
-		'8013C752-31AA-46C6-9B55-BCFBE57C0577'
+		'8013C752-31AA-46C6-9B55-BCFBE57C0577',
+        @Now
 	),
 	(
 		'Complete',
@@ -131,7 +143,8 @@ VALUES
 		1,
 		1,
         1,
-		'359D3CE0-E144-491E-8C3B-2A2BCE55C04B'
+		'359D3CE0-E144-491E-8C3B-2A2BCE55C04B',
+        @Now
 	);
 
 -- Baptism Step Updates
@@ -165,6 +178,7 @@ BEGIN
         [IsActive],
         [Order],
         [Guid],
+        [CreatedDateTime],
         [IsDateRequired],
         [IsSystem]
     )
@@ -181,6 +195,7 @@ BEGIN
         1,
         0,
         '801cc43c-0641-4271-939e-75e428f31d06',
+        @Now,
         1,
         1
     );
@@ -217,6 +232,7 @@ BEGIN
         [IsActive],
         [Order],
         [Guid],
+        [CreatedDateTime],
         [IsDateRequired],
         [IsSystem]
     )
@@ -233,6 +249,7 @@ BEGIN
         1,
         1,
         'EFA15A4F-5666-4153-B92F-AF3ECD73C504',
+        @Now,
         1,
         1
     );
@@ -269,6 +286,7 @@ BEGIN
         [IsActive],
         [Order],
         [Guid],
+        [CreatedDateTime],
         [IsDateRequired],
         [IsSystem]
     )
@@ -285,6 +303,7 @@ BEGIN
         1,
         2,
         '71E66730-8F7D-4EEF-9C53-524C4BDE5E59',
+        @Now,
         1,
         1
     );
@@ -319,8 +338,9 @@ END
             DropColumn( "dbo.StepStatus", "IsSystem" );
             DropColumn( "dbo.StepType", "IsSystem" );
             Sql( @"
+DELETE FROM [StepProgramCompletion] WHERE [StepProgramId] = (SELECT [Id] FROM [StepProgram] WHERE [Guid] = '898972DA-E58C-4EE1-BCA0-CA3343470B09');
 DELETE FROM [StepProgram] WHERE [Guid] = '898972DA-E58C-4EE1-BCA0-CA3343470B09';
-DELETE FROM [StepType] WHERE [Guid] ='E57468BE-15BF-48B6-AAB2-F8E2B02720F3';
+DELETE FROM [StepType] WHERE [Guid] = 'E57468BE-15BF-48B6-AAB2-F8E2B02720F3';
 DELETE FROM [StepStatus] WHERE [Guid] IN ('8013C752-31AA-46C6-9B55-BCFBE57C0577', '359D3CE0-E144-491E-8C3B-2A2BCE55C04B');
 " );
             RockMigrationHelper.DeleteAttribute( "343A557E-92CC-4A75-B251-0DA732F5EB4E" );

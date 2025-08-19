@@ -93,6 +93,7 @@
     margin-bottom: 0;
     background: transparent;
     border: 0 !important;
+    overflow: visible;
   }
 }
 .card-badge-top {
@@ -318,11 +319,11 @@
       color:      var(--color-interface-strong);
       background: #e9ecef;
   }
-  
+
   .bio-data {
   z-index: 1010;
   }
-  
+
   .card-section {
       padding: var(--spacing-medium);
 
@@ -330,7 +331,7 @@
           border-top: 1px solid var(--color-interface-soft);
       }
   }
-  
+
   .card-body {
       padding: var(--spacing-medium);
   }

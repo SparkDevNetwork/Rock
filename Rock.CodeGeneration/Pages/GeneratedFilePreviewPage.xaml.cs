@@ -8,7 +8,12 @@ using System.Runtime.CompilerServices;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Controls;
+using System.Windows.Documents;
 using System.Windows.Media;
+
+using ColorCode;
+using ColorCode.Common;
+using ColorCode.Parsing;
 
 using Rock;
 using Rock.CodeGeneration.Utility;
@@ -190,6 +195,16 @@ namespace Rock.CodeGeneration.Pages
             FilePreviewDiffView.IsSideBySide = diffType == 2;
         }
 
+        private void SetCodeText( GeneratedFile file )
+        {
+            var formatter = new RichTextBlockFormatter();
+            var language = file.FileName.EndsWith( ".cs" )
+                ? Languages.CSharp
+                : ( file.FileName.EndsWith( ".obs" ) ? Languages.Html : Languages.Typescript );
+
+            formatter.FormatRichTextBlock( file.Content, language, FilePreviewContent );
+        }
+
         #endregion
 
         #region Event Handlers
@@ -207,7 +222,7 @@ namespace Rock.CodeGeneration.Pages
             {
                 FilePreviewDiffView.OldText = exportFile.OldContent;
                 FilePreviewDiffView.NewText = exportFile.File.Content;
-                FilePreviewContent.Text = exportFile.File.Content;
+                SetCodeText( exportFile.File );
                 FilePreviewContent.ScrollToHome();
                 FilePreviewPath.Text = $"Path: {exportFile.File.SolutionRelativePath}";
             }
@@ -215,7 +230,7 @@ namespace Rock.CodeGeneration.Pages
             {
                 FilePreviewDiffView.OldText = string.Empty;
                 FilePreviewDiffView.NewText = string.Empty;
-                FilePreviewContent.Text = string.Empty;
+                FilePreviewContent.Document.Blocks.Clear();
                 FilePreviewPath.Text = string.Empty;
             }
         }
@@ -350,7 +365,7 @@ namespace Rock.CodeGeneration.Pages
             {
                 FilePreviewDiffView.OldText = exportFile.OldContent;
                 FilePreviewDiffView.NewText = exportFile.File.Content;
-                FilePreviewContent.Text = exportFile.File.Content;
+                SetCodeText( exportFile.File );
                 FilePreviewContent.ScrollToHome();
                 FilePreviewPath.Text = $"Path: {exportFile.File.SolutionRelativePath}";
             }
@@ -358,7 +373,7 @@ namespace Rock.CodeGeneration.Pages
             {
                 FilePreviewDiffView.OldText = string.Empty;
                 FilePreviewDiffView.NewText = string.Empty;
-                FilePreviewContent.Text = string.Empty;
+                FilePreviewContent.Document.Blocks.Clear();
                 FilePreviewPath.Text = string.Empty;
             }
         }

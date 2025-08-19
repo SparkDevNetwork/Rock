@@ -144,13 +144,42 @@ namespace RockWeb.Blocks.Connection
         Order = 13,
         Key = AttributeKey.ConnectionTypes )]
 
+    [BooleanField(
+        "Limit to Assigned Connections",
+        DefaultBooleanValue = false,
+        Description = "When enabled, only requests assigned to the current person will be shown.",
+        Key = AttributeKey.OnlyShowAssigned,
+        IsRequired = true,
+        Order = 14 )]
+
+    [LinkedPage(
+        "Connection Request History Page",
+        Description = "Page used to display history details.",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
+        Order = 15,
+        Key = AttributeKey.ConnectionRequestHistoryPage )]
+
+    [LinkedPage(
+        "Bulk Update Requests",
+        Description = "Page used to update selected connection requests",
+        IsRequired = true,
+        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUESTS_BULK_UPDATE,
+        Order = 16,
+        Key = AttributeKey.BulkUpdateRequestsPage )]
+
+    #endregion Block Attributes
+
+    #region Advanced Settings Block Attributes
+
     [CustomCheckboxListField(
         "Default Filtered Connection States",
         "Specifies the default states that should be used for the Connection State Filter.",
         "Active^Active,Inactive^Inactive,FutureFollowUp^Future Follow Up,Connected^Connected",
         false,
         "Active",
-        Order = 14,
+        Category = "Advanced",
+        IsRequired = true,
         Key = AttributeKey.DefaultFilteredConnectionStates )]
 
     [CustomCheckboxListField(
@@ -165,34 +194,10 @@ WHERE cs.[IsActive] = 1
 ORDER BY ct.[Name], cs.[Name]",
         false,
         "",
-        Order = 15,
+        Category = "Advanced",
         Key = AttributeKey.DefaultFilteredConnectionStatuses )]
 
-    [BooleanField(
-        "Limit to Assigned Connections",
-        DefaultBooleanValue = false,
-        Description = "When enabled, only requests assigned to the current person will be shown.",
-        Key = AttributeKey.OnlyShowAssigned,
-        IsRequired = true,
-        Order = 16 )]
-
-    [LinkedPage(
-        "Connection Request History Page",
-        Description = "Page used to display history details.",
-        IsRequired = true,
-        DefaultValue = Rock.SystemGuid.Page.GROUP_VIEWER,
-        Order = 17,
-        Key = AttributeKey.ConnectionRequestHistoryPage )]
-
-    [LinkedPage(
-        "Bulk Update Requests",
-        Description = "Page used to update selected connection requests",
-        IsRequired = true,
-        DefaultValue = Rock.SystemGuid.Page.CONNECTION_REQUESTS_BULK_UPDATE,
-        Order = 18,
-        Key = AttributeKey.BulkUpdateRequestsPage )]
-
-    #endregion Block Attributes
+    #endregion Advanced Settings Block Attributes
 
     [ContextAware( typeof( Person ), IsConfigurable = false )]
     [Rock.SystemGuid.BlockTypeGuid( "28DBE708-E99B-4879-A64D-656C030D25B5" )]
@@ -2271,8 +2276,17 @@ ORDER BY ct.[Name], cs.[Name]",
                     w.TriggerType == ConnectionWorkflowTriggerType.Manual &&
                     w.WorkflowType != null &&
                     ( w.ManualTriggerFilterConnectionStatusId == null || w.ManualTriggerFilterConnectionStatusId == connectionRequest.ConnectionStatusId ) )
-                .OrderBy( w => w.WorkflowType.Name )
                 .Distinct();
+
+            var workflowTypeOrder = connectionOpportunity.GetAdditionalSettingsOrNull<List<int>>( "WorkflowTypeOrder" ) ?? new List<int>();
+            
+            var orderedManualWorkflows = manualWorkflows
+                .OrderBy( w =>
+                {
+                    var index = workflowTypeOrder.IndexOf( w.WorkflowTypeId ?? -1 );
+                    return index == -1 ? int.MaxValue : index;
+                } )
+                .ThenBy( w => w.WorkflowType.Name );
 
             var person = connectionRequest.PersonAlias?.Person;
             if ( person == null )
@@ -2284,7 +2298,7 @@ ORDER BY ct.[Name], cs.[Name]",
             var workflowsNeedingDataViewChecks = new List<ConnectionWorkflow>();
             var authorizedWorkflows = new List<ConnectionWorkflow>();
 
-            foreach ( var manualWorkflow in manualWorkflows )
+            foreach ( var manualWorkflow in orderedManualWorkflows )
             {
                 if ( ( manualWorkflow.WorkflowType.IsActive ?? true ) && manualWorkflow.WorkflowType.IsAuthorized( Authorization.VIEW, CurrentPerson ) )
                 {
@@ -3275,6 +3289,21 @@ ORDER BY ct.[Name], cs.[Name]",
                     if ( newOpportunityId.HasValue && transferredActivityId > 0 )
                     {
                         var newOpportunity = new ConnectionOpportunityService( rockContext ).Get( newOpportunityId.Value );
+
+                        // Check if a connection request in the target opportunity already exists for the same person
+                        var existingRequest = connectionRequestService.Queryable().AsNoTracking()
+                            .Where( r => r.PersonAliasId == connectionRequest.PersonAliasId && 
+                                        r.ConnectionOpportunityId == newOpportunityId.Value &&
+                                        r.Id != connectionRequest.Id &&
+                                        ( r.ConnectionState == ConnectionState.Active || r.ConnectionState == ConnectionState.FutureFollowUp ) )
+                            .FirstOrDefault();
+
+                        if ( existingRequest != null )
+                        {
+                            nbTranferFailed.Text = "This person already has an active connection request for the selected opportunity. Transfer cannot be completed.";
+                            nbTranferFailed.Visible = true;
+                            return;
+                        }
 
                         connectionRequest.ConnectionOpportunityId = newOpportunityId.Value;
                         connectionRequest.ConnectionTypeId = newOpportunity.ConnectionTypeId;
@@ -4548,6 +4577,12 @@ ORDER BY ct.[Name], cs.[Name]",
             if ( connectionOpportunity.ShowCampusOnTransfer )
             {
                 cpTransferCampus.IncludeInactive = false;
+
+                // Filter campuses to only those associated with the selected connection opportunity for transfer
+                var campusIds = connectionOpportunity.ConnectionOpportunityCampuses.Select( c => c.CampusId ).ToList();
+                var availableCampuses = CampusCache.All().Where( c => campusIds.Contains( c.Id ) && ( c.IsActive ?? false ) ).ToList();
+                cpTransferCampus.Campuses = availableCampuses;
+
                 cpTransferCampus.SetValue( connectionRequest.CampusId );
             }
         }

@@ -254,7 +254,7 @@ namespace RockWeb.Blocks.Cms
                         {
                             string activeLoginFormat = @"
 <li class='active-user {0}' data-toggle='tooltip' data-placement='top' title='{2}'>
-    <i class='ti-list ti ti-circle'></i> {1}
+    <i class='ti ti-circle-filled'></i> {1}
 </li>";
                             // define the formatting for each user entry
                             if ( activeLogin.pageViews != null )
@@ -270,7 +270,7 @@ namespace RockWeb.Blocks.Cms
                         {
                             string inactiveLoginFormat = @"
 <li class='active-user {0}'>
-    <i class='ti-list ti ti-circle'></i> {1}
+    <i class='ti ti-circle-filled'></i> {1}
 </li>";
                             sbUsers.Append( string.Format( inactiveLoginFormat, className, personLink ) );
                         }
@@ -323,7 +323,7 @@ namespace RockWeb.Blocks.Cms
 
                 if ( sbUsers.Length > 0 )
                 {
-                    lUsers.Text = string.Format( @"<ul class='activeusers fa-ul'>{0}</ul>", sbUsers.ToString() );
+                    lUsers.Text = string.Format( @"<ul class='activeusers'>{0}</ul>", sbUsers.ToString() );
                     lUsers.Text += string.Format( @"<p class='margin-l-sm js-current-guests'>{0}</p>", guestVisitorsStr );
                 }
                 else

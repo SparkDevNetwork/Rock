@@ -432,6 +432,17 @@ namespace Rock.Transactions
         /// </value>
         public string UserAgent { get; set; }
 
+        /// <summary>
+        /// The UserAgentPlatformVersion value that will used for the Interaction.
+        /// </summary>
+        /// <remarks>
+        /// This is not always provided by user agents and we have to request it by sending
+        /// Headers "Accept-CH" and "Critical-CH" with a value of Sec-CH-UA-Platform-Version
+        /// and possibly the "Permissions-Policy" header with a value of "ch-ua-platform-version=(self)"
+        /// see https://learn.microsoft.com/en-us/microsoft-edge/web-platform/how-to-detect-win11.
+        /// </remarks>
+        public string UserAgentPlatformVersion { get; set; }
+
         #endregion InteractionDeviceType Properties
 
         #region Interaction Properties
@@ -587,6 +598,7 @@ namespace Rock.Transactions
 
             this.InteractionData = this.InteractionData ?? request?.UrlProxySafe().ToString();
             this.UserAgent = this.UserAgent ?? request?.UserAgent;
+            this.UserAgentPlatformVersion = this.UserAgentPlatformVersion ?? request.UserAgentPlatformVersion();
 
             try
             {

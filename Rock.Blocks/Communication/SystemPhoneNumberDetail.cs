@@ -198,7 +198,9 @@ namespace Rock.Blocks.Communication
                 Number = entity.Number,
                 MobileApplicationSite = entity.MobileApplicationSite.ToListItemBag(),
                 SmsNotificationGroup = entity.SmsNotificationGroup.ToListItemBag(),
-                SmsReceivedWorkflowType = entity.SmsReceivedWorkflowType.ToListItemBag()
+                SmsReceivedWorkflowType = entity.SmsReceivedWorkflowType.ToListItemBag(),
+                SuppressSmsOptInOutAutoReplies = entity.SuppressSmsOptInOutAutoReplies,
+                DisableSmsOptInOutTracking = entity.DisableSmsOptInOutTracking
             };
         }
 
@@ -283,6 +285,12 @@ namespace Rock.Blocks.Communication
 
             box.IfValidProperty( nameof( box.Entity.SmsReceivedWorkflowType ),
                 () => entity.SmsReceivedWorkflowTypeId = box.Entity.SmsReceivedWorkflowType.GetEntityId<WorkflowType>( rockContext ) );
+
+            box.IfValidProperty( nameof( box.Entity.SuppressSmsOptInOutAutoReplies ),
+                () => entity.SuppressSmsOptInOutAutoReplies = box.Entity.SuppressSmsOptInOutAutoReplies );
+
+            box.IfValidProperty( nameof( box.Entity.DisableSmsOptInOutTracking ),
+                () => entity.DisableSmsOptInOutTracking = box.Entity.DisableSmsOptInOutTracking );
 
             box.IfValidProperty( nameof( box.Entity.AttributeValues ),
                 () =>

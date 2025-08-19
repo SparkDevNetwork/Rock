@@ -3,12 +3,12 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style              
-//  + Button Toolbar    
-//  + Border Radius   
+// Table of Content
+//  + Base Style
+//  + Button Toolbar
+//  + Border Radius
 //  + Button Groups Sizing
-//  + Vertical Button Groups  
+//  + Vertical Button Groups
 // =============================================================
 
 
@@ -139,19 +139,19 @@
 
 
 // ========================== BUTTON GROUP SIZING ==========================
-.btn-group-xs > .btn { 
-  padding:        1px var(--spacing-tiny);
+.btn-group-xs > .btn {
+  padding:        var(--spacing-tiny) var(--spacing-xsmall);
   font-size:      var(--font-size-xsmall);
-  line-height:    var(--line-height-tight);
+  line-height:    var(--line-height-normal);
   border-radius:  var(--rounded-tiny);
 }
-.btn-group-sm > .btn { 
+.btn-group-sm > .btn {
   padding:        var(--spacing-tiny) var(--spacing-xsmall);
   font-size:      var(--font-size-small);
   line-height:    var(--line-height-normal);
   border-radius:  var(--rounded-small);
 }
-.btn-group-lg > .btn { 
+.btn-group-lg > .btn {
   padding:        var(--spacing-xsmall) var(--spacing-medium);
   font-size:      var(--font-size-h5);
   line-height:    var(--line-height-normal);

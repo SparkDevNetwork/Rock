@@ -21,6 +21,8 @@
 // </copyright>
 //
 
+import { CommunicationDetailPermissionsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationDetail/communicationDetailPermissionsBag";
+
 /**
  * A bag that contains information about the outcome of a request to perform an action on a communication within
  * the communication detail block.
@@ -28,6 +30,9 @@
 export type CommunicationActionResponseBag = {
     /** Gets or sets a message to display to the individual about the outcome of the action. */
     outcomeMessage?: string | null;
+
+    /** Gets or sets the permissions for this communication detail block. */
+    permissions?: CommunicationDetailPermissionsBag | null;
 
     /** Gets or sets the optional URL to which the client should be redirected. */
     redirectUrl?: string | null;

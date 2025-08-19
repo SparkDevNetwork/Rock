@@ -28,7 +28,7 @@ export function isEnumValue<T extends Record<string, number | string>>(enumObjec
 }
 
 type RockDateTimeParser = {
-    parseRockDateTime(isoDateTime: string | null | undefined): RockDateTime | null;
+    parseRockDateTime(isoDateTime: string | number | RockDateTime | null | undefined): RockDateTime | null;
 };
 
 const rockDateTimeParserInjectionKey: InjectionKey<RockDateTimeParser> = Symbol("rock-date-time-parser");
@@ -36,19 +36,37 @@ const rockDateTimeParserInjectionKey: InjectionKey<RockDateTimeParser> = Symbol(
 export function provideRockDateTimeParser(): RockDateTimeParser {
     const cachedDates = new Map<string, RockDateTime | null>();
 
-    function parseRockDateTime(isoDateTime: string | null | undefined): RockDateTime | null {
-        if (!isoDateTime) {
+    function parseRockDateTime(isoDateTimeOrTimestamp: string | number | RockDateTime | null | undefined): RockDateTime | null {
+        if (isNullish(isoDateTimeOrTimestamp)) {
             return null;
         }
 
-        if (cachedDates.has(isoDateTime)) {
-            return cachedDates.get(isoDateTime) ?? null;
+        if (typeof isoDateTimeOrTimestamp === "number") {
+            const cacheKey = `${isoDateTimeOrTimestamp}`;
+
+            if (cachedDates.has(cacheKey)) {
+                return cachedDates.get(cacheKey)!;
+            }
+            else {
+                const rockDateTime = RockDateTime.fromMilliseconds(isoDateTimeOrTimestamp);
+                cachedDates.set(cacheKey, rockDateTime);
+                return rockDateTime;
+            }
         }
+        else if (typeof isoDateTimeOrTimestamp === "string") {
+            const cacheKey = isoDateTimeOrTimestamp;
 
-        const dateTime = RockDateTime.parseISO(isoDateTime);
-        cachedDates.set(isoDateTime, dateTime);
+            if (cachedDates.has(cacheKey)) {
+                return cachedDates.get(cacheKey) ?? null;
+            }
 
-        return dateTime;
+            const rockDateTime = RockDateTime.parseISO(isoDateTimeOrTimestamp);
+            cachedDates.set(cacheKey, rockDateTime);
+            return rockDateTime;
+        }
+        else {
+            return isoDateTimeOrTimestamp;
+        }
     }
 
     const parser: RockDateTimeParser = { parseRockDateTime };

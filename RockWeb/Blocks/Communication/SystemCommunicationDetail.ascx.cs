@@ -20,6 +20,7 @@ using System.Linq;
 using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
+using Rock.Cms.StructuredContent;
 using Rock.Communication;
 using Rock.Constants;
 using Rock.Data;
@@ -212,6 +213,10 @@ namespace RockWeb.Blocks.Communication
             emailTemplate.PushMessage = pushCommunication.PushMessage;
             emailTemplate.PushOpenAction = pushCommunication.PushOpenAction;
             emailTemplate.PushOpenMessage = pushCommunication.PushOpenMessage;
+
+            new StructuredContentHelper( pushCommunication.PushOpenMessageJson )
+                .DetectAndApplyDatabaseChanges( emailTemplate.PushOpenMessageJson, rockContext );
+
             emailTemplate.PushOpenMessageJson = pushCommunication.PushOpenMessageJson;
             emailTemplate.PushTitle = pushCommunication.PushTitle;
 

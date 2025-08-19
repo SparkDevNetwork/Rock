@@ -4,7 +4,7 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base Style
 //  + Panel list group
 //  + Table panel
@@ -46,8 +46,8 @@
   padding: var(--spacing-medium);
   &:before,
   &:after {
-    display: table; 
-    content: " "; 
+    display: table;
+    content: " ";
   }
   &:after {
     clear: both;
@@ -63,16 +63,16 @@
 
 // PANEL HEADING
 .panel-heading {
-  padding:                  14px 18px; 
+  padding:                  14px 18px;
   border-bottom:            1px solid transparent;
-  border-top-left-radius:   var(--rounded-medium);  
+  border-top-left-radius:   var(--rounded-medium);
   border-top-right-radius:  var(--rounded-medium);
   > .dropdown .dropdown-toggle {
     color: inherit;
   }
 }
 
-// PANEL TITLE 
+// PANEL TITLE
 .panel-title {
   margin-top:     0;
   margin-bottom:  0;
@@ -92,7 +92,7 @@
 .panel-footer {
   padding:                      var(--spacing-xsmall) var(--spacing-medium);
   border-top:                   1px solid var(--color-interface-soft);
-  border-bottom-right-radius:   3px;  
+  border-bottom-right-radius:   3px;
   border-bottom-left-radius:    3px;
   color:              var(--color-interface-stronger);
   background-color:   var(--color-interface-softer);
@@ -115,7 +115,7 @@
     &:first-child {
       .list-group-item:first-child {
         border-top:               0;
-        border-top-left-radius:   3px;  
+        border-top-left-radius:   3px;
         border-top-right-radius:  3px;
       }
     }
@@ -124,7 +124,7 @@
     &:last-child {
       .list-group-item:last-child {
         border-bottom:              0;
-        border-bottom-right-radius: 3px;  
+        border-bottom-right-radius: 3px;
         border-bottom-left-radius:  3px;
       }
     }
@@ -146,6 +146,13 @@
 .list-group + .panel-footer {
   border-top-width:   0;
 }
+
+ul.activeusers {
+    list-style: none;
+    margin-left: 0px;
+    padding-left: 0px;
+}
+
 // =================== END PANEL LIST GROUP ===================
 
 
@@ -165,22 +172,22 @@
   // Add border top radius for first one
   > .table:first-child,
   > .table-responsive:first-child > .table:first-child {
-      border-top-left-radius:       3px;  
+      border-top-left-radius:       3px;
       border-top-right-radius:      3px;
 
     > thead:first-child,
     > tbody:first-child {
       > tr:first-child {
-        border-top-left-radius:     3px;  
+        border-top-left-radius:     3px;
         border-top-right-radius:    3px;
 
         td:first-child,
         th:first-child {
-          border-top-left-radius:   3px;  
+          border-top-left-radius:   3px;
         }
         td:last-child,
         th:last-child {
-          border-top-right-radius:  3px; 
+          border-top-right-radius:  3px;
         }
       }
     }
@@ -189,22 +196,22 @@
   // Add border bottom radius for last one
   > .table:last-child,
   > .table-responsive:last-child > .table:last-child {
-    border-bottom-right-radius:       3px;  
+    border-bottom-right-radius:       3px;
     border-bottom-left-radius:        3px;
 
     > tbody:last-child,
     > tfoot:last-child {
       > tr:last-child {
-        border-bottom-right-radius:   3px; 
+        border-bottom-right-radius:   3px;
         border-bottom-left-radius:    3px;
 
         td:first-child,
         th:first-child {
-          border-bottom-left-radius:  3px; 
+          border-bottom-left-radius:  3px;
         }
         td:last-child,
         th:last-child {
-          border-bottom-right-radius: 3px; 
+          border-bottom-right-radius: 3px;
         }
       }
     }
@@ -322,6 +329,10 @@
 }
 }
 
+.panel-default:has(.dropdown-menu) { // Allows dropdown menus to overflow outside of Content Collection panel
+      overflow: visible;
+}
+
 .panel-primary {
   border-color:         var(--color-primary);
 
@@ -346,7 +357,7 @@
 }
 
 .panel-success {          // TODO Color is hard coded needs to change
-  border-color:         #cce0c1;    
+  border-color:         #cce0c1;
 
   & > .panel-heading {
     color:              var(--color-success-strong);
@@ -727,7 +738,7 @@
   > .panel-heading {
     &:before,
     &:after {
-      display:  table; 
+      display:  table;
       content:  " ";
     }
     &:after {
@@ -1002,7 +1013,7 @@
 }
 
 // copy from _rock_core.less, some of the nested class I join with the bootstrap panel class.
-.panel { 
+.panel {
   .panel-heading {
 
     .panel-header-actions {
@@ -1060,21 +1071,21 @@
     display:      flex;
     flex-wrap:    wrap;
     margin:       calc(var(--spacing-medium) * -1);
-  
+
     > .form-group {
       flex:           1 1 100%;
       border-bottom:  1px solid var(--color-interface-soft);
-  
+
       &:first-child {
         border-left: 0;
       }
-  
+
       @media (min-width: $screen-small) {
         flex:         1 1 auto;
         border-left:  1px solid var(--color-interface-soft);
       }
     }
-  
+
     .control-label {
       position:     absolute;
       z-index:      30;
@@ -1084,13 +1095,13 @@
       color:        var(--color-interface-strong);
       pointer-events: none;
     }
-  
+
     .btn,
     .btn-group,
     .dropdown-menu {
       width: 100%;
     }
-  
+
     .btn {
       display:          flex;
       justify-content:  space-between;

@@ -1,11 +1,17 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <span :class="`label label-${statusClassSource[row.inferredStatus]}`"
-          :data-original-title="approvedByTooltip"
-          :ref="applyTooltip">
+    <div :class="`label label-${statusClassSource[row.inferredStatus]} text-truncate communication-list-grid-cell-label`"
+         :data-original-title="approvedByTooltip"
+         :ref="applyTooltip">
         {{ InferredCommunicationStatusDescription[row.inferredStatus] }}
-    </span>
+    </div>
 </template>
+
+<style scoped>
+.communication-list-grid-cell-label {
+    display: block;
+}
+</style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";

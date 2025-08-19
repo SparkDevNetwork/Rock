@@ -29,6 +29,11 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationDetail
         public string OutcomeMessage { get; set; }
 
         /// <summary>
+        /// Gets or sets the permissions for this communication detail block.
+        /// </summary>
+        public CommunicationDetailPermissionsBag Permissions { get; set; }
+
+        /// <summary>
         /// Gets or sets the optional URL to which the client should be redirected.
         /// </summary>
         public string RedirectUrl { get; set; }

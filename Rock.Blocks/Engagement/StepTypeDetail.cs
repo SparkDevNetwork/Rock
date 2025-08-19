@@ -205,7 +205,7 @@ namespace Rock.Blocks.Engagement
             var stepType = GetStepType();
             var options = new StepTypeDetailOptionsBag()
             {
-                StepStatuses = GetStepStatuses( stepType ).ToListItemBagList(),
+                StepStatuses = GetStepStatusBagList( GetStepStatuses( stepType ) ),
                 TriggerTypes = new List<ListItemBag>
                 {
                     new ListItemBag() { Text = "Step Completed", Value = StepWorkflowTrigger.WorkflowTriggerCondition.IsComplete.ToString() },
@@ -231,6 +231,28 @@ namespace Rock.Blocks.Engagement
         }
 
         /// <summary>
+        /// Converts the list of <see cref="StepStatus"/> to a list of <see cref="StepStatusBag"/>.
+        /// </summary>
+        /// <param name="stepStatuses">List of Step Statuses</param>
+        /// <returns></returns>
+        private List<StepStatusBag> GetStepStatusBagList( List<StepStatus> stepStatuses )
+        {
+            if ( stepStatuses == null )
+            {
+                return new List<StepStatusBag>();
+            }
+
+            return stepStatuses
+                .Where( s => s != null )
+                .Select( s => new StepStatusBag
+                {
+                    StepStatus = s.ToListItemBag(),
+                    IsCompletionStatus = s.IsCompleteStatus
+                } )
+                .ToList();
+        }
+
+        /// <summary>
         /// Gets all active Step Programs that the current person has view permissions for.
         /// </summary>
         /// <returns>Step Programs in a list of list item bags</returns>
@@ -251,9 +273,13 @@ namespace Rock.Blocks.Engagement
                     StepProgram = s,
                     StepStatuses = s.StepStatuses
                         .Where( ss => ss.IsActive )
-                        .Select( ss => new ListItemBag {
-                            Text = ss.Name,
-                            Value = ss.Guid.ToString()
+                        .Select( ss => new StepStatusBag {
+                            StepStatus = new ListItemBag
+                            {
+                                Text = ss.Name,
+                                Value = ss.Guid.ToString()
+                            },
+                            IsCompletionStatus = ss.IsCompleteStatus
                         } )
                         .ToList()
                 } )
@@ -1483,7 +1509,7 @@ namespace Rock.Blocks.Engagement
             var currentStatuses = new StepStatusService( RockContext )
                 .Queryable()
                 .Where( ss => ss.StepProgramId == stepType.StepProgramId )
-                .Select( ss => new { ss.Guid, ss.Id, ss.Name } )
+                .Select( ss => new { ss.Guid, ss.Id, ss.Name, ss.IsCompleteStatus } )
                 .ToList();
 
             // Fetch all Step Statuses from the target Step Program
@@ -1493,12 +1519,14 @@ namespace Rock.Blocks.Engagement
             var targetStatuses = new StepStatusService( RockContext )
                 .Queryable()
                 .Where( ss => ss.StepProgramId == targetStepProgram.Id )
-                .ToDictionary( ss => ss.Guid, ss => ss.Id );
+                .Select( ss => new { ss.Guid, ss.Id, ss.Name, ss.IsCompleteStatus } )
+                .ToList();
 
             // Validate that every current status has a valid mapping
             // We loop over each status from the current program and check:
             //   - Does it have an entry in transferBag.StepStatusMappings?
             //   - Does the mapped Guid exist in the target program's statuses?
+            //   - Do the Completion Status flags match?
             // If either check fails, we return a descriptive error message.
             foreach ( var status in currentStatuses )
             {
@@ -1507,10 +1535,17 @@ namespace Rock.Blocks.Engagement
                     return ActionBadRequest( $"A mapping for status '{status.Name}' is required." );
                 }
 
-                var mappedGuid = mappedGuidString.AsGuid();
-                if ( !targetStatuses.ContainsKey( mappedGuid ) )
+                // Find exactly the mapped target status (and fail if it's missing)
+                var target = targetStatuses.FirstOrDefault( ts => ts.Guid == mappedGuidString.AsGuid() );
+                if ( target == null )
                 {
                     return ActionBadRequest( $"The mapped status for '{status.Name}' is not valid in the target program." );
+                }
+
+                // Final check: completion flag must match
+                if ( status.IsCompleteStatus != target.IsCompleteStatus )
+                {
+                    return ActionBadRequest( $"'{status.Name}' and its mapped status '{target.Name}' must have the same completion setting." );
                 }
             }
 
@@ -1528,8 +1563,8 @@ namespace Rock.Blocks.Engagement
                 if ( oldStatusGuid.HasValue
                      && transferBag.StepStatusMappings.TryGetValue( oldStatusGuid.Value.ToString(), out var mappedGuidString ) )
                 {
-                    var newStatusGuid = mappedGuidString.AsGuid();
-                    step.StepStatusId = targetStatuses[newStatusGuid];
+                    var target = targetStatuses.FirstOrDefault( ts => ts.Guid == mappedGuidString.AsGuid() );
+                    step.StepStatusId = target.Id;
                 }
             }
 

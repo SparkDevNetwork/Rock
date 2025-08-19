@@ -1,13 +1,19 @@
 // This files is being imported by './_font-styling-core.scss'
 
-.fa-spin,
-.ti-spin {
+.fa-spin {
     animation: fa-spin 2s infinite linear;
 }
+
+.ti-spin {
+    animation: ti-spin 2s infinite linear;
+}
   
-.fa-pulse,
-.ti-pulse {
+.fa-pulse {
     animation: fa-spin 1s infinite steps(8);
+}
+
+.ti-pulse {
+    animation: ti-spin 1s infinite steps(8);
 }
   
 @keyframes fa-spin {
@@ -17,4 +23,13 @@
     100% {
         transform: rotate(360deg);
     }
+}
+
+@keyframes ti-spin {
+  0% {
+    transform: rotate(360deg);
+  }
+  100% {
+    transform: rotate(0deg);
+  }
 }

@@ -1,47 +1,18 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
-    <div class="display-card-container">
+    <div class="displaycard-container">
         <template v-for="(entry, index) in decoratedChildren" :key="index">
             <div v-if="index > 0"
                  :class="[
-                    'display-card-connector',
-                    entry.showConnectorTip ? 'display-card-connector-tip' : '',
-                    !hasConnectors ? 'display-card-connector-transparent' : ''
+                    'displaycard-connector',
+                    entry.showConnectorTip ? 'displaycard-connector-tip' : '',
+                    !hasConnectors ? 'displaycard-connector-transparent' : ''
                 ]"></div>
 
             <component :is="entry.vnode" />
         </template>
     </div>
 </template>
-
-<style scoped>
-.display-card-connector {
-    width: 2px;
-    height: var(--spacing-medium);
-    background-color: var(--color-interface-soft);
-    margin: 0 auto;
-    position: relative;
-}
-
-.display-card-connector-tip::after {
-    content: "";
-    position: absolute;
-    bottom: 2px;
-    left: 50%;
-    transform: translateX(-50%) rotate(45deg);
-    width: 8px;
-    height: 8px;
-    border-bottom: 2px solid var(--color-interface-soft);
-    border-right: 2px solid var(--color-interface-soft);
-    background: transparent;
-}
-
-.display-card-connector-transparent,
-.display-card-connector-transparent::after {
-    border-color: transparent;
-    background-color: transparent;
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType, useSlots, VNode, VNodeTypes } from "vue";

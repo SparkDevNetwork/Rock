@@ -1,7 +1,7 @@
 <template>
-    <div class="list-group content-section-nav">
-        <div class="content-section-nav-header">
-            <h5 class="content-section-nav-header-title">Sections</h5>
+    <div class="list-group contentsection-nav">
+        <div class="contentsection-nav-header">
+            <h5 class="contentsection-nav-header-title">Sections</h5>
 
             <span style="position: relative;">
                 <button type="button" class="btn btn-action"
@@ -28,7 +28,7 @@
 
         <a v-for="section in sections"
            :href="`#${section.anchor.value}`"
-           class="list-group-item content-section-nav-link"
+           class="list-group-item contentsection-nav-link"
            :class="{ active: section.anchor.value === activeSectionId }"
            @click.prevent.stop="onOpenSectionClick(section)">
             <i v-if="section.icon.value" :class="section.icon.value"></i>
@@ -36,70 +36,6 @@
         </a>
     </div>
 </template>
-
-<style>
-.content-section-nav {
-    border: none;
-    border-radius: var(--rounded-medium);
-    padding: var(--spacing-xsmall);
-    background-color: var(--color-interface-softer);
-    position: sticky;
-    position: -webkit-sticky;
-    /* ← "pin" it 0px from the top of its scroll container */
-    top: 0;
-    /* keep it above your content as you scroll */
-    z-index: 10;
-}
-
-.content-section-nav > .content-section-nav-header {
-    width: 100%;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding-left: var(--spacing-xsmall);
-    margin-bottom: var(--spacing-tiny);
-}
-
-.content-section-nav > .content-section-nav-header-title {
-    color: var(--color-interface-medium);
-    font-size: var(--font-size-small);
-    padding-left: var(--spacing-small);
-}
-
-.content-section-nav > .content-section-nav-link {
-    border: none;
-    border-radius: var(--rounded-small);
-    background-color: transparent;
-    color: var(--color-interface-strong);
-    padding: var(--spacing-xsmall) var(--spacing-small);
-    font-weight: normal;
-    font-size: var(--font-size-small);
-    display: flex;
-    align-items: center;
-    margin-bottom: var(--spacing-tiny);
-}
-
-.content-section-nav > .list-group-item i.ti {
-    font-size: var(--font-size-regular);
-    margin-right: var(--spacing-xsmall);
-    color: var(--color-interface-strong);
-    align-self: center;
-}
-
-.content-section-nav > .list-group-item:hover {
-    background-color: var(--color-interface-softest);
-}
-
-.content-section-nav > .list-group-item.active {
-    background-color: var(--color-interface-softest);
-    font-weight: var(--font-weight-semibold);
-    color: var(--color-interface-strong);
-}
-
-.content-section-nav > .list-group-item.active i.ti {
-    color: var(--color-interface-strong);
-}
-</style>
 
 <script setup lang="ts">
     import { IContentSectionHolder } from "@Obsidian/Core/Controls/contentSection";
@@ -118,7 +54,7 @@
 
     // #region Values
 
-    const autoCollapse = ref(asBooleanOrNull(preferences.getValue("content-section-auto-collapse")) ?? true);
+    const autoCollapse = ref(asBooleanOrNull(preferences.getValue("contentsection-auto-collapse")) ?? true);
     const activeSectionId = ref(window.location.hash.replace("#", ""));
 
     // #endregion
@@ -160,7 +96,7 @@
     // #endregion
 
     watch(autoCollapse, () => {
-        preferences.setValue("content-section-auto-collapse", autoCollapse.value ? "true" : "false");
+        preferences.setValue("contentsection-auto-collapse", autoCollapse.value ? "true" : "false");
         preferences.save();
     });
 

@@ -257,6 +257,7 @@ import IconPickerGallery from "./ControlGallery/iconPickerGallery.partial.obs";
 import ContentStackGallery from "./ControlGallery/contentStackGallery.partial.obs";
 import ContentSectionGallery from "./ControlGallery/contentSectionGallery.partial.obs";
 import ContentSectionContainerGallery from "./ControlGallery/contentSectionContainerGallery.partial.obs";
+import LineChartGallery from "./ControlGallery/lineChartGallery.partial.obs";
 
 const controlGalleryComponents: Record<string, Component> = [
     NotificationBoxGallery,
@@ -454,6 +455,7 @@ const controlGalleryComponents: Record<string, Component> = [
     ContentStackGallery,
     ContentSectionGallery,
     ContentSectionContainerGallery,
+    LineChartGallery
 ]
     // Fix vue 3 SFC putting name in __name.
     .map(a => {

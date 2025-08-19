@@ -260,20 +260,15 @@ namespace Rock.Blocks.Cms
                     return ActionNotFound();
                 }
 
-                var result = new PersistedDataset.UpdateResult()
-                {
-                    IsSuccess = persistedDataset.LastRefreshDateTime != null
-                };
-
                 // Ensure data is refreshed if needed
                 if ( persistedDataset.LastRefreshDateTime == null )
                 {
-                    result = persistedDataset.UpdateResultData();
-                }
+                    var result = persistedDataset.UpdateResultData();
 
-                if ( !result.IsSuccess && !persistedDataset.ResultData.IsNullOrWhiteSpace() )
-                {
-                    return ActionBadRequest( result.WarningMessage );
+                    if ( !result.IsSuccess && persistedDataset.ResultData.IsNullOrWhiteSpace() )
+                    {
+                        return ActionBadRequest( result.WarningMessage );
+                    }
                 }
 
                 // Get max preview size from block settings (default 1MB)
@@ -291,7 +286,7 @@ namespace Rock.Blocks.Cms
                 }
 
                 var preViewObject = persistedDataset.ResultData.FromJsonDynamic().ToJson( true );
-                string refreshMaxLengthWarning = preViewObject?.Length < maxPreviewSizeLength
+                string refreshMaxLengthWarning = preViewObject?.Length > maxPreviewSizeLength
                     ? string.Format( "JSON size is {0}. Showing first {1}.", preViewObject?.Length.FormatAsMemorySize(), maxPreviewSizeLength.FormatAsMemorySize() )
                     : null;
 

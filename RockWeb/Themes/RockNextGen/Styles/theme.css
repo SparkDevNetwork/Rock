@@ -1150,9 +1150,9 @@ a.rock-bookmark {
   #splash #content {
     margin-top: 10vh;
     grid-template-columns: 1fr;
-    grid-template-rows: 8fr 10fr;
+    grid-template-rows: 4fr 10fr;
     gap: 0;
-    min-width: 480px;
+    min-width: 380px;
     width: 80vw;
   }
 }
@@ -1163,8 +1163,8 @@ a.rock-bookmark {
   justify-content: center;
   border-radius: var(--rounded-large);
   background-color: var(--color-primary);
-  height: -webkit-fill-available;
-  width: -webkit-fill-available;
+  height: 100%;
+  width: 100%;
   grid-column: 1/2;
   grid-row: 1/2;
   z-index: 1001;

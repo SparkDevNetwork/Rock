@@ -24,6 +24,8 @@
   --base-warning: #E58600;
   --base-link: #006DCC;
   --base-secondary: #83758F;
+  --base-gender-male:   #1A8AE5;
+  --base-gender-female: #DE69C3;
 
   // INTERFACE COLORS
   --color-interface-strongest: var(--base-interface-strongest);
@@ -137,10 +139,12 @@
   --rounded-huge: 24px;
   --box-shadow: ~"rgba(145, 158, 171, 0.2) 0px 0px 2px 0px,rgba(145, 158, 171, 0.12) 0px 12px 24px -4px";
   // GENDER COLORS
+  /*
   --color-gender-male-bg: #E8F3FC;
   --color-gender-female-bg: #FCE8FA;
   --color-gender-male-text: #1A8AE5;
   --color-gender-female-text: #DE69C3;
+  */
 
   /*
       Legacy CSS Variables Below
@@ -210,6 +214,12 @@
     --color-link-shade: ~"color-mix(in srgb, var(--base-link) 100%, #000 var(--shade-black-percentage))";
     --color-secondary-tint: ~"color-mix(in srgb, var(--base-secondary) 50%, transparent var(--tint-white-percentage))";
     --color-secondary-shade: ~"color-mix(in srgb, var(--base-secondary) 100%, #000 var(--shade-black-percentage))";
+    --color-gender-male-tint:   ~"color-mix(in srgb, var(--base-gender-male) 50%, transparent var(--tint-white-percentage))";
+    --color-gender-male-soft:   ~"color-mix(in srgb, var(--base-gender-male) 7%, transparent var(--tint-white-percentage))";
+    --color-gender-male-shade:  ~"color-mix(in srgb, var(--base-gender-male) 100%, #000 var(--shade-black-percentage))";
+    --color-gender-female-tint:   ~"color-mix(in srgb, var(--base-gender-female) 50%, transparent var(--tint-white-percentage))";
+    --color-gender-female-soft:   ~"color-mix(in srgb, var(--base-gender-female) 7%, transparent var(--tint-white-percentage))";
+    --color-gender-female-shade:  ~"color-mix(in srgb, var(--base-gender-female) 100%, #000 var(--shade-black-percentage))";
   }
 }
 
@@ -330,7 +340,7 @@ iframe {
 
 // context help
 a.help {
-  margin-left: 6px;
+  margin-left: 2px;
   color: @help-color;
   outline: 0;
 }
@@ -600,7 +610,7 @@ th[align="right"] {
     .panel-header-actions {
       margin-right: 1rem !important;
     }
-    
+
     .panel-title {
       small {
         opacity: .5;

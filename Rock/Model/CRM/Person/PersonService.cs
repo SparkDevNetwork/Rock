@@ -3068,7 +3068,7 @@ namespace Rock.Model
         /// <returns>
         /// A <see cref="Dictionary{TKey, TValue}"/> where:
         /// <list type="bullet">
-        ///   <item><description><c>TKey</c> = the <see cref="Person.Id"/> of the person (not the spouse).</description></item>
+        ///   <item><description><c>TKey</c> = the <see cref="IEntity.Id"/> of the person (not the spouse).</description></item>
         ///   <item><description><c>TValue</c> = the spouse’s full name as a <see cref="string"/>.</description></item>
         /// </list>
         /// Only people meeting the spouse criteria will be included in the dictionary.

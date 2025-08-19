@@ -2,12 +2,12 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Normalization
 //  + Form control
 //  + Form group, help block, form-inline
 //  + Check box, radio
-//  + Sizing Form control 
+//  + Sizing Form control
 //  + Feedback states
 //  + Horizontal Form
 // =============================================================
@@ -139,9 +139,9 @@ output {
   // Placeholder
   &::-moz-placeholder {
     color:      var(--color-interface-strong);
-    opacity:    1; 
+    opacity:    1;
   }
-  &:-ms-input-placeholder { color: var(--color-interface-strong); } 
+  &:-ms-input-placeholder { color: var(--color-interface-strong); }
   &::-webkit-input-placeholder  { color: var(--color-interface-strong); }
 
   // Unstyle the caret on `<select>`s in IE10+.
@@ -178,7 +178,7 @@ output {
     margin-right: var(--spacing-medium);
     align-items:  center;
   }
-  
+
   > .row,
   > .form-row,
   > .form-group {
@@ -275,8 +275,8 @@ output {
 
   &:before,
   &:after {
-    display:  table; 
-    content:  " "; 
+    display:  table;
+    content:  " ";
   }
   &:after {
     clear:    both;
@@ -297,8 +297,8 @@ output {
 
   &:before,
   &:after {
-    display: table; 
-    content: " "; 
+    display: table;
+    content: " ";
   }
   &:after {
     clear: both;
@@ -320,17 +320,17 @@ output {
   padding-top: 0;
 }
 
-// Moved from _checkin-core.less 
-.form-group.required {
-  .control-label::after {
-    margin-left:    var(--spacing-tiny);
-    font-family:    'FontAwesome';
-    font-size:      6px;
-    font-weight:    var(--font-weight-black);
-    color:          var(--color-danger-strong);
-    vertical-align: super;
-    content:        '\f111';
-  }
+// Moved from _checkin-core.less
+.form-group.required > .control-label::before {
+  margin-right:    var(--spacing-tiny);
+  background-color: var(--color-danger-strong);
+  width: 6px;
+  height: 6px;
+  display: inline-block;
+  border-radius: 50%;
+  content:        '';
+  position: relative;
+  transform: translateY(-30%);
 }
 // ===============
 // ===================== END FORM CONTROL =====================
@@ -511,9 +511,13 @@ select.form-control {
 }
 
 a.help {
-  margin-left:  6px;
-  color:        var(--color-info-strong);
+  margin-left:  var(--spacing-tiny);
+  color:        var(--color-interface-medium);
   outline:      0;
+}
+
+a.help i {
+  font-size: 15px;
 }
 
 a.warning {
@@ -890,7 +894,7 @@ a.warning {
     .form-control {
       float: left;
     }
-    
+
     &:before,
     &:after {
       display: table;
@@ -983,7 +987,7 @@ a.warning {
         min-height: 1px;
         padding-right: calc(30px / 2);
         padding-left: calc(30px / 2);
-      
+
         @media (min-width: $screen-small) {
           float: left;
           width: calc((10 / 12) * 100%);
@@ -999,7 +1003,7 @@ a.warning {
         min-height: 1px;
         padding-right: calc(30px / 2);
         padding-left: calc(30px / 2);
-      
+
         @media (min-width: $screen-small) {
           float: left;
           width: calc((4 / 12) * 100%);
@@ -1010,7 +1014,7 @@ a.warning {
         min-height: 1px;
         padding-right: calc(30px / 2);
         padding-left: calc(30px / 2);
-      
+
         @media (min-width: $screen-small) {
           float: left;
           width: calc((8 / 12) * 100%);
@@ -1053,7 +1057,7 @@ a.warning {
         min-height: 1px;
         padding-right: calc(30px / 2);
         padding-left: calc(30px / 2);
-      
+
         @media (min-width: $screen-small) {
           float: left;
           width: calc((8 / 12) * 100%);
@@ -1064,7 +1068,7 @@ a.warning {
         min-height: 1px;
         padding-right: calc(30px / 2);
         padding-left: calc(30px / 2);
-      
+
         @media (min-width: $screen-small) {
           float: left;
           width: calc((4 / 12) * 100%);

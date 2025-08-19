@@ -32,5 +32,15 @@ namespace Rock.SystemGuid
         /// Baptism Step Type
         /// </summary>
         public const string BAPTISM = "801cc43c-0641-4271-939e-75e428f31d06";
+
+        /// <summary>
+        /// Small Group Step Type
+        /// </summary>
+        public const string SMALL_GROUP = "EFA15A4F-5666-4153-B92F-AF3ECD73C504";
+
+        /// <summary>
+        /// Serve Step Type
+        /// </summary>
+        public const string SERVE = "71E66730-8F7D-4EEF-9C53-524C4BDE5E59";
    }
 }

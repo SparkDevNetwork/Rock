@@ -5,306 +5,624 @@
 <script setup lang="ts">
     import { computed, PropType } from "vue";
     import Chart from "./chart.obs";
-    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
-    import { ChartData, ChartDataset, ChartOptions, Point } from "chart.js";
-    import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
+    import { LabelDateFormat, LegendAlign, LegendPosition, LineSeries, LineStyle } from "@Obsidian/Core/Controls/chart";
+    import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
+    import { ChartData, ChartOptions, Color, LegendItem, ScriptableContext, TooltipItem, TooltipLabelStyle } from "@Obsidian/Libs/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { isNullish } from "@Obsidian/Utility/util";
 
-    type ChartStyles = {
-        fontFamily: string;
-        fontColor: string;
-        fontSize: number;
-        fontWeight: string;
-        legendBoxSize: number;
-        fallbackColor: string;
-    };
-
-    type LegendConfig = {
-        hide?: boolean;
-        position?: "top" | "bottom" | "left" | "right";
-    };
-
-    type LabelAxisConfig = {
-        type?:
-        | "string"
-        | "date.day"
-        | "date.week"
-        | "date.month"
-        | "date.year";
-    };
-
-    type ValueAxisConfig = {
-        type?: "number" | "percent";
-        maxDecimalPlaces?: number;
-        limits?: {
-            min?: number;
-            max?: number;
-        };
-        ticks?: {
-            coarse?: number;
-            fine?: number;
-        };
-        tooltip?: (label: string, value: number, formattedValue: string) => string | null | undefined;
-    };
-
-    type AxesConfig = {
-        label?: LabelAxisConfig;
-        value?: ValueAxisConfig;
-    };
+    const defaultLegendIsHidden = false;
+    const defaultLegendPosition = LegendPosition.Bottom;
+    const defaultLegendAlign = LegendAlign.Center;
 
     const props = defineProps({
-        modelValue: {
-            type: Array as PropType<ChartNumericDataPointBag[]>,
+        /**
+         * The series data to display in the chart.
+         */
+        data: {
+            type: Array as PropType<LineSeries[]>,
             required: true
         },
 
-        axes: {
-            type: Object as PropType<AxesConfig | null | undefined>,
-            default: ({
-                label: { type: "string" },
-                value: { type: "number" }
-            })
+        /**
+         * Whether the legend is hidden.
+         */
+        hideLegend: {
+            type: Object as PropType<boolean | undefined>
         },
 
-        legend: {
-            type: Object as PropType<LegendConfig | null | undefined>
+        /**
+         * The format to use for the date labels.
+         *
+         * When set, `labels` is treated as an array of ISO date strings.
+         */
+        labelDateFormat: {
+            type: String as PropType<LabelDateFormat | undefined>
         },
 
-        seriesSort: {
-            type: Object as PropType<((a: string, b: string) => number) | string[] | null | undefined>
+        /**
+         * When supplying date strings, they MUST be in ISO format and you MUST set `labelDateFormat`.
+         */
+        labels: {
+            type: Array as PropType<string[]>,
+            required: true
         },
 
+        /**
+         * The alignment of the legend in the chart.
+         */
+        legendAlign: {
+            type: Object as PropType<LegendAlign | null | undefined>
+        },
+
+        /**
+         * The position of the legend in the chart.
+         */
+        legendPosition: {
+            type: Object as PropType<LegendPosition | undefined>
+        },
+
+        /**
+         * Whether the chart has linear connections between data points.
+         *
+         * The per series property, `props.data[n].isLinear`, overrides this setting.
+         */
+        linear: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The line style to use for the chart.
+         *
+         * The per series property, `props.data[n].lineStyle`, overrides this setting.
+         */
+        lineStyle: {
+            type: String as PropType<LineStyle | undefined>
+        },
+
+        /**
+         * Whether the chart has stacked lines.
+         */
+        stacked: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The title of the chart.
+         */
         title: {
-            type: String as PropType<string | null | undefined>,
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The type of data represented in the chart.
+         *
+         * For "percent", the data MUST be in decimal form (e.g., 0.1 for 10%).
+         */
+        type: {
+            type: String as PropType<"number" | "percent">,
+            default: "number"
+        },
+
+        /**
+         * Whether the chart has unfilled areas.
+         *
+         * The per series property, `props.data[n].isUnfilled`, overrides this setting.
+         */
+        unfilled: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The x-axis label.
+         */
+        xLabel: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The maximum number of ticks to show on the x-axis.
+         */
+        xMaxTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * Whether to show the x-axis grid lines. Hidden by default.
+         */
+        xShowGridLines: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * Whether to hide the y-axis grid lines. Shown by default.
+         */
+        yHideGridLines: {
+            type: Boolean as PropType<boolean | undefined>
+        },
+
+        /**
+         * The y-axis label.
+         */
+        yLabel: {
+            type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The maximum number of ticks to show on the y-axis.
+         */
+        yMaxTickCount: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The minimum value to display in the y-axis if there is nothing lower.
+         *
+         * This is useful for controlling the starting point of the y-axis.
+         * The actual minimum value will be used if there is a lower value present.
+         */
+        ySuggestedMin: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The maximum value to display in the y-axis if there is nothing higher.
+         *
+         * This is useful for controlling the ending point of the y-axis.
+         * The actual maximum value will be used if there is a higher value present.
+         */
+        ySuggestedMax: {
+            type: Number as PropType<number | undefined>
+        },
+
+        /**
+         * The number of ticks to show on the y-axis.
+         *
+         * This overrides `yMinTickCount` and `yMaxTickCount`.
+         */
+        yTickCount: {
+            type: Number as PropType<number | undefined>
         }
     });
 
     // #region Computed Values
 
-    const seriesSortFunction = computed<((a: string, b: string) => number) | undefined>(() => {
-        const seriesSort = props.seriesSort;
-        if (seriesSort) {
-            if (Array.isArray(seriesSort)) {
-                return (a, b) => {
-                    return seriesSort.indexOf(a) - seriesSort.indexOf(b);
-                };
+    const internalYSuggestedMin = computed<number | undefined>(() => {
+        // Use the supplied ySuggestedMin if present,
+        // otherwise default to 0.0 (0%) for percent charts (based on min value).
+        if (!isNullish(props.ySuggestedMin)) {
+            return props.ySuggestedMin;
+        }
+
+        if (props.type === "percent") {
+            const min = Enumerable.from(props.data)
+                .selectMany(s => s.data)
+                .min(d => d ?? 0);
+
+            if (!min || min > 0) {
+                // Min is nullish, 0, or greater than 0, so return 0.0 (0%).
+                return 0;
             }
-            else {
-                return seriesSort;
-            }
+
+            // Convert the decimal value, 0.11, to an integer percentage, 11.
+            const minInteger = Math.floor(min * 100);
+
+            // Get the next 10s digit.
+            const nextTens = Math.floor(minInteger / 10) * 10;
+
+            // Convert back to a decimal.
+            return nextTens / 100;
         }
     });
 
-    const chartStyles = computed<ChartStyles>(() => {
-        return {
-            fontFamily: getCssVar("--font-family-sans-serif", '-apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif, "Apple Color Emoji", "Segoe UI Emoji", "Segoe UI Symbol"'),
-            fontColor: getCssVar("--color-interface-stronger", "#0D1117"),
-            fontSize: parseInt(getCssVar("--font-size-small", "14")),
-            fontWeight: getCssVar("--font-weight-semibold", "600"),
-            legendBoxSize: parseInt(getCssVar("--spacing-large", "24")),
-            fallbackColor: "#8e8e93"
-        };
+    const internalYSuggestedMax = computed<number | undefined>(() => {
+        // Use the supplied ySuggestedMax if present,
+        // otherwise default to the next highest 10s digit for percent charts,
+        // (e.g., 0.7 for 70% if the highest value is 0.67).
+        if (!isNullish(props.ySuggestedMax)) {
+            return clamp(props.ySuggestedMax, 0);
+        }
+
+        if (props.type === "percent") {
+            const max = Enumerable.from(props.data)
+                .selectMany(s => s.data)
+                .max(d => d ?? 0);
+
+            if (!max) {
+                // Max is nullish or 0, so return 1.0 (100%).
+                return 1;
+            }
+
+            // Convert the decimal value, 0.11, to an integer percentage, 11.
+            const maxInteger = Math.ceil(max * 100);
+
+            // Get the next 10s digit.
+            const nextTens = Math.ceil(maxInteger / 10) * 10;
+
+            // Convert back to a decimal.
+            return nextTens / 100;
+        }
+    });
+
+    const internalLabelDateFormat = computed<"day" | "week" | "month" | "year" | undefined>(() => {
+        if (!props.labelDateFormat) {
+            // No label date format specified,
+            // so assume the labels are categorical, not date strings.
+            return;
+        }
+
+        if (props.labelDateFormat !== LabelDateFormat.Auto) {
+            return props.labelDateFormat;
+        }
+
+        // Use the date unit to determine the label format.
+        const uniqueRockDateTimes = Enumerable
+            .from(props.labels ?? [])
+            .select(label => RockDateTime.parseISO(label))
+            .ofType<RockDateTime>((rockDateTime): rockDateTime is RockDateTime => !isNullish(rockDateTime))
+            .select(rockDateTime => rockDateTime.date)
+            .distinctBy(rockDateTime => rockDateTime.toMilliseconds())
+            .toArray();
+
+        // If there are more than two years then use years.
+        const uniqueYears = Enumerable
+            .from(uniqueRockDateTimes)
+            .select(r => r.year)
+            .distinct()
+            .count();
+
+        if (uniqueYears > 2) {
+            return "year";
+        }
+
+        // If there are more than four unique year+month combinations then use months.
+        const uniqueYearAndMonths = Enumerable
+            .from(uniqueRockDateTimes)
+            .select(r => `${r.year}+${r.month}`)
+            .distinct()
+            .count();
+
+        if (uniqueYearAndMonths > 4) {
+            return "month";
+        }
+
+        // If there are between one and four unique year+month combinations then use weeks.
+        if (uniqueYearAndMonths >= 1) {
+            return "week";
+        }
+
+        return "day";
+    });
+
+    const internalLabels = computed<string[]>(() => {
+        if (!internalLabelDateFormat.value) {
+            // No date format specified, so return the original labels.
+            return props.labels;
+        }
+
+        // Map the original labels to their formatted date strings
+        // without timezone so luxon can parse them correctly.
+        return Enumerable
+            .from(props.labels)
+            .select(label => {
+                const rockDateTime = RockDateTime.parseISO(label);
+
+                if (!rockDateTime) {
+                    // label is not a valid ISO date string so return it without modification.
+                    console.warn(`Invalid ISO date string: ${label}`);
+                    return label;
+                }
+                else {
+                    return rockDateTime.toASPString("yyyy-MM-ddTHH:mm:ss");
+                }
+            })
+            .toArray();
     });
 
     const chartData = computed<ChartData<"line">>(() => {
-        const dataPointsEnumerable = Enumerable.from(props.modelValue);
-
-        const labels = dataPointsEnumerable
-            .select(d => d.label)
-            .ofType((d): d is string => !isNullish(d))
-            .distinct()
-            .toArray();
-
-        let groupedBySeries = dataPointsEnumerable
-            .groupBy(d => d.seriesName)
-            .ofType((group): group is GroupedEnumerable<string, ChartNumericDataPointBag> => {
-                return !isNullish(group.key);
-            });
-
-        if (seriesSortFunction.value) {
-            groupedBySeries = groupedBySeries
-                .orderBy(group => group.key, seriesSortFunction.value);
-        }
-
         return {
-            labels,
-            datasets: groupedBySeries
-                .select<ChartDataset<"line", (number | Point | null)[]>>(group => {
-                    // Convert to an array once so the grouped enumerable isn't iterated multiple times.
-                    const groupArray = group.toArray();
-                    const seriesDataColors = Enumerable.from(groupArray).select(d => d.color ?? chartStyles.value.fallbackColor).toArray();
-                    const dataDictionary = Enumerable.from(groupArray).toDictionary(d => d.label, d => d.value);
+            labels: internalLabels.value,
+            datasets: props.data.map((series, index) => {
+                const seriesColor = series.color ?? getCategoricalColor(index + 1);
+                const isUnfilled = series.isUnfilled ?? props.unfilled;
+                const isLinear = series.isLinear ?? props.linear;
+                const lineStyle = series.lineStyle ?? props.lineStyle;
 
-                    // Data points are ordered by the labels,
-                    // and if a label is missing in the data,
-                    // it will use the last value.
-                    // This fills in the gaps to create a smooth line.
-                    let lastValue = 0;
-                    const data = Enumerable.from(labels)
-                        .select(label => {
-                            if (dataDictionary.has(label)) {
-                                lastValue = dataDictionary.get(label)!;
-                            }
+                return {
+                    label: series.label,
+                    data: series.data,
 
-                            return lastValue;
-                        })
-                        .toArray();
+                    // Line color.
+                    borderColor: seriesColor,
 
-                    return {
-                        label: group.key,
-                        data,
-                        backgroundColor: seriesDataColors,
-                        borderColor: seriesDataColors
-                    };
-                })
-                .toArray()
+                    // Fill with a gradient by default (only shown when fill is true).
+                    // For a stacked line chart, use a solid background color.
+                    fill: isUnfilled !== true,
+                    backgroundColor:
+                        props.stacked ? seriesColor
+                            : isUnfilled !== true
+                                ? (ctx: ScriptableContext<"line">) => getGradientFillColor(ctx, seriesColor)
+                                : seriesColor,
+
+                    // Use dotted, dashed, or solid line styles.
+                    // For dotted, also set the border width to the same size as the dot to give a circular appearance.
+                    // For stacked, filled, solid lines, use thin lines.
+                    borderDash:
+                        lineStyle === LineStyle.Dotted ? [2, 2] // Border width is set to 2 as well
+                            : lineStyle === LineStyle.Dashed ? [5, 3]
+                                : undefined,
+                    borderWidth:
+                        lineStyle === LineStyle.Dotted ? 2
+                            : (props.stacked && !isUnfilled && (!lineStyle || lineStyle === LineStyle.Solid)) ? 1
+                                : 3,
+
+                    // Make the line segments between points curved or straight.
+                    //tension: isLinear !== true ? 1 : 0,
+                    cubicInterpolationMode: !isLinear ? "monotone" : "default",
+
+                    // To make points visible only on hover,
+                    // set the colors to "transparent" and the hover colors to the series color.
+                    // This is the way as going the `options.elements.point.radius: 0` route
+                    // causes hovered points to be clipped when they are min or max values.
+                    pointBackgroundColor: Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
+                    pointBorderColor: Enumerable.from(series.data).where(d => typeof d === "number").count() > 1 ? "transparent" : seriesColor,
+                    pointHoverBackgroundColor: seriesColor,
+                    pointHoverBorderColor: seriesColor,
+                };
+            })
         };
     });
 
     const chartOptions = computed<ChartOptions<"line">>(() => {
         return {
+            // Allow the chart to change size with the parent container.
             responsive: true,
             maintainAspectRatio: false,
+
+            // Make it easier to interact and hover over points by using the nearest point mode.
+            interaction: {
+                // `mode: "nearest"` finds the nearest point to the X and Y coordinates of the cursor.
+                // Use `mode: "index"` when using a stacked line chart so all points nearest to the X coordinate are selected.
+                mode: props.stacked ? "index" : "nearest",
+                // `intersect: false` means hover will occur on the nearest point.
+                // `true` means hover will occur only when the cursor is directly over a point.
+                intersect: false
+            },
+
             plugins: {
+                legend: {
+                    display: !((props.hideLegend ?? defaultLegendIsHidden) === true),
+                    position: props.legendPosition ?? defaultLegendPosition,
+                    align: props.legendAlign ?? defaultLegendAlign,
+                    labels: {
+                        // `usePointStyle: true` removes the boxes next to each legend item
+                        // and uses "points" instead. Control the "point" shape inside the
+                        // `generateLabels` callback.
+                        usePointStyle: true,
+                        generateLabels: (chart) => {
+                            const data = chart.data;
+                            if (!data || !data.datasets) {
+                                return [];
+                            }
+
+                            const labelColor = chart.legend?.options.labels.color;
+
+                            return Enumerable
+                                .from(data.datasets)
+                                .withIndex()
+                                .select<LegendItem>(([dataset, index]) => {
+                                    return {
+                                        text: dataset.label ?? "",
+                                        pointStyle: "line",
+                                        strokeStyle: dataset.borderColor as Color,
+                                        hidden: !chart.isDatasetVisible(index),
+                                        datasetIndex: index,
+                                        lineWidth: 4, // Line thickness
+                                        fontColor: labelColor,
+                                        lineCap: "round"
+                                    };
+                                })
+                                .toArray();
+                        }
+                    }
+                },
+
                 title: {
                     display: !!props.title,
-                    text: props.title ?? undefined,
-                    color: chartStyles.value.fontColor,
-                    font: {
-                        family: chartStyles.value.fontFamily,
-                        size: chartStyles.value.fontSize,
-                        weight: chartStyles.value.fontWeight
-                    }
+                    text: props.title ?? undefined
                 },
-                legend: {
-                    position: props.legend?.position ?? "bottom",
-                    labels: {
-                        boxWidth: chartStyles.value.legendBoxSize,
-                        boxHeight: chartStyles.value.legendBoxSize,
-                        font: {
-                            family: chartStyles.value.fontFamily,
-                            size: chartStyles.value.fontSize,
-                            weight: chartStyles.value.fontWeight
-                        },
-                        color: chartStyles.value.fontColor
-                    }
-                },
-                tooltip: props.axes?.value?.tooltip
-                    ? {
-                        callbacks: {
-                            label: context => {
-                                const label = context.dataset.label ?? "";
-                                const value = context.parsed.y;
-                                //const formattedValue = context.formattedValue; // This is not formatted as a percent.
-                                const formattedValue = props.axes?.value?.type === "percent"
-                                    ? value.toLocaleString(undefined, { style: "percent", maximumFractionDigits: props.axes?.value?.maxDecimalPlaces })
-                                    : value.toLocaleString(undefined, { maximumFractionDigits: props.axes?.value?.maxDecimalPlaces });
-                                const tooltip = props.axes?.value?.tooltip?.(label, value, formattedValue);
 
-                                if (tooltip) {
-                                    return tooltip;
-                                }
+                tooltip: {
+                    // Remove colored box preceding the value.
+                    //displayColors: false,
+                    // Place tooltip above the data point.
+                    //yAlign: "bottom",
+                    callbacks: {
+                        title: internalLabelDateFormat.value
+                            ? (tooltipItems: TooltipItem<"line">[]) => {
+                                const chart = tooltipItems[0].chart;
+                                const unit = chart.options.scales?.x?.["time"].unit ?? "day";
+                                const format = chart.options.scales?.x?.["time"].displayFormats[unit] ?? "MMM d, yyyy";
+
+                                return chart.scales.x.ticks.find(t => t.value === tooltipItems[0].parsed.x)?.label
+                                    // If the ticks have `autoSkip: true`, the label may be undefined above.
+                                    // In that case, try to format the value manually using the date adapter.
+                                    ?? chart.scales.x?.["_adapter"]?.format(tooltipItems[0].parsed.x, format)
+                                    // Fallback to the original label.
+                                    ?? tooltipItems[0].label;
                             }
+                            : undefined,
+
+                        // For "percent" values, use the appropriate locale percent formatting.
+                        label:
+                            props.type === "percent"
+                                ? (context) => {
+                                    let label = context.dataset.label ?? "";
+
+                                    if (label) {
+                                        label += ": ";
+                                    }
+
+                                    if (!isNullish(context.parsed.y)) {
+                                        label += context.parsed.y.toLocaleString(
+                                            undefined,
+                                            { style: "percent", maximumFractionDigits: 0 }
+                                        );
+                                    }
+
+                                    return label;
+                                }
+                                : undefined,
+
+                        labelColor: (context): TooltipLabelStyle => {
+                            return {
+                                borderColor: context.dataset.borderColor as Color,
+                                backgroundColor: context.dataset.borderColor as Color
+                            };
                         }
                     }
-                    : {
-                        callbacks: {
-                            label: context => {
-                                let label = context.dataset.label || "";
-
-                                if (label) {
-                                    label += ": ";
-                                }
-
-                                if (context.parsed.y !== null) {
-                                    if (props.axes?.value?.type === "percent") {
-                                        label += context.parsed.y.toLocaleString(undefined, { style: "percent", maximumFractionDigits: props.axes?.value?.maxDecimalPlaces });
-                                    }
-                                    else {
-                                        label += context.parsed.y.toLocaleString(undefined, { maximumFractionDigits: props.axes?.value?.maxDecimalPlaces });
-                                    }
-                                }
-
-                                return label;
-                            }
-                        }
-                    }
+                }
             },
             scales: {
-                x: props.axes?.label?.type?.startsWith("date")
-                    ? {
-                        type: "time",
-                        time: {
-                            unit: props.axes.label.type.split(".")[1] as "day" | "week" | "month"
-                        }
-                    }
-                    : undefined,
-                y: {
-                    beginAtZero: true,
-                    min: props.axes?.value?.limits?.min,
-                    max: props.axes?.value?.limits?.max,
+                x: {
+                    title: {
+                        display: !!props.xLabel,
+                        text: props.xLabel ?? undefined
+                    },
                     ticks: {
-                        stepSize: stepSize.value,
-                        callback: tickValue => {
-                            if (typeof tickValue !== "number") {
-                                tickValue = Number(tickValue);
-                            }
-
-                            if (isNaN(tickValue)) {
-                                // If it's not a number, return the original value.
-                                return `${tickValue}`;
-                            }
-                            else if (props.axes?.value?.type === "percent") {
-                                return tickValue.toLocaleString(undefined, { style: "percent", maximumFractionDigits: props.axes?.value?.maxDecimalPlaces });
-                            }
-                            else {
-                                return tickValue.toLocaleString(undefined, { maximumFractionDigits: props.axes?.value?.maxDecimalPlaces });
-                            }
+                        autoSkip: true,
+                        autoSkipPadding: 10,
+                        minRotation: 45,
+                        maxTicksLimit: clamp(props.xMaxTickCount, 0)
+                    },
+                    grid: {
+                        // Hide x-axis grid lines by default
+                        display: props.xShowGridLines === true
+                    },
+                    type: internalLabelDateFormat.value ? "timeseries" : "category",
+                    time: internalLabelDateFormat.value ? {
+                        unit: internalLabelDateFormat.value,
+                        minUnit: internalLabelDateFormat.value,
+                        displayFormats: {
+                            day: "M/d/yy",
+                            week: "MMM d, yyyy",
+                            month: "MMM yyyy",
+                            year: "yyyy"
                         }
                     }
+                        : undefined
+                },
+                y: {
+                    beginAtZero: internalYSuggestedMin.value === 0,
+
+                    grid: {
+                        display: props.yHideGridLines !== true
+                    },
+
+                    stacked: props.stacked,
+
+                    // Use `suggestedMin` and `suggestedMax` instead of `min` and `max`
+                    // so points that are close to the edges are not cropped.
+                    // min: props.min ?? undefined,
+                    // max: props.max ?? undefined,
+                    suggestedMin: internalYSuggestedMin.value ?? undefined,
+                    suggestedMax: internalYSuggestedMax.value ?? undefined,
+
+                    ticks: {
+                        count: clamp(props.yTickCount, 0),
+                        maxTicksLimit: clamp(props.yMaxTickCount, 0),
+                        callback: props.type === "percent"
+                            ? (tickValue) => {
+                                if (typeof tickValue !== "number") {
+                                    tickValue = Number(tickValue);
+                                }
+
+                                if (isNaN(tickValue)) {
+                                    // If it's not a number, return the original value.
+                                    return `${tickValue}`;
+                                }
+                                else {
+                                    return tickValue.toLocaleString(
+                                        undefined,
+                                        { style: "percent", maximumFractionDigits: 0 }
+                                    );
+                                }
+                            }
+                            : undefined
+                    },
+
+                    title: {
+                        display: !!props.yLabel,
+                        text: props.yLabel ?? undefined
+                    },
                 }
             }
         };
-    });
-
-    const stepSize = computed<number | undefined>(() => {
-        const coarseTicks = props.axes?.value?.ticks?.coarse;
-        const fineTicks = props.axes?.value?.ticks?.fine;
-        const min = props.axes?.value?.limits?.min;
-        const max = props.axes?.value?.limits?.max;
-
-        if ((!isNullish(min) && !isNullish(max)) && (!isNullish(coarseTicks) || !isNullish(fineTicks))) {
-
-            const middleValue = (min + max) / 2;
-            const maxValue = Enumerable.from(props.modelValue).max(d => d.value);
-
-            if (!isNullish(maxValue)) {
-                if (maxValue >= middleValue && !isNullish(coarseTicks)) {
-                    return coarseTicks;
-                }
-                else if (maxValue < middleValue && !isNullish(fineTicks)) {
-                    return fineTicks;
-                }
-            }
-        }
     });
 
     // #endregion Computed Values
 
     // #region Functions
 
-    /**
-     * Gets the CSS variable value.
-     *
-     * @param name The name of the CSS variable.
-     * @param fallback The fallback value to use.
-     */
-    function getCssVar(name: string, fallback: string): string {
-        const computedStyle = getComputedStyle(document.documentElement)
-            .getPropertyValue(name)
-            .trim();
+    const fillColorCache = new Map<string, CanvasGradient>();
 
-        return computedStyle || fallback;
+    function getFillColorCacheKey(color: string, chartAreaTop: number, chartAreaBottom: number): string {
+        return `${color}-${chartAreaTop}-${chartAreaBottom}`;
+    }
+
+    function getGradientFillColor(ctx: ScriptableContext<"line">, color: string): CanvasGradient {
+        const top = ctx.chart.chartArea?.top ?? 0;
+        const bottom = ctx.chart.chartArea?.bottom ?? 0;
+        const cacheKey = getFillColorCacheKey(color, top, bottom);
+        if (fillColorCache.has(cacheKey)) {
+            console.log("retrieved fill color from cache");
+            return fillColorCache.get(cacheKey)!;
+        }
+
+        const rockColor = new RockColor(color);
+
+        const gradient = ctx.chart.ctx.createLinearGradient(0, top, 0, bottom);
+
+        rockColor.alpha = 0.5;
+        gradient.addColorStop(0, rockColor.toHex());
+
+        rockColor.alpha = 0;
+        gradient.addColorStop(1, rockColor.toHex());
+
+        fillColorCache.set(cacheKey, gradient);
+
+        return gradient;
+    }
+
+    const cssVarValueCache = new Map<string, string>();
+
+    function getCategoricalColor(num: number): string {
+        // There are only 8 categorical colors so cycle through them.
+        num = num > 0 ? ((num - 1) % 8) + 1 : 1;
+        const varName = `--color-categorical-${num}`;
+        if (cssVarValueCache.has(varName)) {
+            return cssVarValueCache.get(varName)!;
+        }
+
+        const value = getComputedStyle(document.documentElement).getPropertyValue(varName);
+        if (value) {
+            // Only cache if there is a value.
+            cssVarValueCache.set(varName, value);
+        }
+
+        return value;
+    }
+
+    /**
+     * Clamps a value between an inclusive minimum and maximum value.
+     * @param value The value to clamp.
+     * @param min The minimum value.
+     * @param max The maximum value.
+     * @returns The clamped value.
+     */
+    function clamp(value: number | undefined, min: number = Number.MIN_SAFE_INTEGER, max: number = Number.MAX_SAFE_INTEGER): number | undefined {
+        return isNullish(value) ? undefined : Math.min(Math.max(value, min), max);
     }
 
     // #endregion Functions

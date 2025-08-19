@@ -172,7 +172,7 @@
             <BooleanColumn v-if="isPropertyColumnVisible(PersonPropertyName.IsDeceased)"
                            name="isDeceased"
                            field="isDeceased"
-                           title="Is Deceased"
+                           title="Deceased"
                            width="150"
                            :filter="booleanValueFilter" />
 

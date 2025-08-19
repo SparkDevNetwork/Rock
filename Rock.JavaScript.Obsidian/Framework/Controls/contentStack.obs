@@ -1,86 +1,19 @@
 <template>
-    <div class="content-stack" :class="additionalStackClasses">
-        <div v-if="title || description || $slots.header" class="content-stack-sidebar">
-            <div class="content-stack-header">
-                <p v-if="title" class="content-stack-header-title">{{ title }}</p>
-                <p v-if="description" class="content-stack-header-description">{{ description }}</p>
+    <div class="contentstack" :class="additionalStackClasses">
+        <div v-if="title || description || $slots.header" class="contentstack-sidebar">
+            <div class="contentstack-header">
+                <p v-if="title" class="contentstack-header-title">{{ title }}</p>
+                <p v-if="description" class="contentstack-header-description">{{ description }}</p>
 
                 <slot name="header" />
             </div>
         </div>
 
-        <div class="content-stack-body">
+        <div class="contentstack-body">
             <slot />
         </div>
     </div>
 </template>
-
-<style>
-.content-stack {
-    display: flex;
-    flex-direction: row;
-    gap: var(--spacing-large);
-    width: 100%;
-    height: auto;
-}
-
-.content-stack-body {
-    flex: 1 1 80%
-}
-
-.content-stack > .content-stack-sidebar {
-    max-width: 400px;
-    padding-top: 0;
-}
-
-.content-stack.content-stack-left > .content-stack-sidebar {
-    flex: 0 0 20%;
-}
-
-.content-stack.content-stack-right > .content-stack-sidebar {
-    flex: 0 0 30%;
-}
-
-.content-stack.content-stack-right {
-    display: flex;
-    flex-direction: row-reverse;
-}
-
-.content-stack.content-stack-right .content-stack-sidebar .content-stack-header-title {
-    display: none;
-}
-
-.content-stack.content-stack-right .content-stack-body {
-    padding-left: 0;
-    flex: 1 1 70%
-}
-
-.content-stack.content-stack-right .content-stack-sidebar {
-    flex: 0 0 30%;
-}
-
-.content-stack-header {
-    display: flex;
-    flex-direction: column;
-    gap: var(--spacing-tiny);
-}
-
-.content-stack-header-title {
-    color: var(--color-interface-strong);
-    margin: 0;
-}
-
-.content-stack-header-description {
-    color: var(--color-interface-medium);
-
-}
-
-@media (max-width: 767px) {
-    .content-stack.content-stack-right {
-        flex-direction: column-reverse;
-    }
-}
-</style>
 
 <script setup lang="ts">
     import { computed, PropType } from "vue";
@@ -120,7 +53,7 @@
      */
     const additionalStackClasses = computed((): string[] => {
         return [
-            props.sidebarPosition === "right" ? "content-stack-right" : "content-stack-left"
+            props.sidebarPosition === "right" ? "contentstack-right" : "contentstack-left"
         ];
     });
 

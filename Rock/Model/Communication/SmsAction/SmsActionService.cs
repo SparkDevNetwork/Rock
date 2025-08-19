@@ -18,6 +18,9 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+
+using Rock.Attribute;
+using Rock.Communication.Medium;
 using Rock.Communication.SmsActions;
 using Rock.Data;
 using Rock.Transactions;
@@ -27,12 +30,83 @@ namespace Rock.Model
 {
     public partial class SmsActionService
     {
+        #region Fields
+
+        /// <summary>
+        /// The list of keywords indicating an individual wants to opt out of receiving messages.
+        /// </summary>
+        private static readonly Lazy<HashSet<string>> _optOutKeywords = new Lazy<HashSet<string>>( () =>
+        {
+            return new HashSet<string>
+            {
+                "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "REVOKE", "OPTOUT"
+            };
+        } );
+
+        /// <summary>
+        /// The list of keywords indicating an individual wants to opt into receiving messages.
+        /// </summary>
+        private static readonly Lazy<HashSet<string>> _optInKeywords = new Lazy<HashSet<string>>( () =>
+        {
+            return new HashSet<string>
+            {
+                "START", "YES", "UNSTOP"
+            };
+        } );
+
+        #endregion Fields
+
+        #region Properties
+
+        /// <summary>
+        /// Gets the list of keywords indicating an individual wants to opt out of receiving messages.
+        /// </summary>
+        private static HashSet<string> OptOutKeywords => _optOutKeywords.Value;
+
+        /// <summary>
+        /// Gets the list of keywords indicating an individual wants to opt into receiving messages.
+        /// </summary>
+        private static HashSet<string> OptInKeywords => _optInKeywords.Value;
+
+        /// <summary>
+        /// Gets the organization name to be used in response messages.
+        /// </summary>
+        private static string OrganizationName
+        {
+            get
+            {
+                var orgName = GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_ABBREVATION );
+                if ( orgName.IsNullOrWhiteSpace() )
+                {
+                    orgName = GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_NAME );
+                }
+
+                return orgName;
+            }
+        }
+
+        /// <summary>
+        /// Gets the organization phone number to be used in response messages.
+        /// </summary>
+        private static string OrganizationPhone => GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_PHONE );
+
+        /// <summary>
+        /// Gets the organization email to be used in response messages.
+        /// </summary>
+        private static string OrganizationEmail => GlobalAttributesCache.Value( Rock.SystemKey.GlobalAttributeKey.ORGANIZATION_EMAIL );
+
+        #endregion Properties
+
+        #region Message Processing
+
         /// <summary>
         /// Processes the incoming message.
         /// </summary>
-        /// <param name="message">The message received by the communications component.</param>
-        /// <returns>If not null, identifies the response that should be sent back to the sender.</returns>
-        static public List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message )
+        /// <param name="message">The incoming message that should be processed.</param>
+        /// <returns>
+        /// A list of outcomes that might contain a response to send back to the incoming message sender.
+        /// </returns>
+        public static List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message )
         {
             return ProcessIncomingMessage( message, null );
         }
@@ -40,14 +114,14 @@ namespace Rock.Model
         /// <summary>
         /// Processes the incoming message.
         /// </summary>
-        /// <param name="message">
-        /// The message.
-        /// </param>
+        /// <param name="message">The incoming message that should be processed.</param>
         /// <param name="smsPipelineId">
-        /// The SMS pipeline identifier. When null the active pipeline with the lowest SmsPipelineId will be used.
+        /// The <see cref="SmsPipeline"/> identifier. If <c>null</c>, the active pipeline with the lowest ID will be used.
         /// </param>
-        /// <returns></returns>
-        static public List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message, int? smsPipelineId )
+        /// <returns>
+        /// A list of outcomes that might contain a response to send back to the incoming message sender.
+        /// </returns>
+        public static List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message, int? smsPipelineId )
         {
             if ( smsPipelineId == null )
             {
@@ -59,8 +133,10 @@ namespace Rock.Model
 
                 if ( minSmsPipelineId == null )
                 {
-                    var errorMessage = string.Format( "No default SMS Pipeline could be found." );
-                    return CreateErrorOutcomesWithLogging( errorMessage );
+                    var errorMessage = "No default SMS Pipeline could be found.";
+                    return new List<SmsActionOutcome> {
+                        LogExceptionAndCreateErrorOutcome( errorMessage )
+                    };
                 }
 
                 smsPipelineId = minSmsPipelineId;
@@ -72,107 +148,117 @@ namespace Rock.Model
         /// <summary>
         /// Processes the incoming message.
         /// </summary>
-        /// <param name="message">The message received by the communications component.</param>
-        /// <param name="smsPipelineId">The SMS pipeline identifier.</param>
+        /// <param name="message">The incoming message that should be processed.</param>
+        /// <param name="smsPipelineId">The <see cref="SmsPipeline"/> identifier.</param>
         /// <returns>
-        /// If not null, identifies the response that should be sent back to the sender.
+        /// A list of outcomes that might contain a response to send back to the incoming message sender.
         /// </returns>
-        static public List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message, int smsPipelineId )
+        public static List<SmsActionOutcome> ProcessIncomingMessage( SmsMessage message, int smsPipelineId )
         {
-            if ( IsOptOutMessage( message.Message ) )
+            // Opt-in/opt-out tracking should be processed before anything else, to ensure we respect the sender's
+            // preferences and also to ensure we remain compliant with messaging regulations.
+            TryUpdateOptInOutTrackingForSender( message );
+
+            SmsPipeline smsPipeline;
+
+            using ( var rockContext = new RockContext() )
             {
-                var optOutResponse = ProcessOptOut( message );
-                if ( optOutResponse != null )
-                {
-                    return optOutResponse;
-                }
-            }
-            else if ( IsOptInMessage( message.Message ) )
-            {
-                var optInResponse = ProcessOptIn( message );
-                if ( optInResponse != null )
-                {
-                    return optInResponse;
-                }
+                smsPipeline = new SmsPipelineService( rockContext ).GetNoTracking( smsPipelineId );
             }
 
-            var errorMessage = string.Empty;
             var outcomes = new List<SmsActionOutcome>();
-            var smsPipelineService = new SmsPipelineService( new RockContext() );
-            var smsPipeline = smsPipelineService.Get( smsPipelineId );
+            var errorMessage = string.Empty;
 
             if ( smsPipeline == null )
             {
-                errorMessage = string.Format( "The SMS Pipeline for SMS Pipeline Id {0} was null.", smsPipelineId );
-                return CreateErrorOutcomesWithLogging( errorMessage );
+                errorMessage = $"SMS Pipeline with ID {smsPipelineId} could not be found.";
+                outcomes.Add( LogExceptionAndCreateErrorOutcome( errorMessage ) );
             }
-
-            if ( !smsPipeline.IsActive )
+            else if ( !smsPipeline.IsActive )
             {
-                errorMessage = string.Format( "The SMS Pipeline for SMS Pipeline Id {0} was inactive.", smsPipelineId );
-                return CreateErrorOutcomesWithLogging( errorMessage );
+                errorMessage = $"SMS Pipeline with ID {smsPipelineId} is inactive.";
+                outcomes.Add( LogExceptionAndCreateErrorOutcome( errorMessage ) );
             }
-
-            var smsActions = SmsActionCache.All()
-                .Where( a => a.IsActive )
-                .Where( a => a.SmsPipelineId == smsPipelineId )
-                .OrderBy( a => a.Order )
-                .ThenBy( a => a.Id );
-
-            foreach ( var smsAction in smsActions )
+            else
             {
-                if ( smsAction.SmsActionComponent == null )
-                {
-                    LogIfError( string.Format( "The SmsActionComponent for {0} was null", smsAction.Name ) );
-                    continue;
-                }
+                var smsActions = SmsActionCache.All()
+                    .Where( a => a.IsActive )
+                    .Where( a => a.SmsPipelineId == smsPipelineId )
+                    .OrderBy( a => a.Order )
+                    .ThenBy( a => a.Id );
 
-                var outcome = new SmsActionOutcome
+                foreach ( var smsAction in smsActions )
                 {
-                    ActionName = smsAction.Name
-                };
-                outcomes.Add( outcome );
-
-                try
-                {
-                    // Check if the action wants to process this message.
-                    outcome.ShouldProcess = smsAction.SmsActionComponent.ShouldProcessMessage( smsAction, message, out errorMessage );
-                    outcome.ErrorMessage = errorMessage;
-                    LogIfError( errorMessage );
-
-                    if ( !outcome.ShouldProcess )
+                    if ( smsAction.SmsActionComponent == null )
                     {
+                        LogIfError( $"The '{smsAction.Name}' SMS Action could not be found." );
                         continue;
                     }
 
-                    // Process the message and use either the response returned by the action
-                    // or the previous response we already had.
-                    outcome.Response = smsAction.SmsActionComponent.ProcessMessage( smsAction, message, out errorMessage );
-                    outcome.ErrorMessage = errorMessage;
-                    LogIfError( errorMessage );
-
-                    if ( outcome.Response != null )
+                    var outcome = new SmsActionOutcome
                     {
+                        ActionName = smsAction.Name
+                    };
+
+                    outcomes.Add( outcome );
+
+                    try
+                    {
+                        // Check if the action wants to process this message.
+                        outcome.ShouldProcess = smsAction.SmsActionComponent.ShouldProcessMessage( smsAction, message, out errorMessage );
+                        outcome.ErrorMessage = errorMessage;
                         LogIfError( errorMessage );
-                    }
 
-                    // Log an interaction if this action completed successfully.
-                    if ( smsAction.IsInteractionLoggedAfterProcessing && errorMessage.IsNullOrWhiteSpace() )
+                        if ( !outcome.ShouldProcess )
+                        {
+                            continue;
+                        }
+
+                        // Process the message and use either the response returned by the action
+                        // or the previous response we already had.
+                        outcome.Response = smsAction.SmsActionComponent.ProcessMessage( smsAction, message, out errorMessage );
+                        outcome.ErrorMessage = errorMessage;
+                        LogIfError( errorMessage );
+
+                        if ( outcome.Response != null )
+                        {
+                            LogIfError( errorMessage );
+                        }
+
+                        // Log an interaction if this action completed successfully.
+                        if ( smsAction.IsInteractionLoggedAfterProcessing && errorMessage.IsNullOrWhiteSpace() )
+                        {
+                            WriteInteraction( smsAction, message, smsPipeline );
+                            outcome.IsInteractionLogged = true;
+                        }
+                    }
+                    catch ( Exception exception )
                     {
-                        WriteInteraction( smsAction, message, smsPipeline );
-                        outcome.IsInteractionLogged = true;
+                        outcome.Exception = exception;
+                        LogIfError( exception );
+                    }
+
+                    // If the action is set to not continue after processing then stop.
+                    if ( outcome.ShouldProcess && !smsAction.ContinueAfterProcessing )
+                    {
+                        break;
                     }
                 }
-                catch ( Exception exception )
-                {
-                    outcome.Exception = exception;
-                    LogIfError( exception );
-                }
+            }
 
-                // If the action is set to not continue after processing then stop.
-                if ( outcome.ShouldProcess && !smsAction.ContinueAfterProcessing )
+            // If the sender is opting into or out of messaging, ensure this response is the last outcome added, so it
+            // will be the response sent back.
+            var optInOutOutcome = TryGetOptInOutOutcome( message );
+            if ( optInOutOutcome != null )
+            {
+                if ( !message.WasOptInOutTrackingProcessed )
                 {
-                    break;
+                    errorMessage = $"System Phone Number {message.ToNumber} is misconfigured: unable to send opt-in/opt-out auto-replies unless Rock also manages opt-out tracking.";
+                    outcomes.Add( LogExceptionAndCreateErrorOutcome( errorMessage ) );
+                }
+                else
+                {
+                    outcomes.Add( optInOutOutcome );
                 }
             }
 
@@ -180,11 +266,11 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Adds an Interaction for the specified SmsAction.
+        /// Writes an <see cref="Interaction"/> for the specified SMS action, message and pipeline.
         /// </summary>
-        /// <param name="action"></param>
-        /// <param name="message"></param>
-        /// <param name="pipeline"></param>
+        /// <param name="action">The SMS action.</param>
+        /// <param name="message">The incoming message.</param>
+        /// <param name="pipeline">The pipeline through which this message is flowing.</param>
         private static void WriteInteraction( SmsActionCache action, SmsMessage message, SmsPipeline pipeline )
         {
             if ( action == null || message == null || pipeline == null )
@@ -235,27 +321,26 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// Creates the error outcomes with logging.
+        /// Logs an exception and creates the error outcome.
         /// </summary>
         /// <param name="errorMessage">The error message.</param>
-        /// <returns></returns>
-        private static List<SmsActionOutcome> CreateErrorOutcomesWithLogging( string errorMessage )
+        /// <returns>An <see cref="SmsActionOutcome"/> containing the error message.</returns>
+        private static SmsActionOutcome LogExceptionAndCreateErrorOutcome( string errorMessage )
         {
             LogIfError( errorMessage );
-            return new List<SmsActionOutcome>
+            return new SmsActionOutcome
             {
-                new SmsActionOutcome
-                {
-                    ErrorMessage = errorMessage
-                }
+                ErrorMessage = errorMessage
             };
         }
 
         /// <summary>
-        /// From the list of outcomes, get the last outcome with a non-null message and return that message
+        /// From the list of outcomes, get the last outcome with a non-null message and return that message.
         /// </summary>
-        /// <param name="outcomes"></param>
-        /// <returns></returns>
+        /// <param name="outcomes">The list of outcomes to search for a message.</param>
+        /// <returns>
+        /// The last non-null message or <c>null</c> if one couldn't be found.
+        /// </returns>
         public static SmsMessage GetResponseFromOutcomes( List<SmsActionOutcome> outcomes )
         {
             if ( outcomes == null )
@@ -268,9 +353,9 @@ namespace Rock.Model
         }
 
         /// <summary>
-        /// If the exception is not null, log it
+        /// If the exception is not null, log it.
         /// </summary>
-        /// <param name="exception"></param>
+        /// <param name="exception">The exception to log.</param>
         static private void LogIfError( Exception exception )
         {
             if ( exception == null )
@@ -279,41 +364,197 @@ namespace Rock.Model
             }
 
             var context = HttpContext.Current;
-            var wrappedException = new Exception( "An exception occurred in the SmsAction pipeline. See the inner exception.", exception );
+            var wrappedException = new Exception( "An error occurred in the SMS Pipeline. See the inner exception.", exception );
             ExceptionLogService.LogException( wrappedException, context );
         }
 
         /// <summary>
-        /// If the errorMessage is not empty, log it
+        /// If the error message is not empty, log it.
         /// </summary>
-        /// <param name="errorMessage"></param>
+        /// <param name="errorMessage">The error message to log.</param>
         static private void LogIfError( string errorMessage )
         {
-            if ( string.IsNullOrEmpty( errorMessage ) )
+            if ( errorMessage.IsNullOrWhiteSpace() )
             {
                 return;
             }
 
             var context = HttpContext.Current;
-            var exception = new Exception( string.Format( "An error occurred in the SmsAction pipeline: {0}", errorMessage ) );
+            var exception = new Exception( $"An error occurred in the SMS Pipeline: {errorMessage}" );
             ExceptionLogService.LogException( exception, context );
         }
 
-        #region Opt Out/Opt In
+        #endregion Message Processing
+
+        #region Opt-In/Opt-Out Handling
+
+        /// <summary>
+        /// Tries to update opt-in/opt-out tracking values for the <see cref="Person"/> who sent this message if not
+        /// already processed and if such tracking has not been disabled at the <see cref="SystemPhoneNumber"/> level.
+        /// </summary>
+        /// <param name="message">The incoming message.</param>
+        /// <remarks>
+        /// This is an internal API that supports the Rock infrastructure and not
+        /// subject to the same compatibility standards as public APIs. It may be
+        /// changed or removed without notice in any release. You should only use
+        /// it directly in your code with extreme caution and knowing that doing so
+        /// can result in application failures when updating to a new Rock release.
+        /// </remarks>
+        [RockInternal( "18.0" )]
+        public static void TryUpdateOptInOutTrackingForSender( SmsMessage message )
+        {
+            var toNumber = message?.ToNumber;
+            var fromNumber = message?.FromNumber;
+
+            if ( toNumber.IsNullOrWhiteSpace() || fromNumber.IsNullOrWhiteSpace() || message.WasOptInOutTrackingProcessed )
+            {
+                return;
+            }
+
+            if ( !message.DisableSmsOptInOutTracking.HasValue )
+            {
+                var systemPhoneNumber = Sms.FindRockSmsSystemPhoneNumber( toNumber );
+                message.DisableSmsOptInOutTracking = systemPhoneNumber?.DisableSmsOptInOutTracking ?? false;
+            }
+
+            if ( message.DisableSmsOptInOutTracking.Value )
+            {
+                return;
+            }
+
+            using ( var rockContext = new RockContext() )
+            {
+                List<PhoneNumber> GetMatchingPhoneNumbers()
+                {
+                    var cleanedFromNumber = PhoneNumber.CleanNumber( fromNumber );
+                    return new PhoneNumberService( rockContext )
+                        .Queryable()
+                        .Where( p =>
+                            p.Number == cleanedFromNumber
+                            || p.Number == fromNumber
+                            || p.FullNumber == cleanedFromNumber
+                            || p.FullNumber == fromNumber
+                        )
+                        .ToList();
+                }
+
+                var shouldSaveChanges = false;
+
+                if ( IsOptOutMessage( message.Message ) )
+                {
+                    foreach ( var phoneNumber in GetMatchingPhoneNumbers() )
+                    {
+                        phoneNumber.IsMessagingEnabled = false;
+                        phoneNumber.IsMessagingOptedOut = true;
+                        phoneNumber.MessagingOptedOutDateTime = RockDateTime.Now;
+                        shouldSaveChanges = true;
+                    }
+                }
+                else if ( IsOptInMessage( message.Message ) )
+                {
+                    foreach ( var phoneNumber in GetMatchingPhoneNumbers() )
+                    {
+                        phoneNumber.IsMessagingEnabled = true;
+                        phoneNumber.IsMessagingOptedOut = false;
+                        phoneNumber.MessagingOptedOutDateTime = null;
+                        shouldSaveChanges = true;
+                    }
+                }
+
+                if ( shouldSaveChanges )
+                {
+                    rockContext.SaveChanges();
+                }
+            }
+
+            message.WasOptInOutTrackingProcessed = true;
+        }
+
+        /// <summary>
+        /// Tries to get an opt-in/opt-out response outcome for this message if it contains a matching keyword and if
+        /// such messaging has not been disabled at the <see cref="SystemPhoneNumber"/> level.
+        /// </summary>
+        /// <param name="message">The incoming message.</param>
+        /// <returns>
+        /// An opt-in/opt-out response outcome or <c>null</c> if such a response should not be sent.
+        /// </returns>
+        private static SmsActionOutcome TryGetOptInOutOutcome( SmsMessage message )
+        {
+            var toNumber = message?.ToNumber;
+            var fromNumber = message?.FromNumber;
+
+            SmsActionOutcome outcome = null;
+
+            if ( toNumber.IsNullOrWhiteSpace() || fromNumber.IsNullOrWhiteSpace() )
+            {
+                return outcome;
+            }
+
+            if ( !message.SuppressSmsOptInOutAutoReplies.HasValue )
+            {
+                var systemPhoneNumber = Sms.FindRockSmsSystemPhoneNumber( toNumber );
+                message.SuppressSmsOptInOutAutoReplies = systemPhoneNumber?.SuppressSmsOptInOutAutoReplies ?? false;
+            }
+
+            if ( message.SuppressSmsOptInOutAutoReplies.Value )
+            {
+                return outcome;
+            }
+
+            if ( IsOptOutMessage( message.Message ) )
+            {
+                var contactMethods = new[] { OrganizationPhone, OrganizationEmail }
+                    .Where( m => m.IsNotNullOrWhiteSpace() )
+                    .ToArray();
+
+                var optOutContactMethods = contactMethods.Any()
+                    ? $" at {contactMethods.JoinStringsWithRepeatAndFinalDelimiterWithMaxLength( ", ", " or ", null )}"
+                    : string.Empty;
+
+                var optedOutMessage = $"You are unsubscribed from {OrganizationName} messages. No more messages will be sent. Reply HELP for help or contact us{optOutContactMethods}.";
+
+                outcome = new SmsActionOutcome
+                {
+                    ActionName = "SMSOptOut",
+                    ShouldProcess = true,
+                    Response = new SmsMessage
+                    {
+                        ToNumber = PhoneNumber.CleanNumber( fromNumber ),
+                        FromNumber = message.ToNumber,
+                        Message = optedOutMessage
+                    }
+                };
+            }
+            else if ( IsOptInMessage( message.Message ) )
+            {
+                var optedInMessage = $"You are now subscribed to {OrganizationName} messages. Message and data rates may apply. Reply STOP to unsubscribe or HELP for help.";
+
+                outcome = new SmsActionOutcome
+                {
+                    ActionName = "SMSOptIn",
+                    ShouldProcess = true,
+                    Response = new SmsMessage
+                    {
+                        ToNumber = PhoneNumber.CleanNumber( fromNumber ),
+                        FromNumber = message.ToNumber,
+                        Message = optedInMessage
+                    }
+                };
+            }
+
+            return outcome;
+        }
 
         /// <summary>
         /// Checks the message body to see if an opt-out keyword was sent.
         /// </summary>
         /// <param name="messageBody">The message body.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// <c>true</c> if an opt-out keyword was sent; otherwise, <c>false</c>.
+        /// </returns>
         private static bool IsOptOutMessage( string messageBody )
         {
-            List<string> optOutKeywords = new List<string>
-            {
-                "STOP", "STOPALL", "UNSUBSCRIBE", "CANCEL", "END", "QUIT", "REVOKE", "OPTOUT"
-            };
-
-            foreach ( var keyword in optOutKeywords )
+            foreach ( var keyword in OptOutKeywords )
             {
                 if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
                 {
@@ -322,70 +563,18 @@ namespace Rock.Model
             }
 
             return false;
-        }
-
-        /// <summary>
-        /// Disables messaging if an opt-out keyword was received.
-        /// </summary>
-        /// <param name="message">The <see cref="SmsMessage"/> that was received.</param>
-        private static List<SmsActionOutcome> ProcessOptOut( SmsMessage message )
-        {
-            var isPhoneUpdated = false;
-
-            var cleanedNumber = PhoneNumber.CleanNumber( message.FromNumber );
-            using ( var rockContext = new RockContext() )
-            {
-                var phoneNumberService = new PhoneNumberService( rockContext );
-                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
-
-                foreach ( var phoneNumber in phoneNumbers )
-                {
-                    phoneNumber.IsMessagingEnabled = false;
-                    phoneNumber.IsMessagingOptedOut = true;
-                    phoneNumber.MessagingOptedOutDateTime = RockDateTime.Now;
-                    isPhoneUpdated = true;
-                }
-
-                rockContext.SaveChanges();
-            }
-
-            if ( !isPhoneUpdated )
-            {
-                // If we didn't do anything, don't return a response.
-                return null;
-            }
-
-            return new List<SmsActionOutcome>
-            {
-                new SmsActionOutcome
-                {
-                    ActionName = "SMSOptOut",
-                    ShouldProcess = true,
-                    IsInteractionLogged = false,
-                    ErrorMessage = string.Empty,
-                    Response = new SmsMessage
-                    {
-                        ToNumber = cleanedNumber,
-                        FromNumber = message.ToNumber,
-                        Message = "You have opted out of messages."
-                    }
-                }
-            };
         }
 
         /// <summary>
         /// Checks the message body to see if an opt-in keyword was sent.
         /// </summary>
         /// <param name="messageBody">The message body.</param>
-        /// <returns></returns>
+        /// <returns>
+        /// <c>true</c> if an opt-in keyword was sent; otherwise, <c>false</c>.
+        /// </returns>
         private static bool IsOptInMessage( string messageBody )
         {
-            List<string> optInKeywords = new List<string>
-            {
-                "START", "YES", "UNSTOP"
-            };
-
-            foreach ( var keyword in optInKeywords )
+            foreach ( var keyword in OptInKeywords )
             {
                 if ( string.Equals( messageBody.Trim(), keyword, StringComparison.OrdinalIgnoreCase ) )
                 {
@@ -395,71 +584,41 @@ namespace Rock.Model
             return false;
         }
 
+        #endregion Opt-In/Opt-Out Handling
+
+        #region Supporting classes
+
         /// <summary>
-        /// Disables messaging if an opt-in keyword was received.
+        /// A POCO to represent SMS interaction data.
         /// </summary>
-        /// <param name="message">The <see cref="SmsMessage"/> that was received.</param>
-        private static List<SmsActionOutcome> ProcessOptIn( SmsMessage message )
-        {
-            var isPhoneUpdated = false;
-
-            var cleanedNumber = PhoneNumber.CleanNumber( message.FromNumber );
-            using ( var rockContext = new RockContext() )
-            {
-                var phoneNumberService = new PhoneNumberService( rockContext );
-                var phoneNumbers = phoneNumberService.Queryable().Where( p => p.Number == cleanedNumber || p.FullNumber == cleanedNumber || p.FullNumber == message.FromNumber ).ToList();
-
-                foreach ( var phoneNumber in phoneNumbers )
-                {
-                    if ( !phoneNumber.IsMessagingEnabled )
-                    {
-                        phoneNumber.IsMessagingEnabled = true;
-                        phoneNumber.IsMessagingOptedOut = false;
-                        phoneNumber.MessagingOptedOutDateTime = null;
-                        isPhoneUpdated = true;
-                    }
-                }
-
-                rockContext.SaveChanges();
-            }
-
-            if ( !isPhoneUpdated )
-            {
-                // If we didn't do anything, don't return a response.
-                return null;
-            }
-
-            return new List<SmsActionOutcome>
-            {
-                new SmsActionOutcome
-                {
-                    ActionName = "SMSOptIn",
-                    ShouldProcess = true,
-                    IsInteractionLogged = false,
-                    ErrorMessage = string.Empty,
-                    Response = new SmsMessage
-                    {
-                        ToNumber = cleanedNumber,
-                        FromNumber = message.ToNumber,
-                        Message = "You have opted in to messages."
-                    }
-                }
-            };
-        }
-
-        #endregion Opt Out/Opt In
-
-        #region Support classes
-
         private class SmsInteractionData
         {
-            public string ToPhone;
-            public string FromPhone;
-            public string MessageBody;
-            public DateTime ReceivedDateTime;
-            public string FromPerson;
+            /// <summary>
+            /// Gets or sets the phone number to which the SMS message was sent.
+            /// </summary>
+            public string ToPhone { get; set; }
+
+            /// <summary>
+            /// Gets or sets the phone number from which the SMS message was sent.
+            /// </summary>
+            public string FromPhone { get; set; }
+
+            /// <summary>
+            /// Gets or sets the SMS message body.
+            /// </summary>
+            public string MessageBody { get; set; }
+
+            /// <summary>
+            /// Gets or sets the datetime the SMS message was received by Rock.
+            /// </summary>
+            public DateTime ReceivedDateTime { get; set; }
+
+            /// <summary>
+            /// Gets or sets the full name of the person who sent the SMS message.
+            /// </summary>
+            public string FromPerson { get; set; }
         }
 
-        #endregion
+        #endregion Supporting classes
     }
 }

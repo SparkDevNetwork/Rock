@@ -1012,6 +1012,10 @@ input[type="button"] {
     color: var(--color-primary);
     box-shadow: var(--input-focus-box-shadow) 
   }
+
+  .ti.theme-mode-icon:before {
+    content: "\f23a"; // Default to light mode icon 
+  }
 }
 
 [theme="dark"] {

@@ -1942,8 +1942,10 @@ namespace RockWeb.Blocks.Groups
 
             if ( _hasGroupRequirements )
             {
+                // Materialize ids ONCE; HashSet gives O(1) Contains in the Where below.
+                var filteredIds = new HashSet<int>( qry.Select( gm => gm.Id ) );
                 _memberRequirements.Clear();
-                foreach ( var member in _group.Members )
+                foreach ( var member in _group.Members.Where( gm => filteredIds.Contains( gm.Id ) ) )
                 {
                     _memberRequirements.TryAdd(
                         member.Id,
@@ -2166,7 +2168,8 @@ namespace RockWeb.Blocks.Groups
                 return;
             }
 
-            _memberRequirements.Clear();
+            // Don't clear the _memberRequirements list, because we don't want to calculate it twice per page load.
+            //_memberRequirements.Clear();
 
             pnlGroupMembers.Visible = true;
             nbRoleWarning.Visible = false;
@@ -2189,28 +2192,6 @@ namespace RockWeb.Blocks.Groups
             _exportLongitude = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().Where( a => a.ID == "lRequirementExportLongitude" ).FirstOrDefault();
 
             _groupTypeRoleIdsWithGroupSync = new HashSet<int>( _group.GroupSyncs.Select( a => a.GroupTypeRoleId ).ToList() );
-
-            if ( _group != null &&
-                _group.RequiredSignatureDocumentTemplateId.HasValue )
-            {
-                _showPersonsThatHaventSigned = true;
-                _personIdsThatHaveSigned = new HashSet<int>( new SignatureDocumentService( rockContext )
-                    .Queryable().AsNoTracking()
-                    .Where( d =>
-                        d.SignatureDocumentTemplateId == _group.RequiredSignatureDocumentTemplateId.Value &&
-                        d.Status == SignatureDocumentStatus.Signed &&
-                        d.BinaryFileId.HasValue &&
-                        d.AppliesToPersonAlias != null )
-                    .OrderByDescending( d => d.LastStatusDate )
-                    .Select( d => d.AppliesToPersonAlias.PersonId )
-                    .Distinct()
-                    .ToList() );
-            }
-            else
-            {
-                _personIdsThatHaveSigned = new HashSet<int>();
-                _showPersonsThatHaventSigned = false;
-            }
 
             GroupMemberService groupMemberService = new GroupMemberService( rockContext );
             var qry = groupMemberService.Queryable( true )
@@ -2252,13 +2233,19 @@ namespace RockWeb.Blocks.Groups
 
             if ( _hasGroupRequirements )
             {
-                foreach ( var member in _group.Members )
+                // Materialize ids ONCE; HashSet gives O(1) Contains in the Where below.
+                var filteredIds = new HashSet<int>( qry.Select( gm => gm.Id ) );
+
+                foreach ( var member in _group.Members.Where( gm => filteredIds.Contains( gm.Id ) ) )
                 {
-                    _memberRequirements.Add(
-                        member.Id,
-                        member.GetGroupRequirementsStatuses( rockContext )
-                        .Where( s => s.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList()
-                        );
+                    if ( !_memberRequirements.ContainsKey( member.Id ) )
+                    {
+                        _memberRequirements.AddOrReplace(
+                            member.Id,
+                            member.GetGroupRequirementsStatuses( rockContext )
+                            .Where( s => s.GroupRequirement.GroupRequirementType.IsAuthorized( Rock.Security.Authorization.VIEW, CurrentPerson ) ).ToList()
+                            );
+                    }
                 }
 
                 _groupMemberIdsThatDoNotMeetGroupRequirements = _memberRequirements.Where( r => r.Value.Where( s => s.MeetsGroupRequirement == MeetsGroupRequirement.NotMet ).Any() ).Select( kvp => kvp.Key ).Distinct().ToHashSet();
@@ -2319,14 +2306,6 @@ namespace RockWeb.Blocks.Groups
 
             _inactiveStatus = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_RECORD_STATUS_INACTIVE );
 
-            // Get a collection of group member Ids that are in the group more than once (because they have multiple roles in the group) if this group allows scheduling.
-            if ( _allowGroupScheduling )
-            {
-                _groupMemberIdsPersonInMultipleRoles = _group.Members
-                    .Where( gm => _group.Members.Where( m => m.GroupMemberStatus == GroupMemberStatus.Active ).GroupBy( m => m.PersonId ).Where( g => g.Count() > 1 ).Select( g => g.Key ).Contains( gm.PersonId ) )
-                    .Select( m => m.Id ).ToList();
-            }
-
             gGroupMemberRequirements.EntityTypeId = EntityTypeCache.Get( Rock.SystemGuid.EntityType.GROUP_MEMBER.AsGuid() ).Id;
 
             if ( isExporting )
@@ -2385,48 +2364,6 @@ namespace RockWeb.Blocks.Groups
             }
 
             var groupMemberIdQuery = qry.Select( m => m.Id );
-
-            _groupMembersWithGroupMemberHistory = new HashSet<int>( new GroupMemberHistoricalService( rockContext ).Queryable().Where( a => a.GroupId == groupId ).Select( a => a.GroupMemberId ).ToList() );
-
-            // Get all the group members with any associated registrations
-            _groupMembersWithRegistrations = new RegistrationRegistrantService( rockContext )
-                .Queryable().AsNoTracking()
-                .Where( r =>
-                    r.Registration != null &&
-                    r.Registration.RegistrationInstance != null &&
-                    r.GroupMemberId.HasValue &&
-                    groupMemberIdQuery.Contains( r.GroupMemberId.Value ) )
-                .ToList()
-                .GroupBy( r => r.GroupMemberId.Value )
-                .Select( g => new
-                {
-                    GroupMemberId = g.Key,
-                    Registrations = g.ToList()
-                        .Select( r => new
-                        {
-                            Id = r.Registration.Id,
-                            Name = r.Registration.RegistrationInstance.Name
-                        } ).Distinct()
-                        .Select( r => new GroupMemberRegistrationItem { RegistrationId = r.Id, RegistrationName = r.Name } ).ToList()
-                } )
-                .ToDictionary( r => r.GroupMemberId, r => r.Registrations );
-
-            if ( _registrationField != null )
-            {
-                _registrationField.Visible = _groupMembersWithRegistrations.Any();
-            }
-
-            _connectionStatusField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lConnectionStatusValue" );
-            if ( _connectionStatusField != null )
-            {
-                _connectionStatusField.Visible = _groupTypeCache.ShowConnectionStatus;
-            }
-
-            _maritalStatusField = gGroupMemberRequirements.ColumnsOfType<RockLiteralField>().FirstOrDefault( a => a.ID == "lMaritalStatusValue" );
-            if ( _maritalStatusField != null )
-            {
-                _maritalStatusField.Visible = _groupTypeCache.ShowMaritalStatus;
-            }
 
             _personIdAttendanceFirstLastLookup = new Dictionary<int, DateRange>();
 

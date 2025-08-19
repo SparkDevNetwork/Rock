@@ -1198,13 +1198,27 @@ namespace RockWeb.Blocks.Finance
                 {
                     using ( var rockContext = new RockContext() )
                     {
-                        foreach ( var txn in new FinancialTransactionService( rockContext )
-                            .Queryable( "AuthorizedPersonAlias.Person" )
-                            .Where( t => txnsSelected.Contains( t.Id ) )
-                            .ToList() )
+                        if ( hfTransactionViewMode.Value == "Transactions" )
                         {
-                            txn.AuthorizedPersonAliasId = personAliasId.Value;
+                            foreach ( var txn in new FinancialTransactionService( rockContext )
+                                .Queryable( "AuthorizedPersonAlias.Person" )
+                                .Where( t => txnsSelected.Contains( t.Id ) )
+                                .ToList() )
+                            {
+                                txn.AuthorizedPersonAliasId = personAliasId.Value;
+                            }
                         }
+                        else
+                        {
+                            foreach ( var txn in new FinancialTransactionService( rockContext )
+                                .Queryable( "AuthorizedPersonAlias.Person, TransactionDetails" )
+                                .Where( t => t.TransactionDetails.Any( d => txnsSelected.Contains( d.Id ) ) )
+                                .ToList() )
+                            {
+                                txn.AuthorizedPersonAliasId = personAliasId.Value;
+                            }
+                        }
+
                         rockContext.SaveChanges();
 
                         var acctAction = rblReassignBankAccounts.SelectedValue;

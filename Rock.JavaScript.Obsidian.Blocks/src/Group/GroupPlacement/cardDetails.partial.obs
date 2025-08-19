@@ -79,13 +79,13 @@
 
 <style scoped>
 .person-card .details-container {
-    padding: 0 0.5rem 0.5rem 0.5rem;
-    font-size: 14px;
+    padding: 0 var(--spacing-xsmall) var(--spacing-xsmall) var(--spacing-xsmall);
+    font-size: var(--font-size-small);
 }
 
 .person-card .details-container .header {
     font-weight: var(--font-weight-semibold);
-    margin-top: 0.5rem;
+    margin-top: var(--spacing-xsmall);
 }
 
 .person-card .details-container dl {
@@ -93,8 +93,8 @@
     grid-template-columns: 1fr 1fr;
     justify-content: space-between;
     margin: 0;
-    row-gap: 0.5rem;
-    padding: 10px 0;
+    row-gap: var(--spacing-xsmall);
+    padding: var(--spacing-small) 0;
     border-bottom: 1px solid var(--color-interface-soft);
 }
 

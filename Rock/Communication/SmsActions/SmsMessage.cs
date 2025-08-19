@@ -74,6 +74,28 @@ namespace Rock.Communication.SmsActions
         public List<BinaryFile> Attachments { get; set; }
 
         /// <summary>
+        /// Gets or sets whether to prevent Rock from sending automatic SMS replies to opt-in or opt-out messages.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if Rock should not send automatic replies; otherwise, <c>false</c>.
+        /// </value>
+        public bool? SuppressSmsOptInOutAutoReplies { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether to prevent Rock from updating an individual's SMS status when they opt in or out of
+        /// receiving SMS messages.
+        /// </summary>
+        /// <value>
+        /// <c>true</c> if Rock should not update an individual's SMS status; otherwise, <c>false</c>.
+        /// </value>
+        public bool? DisableSmsOptInOutTracking { get; set; }
+
+        /// <summary>
+        /// Gets or sets whether opt-in/opt-out tracking was processed for this message.
+        /// </summary>
+        public bool WasOptInOutTrackingProcessed { get; set; }
+
+        /// <summary>
         /// Initializes a new instance of the <see cref="SmsMessage"/> class.
         /// </summary>
         public SmsMessage()

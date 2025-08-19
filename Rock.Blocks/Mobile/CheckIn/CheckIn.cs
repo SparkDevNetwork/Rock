@@ -490,6 +490,12 @@ namespace Rock.Blocks.Mobile.CheckIn
                     PerformedByPersonId = RequestContext.CurrentPerson?.IdKey
                 };
 
+                // Default to mobile attendance if not specified.
+                if ( !session.AttendanceSourceValueId.HasValue )
+                {
+                    session.AttendanceSourceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_MOBILE.AsGuid(), RockContext )?.Id;
+                }
+
                 var result = session.SaveAttendance( sessionRequest, options.Requests, kiosk, RequestContext.ClientInformation.IpAddress );
 
                 if ( !options.Session.IsPending )

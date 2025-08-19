@@ -16,13 +16,11 @@
 //
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Linq;
 
 using Rock.Data;
 using Rock.Net;
 using Rock.Security;
 using Rock.ViewModels.Controls;
-using Rock.ViewModels.Utility;
 
 namespace Rock.Core.Automation.Events
 {
@@ -42,11 +40,6 @@ namespace Rock.Core.Automation.Events
             /// The Lava template to merge.
             /// </summary>
             public const string Template = "template";
-
-            /// <summary>
-            /// The Lava commands that are enabled for this template as a comma separated list.
-            /// </summary>
-            public const string EnabledLavaCommands = "enabledLavaCommands";
         }
 
         #endregion Keys
@@ -76,11 +69,10 @@ namespace Rock.Core.Automation.Events
         public override AutomationEventExecutor CreateExecutor( int automationEventId, Dictionary<string, string> privateConfiguration, RockContext rockContext )
         {
             var template = privateConfiguration.GetValueOrNull( ConfigurationKey.Template );
-            var enabledLavaCommands = privateConfiguration.GetValueOrNull( ConfigurationKey.EnabledLavaCommands );
 
             if ( template.IsNotNullOrWhiteSpace() )
             {
-                return new LavaEventExecutor( automationEventId, template, enabledLavaCommands );
+                return new LavaEventExecutor( automationEventId, template );
             }
 
             return null;
@@ -99,27 +91,6 @@ namespace Rock.Core.Automation.Events
         }
 
         /// <inheritdoc/>
-        public override Dictionary<string, string> GetPublicConfiguration( Dictionary<string, string> privateConfiguration, RockContext rockContext, RockRequestContext requestContext )
-        {
-            var publicConfiguration = new Dictionary<string, string>( privateConfiguration );
-
-            if ( publicConfiguration.TryGetValue( ConfigurationKey.EnabledLavaCommands, out var enabledLavaCommands ) )
-            {
-                publicConfiguration[ConfigurationKey.EnabledLavaCommands] = enabledLavaCommands
-                    .Split( ',' )
-                    .Select( c => new ListItemBag
-                    {
-                        Value = c,
-                        Text = c.SplitCase()
-                    } )
-                    .ToList()
-                    .ToCamelCaseJson( false, false );
-            }
-
-            return publicConfiguration;
-        }
-
-        /// <inheritdoc/>
         public override Dictionary<string, string> GetPrivateConfiguration( Dictionary<string, string> publicConfiguration, RockContext rockContext, RockRequestContext requestContext )
         {
             var privateConfiguration = new Dictionary<string, string>();
@@ -127,15 +98,6 @@ namespace Rock.Core.Automation.Events
             if ( publicConfiguration.TryGetValue( ConfigurationKey.Template, out var template ) )
             {
                 privateConfiguration[ConfigurationKey.Template] = template;
-            }
-
-            if ( publicConfiguration.TryGetValue( ConfigurationKey.EnabledLavaCommands, out var enabledLavaCommands ) )
-            {
-                privateConfiguration[ConfigurationKey.EnabledLavaCommands] = enabledLavaCommands
-                    .FromJsonOrNull<List<ListItemBag>>()
-                    ?.Select( c => c.Value )
-                    .JoinStrings( "," )
-                    ?? string.Empty;
             }
 
             return privateConfiguration;

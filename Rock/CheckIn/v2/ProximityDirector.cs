@@ -116,6 +116,8 @@ namespace Rock.CheckIn.v2
                     Activity.Current?.AddEvent( new ActivityEvent( "Complete IsFirstTime" ) );
                 }
 
+                var sourceValueId = DefinedValueCache.Get( SystemGuid.DefinedValue.ATTENDANCE_SOURCE_PROXIMITY.AsGuid(), _rockContext )?.Id;
+
                 if ( attendance.StartDateTime > now || attendance.StartDateTime == DateTime.MinValue )
                 {
                     attendance.StartDateTime = now;
@@ -125,6 +127,7 @@ namespace Rock.CheckIn.v2
                 attendance.CheckInStatus = Enums.Event.CheckInStatus.Present;
                 attendance.DidAttend = true;
                 attendance.CampusId = option.CampusId;
+                attendance.SourceValueId = sourceValueId;
 
                 _rockContext.SaveChanges();
 

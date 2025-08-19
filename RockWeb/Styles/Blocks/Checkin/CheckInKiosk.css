@@ -30,6 +30,10 @@
     color: var(--color-interface-strong);
 }
 
+.check-in-page .grid-obsidian .btn-default {
+    background-color:  transparent;
+}
+
 .check-in-page  .btn.btn-default.check-in-button {
     font-size: var(--font-size-regular);
     font-size: var(--font-size-h4);

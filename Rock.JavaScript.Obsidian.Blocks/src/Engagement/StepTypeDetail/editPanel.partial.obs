@@ -321,8 +321,10 @@
     const isWorkflowModalOpen = ref(false);
     const triggerType = ref("");
     const triggerTypes = ref(props.options.triggerTypes ?? []);
-    const stepStatuses = ref(props.options.stepStatuses ?? []);
     const organizationalObjectives = (props.options.organizationalObjectives ?? []);
+    const stepStatuses = ref<ListItemBag[]>(
+        (props.options.stepStatuses?.map(s => s.stepStatus).filter((s): s is ListItemBag => !!s)) ?? []
+    );
     const primaryQualifier = ref("");
     const secondaryQualifier = ref("");
     const stepWorkflowTrigger = ref<StepTypeWorkflowTriggerBag>({});

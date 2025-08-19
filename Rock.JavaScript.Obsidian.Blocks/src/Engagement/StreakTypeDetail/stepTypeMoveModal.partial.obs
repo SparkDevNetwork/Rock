@@ -20,13 +20,13 @@
             <RockLabel>Status Mappings</RockLabel>
             <p class="status-mapping-description">Select a new status for each of the existing statuses below.</p>
 
-            <template v-for="status in currentStepStatuses">
-                <div v-if="status.value" :key="status.value" class="status-mapping-row">
-                    <span class="status-mapping-cell text-truncate">{{ status.text }}</span>
+            <template v-for="statusBag in currentStepStatuses">
+                <div v-if="statusBag.stepStatus?.value" :key="statusBag.stepStatus.value" class="status-mapping-row">
+                    <span class="status-mapping-cell text-truncate">{{ statusBag.stepStatus.text }}</span>
                     <div class="status-mapping-cell">
-                        <DropDownList v-model="statusMapping[status.value]"
-                                      :items="transferProgramStatuses"
-                                      :rules="getTargetStatusRules(status.text ?? '')" />
+                        <DropDownList v-model="statusMapping[statusBag.stepStatus.value]"
+                                      :items="transferProgramStatuses(statusBag.isCompletionStatus)"
+                                      :rules="getTargetStatusRules(statusBag.stepStatus?.text ?? '')" />
                     </div>
                 </div>
             </template>
@@ -66,6 +66,7 @@
     import { createRuleWithReplacement, required } from "./utils.partial";
     import { ValidationRule } from "@Obsidian/ValidationRules";
     import { isNullOrWhiteSpace } from "@Obsidian/Utility/stringUtils";
+    import { StepStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepStatusBag";
 
     const props = defineProps({
         modelValue: {
@@ -74,7 +75,7 @@
         },
 
         currentStepStatuses: {
-            type: Array as PropType<ListItemBag[]>,
+            type: Array as PropType<StepStatusBag[]>,
             required: true
         },
 
@@ -102,7 +103,24 @@
 
     const errorMessage = computed(() => props.errorMessage);
 
-    const transferProgramStatuses = computed(() => props.availableStepPrograms.filter(s => s.stepProgram?.value === targetStepProgram.value).flatMap(s => s.stepStatuses ?? []));
+    const transferProgramStatusBags = computed(() => {
+        return (props.availableStepPrograms ?? [])
+            .filter(p => p.stepProgram?.value === targetStepProgram.value)
+            .flatMap(p => p.stepStatuses ?? []);
+    });
+
+    /**
+     * Gets the available transfer statuses that match the completion setting on the source status.
+     * @param isSourceStatusCompletion the Completion status of the source status
+     */
+    const transferProgramStatuses = (isSourceStatusCompletion: boolean): ListItemBag[] => {
+        return transferProgramStatusBags.value
+            .filter((s): s is StepStatusBag =>
+                (s as StepStatusBag).isCompletionStatus === isSourceStatusCompletion
+            )
+            .map(s => (s as StepStatusBag).stepStatus)
+            .filter((s): s is ListItemBag => s != null);
+    };
 
     function onTransfer(): void {
         const bag = <StepTypeTransferBag>{

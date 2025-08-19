@@ -21,6 +21,7 @@
 // </copyright>
 //
 
+import { StepStatusBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepStatusBag";
 import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type StepProgramBag = {
@@ -28,5 +29,5 @@ export type StepProgramBag = {
     stepProgram?: ListItemBag | null;
 
     /** Gets or sets the step statuses. */
-    stepStatuses?: ListItemBag[] | null;
+    stepStatuses?: StepStatusBag[] | null;
 };

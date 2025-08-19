@@ -39,7 +39,7 @@ namespace Rock.ViewModels.Blocks.Engagement.StepTypeDetail
         /// <value>
         /// The step statuses.
         /// </value>
-        public List<ListItemBag> StepStatuses { get; set; }
+        public List<StepStatusBag> StepStatuses { get; set; }
 
         /// <summary>
         /// Gets or sets the step programs.

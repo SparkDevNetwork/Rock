@@ -5,7 +5,7 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base style
 // =============================================================
 
@@ -93,7 +93,7 @@
     &.day:hover,
     &.focused {
       cursor:       pointer;
-      background:   var(--color-interface-softer);
+      background:   var(--color-interface-soft);
     }
     &.disabled,
     &.disabled:hover {

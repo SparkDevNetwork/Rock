@@ -27,4 +27,8 @@ export const StepType = {
     Baptism: "801cc43c-0641-4271-939e-75e428f31d06",
     /** eRA Step Type */
     Era: "E57468BE-15BF-48B6-AAB2-F8E2B02720F3",
+    /** Serve Step Type */
+    Serve: "71E66730-8F7D-4EEF-9C53-524C4BDE5E59",
+    /** Small Group Step Type */
+    SmallGroup: "EFA15A4F-5666-4153-B92F-AF3ECD73C504",
 };

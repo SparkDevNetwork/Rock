@@ -5,8 +5,8 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style  
+// Table of Content
+//  + Base Style
 // =============================================================
 
 
@@ -26,6 +26,11 @@ ul.list-group-panel,
 
     &:first-child {
       border: 0;
+    }
+
+    &:last-child {
+      border-bottom-left-radius: var(--rounded-medium);
+      border-bottom-right-radius: var(--rounded-medium);
     }
   }
 }

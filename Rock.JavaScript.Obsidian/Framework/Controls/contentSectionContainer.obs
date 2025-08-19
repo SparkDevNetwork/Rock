@@ -1,7 +1,7 @@
 <template>
-    <div class="content-section-container"
+    <div class="contentsection-container"
          :class="additionalSectionContainerClasses">
-        <div class="content-section-list">
+        <div class="contentsection-list">
             <slot />
         </div>
 
@@ -9,50 +9,6 @@
                            :sections="sections" />
     </div>
 </template>
-
-<style>
-.content-section-container {
-    display: flex;
-    flex-direction: row;
-    gap: var(--spacing-large);
-    height: auto;
-    width: 100%;
-    align-items: flex-start;
-}
-
-.content-section-container > .content-section-nav {
-    height: 100%;
-    flex: 0 0 20%;
-    position: sticky;
-    top: 0;
-}
-
-.content-section-list {
-    display: flex;
-    flex-direction: column;
-    flex: 1 1 80%;
-    gap: var(--spacing-xlarge);
-    height: auto;
-    overflow-y: auto;
-    scroll-behavior: smooth;
-}
-
-.content-section-container.content-section-nav-left {
-    flex-direction: row-reverse;
-}
-
-@media (max-width: 767px) {
-    .content-section-container .content-section-nav {
-        display: none;
-    }
-}
-
-@media (min-width: 768px) and (max-width: 991px) {
-    .content-section-container > .content-section-nav {
-        top: 16px;
-    }
-}
-</style>
 
 <script setup lang="ts">
     import ContentSectionNav from "@Obsidian/Controls/Internal/contentSectionNav.obs";
@@ -110,7 +66,7 @@
      */
     const additionalSectionContainerClasses = computed((): string[] => {
         return [
-            props.sidebarPosition === "right" ? "content-section-nav-right" : "content-section-nav-left"
+            props.sidebarPosition === "right" ? "contentsection-nav-right" : "contentsection-nav-left"
         ];
     });
 
