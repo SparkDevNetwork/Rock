@@ -87,11 +87,6 @@ namespace Rock.AI.Agent.Skills
         [UserDescription( "Provides information on the campuses." )]
         public RockFunctionResult LookupCampuses()
         {
-            foreach( var cs in  CampusCache.All()[0].CampusSchedules )
-            {
-                var schedule = cs.Schedule;
-            }
-
             var campusResults = RockCache.GetOrAddExisting( "rock.core.aiagent.lookupcampuses", null, () =>
             {
                 return LoadCampuses();
