@@ -90,12 +90,12 @@ namespace Rock.AI.Agent.Skills
         )]
         [UserDescription( "Lists page visits for a specific person." )]
         [AgentFunctionGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
-        public RockFunctionResult ListPageVisitsForPerson( ListPageVisitsArguments arguments )
+        public RockToolResult ListPageVisitsForPerson( ListPageVisitsArguments arguments )
         {
             var errors = new List<string>();
             if ( arguments == null )
             {
-                return RockFunctionResult.Error( "Options are required." );
+                return RockToolResult.Error( "Options are required." );
             }
 
             var start = arguments.StartDate;
@@ -137,7 +137,7 @@ namespace Rock.AI.Agent.Skills
 
             if ( errors.Count > 0 )
             {
-                return RockFunctionResult.Error( string.Join( " ", errors ) );
+                return RockToolResult.Error( errors );
             }
 
             try
@@ -175,15 +175,17 @@ namespace Rock.AI.Agent.Skills
 
                 if ( !rows.Any() )
                 {
-                    return RockFunctionResult.NoData( meta: meta );
+                    return RockToolResult.NoData()
+                        .WithMetadata( meta );
                 }
 
-                return RockFunctionResult.Success( rows, meta: meta );
+                return RockToolResult.Success( rows )
+                    .WithMetadata( meta );
             }
             catch ( Exception ex )
             {
                 _logger.LogError( ex, "LookupSiteAnalytics failed for PersonId={PersonId}, SiteId={SiteId}", personId, siteId );
-                return RockFunctionResult.Error( "Failed to retrieve site analytics. " + ex.Message );
+                return RockToolResult.Error( "Failed to retrieve site analytics. " + ex.Message );
             }
         }
 
@@ -195,11 +197,12 @@ namespace Rock.AI.Agent.Skills
         [KernelFunction( "SearchPerson" )]
         [UserDescription( @"Searches for matching people by name. This will search by exact match as well as ""Sounds Like"". Suffixes should be provide in the format of Sr., Jr. III, IV." )]
         [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
-        public RockFunctionResult SearchPerson( string fullName, int maxResults = 10, string campusIdKey = null )
+        public RockToolResult SearchPerson( string fullName, int maxResults = 10, string campusIdKey = null )
         {
             if ( fullName == null || fullName.IsNullOrWhiteSpace() )
             {
-                return RockFunctionResult.Error( "Full name is required.", "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
+                return RockToolResult.Error( "Full name is required.")
+                    .WithInstructions( "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
             }
 
             // Get queryable with the metaphone and full name search.
@@ -222,7 +225,8 @@ namespace Rock.AI.Agent.Skills
                     specificErrorInstructions = "Please retry providing the suffix of Jr. instead of Junior";
                 }
 
-                return RockFunctionResult.Error( "Could not find anyone with the name provided.", specificErrorInstructions );
+                return RockToolResult.Error( "Could not find anyone with the name provided." )
+                    .WithInstructions( "Could not find anyone with the name provided." );
             }
             
             // Append campus filter if provided
@@ -232,7 +236,7 @@ namespace Rock.AI.Agent.Skills
 
                 if ( !campusId.HasValue || campusId <= 0 )
                 {
-                    return RockFunctionResult.Error( "Invalid CampusIdKey provided.", "Provide a valid CampusIdKey. You can get a list of them by calling the LookupCampus function." );
+                    return RockToolResult.Error( "Invalid CampusIdKey provided." );
                 }
 
                 // Confirm that the campusId is valid and filter the search results.
@@ -240,7 +244,7 @@ namespace Rock.AI.Agent.Skills
 
                 if ( campus == null )
                 {
-                    return RockFunctionResult.Error( "Invalid CampusIdKey provided.", "The CampusIdKey provided does not match any existing campus. Use the LookupCampus function to get a list of valid campuses." );
+                    return RockToolResult.Error( "Invalid CampusIdKey provided." );
                 }
 
                 searchQueryable = searchQueryable
@@ -292,7 +296,9 @@ namespace Rock.AI.Agent.Skills
                     { "hasMore", hasMore }
                 };
 
-            return RockFunctionResult.Success( results, "This data represents results that match the search query. These are both exact matches and those that are similar based on metaphone sounds like. All results should be displayed, even if they don't match exactly what was provided.", meta );
+            return RockToolResult.Success( results )
+                .WithInstructions( "This data represents results that match the search query. These are both exact matches and those that are similar based on metaphone sounds like. All results should be displayed, even if they don't match exactly what was provided." )
+                .WithMetadata( meta );
         }
 
         #endregion

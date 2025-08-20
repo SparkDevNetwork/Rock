@@ -18,10 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
-using System.Data.Entity;
 using System.Linq;
-
-using Amazon.Runtime.Internal.Util;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -80,7 +77,7 @@ namespace Rock.AI.Agent.Skills
         [Description( "🎯 Purpose:\r\n1. Determines a date range from a natural language string.\r\n\r\n\U0001f9ed Usage Guidance:\r\n1. This function is useful in cases where you need to determine a start date and end date for another\r\n   function, such as when you want to filter results by a specific date range." )]
         [UserDescription( "Determines a date range from a natural language string." )]
         [AgentFunctionGuid( "87756092-9D52-448E-82EE-556A780DF7CF" )]
-        public RockFunctionResult DetermineDateRange(
+        public RockToolResult DetermineDateRange(
             [Description( "A natural language string, such as 'last week', 'tomorrow', or 'March 1st to March 10th'.")]
             string query )
         {
@@ -89,23 +86,24 @@ namespace Rock.AI.Agent.Skills
 
             if ( dateRange == null )
             {
-                return RockFunctionResult.Error( "A date range could not be determined from the query.", instructions: $"Today is {DateTime.Now}. Using today as a reference date, infer the date range yourself." );
+                return RockToolResult.Error( "A date range could not be determined from the query." )
+                    .WithInstructions( $"Today is {DateTime.Now}. Using today as a reference date, infer the date range yourself." );
             }
 
-            return RockFunctionResult.Success( dateRange );
+            return RockToolResult.Success( dateRange );
         }
 
         [KernelFunction( "LookupCampuses" )]
         [AgentFunctionGuid( "1FDDC83F-2911-5E86-4219-DB4A5F10BD42" )]
         [UserDescription( "Provides information on the campuses." )]
-        public RockFunctionResult LookupCampuses()
+        public RockToolResult LookupCampuses()
         {
             var campusResults = RockCache.GetOrAddExisting( "rock.core.aiagent.lookupcampuses", null, () =>
             {
                 return LoadCampuses();
             }, TimeSpan.FromMinutes( 3 ) ) as List<CampusResult>;
 
-            return RockFunctionResult.Success( campusResults );
+            return RockToolResult.Success( campusResults );
         }
 
         #endregion

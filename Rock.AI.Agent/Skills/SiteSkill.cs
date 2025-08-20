@@ -72,13 +72,13 @@ namespace Rock.AI.Agent.Skills
         [KernelFunction( "LookupSites" )]
         [UserDescription( "Retrieves all configured websites in Rock." )]
         [AgentFunctionGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
-        public async Task<RockFunctionResult> LookupSites()
+        public async Task<RockToolResult> LookupSites()
         {
             var sites = SiteCache.All();
 
             if ( !sites.Any() )
             {
-                return RockFunctionResult.NoData();
+                return RockToolResult.NoData();
             }
 
             var siteList = sites.Select( s => new SiteResult
@@ -101,7 +101,7 @@ namespace Rock.AI.Agent.Skills
 
             await AgentRequestContext.ChatAgent.AddSessionContextAsync( "site-list", trimmedForContext.ToJson() );
 
-            return RockFunctionResult.Success( siteList );
+            return RockToolResult.Success( siteList );
         }
 
         #endregion
