@@ -27,7 +27,7 @@ namespace Rock.AI.Agent.Classes.Common
     /// A common POCO for storing information about a person. Apply only the properties that are needed for the specific use case.
     /// Null properties will not be serialized.
     /// </summary>
-    class PersonResult
+    public class PersonResult
     {
         #region Ignored Properties
         // These properties exist to help with internal logic but they should not be serialized to JSON.
@@ -36,7 +36,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// Gets or sets the person identifier.
         /// </summary>
         [JsonIgnore]
-        public int PersonId { get; set; }
+        public int Id { get; set; }
 
         /// <summary>
         /// Gets or sets the primary family identifier.
@@ -78,7 +78,7 @@ namespace Rock.AI.Agent.Classes.Common
         public string PersonIdKey {
             get
             {
-                return this.PersonId.AsIdKey();
+                return this.Id.AsIdKey();
             }
         }
 
@@ -101,6 +101,11 @@ namespace Rock.AI.Agent.Classes.Common
         /// Gets or sets the person's name suffix.
         /// </summary>
         public string Suffix { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person's e-mail.
+        /// </summary>
+        public string Email { get; set; }
 
         /// <summary>
         /// Gets the URL for the person's avatar image.

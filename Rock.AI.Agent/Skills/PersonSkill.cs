@@ -199,7 +199,7 @@ namespace Rock.AI.Agent.Skills
         {
             if ( fullName == null || fullName.IsNullOrWhiteSpace() )
             {
-                return RockFunctionResult.Error( "Full name is required.", instructions: "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
+                return RockFunctionResult.Error( "Full name is required.", "The FullName parameter is required. You may also provide optional filters for CampusKey to filter by a specific campus and MaxResults to limit the results." );
             }
 
             // Get queryable with the metaphone and full name search.
@@ -222,7 +222,7 @@ namespace Rock.AI.Agent.Skills
                     specificErrorInstructions = "Please retry providing the suffix of Jr. instead of Junior";
                 }
 
-                return RockFunctionResult.Error( "Could not find anyone with the name provided.", instructions: specificErrorInstructions );
+                return RockFunctionResult.Error( "Could not find anyone with the name provided.", specificErrorInstructions );
             }
             
             // Append campus filter if provided
@@ -252,7 +252,7 @@ namespace Rock.AI.Agent.Skills
             var results = searchQueryable
                 .Select( p => new PersonResult
                 {
-                    PersonId = p.Id,
+                    Id = p.Id,
                     FirstName = p.FirstName,
                     NickName = p.NickName,
                     LastName = p.LastName,
@@ -292,7 +292,7 @@ namespace Rock.AI.Agent.Skills
                     { "hasMore", hasMore }
                 };
 
-            return RockFunctionResult.Success( results, meta: meta, instructions: "This data represents results that match the search query. These are both exact matches and those that are similar based on metaphone sounds like. All results should be displayed, even if they don't match exactly what was provided." );
+            return RockFunctionResult.Success( results, "This data represents results that match the search query. These are both exact matches and those that are similar based on metaphone sounds like. All results should be displayed, even if they don't match exactly what was provided.", meta );
         }
 
         #endregion
@@ -337,17 +337,17 @@ namespace Rock.AI.Agent.Skills
             {
                 result.ChildrenInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
                                                 && m.GroupRoleGuid == childGuid
-                                                && m.PersonId != result.PersonId )
-                                            .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, PersonId = m.PersonId, Suffix = m.Suffix } )
+                                                && m.PersonId != result.Id )
+                                            .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix } )
                                             .ToList();
 
                 result.AdultsInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
                                                 && m.GroupRoleGuid == adultGuid
-                                                && m.PersonId != result.PersonId )
-                                            .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, PersonId = m.PersonId, Suffix = m.Suffix } )
+                                                && m.PersonId != result.Id )
+                                            .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix } )
                                             .ToList();
 
-                var personRoleInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId && m.PersonId == result.PersonId )
+                var personRoleInFamily = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId && m.PersonId == result.Id )
                                             .Select( m => m.GroupRoleGuid )
                                             .FirstOrDefault();
 
@@ -356,10 +356,10 @@ namespace Rock.AI.Agent.Skills
                 {
                     result.Spouse = familyMembers.Where( m => m.FamilyId == result.PrimaryFamilyId
                                                 && m.GroupRoleGuid == adultGuid
-                                                && m.PersonId != result.PersonId
+                                                && m.PersonId != result.Id
                                                 && m.MaritalStatusGuid == marriedMaritalStatusGuid
                                                 && ( !isBibleStrictSpouse || m.Gender != result.Gender || m.Gender == Gender.Unknown || result.Gender == Gender.Unknown ) )
-                                             .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, PersonId = m.PersonId, Suffix = m.Suffix } )
+                                             .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix } )
                                              .FirstOrDefault();
                 }
             }

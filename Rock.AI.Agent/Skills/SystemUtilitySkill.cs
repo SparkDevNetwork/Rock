@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Linq;
 
 using Amazon.Runtime.Internal.Util;
@@ -29,6 +30,8 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.SystemUtilitySkill;
 using Rock.AI.Agent.Utilities;
 using Rock.Core.Geography.Classes;
+using Rock.Data;
+using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
 
@@ -53,6 +56,13 @@ namespace Rock.AI.Agent.Skills
         public SystemUtilitySkill( ILogger<SystemUtilitySkill> logger )
         {
         }
+
+        #endregion
+
+        #region Fields
+
+        private readonly RockContext _rockContext;
+        private readonly ILogger<SystemUtilitySkill> _logger;
 
         #endregion
 
@@ -105,7 +115,7 @@ namespace Rock.AI.Agent.Skills
         /// <returns></returns>
         private List<CampusResult> LoadCampuses()
         {
-            return CampusCache.All()
+            var campuses = CampusCache.All()
                 .Where( c => c.IsActive == true )
                 .Select( c => new CampusResult
                 {
@@ -115,6 +125,7 @@ namespace Rock.AI.Agent.Skills
                     Abbreviation = c.ShortCode,
                     CampusType = c.CampusTypeValue?.Value ?? string.Empty,
                     CampusStatus = c.CampusStatusValue?.Value ?? string.Empty,
+                    CampusTeamGroupId = c.TeamGroupId,
                     Location = new LocationResult
                     {
                         Street1 = c.Location.Street1,
@@ -135,6 +146,28 @@ namespace Rock.AI.Agent.Skills
                                         .ToList()
                 } )
                 .ToList();
+
+            // Add the team information
+            foreach( var campus in campuses.Where( c => c.CampusTeamGroupId != null) )
+            {
+                // Get team members
+                campus.CampusTeamMembers = new GroupMemberService( _rockContext ).Queryable()
+                                    .Where( m => m.GroupId == campus.CampusTeamGroupId )
+                                    .Select( m => new CampusTeamMemberResult
+                                    {
+                                        Role = m.GroupRole.Name,
+                                        TeamMember = new PersonResult
+                                        {
+                                            Id = m.PersonId,
+                                            NickName = m.Person.NickName,
+                                            LastName = m.Person.LastName,
+                                            Email = m.Person.Email
+                                        }
+                                    } )
+                                    .ToList();
+            }
+
+            return campuses;
         }
 
         #endregion
