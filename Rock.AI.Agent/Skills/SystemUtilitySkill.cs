@@ -52,9 +52,12 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemUtilitySkill"/> class.
         /// </summary>
-        /// <param name="logger"></param>
-        public SystemUtilitySkill( ILogger<SystemUtilitySkill> logger )
+        /// <param name="rockContext">Rock data context used for database access.</param>
+        /// <param name="logger">Logger for diagnostics and error reporting.</param>
+        public SystemUtilitySkill( RockContext rockContext, ILogger<SystemUtilitySkill> logger )
         {
+            _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
+            _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 
         #endregion
@@ -115,6 +118,8 @@ namespace Rock.AI.Agent.Skills
         /// <returns></returns>
         private List<CampusResult> LoadCampuses()
         {
+            var isInternal = this.AgentRequestContext.AudienceType == Enums.AI.Agent.AudienceType.Internal;
+
             var campuses = CampusCache.All()
                 .Where( c => c.IsActive == true )
                 .Select( c => new CampusResult
@@ -137,34 +142,50 @@ namespace Rock.AI.Agent.Skills
                         GeographyPoint = ( c.Location.Latitude.HasValue && c.Location.Longitude.HasValue ) ? new GeographyPoint( c.Location.Latitude.Value, c.Location.Latitude.Value ) : null
                     },
                     CampusSchedules = c.CampusSchedules
-                                        .Where( s => s.Schedule.IsActive )
-                                        .Select( s => new CampusScheduleResult
-                                        {
-                                            ScheduleName = s.Schedule.FriendlyScheduleText,
-                                            ScheduleType = s.ScheduleTypeValue.Value,
-                                        } )
-                                        .ToList()
+                        .Where( s => s.Schedule.IsActive )
+                        .Select( s => new CampusScheduleResult
+                        {
+                            ScheduleName = s.Schedule.FriendlyScheduleText,
+                            ScheduleType = s.ScheduleTypeValue.Value,
+                        } )
+                        .ToList(),
+                    Attributes = c.AttributeValues
+                        .Where( a => a.Value.AttributeIsPublic == true || isInternal == true )
+                        .Select( a => new AttributeResult
+                        {
+                            Id = a.Value.AttributeId,
+                            Key = a.Key,
+                            Value = a.Value.ValueFormatted
+                        } )
+                        .ToList()
                 } )
                 .ToList();
 
             // Add the team information
             foreach( var campus in campuses.Where( c => c.CampusTeamGroupId != null) )
             {
+                if (campus.CampusTeamGroupId == null )
+                {
+                    continue;
+                }
+
+                // TODO: Filter roles by public once the GroupRole property is merged. 
+
                 // Get team members
                 campus.CampusTeamMembers = new GroupMemberService( _rockContext ).Queryable()
-                                    .Where( m => m.GroupId == campus.CampusTeamGroupId )
-                                    .Select( m => new CampusTeamMemberResult
-                                    {
-                                        Role = m.GroupRole.Name,
-                                        TeamMember = new PersonResult
-                                        {
-                                            Id = m.PersonId,
-                                            NickName = m.Person.NickName,
-                                            LastName = m.Person.LastName,
-                                            Email = m.Person.Email
-                                        }
-                                    } )
-                                    .ToList();
+                    .Where( m => m.GroupId == campus.CampusTeamGroupId )
+                    .Select( m => new CampusTeamMemberResult
+                    {
+                        Role = m.GroupRole.Name,
+                        TeamMember = new PersonResult
+                        {
+                            Id = m.PersonId,
+                            NickName = m.Person.NickName,
+                            LastName = m.Person.LastName,
+                            Email = m.Person.Email
+                        }
+                    } )
+                    .ToList();
             }
 
             return campuses;

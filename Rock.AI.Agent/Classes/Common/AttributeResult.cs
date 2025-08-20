@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using System.Text.Json.Serialization;
+
 namespace Rock.AI.Agent.Classes.Common
 {
     /// <summary>
@@ -21,6 +23,25 @@ namespace Rock.AI.Agent.Classes.Common
     /// </summary>
     public class AttributeResult
     {
+        #region Ignored Properties
+        /// <summary>
+        /// The attribute id. This will not be show in the JSON output.
+        /// </summary>
+        [JsonIgnore]
+        public int Id { get; set; }
+        #endregion
+
+        /// <summary>
+        /// The attribute identifier key.
+        /// </summary>
+        public string AttributeIdKey
+        {
+            get
+            {
+                return this.Id.AsIdKey();
+            }
+        }
+
         /// <summary>
         /// The attribute name.
         /// </summary>
@@ -35,10 +56,5 @@ namespace Rock.AI.Agent.Classes.Common
         /// The attribute key.
         /// </summary>
         public string Key { get; set; }
-
-        /// <summary>
-        /// The attribute identifier key.
-        /// </summary>
-        public string AttributeIdKey { get; set; }
     }
 }
