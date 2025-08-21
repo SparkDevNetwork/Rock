@@ -14,39 +14,30 @@
 // limitations under the License.
 // </copyright>
 //
-using System.ComponentModel;
 
-namespace Rock.Enums.Engagement
+using System;
+using System.Collections.Generic;
+
+namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {
     /// <summary>
-    /// Defines the different views available for step charts.
+    ///
     /// </summary>
-    public enum ChartView
+    public class SeriesBag
     {
         /// <summary>
-        /// The default view showing Key Performance Indicators (KPIs).
+        /// Gets or sets the label for the series.
         /// </summary>
-        [Description( "KPIs" )]
-        KPIs = 0,
+        public string Label { get; set; }
 
         /// <summary>
-        /// The view showing trends over time.
+        /// Gets or sets the data for the series.
         /// </summary>
-        Trends = 1,
+        public List<int> Data { get; set; }
 
         /// <summary>
-        /// The view showing totals for the steps.
+        /// Gets or sets the color for the series.
         /// </summary>
-        Totals = 2,
-
-        /// <summary>
-        /// The view showing data segmented by campuses.
-        /// </summary>
-        Campuses = 3,
-
-        /// <summary>
-        /// The view showing the flow of engagement through different steps.
-        /// </summary>
-        Flow = 4,
+        public string Color { get; set; }
     }
 }

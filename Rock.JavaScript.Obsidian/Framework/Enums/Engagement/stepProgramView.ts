@@ -22,7 +22,7 @@
 //
 
 /** Defines the different views available for step charts. */
-export const ChartView = {
+export const StepProgramView = {
     /** The default view showing Key Performance Indicators (KPIs). */
     KPIs: 0,
 
@@ -40,7 +40,7 @@ export const ChartView = {
 } as const;
 
 /** Defines the different views available for step charts. */
-export const ChartViewDescription: Record<number, string> = {
+export const StepProgramViewDescription: Record<number, string> = {
     0: "KPIs",
 
     1: "Trends",
@@ -53,4 +53,4 @@ export const ChartViewDescription: Record<number, string> = {
 };
 
 /** Defines the different views available for step charts. */
-export type ChartView = typeof ChartView[keyof typeof ChartView];
+export type StepProgramView = typeof StepProgramView[keyof typeof StepProgramView];

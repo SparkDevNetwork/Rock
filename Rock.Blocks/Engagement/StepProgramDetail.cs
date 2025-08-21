@@ -23,7 +23,6 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
-using Rock.Chart;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Engagement;
@@ -315,21 +314,6 @@ namespace Rock.Blocks.Engagement
             }
 
             bag.Kpi = kpi;
-
-            var showActivitySummary = ShowActivitySummary( entity );
-
-            if ( showActivitySummary )
-            {
-                // Get chart data and set visibility of related elements.
-                var chartFactory = GetChartJsFactory( defaultDateRange , entity);
-
-                if ( chartFactory.HasData )
-                {
-                    var args = GetChartArgs();
-                    // Add client script to construct the chart.
-                    bag.ChartData = chartFactory.GetChartDataJson( args );
-                }
-            }
 
             var lavaNodes = new List<Object>();
             int order = 0;
@@ -645,172 +629,232 @@ namespace Rock.Blocks.Engagement
             return stepsQuery;
         }
 
-        //private List<StepTypeActivityDataPoint> GetStepsByMeasure( StepChartMeasure selectedMeasure, IQueryable<Step> stepsQuery, bool isCompletionOnly, int timeUnitHelper )
-        //{
-        //    var qry = stepsQuery.Select( s => new
-        //    {
-        //        DateKey = isCompletionOnly ? s.CompletedDateKey / timeUnitHelper : s.StartDateKey / timeUnitHelper,
-        //        s.StepType.EngagementType,
-        //        OrganizationObjective = s.StepType.OrganizationalObjectiveValue,
-        //        StepTypeName = s.StepType.Name,
-        //        StepTypeOrder = s.StepType.Order,
-        //        s.StepTypeId,
-        //        StepTypeImpactWeight = s.StepType.ImpactWeight,
-        //    } ).Where( s => s.DateKey.HasValue );
-
-        //    switch ( selectedMeasure )
-        //    {
-        //        case StepChartMeasure.Steps:
-        //            return qry.GroupBy( s => new
-        //            {
-        //                DateKey = s.DateKey.Value, // todo - date grouping
-        //                DatasetName = s.StepTypeName,
-        //                SortKey1 = s.StepTypeOrder,
-        //                SortKey2 = s.StepTypeId
-        //            } )
-        //            .Select( x => new
-        //            {
-        //                x.Key,
-        //                Count = x.Count()
-        //            } )
-        //            .ToList()
-        //            .Select( x => new StepTypeActivityDataPoint
-        //            {
-        //                StepTypeName = x.Key.DatasetName,
-        //                DateTime = x.Key.DateKey.GetDateKeyDate(),
-        //                SortKey1 = x.Key.SortKey1,
-        //                SortKey2 = x.Key.SortKey2,
-        //                CompletedCount = x.Count
-        //            } )
-        //            .OrderBy( x => x.SortKey1 )
-        //            .ThenBy( x => x.SortKey2 )
-        //            .ToList();
-        //        case StepChartMeasure.ImpactAdjustedSteps:
-        //            return qry.Where( s => s.StepTypeImpactWeight.HasValue ).GroupBy( s => new
-        //            {
-        //                DateKey = s.DateKey.Value,
-        //                DatasetName = s.StepTypeName,
-        //                SortKey1 = s.StepTypeOrder,
-        //                SortKey2 = s.StepTypeId,
-        //                ImpactWeight = s.StepTypeImpactWeight.Value
-        //            } )
-        //            .Select( x => new
-        //            {
-        //                x.Key,
-        //                Count = x.Count() * x.Key.ImpactWeight
-        //            } )
-        //            .ToList()
-        //            .Select( x => new StepTypeActivityDataPoint
-        //            {
-        //                StepTypeName = x.Key.DatasetName,
-        //                DateTime = x.Key.DateKey.GetDateKeyDate(),
-        //                SortKey1 = x.Key.SortKey1,
-        //                SortKey2 = x.Key.SortKey2,
-        //                CompletedCount = x.Count
-        //            } )
-        //            .OrderBy( x => x.SortKey1 )
-        //            .ThenBy( x => x.SortKey2 )
-        //            .ToList();
-        //        case StepChartMeasure.TotalSteps:
-        //            return qry.GroupBy( s => new
-        //            {
-        //                DateKey = s.DateKey.Value, // todo - date grouping
-        //            } )
-        //            .Select( x => new
-        //            {
-        //                x.Key,
-        //                Count = x.Count()
-        //            } )
-        //            .ToList()
-        //            .Select( x => new StepTypeActivityDataPoint
-        //            {
-        //                StepTypeName = "Total Steps",
-        //                DateTime = x.Key.DateKey.GetDateKeyDate(),
-        //                CompletedCount = x.Count
-        //            } )
-        //            .ToList();
-        //        case StepChartMeasure.EngagementType:
-        //            return qry.Where( s => s.EngagementType.HasValue ).GroupBy( s => new
-        //            {
-        //                DateKey = s.DateKey.Value, // todo - date grouping
-        //                DatasetName = s.EngagementType,
-        //            } )
-        //            .Select( x => new
-        //            {
-        //                x.Key,
-        //                Count = x.Count()
-        //            } )
-        //            .ToList()
-        //            .Select( x => new StepTypeActivityDataPoint
-        //            {
-        //                StepTypeName = x.Key.DatasetName.ToString(),
-        //                DateTime = x.Key.DateKey.GetDateKeyDate(),
-        //                CompletedCount = x.Count
-        //            } )
-        //            .ToList();
-        //        case StepChartMeasure.OrganizationObjective:
-        //            return qry.Where( s => s.OrganizationObjective != null && s.OrganizationObjective.Value != null ).GroupBy( s => new
-        //            {
-        //                DateKey = s.DateKey.Value, // todo - date grouping
-        //                DatasetName = s.OrganizationObjective.Value,
-        //            } )
-        //            .Select( x => new
-        //            {
-        //                x.Key,
-        //                Count = x.Count()
-        //            } )
-        //            .ToList()
-        //            .Select( x => new StepTypeActivityDataPoint
-        //            {
-        //                StepTypeName = x.Key.DatasetName,
-        //                DateTime = x.Key.DateKey.GetDateKeyDate(),
-        //                CompletedCount = x.Count
-        //            } )
-        //            .ToList();
-        //    }
-        //}
-
-        /// <summary>
-        /// Gets the completed step query.
-        /// </summary>
-        /// <returns></returns>
-        private IQueryable<Step> GetStepsCompletedQuery( string delimitedDateRange, StepProgram stepProgram )
+        private DateTime GetDateTimeWithTimeUnitHelper( int timeUnitHelper, int dateKey )
         {
-            var stepService = new StepService( RockContext );
-            var stepProgramId = stepProgram.Id;
-
-            var query = stepService.Queryable()
-                .AsNoTracking()
-                .Where( x =>
-                    x.StepType.StepProgramId == stepProgramId &&
-                    x.StepType.IsActive &&
-                    x.CompletedDateKey != null );
-
-            var campusContext = this.RequestContext.GetContextEntity<Campus>();
-            if ( campusContext != null )
+            if ( timeUnitHelper != 1 )
             {
-                query = query.Where( s => s.CampusId == campusContext.Id );
+                dateKey = ( dateKey * timeUnitHelper ) + 1;
             }
 
-            // Apply date range
-            var reportPeriod = new TimePeriod( delimitedDateRange );
-            var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start;
-            var endDate = dateRange.End;
+            return dateKey.GetDateKeyDate();
+        }
+
+        private ChartDataBag GetStepsByMeasure( StepChartMeasure selectedMeasure, IQueryable<Step> stepsQuery, bool isCompletionOnly, int timeUnitHelper, DateRange filterDateRange )
+        {
+            var startDate = filterDateRange.Start;
+            var endDate = filterDateRange.End;
+
+            var qry = stepsQuery.Include( s => s.StepType )
+                .Select( s => new
+                {
+                    DateKey = isCompletionOnly ? s.CompletedDateKey / timeUnitHelper : s.StartDateKey / timeUnitHelper,
+                    s.StepType.EngagementType,
+                    OrganizationObjective = s.StepType.OrganizationalObjectiveValue,
+                    StepTypeName = s.StepType.Name,
+                    StepTypeOrder = s.StepType.Order,
+                    s.StepTypeId,
+                    StepTypeImpactWeight = s.StepType.ImpactWeight,
+                    s.StepType.HighlightColor
+                } )
+                .Where( s => s.DateKey.HasValue );
 
             if ( startDate != null )
             {
-                var startDateKey = startDate.Value.ToDateKey();
-                query = query.Where( x => x.CompletedDateKey >= startDateKey );
+                var startDateKey = startDate.Value.ToDateKey() / timeUnitHelper;
+                qry = qry.Where( x => x.DateKey >= startDateKey );
             }
 
             if ( endDate != null )
             {
-                var compareDateKey = endDate.Value.ToDateKey();
-                query = query.Where( x => x.CompletedDateKey <= compareDateKey );
+                var compareDateKey = endDate.Value.ToDateKey() / timeUnitHelper;
+                qry = qry.Where( x => x.DateKey <= compareDateKey );
             }
 
-            return query;
+            var dateKeys = new List<int>();
+            var chartData = new ChartDataBag();
+
+            switch ( selectedMeasure )
+            {
+                case StepChartMeasure.Steps:
+                    var stepsData = qry.GroupBy( s => new { DateKey = s.DateKey.Value, s.StepTypeName, s.HighlightColor } )
+                        .Select( g => new
+                        {
+                            g.Key.DateKey,
+                            g.Key.StepTypeName,
+                            g.Key.HighlightColor,
+                            Count = g.Count()
+                        } )
+                        .ToList();
+
+                    dateKeys = stepsData
+                        .Select( d => d.DateKey )
+                        .Distinct()
+                        .OrderBy( k => k )
+                        .ToList();
+
+                    var stepsLookup = stepsData.ToDictionary( d => (d.DateKey, d.StepTypeName), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = dateKeys.Select( d => GetDateTimeWithTimeUnitHelper( timeUnitHelper, d ) ).ToList(),
+                        Series = stepsData.Select( d => new
+                            {
+                                d.StepTypeName,
+                                d.HighlightColor
+                            } )
+                            .Distinct()
+                            .Select( stepType => new SeriesBag
+                            {
+                                Label = stepType.StepTypeName,
+                                Data = dateKeys.Select( date => stepsLookup.TryGetValue( (date, stepType.StepTypeName), out var count ) ? count : 0 )
+                                    .ToList(),
+                                Color = stepType.HighlightColor
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.ImpactAdjustedSteps:
+                    var impactStepsData = qry.Where( s => s.StepTypeImpactWeight.HasValue )
+                        .GroupBy( s => new { DateKey = s.DateKey.Value, s.StepTypeName, ImpactWeight = s.StepTypeImpactWeight.Value, s.HighlightColor } )
+                        .Select( g => new
+                        {
+                            g.Key.DateKey,
+                            g.Key.StepTypeName,
+                            g.Key.HighlightColor,
+                            Count = g.Count() * g.Key.ImpactWeight
+                        } )
+                        .ToList();
+
+                    dateKeys = impactStepsData
+                        .Select( d => d.DateKey )
+                        .Distinct()
+                        .OrderBy( k => k )
+                        .ToList();
+
+                    var impactStepsLookup = impactStepsData.ToDictionary( d => (d.DateKey, d.StepTypeName), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = dateKeys.Select( d => GetDateTimeWithTimeUnitHelper( timeUnitHelper, d ) ).ToList(),
+                        Series = impactStepsData.Select( d => new
+                        {
+                            d.StepTypeName,
+                            d.HighlightColor
+                        } )
+                            .Distinct()
+                            .Select( stepType => new SeriesBag
+                            {
+                                Label = stepType.StepTypeName,
+                                Data = dateKeys.Select( date => impactStepsLookup.TryGetValue( (date, stepType.StepTypeName), out var count ) ? count : 0 )
+                                    .ToList(),
+                                Color = stepType.HighlightColor
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.TotalSteps:
+                    var totalStepsData = qry.GroupBy( s => s.DateKey.Value )
+                        .Select( g => new
+                        {
+                            g.Key,
+                            Count = g.Count()
+                        } )
+                        .ToList();
+
+                    dateKeys = totalStepsData.Select( d => d.Key ).ToList();
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = dateKeys.Select( d => GetDateTimeWithTimeUnitHelper( timeUnitHelper, d ) ).ToList(),
+                        Series = new List<SeriesBag>
+                        {
+                            new SeriesBag
+                            {
+                                Label = "Steps",
+                                Data = totalStepsData.Select(d => d.Count).ToList()
+                            }
+                        }
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.OrganizationObjective:
+                    var orgObjectiveStepsData = qry.Where( s => s.OrganizationObjective != null && s.OrganizationObjective.Value != null )
+                        .GroupBy( s => new { DateKey = s.DateKey.Value, OrganizationObjectiveValue = s.OrganizationObjective.Value } )
+                        .Select( g => new
+                        {
+                            g.Key.DateKey,
+                            g.Key.OrganizationObjectiveValue,
+                            Count = g.Count()
+                        } )
+                        .ToList();
+
+                    dateKeys = orgObjectiveStepsData
+                        .Select( d => d.DateKey )
+                        .Distinct()
+                        .OrderBy( k => k )
+                        .ToList();
+
+                    var orgObjectiveStepsLookup = orgObjectiveStepsData.ToDictionary( d => (d.DateKey, d.OrganizationObjectiveValue), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = dateKeys.Select( d => GetDateTimeWithTimeUnitHelper( timeUnitHelper, d ) ).ToList(),
+                        Series = orgObjectiveStepsData.Select( d => d.OrganizationObjectiveValue )
+                            .Distinct()
+                            .Select( organizationObjective => new SeriesBag
+                            {
+                                Label = organizationObjective,
+                                Data = dateKeys.Select( date => orgObjectiveStepsLookup.TryGetValue( (date, organizationObjective), out var count ) ? count : 0 )
+                                    .ToList()
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+                case StepChartMeasure.EngagementType:
+                    var engagementStepsData = qry.Where( s => s.EngagementType.HasValue )
+                        .GroupBy( s => new { DateKey = s.DateKey.Value, EngagementType = s.EngagementType.Value.ToString() } )
+                        .Select( g => new
+                        {
+                            g.Key.DateKey,
+                            g.Key.EngagementType,
+                            Count = g.Count()
+                        } )
+                        .ToList();
+
+                    dateKeys = engagementStepsData
+                        .Select( d => d.DateKey )
+                        .Distinct()
+                        .OrderBy( k => k )
+                        .ToList();
+
+                    var engagementStepsLookup = engagementStepsData.ToDictionary( d => (d.DateKey, d.EngagementType), d => d.Count );
+
+                    chartData = new ChartDataBag
+                    {
+                        DateLabels = dateKeys.Select( d => GetDateTimeWithTimeUnitHelper( timeUnitHelper, d ) ).ToList(),
+                        Series = engagementStepsData.Select( d => d.EngagementType )
+                            .Distinct()
+                            .Select( engagementType => new SeriesBag
+                            {
+                                Label = engagementType,
+                                Data = dateKeys.Select( date => engagementStepsLookup.TryGetValue( (date, engagementType), out var count ) ? count : 0 )
+                                    .ToList()
+                            } )
+                            .ToList()
+                    };
+
+                    return chartData;
+
+            }
+
+            return null;
         }
 
         /// <summary>
@@ -992,189 +1036,32 @@ namespace Rock.Blocks.Engagement
             return showActivitySummary;
         }
 
-        //private GetNewChartJsFactory<ChartJsTimeSeriesDataPoint> GetNewChartJsFactory( string delimitedDateRange, StepChartMeasure selectedMeasure, string statusFilter, StepProgramCache stepProgram )
-        //{
-        //    var reportPeriod = new TimePeriod( delimitedDateRange );
-        //    var dateRange = reportPeriod.GetDateRange();
-        //    var startDate = dateRange.Start;
-        //    var endDate = dateRange.End;
-        //    int timeUnitHelper;
-
-        //    if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
-        //    {
-        //        timeUnitHelper = 100;
-        //    }
-        //    else
-        //    {
-        //        timeUnitHelper = 1;
-        //    }
-
-        //    var stepService = new StepService( RockContext );
-        //    var query = stepService.Queryable()
-        //        .AsNoTracking()
-        //        .Where( x =>
-        //            x.StepType.StepProgramId == stepProgram.Id &&
-        //            x.StepType.IsActive );
-
-        //    query = GetStepsFilteredByStatus( statusFilter, query, out bool isCompletionOnly );
-
-        //    List<StepTypeActivityDataPoint> stepTypeDataPoints = GetStepsByMeasure( selectedMeasure, query, isCompletionOnly, timeUnitHelper );
-        //}
-
-        /// <summary>
-        /// Gets a configured factory that creates the data required for the chart.
-        /// </summary>
-        /// <returns></returns>
-        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( string delimitedDateRange, StepProgram stepProgram )
+        // TODO - Probably remove factory and put in block action
+        private ChartDataBag GetChartDataFactory( string delimitedDateRange, StepChartMeasure selectedMeasure, string statusFilter, StepProgramCache stepProgram )
         {
             var reportPeriod = new TimePeriod( delimitedDateRange );
             var dateRange = reportPeriod.GetDateRange();
-            var startDate = dateRange.Start;
-            var endDate = dateRange.End;
-            StepProgram program = stepProgram;
-
-            // Get all of the completed Steps associated with the current program, grouped by Step Type.
-            var stepsCompletedQuery = GetStepsCompletedQuery( delimitedDateRange, stepProgram );
-
-            if ( startDate.HasValue )
-            {
-                startDate = startDate.Value.Date;
-                var startDateKey = startDate.ToDateKey();
-                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateKey.Value >= startDateKey );
-            }
-
-            if ( endDate != null )
-            {
-                var compareDateKey = endDate.Value.ToDateKey();
-                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateKey.Value <= compareDateKey );
-            }
-
-            List<StepTypeActivityDataPoint> stepTypeDataPoints;
-
-            // Get the Data Points, scaled according to the currently selected range.
-            ChartJsTimeSeriesTimeScaleSpecifier chartTimeScale;
+            int timeUnitHelper;
 
             if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
             {
-                // Group by Month
-                chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
-
-                stepTypeDataPoints = stepsCompletedQuery
-                    .GroupBy( x => new
-                    {
-                        MonthKey = x.CompletedDateKey.Value / 100,
-                        DatasetName = x.StepType.Name,
-                        SortKey1 = x.StepType.Order,
-                        SortKey2 = x.StepTypeId
-                    } )
-                    .Select( x => new
-                    {
-                        x.Key,
-                        Count = x.Count()
-                    } )
-                    .ToList()
-                    .Select( x =>
-                    {
-                        // Add 1 for the first day of the month
-                        var dateKey = ( x.Key.MonthKey * 100 ) + 1;
-
-                        return new StepTypeActivityDataPoint
-                        {
-                            StepTypeName = x.Key.DatasetName,
-                            DateTime = dateKey.GetDateKeyDate(),
-                            SortKey1 = x.Key.SortKey1,
-                            SortKey2 = x.Key.SortKey2,
-                            CompletedCount = x.Count
-                        };
-                    } )
-                    .OrderBy( x => x.SortKey1 )
-                    .ThenBy( x => x.SortKey2 )
-                    .ToList();
+                timeUnitHelper = 100;
             }
             else
             {
-                // Group by Day
-                chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
-
-                stepTypeDataPoints = stepsCompletedQuery
-                    .GroupBy( x => new
-                    {
-                        DateKey = x.CompletedDateKey.Value,
-                        DatasetName = x.StepType.Name,
-                        SortKey1 = x.StepType.Order,
-                        SortKey2 = x.StepTypeId
-                    } )
-                    .Select( x => new
-                    {
-                        x.Key,
-                        Count = x.Count()
-                    } )
-                    .ToList()
-                    .Select( x => new StepTypeActivityDataPoint
-                    {
-                        StepTypeName = x.Key.DatasetName,
-                        DateTime = x.Key.DateKey.GetDateKeyDate(),
-                        SortKey1 = x.Key.SortKey1,
-                        SortKey2 = x.Key.SortKey2,
-                        CompletedCount = x.Count
-                    } )
-                    .OrderBy( x => x.SortKey1 )
-                    .ThenBy( x => x.SortKey2 )
-                    .ToList();
+                timeUnitHelper = 1;
             }
 
-            var stepTypeDatasets = stepTypeDataPoints
-                .OrderBy( x => x.SortKey1 ).ThenBy( x => x.SortKey2 )
-                .Select( x => x.StepTypeName )
-                .Distinct()
-                .ToList();
+            var stepService = new StepService( RockContext );
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Where( x =>
+                    x.StepType.StepProgramId == stepProgram.Id &&
+                    x.StepType.IsActive );
 
-            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
+            query = GetStepsFilteredByStatus( statusFilter, query, out bool isCompletionOnly );
 
-            factory.TimeScale = chartTimeScale;
-            factory.StartDateTime = startDate;
-            factory.EndDateTime = endDate;
-            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.StackedLine;
-
-            foreach ( var stepTypeDataset in stepTypeDatasets )
-            {
-                var dataset = new ChartJsTimeSeriesDataset();
-
-                // Set Line Color to Step Type Highlight Color.
-                var step = program.StepTypes.FirstOrDefault( x => x.Name == stepTypeDataset );
-
-                if ( step != null )
-                {
-                    dataset.BorderColor = step.HighlightColor;
-                }
-
-                dataset.Name = stepTypeDataset;
-
-                dataset.DataPoints = stepTypeDataPoints
-                                        .Where( x => x.StepTypeName == stepTypeDataset )
-                                        .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.CompletedCount } )
-                                        .Cast<IChartJsTimeSeriesDataPoint>()
-                                        .ToList();
-
-                factory.Datasets.Add( dataset );
-            }
-
-            return factory;
-        }
-
-        /// <summary>
-        /// Gets the arguments for creating the Chart.
-        /// </summary>
-        /// <returns></returns>
-        private static ChartJsTimeSeriesDataFactory.GetJsonArgs GetChartArgs()
-        {
-            return new ChartJsTimeSeriesDataFactory.GetJsonArgs
-            {
-                DisplayLegend = false,
-                LineTension = 0.4m,
-                MaintainAspectRatio = false,
-                SizeToFitContainerWidth = true
-            };
+            return GetStepsByMeasure( selectedMeasure, query, isCompletionOnly, timeUnitHelper, dateRange );
         }
 
         /// <summary>
@@ -1486,54 +1373,35 @@ namespace Rock.Blocks.Engagement
         /// <param name="dateRange"></param>
         /// <returns></returns>
         [BlockAction]
-        public BlockActionResult GetChartData( string dateRange, ChartView selectedChartView )
+        public BlockActionResult GetChartData( string dateRange, StepProgramView selectedProgramView, StepChartMeasure selectedMeasure, string selectedStatusFilter )
         {
-            var stepProgram = new StepProgramService( RockContext ).Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
+            var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
 
             if ( stepProgram == null )
             {
                 return ActionBadRequest( "Could not find the specified Step Program" );
             }
 
-            var showActivitySummary = ShowActivitySummary( stepProgram );
-            var chartDataJson = string.Empty;
+            //var showActivitySummary = ShowActivitySummary( stepProgram );
+            //var chartDataJson = string.Empty;
 
-            if ( showActivitySummary )
-            {
-                // Get chart data and set visibility of related elements.
-                var chartFactory = GetChartJsFactory( dateRange, stepProgram );
+            //if ( showActivitySummary )
+            //{
+            //    // Get chart data and set visibility of related elements.
+            //    var chartFactory = GetChartJsFactory( dateRange, stepProgram );
 
-                if ( chartFactory.HasData )
-                {
-                    var args = GetChartArgs();
-                    // Add client script to construct the chart.
-                    chartDataJson = chartFactory.GetChartDataJson( args );
-                }
-            }
+            //    if ( chartFactory.HasData )
+            //    {
+            //        var args = GetChartArgs();
+            //        // Add client script to construct the chart.
+            //        chartDataJson = chartFactory.GetChartDataJson( args );
+            //    }
+            //}
 
-            return ActionOk( new StepProgramBag() { ChartData = chartDataJson, ShowChart = showActivitySummary } );
+            var chartData = GetChartDataFactory( dateRange, selectedMeasure, selectedStatusFilter, stepProgram );
+
+            return ActionOk( chartData );
         }
-
-        //[BlockAction]
-        //public BlockActionResult GetTrendData( string dateRange, StepChartMeasure selectedMeasure, string statusFilter )
-        //{
-        //    var stepProgram = StepProgramCache.Get( PageParameter( PageParameterKey.StepProgramId ), !PageCache.Layout.Site.DisablePredictableIds );
-
-        //    if ( !stepProgram.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-        //    {
-        //        return ActionBadRequest( "You are not authorized to view this Step Program." );
-        //    }
-
-        //    // Get chart data and set visibility of related elements.
-        //    var chartFactory = GetNewChartJsFactory( dateRange, stepProgram );
-
-        //    if ( chartFactory.HasData )
-        //    {
-        //        var args = GetChartArgs();
-        //        // Add client script to construct the chart.
-        //        chartDataJson = chartFactory.GetChartDataJson( args );
-        //    }
-        //}
 
         [BlockAction]
         public BlockActionResult GetKPIData( string dateRange )
@@ -1720,3 +1588,208 @@ namespace Rock.Blocks.Engagement
         }
     }
 }
+
+
+/*
+
+/// <summary>
+        /// Gets a configured factory that creates the data required for the chart.
+        /// </summary>
+        /// <returns></returns>
+        public ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint> GetChartJsFactory( string delimitedDateRange, StepProgram stepProgram )
+        {
+            var reportPeriod = new TimePeriod( delimitedDateRange );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+            StepProgram program = stepProgram;
+
+            // Get all of the completed Steps associated with the current program, grouped by Step Type.
+            var stepsCompletedQuery = GetStepsCompletedQuery( delimitedDateRange, stepProgram );
+
+            if ( startDate.HasValue )
+            {
+                startDate = startDate.Value.Date;
+                var startDateKey = startDate.ToDateKey();
+                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateKey.Value >= startDateKey );
+            }
+
+            if ( endDate != null )
+            {
+                var compareDateKey = endDate.Value.ToDateKey();
+                stepsCompletedQuery = stepsCompletedQuery.Where( x => x.CompletedDateKey.Value <= compareDateKey );
+            }
+
+            List<StepTypeActivityDataPoint> stepTypeDataPoints;
+
+            // Get the Data Points, scaled according to the currently selected range.
+            ChartJsTimeSeriesTimeScaleSpecifier chartTimeScale;
+
+            if ( reportPeriod.TimeUnit == TimePeriodUnitSpecifier.Year )
+            {
+                // Group by Month
+                chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Month;
+
+                stepTypeDataPoints = stepsCompletedQuery
+                    .GroupBy( x => new
+                    {
+                        MonthKey = x.CompletedDateKey.Value / 100,
+                        DatasetName = x.StepType.Name,
+                        SortKey1 = x.StepType.Order,
+                        SortKey2 = x.StepTypeId
+                    } )
+                    .Select( x => new
+                    {
+                        x.Key,
+                        Count = x.Count()
+                    } )
+                    .ToList()
+                    .Select( x =>
+                    {
+                        // Add 1 for the first day of the month
+                        var dateKey = ( x.Key.MonthKey * 100 ) + 1;
+
+                        return new StepTypeActivityDataPoint
+                        {
+                            StepTypeName = x.Key.DatasetName,
+                            DateTime = dateKey.GetDateKeyDate(),
+                            SortKey1 = x.Key.SortKey1,
+                            SortKey2 = x.Key.SortKey2,
+                            CompletedCount = x.Count
+                        };
+                    } )
+                    .OrderBy( x => x.SortKey1 )
+                    .ThenBy( x => x.SortKey2 )
+                    .ToList();
+            }
+            else
+            {
+                // Group by Day
+                chartTimeScale = ChartJsTimeSeriesTimeScaleSpecifier.Day;
+
+                stepTypeDataPoints = stepsCompletedQuery
+                    .GroupBy( x => new
+                    {
+                        DateKey = x.CompletedDateKey.Value,
+                        DatasetName = x.StepType.Name,
+                        SortKey1 = x.StepType.Order,
+                        SortKey2 = x.StepTypeId
+                    } )
+                    .Select( x => new
+                    {
+                        x.Key,
+                        Count = x.Count()
+                    } )
+                    .ToList()
+                    .Select( x => new StepTypeActivityDataPoint
+                    {
+                        StepTypeName = x.Key.DatasetName,
+                        DateTime = x.Key.DateKey.GetDateKeyDate(),
+                        SortKey1 = x.Key.SortKey1,
+                        SortKey2 = x.Key.SortKey2,
+                        CompletedCount = x.Count
+                    } )
+                    .OrderBy( x => x.SortKey1 )
+                    .ThenBy( x => x.SortKey2 )
+                    .ToList();
+            }
+
+            var stepTypeDatasets = stepTypeDataPoints
+                .OrderBy( x => x.SortKey1 ).ThenBy( x => x.SortKey2 )
+                .Select( x => x.StepTypeName )
+                .Distinct()
+                .ToList();
+
+            var factory = new ChartJsTimeSeriesDataFactory<ChartJsTimeSeriesDataPoint>();
+
+            factory.TimeScale = chartTimeScale;
+            factory.StartDateTime = startDate;
+            factory.EndDateTime = endDate;
+            factory.ChartStyle = ChartJsTimeSeriesChartStyleSpecifier.StackedLine;
+
+            foreach ( var stepTypeDataset in stepTypeDatasets )
+            {
+                var dataset = new ChartJsTimeSeriesDataset();
+
+                // Set Line Color to Step Type Highlight Color.
+                var step = program.StepTypes.FirstOrDefault( x => x.Name == stepTypeDataset );
+
+                if ( step != null )
+                {
+                    dataset.BorderColor = step.HighlightColor;
+                }
+
+                dataset.Name = stepTypeDataset;
+
+                dataset.DataPoints = stepTypeDataPoints
+                                        .Where( x => x.StepTypeName == stepTypeDataset )
+                                        .Select( x => new ChartJsTimeSeriesDataPoint { DateTime = x.DateTime, Value = x.CompletedCount } )
+                                        .Cast<IChartJsTimeSeriesDataPoint>()
+                                        .ToList();
+
+                factory.Datasets.Add( dataset );
+            }
+
+            return factory;
+        }
+
+
+/// <summary>
+        /// Gets the arguments for creating the Chart.
+        /// </summary>
+        /// <returns></returns>
+        private static ChartJsTimeSeriesDataFactory.GetJsonArgs GetChartArgs()
+        {
+            return new ChartJsTimeSeriesDataFactory.GetJsonArgs
+            {
+                DisplayLegend = false,
+                LineTension = 0.4m,
+                MaintainAspectRatio = false,
+                SizeToFitContainerWidth = true
+            };
+        }
+
+
+        /// <summary>
+        /// Gets the completed step query.
+        /// </summary>
+        /// <returns></returns>
+        private IQueryable<Step> GetStepsCompletedQuery( string delimitedDateRange, StepProgram stepProgram )
+        {
+            var stepService = new StepService( RockContext );
+            var stepProgramId = stepProgram.Id;
+
+            var query = stepService.Queryable()
+                .AsNoTracking()
+                .Where( x =>
+                    x.StepType.StepProgramId == stepProgramId &&
+                    x.StepType.IsActive &&
+                    x.CompletedDateKey != null );
+
+            var campusContext = this.RequestContext.GetContextEntity<Campus>();
+            if ( campusContext != null )
+            {
+                query = query.Where( s => s.CampusId == campusContext.Id );
+            }
+
+            // Apply date range
+            var reportPeriod = new TimePeriod( delimitedDateRange );
+            var dateRange = reportPeriod.GetDateRange();
+            var startDate = dateRange.Start;
+            var endDate = dateRange.End;
+
+            if ( startDate != null )
+            {
+                var startDateKey = startDate.Value.ToDateKey();
+                query = query.Where( x => x.CompletedDateKey >= startDateKey );
+            }
+
+            if ( endDate != null )
+            {
+                var compareDateKey = endDate.Value.ToDateKey();
+                query = query.Where( x => x.CompletedDateKey <= compareDateKey );
+            }
+
+            return query;
+        }
+ */

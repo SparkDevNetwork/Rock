@@ -18624,7 +18624,6 @@ iframe.file-browser {
   background-color: var(--color-interface-softer);
   padding-left: 0;
   padding-right: 0;
-  overflow: hidden;
 }
 
 /* HEADER */

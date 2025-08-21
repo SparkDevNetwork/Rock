@@ -8,14 +8,14 @@
                                     previewLocation="None"
                                     @dateRangeTextChanged="onDateRangeTextChanged" />
 
-            <ButtonGroup v-model="selectedChartView"
+            <ButtonGroup v-model="selectedStepProgramView"
                          :btnSize="BtnSize.Default"
                          :btnType="BtnType.Default"
-                         :items="chartViewOptions" />
+                         :items="stepProgramViewOptions" />
         </div>
-        <ContentSection v-if="selectedChartView !== ChartView.KPIs.toString()" class="mb-sm">
+        <ContentSection v-if="selectedStepProgramView !== StepProgramView.KPIs.toString()" class="mb-sm">
             <ContentStack>
-                <div v-if="selectedChartView === ChartView.Flow.toString()" class="row">
+                <div v-if="selectedStepProgramView === StepProgramView.Flow.toString()" class="row">
                     <RockForm @submit="fetchStepFlowData" ref="flowForm">
                         <div class="col-md-3">
                             <NumberBox v-model="maxLevels"
@@ -32,54 +32,58 @@
                     <div class="w-50">
                         <div class="col-md-6">
                             <DropDownList v-model="selectedMeasure"
+                                          @update:modelValue="handleChartFilterChanged"
                                           label="Measure"
                                           :items="measureOptions"
                                           :showBlankItem="false" />
                         </div>
                         <div class="col-md-6">
                             <DropDownList v-model="selectedStatusFilter"
+                                          @update:modelValue="handleChartFilterChanged"
                                           label="Status"
                                           grouped
                                           :items="statusOptions" />
                         </div>
                     </div>
                     <div class="pull-right">
-                        <div class="btn-group btn-toggle btn-group">
+                        <!-- <div class="btn-group btn-toggle btn-group">
                             <RockButton @click="updateChartType('line', true)" :class="isLineChart ? selectedButtonClasses : unselectedButtonClasses">
                                 <i class="ti ti-chart-line"></i>
                             </RockButton>
                             <RockButton @click="updateChartType('bar', true)" :class="isLineChart ? unselectedButtonClasses : selectedButtonClasses">
                                 <i class="ti ti-chart-bar"></i>
                             </RockButton>
-                        </div>
+                        </div> -->
                     </div>
                 </div>
             </ContentStack>
         </ContentSection>
 
-        <div v-if="selectedChartView === ChartView.KPIs.toString()" v-html="kpi"></div>
+        <div v-if="selectedStepProgramView === StepProgramView.KPIs.toString()" v-html="kpi"></div>
         <div v-else>
             <h5 class="chart-title">{{ chartTitle }}</h5>
             <p class="chart-subtitle">{{ chartSubtitle }}</p>
             <NotificationBox v-if="notificationMessage" alertType="info">{{ notificationMessage }}</NotificationBox>
 
-            <SankeyDiagram v-if="selectedChartView === ChartView.Flow.toString()"
+            <SankeyDiagram v-if="selectedStepProgramView === StepProgramView.Flow.toString()"
                            :flowNodes="flowNodes"
                            :flowEdges="flowEdges"
                            :isLoading="isLoading"
                            nodeTooltipActionLabel="Total Steps Taken"
                            :settings="settings" />
 
-        </div>
-        <div v-show="isChartShown" :style="chartStyle()" class="col-md-12">
-            <div class="chart-container" style="height: 100%;">
-                <canvas ref="canvasElement"></canvas>
-                <NotificationBox v-if="props.modelValue && !props.modelValue.isDeletable" alertType="warning" class="col-md-12 margin-y-xsmall">
-                    The {{ props.modelValue.name }} Step Program is used by Rock and cannot be deleted.
-                </NotificationBox>
-            </div>
+            <LineChart v-else
+                       :data="chartSeries"
+                       :labels="chartLabels"
+                       :labelDateFormat="dateUnit"
+                       xShowGridLines
+                       unfilled />
+
         </div>
 
+        <NotificationBox v-if="props.modelValue && !props.modelValue.isDeletable" alertType="warning" class="col-md-12 margin-y-xsmall">
+            The {{ props.modelValue.name }} Step Program is used by Rock and cannot be deleted.
+        </NotificationBox>
         <AttributeValuesContainer :modelValue="attributeValues" :attributes="attributes" :numberOfColumns="2" />
 
     </fieldset>
@@ -139,22 +143,25 @@
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
+    import LineChart from "@Obsidian/Controls/lineChart.obs";
     import SankeyDiagram from "@Obsidian/Controls/internal/SankeyDiagram/sankeyDiagram.obs";
     import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
     import { SankeyDiagramEdgeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramEdgeBag";
     import { SankeyDiagramSettingsBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramSettingsBag";
-    import { Chart, ChartData, ChartOptions, ChartTypeRegistry, ChartConfiguration, } from "@Obsidian/Libs/chart";
     import { BtnType } from "@Obsidian/Enums/Controls/btnType";
     import { BtnSize } from "@Obsidian/Enums/Controls/btnSize";
     import { StepProgramBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramBag";
     import { StepProgramDetailOptionsBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/stepProgramDetailOptionsBag";
+    import { ChartDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/chartDataBag";
+    import { SeriesBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/seriesBag";
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
     import { SlidingDateRangeBag } from "@Obsidian/ViewModels/Controls/slidingDateRangeBag";
-    import { ChartView, ChartViewDescription } from "@Obsidian/Enums/Engagement/chartView";
+    import { StepProgramView, StepProgramViewDescription } from "@Obsidian/Enums/Engagement/stepProgramView";
     import { StepChartMeasure, StepChartMeasureDescription } from "@Obsidian/Enums/Engagement/stepChartMeasure";
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
+    import { LineSeries, Series } from "@Obsidian/Core/Controls/chart";
 
     const props = defineProps({
         modelValue: {
@@ -170,20 +177,20 @@
 
     // #region Values
 
-    const chartViewOptions = enumToStandardListItemBagList(ChartViewDescription);
+    const stepProgramViewOptions = enumToStandardListItemBagList(StepProgramViewDescription);
 
     const chartStateFlags: Record<number, boolean> = {};
-    const fetchByChartView: Record<number, () => Promise<void>> = {
-        [ChartView.KPIs]: () => fetchKPIData(),
-        [ChartView.Trends]: () => onRefresh(),
-        [ChartView.Totals]: () => onRefresh(),
-        [ChartView.Campuses]: () => onRefresh(),
-        [ChartView.Flow]: () => fetchStepFlowData()
+    const fetchByStepProgramView: Record<number, () => Promise<void>> = {
+        [StepProgramView.KPIs]: () => fetchKPIData(),
+        [StepProgramView.Trends]: () => fetchChartData(),
+        [StepProgramView.Totals]: () => fetchChartData(),
+        [StepProgramView.Campuses]: () => fetchChartData(),
+        [StepProgramView.Flow]: () => fetchStepFlowData()
     };
-    const chartViewData: Record<number, ChartData<keyof ChartTypeRegistry, number[]> | null> = {
-        [ChartView.Trends]: null,
-        [ChartView.Totals]: null,
-        [ChartView.Campuses]: null,
+    const stepProgramViewData: Record<number, ChartDataBag | null> = {
+        [StepProgramView.Trends]: null,
+        [StepProgramView.Totals]: null,
+        [StepProgramView.Campuses]: null,
     };
 
     const baseMeasureOptions = enumToListItemBag(StepChartMeasureDescription);
@@ -222,7 +229,19 @@
     });
     const flowForm = ref<InstanceType<typeof RockForm>>();
 
-    const selectedChartView = ref(ChartView.KPIs.toString());
+    const chartSeries = ref<LineSeries[]>([]);
+    const chartLabels = ref<string[]>([]);
+    const dateUnit = computed<"day" | "month">(() => {
+        const timeUnit = filterDate.value?.timeUnit;
+        if (timeUnit === TimeUnit.Year) {
+            return "month";
+        }
+        else {
+            return "day";
+        }
+    });
+
+    const selectedStepProgramView = ref(StepProgramView.KPIs.toString());
     const selectedMeasure = ref("");
     const selectedStatusFilter = ref(statusOptions[0].value ?? "All");
     // const isLineChart = ref(true); // TODO - save as preference
@@ -233,54 +252,10 @@
     const dateRangeText = ref<string>("");
     const name = ref(props.modelValue?.name ?? "");
     const description = ref(props.modelValue?.description ?? "");
-    const chartType = ref<keyof ChartTypeRegistry>("line");
-    //const chartData = ref(props.modelValue?.chartData ?? "{}");
-    // const chartData = ref<ChartData<keyof ChartTypeRegistry, number[]>>(JSON.parse(props.modelValue?.chartData || "{}"));
     const kpi = ref(props.modelValue?.kpi ?? "");
-    const showChart = ref(props.modelValue?.showChart);
     const notificationMessage = ref(props.modelValue?.chartData ? "" : "There are no completed Steps matching the current filter.");
     const filterDate = ref(props.modelValue?.defaultDateRange as SlidingDateRange);
     const isRefreshLoading = ref(false);
-    const canvasElement = shallowRef<HTMLCanvasElement | null>(null);
-    let chart: Chart<keyof ChartTypeRegistry, number[]> | null = null;
-    const options = ref<ChartOptions>({
-        responsive: true,
-        maintainAspectRatio: false,
-        animation: {
-            duration: 1000
-        },
-        plugins: {
-            legend: {
-                position: "bottom",
-                align: "center",
-                display: true
-            },
-            tooltip: {
-                enabled: true
-            },
-        },
-        scales: {
-            y:
-            {
-                ticks: {
-                    callback: function (label, _index, _labels) {
-                        const date = Number(label);
-                        if (date) {
-                            return Intl.NumberFormat().format(date);
-                        }
-                        else {
-                            return label;
-                        }
-                    },
-                    stepSize: 1
-                },
-                stacked: true,
-                beginAtZero: true,
-                suggestedMax: 2
-            },
-
-        }
-    });
 
     const invokeBlockAction = useInvokeBlockAction();
 
@@ -288,10 +263,8 @@
 
     // #region Computed Values
 
-    const isLineChart = computed(() => chartType.value === "line" ? true : false);
-
     const measureOptions = computed(() => {
-        if (selectedChartView.value === ChartView.Campuses.toString()) {
+        if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
             return baseMeasureOptions;
         }
         else {
@@ -300,7 +273,7 @@
     });
 
     const chartTitle = computed(() => {
-        if (selectedChartView.value === ChartView.Flow.toString()) {
+        if (selectedStepProgramView.value === StepProgramView.Flow.toString()) {
             return `${name.value} Flow`;
         }
         else {
@@ -311,8 +284,6 @@
                     return "Impact-Adjusted Steps by Type";
                 case StepChartMeasure.TotalSteps.toString():
                     return "Total Steps";
-                case StepChartMeasure.TotalStepAdjustedImpact.toString():
-                    return "Total Step-Adjusted Impact";
                 case StepChartMeasure.EngagementType.toString():
                     return "Steps by Engagement Type";
                 case StepChartMeasure.OrganizationObjective.toString():
@@ -328,7 +299,7 @@
     });
 
     const chartSubtitle = computed(() => {
-        if (selectedChartView.value === ChartView.Flow.toString()) {
+        if (selectedStepProgramView.value === StepProgramView.Flow.toString()) {
             return "All Completed Steps from " + dateRangeText.value;
         }
         else if (selectedMeasure.value === StepChartMeasure.ProgramCompletions.toString()) {
@@ -340,10 +311,10 @@
     });
 
     const isChartShown = computed(() => {
-        const selectedChartViewId = toNumber(selectedChartView.value) as ChartView;
-        return selectedChartViewId === ChartView.Trends
-            || selectedChartViewId === ChartView.Totals
-            || selectedChartViewId === ChartView.Campuses;
+        const selectedStepProgramViewId = toNumber(selectedStepProgramView.value) as StepProgramView;
+        return selectedStepProgramViewId === StepProgramView.Trends
+            || selectedStepProgramViewId === StepProgramView.Totals
+            || selectedStepProgramViewId === StepProgramView.Campuses;
     });
 
     // #endregion
@@ -354,11 +325,24 @@
         dateRangeText.value = newText;
     }
 
-    function resetChartStateFlags(initialValue = false): void {
-        for (const key in ChartView) {
-            const value = ChartView[key as keyof typeof ChartView];
+    function resetAllStateFlags(initialValue = false): void {
+        for (const key in StepProgramView) {
+            const value = StepProgramView[key as keyof typeof StepProgramView];
             chartStateFlags[value] = initialValue;
         }
+    }
+
+    function resetChartStateFlags(): void {
+        chartStateFlags[StepProgramView.Trends] = false;
+        chartStateFlags[StepProgramView.Totals] = false;
+        chartStateFlags[StepProgramView.Campuses] = false;
+    }
+
+    function handleChartFilterChanged() {
+        resetChartStateFlags();
+
+        const selectedStepProgramViewId = toNumber(selectedStepProgramView.value) as StepProgramView;
+        fetchByStepProgramView[selectedStepProgramViewId]();
     }
 
     /**
@@ -389,59 +373,9 @@
         return standardListItemBagList;
     }
 
-    function updateChartType(type: keyof ChartTypeRegistry, shouldRefreshChart: boolean): void {
-        chartType.value = type;
-
-        if (chart) {
-            const selectedChartViewId = toNumber(selectedChartView.value) as ChartView;
-            chart.destroy();
-            chart = null;
-
-            if (shouldRefreshChart) {
-                const chartData = chartViewData[selectedChartViewId];
-                if (chartData) {
-                    updateChartForView(chartData);
-                }
-            }
-        }
-    }
-
-    /**
-    * Gets the configuration data that will be used to draw the chart.
-    *
-    * @returns The chart configuration data that can be passed to Chart.JS.
-    */
-    function getChartConfig(chartViewData: ChartData<keyof ChartTypeRegistry, number[]>): ChartConfiguration<keyof ChartTypeRegistry, number[]> {
-        const config: ChartConfiguration<keyof ChartTypeRegistry, number[]> = {
-            type: chartType.value,
-            data: chartViewData,
-            options: options.value
-        };
-
-        return config;
-    }
-
-    function chartStyle(): StyleValue {
-        if (showChart.value && !notificationMessage.value) {
-            return "height: 350px; display: block;";
-        }
-        else {
-            return "height: 350px; display: none;";
-        }
-    }
-
-    function updateChartForView(chartViewData: ChartData<keyof ChartTypeRegistry, number[]>): void {
-        if (!canvasElement.value) {
-            return;
-        }
-
-        if (!chart) {
-            chart = new Chart(canvasElement.value, getChartConfig(chartViewData));
-        }
-        else {
-            chart.data = chartViewData;
-            chart.update();
-        }
+    function updateChartForView(chartData: ChartDataBag): void {
+        chartLabels.value = chartData.dateLabels ?? [];
+        chartSeries.value = (chartData.series ?? []) as LineSeries[];
     }
 
     // #endregion
@@ -451,39 +385,34 @@
      * Event handler for the Refresh button being clicked. Request new chart
      * data from the server using the specified filter date.
      */
-    async function onRefresh(): Promise<void> {
+    async function fetchChartData(): Promise<void> {
         console.log("Fetching Chart Data");
-
-        if (!canvasElement.value) {
-            return;
-        }
 
         isRefreshLoading.value = true;
         notificationMessage.value = "";
 
-        const result = await invokeBlockAction<StepProgramBag>("GetChartData", {
+        const result = await invokeBlockAction<ChartDataBag>("GetChartData", {
             dateRange: filterDate.value ? slidingDateRangeToString(filterDate.value as SlidingDateRange) : "DateRange||||",
-            selectedChartView: toNumber(selectedChartView.value) as ChartView
+            selectedProgramView: toNumber(selectedStepProgramView.value) as StepProgramView,
+            selectedMeasure: toNumber(selectedMeasure.value) as StepChartMeasure,
+            selectedStatusFilter: selectedStatusFilter.value
         });
 
         isRefreshLoading.value = false;
 
-        if (result.isSuccess && result.data) {
-            if (result.data.chartData) {
-                const chartData = JSON.parse(result.data.chartData ?? "{}") as ChartData<keyof ChartTypeRegistry, number[]>;
-                showChart.value = result.data.showChart;
+        if (result.isSuccess && result.data && result.data.dateLabels && result.data.series) {
+            console.log("chart success ", result.data);
 
-                updateChartForView(chartData);
+            const selectedStepProgramViewId = toNumber(selectedStepProgramView.value) as StepProgramView;
+            chartStateFlags[selectedStepProgramViewId] = true;
+            stepProgramViewData[selectedStepProgramViewId] = result.data;
 
-                const selectedChartViewId = toNumber(selectedChartView.value) as ChartView;
-                chartStateFlags[selectedChartViewId] = true;
-                chartViewData[selectedChartViewId] = chartData;
-            }
-            else {
-                // TODO - address this.
-                notificationMessage.value = "There are no completed Steps matching the current filter.";
-                showChart.value = result.data.showChart;
-            }
+            updateChartForView(result.data);
+            // else {
+            //     // TODO - address this.
+            //     notificationMessage.value = "There are no completed Steps matching the current filter.";
+            //     showChart.value = result.data.showChart;
+            // }
         }
         else {
             notificationMessage.value = result.errorMessage ?? "Unknown error while trying to refresh chart.";
@@ -509,7 +438,7 @@
         if (result.isSuccess && result.data) {
             kpi.value = result.data ?? "";
 
-            chartStateFlags[ChartView.KPIs] = true;
+            chartStateFlags[StepProgramView.KPIs] = true;
         }
         else {
             notificationMessage.value = result.errorMessage ?? "Unknown error while trying to fetch KPI data.";
@@ -559,52 +488,52 @@
             flowNodes.value = response.data.nodes ?? [];
 
             // State is up-to-date.
-            chartStateFlags[ChartView.Flow] = true;
+            chartStateFlags[StepProgramView.Flow] = true;
         }
         else {
             throw new Error(response.errorMessage || "An error occurred");
         }
     }
 
-    watch(selectedChartView, (newValue, oldValue) => {
-        const oldChartViewId = toNumber(oldValue) as ChartView;
-        const selectedChartViewId = toNumber(newValue) as ChartView;
-        console.log("Selected Chart View changed, checking state for ", selectedChartViewId);
+    watch(selectedStepProgramView, (newValue, oldValue) => {
+        const oldStepProgramViewId = toNumber(oldValue) as StepProgramView;
+        const selectedStepProgramViewId = toNumber(newValue) as StepProgramView;
+        console.log("Selected Chart View changed, checking state for ", selectedStepProgramViewId);
 
         // Set max levels to its default value of 4 if it does not meet the requirements for the Number Box.
         // This handles the edge case where an incorrect value was inputted for maxLevels and then the person
         // navigates to another chart view and then back to the Flow chart view.
-        if (selectedChartViewId === ChartView.Flow && maxLevels.value < 2) {
+        if (selectedStepProgramViewId === StepProgramView.Flow && maxLevels.value < 2) {
             maxLevels.value = 4;
         }
 
         // TODO - Come back to this when we have the ChartJS updates from Josh.
         // Handles an edge case where we navigate from a non-ChartJS view to a ChartJS view and the chart already exists.
         // If we don't clear the chart then there is some clunky UI with redrawing it on the update.
-        if ((oldChartViewId === ChartView.KPIs || oldChartViewId === ChartView.Flow) && isChartShown.value && chart) {
-            chart.clear();
-        }
+        // if ((oldStepProgramViewId === StepProgramView.KPIs || oldStepProgramViewId === StepProgramView.Flow) && isChartShown.value && chart) {
+        //     chart.clear();
+        // }
 
         // If the current chart type is a line and we are switching to the Totals or Campuses view than we need to set
         // the chart type to "bar", but we do not need to refresh the chart as that will be done in the logic below.
-        if (chartType.value === "line" && (selectedChartViewId === ChartView.Totals || selectedChartViewId === ChartView.Campuses)) {
-            updateChartType("bar", false);
-        }
+        // if (chartType.value === "line" && (selectedStepProgramViewId === StepProgramView.Totals || selectedStepProgramViewId === StepProgramView.Campuses)) {
+        // updateChartType("bar", false);
+        // }
 
-        if (!chartStateFlags[selectedChartViewId]) {
+        if (!chartStateFlags[selectedStepProgramViewId]) {
             console.log("Chart state was dirty fetching now...");
-            fetchByChartView[selectedChartViewId]();
+            fetchByStepProgramView[selectedStepProgramViewId]();
         }
-        else if (isChartShown.value && chartViewData[selectedChartViewId]) {
-            updateChartForView(chartViewData[selectedChartViewId]);
+        else if (isChartShown.value && stepProgramViewData[selectedStepProgramViewId]) {
+            updateChartForView(stepProgramViewData[selectedStepProgramViewId]);
         }
 
         // Setting default measure values.
         if (selectedMeasure.value === "") {
-            if (selectedChartView.value === ChartView.Campuses.toString()) {
+            if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
                 selectedMeasure.value = StepChartMeasure.TotalSteps.toString();
             }
-            else if (selectedChartView.value === ChartView.Trends.toString() || selectedChartView.value === ChartView.Totals.toString()) {
+            else if (selectedStepProgramView.value === StepProgramView.Trends.toString() || selectedStepProgramView.value === StepProgramView.Totals.toString()) {
                 selectedMeasure.value = StepChartMeasure.Steps.toString();
             }
         }
@@ -612,16 +541,16 @@
 
     watch(filterDate, () => {
         console.log("Filter date changed. All Chart states are now dirty.");
-        resetChartStateFlags();
+        resetAllStateFlags();
 
-        const selectedChartViewId = toNumber(selectedChartView.value) as ChartView;
-        fetchByChartView[selectedChartViewId]();
+        const selectedStepProgramViewId = toNumber(selectedStepProgramView.value) as StepProgramView;
+        fetchByStepProgramView[selectedStepProgramViewId]();
     });
 
     watch(maxLevels, () => {
         console.log("Max Levels changed. Flow state is now dirty.");
 
-        chartStateFlags[ChartView.Flow] = false;
+        chartStateFlags[StepProgramView.Flow] = false;
         nextTick(() => {
             if (flowForm.value) {
                 flowForm.value.submitForm();
@@ -629,24 +558,10 @@
         });
     });
 
-    // watch(isLineChart, () => {
-    //     if (chart) {
-    //         chart.destroy();
-    //     }
-    // });
-
     onMounted(() => {
-        resetChartStateFlags();
-
+        resetAllStateFlags();
         // KPIs are populated off of the Block Initialization so its state is valid.
-        chartStateFlags[ChartView.KPIs] = true;
-
-        if (!canvasElement.value) {
-            return;
-        }
-
-        // chart = new Chart(canvasElement.value, getChartConfig());
-
+        chartStateFlags[StepProgramView.KPIs] = true;
     });
 
     // #endregion

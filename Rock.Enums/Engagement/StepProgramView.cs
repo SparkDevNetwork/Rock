@@ -19,45 +19,34 @@ using System.ComponentModel;
 namespace Rock.Enums.Engagement
 {
     /// <summary>
-    /// Defines how the steps in a chart should be measured.
+    /// Defines the different views available for step charts.
     /// </summary>
-    public enum StepChartMeasure
+    public enum StepProgramView
     {
         /// <summary>
-        /// Steps by Step Type
+        /// The default view showing Key Performance Indicators (KPIs).
         /// </summary>
-        Steps = 0,
+        [Description( "KPIs" )]
+        KPIs = 0,
 
         /// <summary>
-        /// Impact-Adjusted Steps
+        /// The view showing trends over time.
         /// </summary>
-        [Description( "Impact-Adjusted Steps" )]
-        ImpactAdjustedSteps = 1,
+        Trends = 1,
 
         /// <summary>
-        /// Total Steps
+        /// The view showing totals for the steps.
         /// </summary>
-        TotalSteps = 2,
+        Totals = 2,
 
         /// <summary>
-        /// Steps by Engagement Type
+        /// The view showing data segmented by campuses.
         /// </summary>
-        EngagementType = 3,
+        Campuses = 3,
 
         /// <summary>
-        /// Steps by Organization Objective
+        /// The view showing the flow of engagement through different steps.
         /// </summary>
-        OrganizationObjective = 4,
-
-        /// <summary>
-        /// Steps by Program Completions
-        /// </summary>
-        ProgramCompletions = 5,
-
-        /// <summary>
-        /// Average Total Steps Per Weekend Attendee
-        /// </summary>
-        [Description( "Average Total Steps Per Weekend Attendee" )]
-        AvgTotalStepsPerWeekendAttendee = 6,
+        Flow = 4,
     }
 }
