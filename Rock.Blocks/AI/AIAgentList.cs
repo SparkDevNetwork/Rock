@@ -133,6 +133,7 @@ namespace Rock.Blocks.AI
                 .AddTextField( "description", a => a.Description )
                 .AddTextField( "role", a => a.AgentType == AgentType.Chat ? a.GetAdditionalSettings<ChatAgentSettings>().Role.ToString() : string.Empty )
                 .AddTextField( "type", a => a.AgentType.GetDescription() ?? a.AgentType.ConvertToString() )
+                .AddTextField( "audience", a => a.AudienceType.GetDescription() ?? a.AudienceType.ConvertToString() )
                 .AddField( "isSecurityDisabled", a => !a.IsAuthorized( Authorization.ADMINISTRATE, RequestContext.CurrentPerson ) );
         }
 

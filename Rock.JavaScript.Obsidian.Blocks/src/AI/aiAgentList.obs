@@ -33,6 +33,14 @@
                      width="160px"
                      visiblePriority="sm" />
 
+        <LabelColumn name="audience"
+                     title="Audience"
+                     field="audience"
+                     :filter="pickExistingValueFilter"
+                     :classSource="audienceClassSource"
+                     width="160px"
+                     visiblePriority="sm" />
+
         <LabelColumn name="role"
                      title="Role"
                      field="role"
@@ -73,6 +81,11 @@
     const typeClassSource = {
         Chat: "success",
         MCP: "info"
+    };
+
+    const audienceClassSource = {
+        Internal: "success",
+        Public: "info",
     };
 
     // #endregion
