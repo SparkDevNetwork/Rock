@@ -83,6 +83,11 @@ namespace Rock.AI.Agent.Classes.Common
         }
 
         /// <summary>
+        /// The URL to the person's internal profile.
+        /// </summary>
+        public string ProfileUrl { get; set; }
+
+        /// <summary>
         /// Gets or sets the person's first/given name.
         /// </summary>
         public string FirstName { get; set; }

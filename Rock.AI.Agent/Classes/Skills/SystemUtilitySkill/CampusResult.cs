@@ -75,6 +75,16 @@ namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
         public int? CampusTeamGroupId { get; set; }
 
         /// <summary>
+        /// The phone number of the campus.
+        /// </summary>
+        public string PhoneNumber { get; set; }
+
+        /// <summary>
+        /// The URL to the campus.
+        /// </summary>
+        public string Url { get; set; }
+
+        /// <summary>
         /// The campus's team members.
         /// </summary>
         public List<CampusTeamMemberResult> CampusTeamMembers { get; set; } = new List<CampusTeamMemberResult>();

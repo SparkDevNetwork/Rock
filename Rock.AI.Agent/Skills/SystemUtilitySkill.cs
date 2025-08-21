@@ -129,6 +129,8 @@ namespace Rock.AI.Agent.Skills
                     CampusType = c.CampusTypeValue?.Value ?? string.Empty,
                     CampusStatus = c.CampusStatusValue?.Value ?? string.Empty,
                     CampusTeamGroupId = c.TeamGroupId,
+                    PhoneNumber = c.PhoneNumber,
+                    Url = c.Url,
                     Location = new LocationResult
                     {
                         Street1 = c.Location.Street1,

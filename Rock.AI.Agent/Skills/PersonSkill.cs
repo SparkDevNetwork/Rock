@@ -24,9 +24,12 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
+using Mono.CSharp;
+
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.Data;
+using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.SystemKey;
@@ -81,12 +84,14 @@ namespace Rock.AI.Agent.Skills
         [Description(
             "🎯 Purpose:\r\n" +
             "Retrieves page visits for a specific person, optionally filtered by date and/or site. \r\n" +
-            "Results include the site type (web, mobile, tv), visited pages and visit counts.\r\n" +
-            "The results are paginated (and the 'PageNumber' parameter is required. \r\n\r\n" +
+            "Results include the site type (web, mobile, tv), visited pages and visit counts. \r\n\r\n" +
 
-            "🛡️ Guardrails:\r\n" +
-            "1. This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n" +
-            "2. Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null."
+            "🧭 Usage Guidance" +
+            "The results are paginated (and the 'PageNumber' parameter is required.) \r\n" +
+            "Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null." +
+
+            "📋 Prerequisites:\r\n" +
+            "This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n"
         )]
         [UserDescription( "Lists page visits for a specific person." )]
         [AgentFunctionGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
@@ -189,13 +194,36 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
+        [KernelFunction]
+        [Description(
+            "🎯 Purpose:\r\n" +
+            "Retrieves media views for a specific person, optionally filtered by date and/or site. \r\n\r\n" +
+
+            "🧭 Usage Guidance" +
+            "The results are paginated (and the 'PageNumber' parameter is required.)"
+        )]
+        [UserDescription( "Lists page visits for a specific person." )]
+        [AgentFunctionGuid( "AB6CB80C-352A-F895-4233-09BA9DA69CCC" )]
+        public RockToolResult ListMediaViewsForPerson( string personIdKey, int pageNumber = 1, DateTime? startDate = null, DateTime? endDate = null )
+        {
+            // Paging
+            var basePageSize = 100;
+            var offset = ( pageNumber - 1 ) * basePageSize;
+            var take = basePageSize + 1; // N+1 to compute hasMore
+
+            return RockToolResult.Success(null);
+        }
+
         /// <summary>
         /// Searches for persons by full name, returning a list of matching persons with their details.
         /// </summary>
         /// <param name="options"></param>
         /// <returns></returns>
         [KernelFunction( "SearchPerson" )]
-        [UserDescription( @"Searches for matching people by name. This will search by exact match as well as ""Sounds Like"". Suffixes should be provide in the format of Sr., Jr. III, IV." )]
+        [Description(
+            "🎯 Purpose:\r\n" +
+            "Searches for matching people by name. This will search by exact match as well as 'Sounds Like'. \\r\\n\" +" +
+            "Suffixes should be provide in the format of Sr., Jr., III, IV." )]
         [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
         public RockToolResult SearchPerson( string fullName, int maxResults = 10, string campusIdKey = null )
         {
@@ -287,7 +315,7 @@ namespace Rock.AI.Agent.Skills
                 results.RemoveAt( results.Count - 1 );
             }
 
-            results = AppendFamilyMembers( results );
+            results = AppendExtendedProperties( results );
 
             // Define meta data
             var meta = new Dictionary<string, object>
@@ -310,7 +338,7 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="results"></param>
         /// <returns></returns>
-        private List<PersonResult> AppendFamilyMembers( List<PersonResult> results )
+        private List<PersonResult> AppendExtendedProperties( List<PersonResult> results )
         {
             // Get configuration for the family roles and marital status
             var childGuid = Rock.SystemGuid.GroupRole.GROUPROLE_FAMILY_MEMBER_CHILD.AsGuid();
@@ -367,6 +395,11 @@ namespace Rock.AI.Agent.Skills
                                                 && ( !isBibleStrictSpouse || m.Gender != result.Gender || m.Gender == Gender.Unknown || result.Gender == Gender.Unknown ) )
                                              .Select( m => new PersonResult { FirstName = m.FirstName, LastName = m.LastName, Id = m.PersonId, Suffix = m.Suffix } )
                                              .FirstOrDefault();
+                }
+
+                if ( AgentRequestContext.AudienceType == AudienceType.Internal )
+                {
+                    result.ProfileUrl = $"{GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" )}/person/{result.PersonIdKey}";
                 }
             }
 
