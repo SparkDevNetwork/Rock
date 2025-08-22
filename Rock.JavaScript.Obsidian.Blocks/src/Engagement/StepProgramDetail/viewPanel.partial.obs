@@ -46,14 +46,14 @@
                         </div>
                     </div>
                     <div class="pull-right">
-                        <!-- <div class="btn-group btn-toggle btn-group">
-                            <RockButton @click="updateChartType('line', true)" :class="isLineChart ? selectedButtonClasses : unselectedButtonClasses">
+                        <div class="btn-group btn-toggle btn-group">
+                            <RockButton @click="updateChartType(true)" :class="isLineChart ? selectedButtonClasses : unselectedButtonClasses">
                                 <i class="ti ti-chart-line"></i>
                             </RockButton>
-                            <RockButton @click="updateChartType('bar', true)" :class="isLineChart ? unselectedButtonClasses : selectedButtonClasses">
+                            <RockButton @click="updateChartType(false)" :class="isLineChart ? unselectedButtonClasses : selectedButtonClasses">
                                 <i class="ti ti-chart-bar"></i>
                             </RockButton>
-                        </div> -->
+                        </div>
                     </div>
                 </div>
             </ContentStack>
@@ -72,12 +72,19 @@
                            nodeTooltipActionLabel="Total Steps Taken"
                            :settings="settings" />
 
-            <LineChart v-else
-                       :data="chartSeries"
-                       :labels="chartLabels"
-                       :labelDateFormat="dateUnit"
-                       xShowGridLines
-                       unfilled />
+            <div v-else style="height: 300px">
+                <LineChart v-if="isLineChart"
+                           :series="lineSeries"
+                           :labels="chartLabels"
+                           :labelDateFormat="dateUnit"
+                           xShowGridLines
+                           unfilled />
+
+                <BarChart v-else
+                          :series="barSeries"
+                          :labels="chartLabels"
+                          :labelDateFormat="dateUnit" />
+            </div>
 
         </div>
 
@@ -144,6 +151,7 @@
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import LineChart from "@Obsidian/Controls/lineChart.obs";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
     import SankeyDiagram from "@Obsidian/Controls/internal/SankeyDiagram/sankeyDiagram.obs";
     import { SankeyDiagramNodeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramNodeBag";
     import { SankeyDiagramEdgeBag } from "@Obsidian/ViewModels/Controls/sankeyDiagramEdgeBag";
@@ -161,7 +169,7 @@
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
-    import { LineSeries, Series } from "@Obsidian/Core/Controls/chart";
+    import { BarSeries, LineSeries, Series } from "@Obsidian/Core/Controls/chart";
 
     const props = defineProps({
         modelValue: {
@@ -229,7 +237,7 @@
     });
     const flowForm = ref<InstanceType<typeof RockForm>>();
 
-    const chartSeries = ref<LineSeries[]>([]);
+    const chartSeries = ref<LineSeries[] | BarSeries[]>([]);
     const chartLabels = ref<string[]>([]);
     const dateUnit = computed<"day" | "month">(() => {
         const timeUnit = filterDate.value?.timeUnit;
@@ -244,7 +252,7 @@
     const selectedStepProgramView = ref(StepProgramView.KPIs.toString());
     const selectedMeasure = ref("");
     const selectedStatusFilter = ref(statusOptions[0].value ?? "All");
-    // const isLineChart = ref(true); // TODO - save as preference
+    const isLineChart = ref(true); // TODO - save as preference
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const maxLevels = ref(4);
@@ -262,6 +270,10 @@
     // #endregion
 
     // #region Computed Values
+
+    const lineSeries = computed(() => chartSeries.value as LineSeries[]);
+
+    const barSeries = computed(() => chartSeries.value as BarSeries[]);
 
     const measureOptions = computed(() => {
         if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
@@ -343,6 +355,10 @@
 
         const selectedStepProgramViewId = toNumber(selectedStepProgramView.value) as StepProgramView;
         fetchByStepProgramView[selectedStepProgramViewId]();
+    }
+
+    function updateChartType(isLineChartSelected: boolean) {
+        isLineChart.value = isLineChartSelected;
     }
 
     /**
@@ -525,7 +541,7 @@
             fetchByStepProgramView[selectedStepProgramViewId]();
         }
         else if (isChartShown.value && stepProgramViewData[selectedStepProgramViewId]) {
-            updateChartForView(stepProgramViewData[selectedStepProgramViewId]);
+            updateChartForView(stepProgramViewData[selectedStepProgramViewId]!);
         }
 
         // Setting default measure values.
