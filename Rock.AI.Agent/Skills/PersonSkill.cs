@@ -580,13 +580,15 @@ OPTION (RECOMPILE);";
 
         private const string _mediaViewsDataSql = @"
             SELECT 
-                me.[Id] AS [MediaId]
+                me.[Id] AS [MediaElementId]
                 , i.[InteractionDateTime] AS [ViewDateTime]
                 , i.[ChannelCustomIndexed1] AS [Medium]
                 , CAST( ROUND( i.[InteractionLength], 0 ) AS int ) AS [PercentWatched]
                 , me.[DurationSeconds] AS [MediaLengthInSeconds]
                 , CAST( ROUND(me.[DurationSeconds] * i.[InteractionLength] / 100, 0) AS int) AS [DurationWatchedInSeconds]
-                , ic.[Name] AS [MediaName]
+                , me.[Name] AS [MediaElementName]
+                , mf.[Name] AS [MediaFolderName]
+                , ma.[Name] AS [MediaAccountName]
                 , i.[InteractionSummary] AS [ViewingLocationUrl]
             FROM [Interaction] i
                 INNER JOIN [InteractionComponent] ic ON ic.[Id] = i.[InteractionComponentId]
@@ -594,6 +596,8 @@ OPTION (RECOMPILE);";
                 INNER JOIN [PersonAlias] pa ON pa.[Id] = i.[PersonAliasId]
                 INNER JOIN [Person] p ON p.[Id] = pa.[PersonId]
                 INNER JOIN [MediaElement] me ON me.[Id] = ic.[EntityId]
+                INNER JOIN [MediaFolder] mf ON mf.[Id] = me.[MediaFolderId]
+                INNER JOIN [MediaAccount] ma ON ma.[Id] = mf.[MediaAccountId]
             WHERE   
                 ich.[Guid] = 'd5b9bdaf-6e52-40d5-8e74-4e23973df159'
                 AND p.[Id] = @PersonId

@@ -28,15 +28,15 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
         /// The identifier of the media view record.
         /// </summary>
         [JsonIgnore]
-        public int MediaId { get; set; }
+        public int MediaElementId { get; set; }
 
         /// <summary>
         /// The opaque identifier for the media view record (Id Key).
         /// </summary>
-        public string MediaIdKey {
+        public string MediaElementIdKey {
             get
             {
-                return this.MediaId.AsIdKey();
+                return this.MediaElementId.AsIdKey();
             }
         }
 
@@ -68,7 +68,17 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
         /// <summary>
         /// The name of the media that was viewed, such as "Sunday Service - 2023-10-01".
         /// </summary>
-        public string MediaName { get; set; }
+        public string MediaElementName { get; set; }
+
+        /// <summary>
+        /// The folder name of the media element.
+        /// </summary>
+        public string MediaFolderName { get; set; }
+
+        /// <summary>
+        /// The account name for the media element.
+        /// </summary>
+        public string MediaAccountName { get; set; }
 
         /// <summary>
         /// The URL where the media can be viewed, such as "https://example.com/media/12345".
