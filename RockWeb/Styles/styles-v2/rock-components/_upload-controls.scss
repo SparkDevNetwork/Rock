@@ -16,7 +16,7 @@
 .imageupload-group,
 .fileupload-group {
   position:         relative;
-  display:          table-cell;
+  display:          inline-block;
   padding:          2px;
   margin-bottom:    var(--spacing-medium);
   cursor:           pointer;

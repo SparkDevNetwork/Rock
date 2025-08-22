@@ -50,6 +50,16 @@ namespace Rock.Enums.Communication
         /// <summary>
         /// The recipient is inactive because the last communication of the flow has been sent.
         /// </summary>
-        LastCommunicationSent = 5
+        LastCommunicationSent = 5,
+
+        /// <summary>
+        /// The recipient is inactive because the person associated with the recipient has been inactivated.
+        /// </summary>
+        PersonInactivated = 6,
+
+        /// <summary>
+        /// The recipient is inactive because they have unsubscribed from the entire flow (not a specific communication).
+        /// </summary>
+        UnsubscribedFromFlow = 7,
     }
 }

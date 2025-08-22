@@ -77,6 +77,10 @@
     background-color: var(--color-interface-softest);
 }
 
+.person-card > .person-row > div + .dropdown > .btn-link {
+    color: var(--color-interface-medium) !important;
+}
+
 .person-row {
     padding: var(--spacing-small);
 }

@@ -4,7 +4,7 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Header
 //  + Badge Bar
 //  + Edit Group Page
@@ -17,6 +17,7 @@
 //  + Photo Request
 //  + Duplicate Pages
 //  + DISC & Assessments
+//  + Connection Request
 // =============================================================
 
 
@@ -364,7 +365,7 @@ $badge-count-width: 18px;
 
   .metric-value {
     position:     absolute;
-    top:          .5em; // 8px
+    top:          .7em; // 8px
     right:        .3em;
     bottom:       .95em;
     left:         .3em;
@@ -405,8 +406,8 @@ $badge-count-width: 18px;
 }
 
 .rockbadge-signal .metric-value {
-  top:      .6em;
-  bottom:   .6em;
+  top:      .35em;
+  bottom:   .65em;
 }
 
 .rockbadge-personaldevice {
@@ -909,3 +910,14 @@ tr.inactive {
 }
 // ====================== END EDIT PERSON ======================
 
+// ======================== CONNECTION REQUEST ========================
+
+.connection-request-board .modal-open .modal-body .panel-body .photo > img {
+  width: 100%;
+}
+
+.connection-request-board .modal-open .modal-body .nav-tabs {
+  margin-top: var(--spacing-medium);
+}
+
+// ======================== END CONNECTION REQUEST ========================

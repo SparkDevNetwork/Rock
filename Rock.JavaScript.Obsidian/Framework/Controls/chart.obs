@@ -26,8 +26,17 @@
         plugins: {
             type: Array as PropType<Plugin<T>[]>,
             default: null
+        },
+
+        disableAnimations: {
+            type: Boolean as PropType<boolean>,
+            default: false
         }
     });
+
+    const emit = defineEmits<{
+        (e: "updated"): void;
+    }>();
 
     const chartEl = ref<HTMLCanvasElement | null>(null);
     let chart;
@@ -66,7 +75,14 @@
         // All other changes just need an update
         chart.data = config.value.data;
         chart.options = config.value.options;
-        chart.update();
+        if (!props.disableAnimations) {
+            chart.update();
+        }
+        else {
+            chart.update("none");
+        }
+
+        emit("updated");
     }, { deep: true });
 
     onUnmounted(() => {

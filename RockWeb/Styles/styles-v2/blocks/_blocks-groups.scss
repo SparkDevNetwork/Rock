@@ -4,7 +4,7 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Group Viewer - styles for the group viewer block.
 //  + Group Scheduler v2 - styles for the Obsidian group scheduler block.
 // =============================================================
@@ -127,6 +127,7 @@
 
   .card-sched {
     margin-bottom:       var(--spacing-small);
+    overflow:            visible;
 
     .location {
       margin-bottom:     var(--spacing-medium);

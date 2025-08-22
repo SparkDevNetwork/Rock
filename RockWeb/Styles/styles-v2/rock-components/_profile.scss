@@ -1,4 +1,4 @@
-.main-content:has(.profile-content) {
+.main-content:has(.profile-content, .person-profile) {
   max-width: 100%;
   padding: 0 !important;
   margin: 0 !important;
@@ -40,8 +40,8 @@
     a,
     a:hover,
     a:focus {
-      color: var(--color-interface-softest);
-      background-color: var(--color-primary);
+      color: var(--color-primary);
+      background-color: var(--color-primary-soft);
     }
   }
 
@@ -84,7 +84,7 @@
     min-height: 102px;
     background: var(--color-interface-softest);
     border: 1px solid var(--color-interface-soft);
-    border-radius: var(--rounded-normal);
+    border-radius: var(--rounded-small);
     box-shadow: 0 1px 3px rgba(0,0,0,.1);
   }
 

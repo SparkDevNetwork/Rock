@@ -329,7 +329,7 @@ ul.activeusers {
 }
 }
 
-.panel-default:has(.dropdown-menu) { // Allows dropdown menus to overflow outside of Content Collection panel
+.panel-default:has(.dropdown.open) { // Allows dropdown menus to overflow outside of Content Collection panel
       overflow: visible;
 }
 
@@ -584,6 +584,10 @@ ul.activeusers {
 
     small {
       color:          var(--color-interface-strong);
+    }
+
+    .btn-link {
+      color: var(--color-interface-medium);
     }
   }
 
@@ -1017,7 +1021,7 @@ ul.activeusers {
   .panel-heading {
 
     .panel-header-actions {
-      margin-right: 1rem !important;
+      margin-right: var(--spacing-xsmall) !important;
     }
 
     .panel-title {

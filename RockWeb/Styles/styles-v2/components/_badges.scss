@@ -4,9 +4,9 @@
 
 
 // =============================================================
-// Table of Content           
-//  + Base Style              
-//  + Alternate Style        
+// Table of Content
+//  + Base Style
+//  + Alternate Style
 // =============================================================
 
 
@@ -70,7 +70,7 @@
   .nav-pills > li > a > & {
     margin-left: 3px;
   }
-  
+
   .fa-square::before,
   .fa-circle::before,
   .ti-square::before,
@@ -91,7 +91,7 @@
 .badge-bar {
   display:      flex;
   align-items:  center;
-  
+
   .badge {
     background-color: inherit;
   }
@@ -255,6 +255,11 @@ $badge-baptism-color: #23a5c5;
     font-size: .3555em; // 16px
     color: var(--color-interface-softest);
   }
+}
+
+.badge-circle {
+  border-radius: 999px;
+  width: 24px;
 }
 
 .badge-icon {

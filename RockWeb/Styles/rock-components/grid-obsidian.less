@@ -31,9 +31,12 @@
     top: var(--sticky-element-offset);
   }
 
+  .grid-header-prepend {
+    border-bottom: 1px solid var(--color-interface-soft);
+  }
   .grid-obsidian.grid-sticky .sticky-column-header {
     position: sticky;
-    top: ~"calc(var(--sticky-element-offset) + 56px)";
+    top: ~"calc(var(--sticky-element-offset) + 57px)";
     z-index: 1;
   }
 
@@ -322,6 +325,13 @@
     flex-wrap: wrap;
   }
 
+  .grid-cell > .label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
+}
+
   .grid-select-field {
     min-width: 60px;
   }
@@ -434,6 +444,12 @@
 
   .grid-obsidian .grid-cell .highlight-title {
     font-weight: 600;
+  }
+
+  .grid-obsidian .grid-cell-boolean,
+  .grid-obsidian .grid-column-header-boolean {
+    text-align: center;
+    justify-content: center;
   }
 
 .grid-obsidian .grid-cell-number,

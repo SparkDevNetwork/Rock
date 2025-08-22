@@ -223,9 +223,9 @@
                     <%-- Recipient Summary Panel --%>
                     <asp:Panel ID="pnlIndividualRecipientSummary" runat="server" Visible="false" CssClass="margin-t-md">
                         <div class="position-relative flex-fill" style="min-height: 200px;">
-                            
+
                                 <asp:Literal ID="lRecipientSummary" runat="server" />
-                            
+
                         </div>
                     </asp:Panel>
 
@@ -495,7 +495,7 @@
                                                         ModalSaveButtonCssClass="js-singleselect aspNetDisabled"
                                                         ModalCssClass="js-AssetManager-modal"
                                                         ButtonTextTemplate="Select Asset"
-                                                        ModalTitle="Asset Manager" 
+                                                        ModalTitle="Asset Manager"
                                                         ShowSelectNoneButton="true">
                                                     </Rock:ItemFromBlockPicker>
                                                     </ContentTemplate>
@@ -1523,7 +1523,7 @@
                         </div>
                         <div class="panel-body">
                             <div>
-                                <span class="mr-1"><i class="ti ti-rotate-2 ti-spin"></i></span>
+                                <span class="mr-1"><i class="ti ti-rotate-clockwise-2 ti-spin"></i></span>
                                 <span id="_TaskActivityMessage">Working...</span>
                             </div>
                             <div id="_TaskActivityBar" class="mt-1 js-global-task-progress-long-running" style="display: none">

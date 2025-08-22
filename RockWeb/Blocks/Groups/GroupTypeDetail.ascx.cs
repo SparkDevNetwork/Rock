@@ -1726,6 +1726,7 @@ namespace RockWeb.Blocks.Groups
             cbIsCheckInAllowed.Checked = groupTypeRole.IsCheckInAllowed;
             cbIsExcludedFromPeerNetwork.Checked = groupTypeRole.IsExcludedFromPeerNetwork;
             cbCanTakeAttendance.Checked = groupTypeRole.CanTakeAttendance;
+            cbRoleIsPublic.Checked = groupTypeRole.IsPublic;
 
             nbMinimumRequired.Text = groupTypeRole.MinCount.HasValue ? groupTypeRole.MinCount.ToString() : string.Empty;
             nbMinimumRequired.Help = string.Format(
@@ -1819,6 +1820,7 @@ namespace RockWeb.Blocks.Groups
             groupTypeRole.IsCheckInAllowed = cbIsCheckInAllowed.Checked;
             groupTypeRole.IsExcludedFromPeerNetwork = cbIsExcludedFromPeerNetwork.Checked;
             groupTypeRole.CanTakeAttendance = cbCanTakeAttendance.Checked;
+            groupTypeRole.IsPublic = cbRoleIsPublic.Checked;
             groupTypeRole.MinCount = nbMinimumRequired.Text.AsIntegerOrNull();
             groupTypeRole.MaxCount = nbMaximumAllowed.Text.AsIntegerOrNull();
             groupTypeRole.ChatRole = ddlChatRole.SelectedValueAsEnum<ChatRole>();

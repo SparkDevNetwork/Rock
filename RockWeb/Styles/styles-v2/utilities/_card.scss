@@ -294,6 +294,7 @@
 }
 
 // Profile Card - remove clipping from popover
-.card.card-profile.card-profile-bio {
+.card.card-profile.card-profile-bio,
+.card:has(.dropdown.open){
   overflow: visible;
 }

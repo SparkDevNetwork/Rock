@@ -84,7 +84,7 @@
                             btnType="primary"
                             :disabled="isFetchingCommunicationTemplate"
                             @click="onNextStepClicked">
-                    <i v-if="isFetchingCommunicationTemplate" class="ti ti-rotate-2 ti-spin"></i>
+                    <i v-if="isFetchingCommunicationTemplate" class="ti ti-rotate-clockwise-2 ti-spin"></i>
                     {{ nextStepTitle ? `Next: ${nextStepTitle}` : 'Next' }}
                 </RockButton>
             </template>

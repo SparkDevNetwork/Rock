@@ -136,6 +136,7 @@ namespace Rock.Web.UI
             blockTypeCss = blockTypeCss.Replace( ' ', '-' ).ToLower();
             var blockInstanceCss = "block-instance js-block-instance " +
                 blockTypeCss +
+                " block-role-" + ( blockCache.Role ?? blockCache.BlockType?.DefaultRole ).ToStringSafe().ToLower() +
                 ( string.IsNullOrWhiteSpace( blockCache.CssClass ) ? string.Empty : " " + blockCache.CssClass.Trim() ) +
                 ( _rockBlock.UserCanEdit || _rockBlock.UserCanAdministrate ? " can-configure " : string.Empty );
 

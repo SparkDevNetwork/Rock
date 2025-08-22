@@ -18,18 +18,17 @@
 import { Guid } from "@Obsidian/Types";
 import { PersonPreferenceCollection } from "@Obsidian/Core/Core/personPreferences";
 import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
-import { Component, computed, defineComponent, nextTick, onErrorCaptured, onMounted, PropType, provide, ref, watch } from "vue";
+import { Component, computed, defineComponent, nextTick, onBeforeUnmount, onErrorCaptured, onMounted, PropType, provide, ref, watch } from "vue";
 import { useStore } from "@Obsidian/PageState";
 import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
-import { createInvokeBlockAction, provideBlockBrowserBus, provideBlockGuid, provideBlockTypeGuid, provideConfigurationValuesChanged, providePersonPreferences, provideReloadBlock, provideStaticContent } from "@Obsidian/Utility/block";
+import { createInvokeBlockAction, IBlockActions, provideBlockGuid, provideBlockActions, provideBlockTypeGuid, provideConfigurationValuesChanged, providePersonPreferences, provideReloadBlock, provideStaticContent, registerBlock, unregisterBlock } from "@Obsidian/Utility/block";
 import { areEqual, emptyGuid, toGuidOrNull } from "@Obsidian/Utility/guid";
 import { PanelAction } from "@Obsidian/Types/Controls/panelAction";
 import { ObsidianBlockConfigBag } from "@Obsidian/ViewModels/Cms/obsidianBlockConfigBag";
 import { IBlockPersonPreferencesProvider, IPersonPreferenceCollection } from "@Obsidian/Types/Core/personPreferences";
 import { PersonPreferenceValueBag } from "@Obsidian/ViewModels/Core/personPreferenceValueBag";
 import { BlockReloadMode } from "@Obsidian/Enums/Cms/blockReloadMode";
-import { BrowserBus } from "@Obsidian/Utility/browserBus";
 import { ICancellationToken } from "@Obsidian/Utility/cancellation";
 
 const store = useStore();
@@ -175,6 +174,24 @@ export default defineComponent({
         const staticContent = ref(props.staticContent ?? []);
         const customActionComponent = ref<Component | null>(null);
         const currentBlockComponent = ref<Component | null>(props.blockComponent);
+
+        const roleActions: IBlockActions = {
+            hideBlock() {
+                if (blockContainerElement.value) {
+                    blockContainerElement.value.classList.add("hidden");
+                }
+
+                return Promise.resolve();
+            },
+            showBlock() {
+                if (blockContainerElement.value) {
+                    blockContainerElement.value.classList.remove("hidden");
+                }
+
+                return Promise.resolve();
+            },
+            reloadBlock: () => reloadBlock()
+        };
 
         // #region Computed Values
 
@@ -397,12 +414,19 @@ export default defineComponent({
                 });
             }
 
-
-            // If we have any custom configuration actions then populate the
-            // custom buttons in the configuration bar.
             if (blockContainerElement.value) {
+                // If we have any custom configuration actions then populate the
+                // custom buttons in the configuration bar.
                 updateConfigurationBarActions(blockContainerElement.value, configBarActions.value);
+
+                blockContainerElement.value.closest(".block-instance")?.classList.add("block-role-action-aware");
             }
+
+            registerBlock(roleActions, props.config.role);
+        });
+
+        onBeforeUnmount(() => {
+            unregisterBlock(roleActions, props.config.role);
         });
 
         provideHttp({
@@ -423,10 +447,8 @@ export default defineComponent({
 
         provideBlockGuid(props.config.blockGuid);
         provideBlockTypeGuid(props.config.blockTypeGuid);
-        provideBlockBrowserBus(new BrowserBus({
-            block: props.config.blockGuid,
-            blockType: props.config.blockTypeGuid
-        }));
+
+        provideBlockActions(roleActions);
 
         // If we have a block guid, then add an event listener for configuration
         // changes to the block.

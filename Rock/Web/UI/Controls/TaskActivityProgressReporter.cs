@@ -136,7 +136,7 @@ namespace Rock.Web.UI.Controls
             // Progress spinner and status text.
             writer.AddAttribute( "class", "js-preparing" );
             writer.RenderBeginTag( "div" );
-            writer.AddAttribute( "class", "ti ti-rotate-2 ti-spin" );
+            writer.AddAttribute( "class", "ti ti-rotate-clockwise-2 ti-spin" );
             writer.RenderBeginTag( "i" );
             writer.RenderEndTag();
             writer.AddAttribute( "class", "js-progress-message" );

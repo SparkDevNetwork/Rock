@@ -121,6 +121,10 @@
     gap: var(--spacing-tiny);
 }
 
+.displaycard-secondary-actions .btn-link.btn-overflow {
+    color: var(--color-interface-medium);
+}
+
 @media (max-width: 767px) {
 
     /*Allow display card to stack content on smaller screens*/
@@ -200,6 +204,7 @@
 .dropdown.open .displaycard-add-button-trigger {
     background-color: var(--color-info-soft);
     color: var(--color-info-strong);
+    text-decoration: none;
 }
 
 .displaycard-add-button .dropdown-menu {

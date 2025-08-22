@@ -182,7 +182,7 @@
     const idKey = ref<string | null | undefined>(config.entity?.idKey);
     // The individual will activate the communication flow after setup is complete.
     // Initialize to false for now to avoid sending communications prematurely.
-    const isActive = ref<boolean>(config.entity?.isActive ?? false);
+    const isActive = ref<boolean>(config.entity?.isActive ?? true);
     const name = ref<string | null | undefined>(config.entity?.name);
     const targetAudienceDataView = ref<ListItemBag | null | undefined>(config.entity?.targetAudienceDataView);
     const triggerType = ref(config.entity?.triggerType ?? CommunicationFlowTriggerType.Recurring);
@@ -341,10 +341,15 @@
             attributes: attributes.value,
             category: category.value,
             communications: communications.value,
-            conversionGoalSettings: conversionGoalSettings.value,
-            conversionGoalTargetPercent: conversionGoalTargetPercent.value,
-            conversionGoalTimeframeInDays: conversionGoalTimeframeInDays.value,
-            conversionGoalType: conversionGoalType.value,
+
+            // Wait until the final save to clear out the conversion goal information
+            // if goal tracking is not enabled. This allows the person to enable/disable
+            // while building the flow without losing conversion goal information.
+            conversionGoalSettings: isGoalTrackingEnabled.value ? conversionGoalSettings.value : null,
+            conversionGoalTargetPercent: isGoalTrackingEnabled.value ? conversionGoalTargetPercent.value : null,
+            conversionGoalTimeframeInDays: isGoalTrackingEnabled.value ? conversionGoalTimeframeInDays.value : null,
+            conversionGoalType: isGoalTrackingEnabled.value ? conversionGoalType.value : null,
+
             description: description.value,
             exitConditionType: exitConditionType.value,
             iCalendarContent: iCalendarContent.value,
@@ -424,7 +429,10 @@
                     // or update the existing communication if it was already in the list.
                     const newCommunications = [...communications.value];
 
-                    const index = newCommunications.findIndex(c => c.guid === originalCommunication.guid);
+                    // Find the index of the original communication in the list
+                    // so it can be updated.
+                    const index = communications.value.findIndex(c => c === originalCommunication);
+
                     if (index === -1) {
                         // If the communication was not already in the list, add it.
                         newCommunications.push(updatedCommunication);

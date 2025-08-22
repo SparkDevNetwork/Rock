@@ -132,8 +132,8 @@
         if (values !== null) {
             const hour = toNumber(values[1]);
             const minute = toNumber(values[2]);
-
-            return `${hour}:${minute > 9 ? `${minute}` : `0${minute}`}${hour >= 12 ? "PM" : "AM"}`;
+            const time = new Date(0, 0, 0, hour, minute);
+            return time.toLocaleTimeString(undefined, { hour: "numeric", minute: "numeric" });
         }
         else {
             return "";

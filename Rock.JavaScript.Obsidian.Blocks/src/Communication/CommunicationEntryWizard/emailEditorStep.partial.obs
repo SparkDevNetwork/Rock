@@ -34,7 +34,7 @@
                         </HighlightLabel>
 
                         <HighlightLabel labelType="info">
-                            <template v-if="isFetchingRecipients"><i class="ti ti-rotate-2 ti-pulse"></i> Recipients</template>
+                            <template v-if="isFetchingRecipients"><i class="ti ti-rotate-clockwise-2 ti-pulse"></i> Recipients</template>
                             <template v-else>{{ recipientsLabel }}</template>
                         </HighlightLabel>
                     </div>

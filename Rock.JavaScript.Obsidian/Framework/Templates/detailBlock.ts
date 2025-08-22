@@ -37,8 +37,9 @@ import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
 import { asBooleanOrNull } from "@Obsidian/Utility/booleanUtils";
 import { splitCase } from "@Obsidian/Utility/stringUtils";
 import { areEqual, emptyGuid } from "@Obsidian/Utility/guid";
-import { useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
+import { hideBlockRole, showBlockRole, useBlockBrowserBus, useEntityTypeGuid, useEntityTypeName } from "@Obsidian/Utility/block";
 import { BlockMessages } from "@Obsidian/Utility/browserBus";
+import { BlockRole } from "@Obsidian/Enums/Cms/blockRole";
 
 /** Provides a pattern for entity detail blocks. */
 export default defineComponent({
@@ -583,6 +584,8 @@ export default defineComponent({
 
             internalMode.value = DetailPanelMode.View;
             browserBus.publish(BlockMessages.EndEdit);
+
+            await showBlockRole(BlockRole.Secondary);
         };
 
         /**
@@ -615,6 +618,8 @@ export default defineComponent({
             // fully loaded and ready to display.
             editModeReadyCompletionSource = new PromiseCompletionSource();
             await editModeReadyCompletionSource.promise;
+
+            await hideBlockRole(BlockRole.Secondary);
 
             // Perform the final switch into edit mode.
             browserBus.publish(BlockMessages.BeginEdit);
@@ -685,6 +690,8 @@ export default defineComponent({
 
                 internalMode.value = DetailPanelMode.View;
                 browserBus.publish(BlockMessages.EndEdit);
+
+                await showBlockRole(BlockRole.Secondary);
             }
             finally {
                 if (formSubmissionSource !== null) {

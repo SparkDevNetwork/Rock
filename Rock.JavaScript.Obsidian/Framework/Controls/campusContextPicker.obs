@@ -1,0 +1,115 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <CampusPicker :modelValue="selectedCampus"
+                  lazyMode="lazy"
+                  :showBlankItem="!selectedCampus"
+                  blankValue="Select Campus"
+                  :forceVisible="forceVisible"
+                  :includeInactive="includeInactive"
+                  :campusStatusFilter="campusStatusFilter"
+                  :campusTypeFilter="campusTypeFilter"
+                  @update:modelValue="onSelectedCampusChanged" />
+</template>
+
+<script setup lang="ts">
+    import CampusPicker from "./campusPicker.obs";
+    import { PropType, ref } from "vue";
+    import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
+    import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { deepEqual } from "@Obsidian/Utility/util";
+    import { Guid } from "@Obsidian/Types";
+
+    defineProps({
+        /**
+         * Forces the picker to be displayed even if only one campus can be
+         * selected.
+         */
+        forceVisible: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * If true then inactive campuses will be included in the list of
+         * options.
+         */
+        includeInactive: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Campus type defined value guids that limit which campuses are
+         * included in the list of campus options.
+         */
+        campusTypeFilter: {
+            type: [String, Array] as PropType<Guid | Guid[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Campus status defined value guids that limit which campuses are
+         * included in the list of campus options.
+         */
+        campusStatusFilter: {
+            type: [String, Array] as PropType<Guid | Guid[] | undefined>,
+            required: false
+        },
+    });
+
+    const contextEntities = useContextEntities();
+
+    // #region Values
+
+    const selectedCampus = ref<ListItemBag | null>(null);
+
+    // #endregion
+
+    // #region Functions
+
+    /**
+     * Loads the context entity values for the current session and populates
+     * any UI elements with the loaded values.
+     */
+    async function loadContextValues(): Promise<void> {
+        const item = await contextEntities.get(EntityType.Campus);
+
+        if (item) {
+            selectedCampus.value = item;
+        }
+    }
+
+    // #endregion
+
+    // #region Event Handlers
+
+    /**
+     * Handles changes to the selected campus.
+     *
+     * @param value The new selected campus.
+     *
+     * @returns A promise that resolves when the context entity is updated.
+     */
+    async function onSelectedCampusChanged(value: ListItemBag | ListItemBag[] | null): Promise<void> {
+        if (Array.isArray(value)) {
+            value = value[0] || null;
+        }
+
+        const newValue = value ?? null;
+
+        // We need to manually skip duplicate updates so that we don't end up
+        // sending unnecessary updates via the API.
+        if (deepEqual(selectedCampus.value, newValue, true)) {
+            return;
+        }
+
+        selectedCampus.value = newValue;
+
+        await contextEntities.set(EntityType.Campus, value, false);
+    }
+
+    // #endregion
+
+    loadContextValues();
+</script>

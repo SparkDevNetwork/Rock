@@ -179,7 +179,7 @@
 
 <style scoped>
 .communication-list-grid-header-button-filters {
-    background-color: var(--theme-light);
+    background-color: var(--color-interface-softer);
 }
 
 .communication-list-grid-cell-recipients {

@@ -44,10 +44,10 @@
   }
 
   &::before {
-    font-family:    'FontAwesome';
+    font-family:    'tabler-icons';
     font-weight:    var(--font-weight-black);
     text-align:     center;
-    content:        "\f065";
+    content:        "\eaea";
   }
 
   .is-fullscreen & {
@@ -1131,6 +1131,11 @@
   display:      flex;
   align-items:  center;
 }
+
+body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-role-action-aware) {
+    display: none;
+}
+
 // ====================== END ELECTRONIC SIGNATURE ======================
 
 

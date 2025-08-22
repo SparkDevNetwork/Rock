@@ -121,7 +121,7 @@
                 internalItems.value = [{
                     children: [],
                     hasChildren: false,
-                    iconCssClass: "ti ti-rotate-2 ti-spin",
+                    iconCssClass: "ti ti-rotate-clockwise-2 ti-spin",
                     value: "",
                     isActive: false,
                     isFolder: false
@@ -174,7 +174,7 @@
                     item.children = [{
                         children: [],
                         hasChildren: false,
-                        iconCssClass: "ti ti-rotate-2 ti-spin",
+                        iconCssClass: "ti ti-rotate-clockwise-2 ti-spin",
                         value: "",
                         isActive: false,
                         isFolder: false

@@ -1903,8 +1903,25 @@ END" );
         /// <remarks>
         /// The block type attribute and category must already exist in the database.
         /// </remarks>
+        [Obsolete( "This migration is not needed (see engineering note below)." )]
+        [RockObsolete( "18.0" )]
         public void AddBlockTypeAttributeToCategoryIfNotAlreadyAdded( string blockTypeAttributeGuid, string categoryName )
         {
+            /*
+                8/21/2025 - JPH
+
+                We don't need to manually seed a block type attribute's category, as Rock automatically manages these
+                categories well:
+
+                Startup process verifies all currently-used block type attributes are updated to match the latest code:
+                https://github.com/SparkDevNetwork/Rock/blob/e9ce12561a257d5368ce08ea488160fdb88bfea2/RockWeb/App_Code/Global.asax.cs#L384-L423
+
+                Page initialization process does the same for all blocks on the page:
+                https://github.com/SparkDevNetwork/Rock/blob/a3df8181c4c2e5cf6add0f944b7c4fafe4ca58e6/Rock/Web/UI/RockPage.cs#L1395
+
+                Reason: Call out that this migration - while safe to run - is not needed.
+             */
+
             Migration.Sql( $@"
 DECLARE @AttributeEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '{Rock.SystemGuid.EntityType.ATTRIBUTE}');
 DECLARE @BlockEntityTypeId INT = (SELECT TOP 1 [Id] FROM [EntityType] WHERE [Guid] = '{Rock.SystemGuid.EntityType.BLOCK}');

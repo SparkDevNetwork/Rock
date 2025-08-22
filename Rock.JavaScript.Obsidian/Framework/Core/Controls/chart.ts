@@ -3,31 +3,13 @@ import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
 // #region Types
 
+// #region Common
+
 export type Series = {
     label: string;
     data: (number | null)[];
     color?: string | undefined;
 };
-
-export type LineSeries = Series & {
-    isUnfilled?: boolean | undefined;
-    isLinear?: boolean | undefined;
-    lineStyle?: LineStyle | undefined;
-};
-
-export const LineStyle = {
-    Solid: "solid",
-    Dashed: "dashed",
-    Dotted: "dotted"
-} as const;
-
-export const LineStyleDescription: Record<string, string> = {
-    "solid": "Solid",
-    "dashed": "Dashed",
-    "dotted": "Dotted"
-};
-
-export type LineStyle = typeof LineStyle[keyof typeof LineStyle];
 
 export const LabelDateFormat = {
     Auto: "auto",
@@ -98,6 +80,90 @@ export type AlignDataResult = {
     labels: string[];
     values: (number | null)[][];
 };
+
+// #region Common
+
+// #region Line Chart
+
+export type LineSeries = Series & {
+    isUnfilled?: boolean | undefined;
+    isLinear?: boolean | undefined;
+    lineStyle?: LineStyle | undefined;
+};
+
+export const LineStyle = {
+    Solid: "solid",
+    Dashed: "dashed",
+    Dotted: "dotted"
+} as const;
+
+export const LineStyleDescription: Record<string, string> = {
+    "solid": "Solid",
+    "dashed": "Dashed",
+    "dotted": "Dotted"
+};
+
+export type LineStyle = typeof LineStyle[keyof typeof LineStyle];
+
+// #endregion Line Chart
+
+// #region Bar Chart
+
+export type BarSeries = Omit<Series, "color"> & {
+    isUnfilled?: boolean | undefined;
+    /** Opacity of the bars (0-1). Can be a single value or an array for each data point. */
+    opacity?: number | number[] | undefined;
+    /** Configuration for the bar labels. */
+    barLabels?: BarLabelsConfig | undefined;
+    /** Color of the bars. Can be a single value or an array for each data point. */
+    color?: string | string[] | undefined;
+};
+
+export type BarChartClickEvent = {
+    targets: {
+        seriesIndex: number;
+        labelIndex: number;
+        label: string;
+        series: BarSeries;
+        value: number | null;
+    }[];
+};
+
+export type BarLabelPosition =
+    | "inside"
+    | "outside";
+
+export type BarLabelContext = {
+    /** Dataset (series) label, e.g. “Revenue”. */
+    seriesName: string;
+    /** Category label on the cross-axis, e.g. “Jan”. */
+    label: string;
+    /** Formatted version of the label (may be `undefined`). */
+    formattedLabel: string | undefined;
+    /** Numeric value that determines bar length. */
+    value: number;
+    /** Formatted version of the value (may be `undefined`). */
+    formattedValue: string | undefined;
+};
+
+export type BarLabelAlignment =
+    | "start"
+    | "center"
+    | "end";
+
+export type BarLabelSpec = {
+    /** Build the text for this line. Supports multiline with \n. */
+    formatter: (ctx: BarLabelContext) => string;
+    /** Color of the label text. */
+    color?: string | undefined;
+};
+
+export type BarLabelsConfig = Partial<Record<
+    BarLabelPosition,
+    BarLabelSpec
+>>;
+
+// #endregion Bar Chart
 
 // #endregion Types
 
@@ -396,7 +462,6 @@ export function alignDataPointsByDate(
         labels: allKeys,
         values: mappedSeries.map(map => {
             let lastValue: number | null | undefined;
-            console.log(`all keys`, allKeys);
             return Enumerable
                 .from(allKeys)
                 .select<number | null>(key => {

@@ -165,7 +165,11 @@ namespace Rock.Blocks.Core
                 return null;
             }
 
-            var cacheability = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>();
+            var defaultCacheability = new RockCacheability()
+            {
+                RockCacheablityType = RockCacheablityType.Public,
+            };
+            var cacheability = entity.CacheControlHeaderSettings.FromJsonOrNull<RockCacheability>() ?? defaultCacheability;
 
             return new BinaryFileTypeBag
             {

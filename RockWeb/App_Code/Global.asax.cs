@@ -411,9 +411,7 @@ namespace RockWeb
                     // Pass in a CancellationToken so we can stop compiling if Rock shuts down before it is done
                     BlockTypeService.VerifyBlockTypeInstanceProperties( allUsedBlockTypeIds, _threadCancellationTokenSource.Token );
 
-                    // This methods updates the SiteTypeFlags property on the BlockType Table for each block. This logic was introduce to improve performance.
-                    // The SiteTypeFlags column stores the flags related to the SiteTypes associated with the Block Types which otherwise needs to be fetched using Reflection.
-                    UpdateSiteTypeFlagsOnBlockTypes();
+                    UpdateCompilerAttributesOnBlockTypes();
 
                     Debug.WriteLine( string.Format( "[{0,5:#} seconds] Block Types Compiled", stopwatchCompileBlockTypes.Elapsed.TotalSeconds ) );
                 }
@@ -422,23 +420,31 @@ namespace RockWeb
             BlockTypeCompilationThread.Start();
         }
 
-        private static void UpdateSiteTypeFlagsOnBlockTypes()
+        /// <summary>
+        /// Updates the block types with values from C# attributes when they
+        /// are available. This gives us peformance benefits to store them on
+        /// the block type and also solves issues if the block type C# type is
+        /// not available for some reason.
+        /// </summary>
+        private static void UpdateCompilerAttributesOnBlockTypes()
         {
-            var blockTypesWithSiteTypes = BlockTypeCache.All()
-               .Where( bt => string.IsNullOrEmpty( bt.Path ) )
+            var blockTypesWithCompiledType = BlockTypeCache.All()
                .Select( bt => new
                {
-                   bt.Id,
-                   compiledType = bt.GetCompiledType(),
-                   bt.SiteTypeFlags
+                   BlockType = bt,
+                   CompiledType = bt.GetCompiledType(),
                } );
 
-
-            foreach ( var blockTypeWithSiteType in blockTypesWithSiteTypes )
+            foreach ( var blockTypeWithCompiledType in blockTypesWithCompiledType )
             {
-                var type = blockTypeWithSiteType.compiledType;
+                var type = blockTypeWithCompiledType.CompiledType;
                 var siteTypes = SiteTypeFlags.None;
 
+                // Process the SiteTypeFlags property on the BlockType Table for
+                // each block. This logic was introduce to improve performance.
+                // The SiteTypeFlags column stores the flags related to the
+                // SiteTypes associated with the Block Types which otherwise
+                // needs to be fetched using Reflection.
                 if ( typeof( RockBlockType ).IsAssignableFrom( type ) )
                 {
                     var blockSiteTypes = type.GetCustomAttribute<SupportedSiteTypesAttribute>();
@@ -471,19 +477,34 @@ namespace RockWeb
                     siteTypes |= SiteTypeFlags.Mobile;
                 }
 
-                if ( blockTypeWithSiteType.SiteTypeFlags != siteTypes )
+                var defaultRole = blockTypeWithCompiledType.BlockType.DefaultRole;
+
+                if ( type != null )
+                {
+                    if ( type.GetCustomAttribute<Rock.Cms.DefaultBlockRoleAttribute>() is Rock.Cms.DefaultBlockRoleAttribute blockRoleAttr )
+                    {
+                        defaultRole = blockRoleAttr.DefaultRole;
+                    }
+                    else
+                    {
+                        defaultRole = BlockRole.Content;
+                    }
+                }
+
+                if ( blockTypeWithCompiledType.BlockType.SiteTypeFlags != siteTypes || blockTypeWithCompiledType.BlockType.DefaultRole != defaultRole )
                 {
                     using ( var rockContext = new RockContext() )
                     {
                         var blockTypeService = new BlockTypeService( rockContext );
                         var blockType = blockTypeService.Queryable()
-                            .Where( bt => bt.Id == blockTypeWithSiteType.Id )
+                            .Where( bt => bt.Id == blockTypeWithCompiledType.BlockType.Id )
                             .FirstOrDefault();
                         if ( blockType == null )
                         {
                             continue;
                         }
                         blockType.SiteTypeFlags = siteTypes;
+                        blockType.DefaultRole = defaultRole;
                         rockContext.SaveChanges();
                     }
                 }

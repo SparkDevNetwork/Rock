@@ -280,7 +280,7 @@ namespace Rock.Jobs
                  || !flow.ConversionGoalTimeframeInDays.HasValue )
             {
                 // No conversion goal set, so no conversion processing needed for this flow.
-                conversionGoalProcessor = null;
+                conversionGoalProcessor = NullConversionGoalProcessor.Instance;
                 return isContextDirty;
             }
 
@@ -289,7 +289,7 @@ namespace Rock.Jobs
                 conversionGoalProcessor = ConversionGoalProcessorFactory.Create( rockContext, flow );
             }
 
-            if ( conversionGoalProcessor == null )
+            if ( conversionGoalProcessor == NullConversionGoalProcessor.Instance )
             {
                 // The conversion goal type is unknown, so skip conversion processing for this flow.
                 Logger.LogWarning( $"Flow {flow.Id} cannot be processed. It has an unsupported conversion goal type {flow.ConversionGoalType.Value}." );
@@ -323,7 +323,7 @@ namespace Rock.Jobs
             ITriggerTypeProcessor triggerProcessor;
             using ( ObservabilityHelper.StartActivity( "Creating Trigger Type Processor" ) )
             {
-                triggerProcessor = TriggerTypeProcessorFactory.Create( rockContext, flow, conversionGoalProcessor );
+                triggerProcessor = TriggerTypeProcessorFactory.Create( rockContext, flow );
             }
 
             flowSendCount = 0;
@@ -416,8 +416,34 @@ namespace Rock.Jobs
                     case ConversionGoalType.JoinedGroup: return new JoinedGroupConversionGoalProcessor( new CommunicationFlowInstanceService( rockContext ), new GroupMemberService( rockContext ) );
                     case ConversionGoalType.Registered: return new RegisteredConversionGoalProcessor( new CommunicationFlowInstanceService( rockContext ), new RegistrationRegistrantService( rockContext ) );
                     case ConversionGoalType.TookStep: return new TookStepConversionGoalProcessor( new CommunicationFlowInstanceService( rockContext ), new StepService( rockContext ) );
-                    default: return null;
+                    default: return NullConversionGoalProcessor.Instance;
                 }
+            }
+        }
+
+        private class NullConversionGoalProcessor : IConversionGoalProcessor
+        {
+            public static NullConversionGoalProcessor Instance { get; } = new NullConversionGoalProcessor();
+
+            private NullConversionGoalProcessor()
+            {
+                // Only allow using the singleton Instance.
+            }
+
+            public bool AddConversions( CommunicationFlowInstance instance, out List<CommunicationFlowInstanceCommunicationConversion> addedConversions )
+            {
+                addedConversions = new List<CommunicationFlowInstanceCommunicationConversion>();
+                return false;
+            }
+
+            public IQueryable<ConversionInfo> GetConversionQuery( CommunicationFlowInstance communicationFlowInstance, IQueryable<int> personIds )
+            {
+                return Enumerable.Empty<ConversionInfo>().AsQueryable();
+            }
+
+            public IQueryable<ConversionInfo> GetConversionQuery( CommunicationFlowInstance communicationFlowInstance, IQueryable<int> personIds, DateTime conversionStartDateTime, DateTime conversionEndDateTime )
+            {
+                return Enumerable.Empty<ConversionInfo>().AsQueryable();
             }
         }
 
@@ -547,11 +573,11 @@ namespace Rock.Jobs
 
                 var existingKeys = instance.CommunicationFlowInstanceCommunications
                     .SelectMany( cfic => cfic.CommunicationFlowInstanceCommunicationConversions )
-                    .Select( h => new ConversionKey
+                    .Select( h => new
                     {
-                        CommunicationFlowInstanceCommunicationId = h.CommunicationFlowInstanceCommunicationId,
-                        CommunicationRecipientId = h.CommunicationRecipientId,
-                        PersonId = h.PersonAlias.PersonId
+                        h.CommunicationFlowInstanceCommunicationId,
+                        h.CommunicationRecipientId,
+                        h.PersonAlias.PersonId
                         // h.Date - add this in the future if we ever need to track ALL conversions for a person per instance.
                     } )
                     .ToHashSet();
@@ -560,11 +586,11 @@ namespace Rock.Jobs
                 using ( ObservabilityHelper.StartActivity( "Get New ConversionCandidates" ) )
                 {
                     newConversions = conversionCandidates
-                        .Where( h => !existingKeys.Contains( new ConversionKey
+                        .Where( h => !existingKeys.Contains( new
                         {
-                            CommunicationFlowInstanceCommunicationId = h.Conversion.CommunicationFlowInstanceCommunicationId,
-                            CommunicationRecipientId = h.Conversion.CommunicationRecipientId,
-                            PersonId = h.PersonId
+                            h.Conversion.CommunicationFlowInstanceCommunicationId,
+                            h.Conversion.CommunicationRecipientId,
+                            h.PersonId
                             // h.Date - add this in the future if we ever need to track ALL conversions for a person per instance.
                         } ) )
                         .ToList();
@@ -619,13 +645,6 @@ namespace Rock.Jobs
                                        && r.CommunicationSendDateTime.Value <= conversionDateTime ) ) )
                     .Select( r => ( r.CommunicationFlowInstanceCommunication, (int?)r.CommunicationRecipientId ) )
                     .FirstOrDefault();
-            }
-
-            private class ConversionKey
-            {
-                public int CommunicationFlowInstanceCommunicationId { get; set; }
-                public int CommunicationRecipientId { get; set; }
-                public int PersonId { get; set; }
             }
 
             private class PersonConversionInfo
@@ -923,12 +942,12 @@ namespace Rock.Jobs
 
         private static class TriggerTypeProcessorFactory
         {
-            public static ITriggerTypeProcessor Create( RockContext rockContext, CommunicationFlow flow, IConversionGoalProcessor conversionGoalProcessor )
+            public static ITriggerTypeProcessor Create( RockContext rockContext, CommunicationFlow flow )
             {
                 switch ( flow.TriggerType )
                 {
-                    case CommunicationFlowTriggerType.OneTime:   return new OneTimeTriggerTypeProcessor( conversionGoalProcessor, new PersonService( rockContext ) );
-                    case CommunicationFlowTriggerType.Recurring: return new RecurringTriggerTypeProcessor( conversionGoalProcessor, new PersonService( rockContext ) );
+                    case CommunicationFlowTriggerType.OneTime:   return new OneTimeTriggerTypeProcessor( new PersonService( rockContext ) );
+                    case CommunicationFlowTriggerType.Recurring: return new RecurringTriggerTypeProcessor( new PersonService( rockContext ) );
                     case CommunicationFlowTriggerType.OnDemand:  return new OnDemandTriggerTypeProcessor();
                     default: return null;
                 }
@@ -937,13 +956,10 @@ namespace Rock.Jobs
 
         private abstract class TriggerTypeProcessorBase : ITriggerTypeProcessor
         {
-            private readonly IConversionGoalProcessor _conversionGoalProcessor;
-
             protected PersonService PersonService { get; }
 
-            protected TriggerTypeProcessorBase( IConversionGoalProcessor conversionGoalProcessor, PersonService personService )
+            protected TriggerTypeProcessorBase( PersonService personService )
             {
-                _conversionGoalProcessor = conversionGoalProcessor ?? throw new ArgumentNullException( nameof( conversionGoalProcessor ) );
                 PersonService = personService ?? throw new ArgumentNullException( nameof( personService ) );
             }
 
@@ -961,8 +977,8 @@ namespace Rock.Jobs
 
         private sealed class OneTimeTriggerTypeProcessor : TriggerTypeProcessorBase
         {
-            public OneTimeTriggerTypeProcessor( IConversionGoalProcessor conversionGoalProcessor, PersonService personService )
-                : base( conversionGoalProcessor, personService )
+            public OneTimeTriggerTypeProcessor( PersonService personService )
+                : base( personService )
             { }
 
             public override bool EnsureFlowHasLatestInstance( CommunicationFlow flow )
@@ -1008,8 +1024,8 @@ namespace Rock.Jobs
 
         private sealed class RecurringTriggerTypeProcessor : TriggerTypeProcessorBase
         {
-            public RecurringTriggerTypeProcessor( IConversionGoalProcessor conversionGoalProcessor, PersonService personService )
-                : base( conversionGoalProcessor, personService )
+            public RecurringTriggerTypeProcessor( PersonService personService )
+                : base( personService )
             { }
 
             public override bool EnsureFlowHasLatestInstance( CommunicationFlow flow )
@@ -1484,7 +1500,7 @@ namespace Rock.Jobs
 
                 var dataViewQuery = _personService
                     .GetQueryUsingDataView( instance.CommunicationFlow.TargetAudienceDataView );
-                
+
                 var personIdQuery = dataViewQuery.Select( p => p.Id );
                 var personAndPersonAliasIds = dataViewQuery
                     .Where( p => p.PrimaryAliasId.HasValue )
@@ -1495,10 +1511,9 @@ namespace Rock.Jobs
                     } )
                     .ToList();
 
-                // Get people who already meet the conversion goal.
                 var preMetPersonIds = _conversionGoalProcessor.GetConversionQuery( instance, personIdQuery )
-                    .Select( h => h.PersonId )
-                    .ToList();
+                        .Select( h => h.PersonId )
+                        .ToList();
 
                 foreach ( var ids in personAndPersonAliasIds )
                 {

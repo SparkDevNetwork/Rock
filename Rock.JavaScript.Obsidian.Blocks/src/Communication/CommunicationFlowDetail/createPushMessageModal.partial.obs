@@ -10,6 +10,7 @@
                     <RockForm :id="createPushFormId" @submit="onSavePushMessageClicked">
                         <TextBox v-model="name"
                                  :disabled="disabled"
+                                 help="This will be the internal name of the message."
                                  label="Name"
                                  rules="required" />
 

@@ -55,7 +55,7 @@
                         <div :class="{ 'col-md-6': defaultFileUrl || defaultThumbnailUrl }">
                             <div v-if="!showNoStatsMessage">
                                 <h5 class="mb-2">Rock Media Analytics</h5>
-                                <Kpi :value="engagementValue" label="Engagement" :tooltip="`The total minutes played divided by the length of the video times the total number of plays.`" iconCssClass="ti ti-building-broadcast" color="blue" isCard />
+                                <Kpi :value="engagementValue" label="Engagement" :tooltip="`The total minutes played divided by the length of the video times the total number of plays.`" iconCssClass="ti ti-building-broadcast-tower" color="blue" isCard />
                                 <Kpi :value="playCount" label="Plays" :tooltip="`This video was played ${playCount} times.`" iconCssClass="ti ti-player-play" color="green" isCard />
                                 <Kpi :value="minutesWatched" label="Minutes Watched" :tooltip="`A total of ${minutesWatched} minutes were watched.`" iconCssClass="ti ti-clock" color="orange" isCard />
                             </div>

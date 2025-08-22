@@ -7,7 +7,7 @@
 .ti-spin {
     animation: ti-spin 2s infinite linear;
 }
-  
+
 .fa-pulse {
     animation: fa-spin 1s infinite steps(8);
 }
@@ -15,7 +15,7 @@
 .ti-pulse {
     animation: ti-spin 1s infinite steps(8);
 }
-  
+
 @keyframes fa-spin {
     0% {
         transform: rotate(0deg);
@@ -27,9 +27,9 @@
 
 @keyframes ti-spin {
   0% {
-    transform: rotate(360deg);
+    transform: rotate(0deg);
   }
   100% {
-    transform: rotate(0deg);
+    transform: rotate(360deg);
   }
 }

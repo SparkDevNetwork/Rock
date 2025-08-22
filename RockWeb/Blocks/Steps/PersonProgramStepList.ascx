@@ -60,10 +60,9 @@
                 </asp:Panel><!-- pnlGridView -->
 
                 <asp:Panel runat="server" id="pnlCardView">
-                    <div class="row d-flex flex-wrap">
+                    <div class="step-grid">
                         <asp:repeater id="rStepTypeCards" runat="server" OnItemDataBound="rStepTypeCards_ItemDataBound">
                             <itemtemplate>
-                                <div class="col-steps">
                                     <div class="step-card styled-scroll <%# Eval( "CardCssClass" ) %>">
                                         <div class="card-info">
                                             <%# Eval( "RenderedLava" ) %>
@@ -109,7 +108,6 @@
                                             </div>
                                         </div>
                                     </div>
-                                </div><!-- col -->
                             </itemtemplate>
                         </asp:repeater>
                     </div><!-- row -->

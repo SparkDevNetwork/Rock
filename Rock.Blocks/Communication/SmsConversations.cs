@@ -507,8 +507,19 @@ namespace Rock.Blocks.Communication
         /// <param name="recipientPersonPrimaryAliasId">The primary alias ID of the recipient person.</param>
         /// <param name="bag">The message data, including text and attachments.</param>
         /// <returns>An error message if the message could not be sent; otherwise, an empty string.</returns>
-        private string SendMessage( int? recipientPersonPrimaryAliasId, SendMessageBag bag )
+        private string SendMessage( Person recipientPerson, SendMessageBag bag )
         {
+            var smsNumber = recipientPerson?.PhoneNumbers.GetFirstSmsNumber();
+            if ( smsNumber == null )
+            {
+                if ( recipientPerson?.PhoneNumbers?.Any( p => p.IsMessagingOptedOut ) == true )
+                {
+                    return "The selected person has opted-out of receiving SMS messages.";
+                }
+
+                return "The selected person does not have an SMS enabled Phone number.";
+            }
+
             if ( bag.RecipientPersonAliasIdKey == string.Empty || ( bag.Message.IsNullOrWhiteSpace() && bag.AttachmentGuid == null ) )
             {
                 return "Message cannot be sent without text or an image.";
@@ -537,7 +548,7 @@ namespace Rock.Blocks.Communication
             var photos = binaryFile != null ? new List<BinaryFile> { binaryFile } : null;
 
             // Create and enqueue the communication
-            Rock.Communication.Medium.Sms.CreateCommunicationMobile( RequestContext.CurrentPerson, recipientPersonPrimaryAliasId, bag.Message, smsSystemPhoneNumber, responseCode, photos, RockContext );
+            Rock.Communication.Medium.Sms.CreateCommunicationMobile( RequestContext.CurrentPerson, recipientPerson.PrimaryAliasId, bag.Message, smsSystemPhoneNumber, responseCode, photos, RockContext );
 
             return string.Empty;
         }
@@ -803,13 +814,7 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Could not find the Recipient Person." );
             }
 
-            var personHasSMSNumbers = recipientPerson.PhoneNumbers.Where( a => a.IsMessagingEnabled ).Any();
-            if ( !personHasSMSNumbers )
-            {
-                return ActionBadRequest( "The selected person does not have an SMS enabled Phone number." );
-            }
-
-            var sendMessageResult = SendMessage( recipientPerson.PrimaryAliasId, bag );
+            var sendMessageResult = SendMessage( recipientPerson, bag );
 
             if ( sendMessageResult.IsNotNullOrWhiteSpace() )
             {
@@ -847,7 +852,7 @@ namespace Rock.Blocks.Communication
                 return ActionBadRequest( "Could not find the Recipient Person." );
             }
 
-            var sendMessageResult = SendMessage( recipientPerson.PrimaryAliasId, bag );
+            var sendMessageResult = SendMessage( recipientPerson, bag );
 
             if ( sendMessageResult.IsNotNullOrWhiteSpace() )
             {

@@ -22,6 +22,7 @@
     <PackageReference Include="Antlr" Version="3.5.0.2" />
     <PackageReference Include="AWSSDK.Core" Version="3.3.25.4" />
     <PackageReference Include="AWSSDK.S3" Version="3.3.21.1" />
+    <PackageReference Include="Azure.AI.DocumentIntelligence" Version="1.0.0" />
     <PackageReference Include="Azure.Storage.Blobs" Version="12.20.0" />
     <PackageReference Include="BCrypt-Official" Version="0.1.109" />
     <PackageReference Include="CacheManager.SystemRuntimeCaching" Version="1.2.0" />

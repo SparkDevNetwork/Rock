@@ -167,12 +167,6 @@ namespace Rock.Blocks.Communication
                 )
                 .FirstOrDefault();
 
-            if ( communicationFlowPerformanceBag?.ConversionGoalType == null )
-            {
-                // If there is no conversion goal, move on without processing further.
-                return communicationFlowPerformanceBag;
-            }
-
             // Get message instances. These are the actual messages that were (or will be) sent to recipients.
             communicationFlowPerformanceBag.Messages = ctx.CommunicationFlowInstanceCommunications
                 .Where( ic => ic.CommunicationFlowCommunication.CommunicationFlowId == communicationFlowId )

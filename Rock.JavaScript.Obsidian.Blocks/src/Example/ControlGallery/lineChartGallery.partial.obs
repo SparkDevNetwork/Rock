@@ -2,15 +2,15 @@
     <GalleryAndResult :value="{ series: series, labels: labels }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode">
 
         <div style="height: 300px;">
-            <LineChart :data="series"
+            <LineChart :labels="labels"
+                       :series="series"
                        :hideLegend="isLegendHidden"
                        :labelDateFormat="labelDateFormat"
-                       :labels="labels"
                        :legendAlign="legendAlign"
-                       :linear="isLinear"
                        :legendPosition="legendPosition"
+                       :linear="isLinear"
                        :lineStyle="lineStyle"
-                       :stacked="isStacked"
+                       :stack="isStacked"
                        :title="title"
                        :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
                        :unfilled="isUnfilled"
@@ -63,12 +63,14 @@
                                     label="Stacked"
                                     @update:modelValue="isStacked = $event" />
 
-                            <Switch v-model="isUnfilled"
-                                    label="Unfilled" />
+                            <Switch :modelValue="isUnfilled ?? false"
+                                    label="Unfilled"
+                                    @update:modelValue="isUnfilled = $event" />
 
-                            <Switch v-model="isLinear"
+                            <Switch :modelValue="isLinear ?? false"
                                     help="Connects data points with straight line segments instead of curves."
-                                    label="Linear" />
+                                    label="Linear"
+                                    @update:modelValue="isLinear = $event" />
 
                             <Switch :modelValue="isPercent ?? false"
                                     help="For 'percent', the data must be in decimal form (e.g., 0.1 for 10%)."
@@ -225,8 +227,8 @@
     const yHideGridLines = ref<boolean | undefined>();
     const xMaxTickCount = ref<number | undefined>();
     const yMaxTickCount = ref<number | undefined>();
-    const isUnfilled = ref<boolean>(false);
-    const isLinear = ref<boolean>(false);
+    const isUnfilled = ref<boolean | undefined>();
+    const isLinear = ref<boolean | undefined>();
     const isStacked = ref<boolean | undefined>();
     const seriesCount = ref<number>(4);
     const legendPosition = ref<LegendPosition | undefined>();
@@ -265,17 +267,16 @@
 
     const exampleCode = computed<string>(() => {
         let lineChartProps: string[] = [
-            `:data="series"`
+            `:labels="labels"`,
+            `:series="series"`
         ];
 
-        if (isLegendHidden.value) {
-            lineChartProps.push(`hideLegend`);
+        if (!isNullish(isLegendHidden.value)) {
+            lineChartProps.push(`hideLegend="${isLegendHidden.value}"`);
         }
         if (!isNullish(labelDateFormat.value)) {
             lineChartProps.push(`labelDateFormat="${labelDateFormat.value}"`);
         }
-
-        lineChartProps.push(`:labels="labels"`);
 
         if (!isNullish(legendAlign.value)) {
             lineChartProps.push(`legendAlign="${legendAlign.value}"`);
@@ -283,14 +284,14 @@
         if (!isNullish(legendPosition.value)) {
             lineChartProps.push(`legendPosition="${legendPosition.value}"`);
         }
-        if (isLinear.value) {
-            lineChartProps.push(`linear`);
+        if (!isNullish(isLinear.value)) {
+            lineChartProps.push(`linear="${isLinear.value}"`);
         }
         if (!isNullish(lineStyle.value)) {
             lineChartProps.push(`lineStyle="${lineStyle.value}"`);
         }
-        if (isStacked.value) {
-            lineChartProps.push(`stacked`);
+        if (!isNullish(isStacked.value)) {
+            lineChartProps.push(`stack="${isStacked.value}"`);
         }
         if (title.value) {
             lineChartProps.push(`title="${title.value}"`);
@@ -303,20 +304,20 @@
                 lineChartProps.push(`type="number"`);
             }
         }
-        if (isUnfilled.value) {
-            lineChartProps.push(`unfilled`);
+        if (!isNullish(isUnfilled.value)) {
+            lineChartProps.push(`unfilled="${isUnfilled.value}"`);
         }
         if (xLabel.value) {
             lineChartProps.push(`xLabel="${xLabel.value}"`);
         }
-        if (xMaxTickCount.value) {
+        if (!isNullish(xMaxTickCount.value)) {
             lineChartProps.push(`:xMaxTickCount="${xMaxTickCount.value}"`);
         }
-        if (xShowGridLines.value) {
-            lineChartProps.push(`xShowGridLines`);
+        if (!isNullish(xShowGridLines.value)) {
+            lineChartProps.push(`xShowGridLines="${xShowGridLines.value}"`);
         }
-        if (yHideGridLines.value) {
-            lineChartProps.push(`yHideGridLines`);
+        if (!isNullish(yHideGridLines.value)) {
+            lineChartProps.push(`yHideGridLines="${yHideGridLines.value}"`);
         }
         if (yLabel.value) {
             lineChartProps.push(`yLabel="${yLabel.value}"`);

@@ -3793,7 +3793,7 @@ Sys.Application.add_load(function () {
         /// and this request has not yet been prepared for a given page.</returns>
         public string GetContextCookieName( bool pageSpecific )
         {
-            return RequestContext?.GetContextCookieName( pageSpecific );
+            return RequestContext?.GetContextCookieName( pageSpecific ? RequestContext.Page : null );
         }
 
         /// <summary>

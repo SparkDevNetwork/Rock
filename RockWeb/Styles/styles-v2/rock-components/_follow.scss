@@ -35,8 +35,8 @@
   transition:   color .15s ease-in-out,background-color .15s ease-in-out,border-color .15s ease-in-out,box-shadow .15s ease-in-out;
 
   &::before {
-    font-family:  $font-face;
-    content:      "\f005"; // TODO hard coded Font Awesome
+    font-family:  'tabler-icons';
+    content:      "\f6a6"; // TODO hard coded Font Awesome
   }
 
   &.following {

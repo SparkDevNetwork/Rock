@@ -131,7 +131,7 @@ namespace RockWeb.Blocks.Core
             get
             {
                 object currentProperty = ViewState["CurrentTab"];
-                return currentProperty != null ? currentProperty.ToString() : "Basic Settings";
+                return currentProperty != null ? currentProperty.ToString() : "0^Basic Settings";
             }
 
             set
@@ -164,6 +164,10 @@ namespace RockWeb.Blocks.Core
                     return;
                 }
 
+                avcAttributes.CategoryNameMapper = RewriteCategoryName;
+                avcMobileAttributes.CategoryNameMapper = RewriteCategoryName;
+                avcAdvancedAttributes.CategoryNameMapper = RewriteCategoryName;
+
                 var _block = BlockCache.Get( blockId.Value );
 
                 Rock.Web.UI.DialogPage dialogPage = this.Page as Rock.Web.UI.DialogPage;
@@ -188,6 +192,13 @@ namespace RockWeb.Blocks.Core
                             BlockTypeCache.Get( blockTypeId ).MarkInstancePropertiesVerified( true );
                         }
                     }
+
+                    LoadCustomSettingsTabs();
+
+                    if ( _block != null )
+                    {
+                        BuildDynamicTabAttributes( _block );
+                    }
                 }
                 else
                 {
@@ -201,7 +212,8 @@ namespace RockWeb.Blocks.Core
 
             base.OnInit( e );
 
-            LoadCustomSettingsTabs();
+            tbBlockName.ValidationGroup = BlockValidationGroup;
+
         }
 
         /// <summary>
@@ -219,29 +231,107 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Builds the AttributeValueContainer objects for dynamic tabs based
+        /// on the attribute categories that have a tab name encoded in them.
+        /// </summary>
+        /// <param name="block">The block containing the attributes.</param>
+        private void BuildDynamicTabAttributes( BlockCache block )
+        {
+            var blockType = block.BlockType;
+
+            phTabAttributes.Controls.Clear();
+
+            if ( blockType == null )
+            {
+                return;
+            }
+
+            var attributeTabs = GetTabs( blockType )
+                .Where( t => t.StartsWith( "1^" ) )
+                .Select( t => t.Substring( 2 ) );
+
+            foreach ( var tab in attributeTabs )
+            {
+                var avc = new AttributeValuesContainer
+                {
+                    ID = "avcCustom" + tab.Replace( " ", "" ),
+                    Visible = false,
+                    CategoryNameMapper = RewriteCategoryName,
+                    IncludedAttributes = block.Attributes.Values
+                        .Where( a => a.Categories.Any( c => c.Name.StartsWith( tab + "^" ) ) )
+                        .ToArray()
+                };
+
+                phTabAttributes.Controls.Add( avc );
+
+                avc.AddEditControls( block );
+            }
+        }
+
+        /// <summary>
+        /// Rewrites the attribute category name to remove the tab name prefix
+        /// if there is one.
+        /// </summary>
+        /// <param name="categoryName">The original attribute category name.</param>
+        /// <returns>The category name to use instead.</returns>
+        private static string RewriteCategoryName( string categoryName )
+        {
+            if ( categoryName.Contains( '^' ) )
+            {
+                return categoryName.Split( '^' )[1];
+            }
+
+            return categoryName;
+        }
+
+        /// <summary>
         /// Gets the tabs.
         /// </summary>
         /// <param name="blockType">Type of the block.</param>
         /// <returns></returns>
         private List<string> GetTabs( BlockTypeCache blockType )
         {
-            var result = new List<string> { "Basic Settings", "Advanced Settings" };
+            var result = new List<string> { "0^Basic Settings" };
 
             if ( this.ShowMobileOptions )
             {
-                result.Insert( 1, "Mobile Local Settings" );
+                result.Insert( 1, "0^Mobile Local Settings" );
             }
 
             if ( this.ShowCustomGridActions || this.ShowCustomGridColumns || this.ShowCustomGridStickyHeader )
             {
-                result.Add( "Custom Grid Options" );
+                result.Add( "0^Custom Grid Options" );
+            }
+
+            int? blockId = PageParameter( "BlockId" ).AsIntegerOrNull();
+            if ( blockId.HasValue )
+            {
+                var block = BlockCache.Get( blockId.Value );
+
+                foreach ( var attr in block.Attributes.Values.OrderBy( a => a.Order ) )
+                {
+                    var tabCategories = attr.Categories
+                        .Where( c => c.Name.Contains( "^" ) )
+                        .Select( c => "1^" + c.Name.Split( '^' )[0] )
+                        .ToList();
+
+                    foreach ( var cat in tabCategories )
+                    {
+                        if ( !result.Contains( cat ) )
+                        {
+                            result.Add( cat );
+                        }
+                    }
+                }
             }
 
             var customSettingTabNames = CustomSettingsProviders.Keys
                 .Where( p => p.CustomSettingsTitle != "Basic Settings" )
                 .Where( p => p.CustomSettingsTitle != "Advanced Settings" )
-                .Select( p => p.CustomSettingsTitle );
+                .Select( p => "2^" + p.CustomSettingsTitle );
             result.AddRange( customSettingTabNames );
+
+            result.Add( "0^Advanced Settings" );
 
             return result;
         }
@@ -317,7 +407,10 @@ namespace RockWeb.Blocks.Core
                     avcMobileAttributes.IncludedCategoryNames = new string[] { "custommobile" };
                     avcMobileAttributes.AddEditControls( _block );
 
-                    avcAttributes.ExcludedCategoryNames = new string[] { "advanced", "customsetting", "custommobile" };
+                    var excludedCategoryNames = new List<string> { "advanced", "customsetting", "custommobile" };
+                    excludedCategoryNames.AddRange( _block.Attributes.Values.SelectMany( a => a.Categories.Select( c => c.Name ) ).Where( c => c.Contains( "^" ) ).Distinct() );
+
+                    avcAttributes.ExcludedCategoryNames = excludedCategoryNames.ToArray();
                     avcAttributes.ExcludedAttributes = _block.Attributes.Select( a => a.Value )
                         .Where( a =>
                         {
@@ -339,6 +432,8 @@ namespace RockWeb.Blocks.Core
 
                 tbBlockName.Text = _block.Name;
                 tbCssClass.Text = _block.CssClass;
+                ddlBlockRole.Text = _block.Role?.ConvertToInt().ToString() ?? string.Empty;
+                ddlBlockRole.AppendText = _block.BlockType != null ? "Default: " + _block.BlockType?.DefaultRole.ToString() : null;
                 cePreHtml.Text = _block.PreHtml;
                 cePostHtml.Text = _block.PostHtml;
 
@@ -393,7 +488,7 @@ namespace RockWeb.Blocks.Core
             LinkButton lb = sender as LinkButton;
             if ( lb != null )
             {
-                CurrentTab = lb.Text;
+                CurrentTab = lb.CommandArgument;
 
                 int blockId = Convert.ToInt32( PageParameter( "BlockId" ) );
                 BlockCache _block = BlockCache.Get( blockId );
@@ -428,6 +523,7 @@ namespace RockWeb.Blocks.Core
 
                 block.Name = tbBlockName.Text;
                 block.CssClass = tbCssClass.Text;
+                block.Role = ddlBlockRole.Text.ConvertToEnumOrNull<BlockRole>();
                 block.PreHtml = cePreHtml.Text;
                 block.PostHtml = cePostHtml.Text;
                 block.OutputCacheDuration = 0; //Int32.Parse( tbCacheDuration.Text );
@@ -435,6 +531,14 @@ namespace RockWeb.Blocks.Core
                 avcAttributes.GetEditValues( block );
                 avcMobileAttributes.GetEditValues( block );
                 avcAdvancedAttributes.GetEditValues( block );
+
+                foreach ( Control ctl in phTabAttributes.Controls )
+                {
+                    if ( ctl is AttributeValuesContainer avc )
+                    {
+                        avc.GetEditValues( block );
+                    }
+                }
 
                 foreach ( var kvp in CustomSettingsProviders )
                 {
@@ -597,6 +701,23 @@ namespace RockWeb.Blocks.Core
         }
 
         /// <summary>
+        /// Gets the tab name.
+        /// </summary>
+        /// <param name="property">The property.</param>
+        /// <returns></returns>
+        protected string GetTabName( object property )
+        {
+            var name = property.ToStringSafe();
+
+            if ( name.Length >= 2 && name[1] == '^' )
+            {
+                return name.Substring( 2 );
+            }
+
+            return name;
+        }
+
+        /// <summary>
         /// Loads the custom settings tabs.
         /// </summary>
         protected void LoadCustomSettingsTabs()
@@ -648,10 +769,15 @@ namespace RockWeb.Blocks.Core
         /// </summary>
         private void ShowSelectedPane()
         {
-            pnlAdvancedSettings.Visible = CurrentTab.Equals( "Advanced Settings" );
-            pnlBasicProperty.Visible = CurrentTab.Equals( "Basic Settings" );
-            pnlMobileSettings.Visible = CurrentTab.Equals( "Mobile Local Settings" );
-            pnlCustomGridTab.Visible = CurrentTab.Equals( "Custom Grid Options" );
+            pnlAdvancedSettings.Visible = CurrentTab.Equals( "0^Advanced Settings" );
+            pnlBasicProperty.Visible = CurrentTab.Equals( "0^Basic Settings" );
+            pnlMobileSettings.Visible = CurrentTab.Equals( "0^Mobile Local Settings" );
+            pnlCustomGridTab.Visible = CurrentTab.Equals( "0^Custom Grid Options" );
+
+            foreach ( Control ctl in phTabAttributes.Controls )
+            {
+                ctl.Visible = CurrentTab.Length >= 2 && ctl.ID == string.Format( "avcCustom{0}", CurrentTab.Substring( 2 ).Replace( " ", string.Empty ) );
+            }
 
             foreach ( var kvp in CustomSettingsProviders )
             {

@@ -392,7 +392,7 @@ namespace RockWeb.Blocks.Steps
 
             if ( !stepGridRow.StepStatusColor.IsNullOrWhiteSpace() )
             {
-                classAttribute = string.Format( @" class=""label label-default"" style=""background-color: {0};"" ", stepGridRow.StepStatusColor );
+                classAttribute = string.Format( @" class=""label label-success"" ", stepGridRow.StepStatusColor );
             }
 
             lStepStatus.Text = string.Format( "<span{0}>{1}</span>",

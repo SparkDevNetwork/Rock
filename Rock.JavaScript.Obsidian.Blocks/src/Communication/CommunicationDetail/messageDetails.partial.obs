@@ -62,7 +62,7 @@
                             Subject:
                         </div>
                         <div :class="infoItemValueCssClass">
-                            <strong>{{ emailSubject }}</strong>
+                            {{ emailSubject }}
                         </div>
                     </div>
                     <div v-if="replyToEmail" :class="infoItemCssClass">

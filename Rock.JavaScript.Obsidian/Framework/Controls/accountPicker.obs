@@ -337,7 +337,7 @@
             const timeout = setTimeout(() => {
                 treeItems.value = [{
                     isActive: true,
-                    iconCssClass: "ti ti-rotate-2 ti-spin",
+                    iconCssClass: "ti ti-rotate-clockwise-2 ti-spin",
                     isFolder: false,
                     hasChildren: false
                 }];
@@ -361,7 +361,7 @@
             const timeout = setTimeout(() => {
                 parentNode.children = [{
                     isActive: true,
-                    iconCssClass: "ti ti-rotate-2 ti-spin",
+                    iconCssClass: "ti ti-rotate-clockwise-2 ti-spin",
                     isFolder: false,
                     hasChildren: false
                 }];

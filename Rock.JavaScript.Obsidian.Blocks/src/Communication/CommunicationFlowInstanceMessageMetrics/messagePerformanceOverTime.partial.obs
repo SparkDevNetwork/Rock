@@ -2,7 +2,7 @@
 <template>
     <Panel panelBodyCssClass="chart-container"
            title="Message Performance Over Time">
-        <LineChart :data="series"
+        <LineChart :series="series"
                    :labels="labels"
                    labelDateFormat="day"
                    legendPosition="top"

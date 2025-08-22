@@ -137,6 +137,7 @@
 @import 'rock-components/content-section';
 @import 'rock-components/content-stack';
 @import 'rock-components/message';
+@import 'rock-components/person-card';
 
 /* ===================== BLOCK =================== */
 @import 'blocks/blocks-core';                       // Fully Format. There are Some hard coded value.
@@ -155,7 +156,7 @@
 // @import 'blocks/checkin-core';                      // Fully Format. MIGHT HAVE TO DELETE BECAUSE WE MIGHT BE ONLY USING THE NEXT GEN CHECKIN
 @import 'blocks/skeleton';                          // Fully Format. There are Some hard coded value.
 @import 'blocks/page-specific';                     // Fully Format. There are Some hard coded value.
-@import 'blocks/blocks-sms';                     
+@import 'blocks/blocks-sms';
 
 
 /* ===================== UTILITIES =================== */

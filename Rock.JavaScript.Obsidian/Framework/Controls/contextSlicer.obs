@@ -1,0 +1,96 @@
+<!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
+<template>
+    <div class="contextslicer">
+        <div class="contextslicer-title">{{ props.title }}</div>
+
+        <div class="contextslicer-content">
+            <slot />
+
+            <CampusContextPicker v-if="showCampus"
+                                 :campusStatusFilter="campusStatusFilter"
+                                 :campusTypeFilter="campusTypeFilter" />
+        </div>
+    </div>
+</template>
+
+<style>
+.contextslicer {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--spacing-medium);
+    min-height: 56px;
+    padding: var(--spacing-small) var(--spacing-medium);
+    border: 1px solid var(--color-interface-soft);
+    border-radius: var(--rounded-small);
+    background: var(--color-interface-softest);
+}
+
+.contextslicer > .contextslicer-title {
+    align-content: center;
+    flex-grow: 1;
+    color: var(--color-interface-stronger);
+    font-size: var(--font-size-h6);
+    font-weight: var(--font-weight-semibold);
+}
+
+.contextslicer > .contextslicer-content {
+    display: flex;
+    gap: var(--spacing-medium);
+    align-items: center;
+}
+
+.contextslicer > .contextslicer-content .form-control {
+    min-width: 150px;
+    height: 30px;
+    border-color: var(--color-interface-softer);
+    background-color: var(--color-interface-softer) !important;
+}
+
+.contextslicer > .contextslicer-content .ant-select-selector {
+    height: auto !important;
+    padding: 0 var(--spacing-medium) !important;
+}
+
+.contextslicer > .contextslicer-content .checkbox {
+    font-size: var(--font-size-small);
+    margin: 0;
+}
+</style>
+
+<script setup lang="ts">
+    import CampusContextPicker from "./campusContextPicker.obs";
+    import { PropType } from "vue";
+    import { Guid } from "@Obsidian/Types";
+
+    const props = defineProps({
+        /** The title to display in the slicer bar. */
+        title: {
+            type: String as PropType<string>,
+            required: true
+        },
+
+        /** Whether to show the campus context picker. */
+        showCampus: {
+            type: Boolean as PropType<boolean>,
+            default: false
+        },
+
+        /**
+         * Campus type defined value guids that limit which campuses are
+         * included in the list of campus options.
+         */
+        campusTypeFilter: {
+            type: [String, Array] as PropType<Guid | Guid[] | undefined>,
+            required: false
+        },
+
+        /**
+         * Campus status defined value guids that limit which campuses are
+         * included in the list of campus options.
+         */
+        campusStatusFilter: {
+            type: [String, Array] as PropType<Guid | Guid[] | undefined>,
+            required: false
+        },
+    });
+</script>

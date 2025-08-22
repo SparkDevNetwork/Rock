@@ -996,6 +996,11 @@ namespace Rock.SystemGuid
         public const string FINANCE = "7BEB7569-C485-40A0-A609-B0678F6F7240";
 
         /// <summary>
+        /// Gets the Finance Reports page guid
+        /// </summary>
+        public const string FINANCE_REPORTS = "8D5917F1-4E0E-4F18-8815-62EFBF808995";
+
+        /// <summary>
         /// Gets the Financial Batch Detail page guid
         /// ParentPage: Batches
         /// </summary>

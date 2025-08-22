@@ -30,6 +30,7 @@ body.navbar-side-open {
 }
 
 .full-work-surface {
+  height: 100%;
   padding: var(--spacing-medium);
 }
 
@@ -62,10 +63,10 @@ body.navbar-side-open {
       }
 
       > li + li::before {
-        font-family: FontAwesome;
+        font-family: 'tabler-icons';
         font-size: 80%;
         font-weight: 900;
-        content: "\f054";
+        content: "\ea61";
       }
     }
     .title {
@@ -179,6 +180,10 @@ body.navbar-side-open {
   @media (min-width: $screen-small) {
       margin-left: 88px;
   }
+}
+
+#content-wrapper:has(.full-work-surface) {
+    height: 100%;
 }
 
 @media (max-width: ($screen-small - 1)) {
@@ -1351,13 +1356,13 @@ a.rock-bookmark {
     min-height: 500px;
 
     @media (max-width: $screen-medium) {
-      margin-top: 10vh;
+      margin: 2vh 0;
       grid-template-columns: 1fr;
       grid-template-rows: 4fr 10fr;
       gap: 0;
       
       min-width: 380px;
-      width: 80vw;
+      width: 90vw;
     }
   }
 
@@ -1428,6 +1433,9 @@ a.rock-bookmark {
   .checkbox {
     // Override the normal check box margin.
     margin-bottom: var(--spacing-medium);
+  }
+  @media screen and (max-width: $screen-medium) {
+    height: 100%;
   }
 }
 

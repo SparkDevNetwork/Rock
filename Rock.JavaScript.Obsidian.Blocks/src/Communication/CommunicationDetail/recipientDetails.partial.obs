@@ -54,6 +54,7 @@
                     field="medium"
                     title="Medium"
                     width="150"
+                    headerClass="text-center"
                     :filter="pickExistingValueFilter"
                     :filterValue="getMediumTextValue"
                     :quickFilterValue="getMediumTextValue">
@@ -69,8 +70,10 @@
                            tooltip="deliveredDateTime"
                            :filter="booleanValueFilter">
                 <template #format="{ row }">
-                    <i v-if="(row as RecipientGridRow).delivered" class="ti ti-check"></i>
-                    <i v-else-if="getIsRowIsDeliveryFailure(row)" class="ti ti-x communication-detail-grid-cell-failure"></i>
+                    <div class="communication-detail-delivered-cell">
+                        <i v-if="(row as RecipientGridRow).delivered" class="ti ti-check"></i>
+                        <i v-else-if="getIsRowIsDeliveryFailure(row)" class="ti ti-x communication-detail-grid-cell-failure"></i>
+                    </div>
                 </template>
             </BooleanColumn>
 
@@ -208,6 +211,12 @@
 <style scoped>
 .communication-detail-grid-cell-failure {
     color: var(--color-danger-strong);
+}
+
+.communication-detail-delivered-cell {
+    width: 100%;
+    display: flex;
+    justify-content: center;
 }
 
 .communication-detail-timeline-footer-actions .btn {

@@ -200,3 +200,133 @@
     text-align: right;
   }
 }
+
+// 3. Group Placement
+// -------------------------
+
+.gender-section {
+    grid-column-start: 1;
+    grid-column-end: -1;
+    display: flex;
+    flex-direction: column;
+    gap: var(--spacing-small);
+}
+
+.loading-section {
+    grid-column-start: 1;
+    grid-column-end: -1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.gender-section .group-role-wrapper {
+    padding: 0;
+    padding-top: var(--spacing-small);
+}
+
+.gender-highlight-label {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-semibold);
+}
+
+.male-label {
+    background-color: var(--color-gender-male-soft);
+    color: var(--color-gender-male-shade);
+}
+
+.female-label {
+    background-color: var(--color-gender-female-soft);
+    color: var(--color-gender-female-shade);
+}
+
+.unknown-label {
+    background-color: var(--color-interface-soft);
+    color: var(--color-interface-strong);
+}
+
+.empty-drop-zone {
+    width: 100%;
+    grid-column-start: 1;
+    grid-column-end: -1;
+    display: flex;
+    justify-content: center;
+    padding: var(--spacing-xsmall);
+    border: 1px dashed var(--color-interface-soft);
+    color: var(--color-interface-soft);
+}
+
+.placement-capacity-label {
+    border-radius: 100px;
+}
+
+.role-count {
+    font-size: var(--font-size-small);
+    font-weight: var(--font-weight-regular);
+    color: var(--color-interface-medium);
+}
+
+.role-count.over-under-role-capacity {
+    color: var(--color-danger-strong);
+}
+
+.male-badge {
+    background-color: var(--color-gender-male-shade) !important;
+}
+
+.female-badge {
+    background-color: var(--color-gender-female-shade) !important;
+}
+
+.unknown-badge {
+    background-color: var(--color-interface-soft) !important;
+    color: var(--color-interface-stronger) !important;
+}
+
+.status-over {
+    background-color: var(--color-danger-strong) !important;
+}
+
+.status-at {
+    background-color: var(--color-critical-strong) !important;
+}
+
+.status-near {
+    background-color: var(--color-warning-strong) !important;
+    color: black;
+}
+
+.status-under {
+    background-color: var(--color-success-strong) !important;
+}
+
+.group-role-wrapper {
+    display: grid;
+    gap: var(--spacing-medium);
+    grid-template-columns: 1fr;
+    padding: var(--spacing-medium);
+}
+
+@media (min-width: 1024px) {
+    .group-role-wrapper {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 1440px) {
+    .group-role-wrapper {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 1800px) {
+    .group-role-wrapper {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 2000px) {
+    .group-role-wrapper {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}

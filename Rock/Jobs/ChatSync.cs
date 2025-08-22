@@ -28,7 +28,6 @@ using Microsoft.Extensions.Logging;
 using Rock.Attribute;
 using Rock.Communication.Chat;
 using Rock.Communication.Chat.DTO;
-using Rock.Communication.Chat.Exceptions;
 using Rock.Communication.Chat.Sync;
 using Rock.Data;
 using Rock.Enums.Communication.Chat;
@@ -164,11 +163,6 @@ namespace Rock.Jobs
                 return;
             }
 
-            // If there are Task.Runs that don't handle their exceptions, this will catch those so that we can log them.
-            // Note that this event won't fire until the Task is disposed. In most cases, that'll be when GC is collected.
-            // So it won't happen immediately.
-            TaskScheduler.UnobservedTaskException += TaskScheduler_UnobservedTaskException;
-
             var syncTask = Task.Run( async () =>
             {
                 using ( var rockContext = new RockContext() )
@@ -236,6 +230,8 @@ namespace Rock.Jobs
             // ---------------------------------------------------------
             // 1a) Ensure the app is set up in the external chat system.
 
+            UpdateLastStatusMessage( "Synchronizing Chat App Settings..." );
+
             rockToChatStopwatch.Restart();
             var isSetUpResult = await chatHelper.EnsureChatProviderAppIsSetUpAsync();
             rockToChatStopwatch.Stop();
@@ -258,6 +254,8 @@ namespace Rock.Jobs
 
             // -------------------------------------------------------------------------------
             // 1b) Delete any Rock chat users who no longer exist in the external chat system.
+
+            UpdateLastStatusMessage( "Synchronizing Rock People to Chat Individuals..." );
 
             // Technically, this should be considered a Chat-to-Rock sync operation, but we need to perform it up front,
             // as it's important to delete these Rock chat users before attempting to perform the remaining Rock-to-Chat
@@ -303,6 +301,8 @@ namespace Rock.Jobs
 
             // ---------------------------------------------------------------------------
             // 1d) Add/[re]enforce global chat bans by syncing "Chat Ban List" chat users.
+
+            UpdateLastStatusMessage( "Synchronizing Global Chat Ban List..." );
 
             var globallyBannedChatUserKeys = new HashSet<string>();
 
@@ -386,6 +386,8 @@ namespace Rock.Jobs
             // -------------------------------------------------------------
             // 1e) Sync "APP - Chat Administrator" security role chat users.
 
+            UpdateLastStatusMessage( "Synchronizing Chat Administrators..." );
+
             // Only perform this sync if chat is NOT enabled for the chat admins group. Otherwise, these chat users will
             // be synced as part of the regular group sync process below.
             var chatAminsGroup = GroupCache.Get( ChatHelper.ChatAdministratorsGroupId );
@@ -449,6 +451,9 @@ namespace Rock.Jobs
 
             // ---------------------------------------------------
             // 1f) Sync all Rock group types to the chat provider.
+
+            UpdateLastStatusMessage( "Synchronizing Rock Group Types to Chat Channel Types..." );
+
             rockToChatStopwatch.Restart();
 
             var groupTypeService = new GroupTypeService( rockContext );
@@ -499,6 +504,8 @@ namespace Rock.Jobs
 
             // -------------------------------------------------------
             // 1g) Sync all chat-enabled groups to the chat provider.
+
+            UpdateLastStatusMessage( "Synchronizing Rock Groups to Chat Channels..." );
 
             rockToChatStopwatch.Restart();
 
@@ -657,6 +664,8 @@ namespace Rock.Jobs
             // -----------------------------------------------------------------------
             // 1h) Sync any non-deceased people who haven't already been synced above.
 
+            UpdateLastStatusMessage( "Synchronizing Rock People to Chat Individuals..." );
+
             rockToChatUsersStopwatch.Start();
 
             var chatUserPersonIds = personService.GetNonDeceasedChatUserPersonIdsQuery().ToList();
@@ -748,6 +757,8 @@ namespace Rock.Jobs
 
             // -----------------------------------
             // 2a) Create any missing Rock groups.
+
+            UpdateLastStatusMessage( "Synchronizing Chat Channels to Rock Groups..." );
 
             taskResult = CreateAndAddNewTaskResult( section, "Chat Channels to Rock Groups", TimeSpan.Zero );
 
@@ -871,6 +882,8 @@ namespace Rock.Jobs
             // ------------------------------------------
             // 2b) Create any missing Rock group members.
 
+            UpdateLastStatusMessage( "Synchronizing Chat Channel Members to Rock Group Members..." );
+
             var chatToRockGroupMembersResult = new ChatSyncCrudResult();
             var chatToRockGroupMemberCommands = new List<SyncChatChannelMemberToRockCommand>();
 
@@ -973,6 +986,8 @@ namespace Rock.Jobs
         private async Task CreateInteractionsAsync( RockContext rockContext, ChatHelper chatHelper )
         {
             var section = CreateAndAddResultSection( "Chat Message Interactions:" );
+
+            UpdateLastStatusMessage( "Creating Chat Message Interactions..." );
 
             var stopwatch = new Stopwatch();
             stopwatch.Start();
@@ -1241,6 +1256,8 @@ namespace Rock.Jobs
         {
             var section = CreateAndAddResultSection( "Delete Merged Chat Individuals:" );
 
+            UpdateLastStatusMessage( "Synchronizing Merged Chat Individuals..." );
+
             var stopwatch = new Stopwatch();
             stopwatch.Start();
 
@@ -1409,7 +1426,8 @@ namespace Rock.Jobs
             {
                 var innerException = ChatHelper.GetFirstOrAggregateException( exceptions, $"Exceptions occurred in {jobName}." );
 
-                throw new ChatSyncException( $"{jobName} completed with errors. {enableErrorLogsMessage}", innerException );
+                // Report as a "warning" since helpful error messages will have been added to the job's result.
+                throw new RockJobWarningException( $"{jobName} completed with errors. {enableErrorLogsMessage}", innerException );
             }
             else if ( anyWarnings )
             {
@@ -1457,16 +1475,6 @@ namespace Rock.Jobs
             }
 
             return formattedResultSb.ToString();
-        }
-
-        /// <summary>
-        /// If there are Task.Runs that don't handle their exceptions, this will catch those so that we can log them.
-        /// </summary>
-        /// <param name="sender">The source of the event.</param>
-        /// <param name="e">The <see cref="UnobservedTaskExceptionEventArgs"/> instance containing the event data.</param>
-        private void TaskScheduler_UnobservedTaskException( object sender, UnobservedTaskExceptionEventArgs e )
-        {
-            ExceptionLogService.LogException( new RockJobWarningException( $"Unobserved Task Exception in {nameof( ChatSync )} Job.", e.Exception ) );
         }
 
         #endregion Task Result Reporting

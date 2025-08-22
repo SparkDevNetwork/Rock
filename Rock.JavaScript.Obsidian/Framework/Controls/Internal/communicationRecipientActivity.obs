@@ -87,8 +87,8 @@
     margin: 0;
     padding: var(--spacing-medium);
     padding-bottom: var(--spacing-xsmall);
-    border-radius: var(--border-radius-base);
-    border: 1px solid var(--color-interface-medium);
+    border-radius: var(--rounded-xsmall);
+    border: 1px solid var(--color-interface-soft);
     background-color: var(--color-interface-softest);
 }
 

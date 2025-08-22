@@ -4,34 +4,11 @@
            hasFullscreen
            panelBodyCssClass="chart-container"
            title="Instance vs. Flow Performance Average">
-        <BarChart :modelValue="dataPoints"
-                  :axes="{
-                    label: {
-                        type: 'string'
-                    },
-                    value: {
-                        type: 'percent',
-                        maxDecimalPlaces: 2,
-                        limits: { min: 0 },
-                        tooltip: {
-                            hide: true
-                        }
-                    }
-                }"
-                  :barLabels="{
-                    inside: {
-                        formatter: ({ value }) => {
-                            return value.toLocaleString(undefined, { style: 'percent', maximumFractionDigits: 2 });
-                        }
-                    },
-                    outside: {
-                        formatter: ({ seriesName }) => seriesName
-                    }
-                }"
-                  :legend="{
-                    hide: true
-                }"
-                  :seriesSort="[SeriesName.Instance, SeriesName.Instances, SeriesName.Average]" />
+        <BarChart :series="data.series"
+                  :labels="data.labels"
+                  :barLabels="barLabels"
+                  hideLegend
+                  type="percent" />
     </Panel>
 
     <NothingToShow v-else title="Instance vs. Flow Performance Average" />
@@ -48,8 +25,8 @@
     import NothingToShow from "./nothingToShow.partial.obs";
     import BarChart from "@Obsidian/Controls/barChart.obs";
     import Panel from "@Obsidian/Controls/panel.obs";
+    import { BarLabelsConfig, BarSeries } from "@Obsidian/Core/Controls/chart";
     import { Enumerable, GroupedEnumerable } from "@Obsidian/Utility/linq";
-    import { ChartNumericDataPointBag } from "@Obsidian/ViewModels/Reporting/chartNumericDataPointBag";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
     import { isNullish } from "@Obsidian/Utility/util";
     import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
@@ -89,6 +66,21 @@
 
     // #region Computed Values
 
+    const barLabels = computed<BarLabelsConfig>(() => {
+        return {
+            outside: {
+                formatter: ({ seriesName }) => {
+                    return seriesName;
+                }
+            },
+            inside: {
+                formatter: ({ formattedValue, value }) => {
+                    return formattedValue ?? value.toLocaleString(undefined, { style: "percent", maximumFractionDigits: 0 });
+                }
+            }
+        };
+    });
+
     const hasSentCommunications = computed<boolean>(() => {
         // Check if there are any recipients with a sent date.
         return Enumerable.from(props.messages).any(m => !!m.sentDateTime);
@@ -102,7 +94,7 @@
             .toArray();
     });
 
-    const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
+    const data = computed<{ series: BarSeries[]; labels: string[]; }>(() => {
         // Calculate conversion and unsubscribe rates for each instance.
         const allInstanceRates = Enumerable
             .from(allMessagesGroupedByInstance.value)
@@ -127,7 +119,7 @@
 
         // If there are no instances, return an empty array.
         if (allInstanceRates.size === 0) {
-            return [];
+            return { labels: [], series: [] };
         }
 
         const selectedInstanceRates = Enumerable
@@ -139,41 +131,34 @@
             .select(k => allInstanceRates.get(k)!)
             .toArray();
 
-        const dataPoints: ChartNumericDataPointBag[] = [];
+        const series: BarSeries[] = [];
 
         // Add data points for the average rates of selected instances.
         if (selectedInstanceRates.length > 0) {
-            dataPoints.push({
-                seriesName: selectedInstanceRates.length > 1 ? SeriesName.Instances : SeriesName.Instance,
-                label: "Conversion Rate",
-                value: Enumerable.from(selectedInstanceRates).average(i => i.conversionRate),
-                color: "#38A169"
-            });
-
-            dataPoints.push({
-                seriesName: selectedInstanceRates.length > 1 ? SeriesName.Instances : SeriesName.Instance,
-                label: "Unsubscribe Rate",
-                value: Enumerable.from(selectedInstanceRates).average(i => i.unsubscribeRate),
-                color: "#E53E3E"
+            series.push({
+                label: selectedInstanceRates.length > 1 ? SeriesName.Instances : SeriesName.Instance,
+                data: [
+                    Enumerable.from(selectedInstanceRates).average(i => i.conversionRate),
+                    Enumerable.from(selectedInstanceRates).average(i => i.unsubscribeRate)
+                ],
+                color: ["#38A169", "#E53E3E"]
             });
         }
 
         // Add data points for the average rates of all instances.
-        dataPoints.push({
-            seriesName: SeriesName.Average,
-            label: "Conversion Rate",
-            value: Enumerable.from(allInstanceRates.values()).average(i => i.conversionRate),
-            color: "#CDEAE1"
+        series.push({
+            label: SeriesName.Average,
+            data: [
+                Enumerable.from(allInstanceRates.values()).average(i => i.conversionRate),
+                Enumerable.from(allInstanceRates.values()).average(i => i.unsubscribeRate)
+            ],
+            color: ["#CDEAE1", "#FAD8D8"]
         });
 
-        dataPoints.push({
-            seriesName: SeriesName.Average,
-            label: "Unsubscribe Rate",
-            value: Enumerable.from(allInstanceRates.values()).average(i => i.unsubscribeRate),
-            color: "#FAD8D8"
-        });
-
-        return dataPoints;
+        return {
+            labels: ["Conversion Rate", "Unsubscribe Rate"],
+            series: series
+        };
     });
 
     // #endregion Computed Values

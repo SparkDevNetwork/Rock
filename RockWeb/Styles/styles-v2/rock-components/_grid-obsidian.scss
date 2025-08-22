@@ -31,9 +31,13 @@
     top: var(--sticky-element-offset);
 }
 
+.grid-obsidian .grid-header-prepend {
+    border-bottom: 1px solid var(--color-interface-soft);
+}
+
 .grid-obsidian.grid-sticky .sticky-column-header {
     position: sticky;
-    top: calc(var(--sticky-element-offset) + 56px);
+    top: calc(var(--sticky-element-offset) + 57px);
     z-index: 1;
 }
 
@@ -271,7 +275,7 @@
 .grid-filter-popup-container .grid-filter-popup > .actions {
     display: flex;
     border-top: 1px solid var(--color-interface-soft);
-    background-color: #fcfcfc;
+    background-color: var(--color-interface-softest);
     padding: 8px;
     gap: 8px;
 }
@@ -320,6 +324,13 @@
 
 .grid-cell.grid-wrapcell {
     flex-wrap: wrap;
+}
+
+.grid-cell > .label {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    display: block;
 }
 
 .grid-select-field {
@@ -436,6 +447,12 @@
     font-weight: 600;
 }
 
+.grid-obsidian .grid-cell-boolean,
+.grid-obsidian .grid-column-header-boolean {
+    text-align: center;
+    justify-content: center;
+}
+
 .grid-obsidian .grid-cell-number,
 .grid-obsidian .grid-cell-currency,
 .grid-obsidian .grid-column-header-number,
@@ -448,7 +465,7 @@
     .grid-row:has(.table-empty) {
     border-bottom: 1px solid var(--color-interface-soft);
     }
-    
+
     .grid-row:has(.table-empty) .grid-cell {
     border-bottom: none;
     }

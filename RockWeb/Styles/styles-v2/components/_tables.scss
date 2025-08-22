@@ -1,8 +1,8 @@
-//TABLE STYLE 
+//TABLE STYLE
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + Base Style
 //  + Alternative Style
 //  + Responsive Table
@@ -41,7 +41,7 @@ caption {
 }
 
 th {
-  text-align: left; 
+  text-align: left;
 }
 
 .table {
@@ -108,14 +108,14 @@ th {
     &:hover a:not(.btn)::after {
       opacity: 1;
     }
-  
+
     // sorting
     &.descending a:not(.btn)::after {
       color:    var(--color-interface-stronger);
       content:  '\f0dd';
       opacity:  1;
     }
-  
+
     &.ascending a:not(.btn)::after {
       color:    var(--color-interface-stronger);
       content:  '\f0de';
@@ -159,7 +159,7 @@ th {
   & .color-field {
     width:            4px;
     padding:          0;
-  
+
     & + th {
       border-left-width: 0;
     }
@@ -258,6 +258,11 @@ td.wrap-contents {
   }
 }
 
+// Table - No Borders
+.table-no-border {
+  overflow-x: auto;
+}
+
 // Core Table
 .table-wrapper {
   .btn-toolbar {
@@ -331,7 +336,7 @@ td.wrap-contents {
   &.active:hover > td,
   &:hover > .active,
   &.active:hover > th {
-    background-color: var(--color-interface-softer); // TODO darken by 5% 
+    background-color: var(--color-interface-softer); // TODO darken by 5%
   }
 }
 
@@ -593,24 +598,24 @@ tr.row-highlight {
   color:              var(--color-interface-strong);
   background-color:   transparent;
   border-color:       transparent;
-  
+
   &:focus,
   &.focus {
     color:            var(--color-interface-softest);
     background-color: var(--color-danger-soft); // TODO darken by 10% when available
     border-color:     var(--color-danger-stronger);
   }
-  
+
   &:hover {
     color:            var(--color-interface-softest);
     background-color: var(--color-danger-soft); // TODO darken by 10% when available
     border-color:     var(--color-danger-stronger);
   }
-  
+
   &:active,
   &.active,
   .open > .dropdown-toggle & {
-    color:            var(--color-interface-softest); 
+    color:            var(--color-interface-softest);
     background-color: var(--color-danger-soft); // TODO this uses darken, which is a Less function
     background-image: none;
     border-color:     var(--color-danger-stronger);
@@ -623,7 +628,7 @@ tr.row-highlight {
       border-color:     var(--color-danger-stronger);
     }
   }
-  
+
   &.disabled,
   &[disabled],
   fieldset[disabled] & {
@@ -634,7 +639,7 @@ tr.row-highlight {
       border-color:     var(--color-interface-soft);
     }
   }
-  
+
   .badge {
     color:            var(--color-interface-softest);
     background-color: var(--color-interface-stronger);
@@ -738,7 +743,7 @@ tr.row-highlight {
   .grid-filter-entry,
   .grid-filter-overview fieldset {
     padding:        var(--spacing-medium);
-    padding-top:    37px;   // TODO this is hard coded 
+    padding-top:    37px;   // TODO this is hard coded
     border-bottom:  1px solid var(--color-interface-soft); // TODO darken softer by 10%
   }
 
@@ -830,7 +835,7 @@ td.grid-col-actions {
   .btn {
     margin-left:      var(--spacing-xsmall);
   }
-  
+
   &:hover {
     color:            var(--color-interface-strong);
   }
@@ -840,7 +845,7 @@ td.grid-col-actions {
   }
 
   .btn-grid-action {
-    padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in 
+    padding:          5px 7px; // Need to hard coded so that the action btn in the group scheduler takes more space, for the "filter options" button to fit in
     margin:           0 0 0 2px;
     font-size:        20px;
     border:           0;

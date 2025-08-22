@@ -1,0 +1,562 @@
+<template>
+    <GalleryAndResult :value="{ series: series, labels: labels }" hasMultipleValues :importCode="importCode" :exampleCode="exampleCode">
+
+        <div style="height: 300px;">
+            <BarChart :labels="labels"
+                      :series="series"
+                      :barLabels="barLabels"
+                      :hideLegend="isLegendHidden"
+                      :labelDateFormat="labelDateFormat"
+                      :legendAlign="legendAlign"
+                      :legendPosition="legendPosition"
+                      :overlap="isOverlapped"
+                      :stack="isStacked"
+                      :title="title"
+                      :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
+                      :unfilled="isUnfilled"
+                      :xLabel="xLabel"
+                      :xMaxTickCount="xMaxTickCount"
+                      :xShowGridLines="xShowGridLines"
+                      :yHideGridLines="yHideGridLines"
+                      :yLabel="yLabel"
+                      :yMaxTickCount="yMaxTickCount"
+                      :ySuggestedMax="ySuggestedMax"
+                      :ySuggestedMin="ySuggestedMin"
+                      :yTickCount="yTickCount"
+                      @click="onBarChartClicked" />
+        </div>
+
+        <template #settings>
+            <div class="settings">
+                <ContentSection title="Settings">
+                    <ContentStack title="General">
+                        <div class="autolayout">
+                            <TextBox :modelValue="title ?? ''"
+                                     label="Chart Title"
+                                     @update:modelValue="title = $event" />
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Data">
+                        <div class="autolayout">
+                            <NumberUpDown v-model="seriesCount"
+                                          label="Series Count"
+                                          :min="1"
+                                          :max="8" />
+
+                            <DropDownList :modelValue="labelDateFormat ?? ''"
+                                          help="If specified, then the labels array must have ISO 8601-formatted dates. If not specified, the labels will be treated as simple strings."
+                                          :items="labelDateFormatItems"
+                                          label="Label Date Format"
+                                          @update:modelValue="labelDateFormat = <LabelDateFormat>$event" />
+
+                            <Switch :modelValue="isPercent ?? false"
+                                    help="For 'percent', the data must be in decimal form (e.g., 0.1 for 10%)."
+                                    label="Percent"
+                                    @update:modelValue="isPercent = $event" />
+
+                            <Switch :modelValue="isStacked ?? false"
+                                    help="Stack bars from different series on top of each other instead of side-by-side or overlapping."
+                                    label="Stack"
+                                    @update:modelValue="isStacked = $event" />
+
+                            <Switch :modelValue="isOverlapped ?? false"
+                                    help="Show bars from different series over each other instead of side-by-side or stacked. The 'unfilled' option is recommended to ensure visibility of overlapping data points."
+                                    label="Overlap"
+                                    @update:modelValue="isOverlapped = $event" />
+
+                            <Switch :modelValue="isUnfilled ?? false"
+                                    help="Unfilled bars are not filled with color, which could be useful to ensure visibility of overlapping data points when using 'overlap'."
+                                    label="Unfilled"
+                                    @update:modelValue="isUnfilled = $event" />
+
+                            <Switch :modelValue="hasOutsideBarLabels ?? false"
+                                    help="If labels overlap, those with a higher data index will be hidden. The chart height will also increase to fit the highest label."
+                                    label="Outside Bar Labels"
+                                    @update:modelValue="hasOutsideBarLabels = $event" />
+
+                            <Switch :modelValue="hasInsideBarLabels ?? false"
+                                    label="Inside Bar Labels"
+                                    @update:modelValue="hasInsideBarLabels = $event" />
+
+                            <div class="button-wrapper">
+                                <RockButton btnType="primary"
+                                            @click="onRandomizeDataClicked">Randomize Data</RockButton>
+                            </div>
+
+                            <div class="button-wrapper">
+                                <RockButton btnType="primary"
+                                            @click="onRandomizeOpacityClicked">Randomize Opacity</RockButton>
+                            </div>
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Legend">
+                        <div class="autolayout">
+                            <DropDownList :modelValue="legendPosition ?? ''"
+                                          :items="legendPositionItems"
+                                          label="Position"
+                                          @update:modelValue="legendPosition = <LegendPosition>$event" />
+
+                            <DropDownList :modelValue="legendAlign ?? ''"
+                                          :items="legendAlignItems"
+                                          label="Alignment"
+                                          @update:modelValue="legendAlign = <LegendAlign>$event" />
+
+                            <Switch :modelValue="isLegendHidden ?? false"
+                                    label="Hide"
+                                    @update:modelValue="isLegendHidden = $event" />
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="X-Axis">
+                        <div class="autolayout">
+                            <TextBox :modelValue="xLabel ?? ''"
+                                     label="Label"
+                                     @update:modelValue="xLabel = $event" />
+
+                            <NumberBox v-model="xMaxTickCount"
+                                       label="Max Tick Count" />
+
+                            <Switch :modelValue="xShowGridLines ?? false"
+                                    label="Show Grid Lines"
+                                    @update:modelValue="xShowGridLines = $event" />
+                        </div>
+                    </ContentStack>
+
+                    <ContentStack title="Y-Axis">
+                        <div class="autolayout">
+                            <TextBox :modelValue="yLabel ?? ''"
+                                     label="Label"
+                                     @update:modelValue="yLabel = $event" />
+
+                            <Switch :modelValue="yHideGridLines ?? false"
+                                    label="Hide Grid Lines"
+                                    @update:modelValue="yHideGridLines = $event" />
+
+                            <NumberBox v-model="yTickCount"
+                                       label="Tick Count" />
+
+                            <NumberBox v-model="yMaxTickCount"
+                                       label="Max Tick Count" />
+
+                            <NumberBox v-model="ySuggestedMin"
+                                       label="Suggested Min" />
+
+                            <NumberBox v-model="ySuggestedMax"
+                                       label="Suggested Max" />
+                        </div>
+                    </ContentStack>
+                </ContentSection>
+            </div>
+        </template>
+    </GalleryAndResult>
+</template>
+
+<style scoped>
+.button-wrapper {
+    display: flex;
+    align-items: center;
+}
+
+.settings {
+    max-height: 350px;
+    overflow: auto;
+}
+
+.autolayout {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    column-gap: var(--spacing-small);
+}
+</style>
+
+<script setup lang="ts">
+    import { computed, ref, watch } from "vue";
+    import GalleryAndResult from "./common/galleryAndResult.partial.obs";
+    import { getSfcControlImportPath } from "./common/utils.partial";
+    import ContentSection from "@Obsidian/Controls/contentSection.obs";
+    import ContentStack from "@Obsidian/Controls/contentStack.obs";
+    import DropDownList from "@Obsidian/Controls/dropDownList.obs";
+    import BarChart from "@Obsidian/Controls/barChart.obs";
+    import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import NumberUpDown from "@Obsidian/Controls/numberUpDown.obs";
+    import RockButton from "@Obsidian/Controls/rockButton.obs";
+    import Switch from "@Obsidian/Controls/switch.obs";
+    import TextBox from "@Obsidian/Controls/textBox.obs";
+    import { BarSeries, LabelDateFormat, LegendAlign, LegendPosition, LabelDateFormatDescription, LegendAlignDescription, LegendPositionDescription, BarChartClickEvent, BarLabelContext, BarLabelsConfig } from "@Obsidian/Core/Controls/chart";
+    import { Enumerable } from "@Obsidian/Utility/linq";
+    import { isNullish } from "@Obsidian/Utility/util";
+
+    const importCode = getSfcControlImportPath("chart");
+    const legendPositionItems = [
+        { text: LegendPositionDescription[LegendPosition.Top], value: LegendPosition.Top },
+        { text: LegendPositionDescription[LegendPosition.Bottom], value: LegendPosition.Bottom },
+        { text: LegendPositionDescription[LegendPosition.Left], value: LegendPosition.Left },
+        { text: LegendPositionDescription[LegendPosition.Right], value: LegendPosition.Right }
+    ];
+    const legendAlignItems = [
+        { text: LegendAlignDescription[LegendAlign.Start], value: LegendAlign.Start },
+        { text: LegendAlignDescription[LegendAlign.Center], value: LegendAlign.Center },
+        { text: LegendAlignDescription[LegendAlign.End], value: LegendAlign.End }
+    ];
+    const labelDateFormatItems = [
+        { text: LabelDateFormatDescription[LabelDateFormat.Auto], value: LabelDateFormat.Auto },
+        { text: LabelDateFormatDescription[LabelDateFormat.Day], value: LabelDateFormat.Day },
+        { text: LabelDateFormatDescription[LabelDateFormat.Week], value: LabelDateFormat.Week },
+        { text: LabelDateFormatDescription[LabelDateFormat.Month], value: LabelDateFormat.Month },
+        { text: LabelDateFormatDescription[LabelDateFormat.Year], value: LabelDateFormat.Year }
+    ];
+    const labels = [
+        "2024-12-01T00:00:00",
+        "2025-01-01T00:00:00",
+        "2025-02-01T00:00:00"
+    ];
+
+    // #region Values
+
+    const series = ref<BarSeries[]>([
+        {
+            label: "Small Group",
+            data: [49, 73, 96],
+        },
+        {
+            label: "Baptism",
+            data: [11, 44, 47],
+        }
+    ]);
+    const minValue = ref<number>(0);
+    const maxValue = ref<number>(100);
+    const xShowGridLines = ref<boolean | undefined>();
+    const yHideGridLines = ref<boolean | undefined>();
+    const xMaxTickCount = ref<number | undefined>();
+    const yMaxTickCount = ref<number | undefined>();
+    const isUnfilled = ref<boolean | undefined>();
+    const isOverlapped = ref<boolean | undefined>();
+    const isStacked = ref<boolean | undefined>();
+    const seriesCount = ref<number>(series.value.length);
+    const legendPosition = ref<LegendPosition | undefined>();
+    const legendAlign = ref<LegendAlign | undefined>();
+    const isLegendHidden = ref<boolean | undefined>();
+    const labelDateFormat = ref<LabelDateFormat | undefined>(LabelDateFormat.Auto);
+    const isPercent = ref<boolean | undefined>();
+    const yTickCount = ref<number | undefined>();
+    const xLabel = ref<string | undefined>("X Axis");
+    const yLabel = ref<string | undefined>("Y Axis");
+    const title = ref<string | undefined>("Chart Title");
+    const ySuggestedMin = ref<number | undefined>();
+    const ySuggestedMax = ref<number | undefined>();
+    const opacity = ref<number | number[] | undefined>();
+    const hasOutsideBarLabels = ref<boolean | undefined>();
+    const hasInsideBarLabels = ref<boolean | undefined>();
+
+    // #endregion Values
+
+    // #region Computed Values
+
+    const exampleCode = computed<string>(() => {
+        let lineChartProps: string[] = [
+            `:labels="labels"`,
+            `:series="series"`
+        ];
+
+        if (!isNullish(isLegendHidden.value)) {
+            lineChartProps.push(`:hideLegend="${isLegendHidden.value}"`);
+        }
+        if (!isNullish(labelDateFormat.value)) {
+            lineChartProps.push(`labelDateFormat="${labelDateFormat.value}"`);
+        }
+
+        if (!isNullish(legendAlign.value)) {
+            lineChartProps.push(`legendAlign="${legendAlign.value}"`);
+        }
+        if (!isNullish(legendPosition.value)) {
+            lineChartProps.push(`legendPosition="${legendPosition.value}"`);
+        }
+        if (!isNullish(isOverlapped.value)) {
+            lineChartProps.push(`:overlap="${isOverlapped.value}"`);
+        }
+        if (!isNullish(isStacked.value)) {
+            lineChartProps.push(`:stack="${isStacked.value}"`);
+        }
+        if (title.value) {
+            lineChartProps.push(`title="${title.value}"`);
+        }
+        if (!isNullish(isPercent.value)) {
+            if (isPercent.value) {
+                lineChartProps.push(`type="percent"`);
+            }
+            else {
+                lineChartProps.push(`type="number"`);
+            }
+        }
+        if (!isNullish(isUnfilled.value)) {
+            lineChartProps.push(`"unfilled="${isUnfilled.value}"`);
+        }
+        if (xLabel.value) {
+            lineChartProps.push(`xLabel="${xLabel.value}"`);
+        }
+        if (!isNullish(xMaxTickCount.value)) {
+            lineChartProps.push(`:xMaxTickCount="${xMaxTickCount.value}"`);
+        }
+        if (!isNullish(xShowGridLines.value)) {
+            lineChartProps.push(`xShowGridLines="${xShowGridLines.value}"`);
+        }
+        if (!isNullish(yHideGridLines.value)) {
+            lineChartProps.push(`yHideGridLines="${yHideGridLines.value}"`);
+        }
+        if (yLabel.value) {
+            lineChartProps.push(`yLabel="${yLabel.value}"`);
+        }
+        if (!isNullish(yMaxTickCount.value)) {
+            lineChartProps.push(`:yMaxTickCount="${yMaxTickCount.value}"`);
+        }
+        if (!isNullish(ySuggestedMax.value)) {
+            lineChartProps.push(`:ySuggestedMax="${ySuggestedMax.value}"`);
+        }
+        if (!isNullish(ySuggestedMin.value)) {
+            lineChartProps.push(`:ySuggestedMin="${ySuggestedMin.value}"`);
+        }
+        if (!isNullish(yTickCount.value)) {
+            lineChartProps.push(`:yTickCount="${yTickCount.value}"`);
+        }
+
+        const prefix = "<BarChart ";
+        const spaces = " ".repeat(prefix.length);
+        return `${prefix}${lineChartProps.join(`\n${spaces}`)} />`;
+    });
+
+    // #endregion Computed Values
+
+    // #region Functions
+
+    function generateSeries(): BarSeries[] {
+        return Enumerable
+            .from(Array(seriesCount.value).keys())
+            .select(i => generateOneSeries(i))
+            .toArray();
+    }
+
+    function generateOneSeries(i: number): BarSeries {
+        const min = Math.min(minValue.value, maxValue.value);
+        const max = Math.max(minValue.value, maxValue.value);
+        let data = generateRandomBarData(labels.length, min, max, true);
+
+        if (isPercent.value) {
+            data = Enumerable.from(data).select(n => typeof n === "number" ? n / 100 : n).toArray();
+        }
+
+        const s: BarSeries = {
+            label: `Series ${i + 1}`,
+            data: data,
+            opacity: opacity.value
+        };
+
+        return s;
+    }
+
+    const barLabels = computed<BarLabelsConfig | undefined>(() => {
+        if (hasInsideBarLabels.value || hasOutsideBarLabels.value) {
+            return {
+                outside: hasOutsideBarLabels.value ? {
+                    formatter: (ctx: BarLabelContext): string => {
+                        return ctx.seriesName;
+                    },
+                } : undefined,
+                inside: hasInsideBarLabels.value ? {
+                    formatter: (ctx: BarLabelContext): string => {
+                        return ctx.formattedValue || ctx.value.toLocaleString(undefined, { maximumFractionDigits: 0 });
+                    },
+                } : undefined
+            };
+        }
+    });
+
+    /**
+ * Generate independent random values between `min` and `max` for bar charts.
+ * - No trend or momentum; each value is i.i.d.
+ * - No accumulation across points.
+ *
+ * Note: `startAtMin` is ignored and kept only for backward compatibility.
+ */
+    function generateRandomBarData(
+        count: number,
+        min: number,
+        max: number,
+        _startAtMin: boolean = true
+    ): number[] {
+        if (count <= 0) return [];
+        if (min > max) [min, max] = [max, min];
+
+        const range = max - min;
+        const data = new Array<number>(count);
+
+        for (let i = 0; i < count; i++) {
+            data[i] = min + Math.random() * range; // uniform in [min, max)
+        }
+
+        return data;
+    }
+
+    // #endregion Functions
+
+    // #region Event Handlers
+
+    function onRandomizeDataClicked(): void {
+        series.value = generateSeries();
+    }
+
+    function onRandomizeOpacityClicked(): void {
+        opacity.value = Enumerable
+            .from(labels)
+            .withIndex()
+            .select(([_label, _index]) => (Math.random() > 0.5 ? 0.25 : 1))
+            .toArray();
+    }
+
+    function onBarChartClicked(event: BarChartClickEvent): void {
+        if (event.targets.length === 0) {
+            // If no targets, reset opacity to full.
+            opacity.value = 1;
+            return;
+        }
+
+        const clickedLabelIndexes = Enumerable
+            .from(event.targets)
+            .select(t => t.labelIndex)
+            .toArray();
+
+        const newOpacity = Enumerable
+            .from(labels)
+            .withIndex()
+            .select<number>(([_label, index]) => {
+                if (clickedLabelIndexes.includes(index)) {
+                    return 1;
+                }
+                return 0.25;
+            })
+            .toArray();
+
+        // If the new and old opacities are the same,
+        // then narrow down the opacity to the selected
+        // dataset.
+        if (Array.isArray(opacity.value) && Enumerable.from(newOpacity).sequenceEqual(opacity.value)) {
+            opacity.value = undefined;
+            series.value = Enumerable
+                .from(series.value)
+                .withIndex()
+                .select<BarSeries>(([s, seriesIndex]) => {
+                    const targetsWithThisSeries = Enumerable
+                        .from(event.targets)
+                        .where(t => t.seriesIndex === seriesIndex)
+                        .toArray();
+
+                    if (targetsWithThisSeries.length) {
+                        const opacities = Enumerable
+                            .from(labels)
+                            .withIndex()
+                            .select<number>(([_label, labelIndex]) => {
+                                if (Enumerable.from(targetsWithThisSeries).any(t => t.labelIndex === labelIndex)) {
+                                    return 1;
+                                }
+                                else {
+                                    return 0.25;
+                                }
+                            })
+                            .toArray();
+
+                        return {
+                            ...s,
+                            opacity: opacities
+                        };
+                    }
+                    return {
+                        ...s,
+                        opacity: 0.25 // This series was not selected.
+                    };
+                }).toArray();
+        }
+        else {
+            // When an index/series is clicked, let's set the opacity of everything but the selected value
+            // to semi-transparent.
+            opacity.value = newOpacity;
+        }
+    }
+
+    // #endregion Event Handlers
+
+    // #region Watchers
+
+    watch(seriesCount, (newCount, oldCount) => {
+        const amountToRemove = oldCount - newCount;
+
+        if (amountToRemove > 0) {
+            series.value = series.value.slice(0, newCount);
+        }
+        else {
+            const amountToAdd = newCount - oldCount;
+
+            if (amountToAdd > 0) {
+                series.value = [
+                    ...series.value,
+                    generateOneSeries(newCount - 1)
+                ];
+            }
+        }
+    });
+
+    watch([minValue, maxValue], () => {
+        const min = Math.min(minValue.value, maxValue.value);
+        const max = Math.max(minValue.value, maxValue.value);
+        series.value = Enumerable
+            .from(series.value)
+            .select(s => {
+                return {
+                    ...s,
+                    data: generateRandomBarData(labels.length, min, max, true)
+                };
+            })
+            .toArray();
+    });
+
+    watch(isPercent, (newValue) => {
+        if (newValue) {
+            series.value = Enumerable
+                .from(series.value)
+                .select(s => {
+                    return {
+                        ...s,
+                        data: Enumerable.from(s.data).select(n => typeof n === "number" ? n / 100 : n).toArray()
+                    };
+                })
+                .toArray();
+        }
+        else {
+            series.value = Enumerable
+                .from(series.value)
+                .select(s => {
+                    return {
+                        ...s,
+                        data: Enumerable.from(s.data).select(n => typeof n === "number" ? n * 100 : n).toArray()
+                    };
+                })
+                .toArray();
+        }
+    });
+
+    watch(opacity, (opacity) => {
+        if (!isNullish(opacity)) {
+            series.value = Enumerable
+                .from(series.value)
+                .select(s => {
+                    return {
+                        ...s,
+                        opacity: opacity
+                    };
+                })
+                .toArray();
+        }
+    });
+
+    // #endregion Watchers
+</script>

@@ -51,7 +51,8 @@
             </template>
         </Column>
 
-        <Column :field="getField('conversions')"
+        <Column v-if="!isNullish(props.conversionGoalType)"
+                :field="getField('conversions')"
                 :name="getField('conversions')"
                 title="Conversions">
             <template #format="{ row }">
@@ -109,14 +110,15 @@
     import { GridRowBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/gridRowBag";
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
     import { CommunicationFlowInstanceBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/communicationFlowInstanceBag";
+    import { ConversionGoalType } from "@Obsidian/Enums/Communication/conversionGoalType";
 
     const getField = useGetTypeMemberName<GridRowBag>();
     const getRow = (v: unknown): GridRowBag => v as GridRowBag;
     const { parseRockDateTime } = useRockDateTimeParser();
 
     const props = defineProps({
-        messages: {
-            type: Array as PropType<MessageBag[]>,
+        conversionGoalType: {
+            type: Number as PropType<ConversionGoalType | null | undefined>,
             required: true
         },
 
@@ -125,13 +127,18 @@
             required: true
         },
 
-        onViewMessage: {
-            type: Function as PropType<((communicationFlowInstanceCommunicationIdKey: string) => void) | undefined>
-        },
-
         instances: {
             type: Object as PropType<CommunicationFlowInstanceBag[]>,
             required: true
+        },
+
+        messages: {
+            type: Array as PropType<MessageBag[]>,
+            required: true
+        },
+
+        onViewMessage: {
+            type: Function as PropType<((communicationFlowInstanceCommunicationIdKey: string) => void) | undefined>
         }
     });
 

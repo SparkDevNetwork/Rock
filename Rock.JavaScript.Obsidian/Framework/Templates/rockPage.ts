@@ -30,8 +30,7 @@ import { BasicSuspenseProvider, provideSuspense } from "@Obsidian/Utility/suspen
 import { alert } from "@Obsidian/Utility/dialogs";
 import { HttpBodyData, HttpMethod, HttpResult, HttpUrlParams } from "@Obsidian/Types/Utility/http";
 import { doApiCall, provideHttp } from "@Obsidian/Utility/http";
-import { createInvokeBlockAction, provideBlockBrowserBus, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
-import { useBrowserBus } from "@Obsidian/Utility/browserBus";
+import { createInvokeBlockAction, provideBlockGuid, provideBlockTypeGuid } from "@Obsidian/Utility/block";
 import { safeParseJson } from "@Obsidian/Utility/stringUtils";
 import { Guid } from "@Obsidian/Types";
 
@@ -595,7 +594,6 @@ export async function showCustomBlockAction(actionFileUrl: string, pageGuid: str
             provide("invokeBlockAction", invokeBlockAction);
             provideBlockGuid(blockGuid);
             provideBlockTypeGuid(blockTypeGuid);
-            provideBlockBrowserBus(useBrowserBus({ block: blockGuid, blockType: blockTypeGuid }));
 
             return {
                 actionComponent,

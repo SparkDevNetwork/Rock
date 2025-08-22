@@ -4,12 +4,13 @@
 
 
 // =============================================================
-// Table of Content           
+// Table of Content
 //  + HTML Content - block to edit HTML on a page
 //  + My Account - Used on external sites for setting person details
 //  + Lava Debug - Used to style the lava debug panel
 //  + Social Tools - Used for showing social media links
 //  + Media Element
+//  + Asset Manager - Used for managing media assets
 // =============================================================
 
 
@@ -417,3 +418,15 @@
   }
 }
 // ================== END MEDIA ELEMENT ==================
+
+// ================== START ASSET MANAGER ==================
+
+.actions.assetmanager-actions {
+  margin-bottom: var(--spacing-xsmall);
+
+  & > .pull-left {
+    margin-right: var(--spacing-xsmall);
+  }
+}
+
+// ================== START ASSET MANAGER ==================

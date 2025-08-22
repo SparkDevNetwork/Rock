@@ -1190,6 +1190,43 @@ export class Enumerable<T> {
     }
 
     /**
+     * Determines whether two sequences are equal by comparing their elements using
+     * strict equality (`===`) or an optional equality comparer.
+     *
+     * @param other The other sequence to compare to.
+     * @param comparer Optional equality comparer function. Defaults to strict equality.
+     * @returns `true` if both sequences have the same length and all elements are equal; otherwise, `false`.
+     *
+     * @example
+     * const seq1 = Enumerable.from([1, 2, 3]);
+     * const seq2 = Enumerable.from([1, 2, 3]);
+     * console.log(seq1.sequenceEqual(seq2)); // Outputs: true
+     *
+     * @example
+     * const seq3 = Enumerable.from(["a", "b", "c"]);
+     * const seq4 = Enumerable.from(["a", "B", "c"]);
+     * console.log(seq3.sequenceEqual(seq4, (a, b) => a.toLowerCase() === b.toLowerCase())); // Outputs: true
+     */
+    sequenceEqual(
+        other: Iterable<T>,
+        comparer: (a: T, b: T) => boolean = (a, b) => a === b
+    ): boolean {
+        const it1 = this[Symbol.iterator]();
+        const it2 = other[Symbol.iterator]();
+
+        // eslint-disable-next-line no-constant-condition
+        while (true) {
+            const n1 = it1.next();
+            const n2 = it2.next();
+
+            if (n1.done && n2.done) return true;  // Both ended → equal
+            if (n1.done !== n2.done) return false; // One ended first → not equal
+            if (!comparer(n1.value, n2.value)) return false; // Mismatch → not equal
+        }
+    }
+
+
+    /**
      * Returns a new Enumerable that skips the first `count` elements of the sequence.
      * @param count - The number of elements to skip.
      * @returns A new Enumerable that skips the specified number of elements.

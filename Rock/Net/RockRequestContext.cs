@@ -137,12 +137,19 @@ namespace Rock.Net
         internal protected virtual IDictionary<string, string> PageParameters { get; private set; }
 
         /// <summary>
-        /// Gets or sets the context entities.
+        /// The context entities that came from the site cookie.
         /// </summary>
-        /// <value>
-        /// The context entities.
-        /// </value>
-        private protected IDictionary<Type, Lazy<IEntity>> ContextEntities { get; set; }
+        private IDictionary<Type, Lazy<IEntity>> SiteContextEntities { get; set; }
+
+        /// <summary>
+        /// The context entities that came from the page cookie.
+        /// </summary>
+        private IDictionary<Type, Lazy<IEntity>> PageContextEntities { get; set; }
+
+        /// <summary>
+        /// The context entities that came from transient sources, such as query string.
+        /// </summary>
+        private IDictionary<Type, Lazy<IEntity>> TransientContextEntities { get; set; }
 
         /// <summary>
         /// Gets the personalization segment identifiers. Will be empty if this
@@ -253,7 +260,9 @@ namespace Rock.Net
         internal RockRequestContext()
         {
             PageParameters = new Dictionary<string, string>( StringComparer.InvariantCultureIgnoreCase );
-            ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            SiteContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            PageContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            TransientContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             Headers = new Dictionary<string, IEnumerable<string>>( StringComparer.InvariantCultureIgnoreCase );
             Cookies = new Dictionary<string, string>();
             QueryString = new NameValueCollection( StringComparer.OrdinalIgnoreCase );
@@ -309,7 +318,9 @@ namespace Rock.Net
             }
 
             // Initialize any context entities found.
-            ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            SiteContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            PageContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            TransientContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             AddContextEntitiesFromCookie( false );
             AddContextEntitiesFromHeaders();
 
@@ -374,7 +385,9 @@ namespace Rock.Net
             _cookieValuesAreUrlDecoded = request.CookiesValuesAreUrlDecoded;
 
             // Initialize any context entities found.
-            ContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            SiteContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            PageContextEntities = new Dictionary<Type, Lazy<IEntity>>();
+            TransientContextEntities = new Dictionary<Type, Lazy<IEntity>>();
             AddContextEntitiesFromCookie( false );
             AddContextEntitiesFromHeaders();
 
@@ -407,7 +420,7 @@ namespace Rock.Net
                 CurrentVisitorId = null;
             }
 
-            AddContextEntitiesForPage( _pageCache );
+            AddContextEntitiesForPage();
         }
 
         /// <summary>
@@ -439,7 +452,7 @@ namespace Rock.Net
         /// <param name="isPageSpecific">Whether to add page-specific context entities.</param>
         private void AddContextEntitiesFromCookie( bool isPageSpecific )
         {
-            var cookieName = GetContextCookieName( isPageSpecific );
+            var cookieName = GetContextCookieName( isPageSpecific ? _pageCache : null );
             if ( cookieName.IsNullOrWhiteSpace() )
             {
                 // Cookie name not defined.
@@ -486,25 +499,19 @@ namespace Rock.Net
                     decodedItem = HttpUtility.UrlDecode( encryptedItem );
                 }
 
-                AddOrReplaceEncryptedContextEntity( decodedItem );
+                AddOrReplaceEncryptedContextEntity( decodedItem, isPageSpecific ? PageContextEntities : SiteContextEntities );
             }
         }
 
         /// <summary>
         /// Gets the name of the context cookie.
         /// </summary>
-        /// <param name="isPageSpecific">Whether to get the name for a page-specific context cookie.</param>
-        /// <returns>The name of the context cookie or <c>null</c> if <paramref name="isPageSpecific"/> == <c>true</c>
-        /// and this request has not yet been prepared for a given page.</returns>
-        internal string GetContextCookieName( bool isPageSpecific )
+        /// <param name="specificPage">If not <c>null</c>, the cookie name will be specific to this page.</param>
+        /// <returns>The name of the context cookie.</returns>
+        internal string GetContextCookieName( PageCache specificPage )
         {
-            if ( isPageSpecific && _pageCache == null )
-            {
-                return null;
-            }
-
-            return isPageSpecific
-                ? $"{PageContextCookieNamePrefix}{_pageCache.Id}"
+            return specificPage != null
+                ? $"{PageContextCookieNamePrefix}{specificPage.Id}"
                 : SiteContextCookieName;
         }
 
@@ -512,7 +519,8 @@ namespace Rock.Net
         /// Decrypts the value and adds or replaces the specified context entity.
         /// </summary>
         /// <param name="encryptedItem">The encrypted item containing the context entity to add or replace.</param>
-        private void AddOrReplaceEncryptedContextEntity( string encryptedItem )
+        /// <param name="contextEntities">The dictionary of context entities to add the new value to.</param>
+        private void AddOrReplaceEncryptedContextEntity( string encryptedItem, IDictionary<Type, Lazy<IEntity>> contextEntities )
         {
             try
             {
@@ -528,7 +536,7 @@ namespace Rock.Net
                     return;
                 }
 
-                AddOrReplaceContextEntity( parts[0], parts[1] );
+                AddOrReplaceContextEntity( parts[0], parts[1], contextEntities );
             }
             catch
             {
@@ -541,7 +549,8 @@ namespace Rock.Net
         /// </summary>
         /// <param name="entityTypeName">The entity type name.</param>
         /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
-        private void AddOrReplaceContextEntity( string entityTypeName, string entityKey )
+        /// <param name="contextEntities">The dictionary of context entities to add the new value to.</param>
+        private void AddOrReplaceContextEntity( string entityTypeName, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities )
         {
             // If entity type name or entity key are not defined then skip.
             if ( entityTypeName.IsNullOrWhiteSpace() || entityKey.IsNullOrWhiteSpace() )
@@ -564,7 +573,7 @@ namespace Rock.Net
                 return;
             }
 
-            AddOrReplaceContextEntity( type, entityKey );
+            AddOrReplaceContextEntity( type, entityKey, contextEntities );
         }
 
         /// <summary>
@@ -572,7 +581,8 @@ namespace Rock.Net
         /// </summary>
         /// <param name="type">The entity type.</param>
         /// <param name="entityKey">The entity key. This may either be a Guid, integer Id or IdKey value.</param>
-        private void AddOrReplaceContextEntity( Type type, string entityKey )
+        /// <param name="contextEntities">The dictionary of context entities to add the new value to.</param>
+        private void AddOrReplaceContextEntity( Type type, string entityKey, IDictionary<Type, Lazy<IEntity>> contextEntities )
         {
             // If entity type or entity key are not defined then skip.
             if ( type == null || entityKey.IsNullOrWhiteSpace() )
@@ -581,7 +591,7 @@ namespace Rock.Net
             }
 
             // Lazy load the entity so we don't actually load if it is never accessed.
-            ContextEntities.AddOrReplace( type, new Lazy<IEntity>( () =>
+            contextEntities.AddOrReplace( type, new Lazy<IEntity>( () =>
             {
                 IEntity entity = null;
                 var keyParts = entityKey.Split( '>' );
@@ -654,15 +664,14 @@ namespace Rock.Net
                     continue;
                 }
 
-                AddOrReplaceContextEntity( kvp.Key.Substring( 16 ), kvp.Value.FirstOrDefault() );
+                AddOrReplaceContextEntity( kvp.Key.Substring( 16 ), kvp.Value.FirstOrDefault(), TransientContextEntities );
             }
         }
 
         /// <summary>
-        /// Adds the context entities for the page.
+        /// Adds the context entities for the current page.
         /// </summary>
-        /// <param name="pageCache">The page cache.</param>
-        private void AddContextEntitiesForPage( PageCache pageCache )
+        private void AddContextEntitiesForPage()
         {
             // The order in which objects are added to the ContextEntities collection is important. Since we're
             // using AddOrReplace, the last object of any given type will be the context object that ends up in
@@ -674,27 +683,27 @@ namespace Rock.Net
             // Page parameters are checked next, but will only override context objects that have already
             // been set by cookie or header contexts; new context objects will not be added by the presence
             // of a page parameter alone.
-            foreach ( var entityType in ContextEntities.Keys.ToList() )
+            foreach ( var entityType in GetContextEntityTypes() )
             {
                 // Look for Id first, this can be either integer, guid or IdKey.
                 var entityTypeName = entityType.Name;
                 var entityKey = GetPageParameter( $"{entityTypeName}Id" );
                 if ( entityKey.IsNotNullOrWhiteSpace() )
                 {
-                    AddOrReplaceContextEntity( entityTypeName, entityKey );
+                    AddOrReplaceContextEntity( entityTypeName, entityKey, TransientContextEntities );
                 }
 
                 // If Guid is present, it will override Id.
                 Guid? entityGuid = GetPageParameter( $"{entityTypeName}Guid" ).AsGuidOrNull();
                 if ( entityGuid.HasValue )
                 {
-                    AddOrReplaceContextEntity( entityTypeName, entityGuid.Value.ToString() );
+                    AddOrReplaceContextEntity( entityTypeName, entityGuid.Value.ToString(), TransientContextEntities );
                 }
             }
 
             // Next, check for page contexts that were explicitly set in Page Properties. These will
             // override any values that were already set by cookies, headers or page parameters.
-            foreach ( var pageContext in pageCache.PageContexts )
+            foreach ( var pageContext in _pageCache.PageContexts )
             {
                 var entityKey = GetPageParameter( pageContext.Value );
                 if ( entityKey.IsNullOrWhiteSpace() )
@@ -702,7 +711,7 @@ namespace Rock.Net
                     continue;
                 }
 
-                AddOrReplaceContextEntity( pageContext.Key, entityKey );
+                AddOrReplaceContextEntity( pageContext.Key, entityKey, TransientContextEntities );
             }
 
             // Finally, check for any encrypted context keys specified in the query string. These take
@@ -710,7 +719,7 @@ namespace Rock.Net
             var separator = new char[1] { ',' };
             foreach ( var param in GetPageParameter( "context" ).Split( separator, StringSplitOptions.RemoveEmptyEntries ) )
             {
-                AddOrReplaceEncryptedContextEntity( param );
+                AddOrReplaceEncryptedContextEntity( param, TransientContextEntities );
             }
         }
 
@@ -784,12 +793,164 @@ namespace Rock.Net
         /// <returns>A reference to the IEntity object or null if none was found.</returns>
         public virtual IEntity GetContextEntity( Type entityType )
         {
-            if ( ContextEntities.ContainsKey( entityType ) )
+            if ( TransientContextEntities.TryGetValue( entityType, out var lazyEntity ) )
             {
-                return ContextEntities[entityType].Value;
+                return lazyEntity.Value;
+            }
+            else if ( PageContextEntities.TryGetValue( entityType, out lazyEntity ) )
+            {
+                return lazyEntity.Value;
+            }
+            else if ( SiteContextEntities.TryGetValue( entityType, out lazyEntity ) )
+            {
+                return lazyEntity.Value;
             }
 
             return default;
+        }
+
+        /// <summary>
+        /// Gets the types of context entities that are currently set in this
+        /// request.
+        /// </summary>
+        /// <returns>A list of <see cref="Type"/> objects that represent the known context entity types.</returns>
+        internal virtual List<Type> GetContextEntityTypes()
+        {
+            var types = new List<Type>( SiteContextEntities.Keys );
+
+            foreach ( var type in PageContextEntities.Keys )
+            {
+                if ( !types.Contains( type ) )
+                {
+                    types.Add( type );
+                }
+            }
+
+            foreach ( var type in TransientContextEntities.Keys )
+            {
+                if ( !types.Contains( type ) )
+                {
+                    types.Add( type );
+                }
+            }
+
+            return types;
+        }
+
+        /// <summary>
+        /// Sets a context entity value as either a global or page-specific setting.
+        /// </summary>
+        /// <param name="entity">The entity to be set as context.</param>
+        /// <param name="pageSpecific"><c>true</c> if the context should be set to the current page.</param>
+        public void SetContextEntity( IEntity entity, bool pageSpecific = false )
+        {
+            SetContextEntity( entity, pageSpecific ? _pageCache : null );
+        }
+
+        /// <summary>
+        /// Sets a context entity value as either a global or page-specific setting.
+        /// </summary>
+        /// <param name="entity">The entity to be set as context.</param>
+        /// <param name="page">If not <c>null</c>, specifies the page to set the context for.</param>
+        internal void SetContextEntity( IEntity entity, PageCache page )
+        {
+            if ( entity == null )
+            {
+                return;
+            }
+
+            var entityType = entity.GetType();
+
+            if ( entityType.IsDynamicProxyType() )
+            {
+                entityType = entityType.BaseType;
+            }
+
+            try
+            {
+                var cookieName = GetContextCookieName( page );
+                var contextItems = new Dictionary<string, string>();
+
+                AddOrReplaceContextEntity( entityType, entity.Id.ToString(), page != null ? PageContextEntities : SiteContextEntities );
+
+                foreach ( var kvp in page != null ? PageContextEntities : SiteContextEntities )
+                {
+                    contextItems[kvp.Key.FullName] = kvp.Value.Value.ContextKey;
+                }
+
+                var cookie = new BrowserCookie
+                {
+                    Expires = RockDateTime.Now.AddYears( 1 ),
+                    Name = cookieName,
+                    Path = "/",
+                    SameSite = Enums.Net.CookieSameSiteMode.Lax,
+                    Value = contextItems.ToJson(),
+                };
+
+                Response?.AddCookie( cookie );
+            }
+            catch
+            {
+                // Intentionally ignore exception in case JSON [de]serialization fails.
+            }
+        }
+
+        /// <summary>
+        /// Removes the context entity value for the specified entity type.
+        /// </summary>
+        /// <param name="entityType">The type of the context entity to remove.</param>
+        /// <param name="pageSpecific"><c>true</c> if the context should be removed from the current page.</param>
+        public void RemoveContextEntity( Type entityType, bool pageSpecific = false )
+        {
+            RemoveContextEntity( entityType, pageSpecific ? _pageCache : null );
+        }
+
+        /// <summary>
+        /// Removes the context entity value for the specified entity type.
+        /// </summary>
+        /// <param name="entityType">The type of the context entity to remove.</param>
+        /// <param name="page">If not <c>null</c>, specifies the page to remove the context from.</param>
+        internal void RemoveContextEntity( Type entityType, PageCache page )
+        {
+            if ( entityType == null )
+            {
+                return;
+            }
+
+            try
+            {
+                var cookieName = GetContextCookieName( page );
+                var contextItems = new Dictionary<string, string>();
+
+                if ( page != null )
+                {
+                    PageContextEntities.Remove( entityType );
+                }
+                else
+                {
+                    SiteContextEntities.Remove( entityType );
+                }
+
+                foreach ( var kvp in page != null ? PageContextEntities : SiteContextEntities )
+                {
+                    contextItems[kvp.Key.FullName] = kvp.Value.Value.ContextKey;
+                }
+
+                var cookie = new BrowserCookie
+                {
+                    Expires = RockDateTime.Now.AddYears( 1 ),
+                    Name = cookieName,
+                    Path = "/",
+                    SameSite = Enums.Net.CookieSameSiteMode.Lax,
+                    Value = contextItems.ToJson(),
+                };
+
+                Response?.AddCookie( cookie );
+            }
+            catch
+            {
+                // Intentionally ignore exception in case JSON [de]serialization fails.
+            }
         }
 
         /// <summary>
@@ -808,9 +969,9 @@ namespace Rock.Net
             {
                 var contextObjects = new LazyDictionary<string, object>();
 
-                foreach ( var ctx in ContextEntities )
+                foreach ( var contextEntityType in GetContextEntityTypes() )
                 {
-                    contextObjects.Add( ctx.Key.Name, () => ctx.Value.Value );
+                    contextObjects.Add( contextEntityType.Name, () => GetContextEntity( contextEntityType ) );
                 }
 
                 // Use Count instead of Any() so we don't materialize the lazy
