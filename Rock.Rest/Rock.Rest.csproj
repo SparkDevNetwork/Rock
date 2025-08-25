@@ -28,7 +28,12 @@
   </ItemGroup>
 
   <ItemGroup Condition=" '$(TargetFramework)' != 'net472' ">
+    <Compile Remove="Binders\**\*.cs" />
     <Compile Remove="Controllers\**\*.cs" />
+    <Compile Remove="Handler\**\*.cs" />
+    <Compile Remove="Swagger\**\*.cs" />
+    <Compile Remove="Utility\**\*.cs" />
+    <Compile Remove="Validation\**\*.cs" />
   </ItemGroup>
 
   <ItemGroup>

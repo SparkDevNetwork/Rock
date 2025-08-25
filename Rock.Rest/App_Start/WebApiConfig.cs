@@ -20,10 +20,6 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.Serialization;
 #if REVIEW_NET5_0_OR_GREATER
-using Microsoft.AspNet.OData.Builder;
-using Microsoft.AspNet.OData.Extensions;
-using Microsoft.AspNet.OData.Routing;
-using Microsoft.AspNet.OData.Routing.Conventions;
 using Microsoft.AspNetCore.Builder;
 #else
 using System.Web.Http;
@@ -47,10 +43,12 @@ using Rock.Configuration;
 using Rock.Data;
 using Rock.Logging;
 using Rock.Net;
+#if WEBFORMS
 using Rock.Rest.Handler;
 using Rock.Rest.Utility;
 using Rock.Rest.Utility.ValueProviders;
 using Rock.Rest.Validation;
+#endif
 
 namespace Rock.Rest
 {
@@ -85,8 +83,7 @@ namespace Rock.Rest
 
         public static void Register( HttpConfiguration config )
         {
-#if REVIEW_NET5_0_OR_GREATER
-#else
+#if WEBFORMS
             config.EnableCors( new Rock.Rest.EnableCorsFromOriginAttribute() );
             config.Filters.Add( new Rock.Rest.Filters.ValidateAttribute() );
             config.Filters.Add( new Rock.Rest.Filters.RockCacheabilityAttribute() );
@@ -108,7 +105,6 @@ namespace Rock.Rest
 
             // register Swagger and its routes first
             Rock.Rest.Swagger.SwaggerConfig.Register( config );
-#endif
             Rock.Rest.Swagger.SwaggerConfigV2.Register( config );
 
             // Add API route for dataviews
@@ -206,11 +202,8 @@ namespace Rock.Rest
                 }
             }
 
-#if REVIEW_NET5_0_OR_GREATER
-#else
             // finds all [Route] attributes on REST controllers and creates the routes
             config.MapHttpAttributeRoutes();
-#endif
 
             //// Add Default API Service routes
             //// Instead of being able to use one default route that gets action from http method, have to
@@ -353,11 +346,7 @@ namespace Rock.Rest
                 } );
 
             // build OData model and create service route (mainly for metadata)
-#if REVIEW_NET5_0_OR_GREATER
-            var builder = new ODataConventionModelBuilder();
-#else
             ODataConventionModelBuilder builder = new ODataConventionModelBuilder( config );
-#endif
 
             var entityTypeList = Reflection.FindTypes( typeof( Rock.Data.IEntity ) )
                 .Where( a => !a.Value.IsAbstract && ( a.Value.GetCustomAttribute<NotMappedAttribute>() == null ) && ( a.Value.GetCustomAttribute<DataContractAttribute>() != null ) )
@@ -365,11 +354,7 @@ namespace Rock.Rest
 
             foreach ( var entityType in entityTypeList )
             {
-#if REVIEW_NET5_0_OR_GREATER
-                var entityTypeConfig = builder.AddEntityType( entityType );
-#else
                 var entityTypeConfig = builder.AddEntity( entityType );
-#endif
 
                 var tableAttribute = entityType.GetCustomAttribute<TableAttribute>();
                 string name;
@@ -382,32 +367,15 @@ namespace Rock.Rest
                     name = entityType.Name.Pluralize();
                 }
 
-#if REVIEW_NET5_0_OR_GREATER
-                foreach ( var ignoredProperties in entityType.GetCustomAttributes<Rock.Data.IgnorePropertiesAttribute>( true ) )
-                {
-                    foreach ( var propertyName in ignoredProperties.Properties )
-                    {
-                        var pi = entityType.GetProperty( propertyName );
-                        if ( pi != null )
-                        {
-                            entityTypeConfig.RemoveProperty( pi );
-                        }
-                    }
-                }
-#endif
-
                 var entitySetConfig = builder.AddEntitySet( name, entityTypeConfig );
             }
-
-#if REVIEW_NET5_0_OR_GREATER
-            config.Routes.Count().Filter().OrderBy().Expand().Select().MaxTop( null );
-#endif
 
             var defaultConventions = ODataRoutingConventions.CreateDefault();
             // Disable the api/$metadata route
             var conventions = defaultConventions.Except( defaultConventions.OfType<MetadataRoutingConvention>() );
 
             config.Routes.MapODataServiceRoute( "api", "api", builder.GetEdmModel(), pathHandler: new DefaultODataPathHandler(), routingConventions: conventions );
+#endif
 
             new Rock.Transactions.RegisterControllersTransaction().Enqueue();
         }
@@ -421,6 +389,7 @@ namespace Rock.Rest
         /// <param name="config">The HTTP configuration.</param>
         private static void ConfigureServiceProvider( HttpConfiguration config )
         {
+#if WEBFORMS
             // Replace the standard controller activator with one of ours
             // that uses the standard dependency injection patterm used in
             // ASP.Net Core.
@@ -428,6 +397,7 @@ namespace Rock.Rest
 
             // Add a new message handler that will create scopes for each request.
             config.MessageHandlers.Add( new ServiceScopeHandler( RockApp.Current ) );
+#endif
         }
     }
 }

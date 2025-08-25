@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if WEBFORMS
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -109,3 +110,4 @@ namespace Rock.Rest.Filters
         }
     }
 }
+#endif
