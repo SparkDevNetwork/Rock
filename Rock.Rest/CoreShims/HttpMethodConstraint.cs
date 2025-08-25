@@ -14,6 +14,7 @@
 // limitations under the License.
 // </copyright>
 //
+#if NET6_0_OR_GREATER
 using Microsoft.AspNetCore.Routing.Constraints;
 
 namespace Rock.Rest
@@ -26,3 +27,4 @@ namespace Rock.Rest
         }
     }
 }
+#endif
