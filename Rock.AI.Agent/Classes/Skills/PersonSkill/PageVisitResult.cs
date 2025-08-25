@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Text.Json.Serialization;
 
 namespace Rock.AI.Agent.Classes.Skills.PersonSkill
 {
@@ -23,10 +24,13 @@ namespace Rock.AI.Agent.Classes.Skills.PersonSkill
     /// </summary>
     public class PageVisitResult
     {
+        [JsonIgnore]
+        internal int SiteId { get; set; }
+
         /// <summary>
         /// Internal numeric identifier of the site containing the page.
         /// </summary>
-        public int SiteId { get; set; }
+        public string SiteIdKey { get; set; }
 
         /// <summary>
         /// Display name of the page.

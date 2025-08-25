@@ -21,15 +21,8 @@ using System.ComponentModel;
 using System.Data.SqlClient;
 using System.Linq;
 
-using dotless.Core.Parser.Infrastructure;
-
-using Microsoft.Azure.Amqp.Framing;
-using Microsoft.CodeAnalysis.Semantics;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
-using Mono.CSharp;
-
-using OpenXmlPowerTools.HtmlToWml.CSS;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
@@ -100,49 +93,43 @@ namespace Rock.AI.Agent.Skills
         )]
         [UserDescription( "Lists page visits for a specific person." )]
         [AgentFunctionGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
-        public RockToolResult ListPageVisitsForPerson( ListPageVisitsArguments arguments )
+        public RockToolResult SummarizePageVisitsForPerson( string personIdKey, DateTime? startDate = null, DateTime? endDate = null, string siteIdKey = "", int pageNumber = 1 )
         {
             var errors = new List<string>();
-            if ( arguments == null )
-            {
-                return RockToolResult.Error( "Options are required." );
-            }
 
-            var start = arguments.StartDate;
-            var end = arguments.EndDate;
 
-            var personId = IdHasher.Instance.GetId( arguments.PersonKey );
+            var personId = IdHasher.Instance.GetId( personIdKey );
             if ( !personId.HasValue || personId <= 0 )
             {
                 errors.Add( "There was an invalid key provided for the person." );
             }
 
-            var siteId = IdHasher.Instance.GetId( arguments.SiteKey );
+            var siteId = IdHasher.Instance.GetId( siteIdKey );
             if ( siteId.HasValue && siteId.Value <= 0 )
             {
-                errors.Add( "Invalid site ID. Provide a value greater than zero." );
+                errors.Add( "There was an invalid site key provided." );
             }
 
-            if ( start.HasValue && end.HasValue && start > end )
+            if ( startDate.HasValue && endDate.HasValue && startDate > endDate )
             {
                 errors.Add( "Invalid date range. Start date cannot be after end date." );
             }
 
-            // Defaults: past year → now
-            if ( !start.HasValue && !end.HasValue )
+            // Defaults: past year → now (safety in case nothing was provided)
+            if ( !startDate.HasValue && !endDate.HasValue )
             {
-                end = RockDateTime.Now;
-                start = end.Value.AddYears( -1 );
+                endDate = RockDateTime.Now;
+                startDate = endDate.Value.AddYears( -1 );
             }
-            else if ( start.HasValue && !end.HasValue )
+            else if ( startDate.HasValue && !endDate.HasValue )
             {
-                end = RockDateTime.Now;
+                endDate = RockDateTime.Now;
             }
 
             // Paging
-            var pageNumber = Math.Max( 1, arguments.PageNumber );
+            var pgNumber = Math.Max( 1, pageNumber );
             var basePageSize = 100;
-            var offset = ( pageNumber - 1 ) * basePageSize;
+            var offset = ( pgNumber - 1 ) * basePageSize;
             var take = basePageSize + 1; // N+1 to compute hasMore
 
             if ( errors.Count > 0 )
@@ -156,8 +143,8 @@ namespace Rock.AI.Agent.Skills
                 {
                     new SqlParameter("@PersonId", personId),
                     GetParameterValueOrDbNull("@SiteId", siteId),
-                    GetParameterValueOrDbNull("@StartDate", start),
-                    GetParameterValueOrDbNull("@EndDate", end),
+                    GetParameterValueOrDbNull("@StartDate", startDate),
+                    GetParameterValueOrDbNull("@EndDate", endDate),
                     new SqlParameter("@PageSize",  take),    // request N+1
                     new SqlParameter("@OffsetRows", offset), // offset uses base size
                 };
@@ -165,6 +152,13 @@ namespace Rock.AI.Agent.Skills
                 var rows = _rockContext.Database
                     .SqlQuery<PageVisitResult>( _websiteDataSql, parameters.ToArray() )
                     .ToList();
+
+                // Populate IdKey for each row
+                rows.ForEach( r =>
+                {
+                    var site = SiteCache.Get( r.SiteId );
+                    r.SiteIdKey = site?.IdKey;
+                } );
 
                 var hasMore = rows.Count > basePageSize;
                 if ( hasMore )
@@ -174,10 +168,10 @@ namespace Rock.AI.Agent.Skills
 
                 var meta = new Dictionary<string, object>
                 {
-                    { "personKey", arguments.PersonKey },
-                    { "startDate", start },
-                    { "endDate", end },
-                    { "pageNumber", pageNumber },
+                    { "personKey", personIdKey },
+                    { "startDate", startDate },
+                    { "endDate", endDate },
+                    { "pageNumber", pgNumber },
                     { "pageSize", basePageSize },
                     { "returnedRows", rows.Count },
                     { "hasMore", hasMore }
@@ -194,7 +188,7 @@ namespace Rock.AI.Agent.Skills
             }
             catch ( Exception ex )
             {
-                _logger.LogError( ex, "LookupSiteAnalytics failed for PersonId={PersonId}, SiteId={SiteId}", personId, siteId );
+                _logger.LogError( ex, "SummarizePageVisitsForPerson failed for PersonId={PersonId}, SiteId={SiteId}", personId, siteId );
                 return RockToolResult.Error( "Failed to retrieve site analytics. " + ex.Message );
             }
         }
