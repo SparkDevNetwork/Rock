@@ -30,6 +30,10 @@ using System.Web.Http;
 using System.Web.Http.Results;
 #endif
 
+#if REVIEW_NET5_0_OR_GREATER
+using Microsoft.AspNetCore.Mvc;
+#endif
+
 namespace Rock.Blocks
 {
     /// <summary>
@@ -164,6 +168,41 @@ namespace Rock.Blocks
             else
             {
                 return Task.FromResult<IHttpActionResult>( new StatusCodeResult( StatusCode, controller ) );
+            }
+        }
+#else
+        /// <summary>
+        /// Executes the result and returns an object understood by the API controller.
+        /// </summary>
+        /// <param name="cancellationToken">A token that specifies when the request was aborted.</param>
+        /// <returns>A result that describes the HTTP response.</returns>
+        internal virtual Task<IActionResult> ExecuteAsync( CancellationToken cancellationToken )
+        {
+            var isErrorStatusCode = ( int ) StatusCode >= 400;
+
+            if ( isErrorStatusCode && Content is string )
+            {
+                return Task.FromResult<IActionResult>( new ObjectResult( Content.ToString() ) { StatusCode = ( int ) StatusCode } );
+            }
+            else if ( Error != null )
+            {
+                return Task.FromResult<IActionResult>( new ObjectResult( Error ) { StatusCode = (int) StatusCode } );
+            }
+            else if ( Content is HttpContent httpContent )
+            {
+                throw new NotImplementedException( "HttpContent is not supported in this context." );
+            }
+            else if ( Content is Stream stream )
+            {
+                return Task.FromResult<IActionResult>( new FileStreamResult( stream, "application/octet-stream" ) );
+            }
+            else if ( ContentClrType != null )
+            {
+                return Task.FromResult<IActionResult>( new ObjectResult( Content ) { StatusCode = ( int ) StatusCode } );
+            }
+            else
+            {
+                return Task.FromResult<IActionResult>( new StatusCodeResult( ( int ) StatusCode ) );
             }
         }
 #endif
