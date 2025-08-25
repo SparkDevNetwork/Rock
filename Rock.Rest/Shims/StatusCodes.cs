@@ -24,6 +24,11 @@ namespace Microsoft.AspNetCore.Http
     public static class StatusCodes
     {
         /// <summary>
+        /// HTTP status code 101.
+        /// </summary>
+        public const int Status101SwitchingProtocols = 101;
+
+        /// <summary>
         /// HTTP status code 200.
         /// </summary>
         public const int Status200OK = 200;
