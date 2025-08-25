@@ -19,11 +19,17 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Reflection;
+using System.Text.Json.Serialization;
+using System.Threading.Tasks;
 
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
+using Microsoft.SemanticKernel.ChatCompletion;
 
+using Rock.AI.Agent.Classes;
+using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Utilities;
 using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Logging;
@@ -202,7 +208,10 @@ namespace Rock.AI.Agent
 
             _logger.LogInformation( "Plugins loaded in {ElapsedMilliseconds}ms for AgentId {AgentId}.", sw.Elapsed.TotalMilliseconds, _agentConfiguration.AgentId );
 
-            return new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor, _options );
+            var agent = new ChatAgent( kernel, _agentConfiguration, _rockContextFactory, _requestContextAccessor, _options );
+            kernel.AutoFunctionInvocationFilters.Add( new StoreHistoryContentFunctionFilter( agent ) );
+
+            return agent;
         }
 
         /// <summary>
@@ -366,6 +375,49 @@ namespace Rock.AI.Agent
             var requestContext = _requestContextAccessor.RockRequestContext;
 
             return agent.GetSkillConfigurations( requestContext.CurrentPerson, _options.IsSecurityEnabled, rockContext );
+        }
+
+        #endregion
+
+        #region Function Invocation Filters
+
+        /// <summary>
+        /// Stores the tool invocation and result if <see cref="RockToolResult.HistoryContent" /> is defined.
+        /// </summary>
+        private sealed class StoreHistoryContentFunctionFilter : IAutoFunctionInvocationFilter
+        {
+            private IChatAgent _agent;
+
+            public StoreHistoryContentFunctionFilter( IChatAgent agent )
+            {
+                _agent = agent ?? throw new ArgumentNullException( nameof( agent ) );
+            }
+
+            public async Task OnAutoFunctionInvocationAsync(
+                   AutoFunctionInvocationContext context,
+                   Func<AutoFunctionInvocationContext, Task> next )
+            {
+
+                // Invoke the function first — this actually sets context.Result
+                await next( context );
+
+
+                // Now capture the return value
+                var functionResult = context.Result; // FunctionResult
+
+                if ( functionResult is null )
+                {
+                    return;
+                }
+
+                var rockToolResult = functionResult.GetValue<RockToolResult>();
+
+                if ( rockToolResult?.HistoryContent != null )
+                {
+                    var functionResultContent = new ToolResultContent( context.Function.Name, context.Function.PluginName, context.ToolCallId, rockToolResult.HistoryContent );
+                    await _agent.AddMessageAsync( Enums.AI.Agent.AuthorRole.Tool, functionResultContent.ToJson() );
+                }
+            }
         }
 
         #endregion

@@ -165,6 +165,7 @@ namespace Rock.Blocks.AI
             return new AIAgentSessionHistoryService( RockContext )
                 .Queryable()
                 .Where( h => h.AIAgentSessionId == sessionId
+                    && h.MessageRole != AuthorRole.Tool
                     && !h.IsSummary )
                 .OrderBy( h => h.MessageDateTime )
                 .ThenBy( h => h.Id )

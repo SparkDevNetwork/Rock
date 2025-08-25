@@ -280,6 +280,10 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
                     {
                         _context.AddAssistantMessage( message.Message );
                     }
+                    else if( message.MessageRole == AuthorRole.Tool )
+                    {
+                        _context.AddToolResultMessage( message.Message );
+                    }
                 }
 
                 SessionId = sessionId;
@@ -293,7 +297,7 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
         /// <inheritdoc/>
         public Task AddMessageAsync( AuthorRole role, string message, CancellationToken cancellationToken )
         {
-            if ( role != AuthorRole.User && role != AuthorRole.Assistant )
+            if ( role != AuthorRole.User && role != AuthorRole.Assistant && role != AuthorRole.Tool )
             {
                 throw new ArgumentOutOfRangeException( nameof( role ), "An invalid author role was specified." );
             }
@@ -339,6 +343,10 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
             if ( role == AuthorRole.User )
             {
                 _context.AddUserMessage( message );
+            }
+            else if( role == AuthorRole.Tool )
+            {
+                _context.AddToolResultMessage( message );
             }
             else
             {
@@ -576,10 +584,21 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
                 } );
             }
 
-            var result = await chat.GetChatMessageContentAsync(
-                _context.GetChatHistory(),
-                executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
-                kernel: _kernel );
+            var history = _context.GetChatHistory();
+
+            ChatMessageContent result;
+
+            try
+            {
+                result = await chat.GetChatMessageContentAsync(
+                    history,
+                    executionSettings: _agentConfiguration.Provider.GetChatCompletionPromptExecutionSettings(),
+                    kernel: _kernel );
+            }
+            catch ( Exception ex )
+            {
+                throw new Exception( "An error occurred while getting the chat history.", ex );
+            }
 
             var usage = GetMetricUsageFromResult( result );
 

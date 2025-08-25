@@ -3,8 +3,11 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text.Json.Serialization;
+using System.Text.RegularExpressions;
 
 using Rock.Enums.AI.Agent;
+using Rock.Net;
+using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Classes.Common
 {
@@ -65,6 +68,12 @@ namespace Rock.AI.Agent.Classes.Common
         /// </summary>
         [JsonInclude, JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
         internal Dictionary<string, object> Meta { get; private set; }
+
+        /// <summary>
+        /// Gets optional reference URL to include in the payload.
+        /// </summary>
+        [JsonInclude, JsonIgnore( Condition = JsonIgnoreCondition.WhenWritingNull )]
+        internal ReferenceUrlResult ReferenceUrl { get; private set; }
 
         #endregion
 
@@ -157,6 +166,43 @@ namespace Rock.AI.Agent.Classes.Common
         }
 
         /// <summary>
+        /// Adds a reference URL to this result, optionally performing security checks
+        /// before including it. Useful for attaching “learn more” or follow-up links
+        /// to the tool’s response.
+        /// </summary>
+        /// <param name="context">
+        /// The current request context, used for authorization checks if <paramref name="secured"/> is true.
+        /// </param>
+        /// <param name="text">
+        /// The display text to show for the reference link (e.g. “View Profile”).
+        /// </param>
+        /// <param name="route">
+        /// The absolute or relative URL of the reference.
+        /// </param>
+        /// <param name="secured">
+        /// If true, the URL is only included if the current user is authorized for the route.  
+        /// Defaults to true.
+        /// </param>
+        /// <returns>
+        /// The same <see cref="RockToolResult"/> instance for fluent chaining.
+        /// </returns>
+        public RockToolResult WithReferenceRoute( RockRequestContext context, string text, string route, bool secured = true )
+        {
+            bool allowed = !secured || IsAuthorizedForRoute( context, route );
+
+            if ( allowed )
+            {
+                ReferenceUrl = new ReferenceUrlResult
+                {
+                    Text = text,
+                    Url = ResolveRockUrlIncludeRoot( context, route )
+                };
+            }
+
+            return this;
+        }
+
+        /// <summary>
         /// Sets the content of the result and returns the updated <see cref="RockToolResult"/> instance.
         /// </summary>
         /// <param name="payload">The content to set. This can be any object representing the result's content.</param>
@@ -210,6 +256,78 @@ namespace Rock.AI.Agent.Classes.Common
         #endregion
 
         #region Helpers
+
+        internal class ReferenceUrlResult
+        {
+            public string Text { get; set; }
+            public string Url { get; set; }
+        }
+
+        /// <summary>
+        /// Determines whether the person making the request has access to
+        /// the page identified by the route.
+        /// </summary>
+        /// <param name="context">The context of the current request.</param>
+        /// <param name="route">The route to be checked.</param>
+        /// <returns><c>true</c> if the route was found and the requesting person is authorized; otherwise, <c>false</c>.</returns>
+        private static bool IsAuthorizedForRoute( RockRequestContext context, string route )
+        {
+            try
+            {
+                // Replace any parameters in the route with fake values.
+                route = new Regex( "{[^}]+}" ).Replace( route, "1" );
+
+                // Resolve the route based on the current request.
+                route = ResolveRockUrlIncludeRoot( context, route );
+
+                // Try to parse the URL, if we can't then assume they can't
+                // access the page.
+                if ( !Uri.TryCreate( route, UriKind.Absolute, out var uri ) )
+                {
+                    return false;
+                }
+
+                // Find a page ref based on the uri.
+                var pageRef = new Rock.Web.PageReference( uri, "/" );
+
+                if ( pageRef.IsValid )
+                {
+                    // If a valid pageref was found, check the security of the page
+                    var page = PageCache.Get( pageRef.PageId );
+
+                    if ( page != null )
+                    {
+                        return page.IsAuthorized( Rock.Security.Authorization.VIEW, context.CurrentPerson );
+                    }
+                }
+            }
+            catch ( Exception ex )
+            {
+                Rock.Model.ExceptionLogService.LogException( ex );
+                // Log and move on...
+            }
+
+            return false;
+        }
+
+        /// <summary>
+        /// Resolves the rock URL and includes the original scheme and domain
+        /// from the request.
+        /// </summary>
+        /// <param name="context">The context of the current request.</param>
+        /// <param name="url">The URL to ben resolved.</param>
+        /// <returns>A new string resolved to the proper domain.</returns>
+        private static string ResolveRockUrlIncludeRoot( RockRequestContext context, string url )
+        {
+            var virtualPath = context.ResolveRockUrl( url );
+
+            if ( context.RootUrlPath.IsNotNullOrWhiteSpace() )
+            {
+                return $"{context.RootUrlPath}{virtualPath}";
+            }
+
+            return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ) + virtualPath.RemoveLeadingForwardslash();
+        }
 
         /// <summary>
         /// Sets the content of this result based on the provided payload.

@@ -32,6 +32,11 @@ namespace Rock.Enums.AI.Agent
         /// <summary>
         /// The message is a response from the assistant (the AI agent).
         /// </summary>
-        Assistant = 1
+        Assistant = 1,
+
+        /// <summary>
+        /// The message is a tool result, indicating that a tool was called.
+        /// </summary>
+        Tool = 2,
     }
 }

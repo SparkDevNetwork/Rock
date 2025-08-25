@@ -24,7 +24,7 @@ namespace Rock.AI.Agent.Classes.Skills.SiteSkill
         /// <summary>
         /// Stable identifier for the site (used by functions; avoid showing to end users).
         /// </summary>
-        public string Key { get; set; }
+        public string IdKey { get; set; }
 
         /// <summary>
         /// Human-readable name of the site.
