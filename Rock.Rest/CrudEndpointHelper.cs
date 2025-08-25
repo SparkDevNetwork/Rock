@@ -20,6 +20,8 @@ using System.Linq;
 using System.Net;
 using System.Reflection;
 
+using Microsoft.AspNetCore.Mvc;
+
 using Rock.Attribute;
 using Rock.Data;
 using Rock.Model;
@@ -28,6 +30,8 @@ using Rock.Web.Cache;
 using Rock.ViewModels.Core;
 using Rock.ViewModels.Rest.Models;
 using Rock.Core.EntitySearch;
+using System.Threading.Tasks;
+
 
 #if WEBFORMS
 using System.Web.Http.Results;
@@ -35,6 +39,8 @@ using System.Web.Http.Results;
 using HttpError = System.Web.Http.HttpError;
 using IActionResult = System.Web.Http.IHttpActionResult;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
+#else
+using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest
@@ -109,7 +115,11 @@ namespace Rock.Rest
                 }
 
                 var routePrefixAttribute = _controller.GetType().GetCustomAttribute<RoutePrefixAttribute>();
+#if NET6_0_OR_GREATER
+                var locationUri = new Uri( $"{routePrefixAttribute.Name}/{entity.Id}", UriKind.Relative );
+#else
                 var locationUri = new Uri( $"{routePrefixAttribute.Prefix}/{entity.Id}", UriKind.Relative );
+#endif
                 var response = new CreatedAtResponseBag
                 {
                     Id = entity.Id,
@@ -118,7 +128,11 @@ namespace Rock.Rest
                     Location = $"{_controller.RockRequestContext.RootUrlPath}{locationUri}"
                 };
 
+#if NET6_0_OR_GREATER
+                return new RedirectObjectResult( locationUri.ToString(), response );
+#else
                 return new CreatedNegotiatedContentResult<CreatedAtResponseBag>( locationUri, response, _controller );
+#endif
             }
             catch ( Exception ex )
             {
@@ -157,7 +171,11 @@ namespace Rock.Rest
                         return authorizationResult;
                     }
 
+#if NET6_0_OR_GREATER
+                    return new OkObjectResult( entity );
+#else
                     return new OkNegotiatedContentResult<TEntity>( entity, _controller );
+#endif
                 }
             }
             catch ( Exception ex )
@@ -460,7 +478,11 @@ namespace Rock.Rest
                         } );
                     }
 
+#if NET6_0_OR_GREATER
+                    return new OkObjectResult( values );
+#else
                     return new OkNegotiatedContentResult<Dictionary<string, object>>( values, _controller );
+#endif
                 }
             }
             catch ( Exception ex )
@@ -599,7 +621,14 @@ namespace Rock.Rest
                         defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
                     }
 
+#if NET6_0_OR_GREATER
+                    return new OkObjectResult( results )
+                    {
+                        Formatters = new[] { formatter }
+                    };
+#else
                     return new FormattedContentResult<EntitySearchResultsBag>( HttpStatusCode.OK, results, formatter, null, _controller );
+#endif
                 }
             }
             catch ( System.Exception ex )
@@ -652,7 +681,14 @@ namespace Rock.Rest
                     defaultContractResolver.NamingStrategy.ProcessDictionaryKeys = true;
                 }
 
+#if NET6_0_OR_GREATER
+                return new OkObjectResult( results )
+                {
+                    Formatters = new[] { formatter }
+                };
+#else
                 return new FormattedContentResult<EntitySearchResultsBag>( HttpStatusCode.OK, results, formatter, null, _controller );
+#endif
             }
             catch ( System.Exception ex )
             {
@@ -747,7 +783,11 @@ namespace Rock.Rest
         /// <returns>The response object.</returns>
         private IActionResult NoContent()
         {
+#if NET6_0_OR_GREATER
+            return new NoContentResult();
+#else
             return new StatusCodeResult( HttpStatusCode.NoContent, _controller );
+#endif
         }
 
         /// <summary>
@@ -757,9 +797,13 @@ namespace Rock.Rest
         /// <returns>The response object.</returns>
         private IActionResult NotFound( string errorMessage )
         {
+#if NET6_0_OR_GREATER
+            return new NotFoundObjectResult( new { Message = errorMessage } );
+#else
             var error = new HttpError( errorMessage );
 
             return new NegotiatedContentResult<HttpError>( HttpStatusCode.NotFound, error, _controller );
+#endif
         }
 
         /// <summary>
@@ -769,9 +813,13 @@ namespace Rock.Rest
         /// <returns>The response object.</returns>
         private IActionResult Unauthorized( string errorMessage )
         {
+#if NET6_0_OR_GREATER
+            return new UnauthorizedObjectResult( new { Message = errorMessage } );
+#else
             var error = new HttpError( errorMessage );
 
             return new NegotiatedContentResult<HttpError>( HttpStatusCode.Unauthorized, error, _controller );
+#endif
         }
 
         /// <summary>
@@ -781,7 +829,11 @@ namespace Rock.Rest
         /// <returns>The response object.</returns>
         private IActionResult BadRequest( string errorMessage )
         {
+#if NET6_0_OR_GREATER
+            return new BadRequestObjectResult( errorMessage );
+#else
             return new BadRequestErrorMessageResult( errorMessage, _controller );
+#endif
         }
 
         /// <summary>
@@ -791,11 +843,38 @@ namespace Rock.Rest
         /// <returns>The response object.</returns>
         private IActionResult InternalServerError( string errorMessage )
         {
+#if NET6_0_OR_GREATER
+            return new ObjectResult( new { Message = errorMessage } )
+            {
+                StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status500InternalServerError
+            };
+#else
             var error = new HttpError( errorMessage );
 
             return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, error, _controller );
+#endif
         }
 
         #endregion
+
+#if NET6_0_OR_GREATER
+        private class RedirectObjectResult : ObjectResult
+        {
+            private readonly string _url;
+
+            public RedirectObjectResult( string url, object value )
+                : base( value )
+            {
+                _url = url;
+                StatusCode = Microsoft.AspNetCore.Http.StatusCodes.Status302Found;
+            }
+
+            public override Task ExecuteResultAsync( ActionContext context )
+            {
+                context.HttpContext.Response.Headers["Location"] = _url;
+                return base.ExecuteResultAsync( context );
+            }
+        }
+#endif
     }
 }
