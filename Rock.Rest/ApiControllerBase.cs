@@ -28,7 +28,7 @@ using System.Web.Http.OData;
 using Microsoft.Extensions.DependencyInjection;
 
 #if REVIEW_NET5_0_OR_GREATER
-using Microsoft.AspNet.OData;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 #endif
 
@@ -57,10 +57,10 @@ namespace Rock.Rest
     /// Supports ODataV3 Queries and ODataRouting
     /// </summary>
     /// <seealso cref="System.Web.Http.ApiController" />
-    [ODataRouting]
 #if REVIEW_NET5_0_OR_GREATER
     public class ApiControllerBase : ControllerBase
 #else
+    [ODataRouting]
     public class ApiControllerBase : ApiController
 #endif
     {
@@ -74,6 +74,7 @@ namespace Rock.Rest
         /// </value>
         public RockRequestContext RockRequestContext { get; private set; }
 
+#if REVIEW_WEBFORMS
         /// <inheritdoc/>
         public override Task<HttpResponseMessage> ExecuteAsync( HttpControllerContext controllerContext, CancellationToken cancellationToken )
         {
@@ -84,6 +85,7 @@ namespace Rock.Rest
 
             return base.ExecuteAsync( controllerContext, cancellationToken );
         }
+#endif
 
         /// <summary>
         /// Gets the currently logged in Person
@@ -100,14 +102,24 @@ namespace Rock.Rest
         /// <param name="controller">The ApiController instance that is looking up the current person.</param>
         /// <param name="rockContext">The rock context.</param>
         /// <returns></returns>
+#if REVIEW_WEBFORMS
         internal static Rock.Model.Person GetPerson( ApiController controller, RockContext rockContext )
+#else
+        internal static Rock.Model.Person GetPerson( ControllerBase controller, RockContext rockContext )
+#endif
         {
+#if REVIEW_WEBFORMS
             if ( controller.Request.Properties.Keys.Contains( "Person" ) )
             {
                 return controller.Request.Properties["Person"] as Person;
             }
+#endif
 
+#if REVIEW_WEBFORMS
             var principal = controller.ControllerContext.Request.GetUserPrincipal();
+#else
+            var principal = controller.User;
+#endif
             if ( principal != null && principal.Identity != null )
             {
                 if ( principal.Identity.Name.StartsWith( "rckipid=" ) )
@@ -127,7 +139,9 @@ namespace Rock.Rest
                     if ( userLogin != null )
                     {
                         var person = userLogin.Person;
+#if REVIEW_WEBFORMS
                         controller.Request.Properties.Add( "Person", person );
+#endif
                         return userLogin.Person;
                     }
                 }
@@ -201,6 +215,7 @@ namespace Rock.Rest
         /// <returns><c>true</c> if the current person has access; otherwise, <c>false</c>.</returns>
         protected bool IsCurrentPersonAuthorized( string securityAction )
         {
+#if REVIEW_WEBFORMS
             if ( ActionContext.ActionDescriptor is ReflectedHttpActionDescriptor actionDescriptor )
             {
                 var restGuid = actionDescriptor.MethodInfo.GetCustomAttribute<SystemGuid.RestActionGuidAttribute>()?.Guid;
@@ -212,12 +227,23 @@ namespace Rock.Rest
                     return restAction?.IsAuthorized( securityAction, RockRequestContext.CurrentPerson ) ?? false;
                 }
             }
+#else
+            var restGuid = ControllerContext.ActionDescriptor.MethodInfo.GetCustomAttribute<SystemGuid.RestActionGuidAttribute>()?.Guid;
+
+            if ( restGuid.HasValue )
+            {
+                var restAction = RestActionCache.Get( restGuid.Value );
+
+                return restAction?.IsAuthorized( securityAction, RockRequestContext.CurrentPerson ) ?? false;
+            }
+#endif
 
             return false;
         }
 
         #region .NET Core compatible methods
 
+#if REVIEW_WEBFORMS
         /// <summary>
         /// Returns a response object to indicate that no content was generated.
         /// </summary>
@@ -262,6 +288,7 @@ namespace Rock.Rest
 
             return new NegotiatedContentResult<HttpError>( HttpStatusCode.InternalServerError, error, this );
         }
+#endif
 
         #endregion
     }
