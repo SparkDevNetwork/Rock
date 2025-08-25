@@ -23,6 +23,8 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
+using OpenXmlPowerTools;
+
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.SystemUtilitySkill;
 using Rock.AI.Agent.Utilities;
@@ -37,7 +39,9 @@ namespace Rock.AI.Agent.Skills
     [Description(
         "🎯 Purpose:\r\n" +
         "Provides common, non-domain-specific helper functions that can be used across multiple skills.\r\n" +
-        "These include utilities for working with dates, times, and simple data conversions."
+        "These include utilities for working with dates, times, and simple data conversions." + "\r\n\r\n" +
+        "\U0001f9ed Usage Guidance:" + "\r\n" +
+        "- ALWAYS call DetermineDateRange for natural-language date/time prompts (e.g., \"\"past 3 years\"\", \"\"yesterday\"\", \"\"Q2\"\", \"\"this week\"\", specific dates)."
     )]
     [UserDescription( "Provides common, non-domain-specific helper functions that can be used across multiple skills." )]
     [AgentSkillGuid( "3406D2DC-6718-45A2-99D3-1DAA32BF2EFD" )]
