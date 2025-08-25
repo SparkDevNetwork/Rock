@@ -64,6 +64,7 @@
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Api.Analyzers" Version="2.2.6" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Core" Version="2.2.5" />
     <PackageReference Include="Microsoft.AspNetCore.Routing" Version="2.2.2" />
+    <PackageReference Include="Swashbuckle.AspNetCore.Annotations" Version="7.3.2" />
   </ItemGroup>
 
   <ItemGroup>

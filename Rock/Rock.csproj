@@ -30,6 +30,7 @@
     <Compile Include="Web\UI\ContextAttribute.cs" />
     <Compile Include="Web\UI\Controls\Chart\ChartStyle.cs" />
     <Compile Include="Web\UI\Controls\Grid\CustomActionConfig.cs" />
+    <Compile Include="Web\UI\Controls\Pickers\TreeViewItem.cs" />
     <Compile Include="Web\UI\Controls\ValueFilter.cs" />
     <Compile Include="Web\UI\ICustomGridColumns.cs" />
     <Compile Include="Web\UI\ICustomGridOptions.cs" />
