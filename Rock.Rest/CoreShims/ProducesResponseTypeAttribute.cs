@@ -19,6 +19,8 @@
 using System;
 using System.Net;
 
+using Rock;
+
 namespace Microsoft.AspNetCore.Mvc
 {
     /// <summary>
@@ -50,6 +52,8 @@ namespace Microsoft.AspNetCore.Mvc
         /// Initializes a new instance of the <see cref="ProducesResponseTypeAttribute"/> class.
         /// </summary>
         /// <param name="statusCode">The status code.</param>
+        [Obsolete( "Use the overload that takes an int instead of HttpStatusCode. This will be removed in a future version." )]
+        [RockObsolete( "18.0" )]
         public ProducesResponseTypeAttribute( HttpStatusCode statusCode )
             : base( statusCode )
         {

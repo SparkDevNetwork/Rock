@@ -38,6 +38,10 @@ using Rock.ViewModels.Blocks;
 using Rock.Web.Cache;
 using Rock.Security;
 
+#if NET6_0_OR_GREATER
+using Microsoft.AspNetCore.Http;
+using Microsoft.AspNetCore.Mvc;
+#endif
 
 #if WEBFORMS
 using BadRequestErrorMessageResult = System.Web.Http.Results.BadRequestErrorMessageResult;
@@ -51,6 +55,8 @@ using OkResult = System.Web.Http.Results.OkResult;
 using RoutePrefixAttribute = System.Web.Http.RoutePrefixAttribute;
 using RouteAttribute = System.Web.Http.RouteAttribute;
 using StatusCodeResult = System.Web.Http.Results.StatusCodeResult;
+#else
+using RoutePrefixAttribute = Microsoft.AspNetCore.Mvc.RouteAttribute;
 #endif
 
 namespace Rock.Rest.v2
@@ -121,8 +127,20 @@ namespace Rock.Rest.v2
         [Authenticate]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ, Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [Rock.SystemGuid.RestActionGuid( "05EAF919-0D36-496E-8924-88DC50A9CD8E" )]
+#if REVIEW_WEBFORMS
         public async Task<IActionResult> BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName, [NakedBody] string parameters )
         {
+#else
+        public async Task<IActionResult> BlockActionAsPost( Guid pageGuid, Guid blockGuid, string actionName )
+        {
+            HttpContext.Request.Body.Seek(0, SeekOrigin.Begin );
+            string parameters;
+
+            using ( var reader = new StreamReader( HttpContext.Request.Body ) )
+            {
+                parameters = await reader.ReadToEndAsync();
+            }
+#endif
             if ( parameters == string.Empty )
             {
                 return await ProcessAction( this, pageGuid, blockGuid, actionName, null, _serviceProvider );
@@ -177,7 +195,11 @@ namespace Rock.Rest.v2
 
                 if ( blockCache == null )
                 {
+#if REVIEW_WEBFORMS
                     return new NotFoundResult( controller );
+#else
+                    return controller.NotFound();
+#endif
                 }
 
                 // Find the page.
@@ -195,12 +217,20 @@ namespace Rock.Rest.v2
 
                 if ( blockCache == null || pageCache == null )
                 {
+#if REVIEW_WEBFORMS
                     return new NotFoundResult( controller );
+#else
+                    return controller.NotFound();
+#endif
                 }
 
                 if ( controller.RockRequestContext?.IsClientForbidden( pageCache ) == true )
                 {
+#if REVIEW_WEBFORMS
                     return new StatusCodeResult( HttpStatusCode.Forbidden, controller );
+#else
+                    return controller.Forbid();
+#endif
                 }
 
                 //
@@ -209,8 +239,6 @@ namespace Rock.Rest.v2
                 var person = GetPerson( controller, null );
 #if WEBFORMS
                 System.Web.HttpContext.Current.AddOrReplaceItem( "CurrentPerson", person );
-#else
-#error Not implemented yet.
 #endif
 
                 // Ensure the user has access to both the page and block. For
@@ -223,7 +251,11 @@ namespace Rock.Rest.v2
 
                 if ( !pageCache.IsAuthorized( Security.Authorization.VIEW, person ) || !canViewBlock )
                 {
+#if REVIEW_WEBFORMS
                     return new StatusCodeResult( HttpStatusCode.Unauthorized, controller );
+#else
+                    return controller.Unauthorized();
+#endif
                 }
 
                 // Check if we need to apply rate limiting to this request.
@@ -236,7 +268,11 @@ namespace Rock.Rest.v2
 
                     if ( !canProcess )
                     {
+#if REVIEW_WEBFORMS
                         return new StatusCodeResult( ( HttpStatusCode ) 429, controller );
+#else
+                        return controller.StatusCode( StatusCodes.Status429TooManyRequests );
+#endif
                     }
                 }
 
@@ -248,7 +284,11 @@ namespace Rock.Rest.v2
 
                 if ( !( block is Blocks.IRockBlockType rockBlock ) )
                 {
+#if REVIEW_WEBFORMS
                     return new NotFoundResult( controller );
+#else
+                    return controller.NotFound();
+#endif
                 }
 
                 var requestContext = controller.RockRequestContext;
@@ -327,17 +367,28 @@ namespace Rock.Rest.v2
                     }
                     catch
                     {
+#if WEBFORMS
                         return new BadRequestErrorMessageResult( "Invalid parameter data.", controller );
+#else
+                        return controller.BadRequest( "Invalid parameter data." );
+#endif
                     }
                 }
 
                 //
                 // Parse any query string parameter data.
                 //
+#if REVIEW_WEBFORMS
                 foreach ( var q in controller.Request.GetQueryNameValuePairs() )
                 {
                     actionParameters.AddOrReplace( q.Key, JToken.FromObject( q.Value.ToString() ) );
                 }
+#else
+                foreach ( var q in controller.Request.Query )
+                {
+                    actionParameters.AddOrReplace( q.Key, JToken.FromObject( q.Value.ToString() ) );
+                }
+#endif
 
                 requestContext.PrepareRequestForPage( pageCache );
 
@@ -345,12 +396,17 @@ namespace Rock.Rest.v2
             }
             catch ( Exception ex )
             {
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogApiException( ex, controller.Request, GetPerson( controller, null )?.PrimaryAlias );
 
-#if WEBFORMS
                 return new System.Web.Http.Results.NegotiatedContentResult<System.Web.Http.HttpError>( HttpStatusCode.InternalServerError, new System.Web.Http.HttpError( ex.Message ), controller );
 #else
-#error Not implemented yet.
+                ExceptionLogService.LogException( ex );
+
+                return new ObjectResult( ex.Message )
+                {
+                    StatusCode = StatusCodes.Status500InternalServerError
+                };
 #endif
             }
         }
@@ -383,7 +439,11 @@ namespace Rock.Rest.v2
                 }
                 catch
                 {
+#if REVIEW_WEBFORMS
                     return new BadRequestErrorMessageResult( "Invalid parameter data.", controller );
+#else
+                    return controller.BadRequest( "Invalid parameter data." );
+#endif
                 }
             }
 
@@ -397,7 +457,11 @@ namespace Rock.Rest.v2
 
             if ( actions.Count == 0 )
             {
+#if REVIEW_WEBFORMS
                 return new NotFoundResult( controller );
+#else
+                return controller.NotFound();
+#endif
             }
 
             var action = FindBestActionForParameters( actions, actionParameters );
@@ -429,7 +493,11 @@ namespace Rock.Rest.v2
                     }
                     else
                     {
+#if REVIEW_WEBFORMS
                         return new BadRequestErrorMessageResult( $"Parameter '{methodParameters[i].Name}' is required.", controller );
+#else
+                        return controller.BadRequest( $"Parameter '{methodParameters[i].Name}' is required." );
+#endif
                     }
 
                     continue;
@@ -461,7 +529,11 @@ namespace Rock.Rest.v2
                     {
                         System.Diagnostics.Debug.WriteLine( ex.Message );
 
+#if REVIEW_WEBFORMS
                         return new BadRequestErrorMessageResult( $"Parameter type mismatch for '{methodParameters[i].Name}'.", controller );
+#else
+                        return controller.BadRequest( $"Parameter type mismatch for '{methodParameters[i].Name}'." );
+#endif
                     }
                 }
                 else if ( methodParameters[i].IsOptional )
@@ -470,7 +542,11 @@ namespace Rock.Rest.v2
                 }
                 else
                 {
+#if REVIEW_WEBFORMS
                     return new BadRequestErrorMessageResult( $"Parameter '{methodParameters[i].Name}' is required.", controller );
+#else
+                    return controller.BadRequest( $"Parameter '{methodParameters[i].Name}' is required." );
+#endif
                 }
             }
 
@@ -497,15 +573,24 @@ namespace Rock.Rest.v2
             }
             catch ( TargetInvocationException ex )
             {
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogApiException( ex.InnerException, controller.Request, GetPerson( controller, null )?.PrimaryAlias );
+#else
+                ExceptionLogService.LogException( ex.InnerException );
+#endif
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
             catch ( Exception ex )
             {
+#if REVIEW_WEBFORMS
                 ExceptionLogService.LogApiException( ex, controller.Request, GetPerson( controller, null )?.PrimaryAlias );
+#else
+                ExceptionLogService.LogException( ex );
+#endif
                 result = new BlockActionResult( HttpStatusCode.InternalServerError, GetMessageForClient( ex ) );
             }
 
+#if REVIEW_WEBFORMS
             var defaultContentNegotiator = new System.Net.Http.Formatting.DefaultContentNegotiator();
             var validFormatters = new List<System.Net.Http.Formatting.MediaTypeFormatter>()
             {
@@ -514,6 +599,7 @@ namespace Rock.Rest.v2
                 new System.Net.Http.Formatting.FormUrlEncodedMediaTypeFormatter(),
                 new System.Web.Http.ModelBinding.JQueryMvcFormUrlEncodedFormatter()
             };
+#endif
 
             // Handle the result type.
             if ( result is IActionResult httpActionResult )
@@ -522,18 +608,26 @@ namespace Rock.Rest.v2
             }
             else if ( result is BlockActionResult actionResult )
             {
+#if REVIEW_WEBFORMS
                 return await actionResult.ExecuteAsync( controller, defaultContentNegotiator, validFormatters, System.Threading.CancellationToken.None );
+#else
+                return await actionResult.ExecuteAsync( System.Threading.CancellationToken.None );
+#endif
             }
             else if ( action.ReturnType == typeof( void ) )
             {
+#if REVIEW_WEBFORMS
                 return new OkResult( controller );
+#else
+                return controller.Ok();
+#endif
             }
             else
             {
 #if WEBFORMS
                 return new System.Web.Http.Results.OkNegotiatedContentResult<object>( result, defaultContentNegotiator, controller.Request, validFormatters );
 #else
-#error Not implemented yet.
+                return controller.Ok( result );
 #endif
             }
         }

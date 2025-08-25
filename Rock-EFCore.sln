@@ -8,8 +8,6 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Solution Items", "Solution 
 		.editorconfig = .editorconfig
 	EndProjectSection
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Rock.NG", "Rock\Rock.NG.csproj", "{8E9CC5A2-0C0C-4A64-9F3B-B4618A31E2F0}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestApp", "TestApp\TestApp.csproj", "{7AD1926C-0A4A-4950-A6CE-AEFC667144B9}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestAppFramework", "TestAppFramework\TestAppFramework.csproj", "{92F92B58-2623-4DC3-B151-49ADF57EF7D7}"
@@ -46,16 +44,14 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.DownhillCss", "Rock.Do
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock", "Rock\Rock.csproj", "{F17BDE00-851B-7D92-2E43-031E08BC410E}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Rock.Rest", "Rock.Rest\Rock.Rest.csproj", "{45C0F21B-6E3B-D434-A0C0-120881CA5C96}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{8E9CC5A2-0C0C-4A64-9F3B-B4618A31E2F0}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{8E9CC5A2-0C0C-4A64-9F3B-B4618A31E2F0}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{8E9CC5A2-0C0C-4A64-9F3B-B4618A31E2F0}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{8E9CC5A2-0C0C-4A64-9F3B-B4618A31E2F0}.Release|Any CPU.Build.0 = Release|Any CPU
 		{7AD1926C-0A4A-4950-A6CE-AEFC667144B9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{7AD1926C-0A4A-4950-A6CE-AEFC667144B9}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{7AD1926C-0A4A-4950-A6CE-AEFC667144B9}.Release|Any CPU.ActiveCfg = Release|Any CPU
@@ -120,6 +116,10 @@ Global
 		{F17BDE00-851B-7D92-2E43-031E08BC410E}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{F17BDE00-851B-7D92-2E43-031E08BC410E}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{F17BDE00-851B-7D92-2E43-031E08BC410E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{45C0F21B-6E3B-D434-A0C0-120881CA5C96}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{45C0F21B-6E3B-D434-A0C0-120881CA5C96}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{45C0F21B-6E3B-D434-A0C0-120881CA5C96}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{45C0F21B-6E3B-D434-A0C0-120881CA5C96}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -131,7 +131,6 @@ Global
 		TestApp.Shared\TestApp.Shared.projitems*{01911862-ecb1-4f51-af69-cee52a11bbee}*SharedItemsImports = 13
 		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{6519c205-3304-4d09-86bc-16be8a0d9c41}*SharedItemsImports = 13
 		TestApp.Shared\TestApp.Shared.projitems*{7ad1926c-0a4a-4950-a6ce-aefc667144b9}*SharedItemsImports = 5
-		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{8e9cc5a2-0c0c-4a64-9f3b-b4618a31e2f0}*SharedItemsImports = 5
 		TestApp.Shared\TestApp.Shared.projitems*{92f92b58-2623-4dc3-b151-49adf57ef7d7}*SharedItemsImports = 4
 		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{f17bde00-851b-7d92-2e43-031e08bc410e}*SharedItemsImports = 5
 		Applications\RockCloudPrint\Rock.CloudPrint.Shared.Common\Rock.CloudPrint.Shared.Common.projitems*{f37318e7-b269-43d1-83a1-b88cb1d1cb9f}*SharedItemsImports = 5
