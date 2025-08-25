@@ -89,7 +89,12 @@ namespace Rock.AI.Agent.Skills
             "Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null." +
 
             "📋 Prerequisites:\r\n" +
-            "This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n"
+            "This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n\r\n" +
+
+            "📝 Examples: \r\n" +
+            "1. has Ted Decker been active on any of our mobile applications in the last 2 years \r\n" +
+            "2. has Alisha Marble visted the giving page in the past 30 days \r\n" +
+            "3. has Pete been active on our platform?"
         )]
         [UserDescription( "Lists page visits for a specific person." )]
         [AgentFunctionGuid( "EFDBC338-CC1C-46D2-A7F6-7AE5081147AE" )]
