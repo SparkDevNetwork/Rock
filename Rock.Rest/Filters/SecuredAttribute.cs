@@ -41,10 +41,10 @@ namespace Rock.Rest.Filters
 #if REVIEW_NET5_0_OR_GREATER
     public class SecuredAttribute : System.Attribute, IAsyncActionFilter
     {
-        public async Task OnActionExecutionAsync( ActionExecutingContext actionContext, ActionExecutionDelegate next )
 #else
     public class SecuredAttribute : ActionFilterAttribute
     {
+#endif
         /// <summary>
         /// The security action that will be checked when authorizing the request.
         /// If this is null or an empty string then it will be automatically
@@ -71,6 +71,9 @@ namespace Rock.Rest.Filters
             SecurityAction = securityAction;
         }
 
+#if REVIEW_NET5_0_OR_GREATER
+        public async Task OnActionExecutionAsync( ActionExecutingContext actionContext, ActionExecutionDelegate next )
+#else
         /// <summary>
         /// Occurs before the action method is invoked.
         /// </summary>
