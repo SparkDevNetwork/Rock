@@ -245,6 +245,15 @@ namespace Rock.Rest
 
 #if REVIEW_WEBFORMS
         /// <summary>
+        /// Returns an empty response with the given status code.
+        /// </summary>
+        /// <returns>The response object.</returns>
+        protected IActionResult StatusCode( int statusCode )
+        {
+            return new StatusCodeResult( ( HttpStatusCode ) statusCode, this );
+        }
+
+        /// <summary>
         /// Returns a response object to indicate that no content was generated.
         /// </summary>
         /// <returns>The response object.</returns>
