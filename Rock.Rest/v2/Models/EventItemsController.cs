@@ -17,6 +17,7 @@
 
 using System.Net;
 
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 using Rock.Rest.Filters;
@@ -44,10 +45,10 @@ namespace Rock.Rest.v2.Models
         [Authenticate]
         [Secured( Security.Authorization.EXECUTE_UNRESTRICTED_WRITE )]
         [ExcludeSecurityActions( Security.Authorization.EXECUTE_READ, Security.Authorization.EXECUTE_WRITE, Security.Authorization.EXECUTE_UNRESTRICTED_READ )]
-        [ProducesResponseType( HttpStatusCode.Created, Type = typeof( CreatedAtResponseBag ) )]
-        [ProducesResponseType( HttpStatusCode.BadRequest )]
-        [ProducesResponseType( HttpStatusCode.NotFound )]
-        [ProducesResponseType( HttpStatusCode.Unauthorized )]
+        [ProducesResponseType( StatusCodes.Status201Created, Type = typeof( CreatedAtResponseBag ) )]
+        [ProducesResponseType( StatusCodes.Status400BadRequest )]
+        [ProducesResponseType( StatusCodes.Status404NotFound )]
+        [ProducesResponseType( StatusCodes.Status401Unauthorized )]
         [SystemGuid.RestActionGuid( "1bb0244c-40f1-565d-8de4-7b0e3de2e742" )]
         public IActionResult PostItem( [FromBody] Rock.Model.EventItem value )
         {
