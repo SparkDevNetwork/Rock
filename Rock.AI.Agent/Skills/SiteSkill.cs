@@ -38,6 +38,7 @@ namespace Rock.AI.Agent.Skills
 
     [AgentSkillGuid( "613D7110-6453-4BAB-892B-064222F8397C" )]
     [EntityTypeGuid( "7A63570D-6FC3-4573-BDF2-89CFF605D5AB" )]
+    [UserDescription( "This skill provides an overview of site details and engagement across websites, mobile apps, and TV apps." )]
     internal sealed class SiteSkill : AgentSkillComponent
     {
         #region Fields

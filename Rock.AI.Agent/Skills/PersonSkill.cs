@@ -42,6 +42,7 @@ namespace Rock.AI.Agent.Skills
     /// </summary>
     [AgentSkillGuid( "DD5FA7DD-3277-4C31-848D-285CD67AC7CA" )]
     [EntityTypeGuid( "12E7BDEA-B67A-48D7-8D1E-245BF8E9B555" )]
+    [UserDescription( "This skill provides a holistic view of a person’s profile, connections, and overall engagement." )]
     internal sealed class PersonSkill : AgentSkillComponent
     {
         #region Fields
