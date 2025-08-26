@@ -19,6 +19,7 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
+using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.Model;
 
 namespace Rock.AI.Agent.Classes.Common
@@ -67,8 +68,6 @@ namespace Rock.AI.Agent.Classes.Common
         /// </summary>
         [JsonIgnore]
         public Guid? MaritalStatusGuid { get; set; }
-
-
         #endregion
 
         #region Common Properties
@@ -81,6 +80,11 @@ namespace Rock.AI.Agent.Classes.Common
                 return this.Id.AsIdKey();
             }
         }
+
+        /// <summary>
+        /// Gets or sets the stable identifier for the person's primary family (used by functions; avoid showing to end users).
+        /// </summary>
+        public string PrimaryFamilyIdKey { get; set; }
 
         /// <summary>
         /// The URL to the person's internal profile.
@@ -98,9 +102,19 @@ namespace Rock.AI.Agent.Classes.Common
         public string NickName { get; set; }
 
         /// <summary>
+        /// Gets or sets the person's middle name.
+        /// </summary>
+        public string MiddleName { get; set; }
+
+        /// <summary>
         /// Gets or sets the person's last/family name.
         /// </summary>
         public string LastName { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of previous last names.
+        /// </summary>
+        public List<string> PreviousLastNames { get; set; }
 
         /// <summary>
         /// Gets or sets the person's name suffix.
@@ -111,6 +125,11 @@ namespace Rock.AI.Agent.Classes.Common
         /// Gets or sets the person's e-mail.
         /// </summary>
         public string Email { get; set; }
+
+        /// <summary>
+        /// Gets or sets the list of phone numbers.
+        /// </summary>
+        public List<PhoneNumberResult> PhoneNumbers { get; set; }
 
         /// <summary>
         /// Gets the URL for the person's avatar image.
@@ -129,6 +148,11 @@ namespace Rock.AI.Agent.Classes.Common
                     this.AgeClassification );
             }
         }
+
+        /// <summary>
+        /// Gets or sets the list of addresses.
+        /// </summary>
+        public List<LocationResult> Addresses { get; set; }
 
         /// <summary>
         /// Gets or sets the age classification.
@@ -195,6 +219,42 @@ namespace Rock.AI.Agent.Classes.Common
         /// Gets or sets the gender.
         /// </summary>
         public Gender Gender { get; set; }
+
+        /// <summary>
+        /// Gets or sets the birth month (1-12).
+        /// </summary>
+        public int? BirthMonth { get; set; }
+
+        /// <summary>
+        /// Gets or sets the birth day of month (1-31).
+        /// </summary>
+        public int? BirthDay { get; set; }
+
+        /// <summary>
+        /// Gets or sets the birth year.
+        /// </summary>
+        public int? BirthYear { get; set; }
+
+        /// <summary>
+        /// Gets or sets the anniversary date.
+        /// </summary>
+        public DateTime? AnniversaryDate { get; set; }
+
+        /// <summary>
+        /// Gets or sets the graduation year.
+        /// </summary>
+        public int? GraduationYear { get; set; }
+
+        /// <summary>
+        /// Attributes of the defined value.
+        /// </summary>
+        public List<AttributeResult> Attributes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the known relationships (e.g. Aunt, Uncle, Grandparent, etc.) where the key is the relationship name and the value is the related person.
+        /// </summary>
+        public Dictionary<string,PersonResult> KnownRelationships { get; set; }
+
         #endregion
     }
 }
