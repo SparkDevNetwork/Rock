@@ -43,7 +43,7 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        #region Methods
+        #region Helpers
 
         /// <summary>
         /// Sends a communication.
@@ -75,7 +75,7 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        #region Kernel Functions
+        #region Skill Tools
 
         [KernelFunction]
         [AgentFunctionGuid( "4EEF6200-AA05-4F26-AB4D-19C73DEB3BDD" )]

@@ -70,7 +70,7 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        #region Native Functions
+        #region Skill Tools
 
         /// <summary>
         /// Determines a date range from a natural language string.

@@ -63,7 +63,7 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        #region Agent Functions
+        #region Skill Tools
 
         /// <summary>
         /// Retrieves all websites (sites) configured in Rock.

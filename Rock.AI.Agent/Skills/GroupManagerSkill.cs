@@ -103,7 +103,7 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        #region Native Functions
+        #region Skill Tools
 
         [KernelFunction( "AddNoteToPerson" )]
         [Description( "Adds a note to a person." )]
@@ -331,7 +331,7 @@ Example:
 
         #endregion
 
-        #region Private Methods
+        #region Helpers
 
         private List<GroupFinderSearchFilter> GetGroupFinderSearchFilters( GroupTypeCache groupType )
         {
@@ -526,6 +526,7 @@ Example:
         #endregion
 
         #region POCOs
+        // TODO this should go away
         private class GroupFinderSearchFilter
         {
             public string GroupFilterSearchFilterType { get; set; }

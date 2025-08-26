@@ -67,7 +67,7 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        #region Agent Functions
+        #region Skill Tools
 
         /// <summary>
         /// Retrieves website analytics (page visits) for a specific person, optionally filtered by date and/or site.
