@@ -23,6 +23,7 @@ namespace Rock.AI.Agent.Skills
     /// </summary>
     [AgentSkillGuid( "37DF3637-9775-4A89-9A77-BF6744232991" )]
     [EntityTypeGuid( "F67D0B02-B59F-475F-A005-8F2A5CCCA91C" )]
+    [UserDescription( "This skill helps author and send communications, and track their impact." )]
     internal sealed class CommunicationSkill : AgentSkillComponent
     {
         #region Fields
