@@ -190,6 +190,7 @@ namespace Rock.Blocks.Workflow
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "02D2DBA8-5300-4367-B15B-E37DFB3F7D1E" )]
     [Rock.SystemGuid.BlockTypeGuid( SystemGuid.BlockType.OBSIDIAN_WORKFLOW_ENTRY )]
     public class WorkflowEntry : RockBlockType, IBreadCrumbBlock

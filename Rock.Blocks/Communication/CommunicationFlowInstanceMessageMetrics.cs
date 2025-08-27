@@ -37,7 +37,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication Flow Instance Message Metrics" )]
     [Category( "Communication" )]
     [Description( "Displays the metrics of each message that the flow instance sends out." )]
-    [IconCssClass( "fa fa-line-chart" )]
+    [IconCssClass( "ti ti-chart-line" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
     
     [Rock.SystemGuid.EntityTypeGuid( "91D70135-87DA-4748-B459-CCE7F60F3D67" )]

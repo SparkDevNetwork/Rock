@@ -27,6 +27,7 @@ using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 using Rock.Web.UI;
+using Rock.Web.UI.Controls;
 
 namespace RockWeb.Blocks.Groups
 {
@@ -45,9 +46,24 @@ namespace RockWeb.Blocks.Groups
     [DefinedValueField( "2E6540EA-63F0-40FE-BE50-F2A84735E600", "Connection Status", "The connection status to use for new individuals (default: 'Prospect'.)", true, false, "368DD475-242C-49C4-A42C-7278BE690CC2" )]
     [DefinedValueField( "8522BADD-2871-45A5-81DD-C76DA07E2E7E", "Record Status", "The record status to use for new individuals (default: 'Pending'.)", true, false, "283999EC-7346-42E3-B807-BCE9B2BABB49" )]
     [BooleanField( "Load Current Person from Page", "If set to true the form will autopopulate fields from the person profile", false, key: "LoadPerson" )]
+    [BooleanField(
+        "Disable Captcha Support",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Key = AttributeKey.DisableCaptchaSupport )]
     [Rock.SystemGuid.BlockTypeGuid( "82A285C1-0D6B-41E0-B1AA-DD356021BDBF" )]
     public partial class GroupSimpleRegister : RockBlock
     {
+
+        #region Attribute Keys
+
+        private static class AttributeKey
+        {
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
+        }
+
+        #endregion Attribute Keys
+
         #region overridden control methods
 
         /// <summary>
@@ -68,13 +84,25 @@ namespace RockWeb.Blocks.Groups
         {
             nbError.Visible = false;
 
-            if ( !Page.IsPostBack &&
-                GetAttributeValue( "LoadPerson" ).AsBoolean() && 
-                CurrentPerson != null  )
+            if ( !Page.IsPostBack )
             {
-                txtFirstName.Text = CurrentPerson.FirstName;
-                txtLastName.Text = CurrentPerson.LastName;
-                txtEmail.Text = CurrentPerson.Email;
+                var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+                if ( disableCaptchaSupport || !cpCaptcha.IsAvailable )
+                {
+                    pnlCaptcha.Visible = false;
+                    EnableForm();
+                }
+                else
+                {
+                    btnSave.Visible = false;
+                }
+
+                if ( GetAttributeValue( "LoadPerson" ).AsBoolean() && CurrentPerson != null )
+                {
+                    txtFirstName.Text = CurrentPerson.FirstName;
+                    txtLastName.Text = CurrentPerson.LastName;
+                    txtEmail.Text = CurrentPerson.Email;
+                }
             }
 
             base.OnLoad( e );
@@ -266,6 +294,31 @@ namespace RockWeb.Blocks.Groups
             pnlInputInfo.Visible = false;
             pnlSuccess.Visible = true;
             nbSuccess.Text = text;
+        }
+
+        /// <summary>
+        /// Enables the form after CAPTCHA has been solved or disabled.
+        /// </summary>
+        private void EnableForm()
+        {
+            btnSave.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the TokenReceived event of the CAPTCHA control.
+        /// </summary>
+        protected void cpCaptcha_TokenReceived( object sender, Rock.Web.UI.Controls.Captcha.TokenReceivedEventArgs e )
+        {
+            pnlCaptcha.Visible = false;
+
+            if ( e.IsValid )
+            {
+                EnableForm();
+            }
+            else
+            {
+                ShowError( "CAPTCHA Verification", "There was an issue processing your request. Please reload this page to try again." );
+            }
         }
     }
 }

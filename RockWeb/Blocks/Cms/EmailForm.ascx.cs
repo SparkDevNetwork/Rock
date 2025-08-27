@@ -155,11 +155,17 @@ namespace RockWeb.Blocks.Cms
         DefaultBooleanValue = false,
         Order = 14,
         Key = AttributeKey.SaveCommunicationHistory )]
+    [BooleanField(
+        "Disable Captcha Support",
+        Description = "If set to 'Yes' the CAPTCHA verification step will not be performed.",
+        DefaultBooleanValue = false,
+        Order = 15,
+        Key = AttributeKey.DisableCaptchaSupport )]
     [LavaCommandsField(
         "Enabled Lava Commands",
         Description = "The Lava commands that should be enabled for this HTML block.",
         IsRequired = false,
-        Order = 15,
+        Order = 16,
         Key = AttributeKey.EnabledLavaCommands )]
 
     #endregion Block Attributes
@@ -187,6 +193,7 @@ namespace RockWeb.Blocks.Cms
             public const string EnableDebug = "EnableDebug";
             public const string SaveCommunicationHistory = "SaveCommunicationHistory";
             public const string EnabledLavaCommands = "EnabledLavaCommands";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         #endregion Attribute Keys
@@ -205,7 +212,7 @@ namespace RockWeb.Blocks.Cms
         <p>{{ CurrentPerson.NickName }}</p>
         <input type=""hidden"" id=""firstname"" name=""FirstName"" value=""{{ CurrentPerson.NickName }}"" />
     {% else %}
-        <input class=""form-control"" id=""firstname"" name=""FirstName"" placeholder=""First Name"" required />
+        <input type=""text"" class=""form-control"" id=""firstname"" name=""FirstName"" placeholder=""First Name"" required />
     {% endif %}
 </div>
 
@@ -216,26 +223,26 @@ namespace RockWeb.Blocks.Cms
         <p>{{ CurrentPerson.LastName }}</p>
         <input type=""hidden"" id=""lastname"" name=""LastName"" value=""{{ CurrentPerson.LastName }}"" />
     {% else %}
-        <input class=""form-control"" id=""lastname"" name=""LastName"" placeholder=""Last Name"" required />
+        <input type=""text"" class=""form-control"" id=""lastname"" name=""LastName"" placeholder=""Last Name"" required />
     {% endif %}
 </div>
 
 <div class=""form-group"">
     <label for=""email"">Email</label>
     {% if CurrentPerson %}
-        <input class=""form-control"" id=""email"" name=""Email"" value=""{{ CurrentPerson.Email }}"" placeholder=""Email"" required />
+        <input type=""email"" class=""form-control"" id=""email"" name=""Email"" value=""{{ CurrentPerson.Email }}"" placeholder=""Email"" required />
     {% else %}
-        <input class=""form-control"" id=""email"" name=""Email"" placeholder=""Email"" required />
+        <input type=""email"" class=""form-control"" id=""email"" name=""Email"" placeholder=""Email"" required />
     {% endif %}
 </div>
 
 <div class=""form-group"">
-    <label for=""email"">Message</label>
+    <label for=""message"">Message</label>
     <textarea id=""message"" rows=""4"" class=""form-control"" name=""Message"" placeholder=""Message"" required></textarea>
 </div>
 
 <div class=""form-group"">
-    <label for=""email"">Attachment</label>
+    <label for=""attachment"">Attachment</label>
     <input type=""file"" id=""attachment"" name=""attachment"" /> <br />
     <input type=""file"" id=""attachment2"" name=""attachment2"" />
 </div>
@@ -325,6 +332,17 @@ namespace RockWeb.Blocks.Cms
                 if ( string.IsNullOrWhiteSpace( GetAttributeValue( "Subject" ) ) )
                 {
                     lError.Text += "<div class='alert alert-warning'>A subject has not been provided for this form.</div>";
+                }
+
+                var disableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+                if ( disableCaptchaSupport || !cpCaptcha.IsAvailable )
+                {
+                    pnlCaptcha.Visible = false;
+                    EnableForm();
+                }
+                else
+                {
+                    btnSubmit.Visible = false;
                 }
             }
 
@@ -494,6 +512,33 @@ namespace RockWeb.Blocks.Cms
                 lResponse.Visible = true;
                 lEmailForm.Visible = false;
                 lResponse.Text = "You appear to be a computer. Check the global attribute 'Email Exceptions Filter' if you are getting this in error.";
+            }
+        }
+
+        /// <summary>
+        /// Enables the form after CAPTCHA has been solved or disabled.
+        /// </summary>
+        private void EnableForm()
+        {
+            btnSubmit.Visible = true;
+        }
+
+        /// <summary>
+        /// Handles the TokenReceived event of the CAPTCHA control.
+        /// </summary>
+        protected void cpCaptcha_TokenReceived( object sender, Rock.Web.UI.Controls.Captcha.TokenReceivedEventArgs e )
+        {
+            pnlCaptcha.Visible = false;
+
+            if ( e.IsValid )
+            {
+                EnableForm();
+            }
+            else
+            {
+                lResponse.Visible = true;
+                lEmailForm.Visible = false;
+                lResponse.Text = "<div class='alert alert-danger'>There was an issue processing your request. Please reload this page to try again.</div>";
             }
         }
 

@@ -57,6 +57,7 @@ namespace RockWeb.Blocks.Core
         Order = 3,
         Key = AttributeKey.SupportSecurity )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "21F5F466-59BC-40B2-8D73-7314D936C3CB" )]
     public partial class Components : RockBlock, ICustomGridColumns
     {

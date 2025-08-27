@@ -186,6 +186,7 @@ namespace RockWeb.Blocks.Groups
 
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "582BEEA1-5B27-444D-BC0A-F60CEB053981" )]
     public partial class GroupDetail : ContextEntityBlock
     {

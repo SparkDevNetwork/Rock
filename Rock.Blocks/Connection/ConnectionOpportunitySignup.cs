@@ -183,8 +183,7 @@ namespace Rock.Blocks.Connection
             box.DisplayHomePhone = GetAttributeValue( AttributeKey.DisplayHomePhone ).AsBoolean();
             box.DisplayMobilePhone = GetAttributeValue( AttributeKey.DisplayMobilePhone ).AsBoolean();
 
-            bool disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !IsCaptchaConfigured();
-            box.DisableCaptchaSupport = disableCaptcha;
+            box.DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
             var opportunity = GetConnectionOpportunity();
 
@@ -427,16 +426,6 @@ namespace Rock.Blocks.Connection
             }
         }
 
-        /// <summary>
-        /// Determines whether CAPTCHA is properly configured with site and secret keys.
-        /// </summary>
-        /// <returns>True if both keys are present and not empty; otherwise, false.</returns>
-        private bool IsCaptchaConfigured()
-        {
-            var siteKey = Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SITE_KEY );
-            var secretKey = Web.SystemSettings.GetValue( Rock.SystemKey.SystemSetting.CAPTCHA_SECRET_KEY );
-            return !(siteKey.IsNullOrWhiteSpace() || secretKey.IsNullOrWhiteSpace());
-        }
 
         #endregion Methods
 
@@ -453,7 +442,7 @@ namespace Rock.Blocks.Connection
             var resultBag = new ConnectionOpportunitySignupResultBag();
             try
             {
-                bool disableCaptcha = GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() || !IsCaptchaConfigured();
+                bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
 
                 if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
                 {

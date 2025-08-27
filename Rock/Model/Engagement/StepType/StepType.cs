@@ -45,9 +45,9 @@ namespace Rock.Model
 </div>
 <div class=""card-middle"">
     {% if StepType.HighlightColor == '' or IsComplete == false %}
-        <i class=""{{ StepType.IconCssClass }} fa-4x""></i>
+        <i class=""{{ StepType.IconCssClass }} ti-4x""></i>
     {% else %}
-        <i class=""{{ StepType.IconCssClass }} fa-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
+        <i class=""{{ StepType.IconCssClass }} ti-4x"" style=""color: {{ StepType.HighlightColor }};""></i>
     {% endif %}
 </div>
 <div class=""card-bottom"">

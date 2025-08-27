@@ -7891,6 +7891,42 @@ ul ul, ol ul, ul ol, ol ol {
   background-color: var(--color-interface-softer);
 }
 
+.panel.panel-collapsed .panel-heading,
+.panel.panel-collapsed .panel-sub-header,
+.panel.panel-collapsed .panel-action-help {
+  border-radius: var(--rounded-medium);
+  border-bottom: none;
+}
+.panel.panel-collapsed .panel-drawer,
+.panel.panel-collapsed .tabbed-bar {
+  border-radius: var(--rounded-medium);
+}
+.panel.panel-collapsed .panel-drawer > .drawer-pull {
+  border-bottom: none;
+}
+.panel.panel-collapsed .panel-heading + .panel-help {
+  border-top: 1px solid var(--color-interface-soft);
+}
+.panel.panel-collapsed .panel-help + .tabbed-bar {
+  border-top: 1px solid var(--color-interface-soft);
+  border-top-left-radius: 0;
+  border-top-right-radius: 0;
+}
+.panel.panel-collapsed:has(.tabbed-bar) .panel-heading, .panel.panel-collapsed:has(.panel-drawer) .panel-heading, .panel.panel-collapsed:has(.panel-sub-header) .panel-heading {
+  border-bottom: 1px solid var(--color-interface-soft);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+}
+.panel.panel-collapsed:has(.panel-heading + .panel-help) .panel-heading {
+  border-bottom: none;
+}
+.panel.panel-collapsed:has(.tabbed-bar) .panel-drawer > .drawer-pull, .panel.panel-collapsed:has(.tabbed-bar) .panel-sub-header, .panel.panel-collapsed:has(.panel-drawer) .panel-sub-header, .panel.panel-collapsed:has(.panel-help) .panel-sub-header, .panel.panel-collapsed:has(.panel-drawer) .panel-help {
+  border-bottom: 1px solid var(--color-interface-soft);
+  border-bottom-left-radius: 0;
+  border-bottom-right-radius: 0;
+  border-top: none;
+}
+
 .panel > .list-group,
 .panel > .panel-collapse > .list-group {
   margin-bottom: 0;
@@ -8098,7 +8134,6 @@ ul.activeusers {
 }
 
 .panel-default {
-  overflow: clip;
   border-color: var(--color-interface-soft);
 }
 .panel-default > .panel-heading {
@@ -8115,10 +8150,6 @@ ul.activeusers {
 }
 .panel-default > .panel-footer + .panel-collapse > .panel-body {
   border-bottom-color: var(--color-interface-soft);
-}
-
-.panel-default:has(.dropdown.open) {
-  overflow: visible;
 }
 
 .panel-primary {
@@ -8263,6 +8294,13 @@ ul.activeusers {
 .panel-toolbar .nav-pills > li {
   margin-top: 6px;
   margin-bottom: 6px;
+}
+.panel-toolbar .nav-pills > li > a {
+  background-color: transparent;
+  color: var(--color-interface-strong);
+}
+.panel-toolbar .nav-pills > li > a:hover {
+  color: var(--color-primary);
 }
 .panel-toolbar .slidingdaterange-select,
 .panel-toolbar .slidingdaterange-number,
@@ -8639,6 +8677,34 @@ ul.activeusers {
   overflow: hidden auto;
 }
 
+.panel-scrollable-content:has(.grid-obsidian) {
+  border: none;
+}
+
+.panel-body:has(.grid-obsidian) {
+  overflow: hidden auto;
+  flex-grow: 1;
+  padding: 0;
+}
+
+.panel-worksurface .panel-scrollable-content:has(.grid-obsidian) {
+  overflow: visible;
+  flex-grow: 0;
+  padding: var(--spacing-medium);
+}
+
+.panel-scrollable-content:has(.grid-obsidian) .grid-heading {
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+}
+
+.panel-scrollable-content:has(.grid-obsidian) .grid-header-container {
+  position: sticky;
+  top: 57px;
+  z-index: 1;
+}
+
 .paneleditor-label {
   float: left;
 }
@@ -8738,10 +8804,16 @@ ul.activeusers {
   padding: var(--spacing-medium);
   background: var(--color-interface-softer);
   border-top: 1px solid var(--color-interface-soft);
+  border-bottom-left-radius: var(--rounded-medium);
+  border-bottom-right-radius: var(--rounded-medium);
 }
 
 .panel-sidebar-footer-content {
   grid-column: 1/span 4;
+}
+
+.help-content {
+  padding: var(--spacing-tiny) var(--spacing-medium);
 }
 
 .popover {
@@ -9270,14 +9342,18 @@ ul.activeusers {
 }
 .nav-pills > li > a {
   border-radius: var(--rounded-small);
+  color: var(--color-interface-strong);
+}
+.nav-pills > li > a:hover {
+  color: var(--color-primary);
 }
 .nav-pills > li + li {
   margin-left: 2px;
 }
-.nav-pills > li.active > a, .nav-pills > li.active > a:hover, .nav-pills > li.active > a:focus {
-  color: var(--base-interface-softest);
-  background-color: var(--color-primary);
-  border-color: var(--color-primary);
+.nav-pills > li.active > a, .nav-pills > li.active > a:focus {
+  color: var(--color-primary);
+  background-color: var(--color-primary-soft);
+  border-color: var(--color-primary-soft);
 }
 
 .nav-stacked > li {
@@ -15733,12 +15809,12 @@ textarea:focus,
 
 .grid-obsidian.grid-bordered {
   border: 1px solid var(--color-interface-soft);
-  border-radius: 4px;
+  border-radius: var(--rounded-medium);
 }
 
 .grid-heading {
   background: var(--color-interface-softest);
-  border-radius: 4px 4px 0 0;
+  border-radius: var(--rounded-medium) var(--rounded-medium) 0 0;
   z-index: 1;
 }
 
@@ -15755,6 +15831,7 @@ textarea:focus,
   position: sticky;
   top: calc(var(--sticky-element-offset) + 57px);
   z-index: 1;
+  background-color: var(--color-interface-softest);
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading {
@@ -17181,12 +17258,7 @@ iframe.file-browser {
 .profile-nav .nav-pills > li > a {
   padding: var(--spacing-xsmall) var(--spacing-small);
   font-weight: var(--font-weight-semibold);
-  color: var(--color-interface-strong);
   white-space: nowrap;
-  background: var(--color-interface-softest);
-}
-.profile-nav .nav-pills > li > a:hover {
-  background: var(--color-interface-softer);
 }
 .profile-nav .nav-pills > li.active a,
 .profile-nav .nav-pills > li.active a:hover,
@@ -19164,6 +19236,174 @@ contentsection-body-overflow {
   width: 100%;
 }
 
+.structuredcontent-attachment {
+  display: flex;
+  align-items: center;
+  padding: var(--spacing-medium);
+  border: 1px solid var(--color-interface-soft);
+  border-radius: var(--rounded-medium);
+  background-color: var(--color-interface-softer);
+  margin-bottom: var(--spacing-small);
+}
+
+.cdx-block .structuredcontent-attachment {
+  margin-bottom: 0;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon {
+  position: relative;
+  margin-right: var(--spacing-small);
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-background {
+  background-color: var(--color-interface-medium);
+  width: 30px;
+  height: 30px;
+  margin-right: 0;
+  border-radius: var(--rounded-xsmall);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  -webkit-mask-box-image: none;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label {
+  position: absolute;
+  left: 0;
+  top: 0;
+  right: 0;
+  bottom: 0;
+  background: inherit;
+  text-transform: uppercase;
+  line-height: 1em;
+  color: #fff;
+  padding: 0;
+  border-radius: var(--rounded-xsmall);
+  font-size: 10px;
+  font-weight: bold;
+  box-shadow: none;
+  font-family: ui-monospace, SFMono-Regular, SF Mono, Menlo, Consolas, Liberation Mono, monospace;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=png],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=jpg],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=jpeg],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=gif],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=svg],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=pdf] {
+  background-color: #aa2284;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=doc],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=docx],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=ppt],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=pptx],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=xls],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=xlsx],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=rtf],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=txt] {
+  background-color: #1483e9;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=htm],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=html] {
+  background-color: #2988f0;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=mp3],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=mp4],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=m4v] {
+  background-color: #f676a6;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=zip],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=rar] {
+  background-color: #4f566f;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=json],
+.structuredcontent-attachment .structuredcontent-attachment-fileicon-label[title=csv] {
+  background-color: #11ae3d;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo {
+  display: grid;
+  grid-gap: 0;
+  margin: auto 0;
+  flex-grow: 2;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo-title {
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+  outline: none;
+  max-width: 90%;
+  font-size: var(--font-size-small);
+  font-weight: var(--font-weight-medium);
+  line-height: 1.5em;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo-title:empty::before {
+  content: "File title";
+  color: var(--color-interface-medium);
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo-size {
+  color: var(--color-interface-medium);
+  font-size: var(--font-size-xsmall);
+  line-height: 1em;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-fileinfo-size::after {
+  content: attr(data-size);
+  margin-left: 0.2em;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-download {
+  display: flex;
+  align-items: center;
+  background: initial;
+  padding: var(--spacing-tiny);
+  border-radius: var(--rounded-xsmall);
+  margin: auto 0 auto auto;
+  transition: background-color 0.3s;
+}
+.structuredcontent-attachment .structuredcontent-attachment-download svg {
+  width: 24px;
+  height: 24px;
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-download:hover {
+  background: var(--color-interface-soft);
+}
+
+.structuredcontent-attachment .structuredcontent-attachment-upload {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--color-interface-strongest);
+  border-radius: var(--rouneded-small);
+  font-weight: var(--font-weight-medium);
+  margin: auto;
+}
+.structuredcontent-attachment .structuredcontent-attachment-upload svg {
+  margin-top: 0;
+  width: 16px;
+  height: 16px;
+}
+
+.structuredcontent-attachment.structuredcontent-attachment-loading .structuredcontent-attachment-fileicon,
+.structuredcontent-attachment.structuredcontent-attachment-loading .structuredcontent-attachment-fileinfo,
+.structuredcontent-attachment.structuredcontent-attachment-loading .structuredcontent-attachment-download,
+.structuredcontent-attachment.structuredcontent-attachment-loading .structuredcontent-attachment-upload {
+  display: none;
+}
+
 /* ===================== BLOCK =================== */
 /*
   Used to manage styles for specific blocks.
@@ -20331,6 +20571,24 @@ body.hide-block-role-secondary .block-instance.block-role-secondary:not(.block-r
   border-radius: 0;
   outline: 0;
   box-shadow: none;
+}
+
+.schedule-status-board th.location {
+  background: var(--color-interface-softest);
+  border-right: var(--color-interface-soft);
+}
+.schedule-status-board td.schedule-location {
+  border-left: 1px solid var(--color-interface-soft);
+}
+
+.location-scheduled-list .person {
+  background: var(--color-interface-softest);
+}
+.location-scheduled-list .person.pending {
+  color: var(--color-interface-medium);
+}
+.location-scheduled-list .slot {
+  border-bottom: 1px solid var(--color-interface-soft);
 }
 
 /*

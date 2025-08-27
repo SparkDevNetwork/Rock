@@ -61,7 +61,7 @@
                         {{ asLocaleString(getRow(row).conversions) }}
                     </span>
                     <span>
-                        {{ `&nbsp;(${getConversionPercentFormatted(getRow(row).communicationFlowCommunicationIdKey ?? '', getRow(row).conversions)})` }}
+                        {{ `&nbsp;(${getConversionPercentFormatted(getRow(row).conversions)})` }}
                     </span>
                 </template>
             </template>
@@ -139,6 +139,11 @@
 
         onViewMessage: {
             type: Function as PropType<((communicationFlowInstanceCommunicationIdKey: string) => void) | undefined>
+        },
+
+        uniquePersonCount: {
+            type: Number as PropType<number>,
+            required: true
         }
     });
 
@@ -169,7 +174,12 @@
                     clicks: messagesByInstance.count(m => !!m.clickedDateTime),
                     opens: messagesByInstance.count(m => !!m.openedDateTime),
                     sent: messagesByInstance.count(m => !!m.sentDateTime),
-                    conversions: messagesByInstance.count(m => !!m.convertedDateTime),
+                    // `conversions` are the number of unique people who converted,
+                    // not the total number of conversions.
+                    conversions: Enumerable
+                        .from(messagesByInstance)
+                        .groupBy(m => m.personAliasIdKey)
+                        .count(g => g.any(m => !!m.convertedDateTime)),
                     unsubscribes: messagesByInstance.count(m => !!m.unsubscribedDateTime),
                     communicationFlowInstanceIdKey: firstMessage.communicationFlowInstanceIdKey,
                     communicationFlowInstanceStartDate: firstMessage.communicationFlowInstanceStartDate,
@@ -199,17 +209,12 @@
 
     // #region Functions
 
-    function getConversionPercentFormatted(communicationFlowInstanceIdKey: string, conversionCount: number): string {
-        const uniquePersonCount = Enumerable.from(props.instances)
-            .where(i => i.communicationFlowInstanceIdKey === communicationFlowInstanceIdKey)
-            .select(i => i.uniquePersonCount)
-            .firstOrDefault(0);
-
-        if (uniquePersonCount === 0) {
+    function getConversionPercentFormatted(conversionCount: number): string {
+        if (props.uniquePersonCount === 0) {
             return "0%";
         }
         else {
-            return asLocalePercent(conversionCount / uniquePersonCount);
+            return asLocalePercent(conversionCount / props.uniquePersonCount);
         }
     }
 

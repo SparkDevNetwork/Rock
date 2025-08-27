@@ -399,9 +399,9 @@ namespace Rock.Jobs
         {
             public int PersonId { get; set; }
 
-            public int PersonAliasId { get; set; }
-
             public DateTime ConversionDateTime { get; set; }
+
+            public PersonAlias PersonAlias { get; set; }
         }
 
         private static class ConversionGoalProcessorFactory
@@ -557,7 +557,8 @@ namespace Rock.Jobs
                                     CommunicationFlowInstanceCommunication = communicationFlowInstanceCommunication,
                                     CommunicationRecipientId = personConversionInfo.CommunicationRecipientId,
                                     Date = c.ConversionDateTime,
-                                    PersonAliasId = c.PersonAliasId
+                                    PersonAliasId = c.PersonAlias.Id,
+                                    PersonAlias = c.PersonAlias
                                 }
                             };
                         } )
@@ -687,7 +688,7 @@ namespace Rock.Jobs
                     )
                     .Select( p => new ConversionInfo
                     {
-                        PersonAliasId = p.InitiatorPersonAliasId.Value,
+                        PersonAlias = p.InitiatorPersonAlias,
                         PersonId = p.InitiatorPersonAlias.PersonId,
                         ConversionDateTime = p.CompletedDateTime.Value
                     } );
@@ -754,7 +755,7 @@ namespace Rock.Jobs
                     .Select( p => new ConversionInfo
                     {
                         PersonId = p.Id,
-                        PersonAliasId = p.PrimaryAliasId.Value,
+                        PersonAlias = p.Aliases.FirstOrDefault( a => a.AliasPersonId == p.Id ),
                         ConversionDateTime = dataView.LastRunDateTime.Value
                     } );
             }
@@ -791,7 +792,7 @@ namespace Rock.Jobs
                     .Select( gm => new ConversionInfo
                     {
                         PersonId = gm.PersonId,
-                        PersonAliasId = gm.Person.PrimaryAliasId.Value,
+                        PersonAlias = gm.Person.Aliases.FirstOrDefault( a => a.AliasPersonId == gm.PersonId ),
                         ConversionDateTime = gm.DateTimeAdded.Value
                     } );
             }
@@ -828,7 +829,7 @@ namespace Rock.Jobs
                     .Select( gm => new ConversionInfo
                     {
                         PersonId = gm.PersonId,
-                        PersonAliasId = gm.Person.PrimaryAliasId.Value,
+                        PersonAlias = gm.Person.Aliases.FirstOrDefault( a => a.AliasPersonId == gm.PersonId ),
                         ConversionDateTime = gm.DateTimeAdded.Value
                     } );
             }
@@ -868,7 +869,7 @@ namespace Rock.Jobs
                         .Select( rr => new ConversionInfo
                         {
                             PersonId = rr.PersonAlias.PersonId,
-                            PersonAliasId = rr.PersonAliasId.Value,
+                            PersonAlias = rr.PersonAlias,
                             ConversionDateTime = rr.CreatedDateTime.Value
                         } );
                 }
@@ -908,7 +909,7 @@ namespace Rock.Jobs
                     .Select( s => new ConversionInfo
                     {
                         PersonId = s.PersonAlias.PersonId,
-                        PersonAliasId = s.PersonAliasId,
+                        PersonAlias = s.PersonAlias,
                         // The CompletedDateTime doesn't actually store the time
                         // so project this to the end of the day for conversion goal purposes.
                         ConversionDateTime = s.CompletedDateTime.Value

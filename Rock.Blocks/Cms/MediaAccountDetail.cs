@@ -399,7 +399,7 @@ namespace Rock.Blocks.Cms
                 }
 
                 var breadCrumbPageRef = new PageReference( pageReference.PageId, 0, pageParameters );
-                var breadCrumb = new BreadCrumbLink( name ?? "New Media Account", breadCrumbPageRef );
+                var breadCrumb = new BreadCrumbLink( $"{name}'s Media" ?? "New Media Account", breadCrumbPageRef );
 
                 return new BreadCrumbResult
                 {

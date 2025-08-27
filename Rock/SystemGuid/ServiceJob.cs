@@ -424,6 +424,11 @@ namespace Rock.SystemGuid
         public const string UPDATE_PROGRAM_COMPLETIONS = "4E805A88-C031-4BA0-BAD6-0A706E647870";
 
         /// <summary>
+        /// The job for updating step program completions. <see cref="Rock.Jobs.UpdateStepProgramCompletions"/>.
+        /// </summary>
+        public const string UPDATE_STEP_PROGRAM_COMPLETIONS = "EB658FC8-3DA1-4CE0-86F6-0D3CA6F48AAE";
+
+        /// <summary>
         /// The Job to run Post v17.0 Data Migrations to chop Block.
         /// </summary>
         public const string DATA_MIGRATIONS_170_CHOP_OBSIDIAN_BLOCKS = "74265B89-31DF-4430-84D4-8343C64F2580";
@@ -523,6 +528,11 @@ namespace Rock.SystemGuid
         /// The Job to run Post v18.0 Data Migrations to chop Block.
         /// </summary>
         public const string DATA_MIGRATIONS_180_CHOP_OBSIDIAN_BLOCKS = "6BFCE2DE-5B38-4B71-8737-423AF51A39B1";
+
+        /// <summary>
+        /// The Job to run Post v18.0 Data Migrations to swap Block.
+        /// </summary>
+        public const string DATA_MIGRATIONS_180_SWAP_OBSIDIAN_BLOCKS = "B3663D0F-6426-44BB-9C43-D9921A0974D3";
 
         /// <summary>
         /// The job to run Post v18.0 Data Migrations to populate the newly-added [CommunicationRecipient].[DeliveredDateTime] field.

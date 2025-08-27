@@ -11,9 +11,11 @@
 
             <fieldset>
                 <DisplayCardContainer hasConnectors>
-                    <template v-for="communication in orderedCommunications" :key="communication.communicationTemplate?.guid">
+                    <template v-for="(communication, index) in orderedCommunications" :key="communication.communicationTemplate?.guid">
                         <CommunicationTrigger :communication="communication"
                                               :disabled="disabled"
+                                              :index="index"
+                                              :communications="orderedCommunications"
                                               @update:communication="onCommunicationUpdated(communication, $event)" />
 
                         <DisplayCard :aside="getDisplayCardAside(communication)"
@@ -80,7 +82,7 @@
         </RockForm>
 
         <div class="exit-container">
-            <i class="ti ti-outbound fa-lg"></i>
+            <i class="ti ti-outbound ti-lg"></i>
             <RockLabel>Recipients Exits Flow When</RockLabel>
             <DropDownList v-model="exitConditionTypeAsString"
                           :disabled="disabled"
@@ -145,7 +147,6 @@
     gap: var(--spacing-small);
     align-items: center;
     border-top: 1px solid var(--color-interface-soft);
-    border-bottom: 1px solid var(--color-interface-soft);
     padding: var(--panel-body-padding);
     margin: var(--panel-body-padding) calc(0px - var(--panel-body-padding)) calc(0px - var(--panel-body-padding)) calc(0px - var(--panel-body-padding));
     background-color: var(--color-interface-softer);
@@ -375,13 +376,13 @@
 
     function getDisplayCardIconCssClass(communication: CommunicationFlowCommunicationBag): string | null | undefined {
         if (communication.communicationType === CommunicationType.Email) {
-            return "ti ti-mail fa-lg";
+            return "ti ti-mail ti-lg";
         }
         else if (communication.communicationType === CommunicationType.SMS) {
-            return "ti ti-message fa-lg";
+            return "ti ti-message ti-lg";
         }
         else if (communication.communicationType === CommunicationType.PushNotification) {
-            return "ti ti-device-mobile fa-lg";
+            return "ti ti-device-mobile ti-lg";
         }
         else {
             return null;

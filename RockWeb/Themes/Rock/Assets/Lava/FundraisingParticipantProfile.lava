@@ -33,17 +33,17 @@
 <ul class="socialsharing margin-b-lg">
 	<li>
 		<a href="https://www.facebook.com/sharer/sharer.php?u={{ 'Global' | Page:'Url' | EscapeDataString }}" onclick="return fbs_click()" target="_blank" rel="noopener noreferrer" class="socialicon socialicon-facebook" title="" data-original-title="Share via Facebook">
-			<i class="fa fa-fw fa-facebook"></i>
+			<i class="ti ti-fw ti-brand-facebook"></i>
 		</a>
 	</li>
 	<li>
 		<a href='https://twitter.com/intent/tweet?text=Help%20Fund%20Me&url={{ 'Global' | Page:'Url' | EscapeDataString }}' class="socialicon socialicon-twitter" title="" data-original-title="Share via Twitter">
-			<i class="fa fa-fw fa-twitter"></i>
+			<i class="ti ti-fw ti-brand-twitter"></i>
 		</a>
 	</li>
 	<li>
 		<a href="mailto:?subject={{ Group | Attribute:'OpportunityTitle' | EscapeDataString }}&body=%0D%0A{{ 'Global' | Page:'Url' | EscapeDataString }}"  class="socialicon socialicon-email" title="" data-original-title="Share via Email">
-			<i class="fa fa-fw fa-envelope-o"></i>
+			<i class="ti ti-fw ti-mail"></i>
 		</a>
 	</li>
 </ul>

@@ -32,7 +32,7 @@ namespace Rock.Blocks.Cms
     [Category( "CMS" )]
     [Description( "Browse and manage files on the web server or stored on a remote server or 3rd party cloud storage" )]
     [IconCssClass( "ti ti-question-mark" )]
-    // [SupportedSiteTypes( Model.SiteType.Web )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes
 

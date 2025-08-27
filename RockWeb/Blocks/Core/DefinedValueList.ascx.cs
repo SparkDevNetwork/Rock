@@ -41,6 +41,7 @@ namespace RockWeb.Blocks.Core
         IsRequired = false,
         Key = AttributeKey.DefinedType )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( "0AB2D5E9-9272-47D5-90E4-4AA838D2D3EE" )]
     public partial class DefinedValueList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {

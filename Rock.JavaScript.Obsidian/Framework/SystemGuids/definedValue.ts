@@ -29,6 +29,10 @@ export const DefinedValue = {
     AttendanceSourceLegacyKiosk: "0B25A627-679B-4B73-AA84-305DEF24815A",
     /** The attendance record came from a mobile check-in. */
     AttendanceSourceMobile: "972E8841-A3C9-4DDD-BD24-A414C0290331",
+    /** The attendance record from from a proximity (bluetooth low energy) check-in. */
+    AttendanceSourceProximity: "799e6fa9-33d8-44aa-93dc-3dbaf25fe9f1",
+    /** The attendance record came from a physical token, such as NFC or QR Code scan. */
+    AttendanceSourceToken: "8059cc0a-bd93-4d35-9458-6e6dff2fa3e3",
     /** Benevolence Approved */
     BenevolenceApproved: "18D3A2DA-F2BA-49AE-83EB-7E60DCD18A3B",
     /** Benevolence Denied */

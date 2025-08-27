@@ -341,6 +341,7 @@ namespace Rock.Blocks.Security
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "75704274-FDB8-4A0C-AE0E-510F1977BE0A" )]
     [Rock.SystemGuid.BlockTypeGuid( "E5C34503-DDAD-4881-8463-0E1E20B1675D" )]
     public class AccountEntry : RockBlockType

@@ -25,10 +25,10 @@
                     </div>
                 </div>
 
-                <TextBox v-model="descriptionOrEmptyString"
+                <TextBox :modelValue="internalDescription ?? ''"
                          label="Description"
-                         rules="required"
-                         textMode="multiline" />
+                         textMode="multiline"
+                         @update:modelValue="internalDescription = $event || null" />
 
                 <div class="row">
                     <div class="col-md-3">
@@ -345,15 +345,6 @@
         },
         set(value: Record<string, string>) {
             internalAttributeValues.value = value;
-        }
-    });
-
-    const descriptionOrEmptyString = computed<string>({
-        get() {
-            return internalDescription.value ?? "";
-        },
-        set(value: string) {
-            internalDescription.value = value;
         }
     });
 

@@ -10,7 +10,7 @@
 <script setup lang="ts">
     import { computed, PropType, ref, watch } from "vue";
     import Chart from "./chart.obs";
-    import { BarChartClickEvent, BarLabelPosition, BarLabelsConfig, BarLabelSpec, BarSeries, LabelDateFormat, LegendAlign, LegendPosition } from "@Obsidian/Core/Controls/chart";
+    import { BarChartClickEvent, BarLabelPosition, BarLabelsConfig, BarLabelSpec, BarSeries, LabelDateFormat, LegendAlign, LegendPosition, TooltipCallback } from "@Obsidian/Core/Controls/chart";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
     import { Chart as ChartJs, ChartData, ChartDataset, ChartOptions, Color, LegendItem, TooltipItem, TooltipLabelStyle, ChartDataLabels, ChartDataLabelOptions } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
@@ -127,6 +127,20 @@
          */
         title: {
             type: String as PropType<string | undefined>
+        },
+
+        /**
+         * The tooltip formatter function.
+         */
+        tooltip: {
+            type: Function as PropType<TooltipCallback | undefined>
+        },
+
+        /**
+         * The tooltip title formatter function.
+         */
+        tooltipTitle: {
+            type: Function as PropType<TooltipCallback | undefined>
         },
 
         /**
@@ -545,44 +559,81 @@
                 tooltip: {
                     // Remove colored box preceding the value.
                     //displayColors: false,
-                    // Place tooltip above the data point.
-                    //yAlign: "bottom",
+
                     callbacks: {
-                        title: internalLabelDateFormat.value
+                        title: props.tooltipTitle
                             ? (tooltipItems: TooltipItem<"bar">[]) => {
-                                const chart = tooltipItems[0].chart;
-                                const unit = chart.options.scales?.x?.["time"].unit ?? "day";
-                                const format = chart.options.scales?.x?.["time"].displayFormats[unit] ?? "MMM d, yyyy";
+                                return Enumerable
+                                    .from(tooltipItems)
+                                    .select(tooltipItem => {
+                                        // There are 3 versions of the label.
+                                        // 1. The raw label (from prop.labels)
+                                        // 2. The formatted label (from the x-axis; using the options.scales.x.ticks.callback formatter)
+                                        // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
+                                        const rawLabel = props.labels[tooltipItem.dataIndex];
 
-                                return chart.scales.x.ticks.find(t => t.value === tooltipItems[0].parsed.x)?.label
-                                    // If the ticks have `autoSkip: true`, the label may be undefined above.
-                                    // In that case, try to format the value manually using the date adapter.
-                                    ?? chart.scales.x?.["_adapter"]?.format(tooltipItems[0].parsed.x, format)
-                                    // Fallback to the original label.
-                                    ?? tooltipItems[0].label;
+                                        return props.tooltipTitle?.({
+                                            label: rawLabel,
+                                            formattedLabel: getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex) ?? rawLabel,
+                                            value: tooltipItem.raw as number | null,
+                                            formattedValue: getFormattedValue(tooltipItem.chart, tooltipItem.parsed.y, tooltipItem.dataIndex) ?? (tooltipItem.formattedValue || tooltipItem.parsed.y.toString()),
+                                            seriesLabel: tooltipItem.dataset.label ?? ""
+                                        });
+                                    })
+                                    .ofType((t): t is string => typeof t === "string")
+                                    .distinct()
+                                    .toArray();
                             }
-                            : undefined,
-
-                        // For "percent" values, use the appropriate locale percent formatting.
-                        label:
-                            props.type === "percent"
-                                ? (context) => {
-                                    let label = context.dataset.label ?? "";
-
-                                    if (label) {
-                                        label += ": ";
-                                    }
-
-                                    if (!isNullish(context.parsed.y)) {
-                                        label += context.parsed.y.toLocaleString(
-                                            undefined,
-                                            { style: "percent", maximumFractionDigits: 0 }
-                                        );
-                                    }
-
-                                    return label;
+                            : internalLabelDateFormat.value
+                                ? (tooltipItems: TooltipItem<"bar">[]) => {
+                                    return Enumerable
+                                        .from(tooltipItems)
+                                        .select(tooltipItem => getFormattedLabel(tooltipItem.chart, tooltipItem.chart.data, tooltipItem.dataIndex))
+                                        .ofType((t): t is string => typeof t === "string")
+                                        .distinct()
+                                        .toArray();
                                 }
                                 : undefined,
+
+                        // Override the default tooltip using the following hierarchy:
+                        // 1. props.tooltip, use provided tooltip
+                        // 2. props.type === "percent", use percent-formatted tooltip
+                        // 3. use default
+                        label:
+                            props.tooltip
+                                ? (context) => {
+                                    // There are 3 versions of the label.
+                                    // 1. The raw label (from prop.labels)
+                                    // 2. The formatted label (from the x-axis; using the options.scales.x.ticks.callback formatter)
+                                    // 3. Unpredictable formatted label (from internal chart library formatting via `context.label`; unpredictable so don't use)
+                                    const rawLabel = props.labels[context.dataIndex];
+
+                                    return props.tooltip?.({
+                                        label: rawLabel,
+                                        formattedLabel: getFormattedLabel(context.chart, context.chart.data, context.dataIndex) ?? rawLabel,
+                                        value: context.raw as number | null,
+                                        formattedValue: getFormattedValue(context.chart, context.parsed.y, context.dataIndex) ?? (context.formattedValue || context.parsed.y.toString()),
+                                        seriesLabel: context.dataset.label ?? ""
+                                    }) ?? "";
+                                }
+                                : props.type === "percent"
+                                    ? (context) => {
+                                        let label = context.dataset.label ?? "";
+
+                                        if (label) {
+                                            label += ": ";
+                                        }
+
+                                        if (!isNullish(context.parsed.y)) {
+                                            label += context.parsed.y.toLocaleString(
+                                                undefined,
+                                                { style: "percent", maximumFractionDigits: 2 }
+                                            );
+                                        }
+
+                                        return label;
+                                    }
+                                    : undefined,
 
                         labelColor: (context): TooltipLabelStyle => {
                             return {
@@ -866,8 +917,14 @@
     }
 
     function getFormattedLabel(chart: ChartJs, data: ChartData, labelIndex: number): string | undefined {
-        const unit = chart.options.scales?.x?.["time"].unit ?? "day";
-        const format = chart.options.scales?.x?.["time"].displayFormats[unit] ?? "MMM d, yyyy";
+        const time = chart.options.scales?.x?.["time"];
+
+        if (!time) {
+            return props.labels[labelIndex];
+        }
+
+        const unit = time.unit ?? "day";
+        const format = time.displayFormats[unit] ?? "MMM d, yyyy";
 
         // If the ticks have `autoSkip: true`, the label may be undefined above.
         // In that case, try to format the value manually using the date adapter.

@@ -49,53 +49,53 @@
                                     :conversionGoalTargetPercent="config.flowPerformance?.conversionGoalTargetPercent"
                                     :conversionGoalTimeframeInDays="config.flowPerformance?.conversionGoalTimeframeInDays"
                                     :conversionGoalType="config.flowPerformance?.conversionGoalType"
-                                    :messages="selectedMessages"
-                                    :uniquePersonCount="selectedInstance?.uniquePersonCount ?? 0" />
+                                    :messages="selectedFlowInstanceMessages"
+                                    :uniquePersonCount="uniquePersonCount" />
 
             <template v-if="!isNullish(config.flowPerformance?.conversionGoalType)">
                 <template v-if="config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OneTime">
                     <div class="row">
                         <div class="col-md-4">
-                            <FlowKeyMetrics :messages="selectedMessages"
+                            <FlowKeyMetrics :messages="selectedFlowInstanceMessages"
                                             :flowPerformance="config.flowPerformance"
                                             vertical />
                         </div>
 
                         <div class="col-md-8">
-                            <TotalFlowPerformanceOverTime :messages="selectedMessages"
+                            <TotalFlowPerformanceOverTime :messages="selectedFlowInstanceMessages"
                                                           :flowPerformance="config.flowPerformance"
                                                           :dateUnit="dateUnit"
-                                                          :uniquePersonCount="selectedInstance?.uniquePersonCount ?? 0" />
+                                                          :uniquePersonCount="uniquePersonCount" />
                         </div>
                     </div>
                 </template>
 
                 <template v-else-if="hasMultipleFlowInstances">
-                    <FlowKeyMetrics :messages="selectedMessages" />
+                    <FlowKeyMetrics :messages="selectedFlowInstanceMessages" />
 
                     <div class="row">
                         <div class="col-md-6">
-                            <TotalFlowPerformanceOverTime :messages="selectedMessages"
+                            <TotalFlowPerformanceOverTime :messages="selectedFlowInstanceMessages"
                                                           :dateUnit="dateUnit"
-                                                          :uniquePersonCount="selectedInstance?.uniquePersonCount ?? 0" />
+                                                          :uniquePersonCount="uniquePersonCount" />
                         </div>
                         <div class="col-md-6">
-                            <InstanceVsFlowPerformanceAverage :messages="selectedMessages"
+                            <InstanceVsFlowPerformanceAverage :messages="selectedFlowInstanceMessages"
                                                               :allMessages="config.flowPerformance?.messages ?? []"
                                                               :instances="config.flowPerformance?.instances ?? []"
-                                                              :uniquePersonCount="selectedInstance?.uniquePersonCount ?? 0" />
+                                                              :uniquePersonCount="uniquePersonCount" />
                         </div>
                     </div>
                 </template>
 
                 <template v-else>
-                    <FlowKeyMetrics :messages="selectedMessages" />
+                    <FlowKeyMetrics :messages="selectedFlowInstanceMessages" />
 
                     <div class="row">
                         <div class="col-md-12">
-                            <TotalFlowPerformanceOverTime :messages="selectedMessages"
+                            <TotalFlowPerformanceOverTime :messages="selectedFlowInstanceMessages"
                                                           :dateUnit="dateUnit"
-                                                          :uniquePersonCount="selectedInstance?.uniquePersonCount ?? 0" />
+                                                          :uniquePersonCount="uniquePersonCount" />
                         </div>
                     </div>
                 </template>
@@ -104,7 +104,7 @@
             <template v-else>
                 <div class="row">
                     <div class="col-md-4">
-                        <UnsubscribesKpi :messages="selectedMessages" />
+                        <UnsubscribesKpi :messages="selectedFlowInstanceMessages" />
                     </div>
                 </div>
             </template>
@@ -121,10 +121,11 @@
         </template>
     </Panel>
 
-    <MessageListGrid :messages="selectedMessages"
+    <MessageListGrid :messages="selectedFlowInstanceMessages"
                      :conversionGoalType="config.flowPerformance?.conversionGoalType"
                      :gridDefinition="config.gridDefinition"
                      :instances="config.flowPerformance?.instances ?? []"
+                     :uniquePersonCount="uniquePersonCount"
                      @viewMessage="onViewMessage" />
 </template>
 
@@ -243,17 +244,81 @@
             .count() > 1;
     });
 
-    const selectedInstance = computed<CommunicationFlowInstanceBag | null | undefined>(() => {
-        const instanceIdKey = selectedRecurringFlowInstanceIdKeyOrEmptyString.value;
+    const uniquePersonCount = computed<number>(() => {
+        return Enumerable
+            .from(selectedFlowInstances.value)
+            .selectMany(m => m.uniquePersonAliasIdKeys ?? [])
+            .distinct()
+            .count();
+    });
 
-        if (instanceIdKey) {
-            return Enumerable.from(config.flowPerformance?.instances ?? [])
-                .where(i => i.communicationFlowInstanceIdKey === instanceIdKey)
-                .firstOrDefault();
+    /**
+     * Computes the selected flow instance(s).
+     *
+     * This property can be used regardless of the flow trigger type.
+     */
+    const selectedFlowInstances = computed<CommunicationFlowInstanceBag[]>(() => {
+        const allInstances = config.flowPerformance?.instances ?? [];
+
+        if (config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OnDemand) {
+            // For on-demand flows, filter instances by the selected date range.
+            if (!selectedOnDemandSlidingDateRange.value) {
+                return allInstances;
+            }
+
+            const { start: startDate, end: endDate } = calculateSlidingDateRange(selectedOnDemandSlidingDateRange.value);
+            if (!startDate && !endDate) {
+                return allInstances;
+            }
+            else {
+                return Enumerable
+                    .from(allInstances)
+                    .where(m => {
+                        const instanceStartDate = parseRockDateTime(m.startDate);
+
+                        if (!instanceStartDate) {
+                            return false;
+                        }
+
+                        if (startDate) {
+                            if (instanceStartDate.isEarlierThan(startDate)) {
+                                return false;
+                            }
+                        }
+
+                        if (endDate) {
+                            if (instanceStartDate.isLaterThan(endDate)) {
+                                return false;
+                            }
+                        }
+
+                        return true;
+                    })
+                    .toArray();
+            }
+        }
+        else if (config.flowPerformance?.triggerType === CommunicationFlowTriggerType.Recurring) {
+            if (!selectedRecurringFlowInstanceIdKeyOrEmptyString.value) {
+                return [];
+            }
+            else {
+                return Enumerable
+                    .from(allInstances)
+                    .where(m => m.communicationFlowInstanceIdKey === selectedRecurringFlowInstanceIdKeyOrEmptyString.value)
+                    .toArray();
+            }
+        }
+        else {
+            return allInstances;
         }
     });
 
-    const selectedMessages = computed<MessageBag[]>(() => {
+    /**
+     * Computes the messages for the selected flow instance(s).
+     *
+     * This property can be used regardless of the flow trigger type.
+     */
+    const selectedFlowInstanceMessages = computed<MessageBag[]>(() => {
         const allMessages = config.flowPerformance?.messages ?? [];
 
         if (config.flowPerformance?.triggerType === CommunicationFlowTriggerType.OnDemand) {
@@ -347,7 +412,7 @@
         }
 
         const firstCommunicationFlowInstanceCommunicationIdKey = Enumerable
-            .from(selectedMessages.value)
+            .from(selectedFlowInstanceMessages.value)
             .select(m => m.communicationFlowInstanceCommunicationIdKey)
             .where(k => !isNullish(k))
             .firstOrDefault();
@@ -422,7 +487,7 @@
 
     function getViewMessageIdKeys(communicationFlowInstanceCommunicationIdKey: string): ViewMessageIdKeys {
         return Enumerable
-            .from(selectedMessages.value)
+            .from(selectedFlowInstanceMessages.value)
             .where(m => m.communicationFlowInstanceCommunicationIdKey === communicationFlowInstanceCommunicationIdKey)
             .select(i => ({
                 instanceIdKey: i.communicationFlowInstanceIdKey,

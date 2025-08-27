@@ -185,6 +185,8 @@ export const ServiceJob = {
     DataMigrations180MigrateEraDataToSteps: "64CB888D-0F81-473B-B200-8FA38337DAED",
     /** The job to run Post v18.0 Data Migrations to populate the newly-added [CommunicationRecipient].[DeliveredDateTime] field. */
     DataMigrations180PopulateCommunicationrecipientDelivereddatetime: "EF2CF0AC-7A83-4BEB-8824-41D3B5B8B832",
+    /** The Job to run Post v18.0 Data Migrations to swap Block. */
+    DataMigrations180SwapObsidianBlocks: "B3663D0F-6426-44BB-9C43-D9921A0974D3",
     /** The job to run Post v18.0 Data Migrations to update an existing index on the CommunicationRecipient table. */
     DataMigrations180UpdateCommunicationrecipientIndex: "FE519BCE-CCB8-42B7-A14C-1620859F23E8",
     /** The job to run Post v18.0 Data Migrations to update the Nameless Locations. */
@@ -241,4 +243,6 @@ export const ServiceJob = {
     UpdatePersonalizationData: "67CFE1FE-7C64-4328-8576-F1A4BFD0EA8B",
     /** The job for updating learning program completions. Rock.Jobs.UpdateProgramCompletions. */
     UpdateProgramCompletions: "4E805A88-C031-4BA0-BAD6-0A706E647870",
+    /** The job for updating step program completions. Rock.Jobs.UpdateStepProgramCompletions. */
+    UpdateStepProgramCompletions: "EB658FC8-3DA1-4CE0-86F6-0D3CA6F48AAE",
 };

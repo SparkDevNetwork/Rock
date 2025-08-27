@@ -543,6 +543,7 @@ namespace RockWeb.Blocks.Finance
 
     #endregion Block Attributes
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "4CCC45A5-4AB9-4A36-BF8D-A6E316790004" )]
     public partial class UtilityPaymentEntry : Rock.Web.UI.RockBlock
     {

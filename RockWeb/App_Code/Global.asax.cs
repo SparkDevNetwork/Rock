@@ -397,7 +397,7 @@ namespace RockWeb
                     // Set to background thread so that this thread doesn't prevent Rock from shutting down.
                     Thread.CurrentThread.IsBackground = true;
 
-                    // Set priority to Below Normal. This was origninally set to Lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority.
+                    // Set priority to Below Normal. This was originally set to Lowest so that RockPage.VerifyBlockTypeInstanceProperties() gets priority.
                     Thread.CurrentThread.Priority = ThreadPriority.BelowNormal;
 
                     Stopwatch stopwatchCompileBlockTypes = Stopwatch.StartNew();

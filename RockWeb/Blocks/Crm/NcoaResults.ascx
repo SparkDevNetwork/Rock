@@ -96,8 +96,7 @@
                                             </div>
                                         </div>
                                         <div class="row">
-                                            <div class="col-xs-12">
-                                                <span class="text-warning"><asp:Literal id="lWarning" runat="server"></asp:Literal></span>
+                                            <div class="col-xs-12"><Rock:NotificationBox id="nbWarning" runat="server" NotificationBoxType="Warning"></Rock:NotificationBox>
                                             </div>
                                         </div>
                                     </div>

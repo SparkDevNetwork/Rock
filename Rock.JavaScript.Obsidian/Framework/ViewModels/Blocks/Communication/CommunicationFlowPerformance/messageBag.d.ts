@@ -47,6 +47,9 @@ export type MessageBag = {
     /** Gets or sets the type of the communication. */
     communicationType: CommunicationType;
 
+    /** Gets or sets the end date of the conversion goal. */
+    conversionGoalEndDate?: string | null;
+
     /** Gets or sets the date/time the person converted. */
     convertedDateTime?: string | null;
 

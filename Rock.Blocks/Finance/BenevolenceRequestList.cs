@@ -78,6 +78,7 @@ namespace Rock.Blocks.Finance
         RepeatColumns = 3,
         Key = AttributeKey.FilterBenevolenceTypesAttributeKey )]
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "d1245f63-a9ba-4289-bd82-44a489f9da9a" )]
     [Rock.SystemGuid.BlockTypeGuid( "8adb5c0d-9a4f-4396-ab0f-deb552c094e1" )]
     [CustomizedGrid]

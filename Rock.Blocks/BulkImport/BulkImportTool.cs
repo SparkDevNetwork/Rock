@@ -42,6 +42,7 @@ namespace Rock.Blocks.BulkImport
     [DisplayName( "Bulk Import" )]
     [Category( "Bulk Import" )]
     [Description( "Block to import Slingshot files into Rock using BulkImport" )]
+    [SupportedSiteTypes( Model.SiteType.Web )]
 
     [IntegerField(
         "Person Record Import Batch Size",

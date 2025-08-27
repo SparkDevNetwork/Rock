@@ -192,6 +192,13 @@ namespace Rock.Blocks.Group
         DefaultValue = "Hide",
         Order = 17 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
+        DefaultBooleanValue = false,
+        Order = 18 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "bbce9c47-b14d-4122-86a0-08441dee2759" )]
@@ -226,6 +233,7 @@ namespace Rock.Blocks.Group
             public const string RequireEmail = "RequireEmail";
             public const string RequireMobilePhone = "RequireMobilePhone";
             public const string DisplaySmsOptIn = "DisplaySmsOptIn";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         #endregion Keys
@@ -344,6 +352,8 @@ namespace Rock.Blocks.Group
             var group = GetGroup( rockContext );
             var currentPerson = RequestContext.CurrentPerson;
 
+            box.DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+
             if ( group != null )
             {
                 // Show lava content
@@ -357,9 +367,9 @@ namespace Rock.Blocks.Group
 
                 box.IsEmailRequired = GetAttributeValue( AttributeKey.RequireEmail ).AsBoolean();
                 box.IsMobilePhoneRequired = GetAttributeValue( AttributeKey.RequireMobilePhone ).AsBoolean();
-                box.Mode = GetAttributeValue(AttributeKey.Mode);
-                box.AutoFill = GetAttributeValue(AttributeKey.AutoFillForm).AsBoolean();
-                box.RegisterButtonAltText = GetAttributeValue(AttributeKey.RegisterButtonAltText);
+                box.Mode = GetAttributeValue( AttributeKey.Mode );
+                box.AutoFill = GetAttributeValue( AttributeKey.AutoFillForm ).AsBoolean();
+                box.RegisterButtonAltText = GetAttributeValue( AttributeKey.RegisterButtonAltText );
 
                 var phoneLabel = DefinedValueCache.Get( Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE ).Value;
                 phoneLabel = phoneLabel.Trim().EndsWith( "Phone" ) ? phoneLabel : phoneLabel + " Phone";
@@ -573,7 +583,7 @@ namespace Rock.Blocks.Group
                 groupMember = new GroupMember();
                 groupMember.PersonId = person.Id;
                 groupMember.GroupRoleId = defaultGroupRole.Id;
-                groupMember.GroupMemberStatus = (GroupMemberStatus)GetAttributeValue( "GroupMemberStatus" ).AsInteger();
+                groupMember.GroupMemberStatus = ( GroupMemberStatus ) GetAttributeValue( "GroupMemberStatus" ).AsInteger();
                 groupMember.GroupId = group.Id;
                 if ( groupMember.IsValidGroupMember( rockContext ) )
                 {
@@ -589,7 +599,7 @@ namespace Rock.Blocks.Group
             }
             else
             {
-                GroupMemberStatus status = (GroupMemberStatus)GetAttributeValue( "GroupMemberStatus" ).AsInteger();
+                GroupMemberStatus status = ( GroupMemberStatus ) GetAttributeValue( "GroupMemberStatus" ).AsInteger();
                 groupMember = group.Members.Where( m =>
                     m.PersonId == person.Id &&
                     m.GroupRoleId == defaultGroupRole.Id ).FirstOrDefault();
@@ -656,6 +666,12 @@ namespace Rock.Blocks.Group
         {
             using ( var rockContext = new RockContext() )
             {
+                bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+                if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+                {
+                    return ActionBadRequest( "CAPTCHA verification failed. Please try again." );
+                }
+
                 var personService = new PersonService( rockContext );
 
                 Person person = null;
@@ -859,7 +875,7 @@ namespace Rock.Blocks.Group
 
                         if ( !isSpouseMatch || !string.IsNullOrWhiteSpace( groupRegistrationBag.SpouseMobilePhone ) )
                         {
-                        
+
                             SetPhoneNumber( rockContext, spouse, groupRegistrationBag.SpouseMobilePhone, groupRegistrationBag.SpouseIsMessagingEnabled, Rock.SystemGuid.DefinedValue.PERSON_PHONE_TYPE_MOBILE.AsGuid() );
                         }
                     }

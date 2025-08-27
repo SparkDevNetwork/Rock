@@ -6,6 +6,7 @@
 // =============================================================
 // Table of Content
 //  + Base Style
+//  + Panel Collapsed
 //  + Panel list group
 //  + Table panel
 //  + Accordion panel
@@ -99,6 +100,59 @@
 }
 // =================== END BASE STYLE ===================
 
+// ===================== PANEL COLLAPSED =====================
+.panel {
+  // When a panel is in a collapsed state
+  &.panel-collapsed {
+    .panel-heading,
+    .panel-sub-header,
+    .panel-action-help {
+      border-radius: var(--rounded-medium);
+      border-bottom: none;
+    }
+    .panel-drawer,
+    .tabbed-bar {
+      border-radius: var(--rounded-medium);
+    }
+    .panel-drawer > .drawer-pull {
+      border-bottom: none;
+    }
+    .panel-heading + .panel-help {
+      border-top: 1px solid var(--color-interface-soft);
+    }
+    .panel-help + .tabbed-bar {
+      border-top: 1px solid var(--color-interface-soft);
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+    }
+  }
+
+  // If a panel is collapsed and has a tabbed bar, drawer, or sub-header, the border should stay.
+  &.panel-collapsed:has(.tabbed-bar) .panel-heading,
+  &.panel-collapsed:has(.panel-drawer) .panel-heading,
+  &.panel-collapsed:has(.panel-sub-header) .panel-heading {
+    border-bottom: 1px solid var(--color-interface-soft);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+  }
+
+  // Remove heading bottom border if collapsed state only has help-content.
+  &.panel-collapsed:has(.panel-heading + .panel-help) .panel-heading {
+    border-bottom: none;
+  }
+
+  &.panel-collapsed:has(.tabbed-bar) .panel-drawer > .drawer-pull,
+  &.panel-collapsed:has(.tabbed-bar) .panel-sub-header,
+  &.panel-collapsed:has(.panel-drawer) .panel-sub-header,
+  &.panel-collapsed:has(.panel-help) .panel-sub-header,
+  &.panel-collapsed:has(.panel-drawer) .panel-help {
+    border-bottom: 1px solid var(--color-interface-soft);
+    border-bottom-left-radius: 0;
+    border-bottom-right-radius: 0;
+    border-top: none;
+  }
+
+}
 
 // ===================== PANEL LIST GROUPS =====================
 .panel {
@@ -306,7 +360,6 @@ ul.activeusers {
 
 // ===================== ALTERNATIVE STYLE =====================
 .panel-default {
-  overflow: clip;
   border-color:         var(--color-interface-soft);
 
 & > .panel-heading {
@@ -327,10 +380,6 @@ ul.activeusers {
     border-bottom-color: var(--color-interface-soft);
   }
 }
-}
-
-.panel-default:has(.dropdown.open) { // Allows dropdown menus to overflow outside of Content Collection panel
-      overflow: visible;
 }
 
 .panel-primary {
@@ -462,60 +511,69 @@ ul.activeusers {
 
 // ======================= PANEL TOOLBAR =======================
 .panel-toolbar {
-  padding:        var(--spacing-xsmall) var(--spacing-medium);
-  font-size:      var(--font-size-xsmall);
-  border-bottom:  1px solid var(--color-interface-soft);
-  display:        flex;
-  flex-wrap:      wrap;
-  align-items:    center;
-  justify-content: space-between;
+    padding: var(--spacing-xsmall) var(--spacing-medium);
+    font-size: var(--font-size-xsmall);
+    border-bottom: 1px solid var(--color-interface-soft);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: space-between;
 
-  @media (min-width: $screen-small) {
-    flex-wrap:    nowrap;
-  }
-
-  .btn-tool,
-  .picker .picker-label {
-    padding:      1px var(--spacing-tiny);
-    color:        var(--color-interface-medium);
-    font-size:    var(--font-size-xsmall);
-    font-weight:  var(--font-weight-semibold);
-    line-height:  24px;
-    color:        var(--color-interface-medium);
-    background:   transparent;
-    border:       1px solid transparent;
-
-    &:focus,
-    &:hover,
-    &:active,
-    &.active {
-      background: var(--color-interface-soft);
+    @media (min-width: $screen-small) {
+        flex-wrap: nowrap;
     }
-  }
 
-  .picker-select-none {
-    margin:       1px 0 0 2px;
-  }
+    .btn-tool,
+    .picker .picker-label {
+        padding: 1px var(--spacing-tiny);
+        color: var(--color-interface-medium);
+        font-size: var(--font-size-xsmall);
+        font-weight: var(--font-weight-semibold);
+        line-height: 24px;
+        color: var(--color-interface-medium);
+        background: transparent;
+        border: 1px solid transparent;
 
-  .nav-pills {
-    margin:       6px var(--spacing-xsmall);
-
-    > li {
-      margin-top:     6px;
-      margin-bottom:  6px;
+        &:focus,
+        &:hover,
+        &:active,
+        &.active {
+            background: var(--color-interface-soft);
+        }
     }
-  }
 
-  .slidingdaterange-select,
-  .slidingdaterange-number,
-  .slidingdaterange-daterange .input-group {
-    margin-bottom:    0;
-  }
+    .picker-select-none {
+        margin: 1px 0 0 2px;
+    }
 
-  &.panel-toolbar-right {
-    justify-content:  flex-end;
-    gap:              var(--spacing-tiny) 30px;
-  }
+    .nav-pills {
+        margin: 6px var(--spacing-xsmall);
+
+        > li {
+            margin-top: 6px;
+            margin-bottom: 6px;
+
+            & > a {
+                background-color: transparent;
+                color: var(--color-interface-strong);
+            }
+
+            & > a:hover {
+                color: var(--color-primary);
+            }
+        }
+    }
+
+    .slidingdaterange-select,
+    .slidingdaterange-number,
+    .slidingdaterange-daterange .input-group {
+        margin-bottom: 0;
+    }
+
+    &.panel-toolbar-right {
+        justify-content: flex-end;
+        gap: var(--spacing-tiny) 30px;
+    }
 }
 
 .panel-toolbar-border {
@@ -1005,6 +1063,34 @@ ul.activeusers {
     overflow: hidden auto;
 }
 
+.panel-scrollable-content:has(.grid-obsidian) {
+  border: none;
+}
+
+.panel-body:has(.grid-obsidian) {
+  overflow: hidden auto;
+  flex-grow: 1;
+  padding: 0;
+}
+
+.panel-worksurface .panel-scrollable-content:has(.grid-obsidian) {
+  overflow: visible;
+  flex-grow: 0;
+  padding: var(--spacing-medium);
+}
+
+.panel-scrollable-content:has(.grid-obsidian) .grid-heading {
+  position: sticky;
+  top: 0;
+  overflow: hidden;
+}
+
+.panel-scrollable-content:has(.grid-obsidian) .grid-header-container {
+  position: sticky;
+  top: 57px;
+  z-index: 1;
+}
+
 .paneleditor-label {
   float: left;
 }
@@ -1125,9 +1211,11 @@ ul.activeusers {
 // ======================= PANEL FOOTER CONTENT =======================
 
 .panel-footer-content {
-    padding: var(--spacing-medium);
-    background: var(--color-interface-softer);
-    border-top: 1px solid var(--color-interface-soft);
+  padding: var(--spacing-medium);
+  background: var(--color-interface-softer);
+  border-top: 1px solid var(--color-interface-soft);
+  border-bottom-left-radius: var(--rounded-medium);
+  border-bottom-right-radius: var(--rounded-medium);
 }
 
 .panel-sidebar-footer-content {
@@ -1135,3 +1223,11 @@ ul.activeusers {
 }
 
 // ===================== END PANEL FOOTER CONTENT =====================
+
+// ===================== PANEL HELP =====================
+
+.help-content {
+  padding: var(--spacing-tiny) var(--spacing-medium);
+}
+
+// ===================== END PANEL HELP =====================

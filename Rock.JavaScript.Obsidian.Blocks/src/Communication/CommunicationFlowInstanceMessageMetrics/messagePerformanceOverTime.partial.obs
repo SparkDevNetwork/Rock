@@ -25,7 +25,7 @@
     import { isNullish } from "@Obsidian/Utility/util";
     import { CommunicationFlowInstanceCommunicationBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowInstanceMessageMetrics/communicationFlowInstanceCommunicationBag";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
-    import { alignDataPointsByDate, LineSeries, XYPoint, XYPointEnumerable } from "@Obsidian/Core/Controls/chart";
+    import { alignDataPointsByDate, LineSeries, TooltipCallback, TooltipContext, XYPoint, XYPointEnumerable } from "@Obsidian/Core/Controls/chart";
 
     enum SeriesName {
         ConversionRate = "Conversion Rate",
@@ -195,90 +195,6 @@
             ]
         };
     });
-
-    // const dataPoints = computed<ChartNumericDataPointBag[]>(() => {
-    //     const dataPoints: ChartNumericDataPointBag[] = [];
-
-    //     if (isNullish(props.modelValue)) {
-    //         return dataPoints;
-    //     }
-
-    //     const recipientMetrics = props.modelValue.recipientMetrics ?? [];
-    //     const totalMessageCount = Enumerable.from(recipientMetrics).count();
-
-    //     if (totalMessageCount <= 0) {
-    //         return dataPoints;
-    //     }
-
-    //     const formatDate = (d: RockDateTime): string => d.toASPString("yyyy-MM-dd");
-    //     const recipientMetricsEnumerable = Enumerable.from(recipientMetrics);
-
-    //     // There are 4 data series: Conversion Rate, Open Rate, Click-Through Rate, and Unsubscribe Rate.
-
-    //     // First let's process the Conversion Rates per day.
-    //     // These contain timestamps so they can be sorted with the other data series below.
-    //     const conversionDataPoints = buildCumulativeRates(
-    //         // Conversion dates.
-    //         // Get the first conversion date for each person.
-    //         // This ensures that if a person has multiple conversion events,
-    //         // they are only counted once since this metric is about people, not events.
-    //         recipientMetricsEnumerable
-    //             .groupBy(rm => rm.personAliasIdKey)
-    //             .select(g => g.select(rm => parseRockDateTime(rm.conversionDate)).firstOrDefault())
-    //             .ofType(isRockDateTime),
-    //         {
-    //             seriesName: SeriesName.ConversionRate,
-    //             color: "#68D391",
-    //             totalCount: props.uniquePersonCount,
-    //             dateFormatter: formatDate
-    //         });
-
-    //     // Open Rates per day.
-    //     // These contain timestamps so they can be sorted with the other data series.
-    //     const openDataPoints = buildCumulativeRates(
-    //         recipientMetricsEnumerable
-    //             .select(rm => parseRockDateTime(rm.openedDate))
-    //             .ofType(isRockDateTime),
-    //         {
-    //             seriesName: SeriesName.OpenRate,
-    //             color: "#63B3ED",
-    //             totalCount: totalMessageCount,
-    //             dateFormatter: formatDate,
-    //         });
-
-    //     // Click-Through Rates per day.
-    //     // These contain timestamps so they can be sorvted with the other data series.
-    //     const clickThroughDataPoints = buildCumulativeRates(
-    //         recipientMetricsEnumerable
-    //             .select(rm => parseRockDateTime(rm.clickedDate))
-    //             .ofType(isRockDateTime),
-    //         {
-    //             seriesName: SeriesName.ClickThroughRate,
-    //             color: "#F6AD55",
-    //             totalCount: totalMessageCount,
-    //             dateFormatter: formatDate,
-    //         });
-
-    //     // Unsubscribe Rates per day.
-    //     // These contain timestamps so they can be sorted with the other data series.
-    //     const unsubscribeDataPoints = buildCumulativeRates(
-    //         recipientMetricsEnumerable
-    //             .select(rm => parseRockDateTime(rm.unsubscribeDate))
-    //             .ofType(isRockDateTime),
-    //         {
-    //             seriesName: SeriesName.UnsubscribeRate,
-    //             color: "#FC8181",
-    //             totalCount: totalMessageCount,
-    //             dateFormatter: formatDate,
-    //         });
-
-    //     return conversionDataPoints
-    //         .concat(openDataPoints)
-    //         .concat(clickThroughDataPoints)
-    //         .concat(unsubscribeDataPoints)
-    //         .orderBy(dp => dp.rockDateTime.toMilliseconds()) // Re-order so the data are all in chronological order.
-    //         .toArray();
-    // });
 
     // #endregion Computed Values
 </script>

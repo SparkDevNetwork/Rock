@@ -17,12 +17,12 @@
 
 .grid-obsidian.grid-bordered {
     border: 1px solid var(--color-interface-soft);
-    border-radius: 4px;
+    border-radius: var(--rounded-medium);
 }
 
 .grid-heading {
     background: var(--color-interface-softest);
-    border-radius: 4px 4px 0 0;
+    border-radius: var(--rounded-medium) var(--rounded-medium) 0 0;
     z-index: 1;
 }
 
@@ -39,6 +39,7 @@
     position: sticky;
     top: calc(var(--sticky-element-offset) + 57px);
     z-index: 1;
+    background-color: var(--color-interface-softest);
 }
 
 .grid-obsidian > .grid-heading > .grid-title-heading {

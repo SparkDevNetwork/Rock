@@ -26,13 +26,7 @@
     > a {
       padding: var(--spacing-xsmall) var(--spacing-small);
       font-weight: var(--font-weight-semibold);
-      color: var(--color-interface-strong);
       white-space: nowrap;
-      background: var(--color-interface-softest);
-
-      &:hover {
-        background: var(--color-interface-softer);
-      }
     }
   }
 

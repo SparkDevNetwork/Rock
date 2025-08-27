@@ -35,11 +35,9 @@
     </DetailBlock>
 
     <StepTypeMoveModal v-model="isStepTypeMoveModalVisible"
-                       :errorMessage="transferModalErrorText"
+                       :currentStepType="config.entity"
                        :currentStepStatuses="config.options?.stepStatuses ?? []"
-                       :availableStepPrograms="config.options?.stepPrograms ?? []"
-                       @transfer="transferStepType"
-                       @dismissMessage="transferModalErrorText = ''" />
+                       :availableStepPrograms="config.options?.stepPrograms ?? []" />
 </template>
 
 <script setup lang="ts">
@@ -52,7 +50,7 @@
     import EditPanel from "./StepTypeDetail/editPanel.partial.obs";
     import ViewPanel from "./StepTypeDetail/viewPanel.partial.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useEntityDetailBlock, useReloadBlock } from "@Obsidian/Utility/block";
-	import StepTypeMoveModal from "./StreakTypeDetail/stepTypeMoveModal.partial.obs";
+    import StepTypeMoveModal from "./StepTypeDetail/stepTypeMoveModal.partial.obs";
     import { NavigationUrlKey } from "./StepTypeDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";
     import { StepTypeBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeBag";
@@ -60,7 +58,6 @@
     import { ValidPropertiesBox } from "@Obsidian/ViewModels/Utility/validPropertiesBox";
     import { makeUrlRedirectSafe } from "@Obsidian/Utility/url";
     import { useStore } from "@Obsidian/PageState";
-    import { StepTypeTransferBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepTypeDetail/stepTypeTransferBag";
 
     const config = useConfigurationValues<DetailBlockBox<StepTypeBag, StepTypeDetailOptionsBag>>();
     const invokeBlockAction = useInvokeBlockAction();
@@ -70,7 +67,6 @@
 
     const blockError = ref("");
     const errorMessage = ref("");
-    const transferModalErrorText = ref<string>("");
 
     const stepTypeViewBag = ref(config.entity);
     const stepTypeEditBag = ref<ValidPropertiesBox<StepTypeBag>>({
@@ -179,23 +175,7 @@
 
     // #region Functions
 
-    function replaceQueryParam(key: string, value: string): void {
-        // Ensure URL and URLSearchParams are supported
-        if (typeof window !== "undefined" && window.location) {
-            const url = new URL(window.location.href);
-
-            // Add or update the query parameter.
-            url.searchParams.set(key, value);
-
-            // Reload with replaced param.
-            window.location.href = url.toString();
-        }
-    }
-
     function onStepTypeMove(): void {
-        // Clear old error messages
-        transferModalErrorText.value = "";
-
         isStepTypeMoveModalVisible.value = true;
     }
 
@@ -302,21 +282,6 @@
 
         errorMessage.value = result.errorMessage ?? "Unknown error while trying to save step type.";
         return false;
-    }
-
-    async function transferStepType(transferBag: StepTypeTransferBag): Promise<void> {
-        transferBag.stepTypeIdKey = config.entity?.idKey;
-
-        const result = await invokeBlockAction<string>("TransferStepType", {
-            transferBag: transferBag as StepTypeTransferBag
-        });
-
-        if (result.isSuccess && result.data) {
-            replaceQueryParam("ProgramId", result.data);
-        }
-        else {
-            transferModalErrorText.value = result.errorMessage ?? "Unknown error while trying to transfer step type.";
-        }
     }
 
     // #endregion

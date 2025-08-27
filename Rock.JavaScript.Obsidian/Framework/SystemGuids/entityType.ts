@@ -539,6 +539,10 @@ export const EntityType = {
     MobileEventsPrayerSessionBlockType: "BCAF9B7B-2ADE-496B-9303-150F495851FC",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Events.PrayerSessionSetup */
     MobileEventsPrayerSessionSetupBlockType: "51431866-FF92-433C-8B0F-0F6BBAD9BCE7",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchDetail. */
+    MobileFinanceFinancialBatchDetailBlockType: "14FE11A8-A4AA-43EF-9F36-354CE60240CA",
+    /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.FinancialBatchList. */
+    MobileFinanceFinancialBatchListBlockType: "E7E18663-7EF9-454C-9C6E-F4A839DB60C8",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.ScheduledTransactionList. */
     MobileFinanceScheduledTransactionListBlockType: "7698E529-6834-46B0-BC5A-D466A6BCE4F6",
     /** The GUID for the entity Rock.Blocks.Types.Mobile.Finance.TransactionDetail. */

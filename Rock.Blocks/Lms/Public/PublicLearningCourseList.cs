@@ -165,7 +165,7 @@ namespace Rock.Blocks.Lms
                         
                     {% else %}
                         <div class=""d-flex justify-content-center align-items-center card-img-top card-img-h"">
-                            <i class=""fa fa-image fa-2x text-gray-200""></i>
+                            <i class=""ti ti-photo ti-2x text-gray-200""></i>
                         </div>
                         
                 {% endif %}

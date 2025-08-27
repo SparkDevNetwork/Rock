@@ -149,6 +149,7 @@ namespace Rock.Model
             target.ForeignKey = source.ForeignKey;
             target.IconCssClass = source.IconCssClass;
             target.IsActive = source.IsActive;
+            target.IsSystem = source.IsSystem;
             target.Name = source.Name;
             target.Order = source.Order;
             target.StepTerm = source.StepTerm;

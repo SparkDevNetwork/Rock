@@ -31,6 +31,9 @@ export type SignUpRegisterInitializationBox = {
     /** Gets or sets the communication preference items available for the registrant to select. */
     communicationPreferenceItems?: ListItemBag[] | null;
 
+    /** Gets or sets whether to disable captcha support for the block. */
+    disableCaptchaSupport: boolean;
+
     /**
      * Gets or sets the error message. A non-empty value indicates that
      * an error is preventing the block from being displayed.

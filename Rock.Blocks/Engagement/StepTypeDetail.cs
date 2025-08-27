@@ -432,6 +432,8 @@ namespace Rock.Blocks.Engagement
                 HasEndDate = entity.HasEndDate,
                 HighlightColor = entity.HighlightColor,
                 IsActive = entity.IsActive,
+                PreRequisites = entity.StepTypePrerequisites.Select( p => p.PrerequisiteStepType.Guid.ToString() ).ToList(),
+                IsPrerequisiteStepType = DetermineIsPrerequisiteStepType( entity ),
                 IsDateRequired = entity.Id == 0 || entity.IsDateRequired,
                 Name = entity.Name,
                 ShowCountOnBadge = entity.ShowCountOnBadge,
@@ -555,7 +557,6 @@ namespace Rock.Blocks.Engagement
 
             bag.LoadAttributesAndValuesForPublicEdit( entity, RequestContext.CurrentPerson, enforceSecurity: true );
 
-            bag.PreRequisites = entity.StepTypePrerequisites.Select( p => p.PrerequisiteStepType.Guid.ToString() ).ToList();
             bag.AvailablePreRequisites = GetPrerequisiteStepsList( entity );
 
             // Get the step type attributes for the grid in the edit view.
@@ -787,6 +788,39 @@ namespace Rock.Blocks.Engagement
             }
 
             return _stepType;
+        }
+
+        /// <summary>
+        /// Determines whether this Step Type is a prerequisite for any other Step Types
+        /// within the same Program.
+        /// </summary>
+        /// <param name="stepType">The current Step Type entity</param>
+        /// <returns><c>true</c> if this Step Type is a prerequisite for other Step Types; otherwise, <c>false</c>.</returns>
+        private bool DetermineIsPrerequisiteStepType( StepType stepType )
+        {
+            return new StepTypePrerequisiteService( RockContext ).Queryable().Any( p => p.PrerequisiteStepTypeId == stepType.Id );
+        }
+
+        /// <summary>
+        /// Removes all prerequisite relationships for this Step Type.
+        /// </summary>
+        /// <param name="stepTypeId">The Step Type Id</param>
+        private void DeletePrerequisites( int stepTypeId )
+        {
+            var stepTypePrerequisiteService = new Rock.Model.StepTypePrerequisiteService( RockContext );
+
+            // Find all prerequisite relationships involving this StepType
+            var prereqsToDelete = stepTypePrerequisiteService.Queryable()
+                .Where( p =>
+                    p.StepTypeId == stepTypeId ||
+                    p.PrerequisiteStepTypeId == stepTypeId )
+                .ToList();
+
+            if ( prereqsToDelete.Any() )
+            {
+                stepTypePrerequisiteService.DeleteRange( prereqsToDelete );
+                RockContext.SaveChanges();
+            }
         }
 
         /// <summary>
@@ -1522,6 +1556,8 @@ namespace Rock.Blocks.Engagement
                 .Select( ss => new { ss.Guid, ss.Id, ss.Name, ss.IsCompleteStatus } )
                 .ToList();
 
+            Dictionary<int, int> statusIdMappings = new Dictionary<int, int>();
+
             // Validate that every current status has a valid mapping
             // We loop over each status from the current program and check:
             //   - Does it have an entry in transferBag.StepStatusMappings?
@@ -1547,28 +1583,25 @@ namespace Rock.Blocks.Engagement
                 {
                     return ActionBadRequest( $"'{status.Name}' and its mapped status '{target.Name}' must have the same completion setting." );
                 }
+
+                statusIdMappings[status.Id] = target.Id;
             }
 
-            var stepsToUpdate = new StepService( RockContext )
-                .Queryable()
-                .Where( s => s.StepTypeId == stepType.Id )
-                .ToList();
-
-            // Update each Step's StepStatusId to match the target program mapping
-            foreach ( var step in stepsToUpdate )
+            foreach ( var kvp in statusIdMappings )
             {
-                var oldStatusGuid = currentStatuses
-                    .FirstOrDefault( cs => cs.Id == step.StepStatusId )?.Guid;
+                var currentStatusId = kvp.Key;
+                var newStatusId = kvp.Value;
 
-                if ( oldStatusGuid.HasValue
-                     && transferBag.StepStatusMappings.TryGetValue( oldStatusGuid.Value.ToString(), out var mappedGuidString ) )
-                {
-                    var target = targetStatuses.FirstOrDefault( ts => ts.Guid == mappedGuidString.AsGuid() );
-                    step.StepStatusId = target.Id;
-                }
+                var stepsQuery = new StepService( RockContext )
+                    .Queryable()
+                    .Where( s => s.StepTypeId == stepType.Id && s.StepStatusId == currentStatusId );
+
+                RockContext.BulkUpdate( stepsQuery, s => new Step { StepStatusId = newStatusId } );
             }
 
             stepType.StepProgramId = targetStepProgram.Id;
+
+            DeletePrerequisites( stepType.Id );
 
             RockContext.SaveChanges();
 

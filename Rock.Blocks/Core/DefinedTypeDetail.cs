@@ -49,6 +49,7 @@ namespace Rock.Blocks.Core
         Key = AttributeKey.DefinedType )]
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "bcd79456-ebd5-4a2f-94e5-c7387b0ea4b7" )]
     [Rock.SystemGuid.BlockTypeGuid( "73fd23b4-fa3a-49ea-b271-ffb228c6a49e" )]
     public class DefinedTypeDetail : RockEntityDetailBlockType<DefinedType, DefinedTypeBag>

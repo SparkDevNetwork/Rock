@@ -176,12 +176,12 @@ namespace Rock.Blocks.Lms
                 <div class=""card rounded-lg mb-4"">
                     <div class=""card-body"">
                         <div class=""card-title d-flex align-items-center"">
-							<h4 class=""m-0""><span><i class=""fa fa-clipboard-list mr-2""></i></span>Requirements
+							<h4 class=""m-0""><span><i class=""ti ti-clipboard-list mr-2""></i></span>Requirements
 							    {% if CourseInfo.UnmetPrerequisites != empty %}
-                                    <i class=""fa fa-exclamation-circle text-danger""></i>
+                                    <i class=""ti ti-exclamation-circle text-danger""></i>
                                     </h4>
                                 {% else %}
-                                    <i class=""fa fa-check-circle text-success""></i>
+                                    <i class=""ti ti-circle-check text-success""></i>
                                     </h4>
                                 {% endif %}
 							</h4>
@@ -223,12 +223,12 @@ namespace Rock.Blocks.Lms
 							<div class=""card rounded-lg mb-4"">
 								<div class=""card-body"">
 									<div class=""card-title d-flex align-items-center"">
-										<i class=""fa fa-user-check mr-2""></i>
+										<i class=""ti ti-user-check mr-2""></i>
 										<h4 class=""m-0"">Currently Enrolled</h4>
 									</div>
 									<div class=""card-text text-muted mb-3"">
 										<p>You are currently enrolled in this course.</p>
-										<p class=""text-gray-800""><i class=""fa fa-arrow-right mr-2""></i>{{classInfo.Name}}</p>
+										<p class=""text-gray-800""><i class=""ti ti-arrow-right mr-2""></i>{{classInfo.Name}}</p>
 									</div>
 									<div>
 										<a class=""btn btn-info"" href=""{{ classInfo.WorkspaceLink }}"">View Class Workspace</a>
@@ -244,7 +244,7 @@ namespace Rock.Blocks.Lms
                                     
                                     <div class=""card-body"">
                                         <div class=""card-title d-flex align-items-center"">
-                                            <i class=""fa fa-rotate-left mr-2""></i>
+                                            <i class=""ti ti-arrow-back-up mr-2""></i>
                                             <h4 class=""m-0"">History</h4>
                                         </div>
                                         <div class=""text-muted"">You completed this class on {{
@@ -273,7 +273,7 @@ namespace Rock.Blocks.Lms
                                     
                                     <div class=""card-body"">
                                         <div class=""card-title d-flex align-items-center"">
-                                            <i class=""fa fa-rotate-left mr-2""></i>
+                                            <i class=""ti ti-arrow-back-up mr-2""></i>
                                             <h4 class=""m-0"">History</h4>
                                         </div>
                                         <div class=""text-muted"">You completed this class on {{
@@ -306,7 +306,7 @@ namespace Rock.Blocks.Lms
                 {% else %}
                     <div class=""card rounded-lg"">
                         <div class=""card-body"">
-                            <h4 class=""card-title mt-0""><i class=""fa fa-chalkboard-teacher mr-2""></i>Classes</h4>
+                            <h4 class=""card-title mt-0""><i class=""ti ti-chalkboard-teacher mr-2""></i>Classes</h4>
                             
                             //- SCOPING TO CLASS DETAILS
                             

@@ -312,6 +312,7 @@ namespace Rock.Blocks.Security
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.EntityTypeGuid( "D9482EF9-F774-4E37-AC84-8B340CBCA364" )]
     [Rock.SystemGuid.BlockTypeGuid( "5437C991-536D-4D9C-BE58-CBDB59D1BBB3" )]
 

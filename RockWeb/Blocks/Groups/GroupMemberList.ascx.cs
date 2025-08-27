@@ -52,6 +52,8 @@ namespace RockWeb.Blocks.Groups
     [BooleanField( "Show First/Last Attendance", "If the group allows attendance, should the first and last attendance date be displayed for each group member?", false, "", 7, SHOW_FIRST_LAST_ATTENDANCE_KEY )]
     [BooleanField( "Show Date Added", "Should the date that person was added to the group be displayed for each group member?", false, "", 8, SHOW_DATE_ADDED_KEY )]
     [BooleanField( "Show Note Column", "Should the note be displayed as a separate grid column (instead of displaying a note icon under person's name)?", false, "", 9 )]
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.BlockTypeGuid( Rock.SystemGuid.BlockType.GROUPS_GROUP_MEMBER_LIST )]
     public partial class GroupMemberList : RockBlock, ISecondaryBlock, ICustomGridColumns
     {

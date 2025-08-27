@@ -90,5 +90,10 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
         /// Gets or sets the type of the communication.
         /// </summary>
         public CommunicationType CommunicationType { get; set; }
+
+        /// <summary>
+        /// Gets or sets the end date of the conversion goal.
+        /// </summary>
+        public DateTime? ConversionGoalEndDate { get; set; }
     }
 }

@@ -7,6 +7,7 @@
 // Table of Content
 //  + Group Viewer - styles for the group viewer block.
 //  + Group Scheduler v2 - styles for the Obsidian group scheduler block.
+//  + Group Schedule Status Board v2
 // =============================================================
 
 
@@ -347,3 +348,34 @@
   }
 }
 // ====================== END GROUP SCHEDULER ======================
+
+// ====================== GROUP SCHEDULE STATUS BOARD ======================
+
+.schedule-status-board {
+  & th.location {
+    background: var(--color-interface-softest);
+    border-right: var(--color-interface-soft);
+  }
+  & td.schedule-location {
+    border-left: 1px solid var(--color-interface-soft);
+  }
+}
+
+.location-scheduled-list {
+  & .person {
+  background: var(--color-interface-softest);
+}
+
+  & .person.pending {
+    color: var(--color-interface-medium);
+  }
+
+  & .slot {
+    border-bottom: 1px solid var(--color-interface-soft);
+  }
+
+}
+
+
+
+// ====================== END GROUP SCHEDULE STATUS BOARD ======================

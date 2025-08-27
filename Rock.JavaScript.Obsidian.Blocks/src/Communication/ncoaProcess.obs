@@ -29,6 +29,9 @@
                                     :btnSize="BtnSize.Default"
                                     :btnType="BtnType.Primary"
                                     :disabled="isStep1Loading"
+                                    autoLoading
+                                    :isLoading="isStep1Loading"
+                                    loadingText="Exporting..."
                                     type="submit">
                             Export File
                         </RockButton>
@@ -67,14 +70,14 @@
                         </div>
                     </div>
                     <div class="ml-2">
-                        <RockButton :btnSize="BtnSize.Default" :btnType="BtnType.Primary" :disabled="isStep2Loading" type="submit">
+                        <RockButton :btnSize="BtnSize.Default" :btnType="BtnType.Primary" :disabled="isStep2Loading" autoLoading :isLoading="isStep2Loading" loadingText="Importing..." type="submit">
                             Import File
                         </RockButton>
                     </div>
                 </RockForm>
                 <div class="col-md-10 col-sm-10 col-xs-12">
                     <NotificationBox v-if="successMessage" alertType="success" v-html="successMessage" />
-                    <NotificationBox v-if="errorMessage" v-text="errorMessage" alertType="warning" />
+                    <NotificationBox v-if="errorMessage" v-html="errorMessage" alertType="warning" />
                 </div>
             </div>
         </div>

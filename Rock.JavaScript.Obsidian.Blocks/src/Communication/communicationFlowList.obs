@@ -8,8 +8,7 @@
           stickyHeader
           liveUpdates
           delete
-          :onAddItem="config.isAddEnabled ? onAddItem : undefined"
-          @selectItem="onSelectItem">
+          :onAddItem="config.isAddEnabled ? onAddItem : undefined">
         <TextColumn name="name"
                     title="Name"
                     field="name"
@@ -68,8 +67,14 @@
 
         <AttributeColumns :attributes="config.gridDefinition?.attributeFields ?? []" />
 
+        <ButtonColumn name="performance"
+                      iconClass="ti ti-chart-histogram"
+                      tooltip="Performance"
+                      @click="onSelectItem" />
+
         <ButtonColumn name="edit"
                       iconClass="ti ti-pencil"
+                      tooltip="Edit"
                       @click="onEditItem" />
 
         <DeleteColumn v-if="config.isDeleteEnabled"

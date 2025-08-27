@@ -32,11 +32,11 @@
 						<div class="list-group">
 
 							{% if videoLink != '' %}
-								<a href="{{ videoLink }}" class="list-group-item"><i class="fa fa-film"></i> Video Download</a>
+								<a href="{{ videoLink }}" class="list-group-item"><i class="ti ti-movie"></i> Video Download</a>
 							{% endif %}
 
 							{% if audioLink != '' %}
-								<a href="{{ audioLink }}" class="list-group-item"><i class="fa fa-volume-up"></i> Audio Download</a>
+								<a href="{{ audioLink }}" class="list-group-item"><i class="ti ti-volume"></i> Audio Download</a>
 							{% endif %}
 
 						</div>

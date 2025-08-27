@@ -29,6 +29,8 @@ namespace Rock.Migrations
         /// </summary>
         public override void Up()
         {
+            DropForeignKey( "dbo.Interaction", "RelatedEntityTypeId", "dbo.EntityType" );
+
             Sql( @"
 DECLARE @SmartyStreetsEntityTypeId INT;
 DECLARE @BingEntityTypeId INT;
@@ -104,6 +106,7 @@ WHERE [Id] = @BingEntityTypeId;
         /// </summary>
         public override void Down()
         {
+            AddForeignKey( "dbo.Interaction", "RelatedEntityTypeId", "dbo.EntityType", "Id", cascadeDelete: false );
         }
     }
 }

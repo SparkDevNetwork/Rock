@@ -34,6 +34,7 @@ using Rock.Utility;
 using Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister;
 using Rock.ViewModels.Utility;
 using Rock.Web.Cache;
+using Rock.Web.UI.Controls;
 
 namespace Rock.Blocks.Engagement.SignUp
 {
@@ -119,6 +120,13 @@ namespace Rock.Blocks.Engagement.SignUp
         DefaultValue = Rock.SystemGuid.DefinedValue.RECORD_SOURCE_TYPE_SIGN_UP,
         Order = 8 )]
 
+    [BooleanField(
+        "Disable Captcha Support",
+        Key = AttributeKey.DisableCaptchaSupport,
+        Description = "If set to 'Yes' the CAPTCHA verification will be skipped. \n\nNote: If the CAPTCHA site key and/or secret key are not configured in the system settings, this option will be forced as 'Yes', even if 'No' is visually selected.",
+        DefaultBooleanValue = false,
+        Order = 9 )]
+
     #endregion
 
     [Rock.SystemGuid.EntityTypeGuid( "ED7A31F2-8D4C-469A-B2D8-7E28B8717FB8" )]
@@ -138,6 +146,7 @@ namespace Rock.Blocks.Engagement.SignUp
             public const string ConnectionStatus = "ConnectionStatus";
             public const string RecordStatus = "RecordStatus";
             public const string RecordSource = "RecordSource";
+            public const string DisableCaptchaSupport = "DisableCaptchaSupport";
         }
 
         private static class PageParameterKey
@@ -232,6 +241,7 @@ namespace Rock.Blocks.Engagement.SignUp
             box.Registrants = registrationData.Registrants;
             box.MemberAttributes = registrationData.MemberAttributes;
             box.MemberOpportunityAttributes = registrationData.MemberOpportunityAttributes;
+            box.DisableCaptchaSupport = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
         }
 
         /// <summary>
@@ -1750,6 +1760,12 @@ namespace Rock.Blocks.Engagement.SignUp
         {
             using ( var rockContext = new RockContext() )
             {
+                bool disableCaptcha = Captcha.CaptchaService.ShouldDisableCaptcha( GetAttributeValue( AttributeKey.DisableCaptchaSupport ).AsBoolean() );
+                if ( !disableCaptcha && !RequestContext.IsCaptchaValid )
+                {
+                    return ActionBadRequest( "CAPTCHA verification failed. Please try again." );
+                }
+
                 // Load block attributes, as we're going to double-check that each registrant is allowed according to the settings.
                 var block = new BlockService( rockContext ).Get( this.BlockId );
                 block.LoadAttributes();

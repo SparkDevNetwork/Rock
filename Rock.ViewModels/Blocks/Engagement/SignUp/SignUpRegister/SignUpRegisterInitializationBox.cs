@@ -76,6 +76,11 @@ namespace Rock.ViewModels.Blocks.Engagement.SignUp.SignUpRegister
         public bool RequireMobilePhone { get; set; }
 
         /// <summary>
+        /// Gets or sets whether to disable captcha support for the block.
+        /// </summary>
+        public bool DisableCaptchaSupport { get; set; }
+
+        /// <summary>
         /// Gets or sets the list of existing or possible registrants, including the registrar.
         /// <para>
         /// Each <see cref="SignUpRegistrantBag.WillAttend"/> value indicates whether they're already registered (<see langword="true" />) or available to be registered (<see langword="false" />).

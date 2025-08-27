@@ -4,7 +4,7 @@
 @import "../../../Styles/styles-v2/core.css";
 
 // @import "../../../Styles/style-v2/icons/fontawesome-icon.css";
-// @import "../../../Styles/style-v2/icons/fontawesome-regular.css"; 
+// @import "../../../Styles/style-v2/icons/fontawesome-regular.css";
 // @import "../../../Styles/style-v2/icons/fontawesome-solid.css";
 // @import "../../../Styles/style-v2/icons/tabler-icon.css";
 :root {
@@ -35,7 +35,7 @@ body.navbar-side-open {
 }
 
 .header-content {
-  
+
   #page-content {
     min-height: 600px;
   }
@@ -43,15 +43,20 @@ body.navbar-side-open {
   .page-title-display {
     color: var(--color-interface-stronger);
     // Maybe a good idea to hardcode so that when people change the spacing it will not break the header
-    margin-left: 80px;
+    margin-left: var(--spacing-huge);
+    margin-right: var(--spacing-large);
+    min-width: 100px;
 
     .page-icon {
       display: none;
     }
 
+    .page-title {
+      width: 100%;
+    }
+
     .breadcrumb {
       padding: 0;
-      margin-top: var(--spacing-tiny);
       font-size: var(--font-size-xsmall);
 
       a:hover {
@@ -73,6 +78,11 @@ body.navbar-side-open {
       font-size: 24px;
       font-weight: 700;
       margin: 0;
+      overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      width: 100%;
+      line-height: var(--line-height-normal);
     }
   }
   @media (max-width: ($screen-large)) {
@@ -539,11 +549,6 @@ $navbar-element-height: 40px;
 
 }
 
-.nav-pills > li > a {
-  color: var(--color-interface-strong);
-  background-color: var(--color-interface-softer);
-}
-
 // Side Nav
 .navbar-static-side {
   --nav-childpages-bg: var(--navbarside-background-color);
@@ -580,7 +585,7 @@ $navbar-element-height: 40px;
     .nav-item-top {
       display: flex;
       align-items: center;
-      justify-content: flex-start; 
+      justify-content: flex-start;
       padding: 18px 12px;
       font-size: 18px;
       margin-top: 0;
@@ -731,7 +736,7 @@ $navbar-element-height: 40px;
         color: var(--color-interface-softer);
 
         @media (min-width: $screen-xsmall) {
-          color: var(--color-interface-strong)          
+          color: var(--color-interface-strong)
         }
 
         i {
@@ -828,7 +833,7 @@ $navbar-element-height: 40px;
       &:last-child {
         border: 0;
       }
-  
+
       &.current {
         background-color: #ffffff30;
         border-radius:    var(--rounded-medium) var(--rounded-medium) var(--rounded-medium) var(--rounded-medium);
@@ -937,7 +942,7 @@ $navbar-element-height: 40px;
   }
 }
 
-// Hamburger 
+// Hamburger
 $hamburger-width: 18px;
 $hamburger-height: 2px;
 $hamburger-spacing: 4px;
@@ -1013,11 +1018,11 @@ a.rock-bookmark {
   border: 1px solid var(--color-interface-soft);
   border-radius: 999px;
   transition: .15s ease-in-out,box-shadow .15s ease-in-out;
-  
+
   &:hover {
     color: var(--color-interface-stronger);
   }
-  
+
   &:focus {
     box-shadow: var(--input-focus-box-shadow) !important;
     i {
@@ -1140,7 +1145,7 @@ a.rock-bookmark {
   display: flex;
   align-items: center;
   border-radius: var(--rounded-medium);
-  
+
   .pull-left {
     margin-right: auto;
   }
@@ -1360,7 +1365,7 @@ a.rock-bookmark {
       grid-template-columns: 1fr;
       grid-template-rows: 4fr 10fr;
       gap: 0;
-      
+
       min-width: 380px;
       width: 90vw;
     }
@@ -1378,8 +1383,8 @@ a.rock-bookmark {
 
     height: 100%;
     width: 100%;
-    grid-column: 1 / 2;  
-    grid-row: 1 / 2; 
+    grid-column: 1 / 2;
+    grid-row: 1 / 2;
 
     z-index: 1001;
     animation: slide-left 1.3s ease-in-out forwards;
@@ -1396,7 +1401,7 @@ a.rock-bookmark {
     justify-content: center;
 
     grid-column: 2 / 3;
-    grid-row: 1 / 2; 
+    grid-row: 1 / 2;
 
     @media (max-width: $screen-medium) {
       display: block;
@@ -1418,7 +1423,7 @@ a.rock-bookmark {
     background-size: 200px;
     fill: var(--color-interface-softest);
     background-image: var(--logo-image);
-    
+
     @media (max-width: $screen-medium) {
       background-size: 120px;
     }

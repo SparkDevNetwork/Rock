@@ -39,7 +39,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication Flow List" )]
     [Category( "Communication" )]
     [Description( "Displays a list of communication flows." )]
-    [IconCssClass( "fa fa-list" )]
+    [IconCssClass( "ti ti-list" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     [LinkedPage( "Detail Page",

@@ -3,10 +3,10 @@
     <MobilePreview>
         <div class="sms-preview">
             <div class="sms-header">
-                <i class="ti ti-chevron-left fa-lg back-button"></i>
+                <i class="ti ti-chevron-left ti-lg back-button"></i>
                 <div class="sms-header-from">
                     <div>
-                        <i class="fas fa-user-circle-o fa-2x"></i>
+                        <i class="ti ti-user-circle ti-2x"></i>
                     </div>
                     <span class="text-xs">{{ smsFromNumberName }}</span>
                 </div>

@@ -76,7 +76,7 @@ namespace Rock.Blocks.Finance
         EditorHeight = 100,
         IsRequired = true,
         DefaultValue = @"<a href=""/Person/{{ Participant.PersonId }}"" class=""pull-right margin-l-sm btn btn-sm btn-default"">
-    <i class=""fa fa-user""></i>
+    <i class=""ti ti-user""></i>
 </a>
 <a href=""/GroupMember/{{ Participant.Id }}"">{{ Participant.Person.FullName }}</a>",
         Category = "Advanced",

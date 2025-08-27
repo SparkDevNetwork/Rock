@@ -2986,13 +2986,17 @@ export function getRsvpComponentHelper(): ComponentMigrationHelper & {
     };
 }
 
+type RowComponentStructure = ComponentStructure & {
+    readonly dropzone: HTMLElement | null;
+};
+
 export function getRowComponentHelper(): ComponentMigrationHelper & {
-    getElements(componentElement: Element): ComponentStructure | null;
+    getElements(componentElement: Element): RowComponentStructure | null;
     createComponentElement(): HTMLElement;
 } {
     const latestVersion = "v17.3-alpha" as const;
 
-    return {
+    const helper = {
         createComponentElement(): HTMLElement {
             const componentElements = createComponent(
                 "row",
@@ -3002,7 +3006,7 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
             return componentElements.marginWrapper.table;
         },
 
-        getElements(componentElement: Element): ComponentStructure | null {
+        getElements(componentElement: Element): RowComponentStructure | null {
             if (!componentElement.classList.contains("component-row")) {
                 throw new Error(`Element is not a row component element: ${componentElement.outerHTML}`);
             }
@@ -3013,7 +3017,13 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
                 return null;
             }
 
-            return wrappers;
+            return {
+                ...wrappers,
+
+                get dropzone(): HTMLElement | null {
+                    return (wrappers.marginWrapper.borderWrapper.paddingWrapper.td.querySelector(".dropzone") ?? null) as HTMLElement | null;
+                },
+            };
         },
 
         isMigrationRequired(componentElement: Element): boolean {
@@ -3083,6 +3093,30 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
                     return componentElement;
                 },
 
+                // Enable placeholder `<div class="component component-row"></div>`
+                // to create a row component.
+                function placeholderToLatest(componentElement: Element): Element {
+                    const outerHTML = componentElement.outerHTML;
+                    const innerHTML = componentElement.innerHTML;
+
+                    const outerHTMLWithoutChildren = outerHTML.replace(innerHTML, "");
+
+                    if (outerHTMLWithoutChildren === `<div class="component component-row"></div>`) {
+                        const newComponent = helper.createComponentElement();
+
+                        if (innerHTML.trim()) {
+                            helper.getElements(newComponent)
+                                ?.dropzone
+                                ?.append(...componentElement.childNodes);
+                        }
+
+                        return newComponent;
+                    }
+                    else {
+                        return componentElement;
+                    }
+                },
+
                 // eslint-disable-next-line @typescript-eslint/naming-convention
                 function v2AlphaToV17_3Alpha(componentElement: Element): Element {
                     const versionNumber = getComponentVersionNumber(componentElement);
@@ -3110,6 +3144,8 @@ export function getRowComponentHelper(): ComponentMigrationHelper & {
             return latestVersion;
         }
     };
+
+    return helper;
 }
 
 type SectionComponentTypeName = Extract<EditorComponentTypeName,

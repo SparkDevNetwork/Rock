@@ -180,6 +180,7 @@ namespace Rock.Model
         public static void CopyPropertiesFrom( this GroupType target, GroupType source )
         {
             target.Id = source.Id;
+            target.AdditionalSettingsJson = source.AdditionalSettingsJson;
             target.AdministratorTerm = source.AdministratorTerm;
             target.AllowAnyChildGroupType = source.AllowAnyChildGroupType;
             target.AllowedScheduleTypes = source.AllowedScheduleTypes;

@@ -113,6 +113,8 @@
     import { MessageBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/messageBag";
     import { ConversionGoalSettingsBag } from "@Obsidian/ViewModels/Blocks/Communication/CommunicationFlowPerformance/conversionGoalSettingsBag";
     import { RockTimeSpan } from "@Obsidian/Utility/rockTimeSpan";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
+    import { isRockDateTime } from "./utils.partial";
 
     /**
      * In terms of metrics, the number of PEOPLE who achieved the conversion goal is most important,
@@ -161,10 +163,8 @@
     const uniquePeopleWhoAchievedGoalCount = computed((): number => {
         return Enumerable
             .from(props.messages)
-            .where(m => !!m.convertedDateTime)
-            .select(m => m.personAliasIdKey)
-            .distinct()
-            .count();
+            .groupBy(m => m.personAliasIdKey)
+            .count(g => g.any(m => !!m.convertedDateTime));
     });
 
     const percentageOfPeopleWhoAchievedGoal = computed((): number => {
@@ -330,34 +330,44 @@
         }
         else {
             const conversionGoalTargetFractionalPercent = (props.conversionGoalTargetPercent ?? 0) / 100;
-
             const goalNotMetInstances = Enumerable
                 .from(messagesGroupedByInstance.value)
                 .where(messagesByInstance => {
-                    const messageCount = messagesByInstance.count();
-                    const conversionCount = messagesByInstance.count(m => !!m.convertedDateTime);
+                    const uniquePeopleConvertedCount = Enumerable
+                        .from(messagesByInstance)
+                        .groupBy(m => m.personAliasIdKey)
+                        .count(g => g.any(m => !!m.convertedDateTime));
 
-                    const conversionPercent = messageCount ? conversionCount / messageCount : 0;
-
-                    return conversionPercent < conversionGoalTargetFractionalPercent;
+                    const conversionPercent = props.uniquePersonCount ? uniquePeopleConvertedCount / props.uniquePersonCount : 0;
+                    if (conversionPercent < conversionGoalTargetFractionalPercent) {
+                        return true;
+                    }
+                    else {
+                        return false;
+                    }
                 })
                 .toArray();
 
             if (Enumerable.from(goalNotMetInstances).any()) {
-                if (Enumerable
+                const exclusiveConversionGoalEndDate = Enumerable
                     .from(goalNotMetInstances)
-                    .any(g => g.select(m => m.communicationFlowInstanceCommunicationIdKey)
-                        .distinct()
-                        .count() < props.communicationCount)
-                ) {
-                    // At least one instance has unsent communications
-                    // and the conversion percent is below the target.
-                    return "Pending";
+                    .select(g => g.first())
+                    .select(m => RockDateTime.parseISO(m.conversionGoalEndDate ?? ""))
+                    .ofType(isRockDateTime)
+                    .select(r => r.addDays(1).date)
+                    .orderByDescending(r => r.toMilliseconds())
+                    .firstOrDefault();
+
+                if (exclusiveConversionGoalEndDate && exclusiveConversionGoalEndDate.isEarlierThan(RockDateTime.now())) {
+                    // The latest conversion goal end date is in the past.
+                    // This instance has missed the conversion goal,
+                    // so return true to add it to the list of "goal not met instances".
+                    return "Missed";
                 }
                 else {
-                    // All selected instances have sent communications,
-                    // but at least one has not met the conversion goal.
-                    return "Missed";
+                    // The latest conversion goal end date is in the future or now
+                    // so this instance is still pending.
+                    return "Pending";
                 }
             }
             else {

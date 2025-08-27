@@ -1055,9 +1055,9 @@ namespace Rock.Data
         /// <param name="pageRouteGuid">The page route unique identifier.</param>
         public void DeletePageRoute( string pageRouteGuid )
         {
-            string sql = $@"
+            Migration.Sql( $@"
                 DELETE FROM [dbo].[PageRoute] WHERE [Guid] = '{pageRouteGuid}';
-            ";
+            " );
         }
 
         /// <summary>

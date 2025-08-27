@@ -185,28 +185,31 @@
 
 // ===================== PILL =====================
 .nav-pills {
-  > li {
-    float: left;
+    > li {
+        float: left;
+        // Links rendered as pills
+        > a {
+            border-radius: var(--rounded-small);
+            color: var(--color-interface-strong);
+        }
 
-    // Links rendered as pills
-    > a {
-      border-radius:  var(--rounded-small);
-    }
-    + li {
-      margin-left:    2px;
-    }
+        > a:hover {
+            color: var(--color-primary);
+        }
 
-    // Active state
-    &.active > a {
-      &,
-      &:hover,
-      &:focus {
-        color:              var(--base-interface-softest);
-        background-color:   var(--color-primary);
-        border-color:       var(--color-primary);
-      }
+        + li {
+            margin-left: 2px;
+        }
+        // Active state
+        &.active > a {
+            &,
+            &:focus {
+                color: var(--color-primary);
+                background-color: var(--color-primary-soft);
+                border-color: var(--color-primary-soft);
+            }
+        }
     }
-  }
 }
 // =================== END PILL ===================
 

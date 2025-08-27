@@ -66,6 +66,8 @@ namespace RockWeb.Blocks.Event
         Order = 2 )]
 
     #endregion Block Attributes
+
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "22B67EDB-6D13-4D29-B722-DF45367AA3CB" )]
     public partial class RegistrationInstanceDetail : RegistrationInstanceBlock
     {

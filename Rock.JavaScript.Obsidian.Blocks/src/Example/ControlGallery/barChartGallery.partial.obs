@@ -12,6 +12,8 @@
                       :overlap="isOverlapped"
                       :stack="isStacked"
                       :title="title"
+                      :tooltip="tooltip"
+                      :tooltipTitle="tooltipTitle"
                       :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
                       :unfilled="isUnfilled"
                       :xLabel="xLabel"
@@ -79,6 +81,12 @@
                                     label="Inside Bar Labels"
                                     @update:modelValue="hasInsideBarLabels = $event" />
 
+                            <Switch :modelValue="hasCustomTooltip ?? false"
+                                    label="Custom Tooltip"
+                                    @update:modelValue="hasCustomTooltip = $event" />
+                        </div>
+
+                        <div class="autolayout">
                             <div class="button-wrapper">
                                 <RockButton btnType="primary"
                                             @click="onRandomizeDataClicked">Randomize Data</RockButton>
@@ -184,9 +192,10 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { BarSeries, LabelDateFormat, LegendAlign, LegendPosition, LabelDateFormatDescription, LegendAlignDescription, LegendPositionDescription, BarChartClickEvent, BarLabelContext, BarLabelsConfig } from "@Obsidian/Core/Controls/chart";
+    import { BarSeries, LabelDateFormat, LegendAlign, LegendPosition, LabelDateFormatDescription, LegendAlignDescription, LegendPositionDescription, BarChartClickEvent, BarLabelContext, BarLabelsConfig, TooltipCallback } from "@Obsidian/Core/Controls/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const importCode = getSfcControlImportPath("chart");
     const legendPositionItems = [
@@ -249,6 +258,7 @@
     const opacity = ref<number | number[] | undefined>();
     const hasOutsideBarLabels = ref<boolean | undefined>();
     const hasInsideBarLabels = ref<boolean | undefined>();
+    const hasCustomTooltip = ref<boolean | undefined>();
 
     // #endregion Values
 
@@ -324,6 +334,27 @@
         const prefix = "<BarChart ";
         const spaces = " ".repeat(prefix.length);
         return `${prefix}${lineChartProps.join(`\n${spaces}`)} />`;
+    });
+
+    const tooltip = computed<TooltipCallback | undefined>(() => {
+        if (hasCustomTooltip.value) {
+            return (ctx) => {
+                if (isPercent.value) {
+                    return `The ${ctx.seriesLabel} value for ${ctx.formattedLabel} is ${ctx.value?.toLocaleString(undefined, { style: "percent", maximumFractionDigits: 2 })}.`;
+                }
+                else {
+                    return `The ${ctx.seriesLabel} value for ${ctx.formattedLabel} is ${ctx.value?.toLocaleString()}.`;
+                }
+            };
+        }
+    });
+
+    const tooltipTitle = computed<TooltipCallback | undefined>(() => {
+        if (hasCustomTooltip.value) {
+            return (ctx) => {
+                return RockDateTime.parseISO(ctx.label)?.toLocaleString({ dateStyle: "long" }) ?? ctx.formattedLabel;
+            };
+        }
     });
 
     // #endregion Computed Values

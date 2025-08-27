@@ -157,7 +157,7 @@ namespace RockWeb.Blocks.Cms
         private int _currentPageNum = 0;
         private int _itemsPerPage = DefaultItemsPerPage;
         private const string DefaultLavaResultTemplate = @"<ul>{% for result in Results %}
-    <li><i class='fa {{ result.IconCssClass }}'></i> {{ result.DocumentName }} <small>(Score {{ result.Score }} )</small> </li>
+    <li><i class='ti {{ result.IconCssClass }}'></i> {{ result.DocumentName }} <small>(Score {{ result.Score }} )</small> </li>
 {% endfor %}</ul>";
 
         #endregion

@@ -36,7 +36,7 @@ namespace Rock.Badge.Component
     [InteractionChannelField( "Interaction Channel", "The Interaction channel to use.", true, order: 0 )]
     [SlidingDateRangeField( "Date Range", "The date range in which the interactions were made.", required: false, order: 1 )]
     [LinkedPage( "Detail Page", "Select the page to navigate when the badge is clicked.", false, order: 2 )]
-    [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "fa-random", key: "BadgeIconCss", order:3 )]
+    [TextField( "Badge Icon CSS", "The CSS icon to use for the badge.", true, "ti-arrows-shuffle", key: "BadgeIconCss", order:3 )]
     [TextField( "Badge Color", "The color of the badge (#ffffff).", true, "#0ab4dd", order: 4 )]
     [Rock.SystemGuid.EntityTypeGuid( "DE2F669D-4321-466F-BFC2-AE4F9952C2ED")]
     public class InteractionsInRange : BadgeComponent

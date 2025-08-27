@@ -38,10 +38,10 @@
         },
 
         /**
-         * The position of the sidebar. This can be either "left" or "right".
+         * The position of the sidebar. This can be either "left", "right" or "top".
          */
-        sidebarPosition: {
-            type: String as PropType<"left" | "right">,
+        headerLocation: {
+            type: String as PropType<"left" | "right" | "top">,
             default: "left"
         },
     });
@@ -52,9 +52,19 @@
      * Additional classes to apply to the stack based on its configuration.
      */
     const additionalStackClasses = computed((): string[] => {
-        return [
-            props.sidebarPosition === "right" ? "contentstack-right" : "contentstack-left"
-        ];
+        const classes: string[] = [];
+
+        if (props.headerLocation === "left") {
+            classes.push("contentstack-left");
+        }
+        else if (props.headerLocation === "right") {
+            classes.push("contentstack-right");
+        }
+        else if (props.headerLocation === "top") {
+            classes.push("contentstack-top");
+        }
+
+        return classes;
     });
 
     // #endregion

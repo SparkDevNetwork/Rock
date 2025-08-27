@@ -533,7 +533,7 @@ $('.template-form > .panel-body').on('validation-error', function() {
                 writer.WriteLine( "<a class='btn btn-xs btn-link form-reorder'><i class='ti ti-menu-2'></i></a>" );
             }
 
-            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='form-state fa {0}'></i></a>",
+            writer.WriteLine( string.Format( "<a class='btn btn-xs btn-link'><i class='form-state ti {0}'></i></a>",
                 Expanded ? "ti ti-chevron-up" : "ti ti-chevron-down" ) );
 
             if ( IsDeleteEnabled )

@@ -47,6 +47,7 @@ namespace Rock.Jobs
             // Get the configured timeout, or default to 240 minutes if it is blank.
             var commandTimeout = GetAttributeValue( AttributeKey.CommandTimeout ).AsIntegerOrNull() ?? 14400;
             var jobMigration = new JobMigration( commandTimeout );
+            var migrationHelper = new MigrationHelper( jobMigration );
 
             jobMigration.Sql( @"
 -- Get required IDs
@@ -249,6 +250,8 @@ LEFT JOIN Exited x
 INNER JOIN [dbo].[Person] p
     ON p.[Id] = e.[PersonId];
 " );
+
+            migrationHelper.AddServiceJobAttributeValue( "623F4751-C654-FEB7-45B7-59685B1F60AE", "DEF426E3-2A86-493D-BEE9-AC1CF0D3D066", "true" );
 
             DeleteJob();
         }

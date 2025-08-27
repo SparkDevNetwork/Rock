@@ -20,7 +20,9 @@
                         <Columns>
                             <Rock:RockBoundField DataField="Name" HeaderText="Name" SortExpression="Name" />
                             <Rock:RockLiteralField HeaderText="Persisted Interval" SortExpression="PersistedScheduleIntervalMinutes">
-                                <ItemTemplate><%# FormatFriendlyMinutesDuration( (int)Eval("PersistedScheduleIntervalMinutes") ) %></ItemTemplate>
+                                <ItemTemplate>
+                                    <%# FormatScheduleInterval( Convert.ToInt32( Eval("PersistedScheduleIntervalMinutes") ), (Rock.Model.Schedule)Eval( "PersistedSchedule") )%>
+                                </ItemTemplate>
                             </Rock:RockLiteralField>
                             <Rock:RockBoundField DataField="PersistedLastRunDurationMilliseconds" HeaderText="Time to Build (ms)" NullDisplayText="-" DataFormatString="{0:F0}" SortExpression="PersistedLastRunDurationMilliseconds" />
                             <Rock:RockBoundField DataField="RunCount" HeaderText="Run Count" NullDisplayText="-" SortExpression="RunCount" />

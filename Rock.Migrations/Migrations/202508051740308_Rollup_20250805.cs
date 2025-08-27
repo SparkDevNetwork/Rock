@@ -2280,7 +2280,7 @@ WHERE [Guid] = 'c2d29296-6a87-47a9-a753-ee4e9159c4c4'
         private void ChopBlocksForV18Up()
         {
             RegisterBlockAttributesForChop();
-            ChopBlockTypesv18_0();
+            //ChopBlockTypesv18_0();
         }
 
         #endregion

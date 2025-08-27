@@ -47,7 +47,7 @@ namespace Rock.Blocks.Communication
     [DisplayName( "Communication Flow Detail" )]
     [Category( "Communication" )]
     [Description( "Displays the details of a particular communication flow." )]
-    [IconCssClass( "fa fa-question" )]
+    [IconCssClass( "ti ti-question-mark" )]
     // [SupportedSiteTypes( Model.SiteType.Web )]
 
     #region Block Attributes

@@ -15,6 +15,9 @@
 // </copyright>
 //
 
+using System;
+using System.Collections.Generic;
+
 namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
 {
     /// <summary>
@@ -31,5 +34,15 @@ namespace Rock.ViewModels.Blocks.Communication.CommunicationFlowPerformance
         /// Gets or sets the count of unique people in this Communication Flow Instance.
         /// </summary>
         public int UniquePersonCount { get; set; }
+
+        /// <summary>
+        /// Gets a list of the unique person alias identifier keys.
+        /// </summary>
+        public List<string> UniquePersonAliasIdKeys { get; set; }
+
+        /// <summary>
+        /// Gets or sets the Communication Flow Instance start date.
+        /// </summary>
+        public DateTime StartDate { get; set; }
     }
 }

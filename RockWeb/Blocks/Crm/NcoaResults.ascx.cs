@@ -253,8 +253,8 @@ namespace RockWeb.Blocks.Crm
                 {
                     mmembers.Add( "Other Family Members", ncoaRow.FamilyMembers.Select( a => a.FullName ).ToList().AsDelimited( "<Br/>" ) );
 
-                    var warninglabel = e.Item.FindControl( "lWarning" ) as Literal;
-                    warninglabel.Text = "Auto processing this move would result in a split family.";
+                    var warning = e.Item.FindControl( "nbWarning" ) as NotificationBox;
+                    warning.Text = "Auto processing this move would result in a split family.";
                 }
             }
             familyMembers.Text = mmembers.Html;
@@ -330,6 +330,13 @@ namespace RockWeb.Blocks.Crm
                                     }
                                 }
                             }
+                        }
+                        else
+                        {
+                            var warninglabel = e.Item.FindControl( "nbWarning" ) as Literal;
+                            warninglabel.Text = "This family is no longer associated with that location.";
+                            warninglabel.Visible = true;
+                            return;
                         }
                     }
 
@@ -578,24 +585,27 @@ namespace RockWeb.Blocks.Crm
                 ncoaRow.ShowButton = false;
 
                 var family = new GroupService( rockContext ).Get( ncoaHistoryRecord.FamilyId );
-                var person = ncoaRow.Individual ?? ncoaRow.FamilyMembers.First();
-                if ( family == null )
+                var person = ncoaRow.Individual ?? ncoaRow.FamilyMembers.FirstOrDefault();
+                if ( family == null && person != null )
                 {
                     family = person.GetFamily( rockContext );
                 }
 
-                var personService = new PersonService( rockContext );
-
-                ncoaRow.FamilyName = family.Name;
-                ncoaRow.HeadOftheHousehold = personService.GetHeadOfHousehold( person, family );
-
-                if ( ncoaHistoryRecord.MoveType != MoveType.Individual )
+                if ( family != null && person != null )
                 {
-                    ncoaRow.FamilyMembers = personService.GetFamilyMembers( family, person.Id, true ).Select( a => a.Person ).ToList();
-                }
-                else
-                {
-                    ncoaRow.FamilyMembers = personService.GetFamilyMembers( family, person.Id, false ).Select( a => a.Person ).ToList();
+                    var personService = new PersonService( rockContext );
+
+                    ncoaRow.FamilyName = family.Name;
+                    ncoaRow.HeadOftheHousehold = personService.GetHeadOfHousehold( person, family );
+
+                    if ( ncoaHistoryRecord.MoveType != MoveType.Individual )
+                    {
+                        ncoaRow.FamilyMembers = personService.GetFamilyMembers( family, person.Id, true ).Select( a => a.Person ).ToList();
+                    }
+                    else
+                    {
+                        ncoaRow.FamilyMembers = personService.GetFamilyMembers( family, person.Id, false ).Select( a => a.Person ).ToList();
+                    }
                 }
 
                 if ( ncoaHistoryRecord.AddressStatus == AddressStatus.Invalid )
@@ -640,7 +650,6 @@ namespace RockWeb.Blocks.Crm
                         ncoaRow.ShowButton = true;
                     }
                 }
-
             }
 
             rptNcoaResultsFamily.DataSource = pagedNcoaRows.Take( resultCount ).GroupBy( n => n.FamilyName );

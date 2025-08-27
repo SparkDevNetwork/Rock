@@ -81,6 +81,16 @@ export type AlignDataResult = {
     values: (number | null)[][];
 };
 
+export type TooltipContext = {
+    label: string;
+    formattedLabel: string;
+    value: number | null;
+    formattedValue: string;
+    seriesLabel: string;
+};
+
+export type TooltipCallback = (context: TooltipContext) => string;
+
 // #region Common
 
 // #region Line Chart

@@ -29,6 +29,7 @@ namespace Rock.Blocks.Engagement
 
     #endregion
 
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Secondary )]
     [Rock.SystemGuid.EntityTypeGuid( "4935B24C-851A-4480-A907-EAEB90D594D2" )]
     [Rock.SystemGuid.BlockTypeGuid( "B5616E10-0551-41BB-BD14-3ABA33E0040B" )]
     public class StreakMapEditor : RockBlockType

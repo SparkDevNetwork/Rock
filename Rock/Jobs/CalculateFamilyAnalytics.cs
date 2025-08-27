@@ -60,6 +60,12 @@ namespace Rock.Jobs
         Category = "General",
         Key = AttributeKey.CommandTimeout,
         Order = 1 )]
+
+    [BooleanField( "Write eRA History",
+        Description = "If enabled will write eRA records to the History table.",
+        DefaultBooleanValue = true,
+        Key = AttributeKey.WriteEraHistory,
+        Order = 5)]
     public class CalculateFamilyAnalytics : RockJob
     {
         private const string SOURCE_OF_CHANGE = "Calculate Family Analytics Job";
@@ -70,6 +76,7 @@ namespace Rock.Jobs
             public const string EraExitWorkflow = "EraExitWorkflow";
             public const string SetVisitDates = "SetVisitDates";
             public const string CommandTimeout = "CommandTimeout";
+            public const string WriteEraHistory = "WriteEraHistory";
         }
 
         /// <summary>
@@ -178,26 +185,30 @@ namespace Rock.Jobs
                                 }
                                 eraEndAttributeValue.Value = RockDateTime.Now.ToISO8601DateString();
 
-                                // Add a history record
-                                if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 )
+
+                                if ( GetAttributeValue( AttributeKey.WriteEraHistory ).AsBoolean() )
                                 {
-                                    History historyRecord = new History();
-                                    historyService.Add( historyRecord );
-                                    historyRecord.EntityTypeId = personEntityTypeId;
-                                    historyRecord.EntityId = person.Id;
-                                    historyRecord.CreatedDateTime = RockDateTime.Now;
-                                    historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
-                                    historyRecord.Caption = "eRA";
+                                    // Add a history record
+                                    if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 )
+                                    {
+                                        History historyRecord = new History();
+                                        historyService.Add( historyRecord );
+                                        historyRecord.EntityTypeId = personEntityTypeId;
+                                        historyRecord.EntityId = person.Id;
+                                        historyRecord.CreatedDateTime = RockDateTime.Now;
+                                        historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
+                                        historyRecord.Caption = "eRA";
 
-                                    historyRecord.Verb = "EXITED";
-                                    historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
-                                    historyRecord.ValueName = "eRA";
-                                    historyRecord.NewValue = "Exited";
+                                        historyRecord.Verb = "EXITED";
+                                        historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
+                                        historyRecord.ValueName = "eRA";
+                                        historyRecord.NewValue = "Exited";
 
-                                    historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
-                                    historyRecord.RelatedEntityId = eraAttributeId;
-                                    historyRecord.CategoryId = personAnalyticsCategoryId;
-                                    historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
+                                        historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
+                                        historyRecord.RelatedEntityId = eraAttributeId;
+                                        historyRecord.CategoryId = personAnalyticsCategoryId;
+                                        historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
+                                    }
                                 }
 
                                 // Update the Step Record
@@ -293,22 +304,26 @@ namespace Rock.Jobs
                                 attributeValueService.Delete( eraEndAttributeValue );
                             }
 
-                            // Add a history record
-                            if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 && !isCurrentlyEra )
+
+                            if ( GetAttributeValue( AttributeKey.WriteEraHistory ).AsBoolean() )
                             {
-                                History historyRecord = new History();
-                                historyService.Add( historyRecord );
-                                historyRecord.EntityTypeId = personEntityTypeId;
-                                historyRecord.EntityId = person.Id;
-                                historyRecord.CreatedDateTime = RockDateTime.Now;
-                                historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
-                                historyRecord.Caption = "eRA";
-                                historyRecord.Verb = "ENTERED";
-                                historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
-                                historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
-                                historyRecord.RelatedEntityId = eraAttributeId;
-                                historyRecord.CategoryId = personAnalyticsCategoryId;
-                                historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
+                                // Add a history record
+                                if ( personAnalyticsCategoryId != 0 && personEntityTypeId != 0 && attributeEntityTypeId != 0 && eraAttributeId != 0 && !isCurrentlyEra )
+                                {
+                                    History historyRecord = new History();
+                                    historyService.Add( historyRecord );
+                                    historyRecord.EntityTypeId = personEntityTypeId;
+                                    historyRecord.EntityId = person.Id;
+                                    historyRecord.CreatedDateTime = RockDateTime.Now;
+                                    historyRecord.CreatedByPersonAliasId = person.PrimaryAliasId;
+                                    historyRecord.Caption = "eRA";
+                                    historyRecord.Verb = "ENTERED";
+                                    historyRecord.ChangeType = History.HistoryChangeType.Attribute.ConvertToString();
+                                    historyRecord.RelatedEntityTypeId = attributeEntityTypeId;
+                                    historyRecord.RelatedEntityId = eraAttributeId;
+                                    historyRecord.CategoryId = personAnalyticsCategoryId;
+                                    historyRecord.SourceOfChange = SOURCE_OF_CHANGE;
+                                }
                             }
 
                             // Add a new Step Record

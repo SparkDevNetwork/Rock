@@ -78,7 +78,9 @@ namespace RockWeb.Blocks.Groups
         Category = "Add Group",
         Order = 17,
         Key = AttributeKey.RootGroup )]
+
     [ContextAware]
+    [Rock.Cms.DefaultBlockRole( Rock.Enums.Cms.BlockRole.Primary )]
     [Rock.SystemGuid.BlockTypeGuid( "3D7FB6BE-6BBD-49F7-96B4-96310AF3048A" )]
     public partial class GroupList : RockBlock, ICustomGridColumns
     {

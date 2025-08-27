@@ -9,6 +9,10 @@
            :isCloseButtonHidden="false"
            @save="onSave">
 
+        <NotificationBox v-if="errorMessage" :alertType="AlertType.Warning">
+            {{ errorMessage }}
+        </NotificationBox>
+
         <p class="decline-reason-instructions">
             Your feedback on declining this schedule would be valuable to us.
         </p>
@@ -36,6 +40,8 @@
     import DefinedValuePicker from "@Obsidian/Controls/definedValuePicker.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
     import NoteTextEditor from "@Obsidian/Controls/noteTextEditor.obs";
+    import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
+    import { AlertType } from "@Obsidian/Enums/Controls/alertType";
     import { DefinedType } from "@Obsidian/SystemGuids/definedType";
     import { Guid } from "@Obsidian/Types";
     import { useInvokeBlockAction } from "@Obsidian/Utility/block";
@@ -45,6 +51,7 @@
     import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
     const invokeBlockAction = useInvokeBlockAction();
+    const errorMessage = ref("");
 
     const props = defineProps({
         isVisible: {
@@ -120,8 +127,14 @@
             declineReasonNote: declineReasonNote.value
         };
 
-        await invokeBlockAction("SaveDeclineReason", { bag });
+        const result = await invokeBlockAction("SaveDeclineReason", { bag });
         isSavingDeclineReason.value = false;
+
+        if (!result.isSuccess) {
+            errorMessage.value = result.errorMessage || "Unknown error while trying to perform schedule row action.";
+            return;
+        }
+
         isVisible.value = false;
         emit("scheduleRowDeclined");
     }

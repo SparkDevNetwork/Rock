@@ -318,7 +318,7 @@
                 if (event.target.getAttribute("name") === "expander") {
                     let icon = event.target.querySelector(".ti-chevron-right");
                     if (icon) {
-                        icon.classList.add("fa-flip-horizontal");
+                        icon.classList.add("ti-flip-horizontal");
                     }
 
                     interaction.classList.add("expanded");
@@ -328,7 +328,7 @@
             interactions.forEach(interaction => interaction.addEventListener("mouseleave", event => {
                 if (interaction.querySelector(".ti-chevron-right")) {
                     let icon = interaction.querySelector(".ti-chevron-right");
-                    icon.classList.remove("fa-flip-horizontal");
+                    icon.classList.remove("ti-flip-horizontal");
 
                     interaction.classList.remove("expanded");
                 }

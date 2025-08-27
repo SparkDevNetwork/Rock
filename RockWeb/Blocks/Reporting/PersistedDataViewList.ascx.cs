@@ -14,6 +14,8 @@
 // limitations under the License.
 // </copyright>
 //
+using OpenXmlPowerTools;
+
 using Rock;
 using Rock.Attribute;
 using Rock.Data;
@@ -22,6 +24,7 @@ using Rock.Web.Cache;
 using Rock.Web.UI;
 using System;
 using System.ComponentModel;
+using System.Configuration;
 using System.Data.Entity;
 using System.Linq;
 using System.Web.UI;
@@ -66,7 +69,7 @@ namespace RockWeb.Blocks.Reporting
         /// </summary>
         private static class PageParameterKey
         {
-            public const string PersistedDataViewId = "PersistedDataViewId";
+            public const string DataViewId = "DataViewId";
         }
 
         #endregion PageParameterKey
@@ -136,7 +139,7 @@ namespace RockWeb.Blocks.Reporting
         /// <param name="e">The <see cref="Rock.Web.UI.Controls.RowEventArgs"/> instance containing the event data.</param>
         protected void gList_RowSelected( object sender, Rock.Web.UI.Controls.RowEventArgs e )
         {
-            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.PersistedDataViewId, e.RowKeyId );
+            NavigateToLinkedPage( AttributeKey.DetailPage, PageParameterKey.DataViewId, e.RowKeyId );
         }
 
         #endregion
@@ -152,7 +155,7 @@ namespace RockWeb.Blocks.Reporting
             DataViewService dataViewService = new DataViewService( rockContext );
 
             // Use AsNoTracking() since these records won't be modified, and therefore don't need to be tracked by the EF change tracker
-            var qry = dataViewService.Queryable().Where( a => a.PersistedScheduleIntervalMinutes.HasValue && a.PersistedLastRefreshDateTime.HasValue ).AsNoTracking();
+            var qry = dataViewService.Queryable().Where( a => a.PersistedScheduleIntervalMinutes.HasValue || a.PersistedScheduleId.HasValue ).AsNoTracking();
 
             var sortProperty = gList.SortProperty;
             if ( gList.AllowSorting && sortProperty != null )
@@ -168,21 +171,21 @@ namespace RockWeb.Blocks.Reporting
             gList.DataBind();
         }
 
-        /// <summary>
-        /// Formats the value as a human friendly duration.
-        /// </summary>
-        /// <param name="minutesValue">The interval value to convert.</param>
-        /// <returns>a human readable value</returns>
-        protected string FormatFriendlyMinutesDuration( int? minutesValue )
+        protected string FormatScheduleInterval( int? minutesValue, Schedule persistedSchedule )
         {
-            if ( !minutesValue.HasValue )
+            if ( persistedSchedule == null && minutesValue.HasValue )
+            {
+                return ( minutesValue * 60 ).ToFriendlyDuration();
+            }
+            else if ( persistedSchedule != null )
+            {
+                return ( string.IsNullOrEmpty( persistedSchedule.Name ) ? persistedSchedule.Description : persistedSchedule.Name );
+            }
+            else
             {
                 return string.Empty;
             }
-
-            return ( minutesValue * 60 ).ToFriendlyDuration();
         }
-
         #endregion
     }
 }

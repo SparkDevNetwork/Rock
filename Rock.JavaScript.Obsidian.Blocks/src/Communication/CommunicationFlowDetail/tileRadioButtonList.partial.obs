@@ -15,7 +15,7 @@
                            :for="getItemUniqueId(uniqueId, item)">
                         <span class="tile-content">
                             <span class="label-icon-and-text">
-                                <span class="label-icon"><i class="fa-2x" :class="item.iconCssClass"></i></span>
+                                <span class="label-icon"><i class="ti-2x" :class="item.iconCssClass"></i></span>
                                 <span class="label-text">{{ item.text }}</span>
                             </span>
                             <span class="label-subtext">{{ item.subtext }}</span>

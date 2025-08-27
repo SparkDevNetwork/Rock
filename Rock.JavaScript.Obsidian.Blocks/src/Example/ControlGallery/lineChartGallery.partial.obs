@@ -12,6 +12,8 @@
                        :lineStyle="lineStyle"
                        :stack="isStacked"
                        :title="title"
+                       :tooltip="tooltip"
+                       :tooltipTitle="tooltipTitle"
                        :type="isPercent ? 'percent' : isPercent === false ? 'number' : undefined"
                        :unfilled="isUnfilled"
                        :xLabel="xLabel"
@@ -76,6 +78,10 @@
                                     help="For 'percent', the data must be in decimal form (e.g., 0.1 for 10%)."
                                     label="Percent"
                                     @update:modelValue="isPercent = $event" />
+
+                            <Switch :modelValue="hasCustomTooltip ?? false"
+                                    label="Custom Tooltip"
+                                    @update:modelValue="hasCustomTooltip = $event" />
                         </div>
                     </ContentStack>
 
@@ -172,9 +178,10 @@
     import RockButton from "@Obsidian/Controls/rockButton.obs";
     import Switch from "@Obsidian/Controls/switch.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
-    import { LabelDateFormat, LegendAlign, LegendPosition, LineStyle, LineSeries, LineStyleDescription, LabelDateFormatDescription, LegendAlignDescription, LegendPositionDescription } from "@Obsidian/Core/Controls/chart";
+    import { LabelDateFormat, LegendAlign, LegendPosition, LineStyle, LineSeries, LineStyleDescription, LabelDateFormatDescription, LegendAlignDescription, LegendPositionDescription, TooltipCallback } from "@Obsidian/Core/Controls/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { isNullish } from "@Obsidian/Utility/util";
+    import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
 
     const importCode = getSfcControlImportPath("chart");
     const labels = [
@@ -223,6 +230,7 @@
 
     const minValue = ref<number>(0);
     const maxValue = ref<number>(100);
+    const hasCustomTooltip = ref<boolean | undefined>();
     const xShowGridLines = ref<boolean | undefined>();
     const yHideGridLines = ref<boolean | undefined>();
     const xMaxTickCount = ref<number | undefined>();
@@ -338,6 +346,27 @@
         const prefix = "<LineChart ";
         const spaces = " ".repeat(prefix.length);
         return `${prefix}${lineChartProps.join(`\n${spaces}`)} />`;
+    });
+
+    const tooltip = computed<TooltipCallback | undefined>(() => {
+        if (hasCustomTooltip.value) {
+            return (ctx) => {
+                if (isPercent.value) {
+                    return `The ${ctx.seriesLabel} value for ${ctx.formattedLabel} is ${ctx.value?.toLocaleString(undefined, { style: "percent", maximumFractionDigits: 2 })}.`;
+                }
+                else {
+                    return `The ${ctx.seriesLabel} value for ${ctx.formattedLabel} is ${ctx.value?.toLocaleString()}.`;
+                }
+            };
+        }
+    });
+
+    const tooltipTitle = computed<TooltipCallback | undefined>(() => {
+        if (hasCustomTooltip.value) {
+            return (ctx) => {
+                return RockDateTime.parseISO(ctx.label)?.toLocaleString({ dateStyle: "long" }) ?? ctx.formattedLabel;
+            };
+        }
     });
 
     // #endregion Computed Values

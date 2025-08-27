@@ -39,7 +39,13 @@ export const CommunicationFlowInstanceRecipientInactiveReason = {
     ClickedCommunication: 4,
 
     /** The recipient is inactive because the last communication of the flow has been sent. */
-    LastCommunicationSent: 5
+    LastCommunicationSent: 5,
+
+    /** The recipient is inactive because the person associated with the recipient has been inactivated. */
+    PersonInactivated: 6,
+
+    /** The recipient is inactive because they have unsubscribed from the entire flow (not a specific communication). */
+    UnsubscribedFromFlow: 7
 } as const;
 
 /** The inactive reason of a Communication Flow Instance Recipient. */
@@ -54,7 +60,11 @@ export const CommunicationFlowInstanceRecipientInactiveReasonDescription: Record
 
     4: "Clicked Communication",
 
-    5: "Last Communication Sent"
+    5: "Last Communication Sent",
+
+    6: "Person Inactivated",
+
+    7: "Unsubscribed From Flow"
 };
 
 /** The inactive reason of a Communication Flow Instance Recipient. */
