@@ -355,12 +355,13 @@ public class ProxyFunctionTests
     [TestMethod]
     public void ExecuteLava_ValidFunction_ReturnsExpectedResult()
     {
-        var requestContext = new AgentRequestContext();
         var rockRequestContextMock = new Mock<RockRequestContext>();
 
         rockRequestContextMock
             .Setup( m => m.GetCommonMergeFields( It.IsAny<Model.Person>(), It.IsAny<Lava.CommonMergeFieldsOptions>() ) )
             .Returns( [] );
+
+        var requestContext = new AgentRequestContext( rockRequestContextMock.Object, null );
 
         var function = new AgentFunction
         {

@@ -22,8 +22,10 @@ using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 using Rock.AI.Agent.Classes;
+using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Lava;
+using Rock.Net;
 
 using SKAuthorRole = Microsoft.SemanticKernel.ChatCompletion.AuthorRole;
 
@@ -86,9 +88,38 @@ namespace Rock.AI.Agent
         public AudienceType AudienceType { get; internal set; }
 
         /// <summary>
+        /// The context that identifies the currently executing web request.
+        /// </summary>
+        public RockRequestContext RockRequestContext { get; internal set; }
+
+        /// <summary>
+        /// The <see cref="RockContext"/> that can be used to query the database.
+        /// This context is automatically disposed after the request is completed.
+        /// This context should not be used to save changes to the database. To
+        /// save changes create a new context by injecting <see cref="IRockContextFactory"/>
+        /// into your skill constructor.
+        /// </summary>
+        public RockContext RockContext { get; internal set; }
+
+        /// <summary>
         /// The chat agent instance that this request is being processed by.
         /// </summary>
         public IChatAgent ChatAgent { get; internal set; }
+
+        #endregion
+
+        #region Constructors
+
+        /// <summary>
+        /// Creates a new instance of the <see cref="AgentRequestContext"/> class.
+        /// </summary>
+        /// <param name="rockRequestContext">The context for the current web request in process.</param>
+        /// <param name="rockContext">The database context that can be used for read-only operations.</param>
+        internal AgentRequestContext( RockRequestContext rockRequestContext, RockContext rockContext )
+        {
+            RockRequestContext = rockRequestContext;
+            RockContext = rockContext;
+        }
 
         #endregion
 

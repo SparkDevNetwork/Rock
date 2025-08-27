@@ -41,7 +41,7 @@ namespace Rock.AI.Agent.Skills
     [EntityTypeGuid( "bed15fba-e033-4741-a894-e8ca6ca2b00a" )]
     internal class GroupManagerSkill : AgentSkillComponent
     {
-        private RockContext _rockContext;
+        private IRockContextFactory _rockContextFactory;
 
         #region Keys
 
@@ -52,9 +52,9 @@ namespace Rock.AI.Agent.Skills
 
         #endregion
 
-        public GroupManagerSkill( RockContext rockContext, ILogger<GroupManagerSkill> logger )
+        public GroupManagerSkill( IRockContextFactory rockContextFactory, ILogger<GroupManagerSkill> logger )
         {
-            _rockContext = rockContext;
+            _rockContextFactory = rockContextFactory;
         }
 
         #region Configuration
@@ -167,70 +167,73 @@ This function may be called 2–3 times per user request and is responsible for 
 
             // Get the person and group to add them to
 
-            var person = new PersonService( _rockContext ).Get( personId );
-
-            if ( person == null )
+            using ( var rockContext = _rockContextFactory.CreateRockContext() )
             {
-                return "We could not find the person you're looking to add to the group.";
-            }
+                var person = new PersonService( rockContext ).Get( personId );
 
-            var group = new GroupService( _rockContext ).Get( groupId );
-
-            if ( group == null )
-            {
-                return "We could not find the group to add them to.";
-            }
-
-            // If delete process the action, we don't need to worry about the role
-            if ( operation == GroupMemberOperation.Delete )
-            {
-                return DeletePersonFromGroup( person, group );
-            }
-
-            // Get the role that we're suppose to use.
-
-            // If no role was provided return a list of roles
-            if ( groupMemberRoleId == null || groupMemberRoleId == 0 )
-            {
-                var validValues = group.GroupType.Roles.Select( r => new
+                if ( person == null )
                 {
-                    RoleId = r.Id,
-                    RoleName = r.Name,
-                    r.IsLeader,
-                    IsDefaultRole = r.Id == group.GroupType.DefaultGroupRoleId
-                } ).ToList().ToJson();
+                    return "We could not find the person you're looking to add to the group.";
+                }
 
-                return $"The groups valid roles are: {validValues}. Use this list to find the best match to the request. If no role was specified by the user then call the GroupMemberOperations using the default role. If there is no default role then ask what role they would like to use.";
-            }
+                var group = new GroupService( AgentRequestContext.RockContext ).Get( groupId );
 
-            // Check that the provided role is in the selected group
-            if ( !group.GroupType.Roles.Any( r => r.Id == groupMemberRoleId ) )
-            {
-                var validValues = group.GroupType.Roles.Select( r => new { r.Id, r.Name } ).ToList().ToJson();
-                return $"The role provided is not valid for a group of type {group.GroupType.Name}. Valid values: {validValues}";
-            }
+                if ( group == null )
+                {
+                    return "We could not find the group to add them to.";
+                }
 
-            // Get the name of the group role
-            var groupMemberRole = GroupTypeRoleCache.Get( groupMemberRoleId.Value );
+                // If delete process the action, we don't need to worry about the role
+                if ( operation == GroupMemberOperation.Delete )
+                {
+                    return DeletePersonFromGroup( rockContext, person, group );
+                }
 
-            // Check that the person is not already in the group with that role
-            var groupMemberService = new GroupMemberService( _rockContext );
-            var groupMember = groupMemberService.Queryable()
-                .Where( m => m.GroupId == groupId && m.PersonId == personId ).FirstOrDefault();
+                // Get the role that we're suppose to use.
 
-            if ( groupMember != null && groupMember.GroupRoleId == groupMemberRoleId )
-            {
-                return $"{person.NickName} is already a {groupMember.GroupRole.Name} in the {group.Name} group.";
-            }
+                // If no role was provided return a list of roles
+                if ( groupMemberRoleId == null || groupMemberRoleId == 0 )
+                {
+                    var validValues = group.GroupType.Roles.Select( r => new
+                    {
+                        RoleId = r.Id,
+                        RoleName = r.Name,
+                        r.IsLeader,
+                        IsDefaultRole = r.Id == group.GroupType.DefaultGroupRoleId
+                    } ).ToList().ToJson();
 
-            // Add or Update the person
-            if ( operation == GroupMemberOperation.Add )
-            {
-                return AddPersonToGroup( person, group, groupMemberRole, groupMember );
-            }
-            else
-            {
-                return UpdatePersonInGroup( groupMember, groupMemberRole );
+                    return $"The groups valid roles are: {validValues}. Use this list to find the best match to the request. If no role was specified by the user then call the GroupMemberOperations using the default role. If there is no default role then ask what role they would like to use.";
+                }
+
+                // Check that the provided role is in the selected group
+                if ( !group.GroupType.Roles.Any( r => r.Id == groupMemberRoleId ) )
+                {
+                    var validValues = group.GroupType.Roles.Select( r => new { r.Id, r.Name } ).ToList().ToJson();
+                    return $"The role provided is not valid for a group of type {group.GroupType.Name}. Valid values: {validValues}";
+                }
+
+                // Get the name of the group role
+                var groupMemberRole = GroupTypeRoleCache.Get( groupMemberRoleId.Value );
+
+                // Check that the person is not already in the group with that role
+                var groupMemberService = new GroupMemberService( AgentRequestContext.RockContext );
+                var groupMember = groupMemberService.Queryable()
+                    .Where( m => m.GroupId == groupId && m.PersonId == personId ).FirstOrDefault();
+
+                if ( groupMember != null && groupMember.GroupRoleId == groupMemberRoleId )
+                {
+                    return $"{person.NickName} is already a {groupMember.GroupRole.Name} in the {group.Name} group.";
+                }
+
+                // Add or Update the person
+                if ( operation == GroupMemberOperation.Add )
+                {
+                    return AddPersonToGroup( rockContext, person, group, groupMemberRole, groupMember );
+                }
+                else
+                {
+                    return UpdatePersonInGroup( rockContext, groupMember, groupMemberRole );
+                }
             }
         }
 
@@ -461,21 +464,21 @@ Example:
         /// <param name="groupTypeRole"></param>
         /// <param name="groupMember"></param>
         /// <returns></returns>
-        private string AddPersonToGroup( Rock.Model.Person person, Group group, GroupTypeRoleCache groupTypeRole, GroupMember groupMember = null )
+        private string AddPersonToGroup( RockContext rockContext, Rock.Model.Person person, Group group, GroupTypeRoleCache groupTypeRole, GroupMember groupMember = null )
         {
             if ( groupMember != null )
             {
                 return $"{person.NickName} is already in the group with the role of {groupMember.GroupRole.Name}. Would you like for me to change their role?";
             }
 
-            var groupMemberService = new GroupMemberService( _rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
             groupMember = new GroupMember();
             groupMemberService.Add( groupMember );
             groupMember.PersonId = person.Id;
             groupMember.GroupId = group.Id;
             groupMember.GroupRoleId = groupTypeRole.Id;
 
-            _rockContext.SaveChanges();
+            rockContext.SaveChanges();
 
             return $"{person.NickName} has been added as a {groupTypeRole.Name} to {group.Name}.";
         }
@@ -486,7 +489,7 @@ Example:
         /// <param name="groupMember"></param>
         /// <param name="groupTypeRole"></param>
         /// <returns></returns>
-        private string UpdatePersonInGroup( GroupMember groupMember, GroupTypeRoleCache groupTypeRole )
+        private string UpdatePersonInGroup( RockContext rockContext, GroupMember groupMember, GroupTypeRoleCache groupTypeRole )
         {
             if ( groupMember == null )
             {
@@ -495,7 +498,7 @@ Example:
 
             groupMember.GroupRoleId = groupTypeRole.Id;
 
-            _rockContext.SaveChanges();
+            rockContext.SaveChanges();
 
             return $"The individual was updated to the {groupTypeRole.Name} role.";
         }
@@ -506,9 +509,9 @@ Example:
         /// <param name="person"></param>
         /// <param name="group"></param>
         /// <returns></returns>
-        private string DeletePersonFromGroup( Rock.Model.Person person, Group group )
+        private string DeletePersonFromGroup( RockContext rockContext, Rock.Model.Person person, Group group )
         {
-            var groupMemberService = new GroupMemberService( _rockContext );
+            var groupMemberService = new GroupMemberService( rockContext );
 
             var groupMembers = groupMemberService.Queryable().Where( gm => gm.PersonId == person.Id && gm.GroupId == group.Id )
                 .ToList();
@@ -518,7 +521,7 @@ Example:
                 groupMemberService.Delete( groupMember );
             }
 
-            _rockContext.SaveChanges();
+            rockContext.SaveChanges();
 
             return $"{person.NickName} has been removed from the group {group.Name}";
         }

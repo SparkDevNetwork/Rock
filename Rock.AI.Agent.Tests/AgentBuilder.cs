@@ -108,6 +108,9 @@ internal class AgentBuilder
 
         providerMock.Setup( m => m.GetAttributeValue( "ApiKey" ) ).Returns( apiKey );
         providerMock.Setup( m => m.GetAttributeValue( "Endpoint" ) ).Returns( endpoint );
+        providerMock.Setup( m => m.GetAttributeValue( "CodeModel" ) ).Returns( "gpt-5-mini" );
+        providerMock.Setup( m => m.GetAttributeValue( "ResearchModel" ) ).Returns( "gpt-5-mini" );
+        providerMock.Setup( m => m.GetAttributeValue( "DefaultModel" ) ).Returns( "gpt-5-mini" );
         providerMock.Setup( m => m.GetAttributeValue( "DefaultTemperature" ) ).Returns( "1" );
         providerMock.Setup( m => m.GetAttributeValue( "DefaultTopP" ) ).Returns( "1" );
         providerMock.Setup( m => m.GetAttributeValue( "Seed" ) ).Returns( seed?.ToString() );

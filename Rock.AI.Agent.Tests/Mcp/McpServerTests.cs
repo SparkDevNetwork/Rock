@@ -99,7 +99,7 @@ namespace Rock.AI.Agent.Tests.Mcp
         #region Initialize Tests
 
         [TestMethod]
-        public async Task Initialize_WithoutParameters_ReturnsError()
+        public async Task Initialize_WithoutParameters_ReturnsSuccess()
         {
             var mcp = new McpServer();
             var agent = new AgentBuilder().Build();
@@ -108,9 +108,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
-            Assert.IsNotNull( rpcResult.Error );
-
-            Assert.AreEqual( JsonRpcErrorCode.InvalidParams, rpcResult.Error.Code );
+            Assert.IsNull( rpcResult.Error );
         }
 
         [TestMethod]
@@ -135,7 +133,7 @@ namespace Rock.AI.Agent.Tests.Mcp
         #region ToolsList Tests
 
         [TestMethod]
-        public async Task ToolsList_WithoutParameters_ReturnsError()
+        public async Task ToolsList_WithoutParameters_ReturnsSuccess()
         {
             var mcp = new McpServer();
             var agent = new AgentBuilder().Build();
@@ -144,9 +142,7 @@ namespace Rock.AI.Agent.Tests.Mcp
             var rpcResult = await mcp.HandleRequestAsync( ( ChatAgent ) agent.Agent, rpcRequest, CancellationToken.None );
 
             Assert.IsNotNull( rpcResult );
-            Assert.IsNotNull( rpcResult.Error );
-
-            Assert.AreEqual( JsonRpcErrorCode.InvalidParams, rpcResult.Error.Code );
+            Assert.IsNull( rpcResult.Error );
         }
 
         [TestMethod]

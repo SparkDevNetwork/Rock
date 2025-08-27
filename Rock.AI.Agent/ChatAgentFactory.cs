@@ -176,7 +176,7 @@ namespace Rock.AI.Agent
         private IKernelBuilder CreateKernelBuilder( AgentProviderComponent provider, Action<IServiceCollection> configureServices )
         {
             var kernelBuilder = Kernel.CreateBuilder();
-            kernelBuilder.Services.AddSingleton<AgentRequestContext>();
+            kernelBuilder.Services.AddSingleton( _ => new AgentRequestContext( _requestContextAccessor.RockRequestContext, _rockContextFactory.CreateRockContext() ) );
             kernelBuilder.Services.AddSingleton( _loggerFactory );
             kernelBuilder.Services.AddSingleton( typeof( ILogger<> ), typeof( Logger<> ) );
 

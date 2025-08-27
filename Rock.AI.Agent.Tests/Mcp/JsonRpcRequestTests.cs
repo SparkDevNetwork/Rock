@@ -69,25 +69,25 @@ namespace Rock.AI.Agent.Tests.Mcp
         }
 
         [TestMethod]
-        public void GetParameters_WithInvalidJson_ReturnsNull()
+        public void GetParameters_WithInvalidJson_ReturnsNewInstance()
         {
             var ms = ToStream( "{\"params\":123}" );
             var request = new JsonRpcRequest( ms );
 
             var parameters = request.GetParameters<ListToolsParameters>();
 
-            Assert.IsNull( parameters );
+            Assert.IsNotNull( parameters );
         }
 
         [TestMethod]
-        public void GetParameters_WithMissingJsonNode_ReturnsNull()
+        public void GetParameters_WithMissingJsonNode_ReturnsNewInstance()
         {
             var ms = ToStream( "{}" );
             var request = new JsonRpcRequest( ms );
 
             var parameters = request.GetParameters<ListToolsParameters>();
 
-            Assert.IsNull( parameters );
+            Assert.IsNotNull( parameters );
         }
 
         #endregion

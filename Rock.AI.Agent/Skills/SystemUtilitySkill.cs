@@ -48,25 +48,22 @@ namespace Rock.AI.Agent.Skills
     [EntityTypeGuid( "35CD02D0-1FF7-4256-B495-FBBFBC9A2C9C" )]
     internal sealed class SystemUtilitySkill : AgentSkillComponent
     {
+        #region Fields
+
+        private readonly ILogger<SystemUtilitySkill> _logger;
+
+        #endregion
+
         #region Constructors
 
         /// <summary>
         /// Initializes a new instance of the <see cref="SystemUtilitySkill"/> class.
         /// </summary>
-        /// <param name="rockContext">Rock data context used for database access.</param>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public SystemUtilitySkill( RockContext rockContext, ILogger<SystemUtilitySkill> logger )
+        public SystemUtilitySkill( ILogger<SystemUtilitySkill> logger )
         {
-            _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
-
-        #endregion
-
-        #region Fields
-
-        private readonly RockContext _rockContext;
-        private readonly ILogger<SystemUtilitySkill> _logger;
 
         #endregion
 
@@ -176,7 +173,7 @@ namespace Rock.AI.Agent.Skills
                 // TODO: Filter roles by public once the GroupRole property is merged. 
 
                 // Get team members
-                campus.CampusTeamMembers = new GroupMemberService( _rockContext ).Queryable()
+                campus.CampusTeamMembers = new GroupMemberService( AgentRequestContext.RockContext ).Queryable()
                     .Where( m => m.GroupId == campus.CampusTeamGroupId )
                     .Select( m => new CampusTeamMemberResult
                     {

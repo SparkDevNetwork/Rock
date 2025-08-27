@@ -47,7 +47,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Fields
 
-        private readonly RockContext _rockContext;
         private readonly ILogger<PersonSkill> _logger;
 
         #endregion
@@ -57,11 +56,9 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Initializes a new instance of the <see cref="SiteSkill"/> class.
         /// </summary>
-        /// <param name="rockContext">Rock data context used for database access.</param>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public PersonSkill( RockContext rockContext, ILogger<PersonSkill> logger )
+        public PersonSkill( ILogger<PersonSkill> logger )
         {
-            _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 
@@ -155,7 +152,7 @@ namespace Rock.AI.Agent.Skills
                     new SqlParameter("@OffsetRows", offset), // offset uses base size
                 };
 
-                var rows = _rockContext.Database
+                var rows = AgentRequestContext.RockContext.Database
                     .SqlQuery<PageVisitResult>( _websiteDataSql, parameters.ToArray() )
                     .ToList();
 
@@ -252,7 +249,7 @@ namespace Rock.AI.Agent.Skills
                     new SqlParameter("@OffsetRows", offset), // offset uses base size
                 };
 
-                var rows = _rockContext.Database
+                var rows = AgentRequestContext.RockContext.Database
                     .SqlQuery<MediaViewResult>( _mediaViewsDataSql, parameters.ToArray() )
                     .ToList();
 
@@ -312,7 +309,7 @@ namespace Rock.AI.Agent.Skills
             }
 
             // Get queryable with the metaphone and full name search.
-            var searchQueryable = new PersonService( _rockContext )
+            var searchQueryable = new PersonService( AgentRequestContext.RockContext )
                 .GetSimilarPersons( fullName );
 
             // If the queryable is null that means that no individuals with that first name or last name were found
@@ -470,7 +467,7 @@ namespace Rock.AI.Agent.Skills
             // Get families members for the individuals in the search results
             var familyIds = results.Select( p => p.PrimaryFamilyId ).Distinct().ToList();
 
-            var familyMembers = new GroupMemberService( _rockContext ).Queryable()
+            var familyMembers = new GroupMemberService( AgentRequestContext.RockContext ).Queryable()
                 .Where( m => familyIds.Contains( m.GroupId ) && m.GroupMemberStatus == GroupMemberStatus.Active )
                 .Select( m => new
                 {

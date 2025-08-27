@@ -29,15 +29,15 @@ namespace Rock.AI.Agent.Skills
         #region Fields
 
         private readonly ILogger<CommunicationSkill> _logger;
-        private readonly RockContext _rockContext;
+        private readonly IRockContextFactory _rockContextFactory;
 
         #endregion
 
         #region Constructors
 
-        public CommunicationSkill( RockContext rockContext, ILogger<CommunicationSkill> logger )
+        public CommunicationSkill( IRockContextFactory rockContextFactory, ILogger<CommunicationSkill> logger )
         {
-            _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
+            _rockContextFactory = rockContextFactory ?? throw new ArgumentNullException( nameof( rockContextFactory ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 
@@ -106,113 +106,115 @@ namespace Rock.AI.Agent.Skills
                     .WithInstructions( "Ensure the communication type is one of: Email, Sms, or Push." );
             }
 
-            var requestContext = RockRequestContextAccessor.Current;
-            var currentPerson = requestContext?.CurrentPerson;
+            var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
             if ( currentPerson == null )
             {
                 return RockToolResult.Error( "The current person is not available. Ensure the agent is properly initialized." );
             }
 
-            var personService = new PersonService( _rockContext );
-            var communicationService = new CommunicationService( _rockContext );
-
-            var recipient = personService.Get( recipientIdKey, false );
-            if ( recipient == null )
+            using ( var rockContext = _rockContextFactory.CreateRockContext() )
             {
-                return RockToolResult.Error( $"No valid recipient found for the provided recipientIdKey: {recipientIdKey}." )
-                    .WithInstructions( "Verify the recipientIdKey and try again." );
-            }
+                var personService = new PersonService( rockContext );
+                var communicationService = new CommunicationService( rockContext );
 
-            var medium = GetCommunicationMedium( commType.Value );
-            if ( medium == null )
-            {
-                return RockToolResult.Error( $"The communication type '{communicationType}' is not supported." )
-                    .WithInstructions( "Tell the user that this is coming soon, Braden's got it." );
-            }
-
-            Rock.Model.Communication draftCommunication = null;
-            if ( existingDraftIdKey.IsNotNullOrWhiteSpace() )
-            {
-                draftCommunication = communicationService.Get( existingDraftIdKey );
-                if ( draftCommunication == null )
+                var recipient = personService.Get( recipientIdKey, false );
+                if ( recipient == null )
                 {
-                    return RockToolResult.Error( $"No valid draft communication found for the provided existingDraftIdKey: {existingDraftIdKey}." )
-                        .WithInstructions( "Ask the user if they would like you to generate a new one." );
-                }
-                else if ( draftCommunication.Status != CommunicationStatus.Transient )
-                {
-                    return RockToolResult.Error( "This draft is not in a transient state. It has likely already been sent." )
-                        .WithInstructions( "Ask the user if they would prefer you create a new draft." );
-                }
-            }
-
-            var recipientValidation = medium.ValidateRecipient( recipient );
-            if ( recipientValidation.Count > 0 )
-            {
-                return RockToolResult.Error( recipientValidation );
-            }
-
-            var draftRequest = new DraftRequest( commType.Value, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipient );
-
-            DraftResult draftResult;
-            try
-            {
-                draftResult = await medium.DraftAsync( kernel, draftRequest, recipient );
-            }
-            catch ( Exception ex )
-            {
-                _logger.LogError( ex, "Failed to draft communication." );
-                return RockToolResult.Error( "Failed to draft the communication. Check the logs for details." );
-            }
-
-            if ( draftResult == null )
-            {
-                return RockToolResult.Error( "The draft content is null. Ensure the medium's DraftAsync method is implemented correctly." );
-            }
-
-            if ( draftCommunication != null )
-            {
-                medium.UpdateCommunication( draftRequest, recipient, draftCommunication, draftResult );
-            }
-            else
-            {
-                draftCommunication = medium.BuildCommunication( draftRequest, recipient, draftResult );
-                if ( draftCommunication == null )
-                {
-                    return RockToolResult.Error( "Failed to build the communication object." );
+                    return RockToolResult.Error( $"No valid recipient found for the provided recipientIdKey: {recipientIdKey}." )
+                        .WithInstructions( "Verify the recipientIdKey and try again." );
                 }
 
-                communicationService.Add( draftCommunication );
+                var medium = GetCommunicationMedium( commType.Value );
+                if ( medium == null )
+                {
+                    return RockToolResult.Error( $"The communication type '{communicationType}' is not supported." )
+                        .WithInstructions( "Tell the user that this is coming soon, Braden's got it." );
+                }
+
+                Rock.Model.Communication draftCommunication = null;
+                if ( existingDraftIdKey.IsNotNullOrWhiteSpace() )
+                {
+                    draftCommunication = communicationService.Get( existingDraftIdKey );
+                    if ( draftCommunication == null )
+                    {
+                        return RockToolResult.Error( $"No valid draft communication found for the provided existingDraftIdKey: {existingDraftIdKey}." )
+                            .WithInstructions( "Ask the user if they would like you to generate a new one." );
+                    }
+                    else if ( draftCommunication.Status != CommunicationStatus.Transient )
+                    {
+                        return RockToolResult.Error( "This draft is not in a transient state. It has likely already been sent." )
+                            .WithInstructions( "Ask the user if they would prefer you create a new draft." );
+                    }
+                }
+
+                var recipientValidation = medium.ValidateRecipient( recipient );
+                if ( recipientValidation.Count > 0 )
+                {
+                    return RockToolResult.Error( recipientValidation );
+                }
+
+                var draftRequest = new DraftRequest( commType.Value, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipient );
+
+                DraftResult draftResult;
+                try
+                {
+                    draftResult = await medium.DraftAsync( kernel, draftRequest, recipient );
+                }
+                catch ( Exception ex )
+                {
+                    _logger.LogError( ex, "Failed to draft communication." );
+                    return RockToolResult.Error( "Failed to draft the communication. Check the logs for details." );
+                }
+
+                if ( draftResult == null )
+                {
+                    return RockToolResult.Error( "The draft content is null. Ensure the medium's DraftAsync method is implemented correctly." );
+                }
+
+                if ( draftCommunication != null )
+                {
+                    medium.UpdateCommunication( draftRequest, recipient, draftCommunication, draftResult );
+                }
+                else
+                {
+                    draftCommunication = medium.BuildCommunication( draftRequest, recipient, draftResult );
+                    if ( draftCommunication == null )
+                    {
+                        return RockToolResult.Error( "Failed to build the communication object." );
+                    }
+
+                    communicationService.Add( draftCommunication );
+                }
+
+                try
+                {
+                    rockContext.SaveChanges();
+                }
+                catch ( Exception ex )
+                {
+                    _logger.LogError( ex, "Failed to save communication." );
+                    return RockToolResult.Error( "Failed to save the communication. Check the logs for details." );
+                }
+
+                // Update our draft result with the newly saved communication.
+                draftResult.CommunicationIdKey = draftCommunication.IdKey;
+
+                var returnInstructions = "Never call SendCommunication directly after this.";
+
+                returnInstructions += "\r\nAsk the user for verification on the following fields: \r\n";
+                returnInstructions += draftResult.GetVerificationText( currentPerson, recipient );
+
+                var historyContent = new
+                {
+                    Recipient = new KeyNameResult( recipient.IdKey, recipient.FullName ),
+                    CommunicationIdKey = draftCommunication.IdKey
+                };
+
+                return RockToolResult.Success( draftResult )
+                    .WithInstructions( returnInstructions )
+                    .WithHistoryContent( historyContent )
+                    .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Draft Communication", $"/Communication/{draftCommunication.Id}", false );
             }
-
-            try
-            {
-                _rockContext.SaveChanges();
-            }
-            catch ( Exception ex )
-            {
-                _logger.LogError( ex, "Failed to save communication." );
-                return RockToolResult.Error( "Failed to save the communication. Check the logs for details." );
-            }
-
-            // Update our draft result with the newly saved communication.
-            draftResult.CommunicationIdKey = draftCommunication.IdKey;
-
-            var returnInstructions = "Never call SendCommunication directly after this.";
-
-            returnInstructions += "\r\nAsk the user for verification on the following fields: \r\n";
-            returnInstructions += draftResult.GetVerificationText( currentPerson, recipient );
-
-            var historyContent = new
-            {
-                Recipient = new KeyNameResult( recipient.IdKey, recipient.FullName ),
-                CommunicationIdKey = draftCommunication.IdKey
-            };
-
-            return RockToolResult.Success( draftResult )
-                .WithInstructions( returnInstructions )
-                .WithHistoryContent( historyContent )
-                .WithReferenceRoute( requestContext, "Draft Communication", $"/Communication/{draftCommunication.Id}", false );
         }
 
         [KernelFunction( "SendCommunication" )]
@@ -234,44 +236,47 @@ namespace Rock.AI.Agent.Skills
                     .WithInstructions( "Ask the user if they would like to draft one." );
             }
 
-            var communicationService = new CommunicationService( _rockContext );
-            var communication = communicationService.Get( communicationIdKey );
-
-            if ( communication == null )
+            using ( var rockContext = _rockContextFactory.CreateRockContext() )
             {
-                return RockToolResult.Error( $"No valid communication found for the provided communicationIdKey: {communicationIdKey}." );
+                var communicationService = new CommunicationService( rockContext );
+                var communication = communicationService.Get( communicationIdKey );
+
+                if ( communication == null )
+                {
+                    return RockToolResult.Error( $"No valid communication found for the provided communicationIdKey: {communicationIdKey}." );
+                }
+
+                if ( communication.Status != CommunicationStatus.Transient )
+                {
+                    return RockToolResult.Error( "The communication is not in a transient state and cannot be sent." )
+                        .WithInstructions( "Ensure the communication is in a transient state before sending." );
+                }
+
+                communication.Status = CommunicationStatus.Approved;
+                communication.ReviewedDateTime = RockDateTime.Now;
+                communication.ReviewerPersonAliasId = currentPerson.PrimaryAliasId;
+
+                try
+                {
+                    rockContext.SaveChanges();
+                }
+                catch ( Exception ex )
+                {
+                    _logger.LogError( ex, "Failed to update communication status." );
+                    return RockToolResult.Error( "Failed to update the communication status. Check the logs for details." );
+                }
+
+                SendCommunication( communication.Id );
+
+                var instructions = "The communication has been queued to be sent.";
+
+                return RockToolResult.Success( new SendCommunicationResult
+                {
+                    CommunicationIdKey = communication.IdKey
+                } )
+                .WithInstructions( instructions )
+                .WithReferenceRoute( requestContext, "Communication", $"/Communication/{communication.Id}", false );
             }
-
-            if ( communication.Status != CommunicationStatus.Transient )
-            {
-                return RockToolResult.Error( "The communication is not in a transient state and cannot be sent." )
-                    .WithInstructions( "Ensure the communication is in a transient state before sending." );
-            }
-
-            communication.Status = CommunicationStatus.Approved;
-            communication.ReviewedDateTime = RockDateTime.Now;
-            communication.ReviewerPersonAliasId = currentPerson.PrimaryAliasId;
-
-            try
-            {
-                _rockContext.SaveChanges();
-            }
-            catch ( Exception ex )
-            {
-                _logger.LogError( ex, "Failed to update communication status." );
-                return RockToolResult.Error( "Failed to update the communication status. Check the logs for details." );
-            }
-
-            SendCommunication( communication.Id );
-
-            var instructions = "The communication has been queued to be sent.";
-
-            return RockToolResult.Success( new SendCommunicationResult
-            {
-                CommunicationIdKey = communication.IdKey
-            } )
-            .WithInstructions( instructions )
-            .WithReferenceRoute( requestContext, "Communication", $"/Communication/{communication.Id}", false );
         }
 
         [KernelFunction]
@@ -282,25 +287,32 @@ namespace Rock.AI.Agent.Skills
             {
                 return RockToolResult.Error( "CommunicationIdKey is required." );
             }
-            var communicationService = new CommunicationService( _rockContext );
-            var draft = communicationService.Get( communicationIdKey, false );
-            if ( draft == null )
-            {
-                return RockToolResult.Error( "No communication record was found for that IdKey." );
-            }
 
-            if( draft.Status != CommunicationStatus.Transient )
+            using ( var rockContext = _rockContextFactory.CreateRockContext() )
             {
-                return RockToolResult.Error( "You can not cancel a communication that is not in a transient state." );
-            }
+                var communicationService = new CommunicationService( rockContext );
+                var draft = communicationService.Get( communicationIdKey, false );
+                if ( draft == null )
+                {
+                    return RockToolResult.Error( "No communication record was found for that IdKey." );
+                }
 
-            if( !communicationService.CanDelete(draft, out var errorMessage ) )
-            {
-                return RockToolResult.Error( $"Unable to delete communication: {errorMessage}" );
-            }
+                if ( draft.Status != CommunicationStatus.Transient )
+                {
+                    return RockToolResult.Error( "You can not cancel a communication that is not in a transient state." );
+                }
 
-            communicationService.Delete( draft );
-            return RockToolResult.Success( "The communication has been deleted" );
+                if ( !communicationService.CanDelete( draft, out var errorMessage ) )
+                {
+                    return RockToolResult.Error( $"Unable to delete communication: {errorMessage}" );
+                }
+
+                communicationService.Delete( draft );
+
+                rockContext.SaveChanges();
+
+                return RockToolResult.Success( "The communication has been deleted" );
+            }
         }
 
         #endregion

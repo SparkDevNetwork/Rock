@@ -43,7 +43,6 @@ namespace Rock.AI.Agent.Skills
     {
         #region Fields
 
-        private readonly RockContext _rockContext;
         private readonly ILogger<SiteSkill> _logger;
 
         #endregion
@@ -53,11 +52,9 @@ namespace Rock.AI.Agent.Skills
         /// <summary>
         /// Initializes a new instance of the <see cref="SiteSkill"/> class.
         /// </summary>
-        /// <param name="rockContext">Rock data context used for database access.</param>
         /// <param name="logger">Logger for diagnostics and error reporting.</param>
-        public SiteSkill( RockContext rockContext, ILogger<SiteSkill> logger )
+        public SiteSkill( ILogger<SiteSkill> logger )
         {
-            _rockContext = rockContext ?? throw new ArgumentNullException( nameof( rockContext ) );
             _logger = logger ?? throw new ArgumentNullException( nameof( logger ) );
         }
 
@@ -75,7 +72,7 @@ namespace Rock.AI.Agent.Skills
         [AgentFunctionGuid( "6234BB68-99B8-4B7C-884D-0D760B1F081C" )]
         public RockToolResult LookupSites()
         {
-            var sites = SiteCache.All();
+            var sites = SiteCache.All( AgentRequestContext.RockContext );
 
             if ( !sites.Any() )
             {
