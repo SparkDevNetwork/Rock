@@ -45,7 +45,8 @@
                                           :items="statusOptions" />
                         </div>
                     </div>
-                    <div class="pull-right">
+                    <div v-if="selectedStepProgramView === StepProgramView.Trends.toString()"
+                         class="pull-right">
                         <div class="btn-group btn-toggle btn-group">
                             <RockButton @click="updateChartType(true)" :class="isLineChart ? selectedButtonClasses : unselectedButtonClasses">
                                 <i class="ti ti-chart-line"></i>
@@ -83,7 +84,8 @@
                 <BarChart v-else
                           :series="barSeries"
                           :labels="chartLabels"
-                          :labelDateFormat="dateUnit" />
+                          :labelDateFormat="dateUnit"
+                          :stack="isStacked" />
             </div>
 
         </div>
@@ -239,15 +241,6 @@
 
     const chartSeries = ref<LineSeries[] | BarSeries[]>([]);
     const chartLabels = ref<string[]>([]);
-    const dateUnit = computed<"day" | "month">(() => {
-        const timeUnit = filterDate.value?.timeUnit;
-        if (timeUnit === TimeUnit.Year) {
-            return "month";
-        }
-        else {
-            return "day";
-        }
-    });
 
     const selectedStepProgramView = ref(StepProgramView.KPIs.toString());
     const selectedMeasure = ref("");
@@ -274,6 +267,36 @@
     const lineSeries = computed(() => chartSeries.value as LineSeries[]);
 
     const barSeries = computed(() => chartSeries.value as BarSeries[]);
+
+    const dateUnit = computed<"day" | "month" | undefined>(() => {
+        if (selectedStepProgramView.value === StepProgramView.Totals.toString() || selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
+            return undefined;
+        }
+
+        const timeUnit = filterDate.value?.timeUnit;
+        if (timeUnit === TimeUnit.Year) {
+            return "month";
+        }
+        else {
+            return "day";
+        }
+    });
+
+    const isStacked = computed<boolean>(() => {
+        if (selectedStepProgramView.value === StepProgramView.Totals.toString()) {
+            return false;
+        }
+
+        if (selectedMeasure.value === StepChartMeasure.OrganizationObjective.toString() || selectedMeasure.value === StepChartMeasure.EngagementType.toString()) {
+            if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
+                return true;
+            }
+
+            return false;
+        }
+
+        return true;
+    });
 
     const measureOptions = computed(() => {
         if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
@@ -390,7 +413,7 @@
     }
 
     function updateChartForView(chartData: ChartDataBag): void {
-        chartLabels.value = chartData.dateLabels ?? [];
+        chartLabels.value = chartData.dateLabels ?? chartData.stringLabels ?? [];
         chartSeries.value = (chartData.series ?? []) as LineSeries[];
     }
 
@@ -416,7 +439,7 @@
 
         isRefreshLoading.value = false;
 
-        if (result.isSuccess && result.data && result.data.dateLabels && result.data.series) {
+        if (result.isSuccess && result.data) {
             console.log("chart success ", result.data);
 
             const selectedStepProgramViewId = toNumber(selectedStepProgramView.value) as StepProgramView;
@@ -530,11 +553,10 @@
         //     chart.clear();
         // }
 
-        // If the current chart type is a line and we are switching to the Totals or Campuses view than we need to set
-        // the chart type to "bar", but we do not need to refresh the chart as that will be done in the logic below.
-        // if (chartType.value === "line" && (selectedStepProgramViewId === StepProgramView.Totals || selectedStepProgramViewId === StepProgramView.Campuses)) {
-        // updateChartType("bar", false);
-        // }
+        // If we are switching to the Totals or Campuses view than we need to set the chart type to bar.
+        if (selectedStepProgramViewId === StepProgramView.Totals || selectedStepProgramViewId === StepProgramView.Campuses) {
+            updateChartType(false);
+        }
 
         if (!chartStateFlags[selectedStepProgramViewId]) {
             console.log("Chart state was dirty fetching now...");

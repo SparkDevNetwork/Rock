@@ -2,7 +2,7 @@
 <template>
     <CampusPicker :modelValue="selectedCampus"
                   lazyMode="lazy"
-                  :showBlankItem="!selectedCampus"
+                  showBlankItem
                   blankValue="Select Campus"
                   :forceVisible="forceVisible"
                   :includeInactive="includeInactive"

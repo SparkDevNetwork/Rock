@@ -31,6 +31,11 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         public List<DateTime> DateLabels { get; set; }
 
         /// <summary>
+        /// Gets or sets the string labels for the chart data.
+        /// </summary>
+        public List<string> StringLabels { get; set; }
+
+        /// <summary>
         /// Gets or sets the series data for the chart.
         /// </summary>
         public List<SeriesBag> Series { get; set; }

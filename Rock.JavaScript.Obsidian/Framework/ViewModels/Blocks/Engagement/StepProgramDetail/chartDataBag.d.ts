@@ -29,4 +29,7 @@ export type ChartDataBag = {
 
     /** Gets or sets the series data for the chart. */
     series?: SeriesBag[] | null;
+
+    /** Gets or sets the string labels for the chart data. */
+    stringLabels?: string[] | null;
 };

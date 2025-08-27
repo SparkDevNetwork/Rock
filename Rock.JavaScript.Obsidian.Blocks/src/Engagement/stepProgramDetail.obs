@@ -1,5 +1,9 @@
 <!-- Copyright by the Spark Development Network; Licensed under the Rock Community License -->
 <template>
+    <ContextSlicer title="Filter By Campus"
+                   class="campus-slicer"
+                   showCampus />
+
     <NotificationBox v-if="blockError" alertType="warning" v-html="blockError"></NotificationBox>
 
     <NotificationBox v-if="errorMessage" alertType="danger" v-html="errorMessage"></NotificationBox>
@@ -72,6 +76,12 @@
     </RockForm>
 </template>
 
+<style scoped>
+.campus-slicer {
+    margin-bottom: var(--spacing-large);
+}
+</style>
+
 <script setup lang="ts">
     import { computed, ref, watch } from "vue";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
@@ -87,6 +97,7 @@
     import RockForm from "@Obsidian/Controls/rockForm.obs";
     import AuditDetail from "@Obsidian/Controls/auditDetail.obs";
     import Modal from "@Obsidian/Controls/modal.obs";
+    import ContextSlicer from "@Obsidian/Controls/contextSlicer.obs";
     import { onConfigurationValuesChanged, useConfigurationValues, useInvokeBlockAction, useReloadBlock, useEntityDetailBlock } from "@Obsidian/Utility/block";
     import { NavigationUrlKey } from "./StepProgramDetail/types.partial";
     import { DetailBlockBox } from "@Obsidian/ViewModels/Blocks/detailBlockBox";

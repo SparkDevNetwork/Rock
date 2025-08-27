@@ -17,6 +17,7 @@
 .contextslicer {
     display: flex;
     flex-wrap: wrap;
+    align-items: center;
     gap: var(--spacing-medium);
     min-height: 56px;
     padding: var(--spacing-small) var(--spacing-medium);
