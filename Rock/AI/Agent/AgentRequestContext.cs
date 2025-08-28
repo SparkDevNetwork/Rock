@@ -23,9 +23,12 @@ using Microsoft.SemanticKernel.ChatCompletion;
 
 using Rock.AI.Agent.Classes;
 using Rock.Data;
+using Rock.Net;
+using Rock.Configuration;
 using Rock.Enums.AI.Agent;
 using Rock.Lava;
-using Rock.Net;
+using Rock.Web.Cache;
+
 
 using SKAuthorRole = Microsoft.SemanticKernel.ChatCompletion.AuthorRole;
 
@@ -124,6 +127,35 @@ namespace Rock.AI.Agent
         #endregion
 
         #region Methods
+
+        /// <summary>
+        /// Resolves ~/ and ~~/ to the proper URL format.
+        /// </summary>
+        /// <param name="url"></param>
+        /// <returns></returns>
+        public string ResolveRockUrl( string url )
+        {
+            if ( url.IsNullOrWhiteSpace() || url.Contains( "://" ) )
+            {
+                return url;
+            }
+
+            url = RockApp.Current.ResolveRockUrl( url );
+
+            // Chat agents should get relative URLs.
+            if ( this.AgentType == AgentType.Chat )
+            {
+                return url;
+            }
+
+            // MCP agents will need full URLs using the appropriate application root.
+            if ( AudienceType == AudienceType.Public )
+            {
+                return GlobalAttributesCache.Get().GetValue( "PublicApplicationRoot" ).RemoveLeadingForwardslash();
+            }
+
+            return GlobalAttributesCache.Get().GetValue( "InternalApplicationRoot" ).RemoveLeadingForwardslash();
+        }
 
         /// <summary>
         /// Clears all system messages, context anchors, chat messages, and cached chat history from the context.

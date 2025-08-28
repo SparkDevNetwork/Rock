@@ -19,6 +19,7 @@ using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Entity;
 
 namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
 {

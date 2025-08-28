@@ -1,0 +1,61 @@
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+
+using System;
+using System.Text.Json.Serialization;
+
+namespace Rock.AI.Agent.Classes.Entity
+{
+    /// <summary>
+    /// Result model for a person's profile.
+    /// </summary>
+    public class EntityResultBase
+    {
+        /// <summary>
+        /// The phone number id. This will not be show in the JSON output.
+        /// </summary>
+        [JsonIgnore]
+        internal int Id { get; set; }
+
+        /// <summary>
+        /// Internal identifier of the phone number.
+        /// </summary>
+        public string IdKey
+        {
+            get { return Id.AsIdKey(); }
+        }
+
+        /// <summary>
+        /// Gets or sets the date and time that the entity was created.
+        /// </summary>
+        public DateTime? CreatedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the date and time that the entity was last modified.
+        /// </summary>
+        public DateTime? ModifiedDateTime { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person who created the entity.
+        /// </summary>
+        public PersonResult CreatedByPerson { get; set; }
+
+        /// <summary>
+        /// Gets or sets the person who last modified the entity.
+        /// </summary>
+        public PersonResult ModifiedByPerson { get; set; }
+    }
+}

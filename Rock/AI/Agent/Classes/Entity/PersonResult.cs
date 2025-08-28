@@ -19,25 +19,45 @@ using System;
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-using Rock.AI.Agent.Classes.Skills.PersonSkill;
+using AngleSharp.Text;
+
+using Rock.AI.Agent.Classes.Common;
 using Rock.Model;
 
-namespace Rock.AI.Agent.Classes.Common
+namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
     /// A common POCO for storing information about a person. Apply only the properties that are needed for the specific use case.
     /// Null properties will not be serialized.
     /// </summary>
-    public class PersonResult
+    public class PersonResult : EntityResultBase
     {
-        #region Ignored Properties
-        // These properties exist to help with internal logic but they should not be serialized to JSON.
+        #region Private Variables
+        private AgentRequestContext _context;
+        #endregion
+
+        #region Constructors
+        /// <summary>
+        /// Default constructor
+        /// </summary>
+        public PersonResult()
+        {
+
+        }
 
         /// <summary>
-        /// Gets or sets the person identifier.
+        /// Constructor that takes an application root.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; }
+        /// <param name="context"></param>
+        public PersonResult( AgentRequestContext context )
+        {
+            _context = context;
+        }
+
+        #endregion
+
+        #region Ignored Properties
+        // These properties exist to help with internal logic but they should not be serialized to JSON.
 
         /// <summary>
         /// Gets or sets the primary family identifier.
@@ -58,12 +78,6 @@ namespace Rock.AI.Agent.Classes.Common
         public int? RecordTypeValueId { get; set; }
 
         /// <summary>
-        /// Gets or sets the campus identifier.
-        /// </summary>
-        [JsonIgnore]
-        public int? CampusId { get; set; }
-
-        /// <summary>
         /// Gets or sets the marital status unique identifier.
         /// </summary>
         [JsonIgnore]
@@ -71,16 +85,7 @@ namespace Rock.AI.Agent.Classes.Common
         #endregion
 
         #region Common Properties
-        /// <summary>
-        /// Gets or sets the stable identifier for the person (used by functions; avoid showing to end users).
-        /// </summary>
-        public string PersonIdKey {
-            get
-            {
-                return this.Id.AsIdKey();
-            }
-        }
-
+        
         /// <summary>
         /// Gets or sets the stable identifier for the person's primary family (used by functions; avoid showing to end users).
         /// </summary>
@@ -138,14 +143,21 @@ namespace Rock.AI.Agent.Classes.Common
         {
             get
             {
-                var initials = this.FirstName.Left( 1 ) + this.LastName.Left( 1 );
-                return Rock.Model.Person.GetPersonPhotoUrl(
+                var initials = FirstName.Left( 1 ) + LastName.Left( 1 );
+                var url = Person.GetPersonPhotoUrl(
                     initials,
-                    this.PhotoId,
-                    this.Age,
-                    this.Gender,
-                    this.RecordTypeValueId,
-                    this.AgeClassification );
+                    PhotoId,
+                    Age,
+                    Gender,
+                    RecordTypeValueId,
+                    AgeClassification );
+
+                if ( _context != null )
+                {
+                    url = _context.ResolveRockUrl( url );
+                }
+
+                return url;
             }
         }
 
@@ -177,23 +189,7 @@ namespace Rock.AI.Agent.Classes.Common
         /// <summary>
         /// Gets or sets the campus name.
         /// </summary>
-        public string Campus { get; set; }
-
-        /// <summary>
-        /// Gets the campus key (hashed identifier).
-        /// </summary>
-        public string CampusKey
-        {
-            get
-            {
-                if ( !this.CampusId.HasValue )
-                {
-                    return null;
-                }
-
-                return this.CampusId.Value.AsIdKey();
-            }
-        }
+        public KeyNameResult Campus { get; set; }
 
         /// <summary>
         /// Gets or sets the connection status.
@@ -253,7 +249,17 @@ namespace Rock.AI.Agent.Classes.Common
         /// <summary>
         /// Gets or sets the known relationships (e.g. Aunt, Uncle, Grandparent, etc.) where the key is the relationship name and the value is the related person.
         /// </summary>
-        public Dictionary<string,PersonResult> KnownRelationships { get; set; }
+        public List<GroupMemberResult> KnownRelationships { get; set; }
+
+        /// <summary>
+        /// Gets or sets the notes.
+        /// </summary>
+        public List<NoteResult> Notes { get; set; }
+
+        /// <summary>
+        /// Gets or sets the prayer requests.
+        /// </summary>
+        public List<PrayerRequestResult> PrayerRequests { get; set; }
 
         #endregion
     }

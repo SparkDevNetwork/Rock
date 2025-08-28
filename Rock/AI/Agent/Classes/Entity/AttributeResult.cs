@@ -16,31 +16,13 @@
 //
 using System.Text.Json.Serialization;
 
-namespace Rock.AI.Agent.Classes.Common
+namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
     /// POCO result for attributes.
     /// </summary>
-    public class AttributeResult
+    public class AttributeResult : EntityResultBase
     {
-        #region Ignored Properties
-        /// <summary>
-        /// The attribute id. This will not be show in the JSON output.
-        /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; }
-        #endregion
-
-        /// <summary>
-        /// The attribute identifier key.
-        /// </summary>
-        public string AttributeIdKey
-        {
-            get
-            {
-                return this.Id.AsIdKey();
-            }
-        }
 
         /// <summary>
         /// The attribute name.
@@ -56,5 +38,10 @@ namespace Rock.AI.Agent.Classes.Common
         /// The attribute key.
         /// </summary>
         public string Key { get; set; }
+
+        /// <summary>
+        /// The attribute category.
+        /// </summary>
+        public string Category { get; set; }
     }
 }

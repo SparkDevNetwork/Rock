@@ -13,27 +13,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-//
 
-using System;
+using Rock.AI.Agent.Classes.Common;
 
-using Rock.AI.Agent.Classes.Entity;
-
-namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
+namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
-    /// POCO result for campus team member information.
+    /// Result model for a person's profile.
     /// </summary>
-    public class CampusTeamMemberResult
+    public class PhoneNumberResult : EntityResultBase
     {
         /// <summary>
-        /// The role of the team member.
+        /// The phone number value.
         /// </summary>
-        public string Role { get; set; }
+        public string PhoneNumber { get; set; }
 
         /// <summary>
-        /// The team member.
+        /// The type of phone number (e.g., Mobile, Home, Work).
         /// </summary>
-        public PersonResult TeamMember { get; set; }
+        public KeyNameResult PhoneType { get; set; }
+
+        /// <summary>
+        /// Indicates if SMS is enabled for this phone number.
+        /// </summary>
+        public bool IsMessagingEnabled { get; set; }
+
+        /// <summary>
+        /// Indicates if this phone number is unlisted.
+        /// </summary>
+        public bool IsUnlisted { get; set; }
     }
 }

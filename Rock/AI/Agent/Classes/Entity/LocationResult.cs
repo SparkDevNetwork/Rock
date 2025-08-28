@@ -14,31 +14,16 @@
 // limitations under the License.
 // </copyright>
 //
-using System.Text.Json.Serialization;
 
 using Rock.Core.Geography.Classes;
 
-namespace Rock.AI.Agent.Classes.Common
+namespace Rock.AI.Agent.Classes.Entity
 {
-    public class LocationResult
+    /// <summary>
+    /// POCO result for a location.
+    /// </summary>
+    public class LocationResult : EntityResultBase
     {
-        /// <summary>
-        /// Gets or sets the unique identifier for the location.
-        /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Gets the location key, which is an encoded representation of the location's Id.
-        /// </summary>
-        public string LocationIdKey
-        {
-            get
-            {
-                return this.Id.AsIdKey();
-            }
-        }
-
         /// <summary>
         /// Gets or sets the type of the location (e.g., Home, Work, Campus).
         /// </summary>
@@ -83,6 +68,16 @@ namespace Rock.AI.Agent.Classes.Common
         /// Gets or sets the county of the location.
         /// </summary>
         public string County { get; set; }
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this location is the mailing address.
+        /// </summary>
+        public bool? IsMailingAddress { get; set; } = null;
+
+        /// <summary>
+        /// Gets or sets a value indicating whether this location is a mapped location.
+        /// </summary>
+        public bool? IsMappedLocation { get; set; } = null;
 
         /// <summary>
         /// Gets or sets the geographical point (latitude and longitude) of the location.

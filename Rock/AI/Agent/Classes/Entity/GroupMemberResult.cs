@@ -15,25 +15,33 @@
 // </copyright>
 //
 
-using System;
+using Rock.AI.Agent.Classes.Common;
 
-using Rock.AI.Agent.Classes.Entity;
-
-namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
+namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
-    /// POCO result for campus team member information.
+    /// POCO result for a group member.
     /// </summary>
-    public class CampusTeamMemberResult
+    public class GroupMemberResult : EntityResultBase
     {
         /// <summary>
-        /// The role of the team member.
+        /// The person in the group.
         /// </summary>
-        public string Role { get; set; }
+        public PersonResult Person { get; set; }
 
         /// <summary>
-        /// The team member.
+        /// The role of the person in the group.
         /// </summary>
-        public PersonResult TeamMember { get; set; }
+        public KeyNameResult Role { get; set; }
+
+        /// <summary>
+        /// The group the person is a member of.
+        /// </summary>
+        public KeyNameResult Group { get; set; }
+
+        /// <summary>
+        /// The status of the group member (e.g., Active, Inactive).
+        /// </summary>
+        public string Status { get; set; }
     }
 }

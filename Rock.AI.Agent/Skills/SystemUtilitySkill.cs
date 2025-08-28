@@ -26,6 +26,7 @@ using Microsoft.SemanticKernel;
 using OpenXmlPowerTools;
 
 using Rock.AI.Agent.Classes.Common;
+using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.SystemUtilitySkill;
 using Rock.AI.Agent.Utilities;
 using Rock.Core.Geography.Classes;
