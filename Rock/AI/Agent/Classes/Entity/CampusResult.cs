@@ -18,26 +18,17 @@
 using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
-using Rock.AI.Agent.Classes.Common;
-using Rock.AI.Agent.Classes.Entity;
-
-namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
+namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
     /// Represents a campus, including identity, type/status, location, service times, and custom attributes.
     /// </summary>
-    public class CampusResult
+    public class CampusResult : EntityResultBase
     {
         /// <summary>
-        /// The Id of the campus.s
+        /// The name of the campus.
         /// </summary>
-        [JsonIgnore]
-        public int Id { get; set; }
-
-        /// <summary>
-        /// Opaque campus identifier (Id Key). Use this value with other APIs instead of the numeric Id.
-        /// </summary>
-        public string CampusIdKey { get; set; }
+        public string Name { get; set; }
 
         /// <summary>
         /// Indicates whether the campus is currently active.

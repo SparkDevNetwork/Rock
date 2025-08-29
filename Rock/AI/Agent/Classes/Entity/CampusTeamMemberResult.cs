@@ -19,7 +19,7 @@ using System;
 
 using Rock.AI.Agent.Classes.Entity;
 
-namespace Rock.AI.Agent.Classes.Skills.SystemUtilitySkill
+namespace Rock.AI.Agent.Classes.Entity
 {
     /// <summary>
     /// POCO result for campus team member information.
