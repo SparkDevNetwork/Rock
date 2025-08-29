@@ -123,7 +123,7 @@ FROM
                         gReport.Visible = true;
 
                         var sw = System.Diagnostics.Stopwatch.StartNew();
-                        DataSet dataSet = DbService.GetDataSet( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
+                        DataSet dataSet = DbService.GetDataSetReadOnly( query, CommandType.Text, null, GetAttributeValue( "DatabaseTimeout" ).AsIntegerOrNull() ?? 180 );
                         sw.Stop();
 
                         if ( dataSet.Tables.Count > 0 )
