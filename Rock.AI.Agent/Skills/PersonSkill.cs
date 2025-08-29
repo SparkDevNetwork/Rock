@@ -44,6 +44,10 @@ namespace Rock.AI.Agent.Skills
     /// </summary>
     [AgentSkillGuid( "DD5FA7DD-3277-4C31-848D-285CD67AC7CA" )]
     [EntityTypeGuid( "12E7BDEA-B67A-48D7-8D1E-245BF8E9B555" )]
+    [Description(
+    "🧭 Usage Guidance:\r\n" +
+    "- Use the SearchPerson function to retrieve a person's IdKey when one is required as a function parameter."
+    )]
     [UserDescription( "This skill provides a holistic view of a person’s profile, connections, and overall engagement." )]
     internal sealed class PersonSkill : AgentSkillComponent
     {
@@ -81,15 +85,14 @@ namespace Rock.AI.Agent.Skills
         [KernelFunction]
         [Description(
             "🎯 Purpose:\r\n" +
-            "Retrieves page visits for a specific person, optionally filtered by date and/or site. \r\n" +
-            "Results include the site type (web, mobile, tv), visited pages and visit counts. \r\n\r\n" +
+            "- Retrieves page visits for a specific person, optionally filtered by date and/or site. \r\n" +
+            "- Results include the site type (web, mobile, tv), visited pages and visit counts. \r\n\r\n" +
 
-            "🧭 Usage Guidance" +
-            "The results are paginated (and the 'PageNumber' parameter is required.) \r\n" +
-            "Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null." +
-
+            "🧭 Usage Guidance: \r\n" +
+            "- The results are paginated (and the 'PageNumber' parameter is required.) \r\n" +
+            "- Do not call this function multiple times per site, unless necessary. It supports all-site aggregation when `siteId` is null." + "\r\n\r\n" +
             "📋 Prerequisites:\r\n" +
-            "This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n\r\n" +
+            "- This function depends on context set by `LookupSites`. Ensure it has been called first to set the site list.\r\n\r\n" +
 
             "📝 Examples: \r\n" +
             "1. has Ted Decker been active on any of our mobile applications in the last 2 years \r\n" +

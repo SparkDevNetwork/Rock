@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
 
@@ -79,19 +80,28 @@ namespace Rock.AI.Agent.Skills
 
         [KernelFunction]
         [AgentFunctionGuid( "4EEF6200-AA05-4F26-AB4D-19C73DEB3BDD" )]
-        [Description( "🎯 Purpose:\r\n" +
-                "Always use this tool to draft emails, SMS messages or push notifications. These communications are saved as Transient and can later be sent. To update an existing draft, pass in the existingDraftIdKey." )]
-        public async Task<RockToolResult> DraftCommunication(
+        [Description(
+            "🎯 Purpose:\r\n" +
+            "- Creates a new draft (email/SMS/push) for the specified recipient, or updates an existing draft if one is provided. Drafts are saved as communications and can later be sent.\r\n\r\n" +
+            "🧭 Usage Guidance:\r\n" +
+            "- The recipient is always provided by IdKey only. Never ask the user for email addresses or phone numbers.\r\n" +
+            "- The function automatically resolves the recipient's actual contact details from the IdKey.\r\n" +
+            "📋 Prerequisites:\r\n" +
+            "- If a corresponding draft already exists and has not been sent, pass existingDraftIdKey to update it instead of creating a new draft."
+        )]
+        public async Task<RockToolResult> DraftCommunicationToPerson(
                     Kernel kernel,
+
+                    [Description("The IdKey of the person to whom the communication will be sent. Used to fetch the contact information for the person.")]
+                    string recipientIdKey,
 
                     // BC TODO: Enum parameter types are broken in MCP.
                     // This is a workaround. This should not make it into final implementation.
                     [Description("Email | Sms | Push")]
                     string communicationType,
                     string subjectHint,
-                    string recipientIdKey,
 
-                    [Description("The data corresponding to the draft being written. Not the body itself.")]
+                    [Description("The data corresponding to the draft being written. Not the draft itself.")]
                     string referenceData,
                     string draftGuidance,
                     string tone = "warm",
@@ -147,18 +157,19 @@ namespace Rock.AI.Agent.Skills
                     }
                 }
 
-                var recipientValidation = medium.ValidateRecipient( recipient );
+                var recipients = new List<Rock.Model.Person> { recipient }; 
+                var recipientValidation = medium.ValidateRecipients( recipients );
                 if ( recipientValidation.Count > 0 )
                 {
                     return RockToolResult.Error( recipientValidation );
                 }
 
-                var draftRequest = new DraftRequest( commType.Value, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipient );
+                var draftRequest = new DraftRequest( commType.Value, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipients );
 
                 DraftResult draftResult;
                 try
                 {
-                    draftResult = await medium.DraftAsync( kernel, draftRequest, recipient );
+                    draftResult = await medium.DraftAsync( kernel, draftRequest );
                 }
                 catch ( Exception ex )
                 {
@@ -173,11 +184,11 @@ namespace Rock.AI.Agent.Skills
 
                 if ( draftCommunication != null )
                 {
-                    medium.UpdateCommunication( draftRequest, recipient, draftCommunication, draftResult );
+                    medium.UpdateCommunication( draftRequest, recipients, draftCommunication, draftResult );
                 }
                 else
                 {
-                    draftCommunication = medium.BuildCommunication( draftRequest, recipient, draftResult );
+                    draftCommunication = medium.BuildCommunication( draftRequest, recipients, draftResult );
                     if ( draftCommunication == null )
                     {
                         return RockToolResult.Error( "Failed to build the communication object." );
@@ -201,8 +212,11 @@ namespace Rock.AI.Agent.Skills
 
                 var returnInstructions = "Never call SendCommunication directly after this.";
 
-                returnInstructions += "\r\nAsk the user for verification on the following fields: \r\n";
-                returnInstructions += draftResult.GetVerificationText( currentPerson, recipient );
+                if( draftResult.VerificationText.IsNotNullOrWhiteSpace() )
+                {
+                    returnInstructions += "\r\nAsk the user for verification on the following fields: \r\n";
+                    returnInstructions += draftResult.VerificationText;
+                }
 
                 var historyContent = new
                 {
@@ -268,7 +282,7 @@ namespace Rock.AI.Agent.Skills
 
                 SendCommunication( communication.Id );
 
-                var instructions = "The communication has been queued to be sent.";
+                var instructions = "The communication has been queued to be sent. The user can view the details of the communication via the reference url.";
 
                 return RockToolResult.Success( new SendCommunicationResult
                 {

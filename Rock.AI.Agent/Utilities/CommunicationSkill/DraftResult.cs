@@ -20,28 +20,8 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
 
         public string Body { get; set; }
 
+        public string VerificationText { get; set; }
+
         public DraftResult() { }
-
-        public string GetVerificationText( Rock.Model.Person currentPerson, Rock.Model.Person recipient )
-        {
-            string recipientAddr; // Either email or SMS
-            if ( Type == AgentCommunicationType.Email )
-            {
-                recipientAddr = string.IsNullOrWhiteSpace( recipient.Email ) ? "" : " (" + recipient.Email + ")";
-            }
-            else if ( Type == AgentCommunicationType.Sms )
-            {
-                recipientAddr = "+1 555 123 1234";
-            }
-            else
-            {
-                recipientAddr = "";
-            }
-
-            return "Recipient:" + recipient.FullName + recipientAddr + "\r\n\r\n"
-                 + "From:" + currentPerson.FullName + " (" + currentPerson.Email + ")\r\n\r\n"
-                 + "Subject:" + "[subject]" + "\r\n\r\n"
-                 + "Body:\r\n\r\n" + "[body]";
-        }
     }
 }

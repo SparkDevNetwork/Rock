@@ -11,11 +11,18 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
         public static string BuildEmailDraftPrompt(
             DraftRequest request )
             {
-                return
+
+            string recipientsSection = "### Recipients\r\n";
+            foreach ( var recipient in request.Recipients )
+            {
+                recipientsSection += $"- {recipient.FullName} ({recipient.Email})\r\n";
+            }
+
+            return
         $@"You are an assistant that drafts professional, well-structured emails.
+    {recipientsSection}
 
     ### Context
-    - Recipient Name: {request.Recipient.FullName}
     - From Name: {request.CurrentPerson.FullName}
     - Tone: {request.Tone}
     - Guidance: {request.DraftGuidance}
@@ -26,7 +33,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
 
     ### Requirements
     - Write a concise subject line (≤ 70 characters).
-    - Greet the recipient by name.
+    - Greet the recipient by name. If multiple recipients, use a general greeting.
     - Match the requested tone.
     - Keep paragraphs short and easy to scan.
     - Sign the email from name provided.

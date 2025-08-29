@@ -1,8 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Collections.Generic;
 
 namespace Rock.AI.Agent.Utilities.CommunicationSkill
 {
@@ -14,7 +10,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
         public string RelevantData { get; private set; }
         public string Tone { get; private set; }
         public Rock.Model.Person CurrentPerson { get; private set; }
-        public Rock.Model.Person Recipient { get; set; }
+        public List<Rock.Model.Person> Recipients { get; set; }
 
         public DraftRequest(
             AgentCommunicationType type,
@@ -23,7 +19,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
             string relevantData,
             string tone,
             Rock.Model.Person currentPerson,
-            Rock.Model.Person recipient )
+            List<Rock.Model.Person> recipients )
         {
             Type = type;
             SubjectHint = subjectHint;
@@ -31,7 +27,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
             RelevantData = relevantData;
             Tone = tone;
             CurrentPerson = currentPerson;
-            Recipient = recipient;
+            Recipients = recipients;
         }
     }
 }

@@ -4,6 +4,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
+using DocumentFormat.OpenXml.Wordprocessing;
+
 using Microsoft.SemanticKernel;
 
 using Rock.Model;
@@ -13,7 +15,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
 {
     internal class EmailMedium : IAgentCommunicationMedium
     {
-        public Model.Communication BuildCommunication( DraftRequest request, Person recipient, DraftResult content )
+        public Model.Communication BuildCommunication( DraftRequest request, List<Rock.Model.Person> recipients, DraftResult content )
         {
             var emailMediumEntityTypeId = EntityTypeCache.Get<Rock.Communication.Medium.Email>().Id;
 
@@ -24,19 +26,22 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
             comm.FromEmail = request.CurrentPerson.Email;
             comm.Subject = content.Subject;
             comm.Message = content.Body;
-            comm.Recipients = new List<CommunicationRecipient>
+
+            var commRecipients = new List<CommunicationRecipient>();
+            foreach( var recipient in recipients )
             {
-                new CommunicationRecipient
+                commRecipients.Add( new CommunicationRecipient
                 {
                     PersonAliasId = recipient.PrimaryAliasId,
                     MediumEntityTypeId = emailMediumEntityTypeId
-                }
-            };
+                } );
+            }
+            comm.Recipients = commRecipients;
 
             return comm;
         }
 
-        public async Task<DraftResult> DraftAsync( Kernel kernel, DraftRequest request, Person recipient )
+        public async Task<DraftResult> DraftAsync( Kernel kernel, DraftRequest request )
         {
             var prompt = DraftPromptBuilder.BuildEmailDraftPrompt( request );
 
@@ -53,10 +58,33 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
                 Body = dto.Body,
                 Subject = dto.Subject,
                 Type = AgentCommunicationType.Email,
+                VerificationText = GetVerificationText( request.CurrentPerson, request.Recipients )
             };
         }
 
-        public void UpdateCommunication( DraftRequest request, Person recipient, Model.Communication comm, DraftResult content )
+        public string GetVerificationText( Rock.Model.Person currentPerson, List<Rock.Model.Person> recipients )
+        {
+            var verificationText = new StringBuilder();
+
+            foreach ( var recipient in recipients )
+            {
+                var recipientAddr = string.IsNullOrWhiteSpace( recipient.Email ) ? "" : " (" + recipient.Email + ")";
+                
+                verificationText.AppendLine( "Recipient: " + recipient.FullName + recipientAddr );
+            }
+
+            verificationText.AppendLine();
+            verificationText.AppendLine( "From: " + currentPerson.FullName + " (" + currentPerson.Email + ")" );
+            verificationText.AppendLine();
+            verificationText.AppendLine( "Subject: [subject]" );
+            verificationText.AppendLine();
+            verificationText.AppendLine( "Body:" );
+            verificationText.AppendLine( "[body]" );
+
+            return verificationText.ToString();
+        }
+
+        public void UpdateCommunication( DraftRequest request, List<Rock.Model.Person> recipients, Model.Communication comm, DraftResult content )
         {
             var emailMediumEntityTypeId = EntityTypeCache.Get<Rock.Communication.Medium.Email>().Id;
 
@@ -66,26 +94,48 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
             comm.FromEmail = request.CurrentPerson.Email;
             comm.Subject = content.Subject;
             comm.Message = content.Body;
-            comm.Recipients = new List<CommunicationRecipient>
+            var commRecipients = new List<CommunicationRecipient>();
+            foreach ( var recipient in recipients )
             {
-                new CommunicationRecipient
+                commRecipients.Add( new CommunicationRecipient
                 {
                     PersonAliasId = recipient.PrimaryAliasId,
                     MediumEntityTypeId = emailMediumEntityTypeId
-                }
-            };
+                } );
+            }
+            comm.Recipients = commRecipients;
         }
 
-        public List<string> ValidateRecipient( Person recipient )
+        /// <summary>
+        /// Validates a collection of recipients for this medium.
+        /// Returns a list of error messages. If empty, all recipients are valid.
+        /// </summary>
+        public List<string> ValidateRecipients( List<Rock.Model.Person> recipients )
         {
             var errors = new List<string>();
 
-            if ( recipient.Email.IsNullOrWhiteSpace() )
+            if ( recipients == null || recipients.Count == 0 )
             {
-                errors.Add( "Recipient " + recipient.IdKey + " does not have a valid email address." );
+                errors.Add( "No recipients were provided." );
+                return errors;
+            }
+
+            foreach ( var recipient in recipients )
+            {
+                if ( recipient == null )
+                {
+                    errors.Add( "A null recipient was encountered." );
+                    continue;
+                }
+
+                if ( recipient.Email.IsNullOrWhiteSpace() )
+                {
+                    errors.Add( $"Recipient {recipient.IdKey} does not have a valid email address." );
+                }
             }
 
             return errors;
         }
+
     }
 }

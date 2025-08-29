@@ -10,21 +10,20 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
 {
     internal interface IAgentCommunicationMedium
     {
-        List<string> ValidateRecipient( Rock.Model.Person recipient );
+        List<string> ValidateRecipients( List<Rock.Model.Person> recipient );
 
         Task<DraftResult> DraftAsync(
             Kernel kernel,
-            DraftRequest request,
-            Rock.Model.Person recipient );
+            DraftRequest request );
 
         Rock.Model.Communication BuildCommunication(
             DraftRequest request,
-            Rock.Model.Person recipient,
+            List<Rock.Model.Person> recipients,
             DraftResult content );
 
         void UpdateCommunication(
             DraftRequest request,
-            Rock.Model.Person recipient,
+            List<Rock.Model.Person> recipients,
             Rock.Model.Communication communication,
             DraftResult content );
     }
