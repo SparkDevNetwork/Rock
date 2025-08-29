@@ -28,7 +28,6 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
 using Rock.AI.Agent.Classes.Skills.PersonSkill;
 using Rock.Core.Geography.Classes;
-using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Model;
 using Rock.Net;

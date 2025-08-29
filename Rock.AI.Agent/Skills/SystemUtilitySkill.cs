@@ -23,14 +23,10 @@ using System.Linq;
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
 
-using OpenXmlPowerTools;
-
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
-using Rock.AI.Agent.Classes.Skills.SystemUtilitySkill;
 using Rock.AI.Agent.Utilities;
 using Rock.Core.Geography.Classes;
-using Rock.Data;
 using Rock.Model;
 using Rock.SystemGuid;
 using Rock.Web.Cache;
@@ -125,7 +121,7 @@ namespace Rock.AI.Agent.Skills
                 .Select( c => new CampusResult
                 {
                     Id = c.Id,
-                    CampusIdKey = c.IdKey,
+                    Name = c.Name,
                     IsActive = c.IsActive ?? false,
                     Abbreviation = c.ShortCode,
                     CampusType = c.CampusTypeValue?.Value ?? string.Empty,
