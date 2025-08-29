@@ -15,6 +15,7 @@
 // </copyright>
 
 using System;
+using System.Collections.Generic;
 using System.Text.Json.Serialization;
 
 namespace Rock.AI.Agent.Classes.Entity
@@ -57,5 +58,10 @@ namespace Rock.AI.Agent.Classes.Entity
         /// Gets or sets the person who last modified the entity.
         /// </summary>
         public PersonResult ModifiedByPerson { get; set; }
+
+        /// <summary>
+        /// Attributes of the defined value.
+        /// </summary>
+        public List<AttributeResult> Attributes { get; set; }
     }
 }

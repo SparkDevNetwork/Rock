@@ -242,11 +242,6 @@ namespace Rock.AI.Agent.Classes.Entity
         public int? GraduationYear { get; set; }
 
         /// <summary>
-        /// Attributes of the defined value.
-        /// </summary>
-        public List<AttributeResult> Attributes { get; set; }
-
-        /// <summary>
         /// Gets or sets the known relationships (e.g. Aunt, Uncle, Grandparent, etc.) where the key is the relationship name and the value is the related person.
         /// </summary>
         public List<GroupMemberResult> KnownRelationships { get; set; }
