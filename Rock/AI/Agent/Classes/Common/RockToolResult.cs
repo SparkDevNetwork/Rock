@@ -101,6 +101,9 @@ namespace Rock.AI.Agent.Classes.Common
 
             SetContent( result, payload );
 
+            // By default, also set the history content to the same value.
+            result.HistoryContent = payload;
+
             return result;
         }
 
@@ -113,6 +116,7 @@ namespace Rock.AI.Agent.Classes.Common
             return new RockToolResult
             {
                 Status = FunctionStatus.Success,
+                HistoryContent = string.Empty
             };
         }
 
@@ -123,7 +127,7 @@ namespace Rock.AI.Agent.Classes.Common
         public static RockToolResult NoData() =>
             new RockToolResult
             {
-                Status = FunctionStatus.NoData
+                Status = FunctionStatus.NoData,
             };
 
         /// <summary>
@@ -135,7 +139,7 @@ namespace Rock.AI.Agent.Classes.Common
             new RockToolResult
             {
                 Status = FunctionStatus.Error,
-                ErrorMessages = new List<string> { message ?? string.Empty }
+                ErrorMessages = new List<string> { message ?? string.Empty },
             };
 
         /// <summary>
@@ -221,6 +225,16 @@ namespace Rock.AI.Agent.Classes.Common
         public RockToolResult WithHistoryContent( object value )
         {
             HistoryContent = value;
+            return this;
+        }
+
+        /// <summary>
+        /// Sets the history content to <c>null</c> so that nothing is added to chat history.
+        /// </summary>
+        /// <returns>The same <see cref="RockToolResult"/> instance for further chaining.</returns>
+        public RockToolResult WithoutHistoryContent()
+        {
+            HistoryContent = null;
             return this;
         }
 

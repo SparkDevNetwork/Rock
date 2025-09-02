@@ -386,7 +386,7 @@ namespace Rock.AI.Agent
         /// </summary>
         private sealed class StoreHistoryContentFunctionFilter : IAutoFunctionInvocationFilter
         {
-            private IChatAgent _agent;
+            private readonly IChatAgent _agent;
 
             public StoreHistoryContentFunctionFilter( IChatAgent agent )
             {
@@ -401,7 +401,6 @@ namespace Rock.AI.Agent
                 // Invoke the function first — this actually sets context.Result
                 await next( context );
 
-
                 // Now capture the return value
                 var functionResult = context.Result; // FunctionResult
 
@@ -410,12 +409,19 @@ namespace Rock.AI.Agent
                     return;
                 }
 
-                var rockToolResult = functionResult.GetValue<RockToolResult>();
-
-                if ( rockToolResult?.HistoryContent != null )
+                try
                 {
-                    var functionResultContent = new ToolResultContent( context.Function.Name, context.Function.PluginName, context.ToolCallId, rockToolResult.HistoryContent );
-                    await _agent.AddMessageAsync( Enums.AI.Agent.AuthorRole.Tool, functionResultContent.ToJson() );
+                    var rockToolResult = functionResult.GetValue<RockToolResult>();
+
+                    if ( rockToolResult?.HistoryContent != null )
+                    {
+                        var functionResultContent = new ToolResultContent( context.Function.Name, context.Function.PluginName, context.ToolCallId, rockToolResult.HistoryContent );
+                        await _agent.AddMessageAsync( Enums.AI.Agent.AuthorRole.Tool, functionResultContent.ToJson() );
+                    }
+                }
+                catch ( InvalidCastException )
+                {
+                    // The tool did not return a RockToolResult, so ignore it.
                 }
             }
         }

@@ -192,7 +192,8 @@ namespace Rock.AI.Agent.Skills
                 }
 
                 return RockToolResult.Success( rows )
-                    .WithMetadata( meta );
+                    .WithMetadata( meta )
+                    .WithoutHistoryContent();
             }
             catch ( Exception ex )
             {
