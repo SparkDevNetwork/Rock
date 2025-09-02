@@ -33,11 +33,16 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// <summary>
         /// Gets or sets the data for the series.
         /// </summary>
-        public List<int> Data { get; set; }
+        public List<double> Data { get; set; }
 
         /// <summary>
         /// Gets or sets the color for the series.
         /// </summary>
         public string Color { get; set; }
+
+        /// <summary>
+        /// Gets or sets the opacity for each data point in the series.
+        /// </summary>
+        public List<double> Opacity { get; set; }
     }
 }

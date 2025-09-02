@@ -19,6 +19,11 @@
     import { EntityType } from "@Obsidian/SystemGuids/entityType";
     import { deepEqual } from "@Obsidian/Utility/util";
     import { Guid } from "@Obsidian/Types";
+    import { useBlockBrowserBus } from "@Obsidian/Utility/block";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { areEqual } from "@Obsidian/Utility/guid";
+    import { updateRefValue } from "@Obsidian/Utility/component";
 
     defineProps({
         /**
@@ -59,10 +64,20 @@
     });
 
     const contextEntities = useContextEntities();
+    const browserBus = useBlockBrowserBus();
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            const campusBag = await contextEntities.get(EntityType.Campus);
+
+            updateRefValue(selectedCampus, campusBag ?? null);
+        }
+    });
 
     // #region Values
 
     const selectedCampus = ref<ListItemBag | null>(null);
+    // updaterefvalue
 
     // #endregion
 
@@ -105,7 +120,7 @@
         }
 
         selectedCampus.value = newValue;
-
+        console.log("WE ARE CALLING THIS: ", selectedCampus.value);
         await contextEntities.set(EntityType.Campus, value, false);
     }
 

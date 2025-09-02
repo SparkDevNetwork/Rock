@@ -18,6 +18,8 @@
 using System;
 using System.Collections.Generic;
 
+using Rock.ViewModels.Utility;
+
 namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
 {
     /// <summary>
@@ -34,6 +36,11 @@ namespace Rock.ViewModels.Blocks.Engagement.StepProgramDetail
         /// Gets or sets the string labels for the chart data.
         /// </summary>
         public List<string> StringLabels { get; set; }
+
+        /// <summary>
+        /// Gets or sets the List of ListItemBags for the Campus Labels
+        /// </summary>
+        public List<ListItemBag> CampusLabels { get; set; }
 
         /// <summary>
         /// Gets or sets the series data for the chart.

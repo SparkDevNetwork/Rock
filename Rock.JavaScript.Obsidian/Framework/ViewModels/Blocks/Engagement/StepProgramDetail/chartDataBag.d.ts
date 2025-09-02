@@ -22,8 +22,12 @@
 //
 
 import { SeriesBag } from "@Obsidian/ViewModels/Blocks/Engagement/StepProgramDetail/seriesBag";
+import { ListItemBag } from "@Obsidian/ViewModels/Utility/listItemBag";
 
 export type ChartDataBag = {
+    /** Gets or sets the List of ListItemBags for the Campus Labels */
+    campusLabels?: ListItemBag[] | null;
+
     /** Gets or sets the date labels for the chart data. */
     dateLabels?: string[] | null;
 

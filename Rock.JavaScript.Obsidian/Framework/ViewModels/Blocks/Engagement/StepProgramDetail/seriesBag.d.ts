@@ -30,4 +30,7 @@ export type SeriesBag = {
 
     /** Gets or sets the label for the series. */
     label?: string | null;
+
+    /** Gets or sets the opacity for each data point in the series. */
+    opacity?: number[] | null;
 };

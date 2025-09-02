@@ -7,7 +7,7 @@
     import Chart from "./chart.obs";
     import { LabelDateFormat, LegendAlign, LegendPosition, LineSeries, LineStyle, TooltipCallback } from "@Obsidian/Core/Controls/chart";
     import { RockColor } from "@Obsidian/Core/Utilities/rockColor";
-    import { Chart as ChartJs, ChartData, ChartOptions, Color, LegendItem, ScriptableContext, TooltipItem, TooltipLabelStyle } from "@Obsidian/Libs/chart";
+    import { Chart as ChartJs, ChartData, ChartOptions, Color, LegendItem, ScriptableContext, TooltipItem, TooltipLabelStyle, LegendOptions } from "@Obsidian/Libs/chart";
     import { Enumerable } from "@Obsidian/Utility/linq";
     import { RockDateTime } from "@Obsidian/Utility/rockDateTime";
     import { isNullish } from "@Obsidian/Utility/util";
@@ -53,6 +53,10 @@
          */
         legendPosition: {
             type: Object as PropType<LegendPosition | undefined>
+        },
+
+        customLegendLabel: {
+            type: Object as PropType<Partial<LegendOptions<"line">["labels"]> | undefined>
         },
 
         /**
@@ -409,7 +413,7 @@
                     display: !((props.hideLegend ?? defaultLegendIsHidden) === true),
                     position: props.legendPosition ?? defaultLegendPosition,
                     align: props.legendAlign ?? defaultLegendAlign,
-                    labels: {
+                    labels: props.customLegendLabel ?? {
                         // `usePointStyle: true` removes the boxes next to each legend item
                         // and uses "points" instead. Control the "point" shape inside the
                         // `generateLabels` callback.

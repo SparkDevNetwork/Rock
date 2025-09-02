@@ -42,7 +42,8 @@
                                           @update:modelValue="handleChartFilterChanged"
                                           label="Status"
                                           grouped
-                                          :items="statusOptions" />
+                                          :items="statusOptions"
+                                          :showBlankItem="false" />
                         </div>
                     </div>
                     <div v-if="selectedStepProgramView === StepProgramView.Trends.toString()"
@@ -78,14 +79,18 @@
                            :series="lineSeries"
                            :labels="chartLabels"
                            :labelDateFormat="dateUnit"
+                           :customLegendLabel="customLegendLabel"
+                           legendAlign="start"
                            xShowGridLines
+                           linear
                            unfilled />
 
                 <BarChart v-else
                           :series="barSeries"
                           :labels="chartLabels"
                           :labelDateFormat="dateUnit"
-                          :stack="isStacked" />
+                          :stack="isStacked"
+                          @click="onBarChartClicked" />
             </div>
 
         </div>
@@ -140,7 +145,7 @@
 
 <script setup lang="ts">
     import { onMounted, PropType, ref, watch, computed, nextTick, shallowRef, StyleValue } from "vue";
-    import { useInvokeBlockAction } from "@Obsidian/Utility/block";
+    import { useBlockBrowserBus, useInvokeBlockAction } from "@Obsidian/Utility/block";
     import AttributeValuesContainer from "@Obsidian/Controls/attributeValuesContainer.obs";
     import NotificationBox from "@Obsidian/Controls/notificationBox.obs";
     import SlidingDateRangePicker from "@Obsidian/Controls/slidingDateRangePicker.obs";
@@ -171,7 +176,12 @@
     import { enumToListItemBag } from "@Obsidian/Utility/enumUtils";
     import { StepFlowGetDataBag } from "@Obsidian/ViewModels/Blocks/Engagement/Steps/stepFlowGetDataBag";
     import { toNumber } from "@Obsidian/Utility/numberUtils";
-    import { BarSeries, LineSeries, Series } from "@Obsidian/Core/Controls/chart";
+    import { BarChartClickEvent, BarSeries, LegendLabels, LineSeries, Series } from "@Obsidian/Core/Controls/chart";
+    import { PageMessages } from "@Obsidian/Utility/browserBus";
+    import { ContextEntityChangedData, Message } from "@Obsidian/Types/Utility/browserBus";
+    import { useContextEntities } from "@Obsidian/Core/Utilities/contextEntity";
+    import { EntityType } from "@Obsidian/SystemGuids/entityType";
+    import { areEqual } from "@Obsidian/Utility/guid";
 
     const props = defineProps({
         modelValue: {
@@ -186,6 +196,15 @@
     });
 
     // #region Values
+
+    const browserBus = useBlockBrowserBus();
+    const contextEntities = useContextEntities();
+
+    browserBus.subscribe(PageMessages.ContextEntityChanged, async (message: Message<ContextEntityChangedData>) => {
+        if (areEqual(message.data.entityTypeGuid, EntityType.Campus)) {
+            handleCampusContextChanged(message.data);
+        }
+    });
 
     const stepProgramViewOptions = enumToStandardListItemBagList(StepProgramViewDescription);
 
@@ -242,10 +261,10 @@
     const chartSeries = ref<LineSeries[] | BarSeries[]>([]);
     const chartLabels = ref<string[]>([]);
 
-    const selectedStepProgramView = ref(StepProgramView.KPIs.toString());
+    const selectedStepProgramView = ref(StepProgramView.Campuses.toString());
     const selectedMeasure = ref("");
     const selectedStatusFilter = ref(statusOptions[0].value ?? "All");
-    const isLineChart = ref(true); // TODO - save as preference
+    const isLineChart = ref(false); // TODO - save as preference
     const attributes = ref(props.modelValue?.attributes ?? {});
     const attributeValues = ref(props.modelValue?.attributeValues ?? {});
     const maxLevels = ref(4);
@@ -259,6 +278,23 @@
     const isRefreshLoading = ref(false);
 
     const invokeBlockAction = useInvokeBlockAction();
+
+    const root = document.documentElement;
+    const legendColor = getComputedStyle(root).getPropertyValue("--color-interface-stronger").trim();
+    const legendFontFamily = getComputedStyle(root).getPropertyValue("--font-family-sans").trim();
+
+    const customLegendLabel: LegendLabels = {
+        usePointStyle: false,
+        boxWidth: 24,
+        boxHeight: 24,
+        padding: 10,
+        color: legendColor,
+        font: {
+            family: legendFontFamily,
+            size: 14,
+            weight: "600"
+        }
+    };
 
     // #endregion
 
@@ -288,7 +324,7 @@
         }
 
         if (selectedMeasure.value === StepChartMeasure.OrganizationObjective.toString() || selectedMeasure.value === StepChartMeasure.EngagementType.toString()) {
-            if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
+            if (selectedStepProgramView.value === StepProgramView.Campuses.toString() && selectedMeasure.value === StepChartMeasure.OrganizationObjective.toString()) {
                 return true;
             }
 
@@ -376,12 +412,68 @@
     function handleChartFilterChanged() {
         resetChartStateFlags();
 
+        console.log("CHART FILTER CHANGED...");
         const selectedStepProgramViewId = toNumber(selectedStepProgramView.value) as StepProgramView;
         fetchByStepProgramView[selectedStepProgramViewId]();
     }
 
     function updateChartType(isLineChartSelected: boolean) {
         isLineChart.value = isLineChartSelected;
+    }
+
+    async function handleCampusContextChanged(data: ContextEntityChangedData) {
+        if (!data.entityType) {
+            return;
+        }
+
+        const selectedStepProgramViewId = toNumber(selectedStepProgramView.value) as StepProgramView;
+
+        if (selectedStepProgramViewId === StepProgramView.Campuses) {
+            const campusItemBag = await contextEntities.get(data.entityType);
+
+            if (!campusItemBag?.text) {
+                chartSeries.value = chartSeries.value.map(s => ({
+                    ...s,
+                    opacity: 1
+                }));
+
+                return;
+            }
+
+            const selectedIndex = chartLabels.value.indexOf(campusItemBag.text);
+
+            chartSeries.value = chartSeries.value.map(s => ({
+                ...s,
+                opacity: s.data.map((_: number, i: number) => (i === selectedIndex ? 1 : 0.25))
+            }));
+        }
+        else {
+            handleChartFilterChanged();
+        }
+
+    }
+
+    async function onBarChartClicked(event: BarChartClickEvent) {
+        if (event.targets.length === 0) {
+            return;
+        }
+
+        const selectedStepProgramViewId = toNumber(selectedStepProgramView.value) as StepProgramView;
+
+        // We currently only want click functionality for Campus Bar Charts.
+        if (selectedStepProgramViewId !== StepProgramView.Campuses) {
+            return;
+        }
+
+        const chartData = stepProgramViewData[selectedStepProgramViewId];
+
+        if (!chartData?.campusLabels) {
+            return;
+        }
+
+        const campusBag = chartData.campusLabels[event.targets[0].labelIndex];
+
+        await contextEntities.set(EntityType.Campus, campusBag, false);
     }
 
     /**
@@ -413,7 +505,7 @@
     }
 
     function updateChartForView(chartData: ChartDataBag): void {
-        chartLabels.value = chartData.dateLabels ?? chartData.stringLabels ?? [];
+        chartLabels.value = chartData.dateLabels ?? chartData.stringLabels ?? chartData?.campusLabels?.map(c => c.text) as string[] ?? [];
         chartSeries.value = (chartData.series ?? []) as LineSeries[];
     }
 
@@ -425,7 +517,9 @@
      * data from the server using the specified filter date.
      */
     async function fetchChartData(): Promise<void> {
-        console.log("Fetching Chart Data");
+        chartLabels.value = [];
+        chartSeries.value = [];
+        console.log("Fetching Chart Data: ", selectedMeasure.value);
 
         isRefreshLoading.value = true;
         notificationMessage.value = "";
@@ -546,12 +640,15 @@
             maxLevels.value = 4;
         }
 
-        // TODO - Come back to this when we have the ChartJS updates from Josh.
-        // Handles an edge case where we navigate from a non-ChartJS view to a ChartJS view and the chart already exists.
-        // If we don't clear the chart then there is some clunky UI with redrawing it on the update.
-        // if ((oldStepProgramViewId === StepProgramView.KPIs || oldStepProgramViewId === StepProgramView.Flow) && isChartShown.value && chart) {
-        //     chart.clear();
-        // }
+        // Setting default measure values.
+        if (selectedMeasure.value === "") {
+            if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
+                selectedMeasure.value = StepChartMeasure.TotalSteps.toString();
+            }
+            else if (selectedStepProgramView.value === StepProgramView.Trends.toString() || selectedStepProgramView.value === StepProgramView.Totals.toString()) {
+                selectedMeasure.value = StepChartMeasure.Steps.toString();
+            }
+        }
 
         // If we are switching to the Totals or Campuses view than we need to set the chart type to bar.
         if (selectedStepProgramViewId === StepProgramView.Totals || selectedStepProgramViewId === StepProgramView.Campuses) {
@@ -564,16 +661,6 @@
         }
         else if (isChartShown.value && stepProgramViewData[selectedStepProgramViewId]) {
             updateChartForView(stepProgramViewData[selectedStepProgramViewId]!);
-        }
-
-        // Setting default measure values.
-        if (selectedMeasure.value === "") {
-            if (selectedStepProgramView.value === StepProgramView.Campuses.toString()) {
-                selectedMeasure.value = StepChartMeasure.TotalSteps.toString();
-            }
-            else if (selectedStepProgramView.value === StepProgramView.Trends.toString() || selectedStepProgramView.value === StepProgramView.Totals.toString()) {
-                selectedMeasure.value = StepChartMeasure.Steps.toString();
-            }
         }
     });
 
