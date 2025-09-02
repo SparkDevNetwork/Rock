@@ -245,8 +245,6 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
                     } )
                     .ToList();
 
-                var contexts = session.GetSessionContextDictionary();
-
                 _context.Clear();
                 AddSystemMessages();
 
@@ -262,12 +260,6 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
                     anchorEntities.Add( anchor.EntityTypeId );
 
                     _context.AddAnchor( anchor.EntityTypeId, anchor.PayloadJson );
-                }
-
-                // Add all session context data.
-                foreach ( var contextData in contexts )
-                {
-                    _context.AddSessionContext( contextData.Key, contextData.Value );
                 }
 
                 // Add all the user and assistant messages.
@@ -421,50 +413,6 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
 
                 rockContext.SaveChanges();
             }
-        }
-
-        /// <inheritdoc/>
-        public Task AddSessionContextAsync( string key, SessionContext context, CancellationToken cancellationToken )
-        {
-            _context.AddSessionContext( key, context );
-
-            if ( SessionId.HasValue )
-            {
-                using ( var rockContext = _rockContextFactory.CreateRockContext() )
-                {
-                    var session = new AIAgentSessionService( rockContext ).Get( SessionId.Value );
-
-                    session.SetSessionContext( key, context );
-                    rockContext.SaveChanges();
-                }
-            }
-
-            return Task.CompletedTask;
-        }
-
-        /// <inheritdoc/>
-        public string GetSessionContextContent( string key )
-        {
-            return _context.GetSessionContext( key )?.Content;
-        }
-
-        /// <inheritdoc/>
-        public Task RemoveSessionContextAsync( string key, CancellationToken cancellationToken )
-        {
-            _context.RemoveSessionContext( key );
-
-            if ( SessionId.HasValue )
-            {
-                using ( var rockContext = _rockContextFactory.CreateRockContext() )
-                {
-                    var session = new AIAgentSessionService( rockContext ).Get( SessionId.Value );
-
-                    session.SetSessionContext( key, null );
-                    rockContext.SaveChanges();
-                }
-            }
-
-            return Task.CompletedTask;
         }
 
         /// <summary>

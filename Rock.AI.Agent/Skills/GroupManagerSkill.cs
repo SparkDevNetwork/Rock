@@ -109,27 +109,8 @@ namespace Rock.AI.Agent.Skills
         [Description( "Adds a note to a person." )]
         [UserDescription( "Adds a note to a person." )]
         [AgentFunctionGuid( "eae482a7-4dde-4914-baa8-bcb4a103259a" )]
-        public async Task<string> AddNoteToPerson( int personId, string noteText )
+        public string AddNoteToPerson( int personId, string noteText )
         {
-            // Notes:
-            // 1. You don't need to get the old context before updating, just showing as an example
-            //    of how to do it.
-            // 2. Adding context is Async because there is a call to db.SaveChanges() that we will
-            //    eventually want to make db.SaveChangesAsync() in EF Core. We can add a non-async
-            //    version for Lava to use if needed.
-            // 3. The "core.note" is the unique key for this context data.
-
-            // Get old context data.
-            var oldSessionContext = AgentRequestContext.ChatAgent.GetSessionContextContent( "core.note" );
-
-            // Store new context data, overwriting old data.
-            await AgentRequestContext.ChatAgent.AddSessionContextAsync( "core.note", new
-            {
-                NoteId = 42,
-                PersonId = personId,
-                NoteText = noteText
-            }.ToJson() );
-
             return "Note added to person successfully.";
         }
 

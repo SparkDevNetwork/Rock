@@ -16,19 +16,17 @@
 //
 
 using System.Collections.Generic;
-using System.Linq;
 
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
 using Rock.AI.Agent.Classes;
-using Rock.Data;
-using Rock.Net;
 using Rock.Configuration;
+using Rock.Data;
 using Rock.Enums.AI.Agent;
 using Rock.Lava;
+using Rock.Net;
 using Rock.Web.Cache;
-
 
 using SKAuthorRole = Microsoft.SemanticKernel.ChatCompletion.AuthorRole;
 
@@ -59,11 +57,6 @@ namespace Rock.AI.Agent
         /// The list of messages that have been exchanged in the chat.
         /// </summary>
         private readonly List<ChatMessageContent> _chatMessages = new List<ChatMessageContent>();
-
-        /// <summary>
-        /// The session context data that should be included in the chat.
-        /// </summary>
-        private readonly Dictionary<string, SessionContext> _sessionContext = new Dictionary<string, SessionContext>();
 
         /// <summary>
         /// The native Semantic Kernel object that holds the chat history. This
@@ -259,47 +252,6 @@ namespace Rock.AI.Agent
         }
 
         /// <summary>
-        /// Adds session context data to the chat context, unless it is marked as internal.
-        /// </summary>
-        /// <param name="key">The key to associate with the session context.</param>
-        /// <param name="context">The session context data to add.</param>
-        internal void AddSessionContext( string key, SessionContext context )
-        {
-            if ( context.IsInternal )
-            {
-                return;
-            }
-
-            _sessionContext[key] = context;
-            _chatHistory = null;
-        }
-
-        /// <summary>
-        /// Retrieves the session context data associated with the given key, if present.
-        /// </summary>
-        /// <param name="key">The key of the session context to retrieve.</param>
-        /// <returns>The session context if found; otherwise, null.</returns>
-        internal SessionContext GetSessionContext( string key )
-        {
-            if ( _sessionContext.TryGetValue( key, out var context ) )
-            {
-                return context;
-            }
-
-            return null;
-        }
-
-        /// <summary>
-        /// Removes the session context data associated with the given key from the chat context.
-        /// </summary>
-        /// <param name="key">The key of the session context to remove.</param>
-        internal void RemoveSessionContext( string key )
-        {
-            _sessionContext.Remove( key );
-            _chatHistory = null;
-        }
-
-        /// <summary>
         /// Gets the full chat history for the current context, including system messages, context anchors, session contexts, and chat messages.
         /// </summary>
         /// <returns>The aggregated chat history object.</returns>
@@ -312,20 +264,6 @@ namespace Rock.AI.Agent
                 foreach ( var anchor in _contextAnchors )
                 {
                     chatHistory.AddSystemMessage( $"ContextAnchor|{anchor.Value}" );
-                }
-
-                foreach ( var context in _sessionContext.Values.OrderBy( c => c.CreatedDateTime ) )
-                {
-                    // Expiration checking is handled when the session is loaded.
-                    // So we don't check it here.
-                    var content = context.Content;
-
-                    if ( context.HistoryContent.IsNotNullOrWhiteSpace() )
-                    {
-                        content = context.HistoryContent;
-                    }
-
-                    chatHistory.AddSystemMessage( $"Context|{content}" );
                 }
 
                 chatHistory.AddRange( _chatMessages );

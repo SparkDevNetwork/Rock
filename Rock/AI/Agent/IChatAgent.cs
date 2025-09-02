@@ -106,36 +106,6 @@ namespace Rock.AI.Agent
         Task RemoveAnchorAsync( int entityTypeId, CancellationToken cancellationToken = default );
 
         /// <summary>
-        /// Adds a new session context item with the given key. If no session
-        /// has been created or loaded then the context will only exist
-        /// in-memory. If any existing context already exists with the same
-        /// <paramref name="key"/> then it will be overwritten.
-        /// </summary>
-        /// <param name="key">The unique key that identifies the context data.</param>
-        /// <param name="context">The context data to be attached to the session.</param>
-        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
-        /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task AddSessionContextAsync( string key, SessionContext context, CancellationToken cancellationToken = default );
-
-        /// <summary>
-        /// Gets the session context <see cref="SessionContext.Content"/> value
-        /// associated with the given <paramref name="key"/>.
-        /// </summary>
-        /// <param name="key">The unique key that identifies the context data.</param>
-        /// <returns>The content string for the context data. If no context was found then <c>null</c> is returned.</returns>
-        string GetSessionContextContent( string key );
-
-        /// <summary>
-        /// Removes the session context item with the given key. If no session
-        /// has been created or loaded then this will only remove the context
-        /// from in-memory data.
-        /// </summary>
-        /// <param name="key">The unique key that identifies the context data.</param>
-        /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
-        /// <returns>A <see cref="Task"/> that represents when the operation has completed.</returns>
-        Task RemoveSessionContextAsync( string key, CancellationToken cancellationToken = default );
-
-        /// <summary>
         /// Sends the current chat history information to the language model
         /// for processing and returns the response from the assistant.
         /// </summary>
