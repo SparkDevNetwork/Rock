@@ -36,52 +36,77 @@
                  label="Instructions"
                  textMode="multiline" />
 
-        <div v-if="agentType === AgentType.Chat.toString()" class="row">
-            <div class="col-md-6">
-                <ImageUploader v-model="avatarBinaryFile"
-                               label="Avatar" />
+        <template v-if="agentType === AgentType.Chat.toString()">
+            <div class="row">
+                <div class="col-md-6">
+                    <ImageUploader v-model="avatarBinaryFile"
+                                   label="Avatar" />
+                </div>
+
+                <div class="col-md-6">
+                    <DropDownList v-model="role"
+                                  label="Role"
+                                  :items="roleItems"
+                                  :showBlankItem="false"
+                                  rules="required" />
+                </div>
             </div>
 
-            <div class="col-md-6">
-                <DropDownList v-model="role"
-                              label="Role"
-                              :items="roleItems"
-                              :showBlankItem="false"
-                              rules="required" />
+            <Panel title="Advanced Settings" hasCollapse>
+                <div class="row">
+                    <div class="col-md-6">
+                        <NumberBox v-model="autoSummarizeThreshold"
+                                   label="Auto Summarize Threshold"
+                                   help="The number of tokens that will trigger an auto summarization of the conversion when the agent is processing a message."
+                                   :minimumValue="0" />
 
-                <NumberBox v-model="autoSummarizeThreshold"
-                           label="Auto Summarize Threshold"
-                           help="The number of tokens that will trigger an auto summarization of the conversion when the agent is processing a message."
-                           :minimumValue="0" />
+                    </div>
 
-                <CheckBox v-model="isExcludingSystemSkills"
-                          label="Exclude System Skills"
-                          help="By default, a set of system skills and functions will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
+                    <div class="col-md-6">
+                        <CheckBox v-model="isExcludingSystemSkills"
+                                  label="Exclude System Skills"
+                                  help="By default, a set of system skills and functions will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
+                    </div>
+                </div>
+
+                <CodeEditor v-model="currentPersonTemplate"
+                            label="Current Person Template"
+                            help="The Lava template to use when rendering the details about the current person for the agent. The merge field 'CurrentPerson' is available. If blank a default template will be used."
+                            editor="monaco"
+                            mode="lava" />
+            </Panel>
+        </template>
+
+        <template v-if="agentType === AgentType.Mcp.toString()">
+            <div class="row">
+                <div class="col-md-6">
+                    <TextBox v-model="slug"
+                             label="Slug"
+                             help="The URL slug that identifies this agent to the MCP service."
+                             :rules="['required', validateSlug]" />
+                </div>
             </div>
-        </div>
 
-        <div v-if="agentType === AgentType.Mcp.toString()" class="row">
-            <div class="col-md-6">
-                <TextBox v-model="slug"
-                         label="Slug"
-                         help="The URL slug that identifies this agent to the MCP service."
-                         :rules="['required', validateSlug]" />
-            </div>
-
-            <div class="col-md-6">
-                <CheckBox v-model="isExcludingSystemSkills"
-                          label="Exclude System Skills"
-                          help="By default, a set of system skills and functions will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
-            </div>
-        </div>
+            <Panel title="Advanced Settings" hasCollapse>
+                <div class="row">
+                    <div class="col-md-6">
+                        <CheckBox v-model="isExcludingSystemSkills"
+                                  label="Exclude System Skills"
+                                  help="By default, a set of system skills and functions will be included in the agent. These provide critical functionality and should only be removed if you are sure you need to remove them." />
+                    </div>
+                </div>
+            </Panel>
+        </template>
     </fieldset>
 </template>
 
 <script setup lang="ts">
     import CheckBox from "@Obsidian/Controls/checkBox.obs";
+    import CodeEditor from "@Obsidian/Controls/codeEditor.obs";
     import DropDownList from "@Obsidian/Controls/dropDownList.obs";
     import ImageUploader from "@Obsidian/Controls/imageUploader.obs";
     import NumberBox from "@Obsidian/Controls/numberBox.obs";
+    import Panel from "@Obsidian/Controls/panel.obs";
     import TextBox from "@Obsidian/Controls/textBox.obs";
     import { PropType, ref, watch } from "vue";
     import { setPropertiesBoxValue } from "@Obsidian/Utility/block";
@@ -121,6 +146,7 @@
     const autoSummarizeThreshold = ref(props.modelValue.bag?.autoSummarizeThreshold ?? 0);
     const avatarBinaryFile = ref(props.modelValue.bag?.avatarBinaryFile ?? null);
     const role = ref((props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
+    const currentPersonTemplate = ref(props.modelValue.bag?.currentPersonTemplate ?? "");
     const slug = ref(props.modelValue.bag?.slug ?? "");
     const isExcludingSystemSkills = ref(props.modelValue.bag?.isExcludingSystemSkills ?? false);
 
@@ -171,15 +197,17 @@
         updateRefValue(agentType, (props.modelValue.bag?.agentType ?? AgentType.Chat).toString());
         updateRefValue(audienceType, (props.modelValue.bag?.audienceType ?? AudienceType.Internal).toString());
         updateRefValue(instructions, props.modelValue.bag?.instructions ?? "");
+        updateRefValue(autoSummarizeThreshold, props.modelValue.bag?.autoSummarizeThreshold ?? 0);
         updateRefValue(avatarBinaryFile, props.modelValue.bag?.avatarBinaryFile ?? null);
         updateRefValue(role, (props.modelValue.bag?.role ?? ModelServiceRole.Default).toString());
+        updateRefValue(currentPersonTemplate, props.modelValue.bag?.currentPersonTemplate ?? "");
         updateRefValue(slug, props.modelValue.bag?.slug ?? "");
         updateRefValue(isExcludingSystemSkills, props.modelValue.bag?.isExcludingSystemSkills ?? false);
     });
 
     // Determines which values we want to track changes on (defined in the
     // array) and then emit a new object defined as newValue.
-    watch([...propRefs, autoSummarizeThreshold, avatarBinaryFile, isExcludingSystemSkills, role, slug], () => {
+    watch([...propRefs, autoSummarizeThreshold, avatarBinaryFile, isExcludingSystemSkills, role, currentPersonTemplate, slug], () => {
         const newValue: ValidPropertiesBox<AIAgentBag> = {
             bag: { ...props.modelValue.bag } as AIAgentBag
         };
@@ -192,6 +220,7 @@
         setPropertiesBoxValue(newValue, "autoSummarizeThreshold", autoSummarizeThreshold.value);
         setPropertiesBoxValue(newValue, "avatarBinaryFile", avatarBinaryFile.value);
         setPropertiesBoxValue(newValue, "role", toNumber(role.value) as ModelServiceRole);
+        setPropertiesBoxValue(newValue, "currentPersonTemplate", currentPersonTemplate.value);
         setPropertiesBoxValue(newValue, "slug", slug.value);
         setPropertiesBoxValue(newValue, "isExcludingSystemSkills", isExcludingSystemSkills.value);
 

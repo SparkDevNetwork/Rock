@@ -61,6 +61,9 @@ namespace Rock.AI.Agent
         /// </summary>
         public ModelServiceRole Role { get; }
 
+        /// <inheritdoc cref="ChatAgentSettings.CurrentPersonTemplate"/>
+        public string CurrentPersonTemplate { get; set; }
+
         /// <summary>
         /// Gets the instructions used to describe the agent’s role, behavior, or system prompt context.
         /// </summary>
@@ -90,6 +93,7 @@ namespace Rock.AI.Agent
             var settings = agent.GetAdditionalSettings<ChatAgentSettings>();
             AutoSummarizeThreshold = settings.AutoSummarizeThreshold;
             Role = settings.Role;
+            CurrentPersonTemplate = settings.CurrentPersonTemplate;
         }
 
         /// <summary>

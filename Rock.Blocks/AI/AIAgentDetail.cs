@@ -248,6 +248,7 @@ namespace Rock.Blocks.AI
                     ? chatSettings.IsExcludingSystemSkills
                     : mcpSettings.IsExcludingSystemSkills,
                 Role = chatSettings.Role,
+                CurrentPersonTemplate = chatSettings.CurrentPersonTemplate,
                 Slug = mcpSettings.Slug,
             };
         }
@@ -370,6 +371,9 @@ namespace Rock.Blocks.AI
 
                 box.IfValidProperty( nameof( box.Bag.Role ),
                     () => chatSettings.Role = box.Bag.Role );
+
+                box.IfValidProperty( nameof( box.Bag.CurrentPersonTemplate ),
+                    () => chatSettings.CurrentPersonTemplate = box.Bag.CurrentPersonTemplate );
 
                 entity.SetAdditionalSettings( chatSettings );
             }

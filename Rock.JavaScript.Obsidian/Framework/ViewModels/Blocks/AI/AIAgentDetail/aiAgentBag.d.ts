@@ -60,6 +60,13 @@ export type AIAgentBag = {
     avatarBinaryFile?: ListItemBag | null;
 
     /**
+     * The Lava template that will be used to generate the current person
+     * details to be added to the system prompt of a chat agent. If blank
+     * then a default template will be used.
+     */
+    currentPersonTemplate?: string | null;
+
+    /**
      * The description of the agent, which provides additional context or
      * information about its intended purpose and functionality.
      */

@@ -77,6 +77,12 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
         } );
 
         /// <summary>
+        /// The default Lava template to use when generating the current person
+        /// system message if the agent configuration does not provide one.
+        /// </summary>
+        private static readonly string DefaultCurrentPersonTemplate = "The current person you are talking to is {{ CurrentPerson.FullName }} (IdKey: {{ CurrentPerson.IdKey }}).";
+
+        /// <summary>
         /// The prompt that will be used when asking the language model to
         /// summarize the current chat history. This is used when the current
         /// history grows beyond the threshold defined in the agent.
@@ -447,7 +453,9 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
 
             if ( _requestContext?.CurrentPerson != null )
             {
-                _context.AddSystemMessage( $"CurrentPerson|The current person is {_requestContext.CurrentPerson.FullName} (key: {_requestContext.CurrentPerson.IdKey})." );
+                var template = _agentConfiguration.CurrentPersonTemplate.IfEmpty( DefaultCurrentPersonTemplate );
+
+                _context.AddSystemMessage( $"CurrentPerson|{template.ResolveMergeFields( _requestContext.GetCommonMergeFields() )}" );
             }
         }
 

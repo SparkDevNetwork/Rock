@@ -82,6 +82,13 @@ namespace Rock.ViewModels.Blocks.AI.AIAgentDetail
         public ModelServiceRole Role { get; set; }
 
         /// <summary>
+        /// The Lava template that will be used to generate the current person
+        /// details to be added to the system prompt of a chat agent. If blank
+        /// then a default template will be used.
+        /// </summary>
+        public string CurrentPersonTemplate { get; set; }
+
+        /// <summary>
         /// A collection containing the Rock.Model.AIAgentSkill entities
         /// that represent the skills attached to this agent.
         /// </summary>

@@ -45,5 +45,12 @@ namespace Rock.AI.Agent
         /// model to use.
         /// </summary>
         public ModelServiceRole Role { get; set; }
+
+        /// <summary>
+        /// The Lava template that will be used to generate the current person
+        /// details to be added to the system prompt of a chat agent. If blank
+        /// then a default template will be used.
+        /// </summary>
+        public string CurrentPersonTemplate { get; set; }
     }
 }
