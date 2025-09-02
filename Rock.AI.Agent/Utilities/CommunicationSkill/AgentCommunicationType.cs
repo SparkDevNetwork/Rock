@@ -12,6 +12,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
     internal enum AgentCommunicationType
     {
         Email,
-        Sms
+        Sms,
+        Push
     }
 }

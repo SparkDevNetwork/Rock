@@ -1,94 +1,88 @@
-﻿// <copyright>
-// Copyright by the Spark Development Network
-//
-// Licensed under the Rock Community License (the "License");
-// you may not use this file except in compliance with the License.
-// You may obtain a copy of the License at
-//
-// http://www.rockrms.com/license
-//
-// Unless required by applicable law or agreed to in writing, software
-// distributed under the License is distributed on an "AS IS" BASIS,
-// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-// See the License for the specific language governing permissions and
-// limitations under the License.
-// </copyright>
-//
-
-using System;
+﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
 using Microsoft.SemanticKernel;
 
+using Rock.Data;
 using Rock.Model;
 using Rock.Web.Cache;
 
 namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
 {
-    internal class EmailMedium : IAgentCommunicationMedium
+    internal class PushNotificationMedium : IAgentCommunicationMedium
     {
+
+        private readonly RockContext _rockContext;
+
+        #region Constructors
+
+        public PushNotificationMedium( RockContext rockContext )
+        {
+            _rockContext = rockContext;
+        }
+
+        #endregion
         #region IAgentCommunicationMedium
+
+        /// <inheritdoc />
+        public Model.Communication BuildCommunication( DraftRequest request, List<Person> recipients, DraftResult content )
+        {
+            return CreateOrUpdateCommunication( request, recipients, content );
+        }
 
         /// <inheritdoc />
         public async Task<DraftResult> DraftAsync( Kernel kernel, DraftRequest request )
         {
-            var prompt = DraftPromptBuilder.BuildEmailDraftPrompt( request );
+            var prompt = DraftPromptBuilder.BuildPushDraftPrompt( request );
 
             var fnResult = await kernel.InvokePromptAsync( prompt );
             var json = fnResult.GetValue<string>();
 
             var dto = json.FromJsonOrNull<DraftDto>();
-            if ( dto == null || dto.Subject.IsNullOrWhiteSpace() || dto.Body.IsNullOrWhiteSpace() )
+            if ( dto == null || dto.Body.IsNullOrWhiteSpace() )
             {
-                throw new InvalidOperationException( "Draft JSON invalid. Expect: { \"subject\", \"body\" }" );
+                throw new InvalidOperationException( "Draft JSON invalid. Expect: { \"body\" }" );
             }
 
             return new DraftResult
             {
                 Body = dto.Body,
                 Subject = dto.Subject,
-                Type = AgentCommunicationType.Email,
+                Type = AgentCommunicationType.Push,
                 VerificationText = GetVerificationText( request.CurrentPerson, request.Recipients )
             };
         }
 
         /// <inheritdoc />
-        public Model.Communication BuildCommunication( DraftRequest request, List<Rock.Model.Person> recipients, DraftResult content )
+        public Model.Communication UpdateCommunication( DraftRequest request, List<Person> recipients, Model.Communication communication, DraftResult content )
         {
-            return CreateOrUpdateCommunication( request, recipients, content );
+            return CreateOrUpdateCommunication( request, recipients, content, communication );
         }
 
         /// <inheritdoc />
-        public Model.Communication UpdateCommunication( DraftRequest request, List<Rock.Model.Person> recipients, Model.Communication comm, DraftResult content )
+        public List<string> ValidateRecipients( List<Person> recipient )
         {
-            
-            return CreateOrUpdateCommunication( request, recipients, content, comm );
-        }
-
-        /// <inheritdoc />
-        public List<string> ValidateRecipients( List<Rock.Model.Person> recipients )
-        {
+            // Verify that the person has a device registered for push notifications.
             var errors = new List<string>();
-
-            if ( recipients == null || recipients.Count == 0 )
+            if ( recipient == null || recipient.Count == 0 )
             {
                 errors.Add( "No recipients were provided." );
                 return errors;
             }
 
-            foreach ( var recipient in recipients )
+            foreach ( var person in recipient )
             {
-                if ( recipient == null )
-                {
-                    errors.Add( "A null recipient was encountered." );
-                    continue;
-                }
+                List<string> devices = new PersonalDeviceService( _rockContext ).Queryable()
+                    .Where( a => a.PersonAliasId.HasValue && a.PersonAliasId == person.PrimaryAliasId && a.IsActive && a.NotificationsEnabled )
+                    .Select( a => a.DeviceRegistrationId )
+                    .ToList();
 
-                if ( recipient.Email.IsNullOrWhiteSpace() )
+                if( !devices.Any() )
                 {
-                    errors.Add( $"Recipient {recipient.IdKey} does not have a valid email address." );
+                    errors.Add( $"Recipient {person.IdKey} does not have any active devices registered for push notifications." );
                 }
             }
 
@@ -116,14 +110,14 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
                 comm = new Rock.Model.Communication();
             }
 
-            var emailMediumEntityTypeId = EntityTypeCache.Get<Rock.Communication.Medium.Email>().Id;
+            var pushMediumEntityTypeId = EntityTypeCache.Get<Rock.Communication.Medium.PushNotification>().Id;
 
             comm.Status = CommunicationStatus.Transient;
-            comm.CommunicationType = CommunicationType.Email;
+            comm.CommunicationType = CommunicationType.PushNotification;
             comm.SenderPersonAliasId = request.CurrentPerson.PrimaryAliasId;
-            comm.FromEmail = request.CurrentPerson.Email;
-            comm.Subject = content.Subject;
-            comm.Message = content.Body;
+            comm.PushTitle = content.Subject;
+            comm.PushMessage = content.Body;
+            comm.PushOpenAction = Utility.PushOpenAction.ShowDetails;
 
             var commRecipients = new List<CommunicationRecipient>();
             foreach ( var recipient in recipients )
@@ -131,7 +125,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
                 commRecipients.Add( new CommunicationRecipient
                 {
                     PersonAliasId = recipient.PrimaryAliasId,
-                    MediumEntityTypeId = emailMediumEntityTypeId
+                    MediumEntityTypeId = pushMediumEntityTypeId
                 } );
             }
             comm.Recipients = commRecipients;
@@ -151,23 +145,22 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
 
             foreach ( var recipient in recipients )
             {
-                var recipientAddr = string.IsNullOrWhiteSpace( recipient.Email ) ? "" : " (" + recipient.Email + ")";
-                
-                verificationText.AppendLine( "Recipient: " + recipient.FullName + recipientAddr );
+                verificationText.AppendLine( "Recipient: " + recipient.FullName );
             }
 
             verificationText.AppendLine();
-            verificationText.AppendLine( "From: " + currentPerson.FullName + " (" + currentPerson.Email + ")" );
+            verificationText.AppendLine( "From: " + currentPerson.FullName );
             verificationText.AppendLine();
 
             // Body + Subject are returned in the actual payload, so just use placeholders here.  
-            verificationText.AppendLine( "Subject: [subject]" );
+            verificationText.AppendLine( "Title: [subject]" );
             verificationText.AppendLine();
-            verificationText.AppendLine( "Body:" );
+            verificationText.AppendLine( "Message:" );
             verificationText.AppendLine( "[body]" );
 
             return verificationText.ToString();
         }
+
 
         #endregion
     }

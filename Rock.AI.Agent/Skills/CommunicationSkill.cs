@@ -1,4 +1,20 @@
-﻿using System;
+﻿// <copyright>
+// Copyright by the Spark Development Network
+//
+// Licensed under the Rock Community License (the "License");
+// you may not use this file except in compliance with the License.
+// You may obtain a copy of the License at
+//
+// http://www.rockrms.com/license
+//
+// Unless required by applicable law or agreed to in writing, software
+// distributed under the License is distributed on an "AS IS" BASIS,
+// WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+// See the License for the specific language governing permissions and
+// limitations under the License.
+// </copyright>
+//                                                                                              
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Threading.Tasks;
@@ -10,6 +26,7 @@ using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Skills.CommunicationSkill;
 using Rock.AI.Agent.Utilities.CommunicationSkill;
 using Rock.AI.Agent.Utilities.CommunicationSkill.Mediums;
+using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -64,20 +81,62 @@ namespace Rock.AI.Agent.Skills
         /// </summary>
         /// <param name="communicationType"></param>
         /// <returns></returns>
-        private IAgentCommunicationMedium GetCommunicationMedium( AgentCommunicationType communicationType )
+        private IAgentCommunicationMedium TryGetCommunicationMedium( AgentCommunicationType communicationType, RockContext rockContext )
         {
+            IAgentCommunicationMedium medium;
+
             if ( communicationType == AgentCommunicationType.Email )
             {
-                return new EmailMedium();
+                if( !MediumContainer.HasActiveEmailTransport() )
+                {
+                    return null;
+                }
+
+                medium = new EmailMedium();
+            }
+            else if ( communicationType == AgentCommunicationType.Sms )
+            {
+                if( !MediumContainer.HasActiveSmsTransport() )
+                {
+                    return null;
+                }
+
+                //medium = new SmsMedium( rockContext );
+                medium = new EmailMedium();
+            }
+            else if ( communicationType == AgentCommunicationType.Push )
+            {
+                if ( !MediumContainer.HasActivePushTransport() )
+                {
+                    return null;
+                }
+
+                medium = new PushNotificationMedium( rockContext );
+            }
+            else
+            {
+                return null;
             }
 
-            return null;
+            return medium;
         }
 
         #endregion
 
         #region Skill Tools
 
+        /// <summary>
+        /// Drafts a communication (email/SMS/push) for a specified recipient.
+        /// </summary>
+        /// <param name="kernel">The kernel. Used to invoke an internal prompt to structure the comm.</param>
+        /// <param name="recipientIdKey">The idKey of the recipient.</param>
+        /// <param name="communicationType">SMS, Push or Email.</param>
+        /// <param name="subjectHint">The hint of the subject.</param>
+        /// <param name="referenceData">The relevant data for crafting the communication.</param>
+        /// <param name="draftGuidance">Guidance for when composing the draft.</param>
+        /// <param name="tone">The tone of the message.</param>
+        /// <param name="existingDraftIdKey">The draft to update in place.</param>
+        /// <returns></returns>
         [KernelFunction]
         [AgentFunctionGuid( "4EEF6200-AA05-4F26-AB4D-19C73DEB3BDD" )]
         [Description(
@@ -134,11 +193,10 @@ namespace Rock.AI.Agent.Skills
                         .WithInstructions( "Verify the recipientIdKey and try again." );
                 }
 
-                var medium = GetCommunicationMedium( commType.Value );
+                var medium = TryGetCommunicationMedium( commType.Value, rockContext );
                 if ( medium == null )
                 {
-                    return RockToolResult.Error( $"The communication type '{communicationType}' is not supported." )
-                        .WithInstructions( "Tell the user that this is coming soon, Braden's got it." );
+                    return RockToolResult.Error( $"The communication type '{communicationType}' is not supported." );
                 }
 
                 Rock.Model.Communication draftCommunication = null;
@@ -157,7 +215,7 @@ namespace Rock.AI.Agent.Skills
                     }
                 }
 
-                var recipients = new List<Rock.Model.Person> { recipient }; 
+                var recipients = new List<Rock.Model.Person> { recipient };
                 var recipientValidation = medium.ValidateRecipients( recipients );
                 if ( recipientValidation.Count > 0 )
                 {
@@ -184,7 +242,7 @@ namespace Rock.AI.Agent.Skills
 
                 if ( draftCommunication != null )
                 {
-                    medium.UpdateCommunication( draftRequest, recipients, draftCommunication, draftResult );
+                    draftCommunication = medium.UpdateCommunication( draftRequest, recipients, draftCommunication, draftResult );
                 }
                 else
                 {
@@ -212,7 +270,7 @@ namespace Rock.AI.Agent.Skills
 
                 var returnInstructions = "Never call SendCommunication directly after this.";
 
-                if( draftResult.VerificationText.IsNotNullOrWhiteSpace() )
+                if ( draftResult.VerificationText.IsNotNullOrWhiteSpace() )
                 {
                     returnInstructions += "\r\nAsk the user for verification on the following fields: \r\n";
                     returnInstructions += draftResult.VerificationText;
@@ -231,7 +289,7 @@ namespace Rock.AI.Agent.Skills
             }
         }
 
-        [KernelFunction( "SendCommunication" )]
+        [KernelFunction]
         [AgentFunctionGuid( "2BB35960-77C6-4EAD-9645-F0ACB0EF132B" )]
         public RockToolResult SendCommunication( string communicationIdKey )
         {
@@ -297,7 +355,7 @@ namespace Rock.AI.Agent.Skills
         [AgentFunctionGuid( "8EC76EA6-83BE-4796-9B91-6B4A34C0C3AD" )]
         public RockToolResult CancelDraft( string communicationIdKey )
         {
-            if( communicationIdKey.IsNullOrWhiteSpace() )
+            if ( communicationIdKey.IsNullOrWhiteSpace() )
             {
                 return RockToolResult.Error( "CommunicationIdKey is required." );
             }
@@ -325,7 +383,7 @@ namespace Rock.AI.Agent.Skills
 
                 rockContext.SaveChanges();
 
-                return RockToolResult.Success( "The communication has been deleted" );
+                return RockToolResult.Success( "The communication has been deleted." );
             }
         }
 
