@@ -17,34 +17,36 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.ComponentModel.DataAnnotations;
+using System.Data;
 using System.Data.Entity;
+using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
+using System.Threading.Tasks;
 
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Communication;
+using Rock.Communication.Transport;
 using Rock.Data;
-using CommunicationEntryWizardCommunicationType = Rock.Enums.Communication.CommunicationType;
-using CommunicationType = Rock.Model.CommunicationType;
-using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
-using PushOpenAction = Rock.Utility.PushOpenAction;
 using Rock.Model;
 using Rock.Observability;
-using Rock.Security;
-using Rock.Utility;
-using Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard;
-using Rock.ViewModels.Utility;
-using Rock.Web.Cache;
-using System.Threading.Tasks;
-using Rock.Tasks;
 using Rock.RealTime;
 using Rock.RealTime.Topics;
-using System.ComponentModel.DataAnnotations;
-using Rock.Communication.Transport;
-using Rock.ViewModels.Rest.Controls;
+using Rock.Security;
 using Rock.Security.SecurityGrantRules;
-using System.Text.RegularExpressions;
-using System.Data;
-using System.Data.SqlClient;
+using Rock.Tasks;
+using Rock.Utility;
+using Rock.ViewModels.Blocks.Communication.CommunicationEntryWizard;
+using Rock.ViewModels.Rest.Controls;
+using Rock.ViewModels.Utility;
+using Rock.Web.Cache;
+
+using CommunicationEntryWizardCommunicationType = Rock.Enums.Communication.CommunicationType;
+using CommunicationEntryWizardPushOpenAction = Rock.Enums.Blocks.Communication.CommunicationEntryWizard.PushOpenAction;
+using CommunicationType = Rock.Model.CommunicationType;
+using PushOpenAction = Rock.Utility.PushOpenAction;
 
 namespace Rock.Blocks.Communication
 {
@@ -2943,9 +2945,13 @@ namespace Rock.Blocks.Communication
 
                 if ( bag.PushOpenMessageJson.IsNotNullOrWhiteSpace() )
                 {
+                    new StructuredContentHelper( bag.PushOpenMessageJson )
+                        .DetectAndApplyDatabaseChanges( details.PushOpenMessageJson, rockContext );
+
                     details.PushOpenMessageJson = bag.PushOpenMessageJson;
                 }
             }
+
 
             details.PushData = ConvertPushData( bag.PushData )?.ToJson();
 

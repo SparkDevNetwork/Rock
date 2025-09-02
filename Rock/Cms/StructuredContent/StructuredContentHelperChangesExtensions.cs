@@ -81,6 +81,22 @@ namespace Rock.Cms.StructuredContent
 
         /// <summary>
         /// Detects the changes that need to be applied to the database by
+        /// looking at th eold content and the current content. Any changes
+        /// are then applied to the database using the provided <paramref name="rockContext"/>.
+        /// </summary>
+        /// <param name="helper">The content helper.</param>
+        /// <param name="oldContent">The old structured content before the save.</param>
+        /// <param name="rockContext">The rock database context to use when saving changes.</param>
+        /// <returns><c>true</c> if any changes were made that require you to call <see cref="DbContext.SaveChanges()"/>; otherwise <c>false</c>.</returns>
+        public static bool DetectAndApplyDatabaseChanges( this StructuredContentHelper helper, string oldContent, RockContext rockContext )
+        {
+            var changes = helper.DetectChanges( oldContent );
+
+            return helper.ApplyDatabaseChanges( changes, rockContext );
+        }
+
+        /// <summary>
+        /// Detects the changes that need to be applied to the database by
         /// looking at the old content and the current content.
         /// </summary>
         /// <param name="helper">The content helper.</param>

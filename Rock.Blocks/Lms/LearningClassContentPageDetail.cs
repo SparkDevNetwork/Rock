@@ -21,6 +21,7 @@ using System.ComponentModel;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Model;
@@ -204,8 +205,13 @@ namespace Rock.Blocks.Lms
                 return false;
             }
 
-            box.IfValidProperty( nameof( box.Bag.Content ),
-                () => entity.Content = box.Bag.Content );
+            box.IfValidProperty( nameof( box.Bag.Content ), () =>
+            {
+                new StructuredContentHelper( box.Bag.Content )
+                    .DetectAndApplyDatabaseChanges( entity.Content, RockContext );
+
+                entity.Content = box.Bag.Content;
+            } );
 
             box.IfValidProperty( nameof( box.Bag.StartDateTime ),
                 () => entity.StartDateTime = box.Bag.StartDateTime );

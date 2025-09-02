@@ -22,6 +22,7 @@ using System.Data.Entity;
 using System.Linq;
 
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Constants;
 using Rock.Data;
 using Rock.Enums.Lms;
@@ -403,8 +404,13 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.DefaultGradingSystem ),
                 () => entity.DefaultLearningGradingSystemId = box.Bag.DefaultGradingSystem.GetEntityId<LearningGradingSystem>( RockContext ) );
 
-            box.IfValidProperty( nameof( box.Bag.Description ),
-                () => entity.Description = box.Bag.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ), () =>
+            {
+                new StructuredContentHelper( box.Bag.Description )
+                    .DetectAndApplyDatabaseChanges( entity.Description, RockContext );
+
+                entity.Description = box.Bag.Description;
+            } );
 
             box.IfValidProperty( nameof( box.Bag.HighlightColor ),
                 () => entity.HighlightColor = box.Bag.HighlightColor );

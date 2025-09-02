@@ -16,6 +16,9 @@
                 </div>
             </div>
             <p class="text-semibold font-italic">Not all settings are demonstrated in this gallery.</p>
+            <div class="alert alert-warning">
+                Whenever you save content from the Structured Content Editor, you must use the C# StructuredContentHelper class to detect and apply changes. Otherwise, some changes (such as file uploads) will not be saved.
+            </div>
         </template>
     </GalleryAndResult>
 </template>
