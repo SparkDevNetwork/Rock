@@ -397,7 +397,6 @@ namespace Rock.Blocks.AI
                 .ToList();
 
             sessionHistoryService.DeleteRange( messages );
-            session.ClearSessionContext();
 
             RockContext.SaveChanges();
 
@@ -442,53 +441,6 @@ namespace Rock.Blocks.AI
             RockContext.SaveChanges();
 
             return ActionOk();
-        }
-
-        /// <summary>
-        /// Gets the session context for the specified session ID, returning a list of context items.
-        /// </summary>
-        /// <param name="sessionId">The session identifier.</param>
-        /// <returns>A collection of <see cref="ListItemBag"/> objects.</returns>
-        [BlockAction]
-        public BlockActionResult GetSessionContext( int sessionId )
-        {
-            var agentGuid = GetAttributeValue( AttributeKey.Agent ).AsGuidOrNull();
-            var agentCache = agentGuid.HasValue ? AIAgentCache.Get( agentGuid.Value, RockContext ) : null;
-
-            if ( agentCache == null )
-            {
-                return ActionBadRequest( "No agent has been configured." );
-            }
-
-            if ( !agentCache.IsAuthorized( Authorization.VIEW, RequestContext.CurrentPerson ) )
-            {
-                return ActionBadRequest( "You are not authorized to access this agent." );
-            }
-
-            var sessionService = new AIAgentSessionService( RockContext );
-            var session = sessionService
-                .Queryable()
-                .Where( s => s.PersonAlias.PersonId == RequestContext.CurrentPerson.Id
-                    && s.AIAgentId == agentCache.Id
-                    && s.Id == sessionId )
-                .FirstOrDefault();
-
-            if (session == null)
-            {
-                return ActionBadRequest( "Session not found." );
-            }
-
-            var items = session.GetSessionContextDictionary()
-                .Select( c => new ListItemBag
-                {
-                    Value = c.Key,
-                    Text = c.Value.Content,
-                    Disabled = c.Value.IsInternal
-                } )
-                .OrderBy( c => c.Value )
-                .ToList();
-
-            return ActionOk( items );
         }
 
         /// <summary>
