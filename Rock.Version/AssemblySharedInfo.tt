@@ -4,7 +4,7 @@
 <#@ output extension=".cs" #>
 <#
      int major = 17; 
-     int minor = 3; 
+     int minor = 4; 
      int build = 1; 
   
      try

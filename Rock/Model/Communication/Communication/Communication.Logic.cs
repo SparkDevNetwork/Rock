@@ -562,76 +562,87 @@ INNER JOIN @DuplicateRecipients dr
         }
 
         /// <summary>
-        /// Removes the non-primary person alias recipients.
+        /// Removes duplicate person recipients, when a given <see cref="Person"/> is represented within the list of
+        /// <see cref="CommunicationRecipient"/>s more than once.
         /// </summary>
         /// <param name="rockContext">The rock context.</param>
-        private void RemoveNonPrimaryPersonAliasRecipients( RockContext rockContext )
+        /// <remarks>
+        /// The first <see cref="CommunicationRecipient"/> that was added for a given <see cref="Person"/> is the one
+        /// that will be preserved. This means that the corresponding <see cref="PersonAlias"/> that remains might not
+        /// be the person's current "primary" alias. Since all we need is a pointer to the person, any alias record -
+        /// primary or not - will serve this purpose. It is more performant to NOT try to preserve the primary alias
+        /// reference here.
+        /// </remarks>
+        private void RemoveDuplicatePersonRecipients( RockContext rockContext )
         {
             /*
-                5/4/2022 - DMV
+                8/28/2025 - JPH
 
-                In tracking down alleged duplicate communications we discovered
-                that duplicates could be sent to the same person if they are in the
-                recipient list more that once with multiple Person Alias IDs.
-                This could have occurred through a person merge or other data changes
-                in Rock. This method removes those duplicates from the list before
-                sending the communication.
-            */
+                This method used to be called `RemoveNonPrimaryPersonAliasRecipients()` and was related to multiple past issues:
 
-            /*
-                1/2/2024 - JPH
+                ----------
 
-                We were previously loading these entities into memory and calling DeleteRange() on the
-                collection, which was causing a separate DELETE statement to be run for each entity.
-                By instead calling BulkDelete(), we can run the delete operation outside of EF context,
-                bypassing quite a bit of unnecessary overhead.
-
-                Reason: Communications with a large number of recipients time out and don't send.
+                1. Communications with a large number of recipients time out and don't send.
                 https://github.com/SparkDevNetwork/Rock/issues/5651
+
+                The fix for this issue involved replacing the previous EF query with a bulk delete process, and was
+                ultimately solved by introducing a precision index to greatly improve the delete performance.
+
+                EF Rework: https://github.com/SparkDevNetwork/Rock/commit/567a51652d1fe7fd09d894fa0474e152750c4d54
+                New Index: https://github.com/SparkDevNetwork/Rock/commit/f3b6f435d5425ef37e27bccfe60d676a4c398af7
+
+                ----------
+
+                2. Merged recipients incorrectly deleted from communication record.
+                https://github.com/SparkDevNetwork/Rock/issues/6255
+
+                The fix for this issue did solve the problem of no longer completely removing recipients from a
+                communication, but introduced a new SQL timeout because of the complexity of the EF-generated queries.
+
+                EF Queries Before Fix: https://github.com/SparkDevNetwork/Rock/blob/8bd4aabd56c31d88353c65635b84fc2c7e835984/Rock/Model/Communication/Communication/Communication.Logic.cs#L593-L622
+                EF Queries After Fix: https://github.com/SparkDevNetwork/Rock/blob/2a1c7d3df3fd1a597c81ac5d04ff32398d56b18a/Rock/Model/Communication/Communication/Communication.Logic.cs#L604-L635
+
+                ----------
+
+                3. SQL Timeout with large communication lists.
+                https://github.com/SparkDevNetwork/Rock/issues/6415
+
+                When this performance issue appeared again, we decided to abandon EF-generated queries altogether, in
+                favor of inline SQL that does what the original, poorly-named `RemoveNonPrimaryPersonAliasRecipients()`
+                method set out to do, as performantly as possible: delete duplicate people from a communication, when
+                they have multiple recipient records corresponding to multiple person alias records. It was also
+                determined that it's more performant to NOT try and preserve the "primary" alias record for a given
+                person, and instead simply delete all but the first recipient record that was added for that person.
+                Since a person alias is simply a pointer to a person, it ultimately doesn't matter which one we preserve
+                here, so we settled on performance over attempting to preserve the primary alias.
+
+                ----------
+
+                Reason: Rename method to reflect the work being performed and improve performance.
             */
 
-            /*
-                7/3/2025 - MSE
+            var sql = @"
+;WITH Recipients AS (
+    SELECT
+        cr.[Id] AS [CommunicationRecipientId]
+        , ROW_NUMBER() OVER (
+            PARTITION BY pa.[PersonId]
+            ORDER BY cr.[Id]
+        ) AS [RowNumber]
+    FROM [CommunicationRecipient] cr
+    INNER JOIN [PersonAlias] pa
+        ON pa.[Id] = cr.[PersonAliasId]
+    WHERE cr.[CommunicationId] = @CommunicationId
+)
+DELETE cr
+FROM [CommunicationRecipient] cr
+INNER JOIN [Recipients] r
+    ON r.[CommunicationRecipientId] = cr.[Id]
+WHERE r.[RowNumber] > 1;";
 
-                Fixed a bug where merging person records prior to the communication being sent
-                caused individuals to be removed from communication records entirely.
-
-                The logic ensures that for each person, at least one recipient record is retained (preferably the one with the primary alias).
-
-                Reason: Prevent loss of valid recipients in scheduled communications due to person merges.
-            */
-
-            using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Remove Non-Primary Person Alias Recipients" ) )
+            using ( var activity = ObservabilityHelper.StartActivity( "COMMUNICATION: Prepare Recipient List > Remove Duplicate Person Recipients" ) )
             {
-                var recipientsQry = GetRecipientsQry( rockContext );
-
-                int? smsMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_SMS.AsGuid() );
-                if ( smsMediumEntityTypeId.HasValue )
-                {
-                    var smsRecipientsToDelete = recipientsQry
-                        .Where( r => r.MediumEntityTypeId == smsMediumEntityTypeId.Value )
-                        .GroupBy( r => r.PersonAlias.PersonId )
-                        .SelectMany( g => g
-                            .OrderByDescending( r => r.PersonAlias.PersonId == r.PersonAlias.AliasPersonId ? 1 : 0 )
-                            .ThenBy( r => r.Id )
-                            .Skip( 1 )
-                        );
-                    rockContext.BulkDelete( smsRecipientsToDelete );
-                }
-
-                int? emailMediumEntityTypeId = EntityTypeCache.GetId( Rock.SystemGuid.EntityType.COMMUNICATION_MEDIUM_EMAIL.AsGuid() );
-                if ( emailMediumEntityTypeId.HasValue )
-                {
-                    var emailRecipientsToDelete = recipientsQry
-                        .Where( r => r.MediumEntityTypeId == emailMediumEntityTypeId.Value )
-                        .GroupBy( r => r.PersonAlias.PersonId )
-                        .SelectMany( g => g
-                            .OrderByDescending( r => r.PersonAlias.PersonId == r.PersonAlias.AliasPersonId ? 1 : 0 )
-                            .ThenBy( r => r.Id )
-                            .Skip( 1 )
-                        );
-                    rockContext.BulkDelete( emailRecipientsToDelete );
-                }
+                rockContext.Database.ExecuteSqlCommand( sql, new SqlParameter( "@CommunicationId", Id ) );
             }
         }
 
@@ -945,7 +956,7 @@ INNER JOIN @DuplicateRecipients dr
                             communication.RemoveRecipientsWithDuplicateAddress( rockContext );
                         }
 
-                        communication.RemoveNonPrimaryPersonAliasRecipients( rockContext );
+                        communication.RemoveDuplicatePersonRecipients( rockContext );
                     }
                 }
             }
@@ -1015,7 +1026,7 @@ INNER JOIN @DuplicateRecipients dr
                             communication.RemoveRecipientsWithDuplicateAddress( rockContext );
                         }
 
-                        communication.RemoveNonPrimaryPersonAliasRecipients( rockContext );
+                        communication.RemoveDuplicatePersonRecipients( rockContext );
                     }
                 }
             }
