@@ -657,6 +657,8 @@ namespace Rock.AI.Agent.Skills
             var take = basePageSize + 1; // N+1 to compute hasMore
 
             var personId = IdHasher.Instance.GetId( personIdKey );
+            var isInternal = AgentRequestContext.AudienceType == AudienceType.Internal;
+
 
             var connectionRequests = new ConnectionRequestService( AgentRequestContext.RockContext ).Queryable()
                 .Where( cr => cr.PersonAlias.PersonId == personId )
@@ -708,8 +710,10 @@ namespace Rock.AI.Agent.Skills
                             PhotoId = a.CreatedByPersonAlias.Person.PhotoId
                         } : null
                     } ).ToList(),
-                    Attributes = cr.ConnectionRequestAttributeValues.Select( a =>
-                        new AttributeResult { Id = a.AttributeId, Value = a.PersistedTextValue, Name = a.Name }).ToList()
+                    Attributes = cr.ConnectionRequestAttributeValues
+                        .Where( a => isInternal || a.IsPublic )
+                        .Select( a =>
+                            new AttributeResult { Id = a.AttributeId, Value = a.PersistedTextValue, Name = a.Name }).ToList()
 
                 } )
                 .OrderBy( cr => cr.Id )
