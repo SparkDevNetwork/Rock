@@ -49,6 +49,12 @@ namespace Rock.Data
         public string Key { get; private set; }
 
         /// <summary>
+        /// Gets the name of the attribute.
+        /// </summary>
+        /// <value>The key of the attribute.</value>
+        public string Name { get; private set; }
+
+        /// <summary>
         /// Gets the raw attribute value.
         /// </summary>
         /// <value>The raw attribute value.</value>
