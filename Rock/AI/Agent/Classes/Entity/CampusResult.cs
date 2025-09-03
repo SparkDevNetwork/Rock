@@ -80,11 +80,5 @@ namespace Rock.AI.Agent.Classes.Entity
         /// The campus's team members.
         /// </summary>
         public List<CampusTeamMemberResult> CampusTeamMembers { get; set; } = new List<CampusTeamMemberResult>();
-
-        /// <summary>
-        /// Arbitrary campus attributes represented as a key/value dictionary.
-        /// Keys are attribute keys; values are formatted strings.
-        /// </summary>
-        public List<AttributeResult> Attributes { get; set; } = new List<AttributeResult>();
     }
 }

@@ -18,8 +18,13 @@
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Data.Entity;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Linq.Dynamic.Core;
+using System.Runtime.InteropServices.ComTypes;
+
+using DocumentFormat.OpenXml.Wordprocessing;
 
 using Microsoft.Extensions.Logging;
 using Microsoft.SemanticKernel;
@@ -35,6 +40,8 @@ using Rock.SystemGuid;
 using Rock.SystemKey;
 using Rock.Utility;
 using Rock.Web.Cache;
+
+using GroupResult = Rock.AI.Agent.Classes.Entity.GroupResult;
 
 namespace Rock.AI.Agent.Skills
 {
@@ -307,8 +314,9 @@ namespace Rock.AI.Agent.Skills
             "Suffixes should be provide in the format of Sr., Jr., III, IV." +
             "📦 Returns" +
             "- A collection of summaries about the matched people. These are not full profiles. Call `GetPersonProfile` passing the personIdKey to get a person's full profile. " )]
+        [UserDescription( "Does a full name sounds like search for the person." )]
         [AgentFunctionGuid( "03093B11-A02D-F794-4A5E-9AEA2C6EF63E" )]
-        public RockToolResult SearchPerson( string fullName, int maxResults = 10, string campusIdKey = null )
+        public RockToolResult SearchPerson( string fullName, int maxResults = 20, string campusIdKey = null )
         {
             if ( fullName == null || fullName.IsNullOrWhiteSpace() )
             {
@@ -413,7 +421,6 @@ namespace Rock.AI.Agent.Skills
                 .WithMetadata( meta );
         }
 
-        // TODO: add instructions that this is the principle tool for getting insights for a person. This is the starting point.
         [Description(
             "🎯 Purpose:\r\n" +
             "-Retrieves the complete profile of a person. \\r\\n\" +" +
@@ -631,6 +638,108 @@ namespace Rock.AI.Agent.Skills
 
             return RockToolResult.Success( profileResult )
                 .WithReferenceRoute( requestContext, "View Profile", $"/person/{profileResult.IdKey}", false );
+        }
+
+        
+        [KernelFunction( "ListConnectionRequestsForPerson" )]
+        [UserDescription( "Returns a list of connection requests for the user." )]
+        [AgentFunctionGuid( "DC03271E-2C54-D5AF-4F18-9CCC69F25202" )]
+        public RockToolResult ListConnectionRequestsForPerson( string personIdKey, int pageNumber = 1 )
+        {
+            if ( personIdKey.IsNullOrWhiteSpace() )
+            {
+                return RockToolResult.Error( "The personIdKey is required." );
+            }
+
+            // Paging
+            var basePageSize = 100;
+            var offset = ( pageNumber - 1 ) * basePageSize;
+            var take = basePageSize + 1; // N+1 to compute hasMore
+
+            var personId = IdHasher.Instance.GetId( personIdKey );
+
+            var connectionRequests = new ConnectionRequestService( AgentRequestContext.RockContext ).Queryable()
+                .Where( cr => cr.PersonAlias.PersonId == personId )
+                .Select( cr => new ConnectionRequestResult
+                {
+                    Id = cr.Id,
+                    Requester = new PersonResult
+                    {
+                        Id = cr.PersonAlias.Person.Id,
+                        FirstName = cr.PersonAlias.Person.FirstName,
+                        LastName = cr.PersonAlias.Person.LastName,
+                        NickName = cr.PersonAlias.Person.NickName,
+                        PhotoId = cr.PersonAlias.Person.PhotoId
+                    },
+                    Comments = cr.Comments,
+                    ConnectionState = new KeyNameResult { Id = (int) cr.ConnectionState, Name = cr.ConnectionState.ToString() },
+                    ConnectionStatus = new KeyNameResult { Id = cr.ConnectionStatus.Id, Name = cr.ConnectionStatus.Name },
+                    ConnectionOpportunity = new ConnectionOpportunityResult
+                        {
+                            Id = cr.ConnectionOpportunity.Id,
+                            Name = cr.ConnectionOpportunity.Name,
+                            ConnectionType = new ConnectionTypeResult { Id = cr.ConnectionOpportunity.ConnectionType.Id, Name = cr.ConnectionOpportunity.ConnectionType.Name }
+                    },
+                    CreatedDateTime = cr.CreatedDateTime,
+                    ModifiedDateTime = cr.ModifiedDateTime,
+                    FollowupDate = cr.FollowupDate,
+                    Campus = cr.Campus != null ? new CampusResult { Id = cr.Campus.Id, Name = cr.Campus.Name } : null,
+                    AssignedGroup = cr.AssignedGroup != null ? new GroupResult { Id = cr.AssignedGroup.Id, Name = cr.AssignedGroup.Name } : null,
+                    Connector = cr.ConnectorPersonAlias != null ? new PersonResult
+                        {
+                            Id = cr.ConnectorPersonAlias.Person.Id,
+                            FirstName = cr.ConnectorPersonAlias.Person.FirstName,
+                            LastName = cr.ConnectorPersonAlias.Person.LastName,
+                            NickName = cr.ConnectorPersonAlias.Person.NickName,
+                            PhotoId = cr.ConnectorPersonAlias.Person.PhotoId
+                        } : null,
+                    Activities = cr.ConnectionRequestActivities.Select( a => new ConnectionRequestActivityResult
+                    {
+                        Id = a.Id,
+                        ActivityType = new KeyNameResult { Id = a.ConnectionActivityTypeId, Name = a.ConnectionActivityType.Name },
+                        Note = a.Note,
+                        CreatedDateTime = a.CreatedDateTime,
+                        Connector = a.ConnectorPersonAlias != null ? new PersonResult
+                        {
+                            Id = a.CreatedByPersonAlias.Person.Id,
+                            FirstName = a.CreatedByPersonAlias.Person.FirstName,
+                            LastName = a.CreatedByPersonAlias.Person.LastName,
+                            NickName = a.CreatedByPersonAlias.Person.NickName,
+                            PhotoId = a.CreatedByPersonAlias.Person.PhotoId
+                        } : null
+                    } ).ToList(),
+                    Attributes = cr.ConnectionRequestAttributeValues.Select( a =>
+                        new AttributeResult { Id = a.AttributeId, Value = a.PersistedTextValue, Name = a.Name }).ToList()
+
+                } )
+                .OrderBy( cr => cr.Id )
+                .Skip( offset )
+                .Take( take )
+                .ToList();
+
+            var hasMore = connectionRequests.Count > basePageSize;
+            if ( hasMore )
+            {
+                connectionRequests.RemoveAt( connectionRequests.Count - 1 ); // drop lookahead row
+            }
+
+            var meta = new Dictionary<string, object>
+                {
+                    { "personKey", personIdKey },
+                    { "pageNumber", pageNumber },
+                    { "pageSize", basePageSize },
+                    { "returnedRows", connectionRequests.Count },
+                    { "hasMore", hasMore }
+                };
+
+            if ( !connectionRequests.Any() )
+            {
+                return RockToolResult.NoData()
+                    .WithMetadata( meta );
+            }
+
+            return RockToolResult.Success( connectionRequests )
+                .WithMetadata( meta );
         }
 
         #endregion

@@ -13,32 +13,30 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
-using System.Collections.Generic;
+//
 
 using Rock.AI.Agent.Classes.Common;
 
 namespace Rock.AI.Agent.Classes.Entity
 {
-    public class ConnectionTypeResult : EntityResultBase
+    /// <summary>
+    /// POCO result for a note.
+    /// </summary>
+    public class ConnectionRequestActivityResult : EntityResultBase
     {
         /// <summary>
-        /// The name of the connection type.
+        /// Gets or sets the note text.
         /// </summary>
-        public string Name { get; set; }
-        /// <summary>
-        /// The description of the connection type.
-        /// </summary>
-        public string Description { get; set; }
+        public string Note { get; set; }
 
         /// <summary>
-        /// The activity types associated with the connection type.
+        /// Gets or sets the type of activity.
         /// </summary>
-        public List<KeyNameResult> ActivityTypes { get; set; }
+        public KeyNameResult ActivityType { get; set; }
 
         /// <summary>
-        /// The connection opportunities associated with the connection type.
+        /// Gets or sets the author of the note.
         /// </summary>
-        public List<ConnectionOpportunityResult> Opportunities { get; set; }
+        public PersonResult Connector { get; set; }
     }
 }

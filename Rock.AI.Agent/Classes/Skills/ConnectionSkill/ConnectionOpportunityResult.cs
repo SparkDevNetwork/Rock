@@ -16,9 +16,7 @@
 
 using System.Collections.Generic;
 
-using Rock.AI.Agent.Classes.Entity;
-
-namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
+namespace Rock.AI.Agent.Classes.Entity
 {
     public class ConnectionOpportunityResult : EntityResultBase
     {
@@ -50,5 +48,10 @@ namespace Rock.AI.Agent.Classes.Skills.ConnectionSkill
         /// List of campuses that the connection opportunity is associated with.
         /// </summary>
         public List<CampusResult> Campuses { get; set; }
+
+        /// <summary>
+        /// The connection type that the opportunity belongs to.
+        /// </summary>
+        public ConnectionTypeResult ConnectionType { get; set; }
     }
 }

@@ -26,7 +26,6 @@ using Microsoft.SemanticKernel;
 
 using Rock.AI.Agent.Classes.Common;
 using Rock.AI.Agent.Classes.Entity;
-using Rock.AI.Agent.Classes.Skills.ConnectionSkill;
 using Rock.Model;
 using Rock.Net;
 using Rock.SystemGuid;

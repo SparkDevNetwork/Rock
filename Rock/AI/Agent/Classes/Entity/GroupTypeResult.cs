@@ -13,32 +13,18 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 // </copyright>
-
-using System.Collections.Generic;
-
-using Rock.AI.Agent.Classes.Common;
+//
 
 namespace Rock.AI.Agent.Classes.Entity
 {
-    public class ConnectionTypeResult : EntityResultBase
+    /// <summary>
+    /// POCO result for a group member.
+    /// </summary>
+    public class GroupTypeResult : EntityResultBase
     {
         /// <summary>
-        /// The name of the connection type.
+        /// The name of the group.
         /// </summary>
         public string Name { get; set; }
-        /// <summary>
-        /// The description of the connection type.
-        /// </summary>
-        public string Description { get; set; }
-
-        /// <summary>
-        /// The activity types associated with the connection type.
-        /// </summary>
-        public List<KeyNameResult> ActivityTypes { get; set; }
-
-        /// <summary>
-        /// The connection opportunities associated with the connection type.
-        /// </summary>
-        public List<ConnectionOpportunityResult> Opportunities { get; set; }
     }
 }
