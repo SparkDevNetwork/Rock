@@ -46,7 +46,7 @@ namespace Rock.Cms.StructuredContent.BlockTypes
                 imageChanges.NewFileIds.Add( newData.File.FileId.Value );
             }
 
-            // If the old data has a file identifier then store it for alter review.
+            // If the old data has a file identifier then store it for later review.
             if ( oldData?.File?.FileId != null )
             {
                 imageChanges.OldFileIds.Add( oldData.File.FileId.Value );
@@ -64,7 +64,6 @@ namespace Rock.Cms.StructuredContent.BlockTypes
             }
 
             var addedBinaryFileIds = imageChanges?.NewFileIds?.Except( imageChanges.OldFileIds )?.ToList();
-            var removedBinaryFileIds = imageChanges?.OldFileIds?.Except( imageChanges.NewFileIds )?.ToList();
 
             bool needSave = false;
             var binaryFileService = new BinaryFileService( rockContext );
@@ -81,17 +80,18 @@ namespace Rock.Cms.StructuredContent.BlockTypes
                 needSave = true;
             }
 
-            // If there are any removed binary files then mark them as temporary
-            // so they will be later removed by the cleanup job.
-            if ( removedBinaryFileIds != null && removedBinaryFileIds.Count > 0 )
-            {
-                var filesToRemove = binaryFileService.Queryable()
-                    .Where( b => removedBinaryFileIds.Contains( b.Id ) )
-                    .ToList();
-
-                filesToRemove.ForEach( b => b.IsTemporary = true );
-                needSave = true;
-            }
+            /*
+             * 2025-08-13 - DSH
+             * 
+             * We used to mark removed finary files as temporary so they would
+             * be cleaned up by the Rock Cleanup job. However, this is no longer
+             * the case. Instead, we will just leave them in the database.
+             *
+             * REASON: Sometimes structured content will be copied from a template
+             * to an instance. When that happens, the same binary file is
+             * referenced in both. So if we then remove the file from the editor
+             * in the instance, it effectively removes it from the template too.
+             */
 
             return needSave;
         }

@@ -23,6 +23,7 @@ using System.Web.UI.WebControls;
 
 using Rock;
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Model;
@@ -210,7 +211,7 @@ namespace RockWeb.Blocks.Communication
         /// Sets up a communication model with the user-entered values
         /// </summary>
         /// <returns>The communication for this session.</returns>
-        private Rock.Model.Communication SetupCommunication()
+        private Rock.Model.Communication SetupCommunication( RockContext rockContext )
         {
             var communication = new Rock.Model.Communication
             {
@@ -231,6 +232,9 @@ namespace RockWeb.Blocks.Communication
                 pushNotificationControl.UpdateCommunication( communicationData );
             }
 
+            new StructuredContentHelper( communicationData.PushOpenMessageJson )
+                .DetectAndApplyDatabaseChanges( communication.PushOpenMessageJson, rockContext );
+
             CommunicationDetails.Copy( communicationData, communication );
 
             return communication;
@@ -247,7 +251,7 @@ namespace RockWeb.Blocks.Communication
             // Using a new context (so that changes in the UpdateCommunication() are not persisted )
             using ( var rockContext = new RockContext() )
             {
-                var testCommunication = SetupCommunication();
+                var testCommunication = SetupCommunication( rockContext );
                 var pushData = testCommunication.PushData.FromJsonOrNull<PushData>();
                 CommunicationService communicationService = null;
 
@@ -668,7 +672,7 @@ namespace RockWeb.Blocks.Communication
         {
             nbPushTestResult.Visible = false;
 
-            var communication = SetupCommunication();
+            var communication = SetupCommunication( new RockContext() );
             nbPushValidation.Visible = false;
             if ( !VerifyPushSettingsAreValid( communication ) )
             {
@@ -688,7 +692,7 @@ namespace RockWeb.Blocks.Communication
         {
             var rockContext = new RockContext();
             var communicationService = new CommunicationService( rockContext );
-            var communication = SetupCommunication();
+            var communication = SetupCommunication( rockContext );
 
             nbPushValidation.Visible = false;
             if ( !VerifyPushSettingsAreValid( communication ) )

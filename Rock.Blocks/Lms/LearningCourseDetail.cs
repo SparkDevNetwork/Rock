@@ -303,8 +303,13 @@ namespace Rock.Blocks.Lms
             box.IfValidProperty( nameof( box.Bag.Credits ),
                 () => entity.Credits = box.Bag.Credits );
 
-            box.IfValidProperty( nameof( box.Bag.Description ),
-                () => entity.Description = box.Bag.Description );
+            box.IfValidProperty( nameof( box.Bag.Description ), () =>
+            {
+                new StructuredContentHelper( box.Bag.Description )
+                    .DetectAndApplyDatabaseChanges( entity.Description, RockContext );
+
+                entity.Description = box.Bag.Description;
+            } );
 
             box.IfValidProperty( nameof( box.Bag.EnableAnnouncements ),
                 () => entity.EnableAnnouncements = box.Bag.EnableAnnouncements );

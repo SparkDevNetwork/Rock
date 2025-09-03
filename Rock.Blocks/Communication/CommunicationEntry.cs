@@ -1790,6 +1790,9 @@ namespace Rock.Blocks.Communication
                 recipient.MediumEntityTypeId = medium?.EntityType?.Id;
             }
 
+            new StructuredContentHelper( bag.PushOpenMessageJson )
+                .DetectAndApplyDatabaseChanges( communication.PushOpenMessageJson, rockContext );
+
             // Copy the communication data in the request to the Communication object.
             CommunicationDetails.Copy( new CommunicationDetailsAdapter( bag, rockContext ), communication );
 

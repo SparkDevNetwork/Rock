@@ -130,6 +130,20 @@ namespace Rock.Lms
             }
         }
 
+
+        /// <inheritdoc/>
+        public override Dictionary<string, string> GetComponentData( LearningClassActivity activity, Dictionary<string, string> componentSettings, RockContext rockContext, RockRequestContext requestContext )
+        {
+            // This is a cheat, we shouldn't really be trying to access the original
+            // JSON this way, but we don't have a better way to do it.
+            var oldData = activity.LearningActivity?.ActivityComponentSettingsJson?.FromJsonOrNull<Dictionary<string, string>>();
+
+            new StructuredContentHelper( componentSettings?.GetValueOrNull( SettingKey.Header ) )
+                .DetectAndApplyDatabaseChanges( oldData?.GetValueOrNull( SettingKey.Header ), rockContext );
+
+            return base.GetComponentData( activity, componentSettings, rockContext, requestContext );
+        }
+
         /// <inheritdoc/>
         public override Dictionary<string, string> GetCompletionValues( LearningClassActivityCompletion completion, Dictionary<string, string> completionData, Dictionary<string, string> componentData, PresentedFor presentation, RockContext rockContext, RockRequestContext requestContext )
         {

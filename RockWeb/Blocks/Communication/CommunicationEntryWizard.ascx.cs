@@ -30,6 +30,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using Rock;
 using Rock.Attribute;
+using Rock.Cms.StructuredContent;
 using Rock.Communication;
 using Rock.Data;
 using Rock.Lava;
@@ -4178,6 +4179,10 @@ function onTaskCompleted( resultData )
                 communication.PushMessage = settings.Details.PushMessage;
                 communication.PushOpenAction = settings.Details.PushOpenAction;
                 communication.PushOpenMessage = settings.Details.PushOpenMessage;
+
+                new StructuredContentHelper( settings.Details.PushOpenMessageJson )
+                    .DetectAndApplyDatabaseChanges( communication.PushOpenMessageJson, rockContext );
+
                 communication.PushOpenMessageJson = settings.Details.PushOpenMessageJson;
                 communication.PushTitle = settings.Details.PushTitle;
 
