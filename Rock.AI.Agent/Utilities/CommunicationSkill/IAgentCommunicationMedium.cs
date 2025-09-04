@@ -42,7 +42,7 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill
         /// <param name="request">The details of the draft.</param>
         /// <returns></returns>
         Task<DraftResult> DraftAsync(
-            Kernel kernel,
+            IChatAgent agent,
             DraftRequest request );
 
         /// <summary>

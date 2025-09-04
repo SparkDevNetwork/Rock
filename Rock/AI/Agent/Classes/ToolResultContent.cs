@@ -63,11 +63,15 @@ namespace Rock.AI.Agent.Classes
         public static ToolResultContent FromJson( string json )
         {
             if ( string.IsNullOrWhiteSpace( json ) )
+            {
                 throw new ArgumentException( "JSON is null/empty.", nameof( json ) );
+            }
 
             var value = JsonSerializer.Deserialize<ToolResultContent>( json, s_options );
             if ( value is null )
+            {
                 throw new JsonException( "Deserialization produced null ToolResultContent." );
+            }
 
             return value;
         }

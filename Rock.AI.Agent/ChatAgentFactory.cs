@@ -415,7 +415,14 @@ namespace Rock.AI.Agent
 
                     if ( rockToolResult?.HistoryContent != null )
                     {
-                        var functionResultContent = new ToolResultContent( context.Function.Name, context.Function.PluginName, context.ToolCallId, rockToolResult.HistoryContent );
+                        var key = rockToolResult.HistoryContentKey.IsNotNullOrWhiteSpace() ? rockToolResult.HistoryContentKey : context.ToolCallId;
+                        var historyContent = new HistoryContentBag
+                        {
+                            Content = rockToolResult.HistoryContent,
+                            HistoryToken = key,
+                        };
+
+                        var functionResultContent = new ToolResultContent( context.Function.Name, context.Function.PluginName, context.ToolCallId, historyContent );
                         await _agent.AddMessageAsync( Enums.AI.Agent.AuthorRole.Tool, functionResultContent.ToJson() );
                     }
                 }

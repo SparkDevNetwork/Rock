@@ -50,6 +50,12 @@ namespace Rock.AI.Agent.Classes.Common
         internal object HistoryContent { get; private set; }
 
         /// <summary>
+        /// The key of the history content. This is so we can remove specific history content if needed.
+        /// </summary>
+        [JsonIgnore]
+        internal string HistoryContentKey { get; private set; }
+
+        /// <summary>
         /// Gets the primary payload when the result represents a single value.
         /// Mutually exclusive with <see cref="Results"/>.
         /// </summary>
@@ -218,13 +224,27 @@ namespace Rock.AI.Agent.Classes.Common
         }
 
         /// <summary>
+        /// Sets the history content key on this result and returns the same instance.
+        /// </summary>
+        /// <param name="key"></param>
+        /// <returns></returns>
+        public RockToolResult WithHistoryKey( string key )
+        {
+            HistoryContentKey = key;
+            return this;
+        }
+
+        /// <summary>
         /// Sets non-serialized history content on this result and returns the same instance.
         /// </summary>
         /// <param name="value">The value to store in chat history only.</param>
+        /// <param name="key">The key of the history content.</param>
         /// <returns>The same <see cref="RockToolResult"/> instance for further chaining.</returns>
-        public RockToolResult WithHistoryContent( object value )
+        public RockToolResult WithHistoryContent( object value, string key = "" )
         {
             HistoryContent = value;
+            HistoryContentKey = key;
+
             return this;
         }
 
