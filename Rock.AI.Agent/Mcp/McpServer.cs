@@ -18,6 +18,7 @@
 using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
@@ -231,6 +232,11 @@ namespace Rock.AI.Agent.Mcp
             try
             {
                 args = JsonSerializer.Deserialize<KernelArguments>( parameters.Arguments.GetRawText(), JsonSerializerOptions );
+
+                foreach ( var key in args.Keys.ToList() )
+                {
+                    args[key] = args[key]?.ToString();
+                }
             }
             catch
             {

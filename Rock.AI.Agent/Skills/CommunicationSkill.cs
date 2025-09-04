@@ -154,10 +154,7 @@ namespace Rock.AI.Agent.Skills
                     [Description("The IdKey of the person to whom the communication will be sent. Used to fetch the contact information for the person.")]
                     string recipientIdKey,
 
-                    // BC TODO: Enum parameter types are broken in MCP.
-                    // This is a workaround. This should not make it into final implementation.
-                    [Description("Email | Sms | Push")]
-                    string communicationType,
+                    AgentCommunicationType communicationType,
                     string subjectHint,
 
                     [Description("The data corresponding to the draft being written. Not the draft itself.")]
@@ -168,13 +165,6 @@ namespace Rock.AI.Agent.Skills
                     [Description("An optional parameter to update an existing draft as opposed to saving a new one.")]
                     string existingDraftIdKey = "" )
         {
-            var commType = communicationType.ConvertToEnumOrNull<AgentCommunicationType>();
-            if ( commType == null )
-            {
-                return RockToolResult.Error( $"The communication type '{communicationType}' is not recognized." )
-                    .WithInstructions( "Ensure the communication type is one of: Email, Sms, or Push." );
-            }
-
             var currentPerson = AgentRequestContext.RockRequestContext.CurrentPerson;
             if ( currentPerson == null )
             {
@@ -193,7 +183,7 @@ namespace Rock.AI.Agent.Skills
                         .WithInstructions( "Verify the recipientIdKey and try again." );
                 }
 
-                var medium = TryGetCommunicationMedium( commType.Value, rockContext );
+                var medium = TryGetCommunicationMedium( communicationType, rockContext );
                 if ( medium == null )
                 {
                     return RockToolResult.Error( $"The communication type '{communicationType}' is not supported." );
@@ -222,7 +212,7 @@ namespace Rock.AI.Agent.Skills
                     return RockToolResult.Error( recipientValidation );
                 }
 
-                var draftRequest = new DraftRequest( commType.Value, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipients );
+                var draftRequest = new DraftRequest( communicationType, subjectHint, draftGuidance, referenceData, tone, currentPerson, recipients );
 
                 DraftResult draftResult;
                 try
