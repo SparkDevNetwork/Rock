@@ -149,8 +149,6 @@ namespace Rock.AI.Agent.Skills
             "- If a corresponding draft already exists and has not been sent, pass existingDraftIdKey to update it instead of creating a new draft."
         )]
         public async Task<RockToolResult> DraftCommunicationToPerson(
-                    Kernel kernel,
-
                     [Description("The IdKey of the person to whom the communication will be sent. Used to fetch the contact information for the person.")]
                     string recipientIdKey,
 
@@ -227,7 +225,7 @@ namespace Rock.AI.Agent.Skills
                 DraftResult draftResult;
                 try
                 {
-                    draftResult = await medium.DraftAsync( kernel, draftRequest );
+                    draftResult = await medium.DraftAsync( AgentRequestContext.ChatAgent, draftRequest );
                 }
                 catch ( Exception ex )
                 {
@@ -284,7 +282,7 @@ namespace Rock.AI.Agent.Skills
 
                 return RockToolResult.Success( draftResult )
                     .WithInstructions( returnInstructions )
-                    .WithHistoryContent( historyContent )
+                    .WithHistoryContent( historyContent, draftCommunication.IdKey )
                     .WithReferenceRoute( AgentRequestContext.RockRequestContext, "Draft Communication", $"/Communication/{draftCommunication.Id}", false );
             }
         }
@@ -347,6 +345,7 @@ namespace Rock.AI.Agent.Skills
                     CommunicationIdKey = communication.IdKey
                 } )
                 .WithInstructions( instructions )
+                .WithHistoryKey( communicationIdKey )
                 .WithReferenceRoute( requestContext, "Communication", $"/Communication/{communication.Id}", false );
             }
         }

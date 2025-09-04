@@ -20,8 +20,6 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 
-using Microsoft.SemanticKernel;
-
 using Rock.Model;
 using Rock.Web.Cache;
 
@@ -32,14 +30,13 @@ namespace Rock.AI.Agent.Utilities.CommunicationSkill.Mediums
         #region IAgentCommunicationMedium
 
         /// <inheritdoc />
-        public async Task<DraftResult> DraftAsync( Kernel kernel, DraftRequest request )
+        public async Task<DraftResult> DraftAsync( IChatAgent agent, DraftRequest request )
         {
             var prompt = DraftPromptBuilder.BuildEmailDraftPrompt( request );
 
-            var fnResult = await kernel.InvokePromptAsync( prompt );
-            var json = fnResult.GetValue<string>();
+            var promptResult = await agent.InvokePromptAsync( prompt, null );
 
-            var dto = json.FromJsonOrNull<DraftDto>();
+            var dto = promptResult.ResponseText.FromJsonOrNull<DraftDto>();
             if ( dto == null || dto.Subject.IsNullOrWhiteSpace() || dto.Body.IsNullOrWhiteSpace() )
             {
                 throw new InvalidOperationException( "Draft JSON invalid. Expect: { \"subject\", \"body\" }" );

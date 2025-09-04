@@ -188,8 +188,6 @@ namespace Rock.AI.Agent
         {
             var toolResultContent = ToolResultContent.FromJson( toolResultContentJson );
 
-            // Add a tool result as an assistant message with the tool name prefixed
-            //_chatMessages.Add( new ChatMessageContent( SKAuthorRole.Tool, message ) );
             var functionCallContent = new FunctionCallContent(
                 functionName: toolResultContent.FunctionName,
                 pluginName: toolResultContent.PluginName,

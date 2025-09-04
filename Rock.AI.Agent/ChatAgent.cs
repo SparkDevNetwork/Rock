@@ -28,6 +28,8 @@ using Microsoft.ML.Tokenizers;
 using Microsoft.SemanticKernel;
 using Microsoft.SemanticKernel.ChatCompletion;
 
+using Rock.AI.Agent.Classes;
+using Rock.AI.Agent.Classes.Common;
 using Rock.Data;
 using Rock.Model;
 using Rock.Net;
@@ -320,6 +322,14 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
         {
             if ( SessionId.HasValue )
             {
+                // TODO: Right now, tool messages are not pruned from history when there is not a session.
+                // This will be fixed when we implement a way to reload the session (making it easier to adjust the context).
+                if ( role == AuthorRole.Tool )
+                {
+                    await AddOrReplaceToolMessageAsync( message, tokenCount, consumedTokenCount );
+                    return;
+                }
+
                 if ( role == AuthorRole.User && _historyNeedsSummary )
                 {
                     await SummarizeChatHistoryAsync( cancellationToken );
@@ -607,6 +617,13 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
             return result.GetValue<object>();
         }
 
+        /// <inheritdoc />
+        public async Task<PromptResult> InvokePromptAsync( string prompt, IDictionary<string, object> arguments, CancellationToken cancellationToken = default )
+        {
+            var result = await _kernel.InvokePromptAsync( prompt );
+            return new PromptResult( result );
+        }
+
         /// <inheritdoc/>
         private UsageMetric GetMetricUsageFromResult( ChatMessageContent result )
         {
@@ -627,6 +644,72 @@ You are an assistant on the Rock RMS platform version {{ RockVersion }}.
             }
 
             return debug;
+        }
+
+        /// <summary>
+        /// Saves a tool result message to the history, replacing any existing tool messages that have the same history token.
+        /// This will reload the session if any existing tool messages are removed.
+        /// </summary>
+        /// <param name="message">The tool message. Should only be <see cref="AuthorRole.Tool"/>.</param>
+        /// <param name="tokenCount">The token count.</param>
+        /// <param name="consumedTokenCount">The consumed token count.</param>
+        /// <param name="token">The cancellation token.</param>
+        /// <returns></returns>
+        private async Task AddOrReplaceToolMessageAsync( string message, int tokenCount, int consumedTokenCount, CancellationToken token = default )
+        {
+            var toolMessageContent = ToolResultContent.FromJson( message ).GetResult<HistoryContentBag>();
+
+            // Tool messages have a key associated.
+            // We want to go cleanup any existing tool messages (with the same key) before adding a new one.
+            using ( var rockContext = _rockContextFactory.CreateRockContext() )
+            {
+                var historyService = new AIAgentSessionHistoryService( rockContext );
+
+                var existingToolMessages = historyService.Queryable()
+                    .Where( h => h.AIAgentSessionId == SessionId
+                        && h.MessageRole == AuthorRole.Tool )
+                    .ToList();
+
+                bool needsRefresh = false;
+                foreach ( var toolMessage in existingToolMessages )
+                {
+                    // Parse the tool content to get the key.
+                    var toolResultContent = ToolResultContent.FromJson( toolMessage.Message )?.GetResult<HistoryContentBag>();
+                    if ( toolResultContent.HistoryToken.IsNotNullOrWhiteSpace() && toolMessageContent.HistoryToken == toolResultContent.HistoryToken )
+                    {
+                        // This is the same tool message, remove it.
+                        historyService.Delete( toolMessage );
+                        needsRefresh = true;
+                    }
+                }
+
+                if ( needsRefresh )
+                {
+                    rockContext.SaveChanges();
+                    await LoadSessionAsync( SessionId.Value, token );
+                }
+
+                var history = new AIAgentSessionHistory
+                {
+                    AIAgentSessionId = SessionId.Value,
+                    MessageRole = AuthorRole.Tool,
+                    Message = message,
+                    IsCurrentlyInContext = true,
+                    MessageDateTime = RockDateTime.Now,
+                    TokenCount = tokenCount,
+                    ConsumedTokenCount = consumedTokenCount
+                };
+
+                historyService.Add( history );
+
+                var session = new AIAgentSessionService( rockContext ).Get( SessionId.Value );
+
+                session.LastMessageDateTime = RockDateTime.Now;
+
+                rockContext.SaveChanges();
+
+                _context.AddToolResultMessage( message );
+            }
         }
 
         /// <summary>

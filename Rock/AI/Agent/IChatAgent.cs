@@ -16,6 +16,7 @@
 //
 
 using System.Collections.Generic;
+using System.ServiceModel.Channels;
 using System.Threading;
 using System.Threading.Tasks;
 
@@ -123,6 +124,19 @@ namespace Rock.AI.Agent
         /// <param name="cancellationToken">A cancellation token that indicates if the operation should be cancelled.</param>
         /// <returns>The value returned from the function invocation.</returns>
         Task<object> InvokeFunctionAsync( string skillKey, string functionKey, IDictionary<string, object> arguments, CancellationToken cancellationToken = default );
+
+        /// <summary>
+        /// Asynchronously invokes a prompt with the specified arguments and returns the result.
+        /// </summary>
+        /// <remarks>This method allows for the execution of a prompt with dynamic arguments, enabling
+        /// flexible interaction scenarios.</remarks>
+        /// <param name="prompt">The prompt to be invoked, represented as a string.</param>
+        /// <param name="arguments">A dictionary containing the arguments to be used in the prompt. Keys are argument names, and values are
+        /// their corresponding values.</param>
+        /// <param name="cancellationToken">A token to monitor for cancellation requests. The default value is <see cref="CancellationToken.None"/>.</param>
+        /// <returns>A task that represents the asynchronous operation. The task result contains a <see cref="PromptResult"/>
+        /// object representing the outcome of the prompt.</returns>
+        Task<PromptResult> InvokePromptAsync( string prompt, IDictionary<string, object> arguments, CancellationToken cancellationToken = default );
 
         #endregion
     }
